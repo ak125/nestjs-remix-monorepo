@@ -65,7 +65,7 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
           {/* 🔙 Article précédent */}
           {previous ? (
             <Link
-              to={`/blog/${previous.slug}`}
+              to={`/blog-pieces-auto/${previous.slug}`}
               className="group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}
@@ -115,7 +115,7 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
           {/* ▶️ Article suivant */}
           {next && (
             <Link
-              to={`/blog/${next.slug}`}
+              to={`/blog-pieces-auto/${next.slug}`}
               className="group relative flex flex-col p-6 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}

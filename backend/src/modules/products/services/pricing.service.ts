@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -105,7 +106,7 @@ export class PricingService extends SupabaseBaseService {
 
       // Requête VRAIES DONNÉES (CORRIGÉE vs original avec erreurs)
       const { data, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           `
           pri_piece_id,
@@ -293,7 +294,7 @@ export class PricingService extends SupabaseBaseService {
     try {
       // Test vraies données
       const { data: testData, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_piece_id, pri_vente_ttc')
         .eq('pri_dispo', '1')
         .not('pri_vente_ttc', 'is', null)
@@ -424,7 +425,7 @@ export class PricingService extends SupabaseBaseService {
   async debugRealData(pieceId: number) {
     try {
       const { data, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .eq('pri_piece_id', pieceId.toString())
         .limit(5);
@@ -459,7 +460,7 @@ export class PricingService extends SupabaseBaseService {
     try {
       // 1. Recherche dans pieces_price par référence (simple d'abord)
       const { data: priceData } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .ilike('pri_ref', `%${reference}%`)
         .limit(10);
@@ -475,7 +476,7 @@ export class PricingService extends SupabaseBaseService {
           let realBrand = 'Marque inconnue';
           if (pmId) {
             const { data: brandData } = await this.client
-              .from('pieces_marque')
+              .from(TABLES.pieces_marque)
               .select('pm_name, pm_alias')
               .eq('pm_id', pmId)
               .limit(1);

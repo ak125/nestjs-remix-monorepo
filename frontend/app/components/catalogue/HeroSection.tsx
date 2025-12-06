@@ -2,7 +2,7 @@
 // Utilise le Design System pour cohérence visuelle et maintenance facilitée
 
 import { Shield } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import VehicleSelectorV2 from '../vehicle/VehicleSelectorV2';
 
 export interface HeroSectionProps {

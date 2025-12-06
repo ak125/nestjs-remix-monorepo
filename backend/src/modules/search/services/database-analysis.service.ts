@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from './supabase-indexation.service';
 
@@ -21,7 +22,7 @@ export class DatabaseAnalysisService {
 
       // AUTO_MARQUE
       const { data: marques, error: marquesError } = await client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*')
         .limit(5);
 
@@ -31,7 +32,7 @@ export class DatabaseAnalysisService {
 
       // AUTO_MODELE
       const { data: modeles, error: modelesError } = await client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*')
         .limit(5);
 
@@ -41,7 +42,7 @@ export class DatabaseAnalysisService {
 
       // AUTO_TYPE
       const { data: types, error: typesError } = await client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .limit(5);
 
@@ -74,7 +75,7 @@ export class DatabaseAnalysisService {
 
       // Test relation AUTO_TYPE → AUTO_MODELE
       const { data: typeWithModel, error: e1 } = await client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
@@ -110,7 +111,7 @@ export class DatabaseAnalysisService {
       const client = this.supabaseService.getClient();
 
       const { data: vehicles, error } = await client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
@@ -174,7 +175,7 @@ export class DatabaseAnalysisService {
 
       // Échantillon de pièces
       const { data: pieces, error } = await client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(5);
 

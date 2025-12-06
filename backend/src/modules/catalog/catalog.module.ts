@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
+import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 Import pour batch-loader vehicleInfo
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -16,6 +17,7 @@ import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filter
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
 import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
+import { BatchLoaderController } from './controllers/batch-loader.controller';
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
@@ -30,15 +32,13 @@ import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.s
 import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
-import { PiecesV4WorkingService } from './services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
-import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from './services/pieces-enhanced.service';
-import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { SeoSwitchesService } from './services/seo-switches.service';
+import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -68,7 +68,7 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     DatabaseModule,
     CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
-    // forwardRef(() => VehiclesModule), // Import circulaire géré - TEMPORAIREMENT DÉSACTIVÉ
+    forwardRef(() => VehiclesModule), // 🚗 Import pour batch-loader vehicleInfo (forwardRef pour éviter dépendance circulaire)
   ],
   controllers: [
     CatalogController,
@@ -81,6 +81,7 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     PiecesCleanController,
     PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
+    BatchLoaderController, // 🚀 BATCH LOADER pour optimisation performance
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
@@ -93,17 +94,16 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     GammeUnifiedService,
     EquipementiersService,
     VehicleFilteredCatalogV4HybridService,
-    PiecesV4WorkingService,
     VehiclePiecesCompatibilityService,
-    PiecesPhpLogicCompleteService,
     PiecesEnhancedService,
-    PiecesUltraEnhancedService,
     CatalogDataIntegrityService, // 🛡️ Service de validation de l'intégrité
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
     // 🔄 SEO SWITCHES SERVICE - Gestion des switches SEO (3 sources)
     SeoSwitchesService,
+    // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)
+    OemPlatformMappingService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
@@ -115,6 +115,9 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     FamilyGammeHierarchyService,
     VehicleFilteredCatalogV4HybridService,
     CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
+    GammeUnifiedService, // ✅ Exporté pour GammeRestModule
+    VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
+    OemPlatformMappingService, // 🔧 Exporté pour filtrage OEM SEO
   ],
 })
 export class CatalogModule {

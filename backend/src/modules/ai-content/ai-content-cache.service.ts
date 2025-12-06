@@ -15,7 +15,7 @@ export class AiContentCacheService {
   private initializeRedis() {
     try {
       const redisUrl = this.configService.get<string>('REDIS_URL');
-      
+
       if (!redisUrl) {
         this.logger.warn('REDIS_URL not configured. Cache will be disabled.');
         return;
@@ -46,7 +46,7 @@ export class AiContentCacheService {
 
     try {
       const data = await this.redisClient.get(this.PREFIX + key);
-      
+
       if (!data) return null;
 
       return JSON.parse(data) as T;
@@ -85,12 +85,14 @@ export class AiContentCacheService {
 
     try {
       const keys = await this.redisClient.keys(this.PREFIX + pattern);
-      
+
       if (keys.length === 0) return 0;
 
       await this.redisClient.del(...keys);
-      this.logger.log(`Cleared ${keys.length} cache entries matching ${pattern}`);
-      
+      this.logger.log(
+        `Cleared ${keys.length} cache entries matching ${pattern}`,
+      );
+
       return keys.length;
     } catch (error) {
       this.logger.error(`Cache clear error: ${error.message}`);
@@ -110,7 +112,7 @@ export class AiContentCacheService {
     try {
       const keys = await this.redisClient.keys(this.PREFIX + '*');
       const info = await this.redisClient.info('memory');
-      
+
       const memoryMatch = info.match(/used_memory_human:(.+)/);
       const memoryUsage = memoryMatch ? memoryMatch[1].trim() : 'Unknown';
 

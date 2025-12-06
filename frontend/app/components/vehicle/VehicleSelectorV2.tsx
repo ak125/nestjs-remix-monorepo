@@ -2,8 +2,8 @@
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
 import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
-import { Form, useNavigate } from '@remix-run/react';
-import { Search, Car, Calendar, Fuel, Settings, RotateCcw, FileText } from 'lucide-react';
+import { useNavigate } from '@remix-run/react';
+import { Search, Car, Calendar, Settings, RotateCcw, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
@@ -49,7 +49,7 @@ interface VehicleSelectorV2Props {
 
 export default function VehicleSelectorV2({
   mode = 'full',
-  showVinSearch = false,
+  showVinSearch: _showVinSearch = false,
   showRecommendation: _showRecommendation = false,
   enableTypeMineSearch = false,
   onVehicleSelect,
@@ -78,7 +78,7 @@ export default function VehicleSelectorV2({
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(false);
   
-  const [searchQuery, setSearchQuery] = useState('');
+  const [_searchQuery, setSearchQuery] = useState('');
   const [searchMode, setSearchMode] = useState<'vehicle' | 'mine'>('vehicle');
   const [mineCode, setMineCode] = useState('');
   
@@ -105,6 +105,7 @@ export default function VehicleSelectorV2({
     return () => {
       brandSelect?.removeEventListener('focus', handleFocus);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_currentVehicle]);
 
   const loadBrands = async () => {

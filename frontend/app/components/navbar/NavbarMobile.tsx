@@ -207,7 +207,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
             {/* Blog */}
             <li>
               <Link
-                to="/blog"
+                to="/blog-pieces-auto"
                 onClick={closeMenu}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
               >
@@ -327,6 +327,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
             <div className="space-y-2">
               <Link
                 to="/login"
+                rel="nofollow"
                 onClick={closeMenu}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium"
               >
@@ -335,6 +336,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
               </Link>
               <Link
                 to="/register"
+                rel="nofollow"
                 onClick={closeMenu}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-info/20 transition-colors font-medium"
               >

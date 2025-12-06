@@ -30,6 +30,8 @@ interface GammePageData {
   conseils?: any;
   informations?: any;
   guideAchat?: any;
+  catalogueMameFamille?: any;
+  famille?: any;
   performance?: {
     total_time_ms: number;
     rpc_time_ms?: number;
@@ -58,13 +60,20 @@ export async function fetchGammePageData(
     try {
       console.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
       
+      // Timeout spécifique pour RPC V2 (10s max)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const rpcSignal = signal || controller.signal;
+
       const rpcResponse = await fetch(
         `${API_URL}/api/gamme-rest/${gammeId}/page-data-rpc-v2`,
         {
           headers: { 'Accept': 'application/json' },
-          signal,
+          signal: rpcSignal,
         }
       );
+      
+      clearTimeout(timeoutId);
 
       if (rpcResponse.ok) {
         const data = await rpcResponse.json();
@@ -84,34 +93,50 @@ export async function fetchGammePageData(
         console.warn(`⚠️ RPC V2 HTTP ${rpcResponse.status}`);
       }
     } catch (error) {
-      console.warn(`⚠️ RPC V2 failed:`, error.message);
+      if (error.name === 'AbortError') {
+        console.warn(`⏱️ RPC V2 Timeout (10s) pour gamme ${gammeId}`);
+      } else {
+        console.warn(`⚠️ RPC V2 failed:`, error.message);
+      }
     }
   }
 
   // Fallback sur méthode classique
   console.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
   
-  const classicResponse = await fetch(
-    `${API_URL}/api/gamme-rest/${gammeId}/page-data`,
-    {
-      headers: { 'Accept': 'application/json' },
-      signal,
+  // Timeout pour fallback (60s max)
+  const fallbackController = new AbortController();
+  const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 60000);
+  const fallbackSignal = signal || fallbackController.signal;
+
+  try {
+    const classicResponse = await fetch(
+      `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
+      {
+        headers: { 'Accept': 'application/json' },
+        signal: fallbackSignal,
+      }
+    );
+    
+    clearTimeout(fallbackTimeoutId);
+
+    if (!classicResponse.ok) {
+      throw new Response('API Error', { status: classicResponse.status });
     }
-  );
 
-  if (!classicResponse.ok) {
-    throw new Response('API Error', { status: classicResponse.status });
+    const data = await classicResponse.json();
+    const elapsed = performance.now() - startTime;
+    
+    console.log(
+      `✅ Classic method SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
+      ` (Total: ${data.performance?.total_time_ms?.toFixed(0)}ms)`
+    );
+
+    return data;
+  } catch (error) {
+    clearTimeout(fallbackTimeoutId);
+    throw error;
   }
-
-  const data = await classicResponse.json();
-  const elapsed = performance.now() - startTime;
-  
-  console.log(
-    `✅ Classic method SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
-    ` (Total: ${data.performance?.total_time_ms?.toFixed(0)}ms)`
-  );
-
-  return data;
 }
 
 /**

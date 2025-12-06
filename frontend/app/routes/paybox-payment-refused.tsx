@@ -1,5 +1,11 @@
-import { type LoaderFunctionArgs, json } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Paiement refusé | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 interface LoaderData {
   errorCode?: string;

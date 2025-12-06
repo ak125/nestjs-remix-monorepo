@@ -23,6 +23,7 @@ import {
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ProfileService } from './profile.service';
 import { ConfigService } from '@nestjs/config';
+import { TABLES } from '@repo/database-types';
 import { UserResponseDto } from '../dto/users.dto';
 
 @Injectable()
@@ -69,7 +70,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       // UPDATE niveau dans DB
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_level: level.toString(),
           cst_updated_at: new Date().toISOString(),
@@ -136,7 +137,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       // UPDATE cst_activ = '0'
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_activ: '0',
           cst_updated_at: new Date().toISOString(),
@@ -188,7 +189,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       // UPDATE cst_activ = '1'
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_activ: '1',
           cst_updated_at: new Date().toISOString(),
@@ -254,7 +255,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       // Soft delete: UPDATE cst_activ = '0'
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_activ: '0',
           cst_updated_at: new Date().toISOString(),

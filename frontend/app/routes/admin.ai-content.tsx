@@ -1,21 +1,24 @@
-import type { MetaFunction } from '@remix-run/node';
-import { useState, useEffect } from 'react';
-import { AiContentGenerator } from '~/components/ai/AiContentGenerator';
-import { ProductDescriptionGenerator } from '~/components/ai/ProductDescriptionGenerator';
-import { SEOMetaGenerator } from '~/components/ai/SEOMetaGenerator';
+import { type MetaFunction } from "@remix-run/node";
+import { useState, useEffect } from "react";
+import { AiContentGenerator } from "~/components/ai/AiContentGenerator";
+import { ProductDescriptionGenerator } from "~/components/ai/ProductDescriptionGenerator";
+import { SEOMetaGenerator } from "~/components/ai/SEOMetaGenerator";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Générateur de Contenu IA - Dashboard Admin' },
+    { title: "Générateur de Contenu IA - Dashboard Admin" },
     {
-      name: 'description',
-      content: 'Générez du contenu intelligent avec IA pour vos produits et pages',
+      name: "description",
+      content:
+        "Générez du contenu intelligent avec IA pour vos produits et pages",
     },
   ];
 };
 
 export default function AiContentDashboard() {
-  const [activeTab, setActiveTab] = useState<'generic' | 'product' | 'seo'>('generic');
+  const [activeTab, setActiveTab] = useState<"generic" | "product" | "seo">(
+    "generic",
+  );
   const [providerStatus, setProviderStatus] = useState<{
     ollama: boolean;
     groq: boolean;
@@ -26,12 +29,14 @@ export default function AiContentDashboard() {
   const checkProvidersStatus = async () => {
     try {
       // Vérifier Ollama
-      const ollamaCheck = await fetch('http://localhost:11434/api/tags').then(
-        (r) => r.ok,
-      ).catch(() => false);
+      const ollamaCheck = await fetch("http://localhost:11434/api/tags")
+        .then((r) => r.ok)
+        .catch(() => false);
 
       // Vérifier Redis (via backend)
-      const redisCheck = await fetch('/api/health').then((r) => r.ok).catch(() => false);
+      const redisCheck = await fetch("/api/health")
+        .then((r) => r.ok)
+        .catch(() => false);
 
       setProviderStatus({
         ollama: ollamaCheck,
@@ -39,7 +44,7 @@ export default function AiContentDashboard() {
         redis: redisCheck,
       });
     } catch (error) {
-      console.error('Error checking providers:', error);
+      console.error("Error checking providers:", error);
     }
   };
 
@@ -59,10 +64,11 @@ export default function AiContentDashboard() {
                 🤖 Générateur de Contenu IA
               </h1>
               <p className="mt-2 text-sm text-gray-700">
-                Créez automatiquement des descriptions, du contenu SEO et des textes marketing
+                Créez automatiquement des descriptions, du contenu SEO et des
+                textes marketing
               </p>
             </div>
-            
+
             {/* Status Indicators */}
             <div className="mt-4 flex space-x-3 md:ml-4 md:mt-0">
               {providerStatus && (
@@ -109,10 +115,12 @@ export default function AiContentDashboard() {
               <div className="mt-2 text-sm text-blue-700">
                 <ul className="list-disc space-y-1 pl-5">
                   <li>
-                    <strong>Ollama</strong> : Génération locale illimitée (modèle Llama 3)
+                    <strong>Ollama</strong> : Génération locale illimitée
+                    (modèle Llama 3)
                   </li>
                   <li>
-                    <strong>Groq</strong> : Ultra-rapide avec 14,400 requêtes/jour gratuites
+                    <strong>Groq</strong> : Ultra-rapide avec 14,400
+                    requêtes/jour gratuites
                   </li>
                   <li>
                     <strong>Cache Redis</strong> : Économise 90% des requêtes
@@ -128,39 +136,39 @@ export default function AiContentDashboard() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
-                onClick={() => setActiveTab('generic')}
+                onClick={() => setActiveTab("generic")}
                 className={`
                   whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium
                   ${
-                    activeTab === 'generic'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    activeTab === "generic"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }
                 `}
               >
                 ✨ Générateur Universel
               </button>
               <button
-                onClick={() => setActiveTab('product')}
+                onClick={() => setActiveTab("product")}
                 className={`
                   whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium
                   ${
-                    activeTab === 'product'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    activeTab === "product"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }
                 `}
               >
                 📦 Descriptions Produits
               </button>
               <button
-                onClick={() => setActiveTab('seo')}
+                onClick={() => setActiveTab("seo")}
                 className={`
                   whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium
                   ${
-                    activeTab === 'seo'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    activeTab === "seo"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }
                 `}
               >
@@ -173,54 +181,54 @@ export default function AiContentDashboard() {
         {/* Tab Content */}
         <div className="rounded-lg bg-white shadow">
           <div className="p-6">
-            {activeTab === 'generic' && (
+            {activeTab === "generic" && (
               <div>
                 <h2 className="mb-4 text-xl font-semibold text-gray-900">
                   Générateur de Contenu Universel
                 </h2>
                 <p className="mb-6 text-sm text-gray-600">
-                  Créez tout type de contenu : descriptions, articles, posts sociaux,
-                  emails marketing, etc.
+                  Créez tout type de contenu : descriptions, articles, posts
+                  sociaux, emails marketing, etc.
                 </p>
                 <AiContentGenerator
                   onContentGenerated={(content) => {
-                    console.log('Contenu généré:', content);
+                    console.log("Contenu généré:", content);
                     // Vous pouvez ajouter ici une notification de succès
                   }}
                 />
               </div>
             )}
 
-            {activeTab === 'product' && (
+            {activeTab === "product" && (
               <div>
                 <h2 className="mb-4 text-xl font-semibold text-gray-900">
                   Générateur de Descriptions Produits
                 </h2>
                 <p className="mb-6 text-sm text-gray-600">
-                  Générez des descriptions professionnelles et engageantes pour vos produits.
-                  Optimisées pour la conversion et le SEO.
+                  Générez des descriptions professionnelles et engageantes pour
+                  vos produits. Optimisées pour la conversion et le SEO.
                 </p>
                 <ProductDescriptionGenerator
                   onGenerated={(description) => {
-                    console.log('Description générée:', description);
+                    console.log("Description générée:", description);
                     // Vous pouvez ajouter ici la logique pour sauvegarder
                   }}
                 />
               </div>
             )}
 
-            {activeTab === 'seo' && (
+            {activeTab === "seo" && (
               <div>
                 <h2 className="mb-4 text-xl font-semibold text-gray-900">
                   Générateur de Méta Descriptions SEO
                 </h2>
                 <p className="mb-6 text-sm text-gray-600">
-                  Créez des méta-descriptions optimisées SEO (150-160 caractères) avec
-                  mots-clés et appel à l'action.
+                  Créez des méta-descriptions optimisées SEO (150-160
+                  caractères) avec mots-clés et appel à l'action.
                 </p>
                 <SEOMetaGenerator
                   onGenerated={(meta) => {
-                    console.log('Meta générée:', meta);
+                    console.log("Meta générée:", meta);
                     // Vous pouvez ajouter ici la logique pour sauvegarder
                   }}
                 />
@@ -258,7 +266,8 @@ export default function AiContentDashboard() {
               ⚠️ Configuration Requise
             </h3>
             <p className="text-sm text-yellow-800 mb-4">
-              Le système de génération IA n'est pas encore configuré. Suivez ces étapes :
+              Le système de génération IA n'est pas encore configuré. Suivez ces
+              étapes :
             </p>
             <div className="space-y-3">
               <SetupStep
@@ -305,15 +314,13 @@ function StatusBadge({
   return (
     <span
       className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-        active
-          ? 'bg-green-100 text-green-800'
-          : 'bg-gray-100 text-gray-800'
+        active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
       }`}
       title={tooltip}
     >
       <span
         className={`mr-1.5 h-2 w-2 rounded-full ${
-          active ? 'bg-green-400' : 'bg-gray-400'
+          active ? "bg-green-400" : "bg-gray-400"
         }`}
       />
       {label}
@@ -340,7 +347,9 @@ function InfoCard({
         </div>
         <div className="ml-5 w-0 flex-1">
           <dl>
-            <dt className="truncate text-sm font-medium text-gray-500">{title}</dt>
+            <dt className="truncate text-sm font-medium text-gray-500">
+              {title}
+            </dt>
             <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
               {value}
             </dd>
@@ -386,7 +395,7 @@ function SetupStep({
             onClick={copyCommand}
             className="ml-2 rounded bg-yellow-200 px-3 py-2 text-xs font-medium text-yellow-900 hover:bg-yellow-300"
           >
-            {copied ? '✓ Copié' : '📋 Copier'}
+            {copied ? "✓ Copié" : "📋 Copier"}
           </button>
         </div>
       </div>

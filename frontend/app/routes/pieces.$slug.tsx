@@ -1,26 +1,29 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
-import { useEffect } from "react";
+import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
+import { useEffect, lazy, Suspense } from "react";
+import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
 import ConseilsSection from "../components/pieces/ConseilsSection";
 import EquipementiersSection from "../components/pieces/EquipementiersSection";
-import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
-import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
+import { PiecesRelatedArticles as _PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
-import { buildCanonicalUrl } from "../utils/seo/canonical";
-import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
-import { generateGammeMeta } from "../utils/seo/meta-generators";
-import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { TrustBadgeGroup } from "../components/trust/TrustBadge";
-import { PurchaseGuide } from "../components/catalog/PurchaseGuide";
+import { buildCanonicalUrl } from "../utils/seo/canonical";
+import { generateGammeMeta } from "../utils/seo/meta-generators";
+import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
+
+// Lazy load PurchaseGuide (contains framer-motion ~167KB)
+const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
 
 interface LoaderData {
   status: number;
@@ -31,7 +34,7 @@ interface LoaderData {
     keywords: string;
     robots: string;
     canonical: string;
-    relfollow: number;
+    relfollow?: number;
   };
   breadcrumbs?: {
     items: Array<{
@@ -47,13 +50,14 @@ interface LoaderData {
   };
   performance?: {
     total_time_ms: number;
-    parallel_time_ms: number;
+    parallel_time_ms?: number;
+    rpc_time_ms?: number;
     motorisations_count: number;
-    catalogue_famille_count: number;
-    equipementiers_count: number;
-    conseils_count: number;
-    informations_count: number;
-    guide_available: number;
+    catalogue_famille_count?: number;
+    equipementiers_count?: number;
+    conseils_count?: number;
+    informations_count?: number;
+    guide_available?: number;
   };
   content?: {
     h1: string;
@@ -125,6 +129,13 @@ interface LoaderData {
     content: string;
     items: string[];
   };
+  // 🔗 SEO Switches pour maillage interne (ancres variées)
+  seoSwitches?: {
+    verbs: Array<{ id: string; content: string }>;
+    nouns: Array<{ id: string; content: string }>;
+    verbCount: number;
+    nounCount: number;
+  };
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -162,24 +173,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }).finally(() => clearTimeout(timeoutId));
     
     // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-    const data: LoaderData = {
+    const heroData = apiData.hero as { h1: string; content: string; image: string; wall: string; famille_info?: any; pg_name?: string; pg_alias?: string } | undefined;
+    // Note: API returns different shapes than LoaderData, using type assertion for compatibility
+    const data = {
       ...apiData,
-      content: apiData.hero ? {
-        h1: apiData.hero.h1,
-        content: apiData.hero.content,
-        pg_name: apiData.hero.pg_name || apiData.hero.famille_info?.mf_name || '',
-        pg_alias: apiData.hero.pg_alias || '',
-        pg_pic: apiData.hero.image,
-        pg_wall: apiData.hero.wall,
+      status: 200,
+      content: heroData ? {
+        h1: heroData.h1,
+        content: heroData.content,
+        pg_name: heroData.pg_name || heroData.famille_info?.mf_name || '',
+        pg_alias: heroData.pg_alias || '',
+        pg_pic: heroData.image,
+        pg_wall: heroData.wall,
       } : undefined,
       famille: apiData.hero?.famille_info,
-      guide: apiData.guideAchat,
-    };
+      guide: apiData.guideAchat ? {
+        ...apiData.guideAchat,
+        date: apiData.guideAchat.updated,
+      } : undefined,
+    } as unknown as LoaderData;
     
-    // 🍞 Construire breadcrumb de base
+    // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
     const baseBreadcrumb = [
       { label: "Accueil", href: "/" },
-      { label: "Pièces", href: "/pieces/catalogue" },
       { label: data.content?.pg_name || "Pièce", current: true }
     ];
 
@@ -268,7 +284,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   return result;
 };
 
-export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
+export function headers({ loaderHeaders: _loaderHeaders }: { loaderHeaders: Headers }) {
   return {
     'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
   };
@@ -303,7 +319,6 @@ export default function PiecesDetailPage() {
     current: item.current
   })) || [
     { label: "Accueil", href: "/" },
-    { label: "Pièces", href: "/pieces/catalogue" },
     { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
   ];
 
@@ -313,6 +328,18 @@ export default function PiecesDetailPage() {
     mf_name: data.famille.mf_name,
     mf_pic: data.famille.mf_pic,
   } as any) : 'from-primary-950 via-primary-900 to-secondary-900'; // Fallback avec design tokens
+
+  // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)
+  const itemListData = data.motorisations?.items && data.motorisations.items.length > 0 ? {
+    name: `${data.content?.pg_name || 'Pièces'} - Véhicules compatibles`,
+    description: `Liste des ${data.motorisations.items.length} véhicules compatibles avec ${data.content?.pg_name || 'cette pièce'}`,
+    items: data.motorisations.items.slice(0, 50).map((item, index) => ({
+      name: `${item.title} - ${item.marque_name} ${item.modele_name}`,
+      url: item.link,
+      description: item.description,
+      position: index + 1
+    }))
+  } : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
@@ -345,7 +372,8 @@ export default function PiecesDetailPage() {
               "https://www.facebook.com/automecanik",
               "https://twitter.com/automecanik"
             ]
-          }
+          },
+          itemList: itemListData
         }}
       />
 
@@ -474,7 +502,7 @@ export default function PiecesDetailPage() {
                 </div>
                 
                 {/* VehicleSelector à droite */}
-                <div className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
+                <div id="vehicle-selector" className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
                   <VehicleSelectorV2 enableTypeMineSearch={true} />
                 </div>
               </div>
@@ -507,49 +535,25 @@ export default function PiecesDetailPage() {
 
       {/* 💡 Guide d'achat personnalisé par famille - Sous le hero */}
       {data.famille && (
-        <PurchaseGuide
-          familleId={data.famille.mf_id}
-          familleName={data.famille.mf_name}
-          productName={data.content?.pg_name}
-          familleColor={familleColor}
-          className="-mt-space-3 mb-space-6"
-        />
-      )}
-
-      {/* 🛡️ Conseil Automecanik - Card blanche avec Design Tokens */}
-      {data.famille?.mf_name.toLowerCase().includes('frein') && (
-        <section className="container mx-auto px-space-4 -mt-space-6 mb-space-6 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-space-6 border border-neutral-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="flex items-start gap-space-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-heading text-neutral-900 font-bold text-base mb-space-2">Conseil Automecanik</p>
-                  <p className="font-sans text-neutral-700 text-sm md:text-base leading-relaxed mb-space-3">
-                    Contrôlez et changez vos plaquettes de frein régulièrement pour votre sécurité et le bon fonctionnement du système de freinage.
-                  </p>
-                  <a 
-                    href="#guide" 
-                    className="inline-flex items-center gap-space-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors group"
-                  >
-                    <span>En savoir plus sur l'entretien</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
+        <Suspense fallback={
+          <div className="container mx-auto px-4 -mt-space-3 mb-space-6">
+            <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+              <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
+              <div className="h-64 bg-gray-100 rounded-2xl"></div>
+              <div className="h-96 bg-gray-100 rounded-2xl"></div>
             </div>
           </div>
-        </section>
+        }>
+          <PurchaseGuide
+            familleId={data.famille.mf_id}
+            familleName={data.famille.mf_name}
+            productName={data.content?.pg_name}
+            productAlias={data.content?.pg_alias}
+            familleColor={familleColor}
+            className="-mt-space-3 mb-space-6"
+          />
+        </Suspense>
       )}
-
-      {/* 📊 Sections lazy-loaded */}
-
-      {/* �🛡️ Conseil Automecanik - Card blanche améliorée */}
-            {/* 🚗 Badge véhicule actif (si présent) */}
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
@@ -568,18 +572,14 @@ export default function PiecesDetailPage() {
           {/* Contenu SEO */}
           {data.content?.content && (
             <div className="p-4 md:p-6 lg:p-8">
-              <div 
+              <HtmlContent 
+                html={data.content.content}
+                trackLinks={true}
                 className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: data.content.content }} 
               />
             </div>
           )}
         </section>
-
-        {/* Guide Expert */}
-        <div id="guide-expert" className="scroll-mt-20">
-          <GuideSection guide={data.guide} familleColor={familleColor} familleName={data.famille?.mf_name} />
-        </div>
 
         {/* Motorisations - Section critique, chargée immédiatement */}
         <MotorisationsSection 
@@ -588,63 +588,30 @@ export default function PiecesDetailPage() {
           familleName={data.famille?.mf_name || 'pièces'}
         />
 
-        {/* Catalogue Même Famille - Lazy load avec skeleton */}
-        <LazySection
-          id="catalogue-section"
-          threshold={0.1}
-          rootMargin="200px"
-          fallback={<LazySectionSkeleton rows={4} height="h-48" />}
-        >
-          <CatalogueSection catalogueMameFamille={data.catalogueMameFamille} />
-        </LazySection>
+        {/* Informations SEO - Contenu unique riche avec maillage interne */}
+        <InformationsSection 
+          informations={data.informations}
+          catalogueFamille={data.catalogueMameFamille?.items}
+        />
 
-        {/* Équipementiers - Lazy load */}
-        <LazySection
-          id="equipementiers-section"
-          threshold={0.1}
-          rootMargin="200px"
-          fallback={<LazySectionSkeleton rows={3} height="h-32" />}
-        >
-          <EquipementiersSection equipementiers={data.equipementiers} />
-        </LazySection>
+        {/* Équipementiers - Chargé immédiatement pour SEO */}
+        <EquipementiersSection equipementiers={data.equipementiers} />
 
-        {/* Conseils - Lazy load */}
-        <LazySection
-          id="conseils-section"
-          threshold={0.05}
-          rootMargin="300px"
-          fallback={
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
-              <div className="h-8 bg-neutral-200 rounded w-1/3 mb-6"></div>
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-24 bg-neutral-100 rounded"></div>
-                ))}
-              </div>
-            </div>
-          }
-        >
-          <ConseilsSection conseils={data.conseils} />
-        </LazySection>
+        {/* Conseils - Chargé immédiatement pour indexation SEO */}
+        <ConseilsSection 
+          conseils={data.conseils}
+          catalogueFamille={data.catalogueMameFamille?.items}
+          gammeName={data.content?.pg_name}
+        />
 
-        {/* Informations - Lazy load (footer-like) */}
-        <LazySection
-          id="informations-section"
-          threshold={0}
-          rootMargin="400px"
-          fallback={
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
-              <div className="h-8 bg-neutral-200 rounded w-1/4 mb-4"></div>
-              <div className="space-y-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-4 bg-neutral-100 rounded"></div>
-                ))}
-              </div>
-            </div>
-          }
-        >
-          <InformationsSection informations={data.informations} />
-        </LazySection>
+        {/* Catalogue Même Famille - Autres pièces de la famille */}
+        <CatalogueSection 
+          catalogueMameFamille={data.catalogueMameFamille}
+          verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}  
+        />
+
+        {/* Bouton Scroll To Top */}
+        <ScrollToTop />
 
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../../cache/cache.service';
@@ -249,11 +250,11 @@ export class HeaderRealDataService extends SupabaseBaseService {
   private async getUserStats(): Promise<{ total: number; active: number }> {
     try {
       const { count: total, error: totalError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true });
 
       const { count: active, error: activeError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true })
         .eq('customer_active', true);
 
@@ -280,12 +281,12 @@ export class HeaderRealDataService extends SupabaseBaseService {
   }> {
     try {
       const { count: total, error: totalError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', 1);
 
       const { count: lowStock, error: lowStockError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', 1)
         .lte('piece_qty_sale', 5);
@@ -310,12 +311,12 @@ export class HeaderRealDataService extends SupabaseBaseService {
   private async getOrderStats(): Promise<{ active: number; pending: number }> {
     try {
       const { count: active, error: activeError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .in('order_status', ['pending', 'processing']);
 
       const { count: pending, error: pendingError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .eq('order_status', 'pending');
 
@@ -346,7 +347,7 @@ export class HeaderRealDataService extends SupabaseBaseService {
   } | null> {
     try {
       const { data: user, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', parseInt(userId))
         .single();

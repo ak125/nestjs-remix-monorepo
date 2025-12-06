@@ -1,57 +1,85 @@
 // app/routes/sitemap[.]xml.tsx
+/**
+ * 🗺️ SITEMAP INDEX - Système V2 Scalable
+ * 
+ * Structure optimale:
+ * - sitemap-racine.xml (homepage)
+ * - sitemap-constructeurs.xml (marques avec relfollow)
+ * - sitemap-modeles.xml (sharding alphabétique A-M + N-Z)
+ * - sitemap-types-*.xml (sharding numérique avec type_relfollow=1|null)
+ * - sitemap-gamme-produits.xml (gammes pièces niveau 1 & 2)
+ * - sitemap-pieces-index.xml (714k+ URLs depuis __sitemap_p_link)
+ * - sitemap-blog.xml (articles)
+ * 
+ * 📊 URLs totales estimées: ~750,000+
+ * - Constructeurs: ~250
+ * - Modèles: ~8,000
+ * - Types: ~15,000-24,000
+ * - Gammes: ~800
+ * - Pièces: ~714,000
+ * 
+ * Optimisations v2:
+ * - Timeout 5s + retry avec backoff
+ * - Validation XML
+ * - Stale-while-revalidate
+ */
 import { type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  SITEMAP_CONFIG,
+  fetchWithRetry,
+  isValidSitemapXml,
+  getSitemapHeaders,
+  generateFallbackSitemapIndex,
+  logSitemapError,
+} from "~/lib/sitemap-fetch";
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const startTime = Date.now();
+  
   try {
-    // ✅ Utiliser l'API REST existante - 714K+ enregistrements, service complet
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/sitemap`);
-    
-    if (!response.ok) {
-      throw new Error(`Backend API Error: ${response.status} ${response.statusText}`);
-    }
-    
+    const response = await fetchWithRetry(`${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/sitemap-index.xml`);
     const sitemap = await response.text();
     
-    // ✅ Headers optimisés pour SEO et performance
+    // Validation XML
+    if (!isValidSitemapXml(sitemap)) {
+      throw new Error('Invalid XML response from backend');
+    }
+    
+    const duration = Date.now() - startTime;
+    
     return new Response(sitemap, {
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-        "Cache-Control": "public, max-age=3600, s-maxage=7200", // 1h browser, 2h CDN
-        "X-Robots-Tag": "noindex", // Pas d'indexation du sitemap lui-même
-        "Vary": "Accept-Encoding",
-      },
+      headers: getSitemapHeaders({ responseTime: duration }),
     });
   } catch (error) {
-    console.error('[Sitemap Index] Erreur:', error);
+    const duration = Date.now() - startTime;
+    logSitemapError('Index', error, duration);
     
-    // ✅ Fallback sitemap minimal mais fonctionnel
-    const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>https://automecanik.com/sitemap-main.xml</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>https://automecanik.com/sitemap-constructeurs.xml</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>https://automecanik.com/sitemap-products.xml</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>https://automecanik.com/sitemap-blog.xml</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-  </sitemap>
-</sitemapindex>`;
+    // Fallback sitemap index complet avec tous les sitemaps
+    const fallbackSitemap = generateFallbackSitemapIndex([
+      // Static & racine
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-racine.xml` },
+      // Gammes produits
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-gamme-produits.xml` },
+      // Catalogue véhicules
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-constructeurs.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-modeles.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-types-1.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-types-2.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-types-3.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-types-4.xml` },
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-types-5.xml` },
+      // 🔗 Pièces détaillées (714k+ URLs)
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-pieces-index.xml` },
+      // Blog
+      { loc: `${SITEMAP_CONFIG.BASE_URL}/sitemap-blog.xml` },
+    ]);
     
     return new Response(fallbackSitemap, {
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-        "Cache-Control": "public, max-age=300", // Cache plus court en cas d'erreur
-        "X-Error": "Backend unavailable - fallback sitemap",
-      },
+      headers: getSitemapHeaders({
+        responseTime: duration,
+        isError: true,
+        errorMessage: 'Backend unavailable - fallback sitemap index',
+      }),
     });
   }
 }

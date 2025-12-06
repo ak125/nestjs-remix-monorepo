@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
@@ -72,7 +73,7 @@ export class VehicleMineService extends SupabaseBaseService {
           const offset = page * limit;
 
           let query = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -152,7 +153,7 @@ export class VehicleMineService extends SupabaseBaseService {
           const offset = page * limit;
 
           const { data, error, count } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -221,7 +222,7 @@ export class VehicleMineService extends SupabaseBaseService {
           const offset = page * limit;
 
           const { data, error, count } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               type_id,
@@ -284,7 +285,7 @@ export class VehicleMineService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               type_mine_code,
@@ -344,7 +345,7 @@ export class VehicleMineService extends SupabaseBaseService {
 
           // Recherche des codes mine similaires (avec préfixe commun)
           const { data, error, count } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -407,14 +408,14 @@ export class VehicleMineService extends SupabaseBaseService {
         try {
           // Total des codes mine
           const { count: totalMines } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' })
             .eq('type_display', 1)
             .not('type_mine_code', 'is', null);
 
           // Par marque
           const { data: byMarqueData } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               auto_modele!inner(
@@ -434,7 +435,7 @@ export class VehicleMineService extends SupabaseBaseService {
 
           // Avec/sans moteur
           const { count: withEngine } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' })
             .eq('type_display', 1)
             .not('type_mine_code', 'is', null)

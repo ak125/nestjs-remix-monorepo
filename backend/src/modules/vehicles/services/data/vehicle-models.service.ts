@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
@@ -56,17 +57,10 @@ export class VehicleModelsService extends SupabaseBaseService {
           const { page = 0, limit = 50, search } = options;
           const offset = page * limit;
 
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           let query = this.client
-            .from('auto_modele')
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .from(TABLES.auto_modele)
+            .select('*')
             .eq('modele_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -110,17 +104,10 @@ export class VehicleModelsService extends SupabaseBaseService {
       cacheKey,
       async () => {
         try {
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           const { data, error } = await this.client
-            .from('auto_modele')
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .from(TABLES.auto_modele)
+            .select('*')
             .eq('modele_id', modeleId)
             .eq('modele_display', 1)
             .single();
@@ -140,6 +127,50 @@ export class VehicleModelsService extends SupabaseBaseService {
   }
 
   /**
+   * 🚗 Obtenir un modèle par marque et alias
+   * Méthode simple pour récupérer un modèle spécifique sans logique de filtrage par motorisations
+   */
+  async getModelByBrandAndAlias(
+    marqueId: number,
+    alias: string,
+  ): Promise<VehicleModel | null> {
+    const cacheKey = `model_by_alias:${marqueId}:${alias}`;
+
+    return await this.cacheService.getOrSet(
+      CacheType.MODELS,
+      cacheKey,
+      async () => {
+        try {
+          this.logger.debug(
+            `🔍 Recherche modèle par alias: ${alias} (marque: ${marqueId})`,
+          );
+
+          const { data, error } = await this.client
+            .from(TABLES.auto_modele)
+            .select('*')
+            .eq('modele_marque_id', marqueId)
+            .eq('modele_alias', alias)
+            .eq('modele_display', 1)
+            .single();
+
+          if (error) {
+            this.logger.debug(`Modèle non trouvé: ${alias}`);
+            return null;
+          }
+
+          return data;
+        } catch (error) {
+          this.logger.error(
+            `Erreur getModelByBrandAndAlias ${marqueId}/${alias}:`,
+            error,
+          );
+          return null;
+        }
+      },
+    );
+  }
+
+  /**
    * 🚗 Obtenir les modèles par marque
    */
   async getModelsByBrand(
@@ -150,136 +181,144 @@ export class VehicleModelsService extends SupabaseBaseService {
 
     // 🔧 TEMPORAIRE: Désactiver le cache pour tester le filtrage des motorisations
     const skipCache = options.year !== undefined;
-    
+
     if (skipCache) {
-      this.logger.log(`⚠️ Cache désactivé pour test filtrage année ${options.year}`);
+      this.logger.log(
+        `⚠️ Cache désactivé pour test filtrage année ${options.year}`,
+      );
     }
 
     const executeQuery = async () => {
       try {
+        this.logger.debug(
+          `🚗 Récupération des modèles pour marque: ${marqueId}, options: ${JSON.stringify(options)}`,
+        );
+
+        const { page = 0, limit = 50, search, year } = options;
+        const offset = page * limit;
+
+        // 🔧 Étape 1: Récupérer TOUS les modèles de la marque
+        const { data: allModels, error: modelsError } = await this.client
+          .from(TABLES.auto_modele)
+          .select('modele_id')
+          .eq('modele_marque_id', marqueId);
+
+        if (modelsError || !allModels) {
+          this.logger.error('Erreur récupération modèles:', modelsError);
+          throw modelsError;
+        }
+
+        const allModelIds = allModels.map((m) => m.modele_id);
+        // ⚠️ type_modele_id est TEXT dans auto_type, convertir en strings
+        const allModelIdsStr = allModelIds.map((id) => id.toString());
+        this.logger.log(
+          `🔍 DEBUG: ${allModelIds.length} modèles totaux pour marque ${marqueId}`,
+        );
+
+        // 🔧 Étape 2: Récupérer les types pour ces modèles
+        // ⚠️ Utiliser les IDs en string car type_modele_id est TEXT
+        const { data: allTypes, error: typesError } = await this.client
+          .from(TABLES.auto_type)
+          .select('type_id, type_modele_id, type_year_from, type_year_to')
+          .in('type_modele_id', allModelIdsStr);
+
+        if (typesError) {
+          this.logger.error('Erreur récupération types:', typesError);
+          throw typesError;
+        }
+
+        // 🔧 Étape 3: Grouper les types par modèle (type_modele_id est STRING)
+        const modelIdsByType = new Map<string, any[]>();
+
+        allTypes?.forEach((type: any) => {
+          const modelIdStr = type.type_modele_id?.toString();
+          if (!modelIdStr) return;
+          if (!modelIdsByType.has(modelIdStr)) {
+            modelIdsByType.set(modelIdStr, []);
+          }
+          modelIdsByType.get(modelIdStr)!.push(type);
+        });
+
+        // 🔧 Étape 4: Filtrer les modèles selon disponibilité des motorisations
+        let modelIdsWithTypes: number[];
+
+        if (year) {
+          this.logger.debug(`🗓️ Filtrage par année: ${year}`);
+
+          // Garder uniquement les modèles ayant au moins une motorisation pour cette année
+          modelIdsWithTypes = Array.from(modelIdsByType.entries())
+            .filter(([, types]) => {
+              return types.some((type: any) => {
+                const yearFrom = type.type_year_from || 0;
+                const yearTo = type.type_year_to || 9999;
+                return yearFrom <= year && year <= yearTo;
+              });
+            })
+            .map(([modelIdStr]) => parseInt(modelIdStr, 10));
+
           this.logger.debug(
-            `🚗 Récupération des modèles pour marque: ${marqueId}, options: ${JSON.stringify(options)}`,
+            `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations pour ${year}`,
+          );
+          this.logger.log(
+            `🔍 DEBUG année ${year}: IDs filtrés = [${modelIdsWithTypes.slice(0, 5).join(', ')}...]`,
+          );
+        } else {
+          // Sans année, prendre tous les modèles qui ont au moins une motorisation
+          // Convertir les clés string en numbers
+          modelIdsWithTypes = Array.from(modelIdsByType.keys()).map((k) =>
+            parseInt(k, 10),
           );
 
-          const { page = 0, limit = 50, search, year } = options;
-          const offset = page * limit;
+          this.logger.debug(
+            `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations`,
+          );
+        }
 
-          // 🔧 Étape 1: Récupérer TOUS les modèles de la marque
-          const { data: allModels, error: modelsError } = await this.client
-            .from('auto_modele')
-            .select('modele_id')
-            .eq('modele_marque_id', marqueId);
+        // 🚫 Si aucun modèle avec motorisations, retourner vide
+        if (modelIdsWithTypes.length === 0) {
+          this.logger.debug(`❌ Aucun modèle avec motorisations disponibles`);
+          return { success: true, data: [], total: 0, page, limit };
+        }
 
-          if (modelsError || !allModels) {
-            this.logger.error('Erreur récupération modèles:', modelsError);
-            throw modelsError;
-          }
+        // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
+        // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
+        // Utiliser modele_marque_id directement
+        let query = this.client
+          .from(TABLES.auto_modele)
+          .select('*', { count: 'exact' })
+          .eq('modele_marque_id', marqueId)
+          .in('modele_id', modelIdsWithTypes);
 
-          const allModelIds = allModels.map(m => m.modele_id);
-          this.logger.log(`🔍 DEBUG: ${allModelIds.length} modèles totaux pour marque ${marqueId}`);
+        if (search?.trim()) {
+          // Recherche par alias OU par nom
+          query = query.or(
+            `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
+          );
+        }
 
-          // 🔧 Étape 2: Récupérer les types pour ces modèles
-          const { data: allTypes, error: typesError } = await this.client
-            .from('auto_type')
-            .select('type_id, modele_id, type_year_from, type_year_to')
-            .in('modele_id', allModelIds);
+        query = query
+          .limit(limit)
+          .range(offset, offset + limit - 1)
+          .order('modele_name');
 
-          if (typesError) {
-            this.logger.error('Erreur récupération types:', typesError);
-            throw typesError;
-          }
+        const { data, error, count } = await query;
 
-          // 🔧 Étape 3: Grouper les types par modèle
-          const modelIdsByType = new Map<number, any[]>();
-          
-          allTypes?.forEach((type: any) => {
-            if (!modelIdsByType.has(type.modele_id)) {
-              modelIdsByType.set(type.modele_id, []);
-            }
-            modelIdsByType.get(type.modele_id)!.push(type);
-          });
-
-          // 🔧 Étape 4: Filtrer les modèles selon disponibilité des motorisations
-          let modelIdsWithTypes: number[];
-
-          if (year) {
-            this.logger.debug(`🗓️ Filtrage par année: ${year}`);
-            
-            // Garder uniquement les modèles ayant au moins une motorisation pour cette année
-            modelIdsWithTypes = Array.from(modelIdsByType.entries())
-              .filter(([_, types]) => {
-                return types.some((type: any) => {
-                  const yearFrom = type.type_year_from || 0;
-                  const yearTo = type.type_year_to || 9999;
-                  return yearFrom <= year && year <= yearTo;
-                });
-              })
-              .map(([modelId, _]) => modelId);
-            
-            this.logger.debug(
-              `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations pour ${year}`,
-            );
-            this.logger.log(`🔍 DEBUG année ${year}: IDs filtrés = [${modelIdsWithTypes.slice(0, 5).join(', ')}...]`);
-          } else {
-            // Sans année, prendre tous les modèles qui ont au moins une motorisation
-            modelIdsWithTypes = Array.from(modelIdsByType.keys());
-            
-            this.logger.debug(
-              `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations`,
-            );
-          }
-
-          // 🚫 Si aucun modèle avec motorisations, retourner vide
-          if (modelIdsWithTypes.length === 0) {
-            this.logger.debug(
-              `❌ Aucun modèle avec motorisations disponibles`,
-            );
-            return { success: true, data: [], total: 0, page, limit };
-          }
-
-          // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
-          let query = this.client
-            .from('auto_modele')
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-              { count: 'exact' }
-            )
-            .eq('auto_marque.marque_id', marqueId)
-            .in('modele_id', modelIdsWithTypes);
-
-          if (search?.trim()) {
-            query = query.ilike('modele_name', `%${search}%`);
-          }
-
-          query = query
-            .limit(limit)
-            .range(offset, offset + limit - 1)
-            .order('modele_name');
-
-          const { data, error, count } = await query;
-
-          if (error) {
-            this.logger.error('Erreur getModelsByBrand:', error);
-            throw error;
-          }
-
-          return {
-            success: true,
-            data: data || [],
-            total: count || 0,
-            page,
-            limit,
-          };
-        } catch (error) {
-          this.logger.error(`Erreur getModelsByBrand ${marqueId}:`, error);
+        if (error) {
+          this.logger.error('Erreur getModelsByBrand:', error);
           throw error;
         }
+
+        return {
+          success: true,
+          data: data || [],
+          total: count || 0,
+          page,
+          limit,
+        };
+      } catch (error) {
+        this.logger.error(`Erreur getModelsByBrand ${marqueId}:`, error);
+        throw error;
+      }
     };
 
     // Exécuter avec ou sans cache selon le besoin
@@ -289,7 +328,7 @@ export class VehicleModelsService extends SupabaseBaseService {
       return await this.cacheService.getOrSet(
         CacheType.MODELS,
         cacheKey,
-        executeQuery
+        executeQuery,
       );
     }
   }
@@ -317,27 +356,17 @@ export class VehicleModelsService extends SupabaseBaseService {
           const { page = 0, limit = 50, marqueId } = options;
           const offset = page * limit;
 
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           let dbQuery = this.client
-            .from('auto_modele')
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .from(TABLES.auto_modele)
+            .select('*')
             .eq('modele_display', 1)
-            .or(
-              `modele_name.ilike.%${query}%,` +
-                `auto_marque.marque_name.ilike.%${query}%`,
-            )
+            .or(`modele_name.ilike.%${query}%,modele_alias.ilike.%${query}%`)
             .limit(limit)
             .range(offset, offset + limit - 1);
 
           if (marqueId) {
-            dbQuery = dbQuery.eq('auto_marque.marque_id', marqueId);
+            dbQuery = dbQuery.eq('modele_marque_id', marqueId);
           }
 
           const { data, error, count } = await dbQuery.order('modele_name');
@@ -377,18 +406,18 @@ export class VehicleModelsService extends SupabaseBaseService {
 
           // Total des modèles
           const { count: totalModels } = await this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id', { count: 'exact' });
 
           // Modèles actifs
           const { count: activeModels } = await this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id', { count: 'exact' })
             .eq('modele_display', 1);
 
           // Modèles avec types
           const { data: modelsWithTypes } = await this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select(
               `
               modele_id,
@@ -436,7 +465,7 @@ export class VehicleModelsService extends SupabaseBaseService {
   > {
     try {
       const { data } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_name,
@@ -476,7 +505,7 @@ export class VehicleModelsService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id, modele_name')
             .eq('modele_marque_id', marqueId)
             .eq('modele_display', 1)
@@ -533,7 +562,7 @@ export class VehicleModelsService extends SupabaseBaseService {
             .map(async (model) => {
               // Récupérer le modèle complet
               const { data } = await this.client
-                .from('auto_modele')
+                .from(TABLES.auto_modele)
                 .select(
                   `
                   *,
@@ -579,7 +608,7 @@ export class VehicleModelsService extends SupabaseBaseService {
       async () => {
         try {
           let dbQuery = this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_name')
             .eq('modele_display', 1)
             .ilike('modele_name', `%${query}%`)
@@ -623,7 +652,7 @@ export class VehicleModelsService extends SupabaseBaseService {
 
           // Informations sur les types
           const { data: types } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_year, type_engine_code')
             .eq('type_modele_id', modeleId)
             .eq('type_display', 1);

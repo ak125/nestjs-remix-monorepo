@@ -1,5 +1,6 @@
-import { Link } from '@remix-run/react';
-import { Package, TrendingUp } from 'lucide-react';
+import { Link } from "@remix-run/react";
+import { Package, TrendingUp } from "lucide-react";
+import { PartImage } from "~/components/ui/ResponsiveImage";
 
 interface Part {
   pg_id: number;
@@ -17,10 +18,10 @@ interface BrandPartsSectionProps {
   brandAlias: string;
 }
 
-export default function BrandPartsSection({ 
-  parts, 
+export default function BrandPartsSection({
+  parts,
   brandName,
-  brandAlias 
+  brandAlias: _brandAlias,
 }: BrandPartsSectionProps) {
   if (!parts || parts.length === 0) {
     return null;
@@ -32,11 +33,11 @@ export default function BrandPartsSection({
       <div className="relative bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 p-6 md:p-8 overflow-hidden">
         {/* Effet de brillance animé */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]"></div>
-        
+
         {/* Décoration géométrique */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
-        
+
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
@@ -51,7 +52,7 @@ export default function BrandPartsSection({
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
             <TrendingUp className="w-5 h-5 text-white" />
             <span className="text-white font-bold text-lg">{parts.length}</span>
@@ -81,36 +82,36 @@ function PartCard({ part }: { part: Part }) {
       {/* Bordure gradient au hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
       <div className="absolute inset-0 bg-white m-0.5 rounded-lg group-hover:m-[3px] transition-all duration-300"></div>
-      
+
       {/* Contenu */}
       <div className="relative p-4">
-        {/* Image avec effet hover */}
+        {/* Image responsive avec srcset */}
         <div className="flex items-center justify-center h-24 mb-3 bg-gray-50 rounded-lg overflow-hidden relative">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-          <img 
-            src={part.image_url || '/images/default-part.png'}
+          <PartImage
+            src={part.image_url || "/images/default-part.png"}
             alt={part.pg_name}
             className="relative h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300"
-            onError={(e) => {
-              e.currentTarget.src = '/images/default-part.png';
-            }}
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 200px"
           />
         </div>
-        
+
         {/* Titre */}
         <h4 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
           {part.pg_name}
         </h4>
-        
+
         {/* Info véhicule */}
         <p className="text-xs text-gray-500 mb-2 line-clamp-1">
           {part.modele_name} • {part.type_name}
         </p>
-        
+
         {/* CTA */}
         <div className="flex items-center gap-1 text-blue-600 text-xs font-medium">
           <span className="group-hover:underline">Voir</span>
-          <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+          <span className="transform group-hover:translate-x-1 transition-transform duration-300">
+            →
+          </span>
         </div>
       </div>
     </Link>

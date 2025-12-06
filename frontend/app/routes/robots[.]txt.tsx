@@ -1,50 +1,93 @@
 // app/routes/robots[.]txt.tsx
+/**
+ * 🤖 ROBOTS.TXT - Aligné avec structure PHP
+ * 
+ * Règles PHP originales:
+ * - Disallow: /_form.get.car.* (formulaires AJAX)
+ * - Disallow: /fiche/ (fiches produits - duplicate content)
+ * - Disallow: /find/ (recherche générale)
+ * - Disallow: /searchmine/ (recherche par type mine)
+ * - Disallow: /account/ (espace client privé)
+ * 
+ * Optimisations v2:
+ * - Timeout + retry automatique
+ * - Cache long (24h browser, 48h CDN)
+ * - Fallback complet si backend indisponible
+ * 
+ * @see backend/src/modules/seo/services/robots-txt.service.ts
+ */
 import { type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  SITEMAP_CONFIG,
+  fetchWithRetry,
+  logSitemapError,
+} from "~/lib/sitemap-fetch";
+
+/**
+ * Générer le robots.txt de fallback
+ */
+function generateFallbackRobots(): string {
+  return `# ===========================================
+# 🤖 ROBOTS.TXT - AutoMecanik.com (Fallback)
+# ===========================================
+
+User-agent: *
+Allow: /
+
+# ❌ Blocages hérités du système PHP
+Disallow: /_form.get.car.*
+Disallow: /fiche/
+Disallow: /find/
+Disallow: /searchmine/
+Disallow: /account/
+
+# ❌ Blocages additionnels
+Disallow: /admin/
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /panier/
+
+# ⏱️ Crawl-delay
+Crawl-delay: 1
+
+# 📍 Sitemaps
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap.xml
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-racine.xml
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-gamme-produits.xml
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-constructeurs.xml
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-blog.xml`;
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const startTime = Date.now();
+  
   try {
-    // ✅ Utiliser l'API REST existante pour robots.txt
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/sitemap/robots.txt`);
-    
-    if (!response.ok) {
-      throw new Error(`Backend API Error: ${response.status} ${response.statusText}`);
-    }
+    // ✅ V2 avec cache Redis
+    const response = await fetchWithRetry(
+      `${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/robots.txt`
+    );
     
     const robotsTxt = await response.text();
+    const duration = Date.now() - startTime;
     
     return new Response(robotsTxt, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "public, max-age=86400, s-maxage=172800", // 24h browser, 48h CDN
+        "Cache-Control": "public, max-age=86400, s-maxage=172800, stale-while-revalidate=3600",
         "Vary": "Accept-Encoding",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Robots.txt] Erreur:', error);
+    const duration = Date.now() - startTime;
+    logSitemapError('Robots.txt', error, duration);
     
-    // Fallback robots.txt sécurisé
-    const fallbackRobots = `User-agent: *
-Allow: /
-
-# Sitemaps
-Sitemap: https://automecanik.com/sitemap.xml
-
-# Restrictions communes
-Disallow: /admin/
-Disallow: /api/
-Disallow: /auth/
-Disallow: /_/
-Disallow: /temp/
-
-# Crawl delay pour éviter la surcharge
-Crawl-delay: 1`;
-    
-    return new Response(fallbackRobots, {
+    return new Response(generateFallbackRobots(), {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "public, max-age=3600",
         "X-Error": "Backend unavailable - fallback robots.txt",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   }

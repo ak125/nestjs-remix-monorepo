@@ -114,7 +114,7 @@ export default function HomeBlogSection({ blogArticles }: HomeBlogSectionProps) 
 
                 {/* CTA */}
                 <Link 
-                  to={`/blog/conseils/${article.slug}`}
+                  to={`/blog-pieces-auto/conseils/${article.slug}`}
                   className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm group/link"
                 >
                   <span>Lire l'article</span>
@@ -138,7 +138,7 @@ export default function HomeBlogSection({ blogArticles }: HomeBlogSectionProps) 
             variant="outline"
             className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50 px-8"
           >
-            <Link to="/blog">
+            <Link to="/blog-pieces-auto">
               Voir tous les articles
               <ChevronRight className="w-5 h-5 ml-2" />
             </Link>

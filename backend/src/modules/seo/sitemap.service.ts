@@ -1,13 +1,53 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
 interface SitemapEntry {
   loc: string;
   lastmod?: string;
-  changefreq?: string;
+  changefreq?:
+    | 'always'
+    | 'hourly'
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'yearly'
+    | 'never';
   priority?: number;
 }
+
+/**
+ * 🎯 STRATÉGIE SEO - Priorités hiérarchiques alignées avec l'ancien système PHP
+ * Homepage = 1.0 (priorité maximale)
+ * Marques/Constructeurs = 0.9
+ * Gammes produits = 0.8
+ * Modèles = 0.8
+ * Types/Motorisations = 0.7
+ * Blog = 0.6
+ */
+const SEO_PRIORITIES = {
+  homepage: 1.0,
+  marque: 0.9,
+  gamme: 0.8,
+  modele: 0.8,
+  type: 0.7,
+  blog: 0.6,
+  default: 0.5,
+} as const;
+
+/**
+ * 🔄 Fréquences de mise à jour par type de page
+ */
+const SEO_CHANGEFREQ = {
+  homepage: 'daily' as const,
+  marque: 'weekly' as const,
+  gamme: 'weekly' as const,
+  modele: 'monthly' as const,
+  type: 'monthly' as const,
+  blog: 'monthly' as const,
+  default: 'monthly' as const,
+};
 
 @Injectable()
 export class SitemapService extends SupabaseBaseService {
@@ -38,7 +78,7 @@ export class SitemapService extends SupabaseBaseService {
       // Colonnes réelles: map_id, map_pg_alias, map_pg_id, map_marque_alias, map_marque_id,
       // map_modele_alias, map_modele_id, map_type_alias, map_type_id, map_has_item
       const { data: existingLinks } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select(
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_has_item',
         )
@@ -72,16 +112,22 @@ export class SitemapService extends SupabaseBaseService {
   }
 
   /**
-   * Génère le sitemap constructeurs - UNIQUEMENT les marques (117 URLs)
+   * 🚗 Génère le sitemap constructeurs - UNIQUEMENT les marques avec relfollow=1
+   * Aligné avec l'ancien système PHP: WHERE MARQUE_DISPLAY = 1
+   * Format URL: /constructeurs/{marque_alias}-{marque_id}.html
    */
   async generateConstructeursSitemap(): Promise<string> {
     try {
       const entries: SitemapEntry[] = [];
 
-      // ✅ Récupérer toutes les marques
+      // ✅ Récupérer toutes les marques avec filtres SEO (comme PHP)
+      // PHP: WHERE MARQUE_DISPLAY = 1
       const { data: brands, error } = await this.client
-        .from('auto_marque')
-        .select('marque_id, marque_alias, marque_name')
+        .from(TABLES.auto_marque)
+        .select(
+          'marque_id, marque_alias, marque_name, marque_relfollow, marque_sitemap, marque_display',
+        )
+        .eq('marque_display', '1') // Marque active
         .order('marque_name');
 
       if (error) {
@@ -89,15 +135,23 @@ export class SitemapService extends SupabaseBaseService {
       }
 
       if (brands && brands.length > 0) {
-        this.logger.log(`Génération sitemap pour ${brands.length} marques`);
+        // Filtrer par marque_relfollow si défini (comme TYPE_RELFOLLOW en PHP)
+        const filteredBrands = brands.filter(
+          (brand) =>
+            brand.marque_relfollow === '1' || brand.marque_relfollow === null,
+        );
 
-        for (const brand of brands) {
-          // ✅ Format nginx: /constructeurs/{alias}-{id}.html
+        this.logger.log(
+          `Génération sitemap pour ${filteredBrands.length}/${brands.length} marques (filtre relfollow)`,
+        );
+
+        for (const brand of filteredBrands) {
+          // ✅ Format PHP: /constructeurs/{alias}-{id}.html
           entries.push({
             loc: `/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`,
-            lastmod: new Date().toISOString(),
-            changefreq: 'weekly',
-            priority: 0.8,
+            lastmod: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD comme PHP
+            changefreq: SEO_CHANGEFREQ.marque,
+            priority: SEO_PRIORITIES.marque,
           });
         }
       } else {
@@ -105,7 +159,7 @@ export class SitemapService extends SupabaseBaseService {
       }
 
       this.logger.log(
-        `Sitemap constructeurs généré avec ${entries.length} entrées`,
+        `✅ Sitemap constructeurs généré avec ${entries.length} entrées`,
       );
       return this.buildSitemapXml(entries);
     } catch (error) {
@@ -113,25 +167,28 @@ export class SitemapService extends SupabaseBaseService {
       return this.buildSitemapXml([
         {
           loc: '/constructeurs',
-          changefreq: 'weekly',
-          priority: 0.8,
-          lastmod: new Date().toISOString(),
+          changefreq: SEO_CHANGEFREQ.marque,
+          priority: SEO_PRIORITIES.marque,
+          lastmod: new Date().toISOString().split('T')[0],
         },
       ]);
     }
   }
 
   /**
-   * Génère le sitemap modèles - TOUTES les pages via pagination récursive
+   * 🚙 Génère le sitemap modèles - Avec filtre modele_relfollow et modele_display
+   * Aligné avec PHP: WHERE MODELE_DISPLAY = 1
+   * Format URL: /constructeurs/{marque}-{id}/{modele}-{id}.html
    */
   async generateModelesSitemap(): Promise<string> {
     try {
       const entries: SitemapEntry[] = [];
 
-      // ✅ Récupérer toutes les marques
+      // ✅ Récupérer toutes les marques actives
       const { data: marques } = await this.client
-        .from('auto_marque')
-        .select('marque_id, marque_alias');
+        .from(TABLES.auto_marque)
+        .select('marque_id, marque_alias')
+        .eq('marque_display', '1');
 
       if (!marques || marques.length === 0) {
         this.logger.warn('Aucune marque trouvée');
@@ -142,17 +199,20 @@ export class SitemapService extends SupabaseBaseService {
         marques.map((m) => [m.marque_id, m.marque_alias]),
       );
 
-      // ✅ Charger TOUS les modèles par lots de 1000
+      // ✅ Charger TOUS les modèles par lots de 1000 avec filtres SEO
       let offset = 0;
       const batchSize = 1000;
       let hasMore = true;
+      let totalFiltered = 0;
 
       while (hasMore) {
+        // ⭐ Filtres alignés PHP: MODELE_DISPLAY = 1
         const { data: modelesBatch } = await this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select(
-            'modele_id, modele_alias, modele_name, modele_name_url, modele_marque_id',
+            'modele_id, modele_alias, modele_name, modele_name_url, modele_marque_id, modele_relfollow, modele_display',
           )
+          .eq('modele_display', '1') // Modèle actif
           .range(offset, offset + batchSize - 1)
           .order('modele_name');
 
@@ -168,7 +228,11 @@ export class SitemapService extends SupabaseBaseService {
         modelesBatch.forEach((modele: any) => {
           const marqueAlias = marqueMap.get(modele.modele_marque_id);
 
-          if (marqueAlias) {
+          // ⭐ Filtre relfollow: inclure si relfollow=1 ou null
+          const hasRelfollow =
+            modele.modele_relfollow === '1' || modele.modele_relfollow === null;
+
+          if (marqueAlias && hasRelfollow) {
             const modeleAlias =
               modele.modele_alias ||
               modele.modele_name_url ||
@@ -177,10 +241,12 @@ export class SitemapService extends SupabaseBaseService {
 
             entries.push({
               loc: `/constructeurs/${marqueAlias}-${modele.modele_marque_id}/${modeleAlias}-${modele.modele_id}.html`,
-              lastmod: new Date().toISOString(),
-              changefreq: 'monthly',
-              priority: 0.6,
+              lastmod: new Date().toISOString().split('T')[0],
+              changefreq: SEO_CHANGEFREQ.modele,
+              priority: SEO_PRIORITIES.modele,
             });
+          } else if (!hasRelfollow) {
+            totalFiltered++;
           }
         });
 
@@ -192,7 +258,9 @@ export class SitemapService extends SupabaseBaseService {
         }
       }
 
-      this.logger.log(`Sitemap modèles généré avec ${entries.length} entrées`);
+      this.logger.log(
+        `✅ Sitemap modèles généré avec ${entries.length} entrées (${totalFiltered} exclus par relfollow)`,
+      );
       return this.buildSitemapXml(entries);
     } catch (error) {
       this.logger.error('Erreur génération sitemap modèles:', error);
@@ -223,7 +291,9 @@ export class SitemapService extends SupabaseBaseService {
   }
 
   /**
-   * Génère un sitemap de types avec chargement récursif par lots
+   * 🏎️ Génère un sitemap de types/motorisations avec filtre TYPE_RELFOLLOW
+   * Aligné avec PHP: WHERE TYPE_DISPLAY = 1 AND MODELE_DISPLAY = 1 AND TYPE_RELFOLLOW = 1
+   * Format URL: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
    */
   private async generateTypesPaginated(
     startOffset: number,
@@ -234,13 +304,14 @@ export class SitemapService extends SupabaseBaseService {
       const part = startOffset === 0 ? 1 : 2;
 
       this.logger.log(
-        `Génération sitemap types partie ${part} (offset: ${startOffset}, max: ${maxEntries})`,
+        `🏎️ Génération sitemap types partie ${part} (offset: ${startOffset}, max: ${maxEntries})`,
       );
 
-      // ✅ Charger toutes les marques
+      // ✅ Charger toutes les marques actives
       const { data: marques, error: marqueError } = await this.client
-        .from('auto_marque')
-        .select('marque_id, marque_alias');
+        .from(TABLES.auto_marque)
+        .select('marque_id, marque_alias')
+        .eq('marque_display', '1');
 
       if (marqueError) {
         this.logger.error('Erreur chargement marques:', marqueError);
@@ -258,7 +329,7 @@ export class SitemapService extends SupabaseBaseService {
         marques.map((m) => [m.marque_id, m.marque_alias]),
       );
 
-      // ✅ Charger tous les modèles par lots
+      // ✅ Charger tous les modèles actifs par lots
       const allModeles = [];
       let modeleOffset = 0;
       const modeleBatchSize = 1000;
@@ -266,8 +337,9 @@ export class SitemapService extends SupabaseBaseService {
 
       while (hasMoreModeles) {
         const { data: modelesBatch, error: modeleError } = await this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('modele_id, modele_alias, modele_name_url, modele_marque_id')
+          .eq('modele_display', '1') // ⭐ Filtre PHP: MODELE_DISPLAY = 1
           .range(modeleOffset, modeleOffset + modeleBatchSize - 1)
           .order('modele_id');
 
@@ -303,17 +375,22 @@ export class SitemapService extends SupabaseBaseService {
         ]),
       );
 
-      // ✅ Charger les types par lots de 1000
+      // ✅ Charger les types par lots de 1000 avec filtres SEO
       let offset = startOffset;
       const batchSize = 1000;
       let hasMore = true;
       let totalTypes = 0;
       let matchedTypes = 0;
+      let filteredByRelfollow = 0;
 
       while (hasMore && entries.length < maxEntries) {
+        // ⭐ Filtres PHP: TYPE_DISPLAY = 1 AND TYPE_RELFOLLOW = 1
         const { data: typesBatch, error: typeError } = await this.client
-          .from('auto_type')
-          .select('type_id, type_name, type_modele_id')
+          .from(TABLES.auto_type)
+          .select(
+            'type_id, type_name, type_alias, type_modele_id, type_relfollow, type_display',
+          )
+          .eq('type_display', '1') // Type actif
           .range(offset, offset + batchSize - 1)
           .order('type_id');
 
@@ -340,6 +417,13 @@ export class SitemapService extends SupabaseBaseService {
         typesBatch.forEach((type: any) => {
           if (entries.length >= maxEntries) return;
 
+          // ⭐⭐ FILTRE CRITIQUE PHP: TYPE_RELFOLLOW = 1 ⭐⭐
+          // C'est ce qui évite le duplicate content dans le sitemap
+          if (type.type_relfollow !== '1') {
+            filteredByRelfollow++;
+            return;
+          }
+
           // ⚠️ type_modele_id est une string, il faut la convertir en number
           const modeleId = parseInt(type.type_modele_id, 10);
           const modeleInfo = modeleMap.get(modeleId);
@@ -349,15 +433,17 @@ export class SitemapService extends SupabaseBaseService {
 
             if (marqueAlias) {
               matchedTypes++;
+              // Utiliser type_alias si disponible, sinon construire depuis type_name
               const typeSlug =
+                type.type_alias ||
                 type.type_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') ||
                 'type';
 
               entries.push({
                 loc: `/constructeurs/${marqueAlias}-${modeleInfo.marque_id}/${modeleInfo.alias}-${type.type_modele_id}/${typeSlug}-${type.type_id}.html`,
-                lastmod: new Date().toISOString(),
-                changefreq: 'monthly',
-                priority: 0.5,
+                lastmod: new Date().toISOString().split('T')[0],
+                changefreq: SEO_CHANGEFREQ.type,
+                priority: SEO_PRIORITIES.type,
               });
             }
           }
@@ -371,7 +457,7 @@ export class SitemapService extends SupabaseBaseService {
       }
 
       this.logger.log(
-        `Sitemap types partie ${part}: ${totalTypes} types traités, ${matchedTypes} matchés avec marque+modèle, ${entries.length} URLs générées`,
+        `✅ Sitemap types partie ${part}: ${totalTypes} types traités, ${matchedTypes} matchés, ${filteredByRelfollow} exclus par type_relfollow, ${entries.length} URLs générées`,
       );
       return this.buildSitemapXml(entries);
     } catch (error) {
@@ -381,8 +467,9 @@ export class SitemapService extends SupabaseBaseService {
   }
 
   /**
-   * Génère le sitemap produits - URLs conformes nginx: /pieces/{alias}-{id}.html
-   * Utilise pagination récursive pour récupérer toutes les gammes
+   * 🔧 Génère le sitemap gammes produits (105 pages dans l'ancien système)
+   * Aligné avec PHP: pg_display = 1, pg_level IN [1, 2]
+   * Format URL: /pieces/{pg_alias}-{pg_id}.html
    */
   async generateProductsSitemap(): Promise<string> {
     try {
@@ -390,16 +477,20 @@ export class SitemapService extends SupabaseBaseService {
       const batchSize = 1000;
       let offset = 0;
       let hasMore = true;
+      let filteredByRelfollow = 0;
 
-      this.logger.log('Chargement des gammes de pièces avec pagination...');
+      this.logger.log('🔧 Chargement des gammes de pièces avec pagination...');
 
       // Pagination récursive pour contourner la limite PostgREST
       while (hasMore) {
+        // ⭐ Filtres PHP: pg_display = 1, pg_level IN [1, 2]
         const { data, error } = await this.client
-          .from('pieces_gamme')
-          .select('pg_id, pg_alias, pg_name')
-          .eq('pg_display', 1)
-          .in('pg_level', [1, 2])
+          .from(TABLES.pieces_gamme)
+          .select(
+            'pg_id, pg_alias, pg_name, pg_relfollow, pg_display, pg_level',
+          )
+          .eq('pg_display', '1')
+          .in('pg_level', ['1', '2'])
           .range(offset, offset + batchSize - 1)
           .order('pg_id');
 
@@ -410,7 +501,14 @@ export class SitemapService extends SupabaseBaseService {
           );
           hasMore = false;
         } else if (data && data.length > 0) {
-          allGammes.push(...data);
+          // ⭐ Filtre pg_relfollow (si défini)
+          data.forEach((gamme) => {
+            if (gamme.pg_relfollow === '1' || gamme.pg_relfollow === null) {
+              allGammes.push(gamme);
+            } else {
+              filteredByRelfollow++;
+            }
+          });
           this.logger.log(
             `Chargé ${data.length} gammes (total: ${allGammes.length})`,
           );
@@ -427,37 +525,41 @@ export class SitemapService extends SupabaseBaseService {
         return this.buildSitemapXml([
           {
             loc: '/pieces',
-            changefreq: 'daily',
-            priority: 0.9,
-            lastmod: new Date().toISOString(),
+            changefreq: SEO_CHANGEFREQ.gamme,
+            priority: SEO_PRIORITIES.gamme,
+            lastmod: new Date().toISOString().split('T')[0],
           },
         ]);
       }
 
       const entries: SitemapEntry[] = allGammes.map((gamme) => ({
         loc: `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`,
-        lastmod: new Date().toISOString(),
-        changefreq: 'weekly',
-        priority: 0.8,
+        lastmod: new Date().toISOString().split('T')[0],
+        changefreq: SEO_CHANGEFREQ.gamme,
+        priority: SEO_PRIORITIES.gamme,
       }));
 
-      this.logger.log(`Sitemap produits généré avec ${entries.length} entrées`);
+      this.logger.log(
+        `✅ Sitemap gammes produits généré avec ${entries.length} entrées (${filteredByRelfollow} exclus par relfollow)`,
+      );
       return this.buildSitemapXml(entries);
     } catch (error) {
       this.logger.error('Erreur génération sitemap produits:', error);
       return this.buildSitemapXml([
         {
           loc: '/pieces',
-          changefreq: 'weekly',
-          priority: 0.7,
-          lastmod: new Date().toISOString(),
+          changefreq: SEO_CHANGEFREQ.gamme,
+          priority: SEO_PRIORITIES.gamme,
+          lastmod: new Date().toISOString().split('T')[0],
         },
       ]);
     }
   }
 
   /**
-   * Génère le sitemap blog - Utilise les vraies tables blog
+   * 📝 Génère le sitemap blog (88 articles dans l'ancien système)
+   * Aligné avec PHP: /blog-pieces-auto/conseils/{alias}
+   * Priority: 0.6 (contenu informatif, pas commercial)
    */
   async generateBlogSitemap(): Promise<string> {
     try {
@@ -465,7 +567,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Récupérer les articles conseils depuis __blog_advice
       const { data: adviceArticles, error: adviceError } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_id, ba_alias, ba_create, ba_update')
         .order('ba_create', { ascending: false });
 
@@ -477,25 +579,30 @@ export class SitemapService extends SupabaseBaseService {
       }
 
       if (adviceArticles && adviceArticles.length > 0) {
-        this.logger.log(`${adviceArticles.length} articles conseils trouvés`);
+        this.logger.log(
+          `📝 ${adviceArticles.length} articles conseils trouvés`,
+        );
         adviceArticles.forEach((article) => {
+          // Formater la date au format YYYY-MM-DD comme PHP
+          const lastmod = article.ba_update || article.ba_create;
+          const formattedDate = lastmod
+            ? new Date(lastmod).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
+
           entries.push({
             loc: `/blog-pieces-auto/conseils/${article.ba_alias}`,
-            lastmod:
-              article.ba_update ||
-              article.ba_create ||
-              new Date().toISOString(),
-            changefreq: 'monthly',
-            priority: 0.7,
+            lastmod: formattedDate,
+            changefreq: SEO_CHANGEFREQ.blog,
+            priority: SEO_PRIORITIES.blog, // 0.6 comme défini dans la stratégie
           });
         });
       } else {
         this.logger.warn('Aucun article conseil trouvé');
       }
 
-      // ✅ Récupérer les guides depuis __blog_guide (pas de colonne statut)
+      // ✅ Récupérer les guides depuis __blog_guide
       const { data: guideArticles, error: guideError } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_id, bg_alias, bg_create, bg_update')
         .order('bg_create', { ascending: false });
 
@@ -504,66 +611,86 @@ export class SitemapService extends SupabaseBaseService {
       }
 
       if (guideArticles && guideArticles.length > 0) {
-        this.logger.log(`${guideArticles.length} guides trouvés`);
+        this.logger.log(`📚 ${guideArticles.length} guides trouvés`);
         guideArticles.forEach((guide) => {
+          const lastmod = guide.bg_update || guide.bg_create;
+          const formattedDate = lastmod
+            ? new Date(lastmod).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
+
           entries.push({
             loc: `/blog-pieces-auto/guide/${guide.bg_alias}`,
-            lastmod:
-              guide.bg_update || guide.bg_create || new Date().toISOString(),
-            changefreq: 'monthly',
-            priority: 0.7,
+            lastmod: formattedDate,
+            changefreq: SEO_CHANGEFREQ.blog,
+            priority: SEO_PRIORITIES.blog,
           });
         });
       } else {
         this.logger.warn('Aucun guide trouvé');
       }
 
-      this.logger.log(`Sitemap blog généré avec ${entries.length} entrées`);
+      this.logger.log(`✅ Sitemap blog généré avec ${entries.length} entrées`);
       return this.buildSitemapXml(entries);
     } catch (error) {
       this.logger.error('Erreur génération sitemap blog:', error);
       return this.buildSitemapXml([
-        { loc: '/blog', changefreq: 'weekly', priority: 0.6 },
+        {
+          loc: '/blog',
+          changefreq: SEO_CHANGEFREQ.blog,
+          priority: SEO_PRIORITIES.blog,
+        },
       ]);
     }
   }
 
   /**
-   * Génère l'index des sitemaps
+   * 📋 Génère l'index des sitemaps - Aligné avec structure PHP
+   * Structure PHP:
+   * - https-sitemap-racine.xml (homepage)
+   * - https-sitemap-gamme-produits.xml (105 gammes)
+   * - https-sitemap-constructeurs.xml (marques + modèles + types - 2.26 MB)
+   * - https-sitemap-blog.xml (88 articles)
    */
   async generateSitemapIndex(): Promise<string> {
+    const today = new Date().toISOString().split('T')[0];
+    const baseUrl = process.env.BASE_URL || 'https://www.automecanik.com';
+
+    // Structure alignée sur PHP mais avec URLs dynamiques NestJS
     const sitemaps = [
       {
-        loc: '/api/sitemap/main.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-racine.xml', // Homepage
+        lastmod: today,
+        comment: '1 URL : Homepage',
       },
       {
-        loc: '/api/sitemap/constructeurs.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-gamme-produits.xml', // 105 gammes
+        lastmod: today,
+        comment: '~105 URLs : Gammes pièces auto',
       },
       {
-        loc: '/api/sitemap/modeles.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-constructeurs.xml', // Marques
+        lastmod: today,
+        comment: '~117 URLs : Marques/Constructeurs',
       },
       {
-        loc: '/api/sitemap/modeles-2.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-modeles.xml', // Modèles
+        lastmod: today,
+        comment: 'Modèles automobiles',
       },
       {
-        loc: '/api/sitemap/types-1.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-types-1.xml', // Types 1-35000
+        lastmod: today,
+        comment: 'Motorisations partie 1',
       },
       {
-        loc: '/api/sitemap/types-2.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-types-2.xml', // Types 35001+
+        lastmod: today,
+        comment: 'Motorisations partie 2',
       },
       {
-        loc: '/api/sitemap/products.xml',
-        lastmod: new Date().toISOString(),
-      },
-      {
-        loc: '/api/sitemap/blog.xml',
-        lastmod: new Date().toISOString(),
+        loc: '/sitemap-blog.xml', // Blog
+        lastmod: today,
+        comment: '~88 URLs : Articles conseils et guides',
       },
     ];
 
@@ -571,16 +698,35 @@ export class SitemapService extends SupabaseBaseService {
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sitemaps
   .map(
-    (sitemap) => `  <sitemap>
-    <loc>https://automecanik.com${sitemap.loc}</loc>
+    (sitemap) => `  <!-- ${sitemap.comment} -->
+  <sitemap>
+    <loc>${baseUrl}${sitemap.loc}</loc>
     <lastmod>${sitemap.lastmod}</lastmod>
   </sitemap>`,
   )
   .join('\n')}
 </sitemapindex>`;
 
-    this.logger.log('Index sitemap généré avec', sitemaps.length, 'sitemaps');
+    this.logger.log(`📋 Index sitemap généré avec ${sitemaps.length} sitemaps`);
     return xml;
+  }
+
+  /**
+   * 🏠 Génère le sitemap racine (homepage uniquement)
+   * Aligné avec PHP: https-sitemap-racine.xml
+   */
+  async generateRacineSitemap(): Promise<string> {
+    const entries: SitemapEntry[] = [
+      {
+        loc: '/',
+        lastmod: new Date().toISOString().split('T')[0],
+        changefreq: SEO_CHANGEFREQ.homepage,
+        priority: SEO_PRIORITIES.homepage, // 1.0
+      },
+    ];
+
+    this.logger.log('🏠 Sitemap racine généré (homepage)');
+    return this.buildSitemapXml(entries);
   }
 
   /**
@@ -616,13 +762,13 @@ Crawl-delay: 1`;
     try {
       // Charger quelques types
       const { data: types } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_id, type_name, type_modele_id')
         .limit(10);
 
       // Charger quelques modèles
       const { data: modeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_name, modele_marque_id')
         .limit(10);
 
@@ -655,31 +801,31 @@ Crawl-delay: 1`;
     try {
       // Total sans filtre
       const { count: totalCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true });
 
       // Avec pg_display = 1
       const { count: displayCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', 1);
 
       // Avec pg_level IN [1, 2]
       const { count: levelCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .in('pg_level', [1, 2]);
 
       // Avec les deux filtres
       const { count: bothCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', 1)
         .in('pg_level', [1, 2]);
 
       // Échantillon avec les filtres
       const { data: samples } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name, pg_display, pg_level')
         .eq('pg_display', 1)
         .in('pg_level', [1, 2])
@@ -756,27 +902,27 @@ ${entries
   async getSitemapStats() {
     try {
       const { count: sitemapLinksCount } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*', { count: 'exact', head: true });
 
       const { count: blogEntriesCount } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact', head: true });
 
       const { count: guidesCount } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*', { count: 'exact', head: true });
 
       const { count: constructeursCount } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true });
 
       const { count: modelesCount } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true });
 
       const { count: gammesCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true });
 
       return {
@@ -812,7 +958,7 @@ ${entries
   async generateConstructeurSitemap(marqueId: number): Promise<string> {
     try {
       const { data: modeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_alias, modele_name, modele_name_url')
         .eq('modele_marque_id', marqueId)
         .eq('modele_display', 1)
@@ -885,7 +1031,7 @@ ${entries
       const fetchLimit = Math.min(limit * 5, 50000);
 
       const { data: rawCombinations, error } = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_type_id, rtp_pg_id')
         .limit(fetchLimit);
 
@@ -952,10 +1098,10 @@ ${entries
       );
 
       // 4. Générer le XML
-      const sitemapEntries = validatedUrls.map((item) => ({
+      const sitemapEntries: SitemapEntry[] = validatedUrls.map((item) => ({
         loc: item.url,
         lastmod: item.lastmod,
-        changefreq: item.changefreq,
+        changefreq: item.changefreq as SitemapEntry['changefreq'],
         priority: item.priority,
       }));
 
@@ -986,7 +1132,7 @@ ${entries
 
     // Récupérer un échantillon
     const { data: combinations } = await this.client
-      .from('pieces_relation_type')
+      .from(TABLES.pieces_relation_type)
       .select(
         `
         rtp_type_id,
@@ -1023,7 +1169,7 @@ ${entries
       // Récupérer les URLs depuis la table pré-calculée avec pagination
       // Supabase limite à 1000 lignes, donc on utilise range()
       const { data: sitemapUrls, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*')
         .range(0, Math.min(limit, 1000) - 1); // Max 1000 lignes par requête
 
@@ -1084,7 +1230,7 @@ ${entries
       );
 
       const { data: sitemapUrls, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*')
         .range(offset, offset + limit - 1);
 
@@ -1123,7 +1269,7 @@ ${entries
     try {
       // Compter le nombre total d'URLs dans __sitemap_p_link
       const { count, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*', { count: 'exact', head: true });
 
       if (error || !count) {

@@ -3,6 +3,7 @@
  */
 
 import { Injectable, Inject, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -37,7 +38,7 @@ export class InvoicesService extends SupabaseBaseService {
       const offset = (page - 1) * limit;
 
       const { data, error } = await this.supabase
-        .from('___xtr_invoice')
+        .from(TABLES.xtr_invoice)
         .select('*')
         .range(offset, offset + limit - 1)
         .order('inv_date', { ascending: false });
@@ -48,7 +49,7 @@ export class InvoicesService extends SupabaseBaseService {
       }
 
       const { count } = await this.supabase
-        .from('___xtr_invoice')
+        .from(TABLES.xtr_invoice)
         .select('*', { count: 'exact', head: true });
 
       const result = {
@@ -84,7 +85,7 @@ export class InvoicesService extends SupabaseBaseService {
       }
 
       const { data: invoice, error } = await this.supabase
-        .from('___xtr_invoice')
+        .from(TABLES.xtr_invoice)
         .select('*')
         .eq('inv_id', invoiceId)
         .single();
@@ -95,7 +96,7 @@ export class InvoicesService extends SupabaseBaseService {
 
       // Lignes de la facture
       const { data: lines } = await this.supabase
-        .from('___xtr_invoice_line')
+        .from(TABLES.xtr_invoice_line)
         .select('*')
         .eq('invl_inv_id', invoiceId);
 
@@ -125,7 +126,7 @@ export class InvoicesService extends SupabaseBaseService {
       }
 
       const { count } = await this.supabase
-        .from('___xtr_invoice')
+        .from(TABLES.xtr_invoice)
         .select('*', { count: 'exact', head: true });
 
       const result = {

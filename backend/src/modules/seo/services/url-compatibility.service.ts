@@ -1,8 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  buildGammeUrl,
+  buildPieceVehicleUrlRaw,
+  buildConstructeurTypeUrl,
+  normalizeAlias,
+  buildSlug,
+} from '../../../common/utils/url-builder.utils';
 
 /**
  * 🔍 Service de Vérification Compatibilité URLs
+ *
+ * ✅ Utilise url-builder.utils.ts pour la génération centralisée des URLs.
  *
  * Génère les URLs EXACTEMENT comme l'ancien sitemap nginx pour :
  * - Gammes : /pieces/{pg_alias}-{pg_id}.html
@@ -23,10 +33,10 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   /**
    * Génère une URL de gamme conforme au format ancien sitemap
    * Format : /pieces/{pg_alias}-{pg_id}.html
+   * ✅ Utilise url-builder.utils.ts
    */
   generateGammeUrl(pgId: number, pgAlias: string): string {
-    const cleanAlias = this.slugify(pgAlias);
-    return `/pieces/${cleanAlias}-${pgId}.html`;
+    return buildGammeUrl(pgAlias, pgId);
   }
 
   /**
@@ -34,8 +44,8 @@ export class UrlCompatibilityService extends SupabaseBaseService {
    * Format : /constructeurs/{marque_alias}-{marque_id}.html
    */
   generateConstructeurUrl(marqueId: number, marqueAlias: string): string {
-    const cleanAlias = this.slugify(marqueAlias);
-    return `/constructeurs/${cleanAlias}-${marqueId}.html`;
+    const cleanAlias = normalizeAlias(marqueAlias);
+    return `/constructeurs/${buildSlug(cleanAlias, marqueId)}.html`;
   }
 
   /**
@@ -48,14 +58,15 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     modeleId: number,
     modeleAlias: string,
   ): string {
-    const cleanMarqueAlias = this.slugify(marqueAlias);
-    const cleanModeleAlias = this.slugify(modeleAlias);
-    return `/constructeurs/${cleanMarqueAlias}-${marqueId}/${cleanModeleAlias}-${modeleId}.html`;
+    const marqueSlug = buildSlug(marqueAlias, marqueId);
+    const modeleSlug = buildSlug(modeleAlias, modeleId);
+    return `/constructeurs/${marqueSlug}/${modeleSlug}.html`;
   }
 
   /**
    * Génère une URL de type (motorisation) conforme au format ancien sitemap
    * Format : /constructeurs/{marque_alias}-{marque_id}/{modele_alias}-{modele_id}/{type_alias}-{type_id}.html
+   * ✅ Utilise url-builder.utils.ts
    */
   generateTypeUrl(
     marqueId: number,
@@ -65,15 +76,20 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     typeId: number,
     typeAlias: string,
   ): string {
-    const cleanMarqueAlias = this.slugify(marqueAlias);
-    const cleanModeleAlias = this.slugify(modeleAlias);
-    const cleanTypeAlias = this.slugify(typeAlias);
-    return `/constructeurs/${cleanMarqueAlias}-${marqueId}/${cleanModeleAlias}-${modeleId}/${cleanTypeAlias}-${typeId}.html`;
+    return buildConstructeurTypeUrl(
+      marqueAlias,
+      marqueId,
+      modeleAlias,
+      modeleId,
+      typeAlias,
+      typeId,
+    );
   }
 
   /**
    * Génère une URL de gamme + véhicule conforme au format ancien sitemap
    * Format : /pieces/{pg_alias}-{pg_id}/{marque_alias}-{marque_id}/{modele_alias}-{modele_id}/{type_alias}-{type_id}.html
+   * ✅ Utilise url-builder.utils.ts
    */
   generateGammeVehiculeUrl(
     pgId: number,
@@ -85,28 +101,20 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     typeId: number,
     typeAlias: string,
   ): string {
-    const cleanPgAlias = this.slugify(pgAlias);
-    const cleanMarqueAlias = this.slugify(marqueAlias);
-    const cleanModeleAlias = this.slugify(modeleAlias);
-    const cleanTypeAlias = this.slugify(typeAlias);
-
-    return `/pieces/${cleanPgAlias}-${pgId}/${cleanMarqueAlias}-${marqueId}/${cleanModeleAlias}-${modeleId}/${cleanTypeAlias}-${typeId}.html`;
+    return buildPieceVehicleUrlRaw(
+      { alias: pgAlias, id: pgId },
+      { alias: marqueAlias, id: marqueId },
+      { alias: modeleAlias, id: modeleId },
+      { alias: typeAlias, id: typeId },
+    );
   }
 
   /**
    * Slugify : transforme un texte en slug URL-friendly
-   * Identique à la logique nginx/PHP de l'ancien site
+   * ✅ Utilise url-builder.utils.ts (normalizeAlias)
    */
   private slugify(text: string): string {
-    if (!text) return '';
-
-    return text
-      .toLowerCase()
-      .normalize('NFD') // Décomposer les caractères accentués
-      .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
-      .replace(/[^a-z0-9]+/g, '-') // Remplacer caractères spéciaux par tirets
-      .replace(/^-+|-+$/g, '') // Supprimer tirets en début/fin
-      .replace(/-+/g, '-'); // Fusionner tirets multiples
+    return normalizeAlias(text);
   }
 
   /**
@@ -128,7 +136,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias');
 
       if (options?.pgDisplay !== false) {
@@ -187,7 +195,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_alias');
 
       if (options?.limit) {
@@ -242,7 +250,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,
@@ -323,7 +331,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_id, ba_title, ba_alias');
 
       if (options?.limit) {
@@ -373,7 +381,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_id, bg_title, bg_alias');
 
       if (options?.limit) {
@@ -586,12 +594,12 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     try {
       // Stats gammes
       const { count: totalGammes } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', '1');
 
       const { count: gammesWithAlias } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', '1')
         .not('pg_alias', 'is', null);
@@ -601,7 +609,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats constructeurs
       const { count: totalConstructeurs } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true });
 
       const constructeurUrls = await this.getAllConstructeurUrls({ limit: 5 });
@@ -609,7 +617,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats modèles
       const { count: totalModeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true })
         .eq('modele_display', 1);
 
@@ -618,7 +626,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats blog conseils
       const { count: totalConseils } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact', head: true });
 
       const conseilsUrls = await this.getAllBlogConseilsUrls({ limit: 5 });
@@ -626,7 +634,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats blog guides
       const { count: totalGuides } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*', { count: 'exact', head: true });
 
       const guidesUrls = await this.getAllBlogGuidesUrls({ limit: 5 });

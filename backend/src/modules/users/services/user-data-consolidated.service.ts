@@ -16,6 +16,7 @@ import {
   mapUserToSupabase,
 } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
+import { TABLES } from '@repo/database-types';
 
 @Injectable()
 export class UserDataConsolidatedService extends SupabaseBaseService {
@@ -32,7 +33,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async findById(userId: string): Promise<User | null> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', userId)
         .single();
@@ -52,7 +53,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async findByEmail(email: string): Promise<User | null> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_mail', email)
         .single();
@@ -85,7 +86,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       } = filters;
 
       let query = this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact' });
 
       // Filtres
@@ -159,7 +160,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .insert(insertData)
         .select()
         .single();
@@ -184,7 +185,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update(updateData)
         .eq('cst_id', userId)
         .select()
@@ -205,7 +206,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async delete(userId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({ cst_activ: '0', cst_updated_at: new Date().toISOString() })
         .eq('cst_id', userId);
 
@@ -224,7 +225,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async reactivate(userId: string): Promise<User> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({ cst_activ: '1', cst_updated_at: new Date().toISOString() })
         .eq('cst_id', userId)
         .select()
@@ -247,7 +248,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_pswd: hashedPassword,
           cst_updated_at: new Date().toISOString(),
@@ -269,7 +270,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async countActive(): Promise<number> {
     try {
       const { count, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true })
         .eq('cst_activ', '1');
 
@@ -288,7 +289,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   async search(searchTerm: string, limit = 20): Promise<User[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_activ', '1')
         .or(

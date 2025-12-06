@@ -1,0 +1,595 @@
+// 📁 backend/src/modules/catalog/services/seo-switches.service.ts
+// 🎯 Service dédié à la gestion des switches SEO (3 sources: SIS, SGCS, SFGCS)
+
+import { Injectable, Logger } from '@nestjs/common';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+/**
+ * Types de switches SEO
+ */
+export interface ItemSwitch {
+  sis_id: number;
+  sis_pg_id: number;
+  sis_alias: number;
+  sis_content: string;
+}
+
+export interface GammeCarSwitch {
+  sgcs_id: number;
+  sgcs_pg_id: number;
+  sgcs_alias: string;
+  sgcs_content: string;
+}
+
+export interface FamilyGammeCarSwitch {
+  sfgcs_id: number;
+  sfgcs_mf_id: number;
+  sfgcs_pg_id: number;
+  sfgcs_alias: number;
+  sfgcs_content: string;
+}
+
+/**
+ * Contexte pour le remplacement de variables
+ */
+export interface SwitchContext {
+  typeId: number;
+  pgId: number;
+  mfId?: number;
+}
+
+export interface PrefetchedSwitches {
+  itemSwitches: ItemSwitch[];
+  gammeSwitches: GammeCarSwitch[];
+  familySwitches: FamilyGammeCarSwitch[];
+}
+
+@Injectable()
+export class SeoSwitchesService {
+  protected readonly logger = new Logger(SeoSwitchesService.name);
+
+  /**
+   * 🚀 Pré-récupère tous les switches pour une gamme et une famille données
+   * Permet d'éviter le problème N+1 requêtes
+   */
+  async prefetchSwitches(
+    supabase: SupabaseClient,
+    pgId: number,
+    mfId?: number
+  ): Promise<PrefetchedSwitches> {
+    const [itemResult, gammeResult, familyResult] = await Promise.all([
+      // 1. Switches globaux (pg_id=0)
+      supabase
+        .from('__seo_item_switch')
+        .select('*')
+        .eq('sis_pg_id', 0),
+        
+      // 2. Switches de la gamme courante
+      supabase
+        .from('__seo_gamme_car_switch')
+        .select('*')
+        .eq('sgcs_pg_id', pgId),
+        
+      // 3. Switches de la famille (si mfId existe)
+      mfId 
+        ? supabase
+            .from('__seo_family_gamme_car_switch')
+            .select('*')
+            .eq('sfgcs_mf_id', mfId)
+            .or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`)
+        : Promise.resolve({ data: [], error: null })
+    ]);
+
+    return {
+      itemSwitches: itemResult.data || [],
+      gammeSwitches: gammeResult.data || [],
+      familySwitches: familyResult.data || []
+    };
+  }
+
+  /**
+   * 📊 Récupère les switches depuis __seo_item_switch
+   * Utilisés pour: #CompSwitch# (alias 1, 2, 3)
+   * Formule: ($type_id + offset) % count
+   */
+  async getItemSwitches(
+    supabase: SupabaseClient,
+    pgId: number,
+    alias: number,
+    prefetched?: PrefetchedSwitches
+  ): Promise<ItemSwitch[]> {
+    // Utiliser le cache si disponible et pertinent (pgId=0 pour global)
+    if (prefetched && pgId === 0) {
+      // ⚠️ Correction type: comparaison souple pour gérer string/number
+      return prefetched.itemSwitches.filter((s) => s.sis_alias == alias);
+    }
+
+    const { data, error } = await supabase
+      .from('__seo_item_switch')
+      .select('*')
+      .eq('sis_pg_id', pgId)
+      .eq('sis_alias', alias);
+
+    if (error) {
+      this.logger.warn(
+        `⚠️ Erreur récupération item switches pg_id=${pgId}, alias=${alias}:`,
+        error.message
+      );
+      return [];
+    }
+
+    return data || [];
+  }
+
+  /**
+   * 📊 Récupère les switches depuis __seo_gamme_car_switch
+   * Utilisés pour: #CompSwitch_X_Y#, #LinkGammeCar_X#
+   * Formule: ($type_id + $pg_id + offset) % count
+   */
+  async getGammeCarSwitches(
+    supabase: SupabaseClient,
+    pgId: number,
+    alias?: string,
+    prefetched?: PrefetchedSwitches
+  ): Promise<GammeCarSwitch[]> {
+    // Utiliser le cache si disponible et pertinent (gamme courante)
+    if (prefetched && prefetched.gammeSwitches.length > 0 && prefetched.gammeSwitches[0].sgcs_pg_id === pgId) {
+      if (alias) {
+        // ⚠️ Correction type: comparaison string pour être sûr
+        return prefetched.gammeSwitches.filter(s => String(s.sgcs_alias) === String(alias));
+      }
+      return prefetched.gammeSwitches;
+    }
+
+    // 1. Chercher dans __seo_gamme_car_switch
+    let query = supabase
+      .from('__seo_gamme_car_switch')
+      .select('*')
+      .eq('sgcs_pg_id', pgId);
+
+    if (alias) {
+      query = query.eq('sgcs_alias', alias);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.logger.warn(
+        `⚠️ Erreur récupération gamme_car switches pg_id=${pgId}, alias=${alias}:`,
+        error.message
+      );
+    }
+
+    // Si trouvé, retourner
+    if (data && data.length > 0) {
+      return data;
+    }
+
+    // 2. FALLBACK: Chercher dans __seo_item_switch (car certaines gammes stockent leurs switches ici)
+    // ex: PG 82, 407, etc.
+    let itemQuery = supabase
+      .from('__seo_item_switch')
+      .select('*')
+      .eq('sis_pg_id', pgId);
+
+    if (alias) {
+      itemQuery = itemQuery.eq('sis_alias', alias);
+    }
+
+    const { data: itemData, error: itemError } = await itemQuery;
+
+    if (itemError) {
+      this.logger.warn(
+        `⚠️ Erreur récupération item switches fallback pg_id=${pgId}, alias=${alias}:`,
+        itemError.message
+      );
+      return [];
+    }
+
+    if (itemData && itemData.length > 0) {
+      // Mapper vers GammeCarSwitch
+      return itemData.map(s => ({
+        sgcs_id: s.sis_id,
+        sgcs_pg_id: s.sis_pg_id,
+        sgcs_alias: String(s.sis_alias),
+        sgcs_content: s.sis_content
+      }));
+    }
+
+    return [];
+  }
+
+  /**
+   * 📊 Récupère les switches depuis __seo_family_gamme_car_switch
+   * Utilisés pour: #CompSwitch_11_Y# à #CompSwitch_16_Y# (switches par famille)
+   * Formule: ($type_id + $pg_id + $alias) % count
+   */
+  async getFamilyGammeCarSwitches(
+    supabase: SupabaseClient,
+    mfId: number,
+    pgId: number,
+    alias: number,
+    prefetched?: PrefetchedSwitches
+  ): Promise<FamilyGammeCarSwitch[]> {
+    // Utiliser le cache si disponible
+    if (prefetched && prefetched.familySwitches.length > 0 && prefetched.familySwitches[0].sfgcs_mf_id === mfId) {
+      // ⚠️ Correction type: comparaison souple pour alias et pg_id
+      return prefetched.familySwitches.filter(
+        (s) =>
+          s.sfgcs_alias == alias &&
+          (s.sfgcs_pg_id == 0 || s.sfgcs_pg_id == pgId),
+      );
+    }
+
+    const { data, error } = await supabase
+      .from('__seo_family_gamme_car_switch')
+      .select('*')
+      .eq('sfgcs_mf_id', mfId)
+      .eq('sfgcs_alias', alias)
+      .or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`);
+
+    if (error) {
+      this.logger.warn(
+        `⚠️ Erreur récupération family switches mf_id=${mfId}, pg_id=${pgId}, alias=${alias}:`,
+        error.message
+      );
+      return [];
+    }
+
+    return data || [];
+  }
+
+  /**
+   * 🎲 Sélectionne un switch par rotation (réplication logique PHP)
+   * Formule générique: (typeId + offset) % count
+   */
+  selectSwitchByRotation<T extends { [key: string]: any }>(
+    switches: T[],
+    typeId: number,
+    offset: number = 0
+  ): T | null {
+    if (!switches || switches.length === 0) return null;
+    const index = (typeId + offset) % switches.length;
+    return switches[index];
+  }
+
+  /**
+   * 🔄 Traite #CompSwitch# (sans alias, switches génériques)
+   * Source: __seo_item_switch avec sis_pg_id=0, sis_alias=3
+   */
+  async processGenericSwitch(
+    supabase: SupabaseClient,
+    text: string,
+    context: SwitchContext,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    if (!text.includes('#CompSwitch#')) return text;
+
+    // Récupérer switches globaux (pg_id=0, alias=3)
+    const switches = await this.getItemSwitches(supabase, 0, 3, prefetched);
+    // 🎯 Formule PHP: $type_id % count (pas de pgId)
+    const selected = this.selectSwitchByRotation(
+      switches,
+      context.typeId,
+      0
+    );
+
+    return selected
+      ? text.replace(/#CompSwitch#/g, selected.sis_content)
+      : text.replace(/#CompSwitch#/g, '');
+  }
+
+  /**
+   * 🔄 Traite #CompSwitch_X# (switches avec alias pour la gamme courante)
+   * Source: __seo_gamme_car_switch
+   */
+  async processAliasedSwitch(
+    supabase: SupabaseClient,
+    text: string,
+    alias: string,
+    context: SwitchContext,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    const marker = `#CompSwitch_${alias}#`;
+    if (!text.includes(marker)) return text;
+
+    let switches = await this.getGammeCarSwitches(
+      supabase,
+      context.pgId,
+      alias,
+      prefetched
+    );
+
+    // FALLBACK 1: Si l'alias ressemble à un PG_ID (ex: 407) et qu'on n'a rien trouvé dans la gamme courante
+    // On essaie de charger les switches de cette gamme cible (ex: PG 407)
+    if ((!switches || switches.length === 0) && alias !== String(context.pgId) && /^\d+$/.test(alias)) {
+      const targetPgId = parseInt(alias);
+      // On cherche les switches pour ce PG_ID (sans filtrer par alias, ou avec alias par défaut ?)
+      // Généralement, si on met #CompSwitch_407#, on veut probablement un switch générique de 407.
+      // On va chercher TOUS les switches de 407 et laisser la rotation choisir.
+      // OU on cherche Alias 1 (souvent "changer si rouillé" etc.)
+      
+      // Essai 1: Chercher Alias 1 pour ce PG_ID
+      const targetSwitches = await this.getGammeCarSwitches(supabase, targetPgId, '1');
+      if (targetSwitches && targetSwitches.length > 0) {
+        switches = targetSwitches;
+        this.logger.log(`✅ Fallback: #CompSwitch_${alias}# trouvé via PG_ID ${targetPgId} (Alias 1)`);
+      } else {
+        // Essai 2: Chercher tous les switches
+        const allTargetSwitches = await this.getGammeCarSwitches(supabase, targetPgId);
+        if (allTargetSwitches && allTargetSwitches.length > 0) {
+          switches = allTargetSwitches;
+          this.logger.log(`✅ Fallback: #CompSwitch_${alias}# trouvé via PG_ID ${targetPgId} (Tous)`);
+        }
+      }
+    }
+
+    // FALLBACK 2: Si aucun switch trouvé et que l'alias correspond à l'ID de la gamme (ex: #CompSwitch_479# pour pg_id=479)
+    // On suppose que c'est un switch générique (Alias 3 global)
+    if ((!switches || switches.length === 0) && alias === String(context.pgId)) {
+      this.logger.log(`⚠️ Fallback: #CompSwitch_${alias}# non trouvé, utilisation du switch global Alias 3`);
+      const itemSwitches = await this.getItemSwitches(supabase, 0, 3, prefetched);
+      // On adapte le format ItemSwitch vers GammeCarSwitch pour la compatibilité
+      switches = itemSwitches.map(s => ({
+        sgcs_id: s.sis_id,
+        sgcs_pg_id: s.sis_pg_id,
+        sgcs_alias: String(s.sis_alias),
+        sgcs_content: s.sis_content
+      }));
+    }
+
+    // 🎯 Formule PHP Alias 3: ($type_id + $pg_id) % count
+    // Pour autres alias: $type_id % count
+    const offset = alias === '3' ? context.pgId : 0;
+    const selected = this.selectSwitchByRotation(
+      switches,
+      context.typeId,
+      offset
+    );
+
+    return selected
+      ? text.replace(new RegExp(marker, 'g'), selected.sgcs_content)
+      : text.replace(new RegExp(marker, 'g'), '');
+  }
+
+  /**
+   * 🔄 Traite #CompSwitch_X_Y# (switches cross-gamme)
+   * Alias X pour gamme Y différente
+   */
+  async processCrossGammeSwitch(
+    supabase: SupabaseClient,
+    text: string,
+    alias: string,
+    targetPgId: number,
+    context: SwitchContext,
+    counter: number,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    const marker = `#CompSwitch_${alias}_${targetPgId}#`;
+    if (!text.includes(marker)) return text;
+
+    // Note: prefetched ne contient que les switches de la gamme courante (context.pgId)
+    // Donc pour cross-gamme, on fera toujours une requête DB sauf si targetPgId == context.pgId
+    const usePrefetched = targetPgId === context.pgId ? prefetched : undefined;
+
+    let switches = await this.getGammeCarSwitches(
+      supabase,
+      targetPgId,
+      alias,
+      usePrefetched
+    );
+
+    // FALLBACK: Si aucun switch trouvé et alias=3, essayer le switch global Alias 3
+    if ((!switches || switches.length === 0) && alias === '3') {
+      this.logger.log(`⚠️ Fallback: #CompSwitch_${alias}_${targetPgId}# non trouvé, utilisation du switch global Alias 3`);
+      const itemSwitches = await this.getItemSwitches(supabase, 0, 3, prefetched); // pg_id=0 pour global
+      switches = itemSwitches.map(s => ({
+        sgcs_id: s.sis_id,
+        sgcs_pg_id: s.sis_pg_id,
+        sgcs_alias: String(s.sis_alias),
+        sgcs_content: s.sis_content
+      }));
+    }
+
+    // 🎯 Formule PHP: ($type_id + $target_pg_id + $counter + $alias) % count
+    const offset = targetPgId + counter + parseInt(alias);
+    const selected = this.selectSwitchByRotation(
+      switches,
+      context.typeId,
+      offset
+    );
+
+    return selected
+      ? text.replace(new RegExp(marker, 'g'), selected.sgcs_content)
+      : text.replace(new RegExp(marker, 'g'), '');
+  }
+
+  /**
+   * 🔄 Traite #CompSwitch_11_Y# à #CompSwitch_16_Y# (switches famille)
+   * Source: __seo_family_gamme_car_switch
+   */
+  async processFamilySwitch(
+    supabase: SupabaseClient,
+    text: string,
+    alias: number,
+    targetPgId: number,
+    context: SwitchContext,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    if (!context.mfId) return text;
+
+    const marker = `#CompSwitch_${alias}_${targetPgId}#`;
+    if (!text.includes(marker)) return text;
+
+    const switches = await this.getFamilyGammeCarSwitches(
+      supabase,
+      context.mfId,
+      targetPgId,
+      alias,
+      prefetched
+    );
+    // 🎯 Formule PHP: ($type_id + $pg_id + $alias) % count (pg_id, pas target)
+    const selected = this.selectSwitchByRotation(
+      switches,
+      context.typeId + context.pgId + alias,
+      0
+    );
+
+    return selected
+      ? text.replace(new RegExp(marker, 'g'), selected.sfgcs_content)
+      : text.replace(new RegExp(marker, 'g'), '');
+  }
+
+  /**
+   * 🔄 Traite #LinkGammeCar_Y# (lien vers autre gamme avec switches)
+   * Combine alias 1 et 2 pour créer un lien complet
+   */
+  async processLinkGammeCar(
+    supabase: SupabaseClient,
+    text: string,
+    targetPgId: number,
+    vehicle: {
+      marque: string;
+      modele: string;
+      type: string;
+      nbCh: string;
+    },
+    context: SwitchContext,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    const marker = `#LinkGammeCar_${targetPgId}#`;
+    if (!text.includes(marker)) return text;
+
+    // Récupérer nom de la gamme cible
+    const { data: targetGamme } = await supabase
+      .from('pieces_gamme')
+      .select('pg_name')
+      .eq('pg_id', targetPgId)
+      .single();
+
+    if (!targetGamme) {
+      return text.replace(new RegExp(marker, 'g'), '');
+    }
+
+    // Note: prefetched ne sert que si targetPgId == context.pgId
+    const usePrefetched = targetPgId === context.pgId ? prefetched : undefined;
+
+    // Récupérer switches alias 1 et 2
+    const switches1 = await this.getGammeCarSwitches(supabase, targetPgId, '1', usePrefetched);
+    const switches2 = await this.getGammeCarSwitches(supabase, targetPgId, '2', usePrefetched);
+
+    // 🎯 Formule PHP: ($type_id + $target_pg_id + 2) % count pour alias 1
+    // 🎯 Formule PHP: ($type_id + $target_pg_id + 3) % count pour alias 2
+    const selected1 = this.selectSwitchByRotation(
+      switches1,
+      context.typeId,
+      targetPgId + 2
+    );
+    const selected2 = this.selectSwitchByRotation(
+      switches2,
+      context.typeId,
+      targetPgId + 3
+    );
+
+    if (!selected1 || !selected2) {
+      return text.replace(new RegExp(marker, 'g'), '');
+    }
+
+    // Construire le texte du lien
+    const linkText = `${selected1.sgcs_content} les ${targetGamme.pg_name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicle.nbCh} ch et ${selected2.sgcs_content}`;
+
+    return text.replace(new RegExp(marker, 'g'), linkText);
+  }
+
+  /**
+   * 🚀 Traite TOUS les types de switches dans un texte
+   * Point d'entrée principal
+   */
+  async processAllSwitches(
+    supabase: SupabaseClient,
+    text: string,
+    vehicle: {
+      marque: string;
+      modele: string;
+      type: string;
+      nbCh: string;
+    },
+    context: SwitchContext,
+    prefetched?: PrefetchedSwitches
+  ): Promise<string> {
+    let result = text;
+
+    // 1. Traiter #CompSwitch# (générique)
+    result = await this.processGenericSwitch(supabase, result, context, prefetched);
+
+    // 2. Traiter #CompSwitch_X# (alias gamme courante)
+    const aliasPattern = /#CompSwitch_(\d+)#/g;
+    const aliasMatches = [...text.matchAll(aliasPattern)];
+    for (const match of aliasMatches) {
+      const alias = match[1];
+      result = await this.processAliasedSwitch(supabase, result, alias, context, prefetched);
+    }
+
+    // 3. Traiter #CompSwitch_X_Y# (cross-gamme ou famille)
+    const crossPattern = /#CompSwitch_(\d+)_(\d+)#/g;
+    const crossMatches = [...text.matchAll(crossPattern)];
+    
+    // 🔢 Counter pour les switches cross-gamme (premier = 0, deuxième = 1, etc.)
+    const crossGammeCounters = new Map<string, number>();
+    
+    for (const match of crossMatches) {
+      const alias = parseInt(match[1]);
+      const targetPgId = parseInt(match[2]);
+
+      // Alias 11-16: switches famille
+      if (alias >= 11 && alias <= 16 && context.mfId) {
+        result = await this.processFamilySwitch(
+          supabase,
+          result,
+          alias,
+          targetPgId,
+          context,
+          prefetched
+        );
+      }
+      // Autres alias: switches cross-gamme normaux
+      else {
+        // Obtenir le counter pour cette combinaison alias_pgId
+        const key = `${alias}_${targetPgId}`;
+        const counter = crossGammeCounters.get(key) || 0;
+        crossGammeCounters.set(key, counter + 1);
+        
+        result = await this.processCrossGammeSwitch(
+          supabase,
+          result,
+          alias.toString(),
+          targetPgId,
+          context,
+          counter,
+          prefetched
+        );
+      }
+    }
+
+    // 4. Traiter #LinkGammeCar_Y#
+    const linkPattern = /#LinkGammeCar_(\d+)#/g;
+    const linkMatches = [...text.matchAll(linkPattern)];
+    for (const match of linkMatches) {
+      const targetPgId = parseInt(match[1]);
+      result = await this.processLinkGammeCar(
+        supabase,
+        result,
+        targetPgId,
+        vehicle,
+        context,
+        prefetched,
+      );
+    }
+
+    // 5. Nettoyer les switches non résolus
+    result = result.replace(/#CompSwitch[^#]*#/g, '');
+    result = result.replace(/#LinkGammeCar_\d+#/g, '');
+
+    return result;
+  }
+}

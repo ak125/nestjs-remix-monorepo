@@ -7,8 +7,10 @@ import {
   ScrollRestoration, 
   useRouteLoaderData,
   useRouteError,
-  isRouteErrorResponse 
+  isRouteErrorResponse,
+  useRevalidator
 } from "@remix-run/react";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -18,14 +20,41 @@ import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
+import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
+import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
+import { type CartData } from "./types/cart";
 // @ts-ignore
 
 export const links: LinksFunction = () => [
+  // Stylesheets
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: animationsStylesheet },
+  
+  // DNS Prefetch & Preconnect (Performance SEO Phase 1)
+  { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
+  { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
+  { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
+  { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
+  { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
+  
+  // Font Preload (Performance SEO Phase 1)
+  { 
+    rel: "preload", 
+    as: "font", 
+    type: "font/woff2", 
+    href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
+    crossOrigin: "anonymous" 
+  },
+  
+  // Image Preload critiques (Logos constructeurs top 10)
+  { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
+  { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
+  { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
+  
+  // Manifest & Icons
   { rel: "manifest", href: "/manifest.json" },
   { rel: "icon", type: "image/webp", sizes: "192x192", href: "/icon-192.webp" },
   { rel: "icon", type: "image/webp", sizes: "512x512", href: "/icon-512.webp" },
@@ -45,10 +74,19 @@ export const meta: MetaFunction = () => [
   { name: "twitter:image", content: "https://www.automecanik.com/logo-og.webp" },
 ];
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
-  const user = await getOptionalUser({ context });
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  // Charger user et cart en parallèle pour la performance
+  const [user, cart] = await Promise.all([
+    getOptionalUser({ context }),
+    getCart(request).catch((err) => {
+      console.warn('⚠️ [root.loader] Erreur chargement panier:', err.message);
+      return null;
+    })
+  ]);
+  
   return json({ 
-    user
+    user,
+    cart
   });
 };
 
@@ -63,6 +101,15 @@ export const useOptionalUser = () => {
   return data.user;
 }
 
+/**
+ * Hook pour accéder aux données du panier depuis le root loader
+ * Utilisé par CartSidebarSimple pour avoir les données SSR
+ */
+export const useRootCart = () => {
+  const data = useRouteLoaderData<typeof loader>("root");
+  return data?.cart || null;
+}
+
 declare module "@remix-run/node" {
   interface AppLoadContext {
     remixService: any;
@@ -73,8 +120,26 @@ declare module "@remix-run/node" {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData("root") as { user: any } | undefined;
-  const user = data?.user;
+  const data = useRouteLoaderData("root") as { user: any; cart: CartData | null } | undefined;
+  const _user = data?.user;
+  const cart = data?.cart;
+  const revalidator = useRevalidator();
+  
+  // 🔄 Synchronisation panier globale via événement
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      console.log('🔄 [root] cart:updated → revalidate');
+      revalidator.revalidate();
+    };
+    
+    window.addEventListener('cart:updated', handleCartUpdated);
+    return () => window.removeEventListener('cart:updated', handleCartUpdated);
+  }, [revalidator]);
+  
+  // DEBUG: Log pour voir si les données arrivent
+  if (typeof window !== 'undefined') {
+    console.log('🏠 [root.Layout] cart data:', cart ? `${cart.items?.length || 0} items` : 'null');
+  }
   
   return (
     <html lang="fr" className="h-full">
@@ -85,18 +150,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full bg-gray-100">
-        <NotificationProvider>
-          <div className="min-h-screen flex flex-col">
-              <Navbar logo={logo} />
-              <main className="flex-grow flex flex-col">
-                <div className="flex-grow">
-                  {children}
-                </div>
-               </main>
-          </div>
-          <Footer />
-          <NotificationContainer />
-        </NotificationProvider>
+        <VehicleProvider>
+          <NotificationProvider>
+            <div className="min-h-screen flex flex-col">
+                <Navbar logo={logo} />
+                <main className="flex-grow flex flex-col">
+                  <div className="flex-grow">
+                    {children}
+                  </div>
+                 </main>
+            </div>
+            <Footer />
+            <NotificationContainer />
+          </NotificationProvider>
+        </VehicleProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
         <Toaster 
           position="top-right"
@@ -144,14 +211,14 @@ export function ErrorBoundary() {
   }
 
   // Erreur non-HTTP (erreur JavaScript, etc.)
-  const errorMessage = error instanceof Error ? error.message : "Une erreur inattendue s'est produite";
-  const errorStack = error instanceof Error ? error.stack : undefined;
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : JSON.stringify(error, null, 2);
   
   return <ErrorGeneric 
     status={500}
     message={errorMessage}
-    details="Une erreur technique s'est produite. Nos équipes ont été notifiées."
-    showStackTrace={process.env.NODE_ENV === 'development'}
+    details={errorStack || "Une erreur technique s'est produite."}
+    showStackTrace={true}
     stack={errorStack}
   />;
 }

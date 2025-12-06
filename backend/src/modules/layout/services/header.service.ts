@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../../cache/cache.service';
@@ -180,7 +181,7 @@ export class HeaderService {
   private async getUserStats(): Promise<{ total: number; active: number }> {
     try {
       const { count: total, error: totalError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true });
 
       if (totalError) {

@@ -590,4 +590,214 @@ export class DynamicSeoController {
       };
     }
   }
+
+  // ====================================
+  // 📊 PHASE 3 - ENDPOINTS MONITORING & OPTIMISATION
+  // ====================================
+
+  /**
+   * 📊 PHASE 3 : Métriques SEO temps réel
+   * GET /api/seo-dynamic-v4/metrics
+   */
+  @Get('metrics')
+  @ApiOperation({
+    summary: 'Métriques SEO temps réel',
+    description:
+      'Dashboard KPIs: cache hit rate, temps traitement, top templates, pages unknown',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Métriques récupérées avec succès',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: {
+          type: 'object',
+          properties: {
+            timestamp: { type: 'string', format: 'date-time' },
+            cacheHitRate: { type: 'object' },
+            avgProcessingTime: { type: 'object' },
+            topTemplates: { type: 'array' },
+            unknownPages: { type: 'object' },
+            abTestResults: { type: 'array' },
+          },
+        },
+      },
+    },
+  })
+  async getMetrics() {
+    try {
+      const metrics = await this.dynamicSeoService.getMetrics();
+
+      return {
+        success: true,
+        data: metrics,
+        message: '📊 Métriques SEO récupérées avec succès',
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération métriques: ${error.message}`);
+      throw new HttpException(
+        {
+          success: false,
+          error: 'Erreur récupération métriques SEO',
+          details: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 PHASE 3 : Audit qualité SEO automatique
+   * GET /api/seo-dynamic-v4/audit
+   */
+  @Get('audit')
+  @ApiOperation({
+    summary: 'Audit qualité SEO automatique',
+    description:
+      'Scan pages sans SEO, contenu obsolète, variables manquantes, recommandations',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit exécuté avec succès',
+  })
+  async runAudit() {
+    try {
+      this.logger.log('🔍 [AUDIT] Lancement audit qualité SEO...');
+      const report = await this.dynamicSeoService.auditSeoQuality();
+
+      return {
+        success: true,
+        data: report,
+        message: `🔍 Audit complété: ${report.coverageRate.toFixed(1)}% couverture, score ${report.qualityScore}/100`,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur audit SEO: ${error.message}`);
+      throw new HttpException(
+        {
+          success: false,
+          error: "Erreur lors de l'audit SEO",
+          details: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🧪 PHASE 3 : Génération variantes A/B test
+   * POST /api/seo-dynamic-v4/ab-test/generate
+   */
+  @Post('ab-test/generate')
+  @ApiOperation({
+    summary: 'Générer variantes A/B test SEO',
+    description:
+      'Crée 3 variantes (conservateur, équilibré, créatif) pour optimisation CTR',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['pgId', 'typeId', 'variables'],
+      properties: {
+        pgId: { type: 'number' },
+        typeId: { type: 'number' },
+        variables: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Variantes A/B générées avec succès',
+  })
+  async generateAbTestVariants(
+    @Body()
+    body: {
+      pgId: number;
+      typeId: number;
+      variables: SeoVariables;
+    },
+  ) {
+    try {
+      const { pgId, typeId, variables } = body;
+
+      this.logger.log(
+        `🧪 [A/B Test] Génération variantes: pgId=${pgId}, typeId=${typeId}`,
+      );
+
+      const variants = await this.dynamicSeoService.generateAbTestVariants(
+        pgId,
+        typeId,
+        variables,
+      );
+
+      return {
+        success: true,
+        data: {
+          variants,
+          totalVariants: variants.length,
+        },
+        message: `🧪 ${variants.length} variantes A/B générées avec succès`,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur génération A/B test: ${error.message}`);
+      throw new HttpException(
+        {
+          success: false,
+          error: 'Erreur génération variantes A/B',
+          details: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📈 PHASE 3 : Métriques liens internes
+   * GET /api/seo-dynamic-v4/internal-links/metrics
+   */
+  @Get('internal-links/metrics')
+  @ApiOperation({
+    summary: 'Métriques maillage interne',
+    description:
+      'Analytics liens internes: LinkGammeCar, CompSwitch, CTR, conversions',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Métriques liens internes récupérées',
+  })
+  async getInternalLinksMetrics() {
+    try {
+      // Récupérer les métriques pour tous les types de liens
+      const [linkGammeCar, linkGammeCarId, compSwitch] = await Promise.all([
+        this.dynamicSeoService.trackInternalLinkPerformance('LinkGammeCar'),
+        this.dynamicSeoService.trackInternalLinkPerformance('LinkGammeCar_ID'),
+        this.dynamicSeoService.trackInternalLinkPerformance('CompSwitch'),
+      ]);
+
+      const metrics = {
+        LinkGammeCar: linkGammeCar,
+        LinkGammeCar_ID: linkGammeCarId,
+        CompSwitch: compSwitch,
+      };
+
+      return {
+        success: true,
+        data: metrics,
+        message: '📈 Métriques maillage interne récupérées avec succès',
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur métriques maillage interne: ${error.message}`,
+      );
+      throw new HttpException(
+        {
+          success: false,
+          error: 'Erreur récupération métriques maillage interne',
+          details: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

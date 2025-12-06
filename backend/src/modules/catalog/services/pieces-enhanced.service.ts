@@ -1,5 +1,11 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  buildRackImageUrl,
+  type PieceImageData,
+} from '../utils/image-urls.utils';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 
 @Injectable()
 export class PiecesEnhancedService extends SupabaseBaseService {
@@ -13,7 +19,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
       // 1️⃣ RÉCUPÉRATION DES RELATIONS SIMPLIFIÉE
       const relationsResult = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id, rtp_pm_id, rtp_psf_id, rtp_type_id, rtp_pg_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
@@ -50,7 +56,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
       // 1.5 RÉCUPÉRATION PIÈCES SÉPARÉE
       const piecesResult = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .in('piece_id', pieceIds)
         .eq('piece_display', 1)
@@ -62,13 +68,13 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         await Promise.all([
           // MARQUES avec logos
           this.client
-            .from('pieces_marque')
+            .from(TABLES.pieces_marque)
             .select('pm_id, pm_name, pm_logo, pm_alias, pm_nb_stars, pm_oes')
             .in('pm_id', pmIds),
 
           // PRIX avec meilleur type
           this.client
-            .from('pieces_price')
+            .from(TABLES.pieces_price)
             .select(
               'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
             )
@@ -78,7 +84,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
           // IMAGES principales
           this.client
-            .from('pieces_media_img')
+            .from(TABLES.pieces_media_img)
             .select('pmi_piece_id, pmi_folder, pmi_name')
             .in('pmi_piece_id', pieceIds)
             .eq('pmi_display', 1)
@@ -86,7 +92,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
           // FILTRES latéraux
           this.client
-            .from('pieces_side_filtre')
+            .from(TABLES.pieces_side_filtre)
             .select('psf_id, psf_side')
             .in('psf_id', relations.map((r) => r.rtp_psf_id).filter(Boolean)),
         ]);
@@ -153,11 +159,8 @@ export class PiecesEnhancedService extends SupabaseBaseService {
           .join(' ')
           .trim();
 
-        // IMAGE URL CORRECTE
-        let imageUrl = '/upload/articles/no.png';
-        if (piece.piece_has_img === 1 && image) {
-          imageUrl = `/rack/${image.pmi_folder}/${image.pmi_name}.webp`;
-        }
+        // IMAGE URL CORRECTE (helper centralisé)
+        const imageUrl = buildRackImageUrl(image as PieceImageData);
 
         return {
           // IDENTIFIANTS
@@ -246,7 +249,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
           // URLs
           urls: {
             fiche: `/fiche/${piece.piece_id}/${typeId}`,
-            detail: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
+            detail: `/piece/${piece.piece_id}/${normalizeAlias(nomComplet || 'piece')}.html`,
           },
         };
       });
@@ -373,15 +376,5 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         (a: any, b: any) => a.label.localeCompare(b.label),
       ),
     };
-  }
-
-  private slugify(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-');
   }
 }

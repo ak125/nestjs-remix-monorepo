@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
@@ -16,6 +17,8 @@ type SearchParams = {
   query: string;
   filters?: SearchFilters;
   pagination?: Pagination;
+  /** Si false (défaut), exclut les équivalences OEM (prs_kind >= 3) */
+  includeEquivalences?: boolean;
 };
 
 @Injectable()
@@ -23,7 +26,7 @@ export class SearchSimpleService extends SupabaseBaseService {
   protected readonly logger = new Logger(SearchSimpleService.name);
 
   // 🔑 Cache
-  private readonly OEM_CACHE_PREFIX = 'search:oem:';
+  private readonly OEM_CACHE_PREFIX = 'search:v2:oem:';
   private readonly OEM_CACHE_TTL = 3600; // 1h
   private readonly GENERAL_CACHE_TTL = 1800; // 30min
 
@@ -107,7 +110,7 @@ export class SearchSimpleService extends SupabaseBaseService {
    */
   async search(params: SearchParams) {
     const startTime = Date.now();
-    const { query, filters, pagination } = params;
+    const { query, filters, pagination, includeEquivalences = true } = params;
     const page = Math.max(1, pagination?.page ?? 1);
     const limit = Math.min(100, Math.max(1, pagination?.limit ?? 20));
     const offset = (page - 1) * limit;
@@ -129,7 +132,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     const cacheKey = `${this.OEM_CACHE_PREFIX}${cleanQuery}:p${page}:l${limit}:f${JSON.stringify(
       filters || {},
-    )}:v${uniqueVariants.join('|')}`;
+    )}:eq${includeEquivalences ? '1' : '0'}:v${uniqueVariants.join('|')}`;
 
     // ⚡ Try cache
     try {
@@ -154,7 +157,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 1) refs dans pieces_ref_search
     const searchRefsResult = await this.client
-      .from('pieces_ref_search')
+      .from(TABLES.pieces_ref_search)
       .select('prs_piece_id, prs_ref, prs_search, prs_kind')
       .in('prs_search', uniqueVariants)
       .limit(1000);
@@ -187,7 +190,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       // Utiliser seulement la variante principale pour la performance
       const mainVariant = uniqueVariants[0];
       const fallbackPricesResult = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_piece_id, pri_ref, pri_pm_id, pri_dispo')
         .ilike('pri_ref', `%${mainVariant}%`)
         .eq('pri_dispo', '1')
@@ -217,7 +220,7 @@ export class SearchSimpleService extends SupabaseBaseService {
         ...new Set(priceMatches.map((p) => p.pri_piece_id)),
       ];
       const directPiecesResult = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
         )
@@ -236,7 +239,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
       // 3) Charger les prix disponibles (pri_dispo='1')
       const pricesResult = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
         )
@@ -313,7 +316,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     const piecesResult = await this.client
-      .from('pieces')
+      .from(TABLES.pieces)
       .select(
         'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
       )
@@ -340,7 +343,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 3) Charger les prix disponibles (pri_dispo='1') — colonnes TEXT
     const pricesResult = await this.client
-      .from('pieces_price')
+      .from(TABLES.pieces_price)
       .select(
         'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
       )
@@ -401,8 +404,23 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     this.logger.log(`✅ ${enrichedPieces.length} pièces enrichies`);
 
-    // 5) Tri façon PHP: PRS_KIND puis QTY*PRICE (desc)
-    const sortedPieces = enrichedPieces.sort((a, b) => {
+    // 5) Filtrer les équivalences si non demandées (par défaut: matchs exacts + OEM directes)
+    let piecesToSort = enrichedPieces;
+    if (!includeEquivalences) {
+      const beforeCount = piecesToSort.length;
+      // prs_kind: 0=direct, 1=OEM équipementier, 2=OEM constructeur → garder tous
+      // prs_kind: 3, 4 = équivalences croisées → exclure
+      piecesToSort = piecesToSort.filter((p) => p._prsKind <= 2);
+      const filteredOut = beforeCount - piecesToSort.length;
+      if (filteredOut > 0) {
+        this.logger.log(
+          `🎯 Filtrage exact: ${filteredOut} équivalences exclues (prs_kind >= 3)`,
+        );
+      }
+    }
+
+    // 6) Tri façon PHP: PRS_KIND puis QTY*PRICE (desc)
+    const sortedPieces = piecesToSort.sort((a, b) => {
       if (a._prsKind !== b._prsKind) return a._prsKind - b._prsKind;
       const scoreA = (a.piece_qty_sale || 1) * a._priceVenteTTC;
       const scoreB = (b.piece_qty_sale || 1) * b._priceVenteTTC;
@@ -477,56 +495,93 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
     this.logger.log(`✅ ${filtered.length} pièces (après filtres)`);
 
-    // Charger métadonnées marques/gammes
+    // Charger métadonnées marques/gammes + IMAGES
     const marqueIds = [
       ...new Set(filtered.map((p) => p.piece_pm_id).filter(Boolean)),
     ];
     const gammeIds = [
       ...new Set(filtered.map((p) => p.piece_pg_id).filter(Boolean)),
     ];
+    const pieceIds = filtered.map((p) => p.piece_id);
 
-    const [marquesResult, gammesResult] = await Promise.all([
+    const [marquesResult, gammesResult, imagesResult] = await Promise.all([
       marqueIds.length
         ? this.client
-            .from('pieces_marque')
-            .select('pm_id, pm_name, pm_oes')
+            .from(TABLES.pieces_marque)
+            .select('pm_id, pm_name, pm_oes, pm_alias')
             .in('pm_id', marqueIds.map(String))
         : Promise.resolve({ data: [] as any[] }),
       gammeIds.length
         ? this.client
-            .from('pieces_gamme')
-            .select('pg_id, pg_name')
+            .from(TABLES.pieces_gamme)
+            .select('pg_id, pg_name, pg_alias')
             .in('pg_id', gammeIds.map(String))
+        : Promise.resolve({ data: [] as any[] }),
+      // 🖼️ Charger les images principales
+      pieceIds.length
+        ? this.client
+            .from(TABLES.pieces_media_img)
+            .select('pmi_piece_id, pmi_folder, pmi_name')
+            .in('pmi_piece_id', pieceIds)
+            .eq('pmi_display', 1)
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
-    const marqueMap = new Map<number, { name: string; oes: string | null }>(
+    const marqueMap = new Map<
+      number,
+      { name: string; oes: string | null; alias: string | null }
+    >(
       (marquesResult.data || []).map((m: any) => [
         parseInt(m.pm_id, 10),
-        { name: m.pm_name, oes: m.pm_oes },
+        { name: m.pm_name, oes: m.pm_oes, alias: m.pm_alias },
       ]),
     );
-    const gammeMap = new Map<number, string>(
+    const gammeMap = new Map<number, { name: string; alias: string | null }>(
       (gammesResult.data || []).map((g: any) => [
         parseInt(g.pg_id, 10),
-        g.pg_name,
+        { name: g.pg_name, alias: g.pg_alias },
       ]),
     );
+    // 🖼️ Map des images: pmi_piece_id -> URL complète
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    const imageMap = new Map<number, string>(
+      (imagesResult.data || []).map((img: any) => [
+        parseInt(img.pmi_piece_id, 10),
+        img.pmi_folder && img.pmi_name
+          ? `${SUPABASE_URL}/storage/v1/object/public/rack-images/${img.pmi_folder}/${img.pmi_name}`
+          : '/images/pieces/default.png',
+      ]),
+    );
+    this.logger.log(`🖼️ ${imagesResult.data?.length || 0} images chargées`);
 
-    // Formatter + qualité + OEM
+    // Formatter + qualité + OEM + IMAGE
     let items = filtered.map((p) => {
       const m = marqueMap.get(p.piece_pm_id);
+      const g = gammeMap.get(p.piece_pg_id);
       const qualityLevel = this.getQualityLevel(m?.oes ?? null);
+      const image = imageMap.get(p.piece_id) || '/images/pieces/default.png';
 
       const item: any = {
         id: String(p.piece_id),
+        piece_id: p.piece_id, // 🔧 ID numérique aussi
         reference: p.piece_ref ?? '',
         brand: m?.name ?? '',
         brandId: p.piece_pm_id,
-        category: gammeMap.get(p.piece_pg_id) ?? '',
+        brandAlias: m?.alias ?? null, // 🔧 Alias marque pour logo
+        category: g?.name ?? '',
         categoryId: p.piece_pg_id,
-        price: p._priceVenteTTC ?? null, // ✅ Exposer le prix pour le frontend
+        categoryAlias: g?.alias ?? null, // 🔧 Alias gamme pour URL
+        price: p._priceVenteTTC ?? 0, // ✅ Prix (0 si non dispo)
+        prices: {
+          vente_ttc: p._priceVenteTTC ?? 0,
+          consigne_ttc: p._priceConsigneTTC ?? 0,
+          total_ttc: (p._priceVenteTTC ?? 0) + (p._priceConsigneTTC ?? 0),
+        },
+        image, // 🖼️ URL image principale
+        hasImage: image !== '/images/pieces/default.png',
         inStock: (p._priceVenteTTC ?? 0) > 0, // ✅ En stock si prix > 0
+        qualite: qualityLevel === 1 ? 'OES' : 'AFTERMARKET',
+        stars: qualityLevel === 1 ? 6 : qualityLevel === 2 ? 5 : 3, // 🔧 Note qualité
         _isOEM: !!p._isOEM,
         _oemRef: p._oemRef ?? null,
         _qualityLevel: qualityLevel,

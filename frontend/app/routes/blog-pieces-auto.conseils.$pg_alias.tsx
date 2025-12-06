@@ -40,6 +40,9 @@ import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
 
+// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
+import { HtmlContent } from "~/components/seo/HtmlContent";
+
 // Analytics
 import { trackArticleView, trackReadingTime, trackShareArticle, trackBookmark } from "~/utils/analytics";
 import { Badge } from "../components/ui/badge";
@@ -317,12 +320,6 @@ export default function LegacyBlogArticle() {
       <CompactBlogHeader
         title={article.h1}
         description={`Publié le ${new Date(article.publishedAt).toLocaleDateString('fr-FR')} • ${article.viewsCount.toLocaleString()} vues`}
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Blog", href: "/blog" },
-          { label: "Conseils", href: "/blog-pieces-auto/conseils" },
-          { label: article.title },
-        ]}
         stats={[
           { icon: Eye, value: article.viewsCount.toLocaleString(), label: "Vues" },
           { icon: Clock, value: `${Math.ceil(article.content.split(' ').length / 200)} min`, label: "Lecture" },
@@ -393,18 +390,20 @@ export default function LegacyBlogArticle() {
                       </svg>
                       {conseil.find(c => c.title.toLowerCase().includes('rôle'))!.title}
                     </h2>
-                    <div 
+                    <HtmlContent 
+                      html={conseil.find(c => c.title.toLowerCase().includes('rôle'))!.content}
                       className="prose prose-lg max-w-none
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                         prose-strong:text-gray-900 prose-strong:font-semibold"
-                      dangerouslySetInnerHTML={{ __html: conseil.find(c => c.title.toLowerCase().includes('rôle'))!.content }}
+                      trackLinks={true}
                     />
                   </div>
                 )}
 
                 {/* Contenu principal */}
-                <div 
+                <HtmlContent 
+                  html={article.content}
                   className="prose prose-lg max-w-none mb-8
                     prose-headings:text-gray-900 prose-headings:font-bold
                     prose-p:text-gray-700 prose-p:leading-relaxed
@@ -412,7 +411,7 @@ export default function LegacyBlogArticle() {
                     prose-strong:text-gray-900 prose-strong:font-semibold
                     prose-ul:list-disc prose-ul:pl-6
                     prose-li:text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
+                  trackLinks={true}
                 />
 
                 {/* CTA Principal (après le contenu principal) */}
@@ -452,14 +451,15 @@ export default function LegacyBlogArticle() {
                       </Card>
                     )}
                     
-                    <div 
+                    <HtmlContent 
+                      html={section.content}
                       className={`prose prose-lg max-w-none ${section.level === 3 ? 'ml-4' : ''}
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-primary prose-a:no-underline hover:prose-a:underline
                         prose-strong:font-semibold
                         prose-ul:list-disc prose-ul:pl-6
                         prose-li:text-gray-700`}
-                      dangerouslySetInnerHTML={{ __html: section.content }}
+                      trackLinks={true}
                     />
 
                     {/* Clear float après l'image */}
@@ -517,7 +517,8 @@ export default function LegacyBlogArticle() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <div 
+                    <HtmlContent 
+                      html={conseilItem.content}
                       className="prose prose-lg max-w-none
                         prose-headings:text-gray-900 prose-headings:font-bold
                         prose-p:text-gray-700 prose-p:leading-relaxed
@@ -526,7 +527,7 @@ export default function LegacyBlogArticle() {
                         prose-ul:list-disc prose-ul:pl-6
                         prose-ol:list-decimal prose-ol:pl-6
                         prose-li:text-gray-700 prose-li:mb-2"
-                      dangerouslySetInnerHTML={{ __html: conseilItem.content }}
+                      trackLinks={true}
                     />
                   </CardContent>
                 </Card>
@@ -572,7 +573,7 @@ export default function LegacyBlogArticle() {
                     {article.relatedArticles.map((related) => (
                       <Link
                         key={related.id}
-                        to={related.pg_alias ? `/blog-pieces-auto/conseils/${related.pg_alias}` : `/blog/article/${related.slug}`}
+                        to={related.pg_alias ? `/blog-pieces-auto/conseils/${related.pg_alias}` : `/blog-pieces-auto/article/${related.slug}`}
                       >
                         <Card className="overflow-hidden hover:shadow-md transition-all group border-gray-200">
                           <div className="flex gap-3 p-3">

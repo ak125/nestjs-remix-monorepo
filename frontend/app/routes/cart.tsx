@@ -1,264 +1,324 @@
 /**
  * 🛒 CART PAGE - Route principale du panier
- * Version consolidée avec appel direct à l'API backend
- * 
+ * Version simplifiée sans CartContext
+ *
  * ✅ Fonctionnalités:
  * - Affichage du panier avec produits
- * - Vidage du panier via API DELETE /api/cart
+ * - Actions via useFetcher (approche Remix native)
  * - Gestion des erreurs et états vides
  * - Compatible avec l'authentification NestJS/Remix
+ * - Barre de progression livraison gratuite (150€)
  */
 
 import { Alert, Badge } from "@fafa/ui";
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link, useNavigation } from "@remix-run/react";
-import React from 'react';
-import { toast } from 'sonner';
-import { Button } from '~/components/ui/button';
-import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useNavigation,
+  useRevalidator,
+} from "@remix-run/react";
+import {
+  ShoppingBag,
+  Truck,
+  Shield,
+  CreditCard,
+  Package,
+  Trash2,
+  Plus,
+  Minus,
+  ArrowRight,
+  ChevronLeft,
+} from "lucide-react";
+import React from "react";
+import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getCart } from "../services/cart.server";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Mon panier | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
+
+// Seuil pour la livraison gratuite
+const FREE_SHIPPING_THRESHOLD = 150;
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   // console.log("🛒 [CART LOADER] Chargement du panier depuis cart.tsx");
   try {
     const url = new URL(request.url);
-    const cleared = url.searchParams.get('cleared');
-    
+    const cleared = url.searchParams.get("cleared");
+
     const cartData = await getCart(request);
-    return json({ 
-      cart: cartData, 
-      success: true, 
+    return json({
+      cart: cartData,
+      success: true,
       error: null,
-      cleared: cleared === 'true' 
+      cleared: cleared === "true",
     });
   } catch (error) {
     console.error("Erreur lors du chargement du panier:", error);
-    return json({ 
-      cart: { 
-        items: [], 
-        summary: { 
-          total_items: 0, 
-          total_price: 0, 
-          subtotal: 0, 
-          tax_amount: 0, 
-          shipping_cost: 0, 
+    return json({
+      cart: {
+        items: [],
+        summary: {
+          total_items: 0,
+          total_price: 0,
+          subtotal: 0,
+          tax_amount: 0,
+          shipping_cost: 0,
           consigne_total: 0, // ✅ PHASE 4
-          currency: "EUR" 
-        } 
-      }, 
-      success: false, 
-      error: "Erreur lors du chargement du panier",
-      cleared: false
-    });
-  }
-}
-
-/**
- * 🧹 Fonction utilitaire pour vider le panier
- * Utilise directement l'API backend car les actions Remix ne fonctionnent pas
- * dans ce setup monorepo NestJS + Remix
- */
-async function clearCartAPI(): Promise<{ success: boolean; error?: string }> {
-  try {
-    console.log('🧹 [CLEAR CART] Appel API DELETE /api/cart');
-    
-    const response = await fetch('/api/cart', {
-      method: 'DELETE',
-      credentials: 'include', // Important: transmet les cookies de session/auth
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      console.log('✅ [CLEAR CART] Panier vidé avec succès:', result);
-      return { success: true };
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('❌ [CLEAR CART] Erreur HTTP:', response.status, errorData);
-      return { 
-        success: false, 
-        error: errorData.message || `Erreur HTTP ${response.status}` 
-      };
-    }
-  } catch (error) {
-    console.error('❌ [CLEAR CART] Erreur réseau:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur réseau' 
-    };
-  }
-}
-
-/**
- * 🔄 Fonction pour modifier la quantité d'un article
- */
-// Fonction pour mettre à jour la quantité d'un article
-// Utilise le product_id numérique au lieu de l'ID UUID inexistant
-async function updateItemQuantityAPI(productId: number, quantity: number) {
-  try {
-    if (quantity < 1) {
-      throw new Error('La quantité doit être d\'au moins 1');
-    }
-    
-    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
-    const response = await fetch('/api/cart/items', {
-      method: 'POST', // Réutiliser l'endpoint d'ajout qui gère la mise à jour
-      headers: {
-        'Content-Type': 'application/json',
+          currency: "EUR",
+        },
       },
-      credentials: 'include',
-      body: JSON.stringify({ 
-        product_id: productId, 
-        quantity: quantity,
-        replace: true // Flag pour indiquer qu'on remplace la quantité
-      })
+      success: false,
+      error: "Erreur lors du chargement du panier",
+      cleared: false,
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Erreur mise à jour quantité:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
-    };
   }
+};
+
+// NOTE: Les fonctions API ont été supprimées.
+// Utiliser les méthodes du hook useCart() qui appellent cart.api.ts
+
+// Helper: formater le prix
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
 }
 
-// Fonction pour supprimer un article du panier
-// Utilise le product_id numérique qui correspond aux données du backend
-async function removeItemAPI(productId: number) {
-  try {
-    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
-    const response = await fetch(`/api/cart/items/${productId}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Erreur suppression article:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
-    };
-  }
-}
+// Composant Barre de progression livraison gratuite
+function FreeShippingProgress({ subtotal }: { subtotal: number }) {
+  const progress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const remaining = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
+  const isEligible = subtotal >= FREE_SHIPPING_THRESHOLD;
 
-// Composant CartSummary avec design amélioré
-function CartSummary({ summary, children, isUpdating }: { 
-  summary: any; 
-  children?: React.ReactNode;
-  isUpdating?: boolean;
-}) {
-  const total = summary.total_price || (summary.subtotal + summary.tax_amount + summary.shipping_cost - (summary.discount_amount || 0));
-  
+  // Message dynamique selon la progression
+  const getMessage = () => {
+    if (progress >= 90) return "Vous y êtes presque ! 🔥";
+    if (progress >= 70) return "Encore un petit effort !";
+    if (progress >= 50) return "Vous êtes à mi-chemin !";
+    return "Ajoutez des articles pour économiser !";
+  };
+
   return (
-    <div className={`bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 p-6 rounded-xl shadow-lg transition-all ${
-      isUpdating ? 'opacity-50 scale-[0.98]' : 'hover:shadow-xl'
-    }`}>
-      <h2 className="text-xl font-bold mb-5 flex items-center text-gray-800 border-b-2 border-blue-500 pb-3">
-        <span className="mr-2">📋</span>
-        Résumé de la commande
-        {isUpdating && (
-          <Badge variant="info" size="sm" className="ml-auto">
-            <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-2 inline-block"></div>
-            Mise à jour...
-          </Badge>
-        )}
-      </h2>
-      
-      <div className="space-y-3 text-sm">
-        {/* Nombre de pièces - Badge style */}
-        <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-          <span className="font-semibold text-gray-700 flex items-center">
-            <span className="mr-2">🔢</span>
-            Nombre de pièces
-          </span>
-          <Badge variant="info" size="lg">
-            {summary.total_items}
-          </Badge>
+    <div
+      className={`rounded-2xl p-5 mb-6 transition-all duration-300 ${
+        isEligible
+          ? "bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg shadow-green-200"
+          : "bg-white border-2 border-blue-100 shadow-md"
+      }`}
+    >
+      {isEligible ? (
+        <div className="flex items-center gap-4">
+          <div className="bg-white/20 p-3 rounded-full animate-bounce">
+            <Truck className="h-7 w-7" />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-xl">
+              🎉 Félicitations ! Livraison OFFERTE
+            </p>
+            <p className="text-sm opacity-90">
+              Vous économisez 9,90€ sur cette commande
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
+            <span className="text-2xl">🚚</span>
+            <span className="font-bold">0,00€</span>
+          </div>
         </div>
+      ) : (
+        <div>
+          {/* Header avec icône et progression */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2.5 rounded-full">
+                <Truck className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900">
+                  Livraison gratuite dès {formatPrice(FREE_SHIPPING_THRESHOLD)}
+                </p>
+                <p className="text-sm text-gray-500">{getMessage()}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <Badge variant="info" className="text-lg font-bold px-3 py-1">
+                {Math.round(progress)}%
+              </Badge>
+            </div>
+          </div>
 
-        {/* Sous-total */}
-        <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
-          <span className="text-gray-700 font-medium">Sous-total produits</span>
-          <span className="font-semibold text-gray-900">{summary.subtotal.toFixed(2)}€</span>
-        </div>
-        
-        {/* Consignes avec style particulier */}
-        {summary.consigne_total > 0 && (
-          <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg shadow-sm border-2 border-amber-300">
-            <span className="text-amber-800 font-medium flex items-center">
-              <span className="mr-2">♻️</span>
-              Consignes
-              <span className="text-xs ml-2 bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
-                remboursables
+          {/* Barre de progression améliorée */}
+          <div className="relative w-full bg-gray-100 rounded-full h-4 overflow-hidden mb-4">
+            <div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 rounded-full transition-all duration-700 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+            {/* Marqueur objectif */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow" />
+          </div>
+
+          {/* Message incitatif avec montant restant */}
+          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3">
+            <span className="text-xl">💡</span>
+            <p className="text-gray-700">
+              Plus que{" "}
+              <span className="font-extrabold text-xl text-blue-600 mx-1">
+                {formatPrice(remaining)}
               </span>
-            </span>
-            <span className="font-bold text-amber-700">+{summary.consigne_total.toFixed(2)}€</span>
+              pour débloquer la{" "}
+              <span className="font-bold text-green-600">
+                livraison gratuite
+              </span>{" "}
+              !
+            </p>
           </div>
-        )}
-        
-        {summary.shipping_cost > 0 && (
-          <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
-            <span className="text-gray-700 flex items-center">
-              <span className="mr-2">🚚</span>
-              Livraison
-            </span>
-            <span className="font-semibold">{summary.shipping_cost.toFixed(2)}€</span>
-          </div>
-        )}
-        
-        {summary.tax_amount > 0 && (
-          <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
-            <span className="text-gray-700">TVA</span>
-            <span className="font-semibold">{summary.tax_amount.toFixed(2)}€</span>
-          </div>
-        )}
-        
-        {summary.discount_amount > 0 && (
-<Alert className="flex justify-between p-3  rounded-lg shadow-sm border-2" variant="success">
-            <span className="text-green-700 font-medium flex items-center">
-              <span className="mr-2">🎁</span>
-              Remise
-            </span>
-            <span className="font-bold text-green-700">-{summary.discount_amount.toFixed(2)}€</span>
-          </Alert>
-        )}
-        
-        {/* Total avec style imposant */}
-        <div className="mt-4 pt-4 border-t-2 border-gray-300">
-          <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg">
-            <span className="font-bold text-lg text-white">Total TTC</span>
-            <span className="font-bold text-3xl text-white">{total.toFixed(2)}€</span>
-          </div>
-        </div>
-      </div>
-      
-      {children && (
-        <div className="mt-6">
-          {children}
         </div>
       )}
     </div>
   );
 }
 
-// Composant CartItem simplifié avec vraies données
-function CartItem({ item, onUpdate, onRemove }: { 
-  item: any; 
+// Composant CartSummary avec design amélioré
+function CartSummary({
+  summary,
+  children,
+  isUpdating,
+}: {
+  summary: any;
+  children?: React.ReactNode;
+  isUpdating?: boolean;
+}) {
+  const total =
+    summary.total_price ||
+    summary.subtotal +
+      (summary.consigne_total || 0) +
+      summary.tax_amount +
+      summary.shipping_cost -
+      (summary.discount_amount || 0);
+  const isEligibleFreeShipping = summary.subtotal >= FREE_SHIPPING_THRESHOLD;
+
+  return (
+    <div
+      className={`bg-white border-2 border-gray-200 rounded-2xl shadow-xl overflow-hidden transition-all ${
+        isUpdating ? "opacity-50 scale-[0.98]" : "hover:shadow-2xl"
+      }`}
+    >
+      {/* Header avec icône */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4">
+        <h2 className="text-xl font-bold flex items-center gap-3">
+          <Package className="h-6 w-6" />
+          Résumé de la commande
+          {isUpdating && (
+            <Badge variant="info" size="sm" className="ml-auto">
+              <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-2 inline-block"></div>
+              Mise à jour...
+            </Badge>
+          )}
+        </h2>
+      </div>
+
+      <div className="p-6 space-y-4">
+        {/* Nombre de pièces */}
+        <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <span className="font-semibold text-gray-700 flex items-center gap-2">
+            <ShoppingBag className="h-5 w-5 text-blue-600" />
+            Nombre d'articles
+          </span>
+          <Badge variant="info" size="lg" className="text-lg px-4 py-1">
+            {summary.total_items}
+          </Badge>
+        </div>
+
+        {/* Sous-total */}
+        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+          <span className="text-gray-600">Sous-total produits</span>
+          <span className="font-semibold text-lg">
+            {formatPrice(summary.subtotal)}
+          </span>
+        </div>
+
+        {/* Consignes */}
+        {summary.consigne_total > 0 && (
+          <div className="flex justify-between items-center p-3 bg-amber-50 rounded-xl border-2 border-amber-200">
+            <span className="text-amber-800 font-medium flex items-center gap-2">
+              <span className="text-xl">♻️</span>
+              Consignes
+              <span className="text-xs bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
+                remboursables
+              </span>
+            </span>
+            <span className="font-bold text-amber-700">
+              +{formatPrice(summary.consigne_total)}
+            </span>
+          </div>
+        )}
+
+        {/* Livraison - Affichée uniquement si gratuite */}
+        {isEligibleFreeShipping && (
+          <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
+            <span className="text-green-700 font-medium flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Livraison
+            </span>
+            <span className="font-bold text-green-600 flex items-center gap-1">
+              ✓ OFFERTE
+            </span>
+          </div>
+        )}
+
+        {summary.tax_amount > 0 && (
+          <div className="flex justify-between py-3 border-b border-gray-100">
+            <span className="text-gray-600">TVA incluse</span>
+            <span className="font-medium">
+              {formatPrice(summary.tax_amount)}
+            </span>
+          </div>
+        )}
+
+        {summary.discount_amount > 0 && (
+          <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
+            <span className="text-green-700 font-medium flex items-center gap-2">
+              <span className="text-xl">🎁</span>
+              Remise appliquée
+            </span>
+            <span className="font-bold text-green-700">
+              -{formatPrice(summary.discount_amount)}
+            </span>
+          </div>
+        )}
+
+        {/* Total */}
+        <div className="mt-4 pt-4 border-t-2 border-gray-200">
+          <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+            <span className="font-bold text-lg text-white">Total TTC</span>
+            <span className="font-extrabold text-3xl text-white">
+              {formatPrice(total)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {children && <div className="px-6 pb-6">{children}</div>}
+    </div>
+  );
+}
+
+// Composant CartItem simplifié avec design moderne et compact
+function CartItem({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: any;
   onUpdate: (productId: number, quantity: number) => void;
   onRemove: (productId: number) => void;
 }) {
@@ -266,209 +326,177 @@ function CartItem({ item, onUpdate, onRemove }: {
   const [isRemoving, setIsRemoving] = React.useState(false);
   const [currentQuantity, setCurrentQuantity] = React.useState(item.quantity);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
-  
+
   const handleQuantityChange = async (newQuantity: number) => {
-    if (newQuantity < 1 || newQuantity === currentQuantity || isUpdating) return;
-    
+    if (newQuantity < 1 || newQuantity === currentQuantity || isUpdating)
+      return;
+
     const oldQuantity = currentQuantity;
     setIsUpdating(true);
     setCurrentQuantity(newQuantity);
-    
+
     try {
       await onUpdate(item.product_id, newQuantity);
     } catch (error) {
       setCurrentQuantity(oldQuantity);
-      console.error('Erreur mise à jour quantité:', error);
+      console.error("Erreur mise à jour quantité:", error);
     } finally {
       setIsUpdating(false);
     }
   };
-  
+
   const handleRemove = async () => {
     setIsRemoving(true);
     try {
       await onRemove(item.product_id);
     } catch (error) {
-      console.error('Erreur suppression:', error);
+      console.error("Erreur suppression:", error);
     } finally {
       setIsRemoving(false);
       setShowConfirmDelete(false);
     }
   };
-  
-  const confirmRemoval = () => {
-    setShowConfirmDelete(true);
-  };
-  
+
   // Calcul du prix
-  const isTotal = Math.abs(item.price - (item.price * item.quantity)) < 0.01;
+  const isTotal = Math.abs(item.price - item.price * item.quantity) < 0.01;
   const unitPrice = isTotal ? item.price / item.quantity : item.price;
   const totalPrice = isTotal ? item.price : item.price * item.quantity;
 
   return (
-    <div className={`bg-white rounded-xl border-2 shadow-md transition-all duration-300 p-6 ${
-      isUpdating || isRemoving 
-        ? 'opacity-50 pointer-events-none scale-[0.98]' 
-        : 'hover:shadow-xl hover:border-blue-300 hover:scale-[1.01]'
-    }`}>
-      {/* En-tête produit avec badge consigne */}
-      <div className="flex items-start justify-between mb-5 pb-4 border-b-2 border-gray-100">
-        <div className="flex-1">
-          <div className="flex items-start gap-3">
-            <h3 className="font-bold text-xl text-gray-900 mb-2 flex-1">
-              {item.product_name || item.name || 'Produit sans nom'}
+    <div
+      className={`bg-white rounded-xl border shadow-sm transition-all duration-300 overflow-hidden ${
+        isUpdating || isRemoving
+          ? "opacity-50 pointer-events-none"
+          : "hover:shadow-md hover:border-blue-200"
+      }`}
+    >
+      <div className="p-4 sm:p-5">
+        {/* En-tête avec nom produit et badge consigne */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">
+              {item.product_name || item.name || "Produit sans nom"}
             </h3>
-            {item.has_consigne && item.consigne_unit > 0 && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 whitespace-nowrap">
-                <span className="mr-1">♻️</span>
-                +{item.consigne_unit.toFixed(2)}€ consigne
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span className="inline-flex items-center text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                Réf: {item.product_sku || item.product_id}
               </span>
-            )}
-          </div>
-          <div className="text-sm text-gray-600 space-y-2 mt-2">
-            <div className="flex items-center">
-              <span className="font-semibold text-gray-500 min-w-[80px]">Référence</span>
-              <span className="text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
-                {item.product_sku || item.product_id}
-              </span>
+              {item.product_brand &&
+                item.product_brand !== "MARQUE INCONNUE" &&
+                item.product_brand !== "Non spécifiée" && (
+                  <Badge variant="secondary" size="sm">
+                    {item.product_brand}
+                  </Badge>
+                )}
+              {item.has_consigne && item.consigne_unit > 0 && (
+                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                  ♻️ +{formatPrice(item.consigne_unit)} consigne
+                </span>
+              )}
             </div>
-            {item.product_brand && item.product_brand !== 'MARQUE INCONNUE' && item.product_brand !== 'Non spécifiée' && (
-              <div className="flex items-center">
-                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
-                <Badge variant="info">
-                  {item.product_brand}
-                </Badge>
-              </div>
-            )}
-            {(item.product_brand === 'MARQUE INCONNUE' || item.product_brand === 'Non spécifiée') && (
-              <div className="flex items-center">
-                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
-                <span className="text-gray-400 italic px-2 py-1">Non spécifiée</span>
-              </div>
-            )}
-            {!item.product_brand && (
-              <div className="flex items-center">
-                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
-                <span className="text-gray-300 italic px-2 py-1">Données manquantes</span>
+          </div>
+
+          {/* Bouton supprimer - toujours visible */}
+          {!showConfirmDelete ? (
+            <button
+              onClick={() => setShowConfirmDelete(true)}
+              disabled={isUpdating || isRemoving}
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
+              title="Supprimer cet article"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowConfirmDelete(false)}
+                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleRemove}
+                disabled={isRemoving}
+                className="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isRemoving ? "..." : "Confirmer"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Ligne inférieure : Quantité + Prix */}
+        <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100">
+          {/* Contrôle quantité compact */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500 hidden sm:inline">
+              Quantité:
+            </span>
+            <div className="flex items-center border rounded-lg overflow-hidden bg-gray-50">
+              <button
+                onClick={() => handleQuantityChange(currentQuantity - 1)}
+                disabled={isUpdating || isRemoving || currentQuantity <= 1}
+                className="p-2 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <Minus className="h-4 w-4 text-gray-600" />
+              </button>
+              <span className="px-4 py-2 font-bold text-lg bg-white min-w-[50px] text-center border-x">
+                {currentQuantity}
+              </span>
+              <button
+                onClick={() => handleQuantityChange(currentQuantity + 1)}
+                disabled={isUpdating || isRemoving}
+                className="p-2 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <Plus className="h-4 w-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          {/* Prix */}
+          <div className="text-right">
+            <div className="text-2xl font-bold text-blue-600">
+              {formatPrice(totalPrice)}
+            </div>
+            {currentQuantity > 1 && (
+              <div className="text-xs text-gray-500">
+                {currentQuantity} × {formatPrice(unitPrice)}
               </div>
             )}
           </div>
         </div>
-        
-        {/* Badge de statut animé */}
+
+        {/* Loader discret */}
         {(isUpdating || isRemoving) && (
-          <div className="flex items-center space-x-2 text-blue-600 text-sm bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 rounded-full border-2 border-blue-200 shadow-sm">
+          <div className="mt-3 flex items-center justify-center gap-2 text-blue-600 text-sm">
             <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-            <span className="font-semibold">{isUpdating ? 'Mise à jour...' : 'Suppression...'}</span>
+            <span>{isUpdating ? "Mise à jour..." : "Suppression..."}</span>
           </div>
         )}
       </div>
-      
-      {/* Contrôles avec design modernisé */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-        {/* Quantité avec style amélioré */}
-        <div className="flex flex-col space-y-2">
-          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Quantité</span>
-          <div className="flex items-center border-2 border-gray-300 rounded-xl bg-gradient-to-r from-gray-50 to-white shadow-md hover:shadow-lg transition-shadow">
-            <button
-              onClick={() => handleQuantityChange(currentQuantity - 1)}
-              disabled={isUpdating || isRemoving || currentQuantity <= 1}
-              className="px-5 py-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-l-xl font-bold text-xl text-red-600 hover:scale-110"
-            >
-              −
-            </button>
-            <div className="px-6 py-3 min-w-[70px] text-center font-bold text-2xl bg-white border-x-2 border-gray-300 text-gray-900">
-              {currentQuantity}
-            </div>
-            <button
-              onClick={() => handleQuantityChange(currentQuantity + 1)}
-              disabled={isUpdating || isRemoving}
-              className="px-5 py-3 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-r-xl font-bold text-xl text-green-600 hover:scale-110"
-            >
-              +
-            </button>
-          </div>
-        </div>
-        
-        {/* Prix avec carte détaillée */}
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Prix total</span>
-          <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-50 p-5 rounded-xl shadow-md border-2 border-blue-200">
-            <div className="text-sm text-gray-700 mb-2 flex justify-between">
-              <span className="font-medium">Prix unitaire</span>
-              <span className="font-bold text-gray-900">{unitPrice.toFixed(2)}€</span>
-            </div>
-            {item.has_consigne && item.consigne_unit > 0 && (
-              <div className="text-xs text-amber-700 mb-2 flex justify-between bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                <span className="font-medium">+ Consigne</span>
-                <span className="font-semibold">{item.consigne_unit.toFixed(2)}€</span>
-              </div>
-            )}
-            <div className="text-3xl font-extrabold text-blue-700 text-center mt-2 mb-1">
-              {totalPrice.toFixed(2)}€
-            </div>
-            <div className="text-xs text-gray-600 text-center bg-white/50 py-1 px-2 rounded-full">
-              {item.quantity} × {unitPrice.toFixed(2)}€
-              {item.has_consigne && ` + ${item.consigne_unit.toFixed(2)}€`}
-            </div>
-          </div>
-        </div>
-        
-        {/* Actions avec bouton amélioré */}
-        <div className="flex flex-col space-y-2">
-          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Actions</span>
-          {!showConfirmDelete ? (
-            <button
-              onClick={confirmRemoval}
-              disabled={isUpdating || isRemoving}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-            >
-              <span className="text-lg">🗑️</span>
-              <span>Supprimer</span>
-            </button>
-          ) : (
-<Alert className="flex flex-col space-y-2  p-3 rounded-xl border-2" variant="error">
-              <p className="text-sm font-semibold text-red-800 mb-1">⚠️ Confirmer la suppression ?</p>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setShowConfirmDelete(false)}
-                  disabled={isRemoving}
-                  className="flex-1 bg-gray-200 hover:bg-muted/50 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleRemove}
-                  disabled={isRemoving}
-                  className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-2 rounded-lg transition-all disabled:opacity-50 font-semibold shadow-md hover:shadow-lg"
-                >
-                  {isRemoving ? '⏳ Suppression...' : '✓ Confirmer'}
-                </button>
-              </div>
-            </Alert>
-          )}
-        </div>
-      </div>
     </div>
   );
-}// Composant panier vide avec design amélioré
+} // Composant panier vide avec design amélioré
 function EmptyCart() {
   return (
-    <div className="text-center py-16 px-6">
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-12 max-w-2xl mx-auto shadow-lg border-2 border-gray-200">
-        <div className="text-8xl mb-6 animate-pulse">🛒</div>
-        <h2 className="text-3xl font-bold mb-4 text-gray-800">Votre panier est vide</h2>
-        <p className="text-lg text-gray-600 mb-8">
-          Découvrez nos produits et ajoutez-les à votre panier pour commencer vos achats
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl p-8 sm:p-12 max-w-lg mx-auto shadow-xl border text-center">
+        <div className="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+          <ShoppingBag className="h-12 w-12 text-gray-400" />
+        </div>
+        <h2 className="text-2xl font-bold mb-3 text-gray-800">
+          Votre panier est vide
+        </h2>
+        <p className="text-gray-600 mb-8">
+          Découvrez nos pièces auto et ajoutez-les à votre panier
         </p>
 
-        <Link
-          to="/products"
-          className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-semibold text-lg hover:scale-105 active:scale-95"
-        >
-          <span>🛍️</span>
-          <span>Continuer mes achats</span>
-        </Link>
+        <Button asChild size="lg" variant="blue" className="w-full sm:w-auto">
+          <Link to="/" className="inline-flex items-center gap-2">
+            <ShoppingBag className="h-5 w-5" />
+            Découvrir nos produits
+          </Link>
+        </Button>
       </div>
     </div>
   );
@@ -478,40 +506,109 @@ function EmptyCart() {
 export default function CartPage() {
   const { cart, success, error, cleared } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const revalidator = useRevalidator();
+  const [isProcessing, setIsProcessing] = React.useState(false);
   const [notification, setNotification] = React.useState<{
-    type: 'success' | 'error';
+    type: "success" | "error";
     message: string;
   } | null>(null);
-  
+
   // Afficher une notification temporaire
-  const showNotification = (type: 'success' | 'error', message: string) => {
+  const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 3000);
   };
-  
-  // Gérer la mise à jour de quantité
+
+  // Gérer la mise à jour de quantité via API directe
   const handleUpdateQuantity = async (productId: number, quantity: number) => {
-    const result = await updateItemQuantityAPI(productId, quantity);
-    
-    if (result.success) {
-      showNotification('success', 'Quantité mise à jour avec succès');
-      // Attendre un peu avant de recharger pour que l'utilisateur voie la notification
-      setTimeout(() => window.location.reload(), 500);
-    } else {
-      showNotification('error', result.error || 'Erreur lors de la mise à jour');
+    setIsProcessing(true);
+    try {
+      const response = await fetch("/api/cart/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          product_id: productId,
+          quantity,
+          replace: true,
+        }),
+      });
+
+      if (response.ok) {
+        showNotification("success", "Quantité mise à jour");
+        revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event("cart:updated"));
+      } else {
+        throw new Error("Erreur mise à jour");
+      }
+    } catch (err) {
+      console.error("Erreur mise à jour quantité:", err);
+      showNotification("error", "Erreur lors de la mise à jour");
+    } finally {
+      setIsProcessing(false);
     }
   };
-  
-  // Gérer la suppression d'article
+
+  // Gérer la suppression d'article via API directe
   const handleRemoveItem = async (productId: number) => {
-    const result = await removeItemAPI(productId);
-    
-    if (result.success) {
-      showNotification('success', 'Article supprimé avec succès');
-      // Attendre un peu avant de recharger pour que l'utilisateur voie la notification
-      setTimeout(() => window.location.reload(), 500);
-    } else {
-      showNotification('error', result.error || 'Erreur lors de la suppression');
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/cart/items/${productId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        showNotification("success", "Article supprimé");
+        revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event("cart:updated"));
+      } else {
+        throw new Error("Erreur suppression");
+      }
+    } catch (err) {
+      console.error("Erreur suppression:", err);
+      showNotification("error", "Erreur lors de la suppression");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Vider le panier via API directe
+  const handleClearCart = async () => {
+    if (
+      !confirm(
+        "Vider le panier ? " +
+          cart.summary.total_items +
+          " article(s) seront supprimés",
+      )
+    ) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const response = await fetch("/api/cart", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        showNotification("success", "Panier vidé");
+        revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event("cart:updated"));
+      } else {
+        throw new Error("Erreur vidage");
+      }
+    } catch (err) {
+      console.error("Erreur vidage panier:", err);
+      showNotification("error", "Erreur lors du vidage");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -522,8 +619,16 @@ export default function CartPage() {
           <div className="text-center py-12">
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
-            <p className="text-gray-600 mb-6">{error || "Une erreur est survenue"}</p>
-            <Button className="inline-block  px-6 py-3 rounded-lg" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
+            <p className="text-gray-600 mb-6">
+              {error || "Une erreur est survenue"}
+            </p>
+            <Button
+              className="inline-block  px-6 py-3 rounded-lg"
+              variant="blue"
+              asChild
+            >
+              <Link to="/">Retour à l'accueil</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -541,70 +646,62 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Panier" }]} />
-        
+
         {/* Notification de succès après vidage */}
         {cleared && (
-          <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>}>
+          <Alert
+            intent="success"
+            variant="solid"
+            icon={<span className="text-lg">✅</span>}
+            className="mb-4"
+          >
             Panier vidé avec succès !
           </Alert>
         )}
-        {/* En-tête */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">
-            Mon Panier ({cart.summary.total_items} article{cart.summary.total_items > 1 ? 's' : ''})
-          </h1>
-          
-          <button
-            type="button"
-            onClick={async () => {
-              toast.warning('Vider le panier ?', {
-                duration: 5000,
-                description: `${cart.summary.total_items} article(s) seront supprimés`,
-                action: {
-                  label: 'Confirmer',
-                  onClick: async () => {
-                    const result = await clearCartAPI();
-                    
-                    if (result.success) {
-                      toast.success('Panier vidé !');
-                      setTimeout(() => {
-                        window.location.href = '/cart?cleared=true';
-                      }, 1000);
-                    } else {
-                      toast.error(result.error || 'Erreur lors du vidage du panier');
-                    }
-                  },
-                },
-                cancel: {
-                  label: 'Annuler',
-                  onClick: () => {},
-                },
-              });
-            }}
-            className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-destructive/5 transition-colors"
-            title="Supprimer tous les articles du panier"
-          >
-            Vider le panier
-          </button>
+
+        {/* En-tête amélioré */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 p-3 rounded-xl">
+              <ShoppingBag className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Mon Panier
+              </h1>
+              <p className="text-gray-600">
+                {cart.summary.total_items} article
+                {cart.summary.total_items > 1 ? "s" : ""} •{" "}
+                {formatPrice(cart.summary.subtotal)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Barre de progression livraison gratuite */}
+        <FreeShippingProgress subtotal={cart.summary.subtotal} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Liste des articles */}
           <div className="lg:col-span-2 space-y-4">
             {notification && (
-              <Alert 
-                intent={notification.type === 'success' ? 'success' : 'error'} 
+              <Alert
+                intent={notification.type === "success" ? "success" : "error"}
                 variant="solid"
-                icon={<span className="text-lg">{notification.type === 'success' ? '✅' : '❌'}</span>}
+                icon={
+                  <span className="text-lg">
+                    {notification.type === "success" ? "✅" : "❌"}
+                  </span>
+                }
               >
                 {notification.message}
               </Alert>
             )}
-            
+
             {cart.items.map((item) => (
               <CartItem
                 key={item.id}
@@ -613,65 +710,96 @@ export default function CartPage() {
                 onRemove={handleRemoveItem}
               />
             ))}
+
+            {/* Actions bas de liste */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Continuer mes achats
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleClearCart}
+                disabled={isProcessing}
+                className="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 text-sm transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="underline-offset-2 hover:underline">
+                  {isProcessing ? "Vidage..." : "Vider le panier"}
+                </span>
+              </button>
+            </div>
           </div>
 
-          {/* Résumé et actions */}
+          {/* Résumé et actions - Sticky sur desktop */}
           <div className="lg:col-span-1">
-            <CartSummary summary={cart.summary} isUpdating={navigation.state === 'loading'}>                  
-              <div className="space-y-3">
-                <Button className="w-full  py-3 px-4 rounded-lg   text-center block" variant="blue" asChild><Link to="/checkout">Finaliser ma commande →</Link></Button>
-                
-                {/*
-                  CONSOLIDATION NOTES:
-                  
-                  Solution finale pour le panier - Approche API directe
-                  =======================================================
-                  
-                  Problème initial: Le bouton "Vider le panier" ne fonctionnait pas
-                  Cause racine: Les actions Remix ne fonctionnent pas dans cette configuration monorepo NestJS+Remix
-                  
-                  Solution implémentée:
-                  1. Fonction clearCartAPI() qui fait un appel direct à l'API backend
-                  2. Gestion d'erreurs appropriée avec try/catch
-                  3. Authentification par cookies (credentials: 'include')
-                  4. Rechargement de la page après succès
-                  
-                  Architecture technique:
-                  - Backend NestJS: /api/cart (DELETE) → CartController.clearCart()
-                  - Frontend Remix: fetch() direct au lieu des actions Remix
-                  - Redis pour stockage des données du panier
-                  - Sessions Passport pour l'authentification
-                  
-                  Cette approche peut être réutilisée pour d'autres opérations du panier
-                  (modification quantité, suppression d'articles) dans ce setup monorepo.
-                */}
-                
-                <Link
-                  to="/products"
-                  className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-medium text-center block"
-                >
-                  Continuer mes achats
-                </Link>
+            <div className="lg:sticky lg:top-24 space-y-4">
+              <CartSummary
+                summary={cart.summary}
+                isUpdating={navigation.state === "loading"}
+              >
+                <div className="space-y-3">
+                  <Link
+                    to="/checkout"
+                    className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                  >
+                    <span className="text-white text-lg">🛒</span>
+                    <span className="text-white font-bold text-lg">
+                      Finaliser ma commande
+                    </span>
+                    <ArrowRight className="h-5 w-5 text-white" />
+                  </Link>
+                </div>
+              </CartSummary>
+
+              {/* Avantages */}
+              <div className="bg-white rounded-xl border p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="bg-green-100 p-2 rounded-lg">
+                    <Shield className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Paiement sécurisé
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      Transactions cryptées SSL
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <Truck className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Livraison rapide
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      Expédition sous 24-48h
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Paiement flexible
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      CB, PayPal, virement
+                    </p>
+                  </div>
+                </div>
               </div>
-            </CartSummary>
-
-            {/* Informations complémentaires */}
-            <div className="mt-6 p-4 bg-primary/5 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">
-                🚚 Livraison gratuite
-              </h3>
-              <p className="text-sm text-blue-700">
-                Livraison gratuite pour toute commande supérieure à 50€
-              </p>
-            </div>
-
-            <div className="mt-4 p-4 bg-success/5 rounded-lg">
-              <h3 className="font-medium text-green-900 mb-2">
-                🔒 Paiement sécurisé
-              </h3>
-              <p className="text-sm text-green-700">
-                Tous vos paiements sont sécurisés et protégés
-              </p>
             </div>
           </div>
         </div>

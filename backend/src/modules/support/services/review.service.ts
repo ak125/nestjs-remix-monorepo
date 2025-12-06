@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import {
   Injectable,
   Logger,
@@ -132,7 +133,7 @@ export class ReviewService extends SupabaseBaseService {
 
       // Créer le message d'avis dans ___xtr_msg
       const { data: reviewMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert({
           msg_cst_id: customer.cst_id,
           msg_ord_id: reviewData.order_id || null,
@@ -180,7 +181,7 @@ export class ReviewService extends SupabaseBaseService {
   async getReview(reviewId: string): Promise<ReviewData | null> {
     try {
       const { data: message, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_id', reviewId)
         .single();
@@ -210,7 +211,7 @@ export class ReviewService extends SupabaseBaseService {
   async getReviews(filters?: ReviewFilters): Promise<ReviewData[]> {
     try {
       let query = this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .like('msg_content', '%"type":"review"%')
         .order('msg_date', { ascending: false });
@@ -275,7 +276,7 @@ export class ReviewService extends SupabaseBaseService {
 
       // Mettre à jour le message
       const { data: updatedMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_content: JSON.stringify(content),
           msg_cnfa_id: moderatorId,
@@ -322,7 +323,7 @@ export class ReviewService extends SupabaseBaseService {
 
       // Mettre à jour le message
       const { data: updatedMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_content: JSON.stringify(content),
         })
@@ -419,7 +420,7 @@ export class ReviewService extends SupabaseBaseService {
 
       // Mettre à jour le message
       const { data: updatedMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_content: JSON.stringify(content),
         })
@@ -454,7 +455,7 @@ export class ReviewService extends SupabaseBaseService {
       }
 
       const { error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .delete()
         .eq('msg_id', reviewId);
 
@@ -485,7 +486,7 @@ export class ReviewService extends SupabaseBaseService {
       if (customerId) {
         // Rechercher le client existant
         const { data: customer, error } = await this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select('*')
           .eq('cst_id', customerId)
           .single();
@@ -498,7 +499,7 @@ export class ReviewService extends SupabaseBaseService {
       if (email) {
         // Rechercher par email
         const { data: customer, error } = await this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select('*')
           .eq('cst_mail', email)
           .single();
@@ -514,7 +515,7 @@ export class ReviewService extends SupabaseBaseService {
         const lastName = lastNameParts.join(' ') || firstName;
 
         const { data: newCustomer, error } = await this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .insert({
             cst_fname: firstName,
             cst_name: lastName,
@@ -552,7 +553,7 @@ export class ReviewService extends SupabaseBaseService {
   ): Promise<boolean> {
     try {
       let query = this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*, ___xtr_order!inner(*)')
         .eq('ordl_pce_id', productId)
         .eq('___xtr_order.ord_cst_id', customerId);
@@ -588,7 +589,7 @@ export class ReviewService extends SupabaseBaseService {
 
       // Récupérer les informations client
       const { data: customer } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', message.msg_cst_id)
         .single();
@@ -597,7 +598,7 @@ export class ReviewService extends SupabaseBaseService {
       let product = null;
       if (content.product_id) {
         const { data: productData } = await this.supabase
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('*')
           .eq('pce_id', content.product_id)
           .single();

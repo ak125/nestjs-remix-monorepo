@@ -1,49 +1,31 @@
 /**
- * 🛒 useCart Hook - PHASE 1 POC
+ * 🛒 useCart Hook - Version sans Context
  * 
- * Hook React pour gérer le panier avec support des consignes.
- * 
- * Features:
- * - Calcul automatique des consignes (pri_consigne_ttc)
- * - Subtotal produits + Total consignes séparé
- * - Intégration avec API backend existante
- * - Synchronisation temps réel
- * 
- * @example
- * ```tsx
- * const { items, summary, isOpen, toggleCart, removeItem } = useCart();
- * ```
+ * Utilise directement l'API cart.api.ts et émet des événements
+ * pour synchroniser le panier globalement via useRevalidator.
  */
 
-import { useFetcher } from '@remix-run/react';
-import { useState, useEffect, useCallback } from 'react';
-import  { type CartData, type CartItem, type CartSummary } from '../types/cart';
+import { useState, useCallback } from 'react';
 
-interface UseCartReturn {
-  items: CartItem[];
-  summary: CartSummary;
-  isOpen: boolean;
-  isLoading: boolean;
-  error: string | null;
-  
-  // Actions
-  toggleCart: () => void;
-  openCart: () => void;
-  closeCart: () => void;
-  addToCart: (productId: number, quantity?: number) => Promise<void>;
-  removeItem: (itemId: string) => Promise<void>;
-  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
-  refreshCart: () => void;
-}
+import { useRootCart } from '../root';
+import { cartApi, formatPrice, getProductImageUrl } from '../services/cart.api';
+
+// Re-export les utilitaires
+export { formatPrice, getProductImageUrl };
 
 /**
- * Hook personnalisé pour gérer le panier avec consignes
+ * Hook principal pour les opérations panier
+ * - Lecture via useRootCart (données SSR du root loader)
+ * - Actions via cartApi + émission event 'cart:updated'
  */
-export function useCart(): UseCartReturn {
-  // État local
-  const [isOpen, setIsOpen] = useState(false);
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [summary, setSummary] = useState<CartSummary>({
+export function useCart() {
+  const rootCart = useRootCart();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Données du panier depuis le root loader
+  const items = rootCart?.items || [];
+  const summary = rootCart?.summary || {
     total_items: 0,
     total_price: 0,
     subtotal: 0,
@@ -51,245 +33,121 @@ export function useCart(): UseCartReturn {
     shipping_cost: 0,
     consigne_total: 0,
     currency: 'EUR',
-  });
-  const [error, setError] = useState<string | null>(null);
+  };
 
-  // Fetcher pour les appels API
-  const fetcher = useFetcher<{ success: boolean; cart?: CartData; error?: string }>();
-
-  // 📊 Calcul automatique du résumé avec consignes
-  const calculateSummary = useCallback((cartItems: CartItem[]): CartSummary => {
-    if (!cartItems || cartItems.length === 0) {
-      return {
-        total_items: 0,
-        total_price: 0,
-        subtotal: 0,
-        tax_amount: 0,
-        shipping_cost: 0,
-        consigne_total: 0,
-        currency: 'EUR',
-      };
+  // Émettre l'événement pour synchroniser globalement
+  const emitCartUpdated = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('cart:updated'));
     }
+  };
 
-    // Calcul des totaux
-    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    
-    // Subtotal produits (HT consignes)
-    const subtotal = cartItems.reduce((sum, item) => {
-      const unitPrice = item.unit_price || item.price || 0;
-      return sum + (unitPrice * item.quantity);
-    }, 0);
+  // Ajouter un article au panier
+  const addToCart = useCallback(async (productId: number, quantity: number = 1): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
 
-    // 🆕 Total consignes (remboursables)
-    const consigneTotal = cartItems.reduce((sum, item) => {
-      const consigneUnit = item.consigne_unit || 0;
-      return sum + (consigneUnit * item.quantity);
-    }, 0);
-
-    // Total TTC = Subtotal + Consignes
-    const totalPrice = subtotal + consigneTotal;
-
-    return {
-      total_items: totalItems,
-      total_price: totalPrice,
-      subtotal: subtotal,
-      tax_amount: 0, // TODO: Calculer TVA si nécessaire
-      shipping_cost: 0, // TODO: Calculer frais port
-      consigne_total: consigneTotal,
-      currency: 'EUR',
-    };
-  }, []);
-
-  // 🔄 Charger le panier au montage
-  useEffect(() => {
-    refreshCart();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 📥 Traiter la réponse du fetcher
-  useEffect(() => {
-    if (fetcher.data) {
-      if (fetcher.data.success && fetcher.data.cart) {
-        const cartData = fetcher.data.cart;
-        
-        // Enrichir les items avec calcul consignes
-        const enrichedItems = cartData.items.map(item => ({
-          ...item,
-          consigne_total: (item.consigne_unit || 0) * item.quantity,
-          has_consigne: (item.consigne_unit || 0) > 0,
-        }));
-
-        setItems(enrichedItems);
-        
-        // ✅ PRIORITÉ: Utiliser le summary du backend (calculs déjà faits)
-        if (cartData.summary) {
-          // console.log('🔍 [useCart] Summary reçu du backend:', cartData.summary);
-          setSummary(cartData.summary); // Utiliser directement le summary backend
-        } else {
-          // Fallback: Recalculer localement si pas de summary backend
-          console.warn('⚠️ [useCart] Pas de summary backend, recalcul local');
-          setSummary(calculateSummary(enrichedItems));
-        }
-        
-        setError(null);
-      } else if (fetcher.data.error) {
-        setError(fetcher.data.error);
-      }
-    }
-  }, [fetcher.data, calculateSummary]);
-
-  // 🔄 Actions du panier
-  const toggleCart = useCallback(() => {
-    setIsOpen(prev => !prev);
-  }, []);
-
-  const openCart = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
-  const closeCart = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const refreshCart = useCallback(() => {
-    // Charger le panier via le loader /cart
-    fetcher.load('/cart');
-  }, [fetcher]);
-
-  const removeItem = useCallback(async (itemId: string) => {
-    // ✅ Appeler le backend via chemin relatif (Remix proxy)
     try {
-      // Extraire product_id : peut être "user-product-timestamp" ou directement "product"
-      const parts = itemId.split('-');
-      const productId = parts.length >= 2 ? parts[1] : itemId;
-      
-      console.log('🗑️ removeItem:', { itemId, productId });
-      
-      const response = await fetch(`/api/cart/items/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        console.log('✅ Article supprimé');
-        // Recharger le panier après suppression
-        refreshCart();
+      const result = await cartApi.addItem(productId, quantity);
+      if (result.success) {
+        emitCartUpdated();
+        return true;
       } else {
-        console.error('❌ Erreur suppression article:', response.status);
+        setError(result.error || "Erreur lors de l'ajout");
+        return false;
       }
-    } catch (error) {
-      console.error('❌ Erreur removeItem:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [refreshCart]);
+  }, []);
 
-  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
-    if (quantity < 1) {
-      removeItem(itemId);
-      return;
-    }
+  // Mettre à jour la quantité
+  const updateQuantity = useCallback(async (productId: number, quantity: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
 
-    // ✅ Appeler le backend via chemin relatif (Remix proxy)
     try {
-      // Extraire product_id : peut être "user-product-timestamp" ou directement "product"
-      const parts = itemId.split('-');
-      const productId = parts.length >= 2 ? parts[1] : itemId;
-      
-      console.log('🔄 updateQuantity:', { itemId, productId, quantity });
-      
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          product_id: parseInt(productId), 
-          quantity,
-          replace: true 
-        })
-      });
-
-      if (response.ok) {
-        console.log('✅ Quantité mise à jour');
-        // Recharger le panier après mise à jour
-        refreshCart();
+      const result = await cartApi.updateQuantity(productId, quantity);
+      if (result.success) {
+        emitCartUpdated();
+        return true;
       } else {
-        console.error('❌ Erreur mise à jour quantité:', response.status);
+        setError(result.error || 'Erreur lors de la mise à jour');
+        return false;
       }
-    } catch (error) {
-      console.error('❌ Erreur updateQuantity:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [removeItem, refreshCart]);
+  }, []);
 
-  const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
+  // Supprimer un article
+  const removeItem = useCallback(async (productId: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      console.log('➕ addToCart:', { productId, quantity });
-      
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          product_id: productId, 
-          quantity 
-        })
-      });
-
-      if (response.ok) {
-        console.log('✅ Article ajouté au panier');
-        // Recharger le panier et l'ouvrir
-        refreshCart();
-        openCart();
+      const result = await cartApi.removeItem(productId);
+      if (result.success) {
+        emitCartUpdated();
+        return true;
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erreur ajout panier:', response.status, errorData);
-        setError(errorData.message || 'Erreur lors de l\'ajout au panier');
+        setError(result.error || 'Erreur lors de la suppression');
+        return false;
       }
-    } catch (error) {
-      console.error('❌ Erreur addToCart:', error);
-      setError('Erreur réseau lors de l\'ajout au panier');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [refreshCart, openCart]);
+  }, []);
+
+  // Vider le panier
+  const clearCart = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await cartApi.clearCart();
+      if (result.success) {
+        emitCartUpdated();
+        return true;
+      } else {
+        setError(result.error || 'Erreur lors du vidage');
+        return false;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return {
+    // Données (lecture depuis SSR)
     items,
     summary,
-    isOpen,
-    isLoading: fetcher.state !== 'idle',
+    itemCount: summary.total_items,
+    subtotal: summary.subtotal,
+    
+    // État
+    isLoading,
     error,
     
     // Actions
-    toggleCart,
-    openCart,
-    closeCart,
     addToCart,
-    removeItem,
     updateQuantity,
-    refreshCart,
+    removeItem,
+    clearCart,
   };
 }
 
-/**
- * 💰 Formater un prix en EUR
- */
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
-
-/**
- * 🎨 Obtenir l'URL de l'image avec fallback
- */
-export function getProductImageUrl(item: CartItem): string {
-  if (item.product_image) {
-    return item.product_image;
-  }
-  
-  // Fallback basé sur la logique PHP legacy
-  // Si PIECE_HAS_IMG = 0 → no.png
-  return '/images/no.png';
-}
+// Alias pour compatibilité
+export const useCartContext = useCart;

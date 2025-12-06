@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/family-gamme-hierarchy.service.ts
 // 🏗️ Service pour gérer la hiérarchie Familles → Gammes (sous-catégories)
 
@@ -143,7 +144,7 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
   }> {
     // 1. Récupérer toutes les familles actives
     const { data: families, error: familiesError } = await this.supabase
-      .from('catalog_family')
+      .from(TABLES.catalog_family)
       .select('*')
       .eq('mf_display', '1')
       .order('mf_sort', { ascending: true });

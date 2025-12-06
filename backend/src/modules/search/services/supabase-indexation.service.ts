@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { VehicleNamingService } from './vehicle-naming.service';
 
@@ -48,7 +49,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
       );
 
       const { data: vehicles, error } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
@@ -182,7 +183,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
       // 1. Récupérer d'abord tous les filtres (priorité)
       const { data: filters, error: filtersError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -207,7 +208,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
       if (remainingLimit > 0) {
         const { data: products, error: productsError } = await this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select(
             `
             piece_id,
@@ -324,25 +325,25 @@ export class SupabaseIndexationService extends SupabaseBaseService {
         await Promise.all([
           // Marques actives
           this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id', { count: 'exact' })
             .eq('marque_display', 1),
 
           // Modèles actifs
           this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id', { count: 'exact' })
             .eq('modele_display', 1),
 
           // Types actifs
           this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' })
             .eq('type_display', 1),
 
           // Pièces actives
           this.client
-            .from('pieces')
+            .from(TABLES.pieces)
             .select('piece_id', { count: 'exact' })
             .eq('piece_display', true),
         ]);
@@ -388,7 +389,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
       // Test 1: Récupérer 3 marques (simple, pas de relation)
       const { data: sampleBrands, error: brandsError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_logo, marque_display')
         .eq('marque_display', 1)
         .limit(3);
@@ -400,7 +401,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
       // Test 2: Récupérer 3 types simples (sans jointure)
       const { data: sampleTypes, error: typesError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_id, type_name, type_display, type_modele_id')
         .eq('type_display', 1)
         .limit(3);
@@ -412,7 +413,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
       // Test 3: Récupérer 3 produits simples
       const { data: sampleProducts, error: productsError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name, piece_ref, piece_display')
         .eq('piece_display', true)
         .not('piece_name', 'is', null)

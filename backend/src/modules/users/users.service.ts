@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * Service Users - Version complète migrée depuis ecommerce-api
  * Implémente toutes les fonctionnalités nécessaires pour l'API
@@ -463,7 +464,7 @@ export class UsersService extends SupabaseBaseService {
         error,
         count,
       } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact' })
         .eq('cst_active', 1)
         .range(offset, offset + limit - 1)
@@ -522,7 +523,7 @@ export class UsersService extends SupabaseBaseService {
 
       // Construire la requête Supabase avec filtres
       let query = this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact' });
 
       // Filtre de recherche global (email, prénom, nom)
@@ -773,7 +774,7 @@ export class UsersService extends SupabaseBaseService {
         );
 
         const { data: users, error } = await this.supabase
-          .from('___users')
+          .from(TABLES.users)
           .select('*')
           .range(
             ((options.page || 1) - 1) * (options.limit || 20),
@@ -786,7 +787,7 @@ export class UsersService extends SupabaseBaseService {
         }
 
         const { count } = await this.supabase
-          .from('___users')
+          .from(TABLES.users)
           .select('*', { count: 'exact', head: true });
 
         console.log(`[UsersService.findAll] Found ${users?.length || 0} users`);

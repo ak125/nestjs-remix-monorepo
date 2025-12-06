@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
@@ -44,7 +45,7 @@ export class LegacyUserService extends SupabaseBaseService {
       console.log(`[UserService] getAllUsers called with:`, { limit, offset });
 
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select(
           'cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_level, cst_activ',
         )
@@ -89,7 +90,7 @@ export class LegacyUserService extends SupabaseBaseService {
       this.logger.debug(`🔍 Recherche utilisateur avec ID: ${userId}`);
 
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', userId)
         .single();
@@ -133,7 +134,7 @@ export class LegacyUserService extends SupabaseBaseService {
   async searchUsers(searchTerm: string, limit = 20): Promise<LegacyUser[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_level')
         .eq('cst_activ', '1')
         .or(
@@ -161,7 +162,7 @@ export class LegacyUserService extends SupabaseBaseService {
       this.logger.debug(`📦 Recherche commandes pour user: ${userId}`);
 
       const { data, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_id, ord_date, ord_total_ttc, ord_is_pay, ord_info')
         .eq('ord_cst_id', userId)
         .order('ord_date', { ascending: false })
@@ -334,7 +335,7 @@ export class LegacyUserService extends SupabaseBaseService {
       this.logger.debug('📊 Fetching total active users count from database');
 
       const { count, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true })
         .eq('cst_activ', '1');
 

@@ -64,35 +64,50 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const [brandsRes, modelsRes, metadataRes] = await Promise.all([
       fetch(`${backendUrl}/api/brands/brands-logos?limit=50`, {
         headers: { "Content-Type": "application/json" },
-      }),
+      }).catch(() => null),
       fetch(`${backendUrl}/api/brands/popular-models?limit=12`, {
         headers: { "Content-Type": "application/json" },
-      }),
+      }).catch(() => null),
       fetch(`${backendUrl}/api/brands/page-metadata/constructeurs`, {
         headers: { "Content-Type": "application/json" },
-      }),
+      }).catch(() => null),
     ]);
 
-    const brandsData = await brandsRes.json();
-    const modelsData = await modelsRes.json();
-    const metadataData = await metadataRes.json();
+    // Parse responses safely
+    const brandsData = brandsRes?.ok ? await brandsRes.json().catch(() => null) : null;
+    const modelsData = modelsRes?.ok ? await modelsRes.json().catch(() => null) : null;
+    const metadataData = metadataRes?.ok ? await metadataRes.json().catch(() => null) : null;
 
-    if (!brandsData?.success || !modelsData?.success) {
-      console.error("Format de réponse inattendu:", { brandsData, modelsData });
-      return json<LoaderData>({
-        brands: [],
-        popularModels: [],
-        stats: { totalBrands: 0, totalModels: 0 },
-      });
-    }
+    // URL de base Supabase pour les logos
+    const supabaseLogoBaseUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos';
+
+    // Mapper les données de l'API vers le format attendu par le frontend
+    const mappedBrands: BrandLogo[] = (brandsData?.data || []).map((brand: any) => ({
+      id: brand.marque_id,
+      name: brand.marque_name,
+      alias: brand.marque_alias,
+      logo: brand.marque_logo ? `${supabaseLogoBaseUrl}/${brand.marque_logo}` : null,
+      slug: brand.marque_alias,
+    }));
+
+    const mappedModels: PopularModel[] = (modelsData?.data || []).map((model: any) => ({
+      id: model.modele_id || model.id,
+      name: model.modele_name || model.name,
+      brandName: model.marque_name || model.brandName,
+      modelName: model.modele_name || model.modelName,
+      typeName: model.type_name || model.typeName || '',
+      dateRange: model.date_range || model.dateRange || '',
+      imageUrl: model.image_url || model.imageUrl || null,
+      slug: model.modele_alias || model.slug || '',
+    }));
 
     return json<LoaderData>({
-      brands: brandsData.data || [],
-      popularModels: modelsData.data || [],
+      brands: mappedBrands,
+      popularModels: mappedModels,
       metadata: metadataData?.success ? metadataData.data : null,
       stats: {
-        totalBrands: brandsData.data?.length || 0,
-        totalModels: modelsData.data?.length || 0,
+        totalBrands: mappedBrands.length,
+        totalModels: mappedModels.length,
       },
     });
   } catch (e) {
@@ -169,7 +184,6 @@ export default function BlogPiecesAutoIndex() {
       <CompactBlogHeader
         title={metadata?.h1 || "Catalogue des Constructeurs"}
         description={`${stats.totalBrands} marques • 5000+ versions disponibles`}
-        breadcrumb={metadata?.ariane || "Accueil > Blog > Constructeurs"}
         stats={[
           { icon: Factory, value: stats.totalBrands, label: "Marques" },
           { icon: Car, value: "5K+", label: "Versions" },

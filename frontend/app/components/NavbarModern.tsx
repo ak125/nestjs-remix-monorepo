@@ -14,7 +14,7 @@
  */
 
 import { Link, useLocation, useNavigate } from "@remix-run/react";
-import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Menu, Phone, Truck } from 'lucide-react';
+import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Phone, Truck } from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
@@ -25,11 +25,17 @@ import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
-export const NavbarModern = ({ logo }: { logo: string }) => {
+export const NavbarModern = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
-  const location = useLocation();
+  const _location = useLocation();
   const navigate = useNavigate();
-  const { summary, isOpen, toggleCart, closeCart } = useCart();
+  const { summary } = useCart();
+  
+  // Cart sidebar state (local state for UI control)
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const toggleCart = () => setIsCartOpen(prev => !prev);
+  const closeCart = () => setIsCartOpen(false);
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -41,8 +47,8 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
   const rafIdRef = useRef<number>();
   
   // Role-based permissions
-  const isAdmin = user && (user.level ?? 0) >= 7;
-  const isSuperAdmin = user && (user.level ?? 0) >= 9;
+  const _isAdmin = user && (user.level ?? 0) >= 7;
+  const _isSuperAdmin = user && (user.level ?? 0) >= 9;
   
   // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
@@ -112,7 +118,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
     if (query) {
       const url = `/search?q=${encodeURIComponent(query)}`;
       // Réinitialiser immédiatement l'état local
-      const currentQuery = query; // Sauvegarder avant reset
+      const _currentQuery = query; // Sauvegarder avant reset
       setSearchQuery("");
       setShowSearch(false);
       // Navigation après reset
@@ -211,7 +217,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
             </Link>
 
             <Link
-              to="/blog"
+              to="/blog-pieces-auto"
               className="relative group px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 flex items-center gap-2"
             >
               <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-500" />
@@ -366,12 +372,14 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
             <div className="hidden md:flex items-center gap-2 ml-2">
               <Link
                 to="/login"
+                rel="nofollow"
                 className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-normal"
               >
                 Connexion
               </Link>
               <Link
                 to="/register"
+                rel="nofollow"
                 className="relative px-5 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
               >
                 {/* Shine effect */}
@@ -383,7 +391,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
         </div>
 
         {/* Sidebar Panier */}
-        <CartSidebar isOpen={isOpen} onClose={closeCart} />
+        <CartSidebar isOpen={isCartOpen} onClose={closeCart} />
       </nav>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}

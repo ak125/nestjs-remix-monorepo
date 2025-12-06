@@ -33,9 +33,16 @@ export class CacheService implements OnModuleInit {
       }
 
       // Vérifier si Redis est déjà connecté
-      if (this.redisClient.status === 'ready' || this.redisClient.status === 'connect') {
+      if (
+        this.redisClient.status === 'ready' ||
+        this.redisClient.status === 'connect'
+      ) {
         this.redisReady = true;
-        console.log('✅ Redis déjà connecté (status:', this.redisClient.status, ')');
+        console.log(
+          '✅ Redis déjà connecté (status:',
+          this.redisClient.status,
+          ')',
+        );
         resolve();
         return;
       }
@@ -96,7 +103,11 @@ export class CacheService implements OnModuleInit {
 
       // Vérifier la connexion après un court délai
       setTimeout(() => {
-        if (this.redisClient && (this.redisClient.status === 'ready' || this.redisClient.status === 'connect')) {
+        if (
+          this.redisClient &&
+          (this.redisClient.status === 'ready' ||
+            this.redisClient.status === 'connect')
+        ) {
           this.redisReady = true;
           console.log('✅ Cache Redis connecté (status check)');
         }
@@ -236,5 +247,29 @@ export class CacheService implements OnModuleInit {
   async clearLoginAttempts(email: string): Promise<void> {
     const key = `login_attempts:${email}`;
     await this.del(key);
+  }
+
+  /**
+   * 🧹 Clear cache by pattern (for sitemap invalidation)
+   */
+  async clearByPattern(pattern: string): Promise<number> {
+    try {
+      if (!this.redisClient || !this.redisReady) {
+        console.warn(`⚠️ Redis non prêt pour clearByPattern ${pattern}`);
+        return 0;
+      }
+
+      const keys = await this.redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await this.redisClient.del(...keys);
+        console.log(
+          `🧹 Cleared ${keys.length} cache entries matching: ${pattern}`,
+        );
+      }
+      return keys.length;
+    } catch (error) {
+      console.error(`❌ Cache clearByPattern ${pattern} error:`, error);
+      return 0;
+    }
   }
 }

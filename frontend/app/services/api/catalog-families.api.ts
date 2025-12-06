@@ -81,6 +81,11 @@ export class CatalogFamiliesApi {
     popularParts: PopularPart[];
     queryType: string;
     seoValid: boolean;
+    seoValidation: {
+      familyCount: number;
+      gammeCount: number;
+      isIndexable: boolean;
+    };
     performance: {
       responseTime: string;
       source: 'CACHE' | 'DATABASE' | 'PRECOMPUTED';
@@ -130,15 +135,23 @@ export class CatalogFamiliesApi {
       );
       
       const queryType = data.catalog.queryType || 'V4_FILTERED_BY_VEHICLE';
-      const seoValid = true; // V4 filtré = toujours SEO valide
       
-      console.log(`✅ [API V4 FILTRÉ] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, Cache: ${data.performance?.source}, ${data.performance?.responseTime}`);
+      // 🎯 SEO Validation depuis l'API backend
+      const seoValidation = data.seoValidation || {
+        familyCount: transformedCatalog.length,
+        gammeCount: transformedCatalog.reduce((sum, f) => sum + f.gammes.length, 0),
+        isIndexable: transformedCatalog.length >= 3,
+      };
+      const seoValid = seoValidation.isIndexable;
+      
+      console.log(`✅ [API V4 FILTRÉ] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, SEO: ${seoValid ? 'indexable' : 'noindex'}, Cache: ${data.performance?.source}, ${data.performance?.responseTime}`);
       
       return {
         catalog: transformedCatalog,
         popularParts: transformedPopularParts,
         queryType,
         seoValid,
+        seoValidation,
         performance: data.performance || {
           responseTime: '0ms',
           source: 'DATABASE',
@@ -157,6 +170,11 @@ export class CatalogFamiliesApi {
         popularParts: [],
         queryType: 'V4_ERROR_FALLBACK',
         seoValid: false,
+        seoValidation: {
+          familyCount: 0,
+          gammeCount: 0,
+          isIndexable: false,
+        },
         performance: {
           responseTime: '0ms',
           source: 'DATABASE',

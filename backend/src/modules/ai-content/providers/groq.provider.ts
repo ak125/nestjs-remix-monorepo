@@ -50,22 +50,25 @@ export class GroqProvider implements AIProvider {
     try {
       this.logger.log(`Generating with Groq model: ${model} (ULTRA SPEED)`);
 
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        'https://api.groq.com/openai/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: options.temperature || 0.7,
+            max_tokens: options.maxTokens || 1000,
+          }),
         },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: options.temperature || 0.7,
-          max_tokens: options.maxTokens || 1000,
-        }),
-      });
+      );
 
       if (!response.ok) {
         const error = await response.text();
@@ -73,14 +76,14 @@ export class GroqProvider implements AIProvider {
       }
 
       const data = await response.json();
-      
+
       if (!data.choices?.[0]?.message?.content) {
         throw new Error('No response from Groq');
       }
 
       const content = data.choices[0].message.content;
       this.logger.log(`Generated ${content.length} characters (ULTRA FAST!)`);
-      
+
       return content.trim();
     } catch (error) {
       this.logger.error(`Groq generation error: ${error.message}`);
@@ -99,7 +102,7 @@ export class GroqProvider implements AIProvider {
         },
       });
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

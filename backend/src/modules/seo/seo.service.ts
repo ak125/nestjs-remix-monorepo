@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
@@ -34,7 +35,7 @@ export class SeoService extends SupabaseBaseService {
   async getMetadata(urlPath: string) {
     try {
       const { data, error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .eq('mta_alias', urlPath)
         .single();
@@ -73,7 +74,7 @@ export class SeoService extends SupabaseBaseService {
       const mtaId = urlPath.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
       const { data, error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .upsert({
           mta_id: `seo_${mtaId}_${Date.now()}`,
           mta_alias: urlPath,
@@ -129,7 +130,7 @@ export class SeoService extends SupabaseBaseService {
   async getSeoConfig(key: string) {
     try {
       const { data } = await this.client
-        .from('___config')
+        .from(TABLES.config)
         .select('config_value')
         .eq('config_key', `seo_${key}`)
         .single();
@@ -147,7 +148,7 @@ export class SeoService extends SupabaseBaseService {
   async getPagesWithoutSeo(limit: number = 50) {
     try {
       const { data, error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_alias, mta_title, mta_descrip')
         .or(
           'mta_title.is.null,mta_descrip.is.null,mta_title.eq.,mta_descrip.eq.',

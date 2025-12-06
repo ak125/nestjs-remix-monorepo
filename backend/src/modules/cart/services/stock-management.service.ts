@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { CacheService } from '../../../cache/cache.service';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
@@ -47,7 +48,7 @@ export class StockManagementService {
     try {
       // Récupérer stock physique depuis la base
       const { data: product, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_stock, piece_stock_reserved')
         .eq('piece_id', productId)
         .single();
@@ -378,13 +379,13 @@ export class StockManagementService {
       // Mettre à jour le stock réservé en base
       // NOTE: Supabase ne supporte pas .raw(), on récupère d'abord la valeur actuelle
       const { data: currentPiece } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_stock_reserved')
         .eq('piece_id', productId)
         .single();
 
       const { error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           piece_stock_reserved:
             (currentPiece?.piece_stock_reserved || 0) + reservation.quantity,

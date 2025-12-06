@@ -23,8 +23,6 @@ export function CartIcon({ className = "" }: CartIconProps) {
 
   // ✅ APPROCHE OPTIMISÉE : Utiliser useFetcher pour récupérer via notre nouveau service
   useEffect(() => {
-    // DÉSACTIVÉ TEMPORAIREMENT : Éviter la surcharge de logs
-    /*
     const fetchCartCount = () => {
       // Utiliser fetcher pour appeler le loader de /cart
       fetcher.load('/cart');
@@ -32,8 +30,19 @@ export function CartIcon({ className = "" }: CartIconProps) {
 
     // Charger une fois au montage
     fetchCartCount();
-    */
-  }, []);
+
+    // Écouter les événements de mise à jour du panier
+    const handleCartUpdate = () => {
+      console.log('🔄 CartIcon: Événement cart:updated reçu');
+      fetchCartCount();
+    };
+
+    window.addEventListener('cart:updated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cart:updated', handleCartUpdate);
+    };
+  }, [fetcher]);
 
   // Mettre à jour le compteur quand les données arrivent
   useEffect(() => {
@@ -50,6 +59,7 @@ export function CartIcon({ className = "" }: CartIconProps) {
   return (
     <Link 
       to="/cart" 
+      rel="nofollow"
       className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >

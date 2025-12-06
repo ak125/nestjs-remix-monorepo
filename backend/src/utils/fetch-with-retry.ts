@@ -110,9 +110,7 @@ export async function fetchJsonWithRetry<T = any>(
   const response = await fetchWithRetry(url, init, options);
 
   if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}: ${response.statusText} - ${url}`,
-    );
+    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${url}`);
   }
 
   return response.json();

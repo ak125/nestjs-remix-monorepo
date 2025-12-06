@@ -1,6 +1,6 @@
 /**
  * 🎨 NAVBAR - Design Ultra Premium v2
- * 
+ *
  * ✨ Améliorations Design Expert :
  * - Glassmorphism avancé avec effet frosted glass
  * - Animations spring fluides avec Framer Motion style
@@ -14,71 +14,93 @@
  */
 
 import { Link, useLocation, useNavigate } from "@remix-run/react";
-import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Menu, Phone, Truck } from 'lucide-react';
+import {
+  Bell,
+  BookOpen,
+  ChevronRight,
+  Search,
+  ShoppingCart,
+  X,
+  Phone,
+  Truck,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
-import { useCart } from "../hooks/useCart";
-import { useOptionalUser } from "../root";
-import { CartSidebar } from "./navbar/CartSidebar";
+import { useOptionalUser, useRootCart } from "../root";
+import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
-export const Navbar = ({ logo }: { logo: string }) => {
+export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
-  const location = useLocation();
+  const _location = useLocation();
   const navigate = useNavigate();
-  const { summary, isOpen, toggleCart, closeCart } = useCart();
+
+  // 🛒 Panier: données depuis root loader + état local pour ouverture
+  const cartData = useRootCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const toggleCart = () => setIsCartOpen((prev) => !prev);
+  const closeCart = () => setIsCartOpen(false);
+  const _openCart = () => setIsCartOpen(true);
+
+  // Résumé du panier depuis les données du root loader
+  const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Ref pour la progress bar - optimisation performance
   const progressBarRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number>();
-  
+
   // Role-based permissions
-  const isAdmin = user && (user.level ?? 0) >= 7;
-  const isSuperAdmin = user && (user.level ?? 0) >= 9;
-  
+  const _isAdmin = user && (user.level ?? 0) >= 7;
+  const _isSuperAdmin = user && (user.level ?? 0) >= 9;
+
   // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       setIsScrolled(currentScrollY > 10);
-      
+
       // Navbar compacte après 100px
       setIsCompact(currentScrollY > 100);
-      
+
       setLastScrollY(currentScrollY);
-      
+
       // Optimisation progress bar avec requestAnimationFrame
       if (progressBarRef.current && currentScrollY > 10) {
         // Annuler l'animation précédente si elle existe
         if (rafIdRef.current) {
           cancelAnimationFrame(rafIdRef.current);
         }
-        
+
         // Planifier la mise à jour de la progress bar
         rafIdRef.current = requestAnimationFrame(() => {
           if (progressBarRef.current) {
-            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercentage = Math.min((currentScrollY / scrollHeight) * 100, 100);
+            const scrollHeight =
+              document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = Math.min(
+              (currentScrollY / scrollHeight) * 100,
+              100,
+            );
             progressBarRef.current.style.width = `${scrollPercentage}%`;
           }
         });
       }
     };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
       // Nettoyer le requestAnimationFrame au démontage
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
@@ -89,14 +111,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
   // Échap pour fermer la recherche
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showSearch) {
+      if (e.key === "Escape" && showSearch) {
         setShowSearch(false);
         setSearchQuery("");
       }
     };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showSearch]);
 
   // Focus automatique sur l'input quand la recherche s'ouvre
@@ -113,7 +135,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const query = searchQuery.trim();
     if (query) {
       // Réinitialiser l'état avant la navigation
@@ -123,17 +145,17 @@ export const Navbar = ({ logo }: { logo: string }) => {
       window.location.href = `/search?q=${encodeURIComponent(query)}`;
     }
   };
-  
+
   return (
     <>
-      <nav 
+      <nav
         className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/80 via-white/85 to-white/80 backdrop-blur-2xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
-          isCompact ? 'py-2.5' : 'py-4'
+          isCompact ? "py-2.5" : "py-4"
         } ${
-          isScrolled 
-            ? 'shadow-2xl shadow-semantic-info/15 border-semantic-info/40' 
-            : 'shadow-lg shadow-neutral-200/30 border-semantic-info/20'
-        }`} 
+          isScrolled
+            ? "shadow-2xl shadow-semantic-info/15 border-semantic-info/40"
+            : "shadow-lg shadow-neutral-200/30 border-semantic-info/20"
+        }`}
         aria-label="Navigation principale"
       >
         {/* GAUCHE : Logo + Navigation Desktop */}
@@ -142,10 +164,10 @@ export const Navbar = ({ logo }: { logo: string }) => {
           <div className="lg:hidden">
             <NavbarMobile user={user} />
           </div>
-          
+
           {/* Logo avec effet hover premium - compact au scroll */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             prefetch="intent"
             className="flex items-center gap-3 group relative flex-shrink-0 cursor-pointer"
             aria-label="Retour à l'accueil"
@@ -153,20 +175,20 @@ export const Navbar = ({ logo }: { logo: string }) => {
             <div className="relative pointer-events-none">
               {/* Glow background animé */}
               <div className="absolute -inset-2 bg-gradient-to-r from-semantic-info/20 via-secondary-400/20 to-semantic-info/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
-              
+
               {/* Logo WebP avec srcset pour haute résolution */}
               <img
                 src="/logo-navbar.webp"
                 srcSet="/logo-navbar.webp 1x, /logo-navbar@2x.webp 2x"
                 alt="Automecanik - Pièces auto à prix pas cher"
                 className={`relative transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-2xl ${
-                  isCompact ? 'h-8' : 'h-12'
+                  isCompact ? "h-8" : "h-12"
                 } w-auto`}
                 loading="eager"
               />
             </div>
           </Link>
-          
+
           {/* Navigation Desktop avec effets premium */}
           <div className="hidden lg:flex items-center gap-1 border-l border-gradient-to-b from-neutral-300/50 to-transparent ml-4 pl-8">
             {/* Catalogue pièces auto - Link avec scroll intelligent pour SEO */}
@@ -174,14 +196,16 @@ export const Navbar = ({ logo }: { logo: string }) => {
               to="/#catalogue"
               onClick={(e) => {
                 e.preventDefault();
-                const catalogueSection = document.getElementById('catalogue');
+                const catalogueSection = document.getElementById("catalogue");
                 if (catalogueSection) {
                   const offset = 100;
-                  const elementPosition = catalogueSection.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - offset;
-                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                  const elementPosition =
+                    catalogueSection.getBoundingClientRect().top;
+                  const offsetPosition =
+                    elementPosition + window.pageYOffset - offset;
+                  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 } else {
-                  navigate('/pieces');
+                  navigate("/pieces");
                 }
               }}
               className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
@@ -197,14 +221,17 @@ export const Navbar = ({ logo }: { logo: string }) => {
               to="/#toutes-les-marques"
               onClick={(e) => {
                 e.preventDefault();
-                const marquesSection = document.getElementById('toutes-les-marques');
+                const marquesSection =
+                  document.getElementById("toutes-les-marques");
                 if (marquesSection) {
                   const offset = 100;
-                  const elementPosition = marquesSection.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - offset;
-                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                  const elementPosition =
+                    marquesSection.getBoundingClientRect().top;
+                  const offsetPosition =
+                    elementPosition + window.pageYOffset - offset;
+                  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 } else {
-                  navigate('/constructeurs');
+                  navigate("/constructeurs");
                 }
               }}
               className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
@@ -216,7 +243,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
             </Link>
 
             <Link
-              to="/blog"
+              to="/blog-pieces-auto"
               className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
             >
               <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-semantic-info" />
@@ -237,11 +264,13 @@ export const Navbar = ({ logo }: { logo: string }) => {
               aria-label="Rechercher"
             >
               <Search className="w-4 h-4 text-neutral-400 group-hover:text-semantic-info transition-all duration-300 group-hover:scale-110" />
-              <span className="text-neutral-500 group-hover:text-semantic-info font-medium flex-1 text-left">Rechercher une pièce...</span>
+              <span className="text-neutral-500 group-hover:text-semantic-info font-medium flex-1 text-left">
+                Rechercher une pièce...
+              </span>
             </button>
           ) : (
-            <form 
-              onSubmit={handleSearch} 
+            <form
+              onSubmit={handleSearch}
               className="w-full max-w-md hidden lg:flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300"
             >
               <div className="relative group flex-1">
@@ -253,7 +282,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
+                    if (e.key === "Escape") {
                       setShowSearch(false);
                       setSearchQuery("");
                     }
@@ -297,11 +326,13 @@ export const Navbar = ({ logo }: { logo: string }) => {
               <Truck className="w-4 h-4 text-semantic-success group-hover:translate-x-0.5 transition-transform" />
               <div className="absolute -inset-1 bg-semantic-success/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <span className="text-xs font-bold text-semantic-success tracking-wide">LIVRAISON GRATUITE</span>
+            <span className="text-xs font-bold text-semantic-success tracking-wide">
+              LIVRAISON GRATUITE
+            </span>
           </div>
 
           {/* 📞 Téléphone cliquable - Desktop minimaliste avec icône uniquement */}
-          <a 
+          <a
             href={`tel:${SITE_CONFIG.contact.phone.raw}`}
             className="hidden lg:flex items-center justify-center w-10 h-10 bg-gradient-to-br from-semantic-info/10 via-secondary-500/10 to-semantic-info/10 rounded-xl border border-semantic-info/20 hover:border-semantic-info/80 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
             aria-label={`Appeler ${SITE_CONFIG.contact.phone.display}`}
@@ -330,8 +361,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
           >
             <ShoppingCart className="w-5 h-5 text-neutral-700 group-hover:text-semantic-info transition-all duration-300 group-hover:scale-110" />
             {summary.total_items > 0 && (
-              <Badge 
-                variant="destructive" 
+              <Badge
+                variant="destructive"
                 className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-semantic-info to-secondary-600 text-semantic-info-contrast shadow-lg shadow-semantic-info/40 animate-in zoom-in-50 duration-300 ring-2 ring-white"
               >
                 {summary.total_items}
@@ -366,12 +397,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
             <div className="hidden md:flex items-center gap-2 ml-2">
               <Link
                 to="/login"
+                rel="nofollow"
                 className="px-4 py-2 text-sm font-semibold text-neutral-700 hover:text-semantic-info hover:bg-semantic-info/10 rounded-lg transition-all duration-normal"
               >
                 Connexion
               </Link>
               <Link
                 to="/register"
+                rel="nofollow"
                 className="relative px-5 py-2 text-sm font-semibold bg-semantic-action text-semantic-action-contrast hover:bg-semantic-action/90 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
               >
                 {/* Shine effect */}
@@ -382,8 +415,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
           )}
         </div>
 
-        {/* Sidebar Panier */}
-        <CartSidebar isOpen={isOpen} onClose={closeCart} />
+        {/* Sidebar Panier - Version simplifiée sans contexte */}
+        <CartSidebarSimple isOpen={isCartOpen} onClose={closeCart} />
       </nav>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}
@@ -412,7 +445,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       handleSearch(e as any);
                     }
@@ -436,7 +469,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
               </div>
             </form>
           </div>
-          
+
           {/* Suggestions et astuces */}
           <div className="p-6 space-y-4">
             {/* Astuce premium */}
@@ -445,16 +478,21 @@ export const Navbar = ({ logo }: { logo: string }) => {
                 <span className="text-xl">💡</span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-neutral-700 mb-1">Recherche intelligente</p>
+                <p className="text-sm font-semibold text-neutral-700 mb-1">
+                  Recherche intelligente
+                </p>
                 <p className="text-xs text-neutral-600">
-                  Recherchez par référence OEM, marque, modèle ou type de pièce pour des résultats précis
+                  Recherchez par référence OEM, marque, modèle ou type de pièce
+                  pour des résultats précis
                 </p>
               </div>
             </div>
-            
+
             {/* Exemples de recherche */}
             <div>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Exemples populaires</p>
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                Exemples populaires
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { icon: "🔧", text: "Filtre à huile" },
@@ -466,12 +504,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
                     key={i}
                     onClick={() => {
                       setSearchQuery(item.text);
-                      handleSearch(new Event('submit') as any);
+                      handleSearch(new Event("submit") as any);
                     }}
                     className="flex items-center gap-2 p-3 bg-white border border-neutral-200 rounded-xl hover:border-semantic-info hover:bg-semantic-info/5 transition-all duration-200 group"
                   >
                     <span className="text-lg">{item.icon}</span>
-                    <span className="text-sm font-medium text-neutral-700 group-hover:text-semantic-info">{item.text}</span>
+                    <span className="text-sm font-medium text-neutral-700 group-hover:text-semantic-info">
+                      {item.text}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -479,14 +519,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </div>
         </div>
       )}
-      
+
       {/* Progress bar au scroll optimisée avec useRef + requestAnimationFrame */}
-            {/* Barre de progression au scroll */}
+      {/* Barre de progression au scroll */}
       {isScrolled && (
-        <div 
+        <div
           ref={progressBarRef}
-          className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-semantic-info/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out" 
-          style={{ width: '0%' }}
+          className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-semantic-info/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out"
+          style={{ width: "0%" }}
         />
       )}
     </>

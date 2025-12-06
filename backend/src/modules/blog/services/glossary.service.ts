@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -46,7 +47,7 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client.from('__blog_advice').select('*');
+      let query = client.from(TABLES.blog_advice).select('*');
 
       // Appliquer les filtres
       if (filters.letter) {
@@ -100,7 +101,7 @@ export class GlossaryService {
 
       const client = this.supabaseService.getClient();
       const { data: term } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_id', id.toString())
         .single();
@@ -134,7 +135,7 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .ilike('ba_title', `${letter}%`)
         .order('ba_title', { ascending: true });
@@ -170,7 +171,7 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .or(
           [
@@ -213,7 +214,7 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_title', { ascending: true });
 
@@ -258,7 +259,7 @@ export class GlossaryService {
 
       // Utiliser une fonction random ou ordre aléatoire
       const { data: termsList } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .limit(count * 2) // Prendre plus pour avoir du choix
         .order('ba_visit', { ascending: false });
@@ -307,7 +308,7 @@ export class GlossaryService {
 
       // Statistiques de base
       const { data: allTerms } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_visit, ba_title, ba_content');
 
       if (!allTerms) {
@@ -347,7 +348,7 @@ export class GlossaryService {
 
       // Termes les plus populaires
       const { data: popularTerms } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_visit', { ascending: false })
         .limit(10);
@@ -391,7 +392,7 @@ export class GlossaryService {
 
       // Récupérer les vues actuelles
       const { data: current } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_visit')
         .eq('ba_id', id.toString())
         .single();
@@ -402,7 +403,7 @@ export class GlossaryService {
 
       // Mettre à jour
       const { error } = await client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .update({ bgl_visit: newViews.toString() })
         .eq('ba_id', id.toString());
 

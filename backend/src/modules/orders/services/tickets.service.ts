@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface PreparationTicket {
@@ -59,7 +60,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Requête Supabase pour obtenir les informations de la ligne de commande
       const { data: orderLines, error: orderLineError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('orl_id', orderLineId)
         .limit(1);
@@ -94,7 +95,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Générer un ID en suivant la séquence existante - Supabase fait un tri alphabétique
       const { data: allTickets } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .select('orlet_id');
 
       let maxId = 0;
@@ -108,7 +109,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Créer le ticket directement avec Supabase
       const { data: newTicket, error: ticketError } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .insert({
           orlet_id: nextId,
           orlet_ord_id: orderLine.orl_ord_id.toString(),
@@ -174,7 +175,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Requête Supabase pour obtenir l'ordre
       const { data: orderLines, error } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('orl_ord_id')
         .eq('orl_id', orderLineId)
         .limit(1);
@@ -189,7 +190,7 @@ export class TicketsService extends SupabaseBaseService {
       // Créer l'avoir directement avec Supabase
       const creditEquivId = `CREDIT_${ticketRef}`;
       const { data: newCredit, error: creditError } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .insert({
           orlet_ord_id: orderInfo.orl_ord_id.toString(),
           orlet_orl_id: orderLineId,
@@ -230,7 +231,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Requête Supabase pour récupérer le ticket par sa référence
       const { data: tickets, error } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .select('*')
         .eq('orlet_equiv_id', ticketReference)
         .limit(1);
@@ -294,7 +295,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Requête Supabase pour récupérer le ticket
       const { data: tickets, error: selectError } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .select(
           `
           orlet_id,
@@ -326,7 +327,7 @@ export class TicketsService extends SupabaseBaseService {
 
       // Mise à jour Supabase
       const { error: updateError } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .update({
           orlet_amount_ttc: newValue.toString(),
         })
@@ -359,7 +360,7 @@ export class TicketsService extends SupabaseBaseService {
     try {
       // Requête Supabase pour récupérer les tickets d'une commande
       const { data: tickets, error } = await this.supabase
-        .from('___xtr_order_line_equiv_ticket')
+        .from(TABLES.xtr_order_line_equiv_ticket)
         .select(
           `
           orlet_id,

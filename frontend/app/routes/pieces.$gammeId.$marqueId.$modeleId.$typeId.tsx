@@ -10,6 +10,7 @@ import { useLoaderData } from "@remix-run/react";
 // ========================================
 
 // Composants UI (ordre alphabétique)
+import { ScrollToTop } from '../components/blog/ScrollToTop';
 import { PiecesBuyingGuide } from '../components/pieces/PiecesBuyingGuide';
 import { PiecesComparisonView } from '../components/pieces/PiecesComparisonView';
 import { PiecesCompatibilityInfo } from '../components/pieces/PiecesCompatibilityInfo';
@@ -30,6 +31,7 @@ import { usePiecesFilters } from '../hooks/use-pieces-filters';
 import { fetchBlogArticle, fetchCrossSellingGammes } from '../services/pieces/pieces-route.service';
 
 // Types centralisés
+import { getPrixPasCherVariation } from '../services/seo/seo-variations.service';
 import { 
   type GammeData, 
   type LoaderData,
@@ -50,7 +52,6 @@ import {
 } from '../utils/pieces-route.utils';
 
 // Service SEO variations
-import { getPrixPasCherVariation } from '../services/seo/seo-variations.service';
 
 // ========================================
 // 🔄 LOADER - Récupération des données
@@ -253,7 +254,7 @@ export default function PiecesVehicleRoute() {
   // Extraction des données
   const { 
     vehicle, 
-    vehicleDetails, 
+    vehicleDetails: _vehicleDetails, 
     gamme, 
     count, 
     minPrice, 
@@ -293,7 +294,6 @@ export default function PiecesVehicleRoute() {
           {/* Hero Header */}
           <PiecesHeader 
             vehicle={vehicle} 
-            vehicleDetails={vehicleDetails}
             gamme={gamme} 
             count={count}
             minPrice={minPrice}
@@ -507,6 +507,9 @@ export default function PiecesVehicleRoute() {
           </div>
         )}
       </div>
+
+      {/* Bouton retour en haut */}
+      <ScrollToTop />
 
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === 'development' && (

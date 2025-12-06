@@ -204,7 +204,7 @@ export default function AdminBlogSimplePage() {
 
             <div className="flex items-center space-x-4">
               <Link
-                to="/blog"
+                to="/blog-pieces-auto"
                 className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors"
               >
                 <EyeIcon className="w-4 h-4 mr-2" />
@@ -320,7 +320,7 @@ export default function AdminBlogSimplePage() {
           <h3 className="text-lg font-medium text-gray-900 mb-6">Actions rapides</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
-              to="/blog/advice"
+              to="/blog-pieces-auto/advice"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-info/20 transition-colors group"
             >
               <DocumentTextIcon className="w-8 h-8 text-blue-600 mr-4" />
@@ -331,7 +331,7 @@ export default function AdminBlogSimplePage() {
             </Link>
 
             <Link
-              to="/blog/constructeurs"
+              to="/blog-pieces-auto/constructeurs"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-success/20 transition-colors group"
             >
               <UserGroupIcon className="w-8 h-8 text-green-600 mr-4" />
@@ -342,7 +342,7 @@ export default function AdminBlogSimplePage() {
             </Link>
 
             <Link
-              to="/blog/glossaire"
+              to="/blog-pieces-auto/glossaire"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors group"
             >
               <ChartBarIcon className="w-8 h-8 text-purple-600 mr-4" />

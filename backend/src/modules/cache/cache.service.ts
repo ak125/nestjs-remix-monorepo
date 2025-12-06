@@ -98,6 +98,18 @@ export class CacheService {
    */
   private getSmartTTL(key: string): number {
     const ttlMap: Record<string, number> = {
+      // 🚀 Données gamme RPC (quasi-statiques) - 1h
+      'gamme:rpc': 3600,
+      'gamme:rpc:v2:stale': 86400, // 24h pour stale cache
+      'gamme:page': 3600,
+      'gamme:seo': 3600,
+
+      // 📦 Données catalogue (refresh quotidien)
+      'catalog:families': 7200, // 2h
+      'catalog:brands': 7200,
+      'catalog:pieces': 1800, // 30 min
+
+      // 🔧 Stats et dashboard
       'dashboard:stats': 300, // 5 min - Stats dashboard
       'stock:available': 60, // 1 min - Stock disponible
       'suppliers:list': 1800, // 30 min - Liste fournisseurs
@@ -106,6 +118,10 @@ export class CacheService {
       'users:count': 600, // 10 min - Compteur utilisateurs
       'manufacturers:list': 3600, // 1h - Constructeurs
       'blog:articles': 1800, // 30 min - Articles blog
+
+      // 🚗 Véhicules
+      'vehicle:pieces': 1800, // 30 min
+      'vehicle:compat': 3600, // 1h
     };
 
     // Trouver le TTL correspondant au préfixe

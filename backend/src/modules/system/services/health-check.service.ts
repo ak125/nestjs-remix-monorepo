@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -337,7 +338,7 @@ export class HealthCheckService extends SupabaseBaseService {
     try {
       // Test rapide base de données
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id')
         .limit(1);
 

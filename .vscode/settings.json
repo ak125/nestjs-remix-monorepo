@@ -1,4 +1,6 @@
 {
+  "workbench.externalBrowser": "chrome",
+  "livePreview.customExternalBrowser": "Chrome",
   "copilot.enable": {
     "*": true,
     "yaml": true,

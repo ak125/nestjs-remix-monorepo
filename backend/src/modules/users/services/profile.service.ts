@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * ProfileService - Gestion des profils utilisateurs
  *
@@ -115,7 +116,7 @@ export class ProfileService extends SupabaseBaseService {
 
       // 3. UPDATE via Supabase
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update(updateData)
         .eq('cst_id', userId)
         .select()
@@ -181,7 +182,7 @@ export class ProfileService extends SupabaseBaseService {
     try {
       // Query directe Supabase ___xtr_customer
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_mail', email)
         .single();

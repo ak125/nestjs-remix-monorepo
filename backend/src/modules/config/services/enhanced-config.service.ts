@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import * as crypto from 'crypto';
@@ -53,7 +54,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       // Charger depuis la base de données
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('*')
         .eq('cnf_id', '1')
         .single();
@@ -93,7 +94,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       // Charger depuis la base de données
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('config_value')
         .eq('config_key', key)
         .single();
@@ -122,7 +123,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
    */
   async set(key: string, value: string, description?: string): Promise<void> {
     try {
-      const { error } = await this.supabase.from('___config').upsert({
+      const { error } = await this.supabase.from(TABLES.config).upsert({
         config_key: key,
         config_value: value,
         description: description || '',
@@ -150,7 +151,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async delete(key: string): Promise<void> {
     try {
       const { error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .delete()
         .eq('config_key', key);
 
@@ -175,7 +176,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async search(pattern: string): Promise<ConfigItem[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('*')
         .or(`config_key.ilike.%${pattern}%,description.ilike.%${pattern}%`)
         .order('config_key');
@@ -201,7 +202,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async getByCategory(category: string): Promise<ConfigItem[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('*')
         .like('config_key', `${category}.%`)
         .order('config_key');

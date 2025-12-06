@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -270,7 +271,7 @@ export class SeoMenuService extends SupabaseBaseService {
   private async getPagesWithoutSEO() {
     try {
       const { count } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*', { count: 'exact', head: true })
         .or('meta_title.is.null,meta_description.is.null');
 

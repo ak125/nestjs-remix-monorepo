@@ -66,7 +66,7 @@ export function SearchResultsEnhanced({
   }
 
   // 🖼️ HELPERS D'OPTIMISATION D'IMAGES WEBP
-  const optimizeImageUrl = (imageUrl: string, width: number = 400): string => {
+  const optimizeImageUrl = (imageUrl: string, _width: number = 400): string => {
     if (!imageUrl) return '';
     
     // Si c'est déjà une URL Supabase
@@ -76,7 +76,8 @@ export function SearchResultsEnhanced({
       if (match) {
         const path = match[1];
         const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-        return `${SUPABASE_URL}/storage/v1/render/image/public/${path}?format=webp&width=${width}&quality=85`;
+        // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
+        return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
       }
     }
     

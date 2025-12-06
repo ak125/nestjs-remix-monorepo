@@ -1,8 +1,8 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../common/cache.service';
-import { Optional } from '@nestjs/common';
 // Services de délégation (optionnels pour compatibilité)
 // import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
 // import { OrderStatusService } from '../../modules/orders/services/order-status.service';
@@ -98,7 +98,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Chercher le dernier numéro pour aujourd'hui
       const { data, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_id')
         .like('ord_id', `${prefix}%`)
         .order('ord_id', { ascending: false })
@@ -179,7 +179,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 1. Vérifier que le client existe
       const { data: customer, error: customerError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id')
         .eq('cst_id', orderData.customerId)
         .single();
@@ -218,7 +218,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 5. Insérer la commande
       const { error: orderError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .insert(orderInsertData)
         .select()
         .single();
@@ -255,14 +255,14 @@ export class OrdersService extends SupabaseBaseService {
         });
 
         const { error: linesError } = await this.supabase
-          .from('___xtr_order_line')
+          .from(TABLES.xtr_order_line)
           .insert(orderLinesData);
 
         if (linesError) {
           this.logger.error('Failed to insert order lines:', linesError);
           // Tentative de rollback de la commande
           await this.supabase
-            .from('___xtr_order')
+            .from(TABLES.xtr_order)
             .delete()
             .eq('ord_id', orderNumber);
           throw linesError;
@@ -291,7 +291,7 @@ export class OrdersService extends SupabaseBaseService {
   async getOrderLines(orderId: string): Promise<LegacyOrderLine[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('ordl_ord_id', orderId)
         .order('ordl_line_number');
@@ -358,7 +358,7 @@ export class OrdersService extends SupabaseBaseService {
 
       if (Object.keys(updateData).length > 0) {
         const { error } = await this.supabase
-          .from('___xtr_order')
+          .from(TABLES.xtr_order)
           .update(updateData)
           .eq('ord_id', orderId);
 
@@ -387,13 +387,15 @@ export class OrdersService extends SupabaseBaseService {
     comment?: string,
   ): Promise<void> {
     try {
-      const { error } = await this.supabase.from('___xtr_order_status').insert({
-        ords_ord_id: orderId,
-        ords_status: status,
-        ords_comment: comment || '',
-        ords_date: new Date().toISOString(),
-        ords_user_id: null, // Pourrait être l'utilisateur connecté
-      });
+      const { error } = await this.supabase
+        .from(TABLES.xtr_order_status)
+        .insert({
+          ords_ord_id: orderId,
+          ords_status: status,
+          ords_comment: comment || '',
+          ords_date: new Date().toISOString(),
+          ords_user_id: null, // Pourrait être l'utilisateur connecté
+        });
 
       if (error) {
         this.logger.warn(
@@ -412,7 +414,7 @@ export class OrdersService extends SupabaseBaseService {
   async getOrderStatusHistory(orderId: string): Promise<any[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_order_status')
+        .from(TABLES.xtr_order_status)
         .select('*')
         .eq('ords_ord_id', orderId)
         .order('ords_date', { ascending: true });
@@ -468,7 +470,7 @@ export class OrdersService extends SupabaseBaseService {
       const order = await this.getOrderById(orderId);
 
       const { data: customer } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_phone')
         .eq('cst_id', order.customerId)
         .single();
@@ -517,7 +519,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 1. Récupérer les commandes
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           'ord_id, ord_cst_id, ord_date, ord_total_ttc, ord_is_pay, ord_info, ord_ords_id',
         )
@@ -565,7 +567,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 3. Charger tous les clients en une seule requête
       const { data: customers } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select(
           'cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_tel, cst_gsm, cst_activ',
         )
@@ -611,7 +613,7 @@ export class OrdersService extends SupabaseBaseService {
   async getOrderById(orderId: string): Promise<LegacyOrder> {
     try {
       const { data: order, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('ord_id', orderId)
         .single();
@@ -633,7 +635,7 @@ export class OrdersService extends SupabaseBaseService {
   async getUserOrders(userId: string): Promise<LegacyOrder[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_id, ord_date, ord_total_ttc, ord_is_pay, ord_info')
         .eq('ord_cst_id', userId)
         .order('ord_date', { ascending: false })
@@ -654,7 +656,7 @@ export class OrdersService extends SupabaseBaseService {
   async getOrdersStats(userId?: string): Promise<any> {
     try {
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_is_pay, ord_total_ttc, ord_date');
 
       if (userId) {
@@ -703,7 +705,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 1. Récupérer la commande brute de la BDD
       const { data: orderData, error: orderError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('ord_id', orderId)
         .single();
@@ -714,7 +716,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 2. Récupérer les informations du client au format BDD
       const { data: customer } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select(
           'cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_tel, cst_gsm, cst_address, cst_zip_code, cst_country',
         )
@@ -723,7 +725,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 3. Récupérer l'adresse de facturation (liée au client, pas à la commande)
       const { data: billingAddress } = await this.supabase
-        .from('___xtr_customer_billing_address')
+        .from(TABLES.xtr_customer_billing_address)
         .select('*')
         .eq('cba_cst_id', orderData.ord_cst_id)
         .limit(1)
@@ -731,7 +733,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // 4. Récupérer l'adresse de livraison (liée au client, comme la facturation)
       const { data: deliveryAddress } = await this.supabase
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .select('*')
         .eq('cda_cst_id', orderData.ord_cst_id)
         .order('cda_id', { ascending: false }) // La plus récente
@@ -740,14 +742,14 @@ export class OrdersService extends SupabaseBaseService {
 
       // 5. Récupérer les lignes de commande
       const { data: orderLines } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('orl_ord_id', orderId)
         .order('orl_id', { ascending: true });
 
       // 6. Récupérer le statut de la commande
       const { data: orderStatus } = await this.supabase
-        .from('___xtr_order_status')
+        .from(TABLES.xtr_order_status)
         .select('*')
         .eq('ords_id', orderData.ord_ords_id)
         .single();
@@ -759,7 +761,7 @@ export class OrdersService extends SupabaseBaseService {
           enrichedOrderLines.map(async (line) => {
             if (line.orl_orls_id) {
               const { data: lineStatus } = await this.supabase
-                .from('___xtr_order_line_status')
+                .from(TABLES.xtr_order_line_status)
                 .select('*')
                 .eq('orls_id', line.orl_orls_id)
                 .single();
@@ -868,7 +870,7 @@ export class OrdersService extends SupabaseBaseService {
       });
 
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true });
 
       // Appliquer les mêmes filtres que getAllOrders

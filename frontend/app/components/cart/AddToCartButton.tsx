@@ -92,10 +92,8 @@ export function AddToCartButton({
           setIsOptimistic(false);
           onSuccess?.();
           
-          // � Recharger après 800ms pour voir l'animation
-          setTimeout(() => {
-            window.location.reload();
-          }, 800);
+          // 🔄 Émettre l'événement pour synchroniser le panier partout
+          window.dispatchEvent(new Event('cart:updated'));
         } else {
           // ❌ Échec - revert optimistic update
           const errorData = await response.json().catch(() => ({}));

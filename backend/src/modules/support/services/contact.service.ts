@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import {
   Injectable,
   Logger,
@@ -81,7 +82,7 @@ export class ContactService extends SupabaseBaseService {
       if (!customerId) {
         // Chercher un client existant par email
         const { data: existingCustomer } = await this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select('cst_id')
           .eq('cst_mail', contactData.email)
           .single();
@@ -101,7 +102,7 @@ export class ContactService extends SupabaseBaseService {
 
           const { data: createdCustomer, error: customerError } =
             await this.supabase
-              .from('___xtr_customer')
+              .from(TABLES.xtr_customer)
               .insert(newCustomer)
               .select('cst_id')
               .single();
@@ -129,7 +130,7 @@ export class ContactService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert(ticketData)
         .select(
           `
@@ -171,7 +172,7 @@ export class ContactService extends SupabaseBaseService {
    */
   async getContactById(id: string): Promise<ContactTicket> {
     const { data, error } = await this.supabase
-      .from('___xtr_msg')
+      .from(TABLES.xtr_msg)
       .select('*')
       .eq('msg_id', id)
       .single();
@@ -218,7 +219,7 @@ export class ContactService extends SupabaseBaseService {
     page: number;
     limit: number;
   }> {
-    let query = this.supabase.from('___xtr_msg').select(
+    let query = this.supabase.from(TABLES.xtr_msg).select(
       `
         *,
         ___xtr_customer:msg_cst_id (
@@ -302,7 +303,7 @@ export class ContactService extends SupabaseBaseService {
     }
 
     const { data, error } = await this.supabase
-      .from('___xtr_msg')
+      .from(TABLES.xtr_msg)
       .update(updateData)
       .eq('msg_id', id)
       .select(
@@ -358,7 +359,7 @@ export class ContactService extends SupabaseBaseService {
     };
 
     const { data, error } = await this.supabase
-      .from('___xtr_msg')
+      .from(TABLES.xtr_msg)
       .insert(responseRecord)
       .select()
       .single();
@@ -378,7 +379,7 @@ export class ContactService extends SupabaseBaseService {
    */
   async getTicketResponses(ticketId: string): Promise<any[]> {
     const { data, error } = await this.supabase
-      .from('___xtr_msg')
+      .from(TABLES.xtr_msg)
       .select(
         `
         *,
@@ -415,7 +416,7 @@ export class ContactService extends SupabaseBaseService {
     const updatedContent = `${ticket.msg_content}\n\n--- ESCALADÉ ---\n${escalationNote}`;
 
     const { data, error } = await this.supabase
-      .from('___xtr_msg')
+      .from(TABLES.xtr_msg)
       .update({
         msg_cnfa_id: staffId,
         msg_content: updatedContent,
@@ -453,14 +454,14 @@ export class ContactService extends SupabaseBaseService {
     try {
       // Messages ouverts
       const { count: openCount } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*', { count: 'exact', head: true })
         .eq('msg_open', '1')
         .eq('msg_close', '0');
 
       // Messages fermés
       const { count: closedCount } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*', { count: 'exact', head: true })
         .eq('msg_close', '1');
 
@@ -469,7 +470,7 @@ export class ContactService extends SupabaseBaseService {
       yesterday.setDate(yesterday.getDate() - 1);
 
       const { count: recentCount } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*', { count: 'exact', head: true })
         .gte('msg_date', yesterday.toISOString());
 
@@ -671,7 +672,7 @@ export class ContactService extends SupabaseBaseService {
 
       // Trouver le prochain ID disponible
       const { data: allTickets } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('msg_id');
 
       let nextId = '1';
@@ -699,7 +700,7 @@ export class ContactService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert(ticketData)
         .select('*')
         .single();
@@ -737,7 +738,7 @@ export class ContactService extends SupabaseBaseService {
     // Version simplifiée temporaire sans jointures
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .limit(20);
 

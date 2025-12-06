@@ -7,7 +7,7 @@
  * - Imports stricts, pas de doublons ni de dépendances circulaires
  */
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 
@@ -34,9 +34,16 @@ import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { VehicleSearchService } from './services/search/vehicle-search.service';
 import { VehicleMineService } from './services/search/vehicle-mine.service';
 
+// Services SEO
+import { BrandSeoService } from './services/seo/brand-seo.service';
+
+// Module Catalog pour le maillage interne
+import { CatalogModule } from '../catalog/catalog.module';
+
 @Module({
   imports: [
     ConfigModule,
+    forwardRef(() => CatalogModule), // 🔗 Pour le maillage interne (gammes populaires)
     CacheModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -71,6 +78,9 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
     // Search
     VehicleSearchService,
     VehicleMineService,
+
+    // SEO
+    BrandSeoService,
   ],
   exports: [
     VehiclesService,

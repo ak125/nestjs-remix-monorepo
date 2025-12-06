@@ -50,23 +50,23 @@ export class ImageOptimizer {
       width,
       height,
       quality = this.DEFAULT_QUALITY,
-      format = 'webp'
+      format: _format = 'webp'
     } = options;
 
     // Nettoyer le chemin de l'image
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
     
-    // Construire l'URL de base avec render/image pour la transformation
+    // 🚀 CDN Supabase avec redimensionnement (format=webp non supporté sur ce bucket)
     const baseUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${cleanPath}`;
     
-    // Construire les paramètres de transformation
+    // Construire les paramètres de transformation (sans format car non supporté)
     const params = new URLSearchParams();
-    params.set('format', format);
     if (width) params.set('width', width.toString());
     if (height) params.set('height', height.toString());
-    params.set('quality', quality.toString());
+    if (quality && quality !== this.DEFAULT_QUALITY) params.set('quality', quality.toString());
     
-    return `${baseUrl}?${params.toString()}`;
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }
 
   /**
@@ -157,14 +157,16 @@ export function getOptimizedLogoUrl(logoFilename?: string): string {
 
 /**
  * Image de modèle de véhicule optimisée
+ * Utilise l'URL directe car les images sont déjà en .webp sur Supabase
  */
 export function getOptimizedModelImageUrl(brandAlias: string, modelPic?: string): string {
-  if (!modelPic) {
+  if (!modelPic || modelPic === 'no.webp') {
     return '/images/no-model.png';
   }
   
+  // Utiliser l'URL directe (les images .webp existent sur Supabase)
   const path = `constructeurs-automobiles/marques-modeles/${brandAlias}/${modelPic}`;
-  return ImageOptimizer.getOptimizedUrl(path, { width: 800, quality: 85 });
+  return ImageOptimizer.getOriginalUrl(path);
 }
 
 /**

@@ -1,5 +1,7 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { BlogService } from './blog.service';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
@@ -144,7 +146,9 @@ export class AdviceService {
       const client = this.supabaseService.client;
       const offset = (page - 1) * limit;
 
-      let query = client.from('__blog_advice').select('*', { count: 'exact' });
+      let query = client
+        .from(TABLES.blog_advice)
+        .select('*', { count: 'exact' });
 
       // Filtres avancés
       if (filters.category) {
@@ -276,7 +280,7 @@ export class AdviceService {
 
       // Rechercher les conseils liés à cette gamme
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .or(`ba_title.ilike.%${gammeCode}%,ba_keywords.ilike.%${gammeCode}%`)
         .order('ba_visit', { ascending: false });
@@ -327,7 +331,7 @@ export class AdviceService {
 
       // Recherche améliorée dans les conseils
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .or(
           `ba_title.ilike.%produit%,ba_keywords.ilike.%produit%,ba_title.ilike.%${productId}%`,
@@ -375,14 +379,14 @@ export class AdviceService {
       if (typeof id === 'string') {
         // Recherche par slug
         query = this.supabaseService.client
-          .from('__blog_advice')
+          .from(TABLES.blog_advice)
           .select('*')
           .eq('ba_alias', id)
           .single();
       } else {
         // Recherche par ID
         query = this.supabaseService.client
-          .from('__blog_advice')
+          .from(TABLES.blog_advice)
           .select('*')
           .eq('ba_id', id)
           .single();
@@ -443,7 +447,7 @@ export class AdviceService {
         // Version simplifiée si BlogService pas disponible
         const articleData = {
           ba_title: article.title,
-          ba_alias: article.slug || this.slugify(article.title || ''),
+          ba_alias: article.slug || normalizeAlias(article.title || ''),
           ba_descrip: article.excerpt,
           ba_content: article.content,
           ba_keywords: article.keywords?.join(','),
@@ -452,7 +456,7 @@ export class AdviceService {
         };
 
         const { data, error } = await this.supabaseService.client
-          .from('__blog_advice')
+          .from(TABLES.blog_advice)
           .insert(articleData)
           .select()
           .single();
@@ -494,12 +498,12 @@ export class AdviceService {
       const [{ data: allH2Sections }, { data: allH3Sections }] =
         await Promise.all([
           this.supabaseService.client
-            .from('__blog_advice_h2')
+            .from(TABLES.blog_advice_h2)
             .select('*')
             .in('ba2_ba_id', adviceIds)
             .order('ba2_id'),
           this.supabaseService.client
-            .from('__blog_advice_h3')
+            .from(TABLES.blog_advice_h3)
             .select('*')
             .in('ba3_ba_id', adviceIds)
             .order('ba3_id'),
@@ -624,12 +628,12 @@ export class AdviceService {
       // Récupérer les sections H2/H3 en parallèle
       const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
         this.supabaseService.client
-          .from('__blog_advice_h2')
+          .from(TABLES.blog_advice_h2)
           .select('*')
           .eq('ba2_ba_id', advice.ba_id)
           .order('ba2_id'),
         this.supabaseService.client
-          .from('__blog_advice_h3')
+          .from(TABLES.blog_advice_h3)
           .select('*')
           .eq('ba3_ba_id', advice.ba_id)
           .order('ba3_id'),
@@ -753,24 +757,10 @@ export class AdviceService {
     } catch {
       // Fallback - mise à jour manuelle si la fonction RPC n'existe pas
       await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .update({ ba_visit: 'ba_visit::int + 1' })
         .eq('ba_id', adviceId);
     }
-  }
-
-  /**
-   * 🔗 Créer un slug à partir d'un titre
-   */
-  private slugify(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
   }
 
   // === MÉTHODES DE COMPATIBILITÉ ===
@@ -830,7 +820,7 @@ export class AdviceService {
     // Version simplifiée des stats pour la compatibilité
     try {
       const { data: allAdvice, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_visit, ba_keywords, ba_title, ba_alias, ba_id');
 
       if (error) throw error;
@@ -968,7 +958,7 @@ export class AdviceService {
 
       // Charger tous les pg_alias ET pg_img en une seule requête
       const { data: gammes } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_img')
         .in('pg_id', pgIds);
 

@@ -1,8 +1,9 @@
 // 📁 frontend/app/components/vehicle/VehicleCascadeSelector.tsx
 // 🚗 Sélecteur de véhicule en cascade - Design professionnel
 
-import { useState, useEffect } from 'react';
-import { ChevronDown, Car, Calendar, Fuel, Settings, Search } from 'lucide-react';
+import { Calendar, Car, ChevronDown, Fuel, Search, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 
 interface VehicleCascadeSelectorProps {
@@ -86,7 +87,7 @@ export default function VehicleCascadeSelector({
   const loadModels = async (brandId: number, year: number) => {
     setLoadingModels(true);
     try {
-      const data = await enhancedVehicleApi.getModelsByBrandAndYear(brandId, year);
+      const data = await enhancedVehicleApi.getModels(brandId, { year, page: 1, limit: 100 });
       setModels(data);
     } catch (error) {
       console.error('❌ Erreur chargement modèles:', error);
@@ -98,7 +99,7 @@ export default function VehicleCascadeSelector({
   const loadTypes = async (modelId: number) => {
     setLoadingTypes(true);
     try {
-      const data = await enhancedVehicleApi.getTypesByModel(modelId);
+      const data = await enhancedVehicleApi.getTypes(modelId);
       setTypes(data);
     } catch (error) {
       console.error('❌ Erreur chargement motorisations:', error);

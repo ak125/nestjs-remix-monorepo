@@ -273,6 +273,7 @@ export function HeaderV8Enhanced({
                 {user ? (
                   <Link 
                     to="/account" 
+                    rel="nofollow"
                     className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <User className="w-5 h-5" />
@@ -283,6 +284,7 @@ export function HeaderV8Enhanced({
                 ) : (
                   <Link 
                     to="/login" 
+                    rel="nofollow"
                     className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <User className="w-5 h-5" />

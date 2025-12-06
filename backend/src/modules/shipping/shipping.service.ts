@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
 /**
@@ -432,7 +433,7 @@ export class ShippingService extends SupabaseBaseService {
 
       // Récupérer les commandes expédiées ou en cours de traitement
       const { data: orders, error: ordersError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           `
           ord_id,
@@ -457,7 +458,7 @@ export class ShippingService extends SupabaseBaseService {
         (orders || []).map(async (order) => {
           // Récupérer les infos client si possible
           const { data: customer } = await this.supabase
-            .from('___xtr_customer')
+            .from(TABLES.xtr_customer)
             .select('cst_firstname, cst_lastname, cst_company')
             .eq('cst_id', order.ord_cst_id)
             .single();
@@ -466,7 +467,7 @@ export class ShippingService extends SupabaseBaseService {
           let shippingAddress = { city: 'Non défini', country: 'FR' };
           if (order.ord_shipping_address_id) {
             const { data: address } = await this.supabase
-              .from('___xtr_customer_delivery_address')
+              .from(TABLES.xtr_customer_delivery_address)
               .select('cda_city, cda_country')
               .eq('cda_id', order.ord_shipping_address_id)
               .single();

@@ -32,6 +32,13 @@ export class VehicleFilteredCatalogV4Controller {
         success: true,
         catalog: result.catalog,
         popularParts: result.catalog.popularParts || [],
+        seoValidation: result.catalog.seoValidation || {
+          familyCount: result.catalog.totalFamilies || 0,
+          gammeCount: result.catalog.totalGammes || 0,
+          isIndexable:
+            (result.catalog.totalFamilies || 0) >= 3 &&
+            (result.catalog.totalGammes || 0) >= 5,
+        },
         performance: {
           responseTime: `${responseTime}ms`,
           source: result.metrics.source,

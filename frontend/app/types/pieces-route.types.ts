@@ -27,6 +27,7 @@ export interface VehicleData {
   modeleId: number;
   marqueAlias?: string; // Alias de la marque pour les couleurs
   modeleAlias?: string; // Alias du modèle pour l'URL
+  typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
 }
 
@@ -47,12 +48,17 @@ export interface PieceData {
   brand: string;
   stock: string;
   reference: string;
+  oemRef?: string; // Référence OEM constructeur (ex: "1109 91")
+  matchKind?: number; // 0=direct, 1=OEM équip, 2=OEM constr, 3-4=équivalences croisées
   quality?: string;
   stars?: number;
   side?: string;
   delaiLivraison?: number;
   description?: string;
   image?: string; // URL de l'image depuis Supabase rack-images
+  images?: string[]; // Galerie d'images
+  marque_id?: number; // ID de la marque équipementier
+  marque_logo?: string; // Nom du fichier logo (ex: "bosch.webp")
 }
 
 export interface SEOEnrichedContent {
@@ -93,6 +99,16 @@ export interface CrossSellingGamme {
   PG_NAME: string;
   PG_ALIAS: string;
   PG_IMAGE?: string;
+}
+
+/**
+ * 🔧 Données OEM constructeur
+ * Références OEM pour SEO et affichage
+ */
+export interface OemRefsData {
+  vehicleMarque: string;
+  oemRefs: string[];
+  count: number;
 }
 
 export interface CompatibilityInfo {
@@ -158,6 +174,10 @@ export interface LoaderData {
   catalogueMameFamille?: CatalogueMameFamille;
   famille?: FamilleData;
   
+  // 🔧 Références OEM constructeur
+  oemRefs?: OemRefsData;
+  oemRefsSeo?: string[];
+  
   seo: SEOInfo;
   performance: PerformanceInfo;
 }
@@ -166,9 +186,11 @@ export interface LoaderData {
 export interface PiecesFilters {
   brands: string[];
   priceRange: "all" | "low" | "medium" | "high";
-  quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard";
+  quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard" | string; // Support des valeurs API dynamiques
   availability: "all" | "stock" | "order";
   searchText: string;
+  minNote?: number; // Filtre par note minimale sur 10 (calculée depuis nb_stars)
+  position?: "all" | string; // Filtre par position (Avant/Arrière, Gauche/Droite, etc.)
 }
 
 export type SortBy = "name" | "price-asc" | "price-desc" | "brand";

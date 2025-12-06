@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
+import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 
 /**
  * Service de construction de la réponse finale
@@ -39,6 +40,14 @@ export class GammeResponseBuilderService {
     const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
     const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
     const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
+    const cgcLevelStats = aggregatedData?.cgc_level_stats || {
+      level_1: 0,
+      level_2: 0,
+      level_3: 0,
+      level_5: 0,
+      total: 0,
+    };
+    const motorisationsBlogRaw = aggregatedData?.motorisations_blog || [];
 
     // Traitement SEO
     let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
@@ -62,8 +71,17 @@ export class GammeResponseBuilderService {
       pageContent = defaultSeo.content;
     }
 
-    const relfollow = pgRelfollow === 1 ? 1 : 0;
-    const pageRobots = relfollow === 1 ? 'index, follow' : 'noindex, nofollow';
+    // Logique SEO pour pages GAMME: seul pg_relfollow compte
+    // NOTE: La logique family_count >= 3 ET gamme_count >= 5 est pour les pages VÉHICULES, pas les gammes
+    const seoValidation = aggregatedData?.seo_validation || {
+      family_count: 0,
+      gamme_count: 0,
+    };
+    // pg_relfollow est TEXT en BDD ('1' ou '0'), conversion pour comparaison
+    const relfollow = String(pgRelfollow) === '1' ? 1 : 0;
+    // Pour une page gamme: index si pg_relfollow='1', noindex sinon
+    const isIndexable = relfollow === 1;
+    const pageRobots = isIndexable ? 'index, follow' : 'noindex, nofollow';
     const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
 
     // Traitement données
@@ -116,7 +134,8 @@ export class GammeResponseBuilderService {
           return '';
         };
 
-        const explicationTechnique = getExplication();
+        // Note: getExplication() est appelé pour effet de bord potentiel mais le résultat n'est pas utilisé
+        getExplication();
 
         // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
         let carImage = null;
@@ -136,14 +155,7 @@ export class GammeResponseBuilderService {
         }
 
         // Slugify pour les URLs
-        const slugify = (text: string): string => {
-          return text
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        };
+        // ✅ Utilise buildPieceVehicleUrlRaw centralisé
 
         // Construire la période
         const yearFrom = item.type_year_from || '';
@@ -151,11 +163,14 @@ export class GammeResponseBuilderService {
         const periode = `${yearFrom} - ${yearTo}`;
 
         // Construire le lien vers la page gamme avec véhicule
-        // Format: /pieces/gamme-alias-ID/marque-ID/modele-ID/type-ID.html
-        const marqueSlug = slugify(item.marque_name);
-        const modeleSlug = slugify(item.modele_name);
-        const typeSlug = slugify(item.type_name);
-        const link = `/pieces/${pgAlias}-${pgIdNum}/${marqueSlug}-${item.marque_id}/${modeleSlug}-${item.modele_id}/${typeSlug}-${item.type_id}.html`;
+        // Format: /pieces/gamme-alias-ID/marque-alias-ID/modele-alias-ID/type-alias-ID.html
+        // ✅ Utilise les alias de la DB (marque_alias, modele_alias, type_alias) au lieu de slugifier
+        const link = buildPieceVehicleUrlRaw(
+          { alias: pgAlias, id: pgIdNum },
+          { alias: item.marque_alias || item.marque_name, id: item.marque_id },
+          { alias: item.modele_alias || item.modele_name, id: item.modele_id },
+          { alias: item.type_alias || item.type_name, id: item.type_id },
+        );
 
         // Valider et nettoyer les fragments SEO
         const validateFragment = (frag: string, marqueName: string): string => {
@@ -195,43 +210,135 @@ export class GammeResponseBuilderService {
           return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
         };
 
-        // Construire la description avec templates variés pour contenu plus naturel
+        // Construire la description avec templates variés et cohérents grammaticalement
         const buildDescription = () => {
           const hasFragment1 =
             cleanedFragment1 && cleanedFragment1.trim().length > 3;
           const hasFragment2 =
             cleanedFragment2 && cleanedFragment2.trim().length > 3;
 
-          // Templates variés basés sur type_id pour éviter répétitions
-          if (hasFragment1 && hasFragment2) {
-            const templateIndex = item.type_id % 4;
+          // Vérifier si les fragments sont identiques ou très similaires
+          const fragmentsAreSimilar =
+            hasFragment1 &&
+            hasFragment2 &&
+            (cleanedFragment1 === cleanedFragment2 ||
+              cleanedFragment1
+                .toLowerCase()
+                .startsWith(cleanedFragment2.toLowerCase().slice(0, 10)));
+
+          // Utiliser les informations de la DB (__seo_gamme_info) comme finitions dynamiques
+          // Ces informations sont déjà chargées dans 'informations' depuis la RPC
+          const getFinitionFromDb = (): string => {
+            if (informations.length === 0) {
+              // Fallback si pas d'informations en DB
+              return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
+            }
+
+            // Sélection rotative basée sur type_id + index
+            const infoIndex = (item.type_id + index) % informations.length;
+            const info = informations[infoIndex];
+
+            if (!info || info.length < 10) {
+              return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
+            }
+
+            // Extraire une partie pertinente de l'information
+            let finition = info;
+
+            // Chercher "pour" dans le texte et extraire à partir de là
+            const pourIndex = info.toLowerCase().indexOf(' pour ');
+            if (pourIndex > 0 && pourIndex < info.length - 20) {
+              finition = info.substring(pourIndex + 1).trim();
+              // S'assurer que ça commence par une minuscule
+              finition = finition.charAt(0).toLowerCase() + finition.slice(1);
+            } else {
+              // Si la phrase commence par "Les plaquettes...", "L'usure...", etc.
+              // On la garde mais on la reformule pour qu'elle s'intègre mieux
+              if (info.match(/^(Les |L'|Il |En |Quand |Attention)/i)) {
+                // Mettre la première lettre en minuscule pour l'intégrer après une virgule
+                finition = info.charAt(0).toLowerCase() + info.slice(1);
+              } else {
+                // Chercher le verbe principal pour extraire la partie utile
+                const verbMatch = info.match(
+                  /(servent à|jouent|permettent|assurent|doivent être|sont)/i,
+                );
+                if (verbMatch && verbMatch.index) {
+                  // Ajouter "les plaquettes de frein" devant pour donner un sujet
+                  const afterVerb = info.substring(verbMatch.index).trim();
+                  if (afterVerb.length > 15) {
+                    finition = 'les plaquettes de frein ' + afterVerb;
+                  }
+                }
+              }
+            }
+
+            // Ajouter un point final si nécessaire
+            if (!finition.endsWith('.')) {
+              finition = finition + '.';
+            }
+
+            return finition;
+          };
+
+          const finition = getFinitionFromDb();
+
+          // Formater la finition pour la ponctuation correcte
+          // Si la finition est une phrase longue, utiliser un point avant
+          const isLongFinition = finition.length > 50;
+          const separator = isLongFinition ? '. ' : ', ';
+          const formattedFinition = isLongFinition
+            ? finition.charAt(0).toUpperCase() + finition.slice(1)
+            : finition;
+
+          // Si fragments identiques, utiliser un seul fragment avec template amélioré
+          if (fragmentsAreSimilar || (hasFragment1 && !hasFragment2)) {
+            const fragment = cleanedFragment1;
+            const capitalizedFragment =
+              fragment.charAt(0).toUpperCase() + fragment.slice(1);
+            const templateIndex = item.type_id % 5;
 
             switch (templateIndex) {
               case 0:
-                // Template original avec explication
-                return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}${explicationTechnique}.`;
+                return `${capitalizedFragment} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
               case 1:
-                // Template inversé avec conseil
-                return `${cleanedFragment1.charAt(0).toUpperCase() + cleanedFragment1.slice(1)} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch. ${cleanedFragment2.charAt(0).toUpperCase() + cleanedFragment2.slice(1)} la pièce avant installation${explicationTechnique}.`;
+                return `Pensez à ${fragment.toLowerCase()} avant installation${separator}${formattedFinition}`;
               case 2:
-                // Template descriptif avec double point
-                return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${cleanedFragment1}. Pensez à ${cleanedFragment2.toLowerCase()} avant montage${explicationTechnique}.`;
+                return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${fragment.toLowerCase()}. Pensez à vérifier avant montage${separator}${formattedFinition}`;
               case 3:
-                // Template conversationnel
-                return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${cleanedFragment1}. N'oubliez pas de ${cleanedFragment2.toLowerCase()}${explicationTechnique}.`;
+                return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${fragment.toLowerCase()}${separator}${formattedFinition}`;
+              case 4:
+                return `${capitalizedFragment} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
             }
           }
 
-          // Si seulement fragment1 : "[fragment1] pour votre [marque] [modèle] [type] [ch] ch [période]"
-          if (hasFragment1) {
-            return `${cleanedFragment1.charAt(0).toUpperCase() + cleanedFragment1.slice(1)} pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}. Qualité d'origine à prix bas.`;
+          // Templates variés basés sur type_id avec deux fragments distincts
+          if (hasFragment1 && hasFragment2) {
+            const templateIndex = item.type_id % 4;
+            const cap1 =
+              cleanedFragment1.charAt(0).toUpperCase() +
+              cleanedFragment1.slice(1);
+            const cap2 =
+              cleanedFragment2.charAt(0).toUpperCase() +
+              cleanedFragment2.slice(1);
+
+            switch (templateIndex) {
+              case 0:
+                return `${cap2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
+              case 1:
+                return `${cap1} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch. ${cap2} avant installation${separator}${formattedFinition}`;
+              case 2:
+                return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${cleanedFragment1.toLowerCase()}. Pensez à ${cleanedFragment2.toLowerCase()} avant montage${separator}${formattedFinition}`;
+              case 3:
+                return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${cleanedFragment1.toLowerCase()}${separator}${formattedFinition}`;
+            }
           }
 
-          // Sinon, description par défaut
-          return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, d'origine à prix bas.`;
+          // Sinon, description par défaut améliorée
+          return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, ${finition}`;
         };
 
         return {
+          cgc_level: item.cgc_level || '1', // Niveau CGC (1=page gamme, 2=page marque, 3=page type)
           cgc_type_id: item.type_id,
           type_name: item.type_name,
           type_power_ps: item.type_power_ps,
@@ -252,6 +359,43 @@ export class GammeResponseBuilderService {
         };
       },
     );
+
+    // Traitement motorisations blog (niveau 5)
+    const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
+      const marqueAlias =
+        item.marque_alias ||
+        item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const carImage =
+        item.modele_pic && item.modele_pic !== 'no.webp'
+          ? `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`
+          : `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
+
+      const yearFrom = item.type_year_from || '';
+      const yearTo = item.type_year_to || "aujourd'hui";
+      const periode = `${yearFrom} - ${yearTo}`;
+
+      const link = buildPieceVehicleUrlRaw(
+        { alias: pgAlias, id: pgIdNum },
+        { alias: item.marque_alias || item.marque_name, id: item.marque_id },
+        { alias: item.modele_alias || item.modele_name, id: item.modele_id },
+        { alias: item.type_alias || item.type_name, id: item.type_id },
+      );
+
+      return {
+        cgc_level: item.cgc_level,
+        type_id: item.type_id,
+        type_name: item.type_name,
+        puissance: `${item.type_power_ps} ch`,
+        periode,
+        modele_id: item.modele_id,
+        modele_name: item.modele_name,
+        marque_id: item.marque_id,
+        marque_name: item.marque_name,
+        image: carImage,
+        link,
+        title: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
+      };
+    });
 
     // Guide d'achat
     const guideAchat = blogData
@@ -311,6 +455,16 @@ export class GammeResponseBuilderService {
               items: catalogueFiltres,
             }
           : null,
+      // Alias pour compatibilité frontend
+      catalogueMameFamille:
+        catalogueFiltres.length > 0
+          ? {
+              title: familleInfo
+                ? `Autres pièces de la famille ${familleInfo.mf_name}`
+                : 'Pièces similaires',
+              items: catalogueFiltres,
+            }
+          : null,
       equipementiers:
         equipementiers.length > 0
           ? {
@@ -325,12 +479,55 @@ export class GammeResponseBuilderService {
               items: conseils,
             }
           : null,
-      informations: informations.length > 0 ? informations : null,
+      informations:
+        informations.length > 0
+          ? {
+              title: `Informations sur ${pgNameSite || 'ce produit'}`,
+              items: informations,
+            }
+          : null,
       guideAchat,
+      motorisationsBlog:
+        motorisationsBlog.length > 0
+          ? {
+              title: 'Véhicules cités dans nos guides',
+              items: motorisationsBlog,
+            }
+          : null,
+      seoValidation: {
+        familyCount: seoValidation.family_count,
+        gammeCount: seoValidation.gamme_count,
+        relfollow: relfollow,
+        isIndexable: isIndexable,
+        robots: pageRobots,
+        pgLevel: pageData.pg_level,
+        pgRelfollow: pageData.pg_relfollow,
+      },
+      cgcLevelStats: {
+        level1: cgcLevelStats.level_1,
+        level2: cgcLevelStats.level_2,
+        level3: cgcLevelStats.level_3,
+        level5: cgcLevelStats.level_5,
+        total: cgcLevelStats.total,
+        description:
+          'CGC_LEVEL: 1=motorisations grille, 2=page marque, 3=page type, 5=section blog',
+      },
+      // 🔗 SEO Switches pour maillage interne (ancres variées)
+      seoSwitches: {
+        verbs: seoFragments1
+          .slice(0, 20)
+          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        nouns: seoFragments2
+          .slice(0, 20)
+          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        verbCount: seoFragments1.length,
+        nounCount: seoFragments2.length,
+      },
       performance: {
         total_time_ms: totalTime,
         rpc_time_ms: timings.rpcTime,
         motorisations_count: motorisations.length,
+        motorisations_blog_count: motorisationsBlog.length,
         catalogue_famille_count: catalogueFiltres.length,
         equipementiers_count: equipementiers.length,
         conseils_count: conseils.length,

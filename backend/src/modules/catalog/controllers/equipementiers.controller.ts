@@ -27,15 +27,18 @@ export class EquipementiersController {
     // 🚀 OPTIMISATION: Cache Redis TTL 1h (données quasi-statiques)
     const cacheKey = 'catalog:equipementiers:all';
     const cached = await this.cacheService.get(cacheKey);
-    
+
     if (cached && typeof cached === 'string') {
       this.logger.log('⚡ Cache HIT - Équipementiers depuis Redis (<5ms)');
       return JSON.parse(cached);
     }
 
-    const equipementiersResult = await this.equipementiersService.getEquipementiers();
+    const equipementiersResult =
+      await this.equipementiersService.getEquipementiers();
 
-    this.logger.log(`✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`);
+    this.logger.log(
+      `✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`,
+    );
 
     const result = {
       success: equipementiersResult.success,
@@ -43,14 +46,14 @@ export class EquipementiersController {
       stats: equipementiersResult.stats,
       message: `${equipementiersResult.stats.total_equipementiers} équipementiers récupérés avec succès`,
     };
-    
+
     // Mise en cache (TTL: 1h)
     try {
       await this.cacheService.set(cacheKey, JSON.stringify(result), 3600);
     } catch (error) {
       this.logger.warn('⚠️ Erreur cache équipementiers:', error);
     }
-    
+
     return result;
   }
 

@@ -1,4 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { HtmlContent } from '../seo/HtmlContent';
+
+interface CatalogueItem {
+  id?: number;
+  name: string;
+  alias?: string;
+  link?: string;
+  image?: string;
+  description?: string;
+  meta_description?: string;
+  sort?: number;
+}
 
 interface InformationsSectionProps {
   informations?: {
@@ -6,17 +18,79 @@ interface InformationsSectionProps {
     content: string;
     items: string[];
   };
+  catalogueFamille?: CatalogueItem[];
 }
 
-export default function InformationsSection({ informations }: InformationsSectionProps) {
+/**
+ * Ajoute des liens vers les gammes connexes dans le texte des informations
+ * Génère du HTML avec des <a> tags qui seront convertis en <Link> par HtmlContent
+ */
+function addGammeLinksToText(text: string, catalogueFamille?: CatalogueItem[]): string {
+  if (!catalogueFamille || !Array.isArray(catalogueFamille) || catalogueFamille.length === 0) return text;
+  
+  // Dédupliquer par nom (éviter doublons de la BDD)
+  const uniqueGammes = catalogueFamille.filter((gamme, index, self) => 
+    index === self.findIndex(g => g.name === gamme.name)
+  );
+  
+  let result = text;
+  const linkedGammes = new Set<string>();
+  
+  for (const gamme of uniqueGammes) {
+    // Vérifier que la gamme a les propriétés nécessaires (name et link ou alias+id)
+    if (!gamme || !gamme.name) continue;
+    
+    // Construire l'URL: utiliser link si disponible, sinon construire depuis alias+id
+    const gammeUrl = gamme.link || (gamme.alias && gamme.id ? `/pieces/${gamme.alias}-${gamme.id}.html` : null);
+    if (!gammeUrl) continue;
+    
+    // Éviter les doublons de liens
+    if (linkedGammes.has(gamme.name)) continue;
+    
+    // Créer des patterns pour le nom de la gamme (singulier et pluriel)
+    const name = gamme.name.toLowerCase();
+    const patterns = [
+      name,
+      name + 's',
+      name.replace('é', 'e'),
+      (name + 's').replace('é', 'e'),
+    ];
+    
+    for (const pattern of patterns) {
+      // Regex insensible à la casse, évitant les mots déjà dans des liens
+      const regex = new RegExp(`(?<!<a[^>]*>)\\b(${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b(?![^<]*<\\/a>)`, 'gi');
+      
+      if (regex.test(result) && !linkedGammes.has(gamme.name)) {
+        result = result.replace(regex, (match) => {
+          linkedGammes.add(gamme.name);
+          return `<a href="${gammeUrl}" class="text-indigo-600 hover:text-indigo-800 underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
+        });
+        break; // Un seul lien par gamme
+      }
+    }
+  }
+  
+  return result;
+}
+
+export default function InformationsSection({ informations, catalogueFamille }: InformationsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Limite initiale augmentée à 10 pour plus de contenu SEO visible
+  const INITIAL_DISPLAY_LIMIT = 10;
+  
+  // Mémoïser le traitement des liens pour les performances
+  const processedItems = useMemo(() => {
+    if (!informations?.items) return [];
+    return informations.items.map(item => addGammeLinksToText(item, catalogueFamille));
+  }, [informations?.items, catalogueFamille]);
 
   if (!informations?.items || informations.items.length === 0) {
     return null;
   }
 
-  const displayItems = isExpanded ? informations.items : informations.items.slice(0, 5);
-  const hasMore = informations.items.length > 5;
+  const displayItems = isExpanded ? processedItems : processedItems.slice(0, INITIAL_DISPLAY_LIMIT);
+  const hasMore = informations.items.length > INITIAL_DISPLAY_LIMIT;
 
   return (
     <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
@@ -31,7 +105,7 @@ export default function InformationsSection({ informations }: InformationsSectio
       
       <div className="p-6">
         <div className="space-y-3">
-          {displayItems.map((info, index) => (
+          {displayItems.map((infoHtml, index) => (
             <div
               key={index}
               className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -39,9 +113,11 @@ export default function InformationsSection({ informations }: InformationsSectio
               <div className="flex-shrink-0 mt-1">
                 <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
               </div>
-              <div className="flex-1 text-gray-700 leading-relaxed">
-                {info}
-              </div>
+              <HtmlContent 
+                html={infoHtml}
+                className="flex-1 text-gray-700 leading-relaxed"
+                trackLinks={true}
+              />
             </div>
           ))}
         </div>
@@ -61,7 +137,7 @@ export default function InformationsSection({ informations }: InformationsSectio
                 </>
               ) : (
                 <>
-                  Voir toutes les informations ({informations.items.length - 5} de plus)
+                  Voir toutes les informations ({informations.items.length - INITIAL_DISPLAY_LIMIT} de plus)
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>

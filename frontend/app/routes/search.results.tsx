@@ -3,11 +3,25 @@
  */
 
 import { Badge } from "@fafa/ui";
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, useNavigation } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
 import { SearchBar } from '../components/search/SearchBar';
 import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
+
+/**
+ * 🔍 SEO Meta Tags - noindex pour pages de recherche
+ */
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const query = data?.query || '';
+  const total = data?.totalCount || 0;
+  
+  return [
+    { title: query ? `Recherche: ${query} | ${total} résultats` : 'Résultats de recherche' },
+    { name: 'description', content: `Résultats de recherche pour "${query}"` },
+    { name: 'robots', content: 'noindex, nofollow' }, // Pages recherche non indexées
+  ];
+};
 
 interface SearchResult {
   id: string;

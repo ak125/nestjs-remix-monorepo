@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "run-p dev:compile dev:watch",
     "dev:nest": "nest start --watch --preserveWatchOutput",
-    "dev:compile": "tsc --build --watch --preserveWatchOutput",
-    "dev:watch": "nodemon --delay 2000ms --watch dist dist/main.js",
+    "dev:compile": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --build --watch --preserveWatchOutput",
+    "dev:watch": "node wait-and-start.js",
+    "dev:no-redis": "nodemon --delay 3000ms --watch dist dist/main.js",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "tsc --build",
+    "build": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --build",
     "start": "node dist/main",
     "lint": "eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
@@ -23,6 +24,7 @@
     "start:prod": "node dist/main"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
     "@conform-to/react": "^1.8.2",
     "@conform-to/zod": "^1.8.2",
     "@google-analytics/data": "^5.2.1",
@@ -45,6 +47,7 @@
     "@nestjs/websockets": "^10.4.20",
     "@paralleldrive/cuid2": "^2.2.2",
     "@remix-run/express": "^2.17.2",
+    "@repo/database-types": "*",
     "@supabase/supabase-js": "^2.81.0",
     "@types/bull": "^4.10.4",
     "@types/compression": "^1.8.1",

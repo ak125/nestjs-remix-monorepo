@@ -286,12 +286,46 @@ export class CartController {
         `✅ Article ajouté: ${productIdNum} x${addItemDto.quantity}`,
       );
 
+      // ⚡ OPTIMISATION: Retourner le panier complet directement
+      // Évite un deuxième appel API depuis le frontend
+      this.logger.log(`⚡ Récupération panier complet pour optimisation...`);
+      const cartData =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+      this.logger.log(
+        `⚡ Panier optimisé: ${cartData.stats.totalQuantity} articles, ${cartData.stats.total.toFixed(2)}€`,
+      );
+
       return {
         success: true,
         message: `Article ajouté au panier`,
         item: result,
         productId: productIdNum,
         quantity: addItemDto.quantity,
+        // ⚡ Panier complet inclus dans la réponse
+        cart: {
+          cart_id: `cart_${userIdForCart}`,
+          user_id: req.user?.id || null,
+          items: cartData.items,
+          totals: {
+            total_items: cartData.stats.totalQuantity,
+            item_count: cartData.stats.totalQuantity,
+            subtotal: cartData.stats.subtotal,
+            consigne_total: cartData.stats.consigne_total || 0,
+            tax: 0,
+            shipping: 0,
+            discount: cartData.stats.promoDiscount,
+            total: cartData.stats.total,
+          },
+          summary: {
+            total_items: cartData.stats.totalQuantity,
+            total_price: cartData.stats.total,
+            subtotal: cartData.stats.subtotal,
+            tax_amount: 0,
+            shipping_cost: 0,
+            consigne_total: cartData.stats.consigne_total || 0,
+            currency: 'EUR',
+          },
+        },
       };
     } catch (error) {
       this.logger.error(
@@ -438,13 +472,51 @@ export class CartController {
         `Suppression article - session: ${sessionId}, itemId: ${itemId}`,
       );
 
-      // Utiliser CartDataService pour supprimer avec l'ID complet de l'item
-      await this.cartDataService.deleteCartItem(itemId, sessionId);
+      // Déterminer si c'est un ID complet ou juste un product_id
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      // Si c'est un numéro (product_id), utiliser removeCartItem
+      // Sinon, c'est un ID complet, utiliser deleteCartItem
+      const isProductId = /^\d+$/.test(itemId);
+
+      if (isProductId) {
+        // C'est un product_id numérique
+        this.logger.log(`🗑️ Suppression par product_id: ${itemId}`);
+        await this.cartDataService.removeCartItem(
+          userIdForCart,
+          parseInt(itemId, 10),
+        );
+      } else {
+        // C'est un ID complet (format: sessionId-productId-timestamp)
+        this.logger.log(`🗑️ Suppression par item ID complet: ${itemId}`);
+        await this.cartDataService.deleteCartItem(itemId, userIdForCart);
+      }
+
+      // ⚡ OPTIMISATION: Retourner le panier complet directement
+      const cartData =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+      this.logger.log(
+        `⚡ Panier après suppression: ${cartData.stats.totalQuantity} articles`,
+      );
 
       return {
         success: true,
         message: 'Article supprimé avec succès',
         itemId: itemId,
+        // ⚡ Panier complet inclus
+        cart: {
+          items: cartData.items,
+          summary: {
+            total_items: cartData.stats.totalQuantity,
+            total_price: cartData.stats.total,
+            subtotal: cartData.stats.subtotal,
+            tax_amount: 0,
+            shipping_cost: 0,
+            consigne_total: cartData.stats.consigne_total || 0,
+            currency: 'EUR',
+          },
+        },
       };
     } catch (error) {
       this.logger.error(

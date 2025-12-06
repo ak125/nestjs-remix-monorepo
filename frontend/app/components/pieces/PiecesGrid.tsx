@@ -1,8 +1,8 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
 // ✅ Images WebP optimisées automatiquement
-import React, { useMemo } from 'react';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
+import React, { useMemo } from "react";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 interface Piece {
   pie_id: number;
@@ -39,44 +39,53 @@ export const PiecesGrid: React.FC<PiecesGridProps> = ({
   gamme,
   vehicle,
   filters,
-  onFilterChange
+  onFilterChange,
 }) => {
   // Filtres et tri
   const filteredAndSortedPieces = useMemo(() => {
     let filtered = pieces;
 
     // Filtre par marque
-    if (filters.marque && filters.marque !== 'all') {
-      filtered = filtered.filter(piece => 
-        piece.marque_nom.toLowerCase().includes(filters.marque.toLowerCase())
+    if (filters.marque && filters.marque !== "all") {
+      filtered = filtered.filter((piece) =>
+        piece.marque_nom.toLowerCase().includes(filters.marque.toLowerCase()),
       );
     }
 
     // Filtre par recherche
     if (filters.search) {
-      filtered = filtered.filter(piece =>
-        piece.pie_designation.toLowerCase().includes(filters.search.toLowerCase()) ||
-        piece.oe_reference.toLowerCase().includes(filters.search.toLowerCase())
+      filtered = filtered.filter(
+        (piece) =>
+          piece.pie_designation
+            .toLowerCase()
+            .includes(filters.search.toLowerCase()) ||
+          piece.oe_reference
+            .toLowerCase()
+            .includes(filters.search.toLowerCase()),
       );
     }
 
     // Tri
     switch (filters.sortBy) {
-      case 'price_asc':
+      case "price_asc":
         return filtered.sort((a, b) => a.prix_unitaire - b.prix_unitaire);
-      case 'price_desc':
+      case "price_desc":
         return filtered.sort((a, b) => b.prix_unitaire - a.prix_unitaire);
-      case 'brand':
-        return filtered.sort((a, b) => a.marque_nom.localeCompare(b.marque_nom));
-      case 'name':
+      case "brand":
+        return filtered.sort((a, b) =>
+          a.marque_nom.localeCompare(b.marque_nom),
+        );
+      case "name":
       default:
-        return filtered.sort((a, b) => a.pie_designation.localeCompare(b.pie_designation));
+        return filtered.sort((a, b) =>
+          a.pie_designation.localeCompare(b.pie_designation),
+        );
     }
   }, [pieces, filters]);
 
   // Extraire les marques uniques pour le filtre
   const uniqueBrands = useMemo(() => {
-    const brands = pieces.map(p => p.marque_nom);
+    const brands = pieces.map((p) => p.marque_nom);
     return [...new Set(brands)].sort();
   }, [pieces]);
 
@@ -90,7 +99,9 @@ export const PiecesGrid: React.FC<PiecesGridProps> = ({
               {gamme.name} - {vehicle.marque} {vehicle.modele}
             </h1>
             <p className="text-gray-600">
-              {filteredAndSortedPieces.length} pièce{filteredAndSortedPieces.length > 1 ? 's' : ''} disponible{filteredAndSortedPieces.length > 1 ? 's' : ''}
+              {filteredAndSortedPieces.length} pièce
+              {filteredAndSortedPieces.length > 1 ? "s" : ""} disponible
+              {filteredAndSortedPieces.length > 1 ? "s" : ""}
             </p>
           </div>
           <div className="text-right">
@@ -112,7 +123,7 @@ export const PiecesGrid: React.FC<PiecesGridProps> = ({
 
       {/* Grid des pièces */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredAndSortedPieces.map(piece => (
+        {filteredAndSortedPieces.map((piece) => (
           <PieceCard key={piece.pie_id} piece={piece} />
         ))}
       </div>
@@ -148,7 +159,7 @@ const PiecesFilters: React.FC<{
       <input
         type="text"
         value={filters.search}
-        onChange={(e) => onFilterChange('search', e.target.value)}
+        onChange={(e) => onFilterChange("search", e.target.value)}
         placeholder="Nom ou référence..."
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
@@ -161,12 +172,14 @@ const PiecesFilters: React.FC<{
       </label>
       <select
         value={filters.marque}
-        onChange={(e) => onFilterChange('marque', e.target.value)}
+        onChange={(e) => onFilterChange("marque", e.target.value)}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">Toutes les marques</option>
-        {brands.map(brand => (
-          <option key={brand} value={brand}>{brand}</option>
+        {brands.map((brand) => (
+          <option key={brand} value={brand}>
+            {brand}
+          </option>
         ))}
       </select>
     </div>
@@ -178,7 +191,7 @@ const PiecesFilters: React.FC<{
       </label>
       <select
         value={filters.sortBy}
-        onChange={(e) => onFilterChange('sortBy', e.target.value)}
+        onChange={(e) => onFilterChange("sortBy", e.target.value)}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="name">Nom</option>
@@ -195,11 +208,11 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
   const stats = useMemo(() => {
     if (pieces.length === 0) return null;
 
-    const prices = pieces.map(p => p.prix_unitaire);
+    const prices = pieces.map((p) => p.prix_unitaire);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const availableCount = pieces.filter(p => p.disponibilite).length;
+    const availableCount = pieces.filter((p) => p.disponibilite).length;
 
     return { minPrice, maxPrice, avgPrice, availableCount };
   }, [pieces]);
@@ -208,25 +221,25 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-<Alert className="rounded-lg p-4" variant="info">
+      <Alert className="rounded-lg p-4" variant="info">
         <div className="text-2xl font-bold text-blue-600">
           {stats.minPrice.toFixed(2)}€
         </div>
         <div className="text-sm text-blue-800">Prix minimum</div>
       </Alert>
-<Alert className="rounded-lg p-4" variant="success">
+      <Alert className="rounded-lg p-4" variant="success">
         <div className="text-2xl font-bold text-green-600">
           {stats.maxPrice.toFixed(2)}€
         </div>
         <div className="text-sm text-green-800">Prix maximum</div>
       </Alert>
-<Alert className="rounded-lg p-4" variant="default">
+      <Alert className="rounded-lg p-4" variant="default">
         <div className="text-2xl font-bold text-purple-600">
           {stats.avgPrice.toFixed(2)}€
         </div>
         <div className="text-sm text-purple-800">Prix moyen</div>
       </Alert>
-<Alert className="rounded-lg p-4" variant="warning">
+      <Alert className="rounded-lg p-4" variant="warning">
         <div className="text-2xl font-bold text-orange-600">
           {stats.availableCount}
         </div>
@@ -238,28 +251,32 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
 
 // Composant Carte Pièce
 // 🖼️ Helper pour optimiser les URLs d'images en WebP
-const optimizeImageUrl = (imageUrl: string | undefined, width: number = 400): string => {
-  if (!imageUrl) return '';
-  
+const optimizeImageUrl = (
+  imageUrl: string | undefined,
+  _width: number = 400,
+): string => {
+  if (!imageUrl) return "";
+
   // Si c'est une URL Supabase, utiliser la transformation d'image
-  if (imageUrl.includes('supabase.co/storage')) {
+  if (imageUrl.includes("supabase.co/storage")) {
     const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
     if (match) {
       const path = match[1];
-      const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-      return `${SUPABASE_URL}/storage/v1/render/image/public/${path}?format=webp&width=${width}&quality=85`;
+      const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
+      // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
+      return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
     }
   }
-  
+
   return imageUrl;
 };
 
 const generateSrcSet = (imageUrl: string | undefined): string => {
-  if (!imageUrl) return '';
-  
+  if (!imageUrl) return "";
+
   return [300, 400, 600]
-    .map(width => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
-    .join(', ');
+    .map((width) => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
+    .join(", ");
 };
 
 const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
@@ -281,13 +298,14 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
           <span className="text-gray-400 text-4xl">🔧</span>
         </div>
       )}
-      
+
       {/* Badge disponibilité */}
-      <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
-        piece.disponibilite 
-          ? 'success' : 'error'
-      }`}>
-        {piece.disponibilite ? '✅ Dispo' : '❌ Rupture'}
+      <div
+        className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
+          piece.disponibilite ? "success" : "error"
+        }`}
+      >
+        {piece.disponibilite ? "✅ Dispo" : "❌ Rupture"}
       </div>
     </div>
 
@@ -322,7 +340,13 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
         </div>
 
         {/* Bouton d'action */}
-        <Button className="px-4 py-2 rounded-lg text-sm font-medium  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" disabled={!piece.disponibilite}>\n  {piece.disponibilite ? '🛒 Ajouter' : '❌ Indisponible'}\n</Button>
+        <Button
+          className="px-4 py-2 rounded-lg text-sm font-medium  disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="blue"
+          disabled={!piece.disponibilite}
+        >
+          \n {piece.disponibilite ? "🛒 Ajouter" : "❌ Indisponible"}\n
+        </Button>
       </div>
     </div>
   </div>

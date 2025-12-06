@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import { Car, TrendingUp, Zap } from 'lucide-react';
+import { VehicleImage } from '~/components/ui/ResponsiveImage';
 
 interface Vehicle {
   type_id: number;
@@ -90,16 +91,14 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
       
       {/* Contenu */}
       <div className="relative">
-        {/* Image avec effet hover */}
+        {/* Image responsive avec srcset */}
         <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-teal-800/20 to-cyan-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <img 
+          <VehicleImage 
             src={vehicle.image_url || '/images/default-vehicle.png'}
             alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
             className="relative w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => {
-              e.currentTarget.src = '/images/default-vehicle.png';
-            }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           
           {/* Badge puissance */}

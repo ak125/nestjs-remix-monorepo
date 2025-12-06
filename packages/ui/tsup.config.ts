@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     'components/alert': 'src/components/alert.tsx',
     'components/badge': 'src/components/badge.tsx',
+    'components/card': 'src/components/card.tsx',
   },
   format: ['cjs', 'esm'],
   dts: true,

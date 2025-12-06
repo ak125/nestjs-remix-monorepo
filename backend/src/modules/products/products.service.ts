@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
@@ -48,7 +49,7 @@ export class ProductsService extends SupabaseBaseService {
   async findAll(filters?: SearchProductDto) {
     try {
       let query = this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           *,
@@ -115,7 +116,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { search = '', page = 1, limit = 24 } = options;
 
-      let query = this.client.from('pieces').select(
+      let query = this.client.from(TABLES.pieces).select(
         `
           piece_id,
           piece_name,
@@ -229,7 +230,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // D'abord récupérer les données de base de la pièce
       const { data: pieceData, error: pieceError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .eq('piece_id', parseInt(id, 10))
         .single();
@@ -270,7 +271,7 @@ export class ProductsService extends SupabaseBaseService {
       let marqueData = null;
       if (pieceData.marque_id) {
         const { data: marque, error: marqueError } = await this.client
-          .from('auto_marque')
+          .from(TABLES.auto_marque)
           .select('*')
           .eq('marque_id', pieceData.marque_id)
           .single();
@@ -288,7 +289,7 @@ export class ProductsService extends SupabaseBaseService {
       // Récupérer les prix si disponibles
       let priceData = null;
       const { data: price, error: priceError } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .eq('piece_id', id)
         .single();
@@ -324,7 +325,7 @@ export class ProductsService extends SupabaseBaseService {
   async findBySku(sku: string) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .or(`piece_ref.eq.${sku},piece_ref_brut.eq.${sku}`)
         .single();
@@ -357,7 +358,7 @@ export class ProductsService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .insert(pieceData)
         .select()
         .single();
@@ -381,7 +382,7 @@ export class ProductsService extends SupabaseBaseService {
   async update(id: string, updateProductDto: UpdateProductDto) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           ...updateProductDto,
           updated_at: new Date().toISOString(),
@@ -409,7 +410,7 @@ export class ProductsService extends SupabaseBaseService {
   async remove(id: string) {
     try {
       const { error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -437,7 +438,7 @@ export class ProductsService extends SupabaseBaseService {
   async updateStock(id: string, quantity: number) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           stock_quantity: quantity,
           updated_at: new Date().toISOString(),
@@ -504,19 +505,19 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Test pieces_gamme
       const { data: gammes, error: gammeError } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*')
         .limit(3);
 
       // Test auto_marque
       const { data: marques, error: marqueError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name')
         .limit(5);
 
       // Test pieces
       const { data: pieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name')
         .limit(5);
 
@@ -551,14 +552,14 @@ export class ProductsService extends SupabaseBaseService {
       // 🎯 Compter uniquement les pièces AFFICHABLES (piece_display = true)
       // Structure réelle vérifiée: piece_display = boolean
       const { count: totalPieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true);
 
       // Compter les pièces actives disponibles (avec stock > 0)
       // piece_qty_sale est de type SMALLINT (int2), comparaison numérique possible
       const { count: activePieces, error: activeError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true)
         .not('piece_qty_sale', 'is', null)
@@ -566,21 +567,21 @@ export class ProductsService extends SupabaseBaseService {
 
       // Compter les gammes actives uniquement (pg_display = '1')
       const { count: totalGammes, error: gammesError } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', '1');
 
       // Compter les marques de pièces actives (pm_display = '1')
       // Note: pieces_marque contient les marques de pièces (toutes colonnes TEXT)
       const { count: totalMarques, error: marquesError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('*', { count: 'exact', head: true })
         .eq('pm_display', '1');
 
       // Compter les pièces avec stock faible (piece_qty_sale = 1)
       // piece_qty_sale est SMALLINT, comparaison numérique directe
       const { count: lowStockCount, error: lowStockError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true)
         .eq('piece_qty_sale', 1);
@@ -636,13 +637,13 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Récupérer quelques vraies pièces pour voir la structure - SANS spécifier les colonnes
       const { data: samplePieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(2);
 
       // Récupérer quelques vraies marques - SANS spécifier les colonnes
       const { data: sampleMarques, error: marquesError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('*')
         .limit(2);
 
@@ -681,7 +682,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Échantillon de stocks pour comprendre la distribution
       const { data: stockSample, error: stockError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name, piece_qty_sale, piece_display')
         .eq('piece_display', true)
         .not('piece_qty_sale', 'is', null)
@@ -700,7 +701,7 @@ export class ProductsService extends SupabaseBaseService {
       const rangeCounts: any = {};
       for (const range of ranges) {
         const { count } = await this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('*', { count: 'exact', head: true })
           .eq('piece_display', true)
           .gte('piece_qty_sale', range.min)
@@ -731,7 +732,7 @@ export class ProductsService extends SupabaseBaseService {
   async getGammes() {
     try {
       const { data, error } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias, pg_pic, pg_display, pg_top')
         .eq('pg_display', '1')
         .order('pg_name', { ascending: true })
@@ -781,7 +782,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les infos de la gamme
       const { data: gammeInfo, error: gammeError } = (await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias, pg_pic, pg_display')
         .eq('pg_id', gammeId)
         .single()) as {
@@ -801,7 +802,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Construire la requête pour les produits
       let query = this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact' })
         .eq('piece_ga_id', gammeId)
         .eq('piece_display', true);
@@ -840,7 +841,7 @@ export class ProductsService extends SupabaseBaseService {
         let brandsData: any[] = [];
         if (brandIds.length > 0) {
           const { data: brands, error: brandsError } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select(
               'marque_id, marque_name, marque_logo, marque_activ, marque_country',
             )
@@ -933,7 +934,7 @@ export class ProductsService extends SupabaseBaseService {
   async getBrandsTest() {
     try {
       const { data, error } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name')
         .limit(10);
 
@@ -956,7 +957,7 @@ export class ProductsService extends SupabaseBaseService {
       const searchTerm = `%${query}%`;
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -1004,7 +1005,7 @@ export class ProductsService extends SupabaseBaseService {
   async getBrands() {
     try {
       const { data, error } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_logo, marque_activ')
         .eq('marque_activ', '1')
         .order('marque_name', { ascending: true })
@@ -1035,7 +1036,7 @@ export class ProductsService extends SupabaseBaseService {
   async getModels(brandId: number) {
     try {
       const { data, error } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*')
         .eq('brand_id', brandId)
         .order('name', { ascending: true });
@@ -1058,7 +1059,7 @@ export class ProductsService extends SupabaseBaseService {
   async getTypes(modelId: number) {
     try {
       const { data, error } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .eq('model_id', modelId)
         .order('name', { ascending: true });
@@ -1081,7 +1082,7 @@ export class ProductsService extends SupabaseBaseService {
   async getPopularProducts(limit = 10) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           *,
@@ -1109,101 +1110,6 @@ export class ProductsService extends SupabaseBaseService {
   // ========== MÉTHODES AVANCÉES POUR PARITÉ PHP ==========
 
   /**
-   * Rechercher des produits par compatibilité véhicule
-   * Correspond à la table VEHICULES_PIECES
-   */
-  async findByVehicleCompatibility(filters: {
-    brand_id?: number;
-    model_id?: number;
-    motor_code?: string;
-    fuel_type?: string;
-    year_from?: number;
-    year_to?: number;
-    page?: number;
-    limit?: number;
-  }) {
-    try {
-      const { page = 1, limit = 20, ...vehicleFilters } = filters;
-
-      let query = this.client.from('vehicules_pieces').select(
-        `
-          piece_id,
-          brand_id,
-          model_id,
-          motor_code,
-          fuel_type,
-          year_from,
-          year_to,
-          pieces:pieces!vehicules_pieces_piece_id_fkey (
-            piece_id,
-            piece_name,
-            piece_ref,
-            piece_des,
-            piece_display,
-            piece_has_img
-          )
-        `,
-        { count: 'exact' },
-      );
-
-      // Appliquer les filtres
-      if (vehicleFilters.brand_id) {
-        query = query.eq('brand_id', vehicleFilters.brand_id);
-      }
-      if (vehicleFilters.model_id) {
-        query = query.eq('model_id', vehicleFilters.model_id);
-      }
-      if (vehicleFilters.motor_code) {
-        query = query.eq('motor_code', vehicleFilters.motor_code);
-      }
-      if (vehicleFilters.fuel_type) {
-        query = query.eq('fuel_type', vehicleFilters.fuel_type);
-      }
-      if (vehicleFilters.year_from) {
-        query = query.gte('year_from', vehicleFilters.year_from);
-      }
-      if (vehicleFilters.year_to) {
-        query = query.lte('year_to', vehicleFilters.year_to);
-      }
-
-      // Pagination
-      const offset = (page - 1) * limit;
-      query = query.range(offset, offset + limit - 1);
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        this.logger.error('Erreur findByVehicleCompatibility:', error);
-        throw error;
-      }
-
-      return {
-        products:
-          data?.map((item) => ({
-            ...item.pieces,
-            vehicle_compatibility: {
-              brand_id: item.brand_id,
-              model_id: item.model_id,
-              motor_code: item.motor_code,
-              fuel_type: item.fuel_type,
-              year_from: item.year_from,
-              year_to: item.year_to,
-            },
-          })) || [],
-        pagination: {
-          total: count || 0,
-          page,
-          limit,
-          totalPages: Math.ceil((count || 0) / limit),
-        },
-      };
-    } catch (error) {
-      this.logger.error('Erreur dans findByVehicleCompatibility:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Rechercher des produits par références OEM
    * Correspond à la table PIECES_REF_OEM
    */
@@ -1217,7 +1123,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { page = 1, limit = 20, ...oemFilters } = filters;
 
-      let query = this.client.from('pieces_ref_oem').select(
+      let query = this.client.from(TABLES.pieces_ref_oem).select(
         `
           piece_id,
           oem_number,
@@ -1284,7 +1190,7 @@ export class ProductsService extends SupabaseBaseService {
 
   /**
    * Rechercher des produits par critères techniques
-   * Correspond à la table PIECES_CRITERES
+   * Utilise la table pieces_criteria
    */
   async findByCriteria(filters: {
     criteria_type?: string;
@@ -1297,14 +1203,13 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { page = 1, limit = 20, ...criteriaFilters } = filters;
 
-      let query = this.client.from('pieces_criteres').select(
+      let query = this.client.from(TABLES.pieces_criteria).select(
         `
-          piece_id,
-          criteria_type,
-          criteria_value,
-          criteria_unit,
-          tolerance,
-          pieces:pieces!pieces_criteres_piece_id_fkey (
+          pc_piece_id,
+          pc_cri_id,
+          pc_cri_value,
+          pc_display,
+          pieces:pieces!pieces_criteria_pc_piece_id_fkey (
             piece_id,
             piece_name,
             piece_ref,
@@ -1318,24 +1223,12 @@ export class ProductsService extends SupabaseBaseService {
 
       // Appliquer les filtres
       if (criteriaFilters.criteria_type) {
-        query = query.eq('criteria_type', criteriaFilters.criteria_type);
+        query = query.eq('pc_cri_id', criteriaFilters.criteria_type);
       }
       if (criteriaFilters.criteria_value !== undefined) {
-        if (criteriaFilters.tolerance) {
-          // Recherche avec tolérance
-          const minValue =
-            criteriaFilters.criteria_value - criteriaFilters.tolerance;
-          const maxValue =
-            criteriaFilters.criteria_value + criteriaFilters.tolerance;
-          query = query
-            .gte('criteria_value', minValue)
-            .lte('criteria_value', maxValue);
-        } else {
-          query = query.eq('criteria_value', criteriaFilters.criteria_value);
-        }
-      }
-      if (criteriaFilters.criteria_unit) {
-        query = query.eq('criteria_unit', criteriaFilters.criteria_unit);
+        // Note: La table pieces_criteria stocke les IDs, pas les valeurs
+        // Cette logique doit être adaptée selon la structure réelle
+        query = query.eq('pc_cri_value', criteriaFilters.criteria_value);
       }
 
       // Pagination
@@ -1354,10 +1247,9 @@ export class ProductsService extends SupabaseBaseService {
           data?.map((item) => ({
             ...item.pieces,
             criteria: {
-              criteria_type: item.criteria_type,
-              criteria_value: item.criteria_value,
-              criteria_unit: item.criteria_unit,
-              tolerance: item.tolerance,
+              cri_id: item.pc_cri_id,
+              cri_value: item.pc_cri_value,
+              display: item.pc_display,
             },
           })) || [],
         pagination: {
@@ -1369,43 +1261,6 @@ export class ProductsService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('Erreur dans findByCriteria:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Ajouter une compatibilité véhicule à un produit
-   */
-  async addVehicleCompatibility(
-    pieceId: string,
-    compatibility: {
-      brand_id: number;
-      model_id: number;
-      motor_code?: string;
-      fuel_type?: string;
-      year_from?: number;
-      year_to?: number;
-    },
-  ) {
-    try {
-      const { data, error } = await this.client
-        .from('vehicules_pieces')
-        .insert({
-          piece_id: parseInt(pieceId, 10),
-          ...compatibility,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        this.logger.error('Erreur addVehicleCompatibility:', error);
-        throw error;
-      }
-
-      this.logger.log(`Compatibilité véhicule ajoutée pour pièce ${pieceId}`);
-      return data;
-    } catch (error) {
-      this.logger.error('Erreur dans addVehicleCompatibility:', error);
       throw error;
     }
   }
@@ -1424,7 +1279,7 @@ export class ProductsService extends SupabaseBaseService {
   ) {
     try {
       const { data, error } = await this.client
-        .from('pieces_ref_oem')
+        .from(TABLES.pieces_ref_oem)
         .insert({
           piece_id: parseInt(pieceId, 10),
           ...oemRef,
@@ -1451,18 +1306,19 @@ export class ProductsService extends SupabaseBaseService {
   async addProductCriteria(
     pieceId: string,
     criteria: {
-      criteria_type: string;
-      criteria_value: number;
-      criteria_unit?: string;
-      tolerance?: number;
+      cri_id: number;
+      cri_value: string;
+      display?: string;
     },
   ) {
     try {
       const { data, error } = await this.client
-        .from('pieces_criteres')
+        .from(TABLES.pieces_criteria)
         .insert({
-          piece_id: parseInt(pieceId, 10),
-          ...criteria,
+          pc_piece_id: parseInt(pieceId, 10),
+          pc_cri_id: criteria.cri_id,
+          pc_cri_value: criteria.cri_value,
+          pc_display: criteria.display || '1',
         })
         .select()
         .single();
@@ -1514,7 +1370,7 @@ export class ProductsService extends SupabaseBaseService {
   async getProductOEMReferences(pieceId: string) {
     try {
       const { data, error } = await this.client
-        .from('pieces_ref_oem')
+        .from(TABLES.pieces_ref_oem)
         .select('*')
         .eq('piece_id', parseInt(pieceId, 10));
 
@@ -1536,9 +1392,9 @@ export class ProductsService extends SupabaseBaseService {
   async getProductCriteria(pieceId: string) {
     try {
       const { data, error } = await this.client
-        .from('pieces_criteres')
+        .from(TABLES.pieces_criteria)
         .select('*')
-        .eq('piece_id', parseInt(pieceId, 10));
+        .eq('pc_piece_id', parseInt(pieceId, 10));
 
       if (error) {
         this.logger.error('Erreur getProductCriteria:', error);
@@ -1589,7 +1445,9 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🏪 getProductsForCommercial - Options:', options);
 
       // Étape 1 : Récupérer les pièces
-      let query = this.client.from('pieces').select('*', { count: 'exact' });
+      let query = this.client
+        .from(TABLES.pieces)
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (search) {
@@ -1652,7 +1510,7 @@ export class ProductsService extends SupabaseBaseService {
         ...new Set(piecesData.map((p) => p.piece_pm_id).filter(Boolean)),
       ];
       const { data: marquesData } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name, pm_logo')
         .in('pm_id', marqueIds);
 
@@ -1661,14 +1519,14 @@ export class ProductsService extends SupabaseBaseService {
         ...new Set(piecesData.map((p) => p.piece_pg_id).filter(Boolean)),
       ];
       const { data: gammesData } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name')
         .in('pg_id', gammeIds);
 
       // Étape 3 : Récupérer prix
       const pieceIds = piecesData.map((p) => p.piece_id);
       const { data: pricesData } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .in('pri_piece_id', pieceIds);
 
@@ -1788,7 +1646,7 @@ export class ProductsService extends SupabaseBaseService {
       );
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({ piece_display: isActive })
         .eq('piece_id', parseInt(pieceId, 10))
         .select();
@@ -1889,7 +1747,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les marques des pièces actives de cette gamme avec LIMIT élevé
       const { data: piecesData, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_pm_id')
         .eq('piece_pg_id', gammeId)
         .eq('piece_display', true)
@@ -1911,7 +1769,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les infos des marques
       const { data: brandsData, error: brandsError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name')
         .in('pm_id', brandIds)
         .order('pm_name', { ascending: true });
@@ -1948,7 +1806,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les gammes des pièces actives de cette marque avec LIMIT élevé
       const { data: piecesData, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_pg_id')
         .eq('piece_pm_id', brandId)
         .eq('piece_display', true)
@@ -1970,7 +1828,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les infos des gammes
       const { data: gammesData, error: gammesError } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name')
         .in('pg_id', gammeIds)
         .order('pg_name', { ascending: true });

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
+import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { CacheService } from '../../modules/cache/cache.service';
 
@@ -385,7 +386,7 @@ export class CartDataService extends SupabaseBaseService {
 
       // REQUÊTE SIMPLE POUR RÉCUPÉRER LA PIÈCE
       const { data: pieceData, error: pieceError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .eq('piece_id', productId)
         .single();
@@ -403,7 +404,7 @@ export class CartDataService extends SupabaseBaseService {
 
       // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
       const { data: priceData, error: priceError } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_vente_ttc, pri_consigne_ttc')
         .eq('pri_piece_id', productId)
         .limit(1);
@@ -419,7 +420,7 @@ export class CartDataService extends SupabaseBaseService {
 
           // Rechercher dans pieces_marque avec pm_id
           const { data: brandData, error: brandError } = await this.client
-            .from('pieces_marque')
+            .from(TABLES.pieces_marque)
             .select('pm_name, pm_alias, pm_id, pm_sort')
             .eq('pm_id', pieceData.piece_pm_id.toString())
             .single();

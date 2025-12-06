@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -221,7 +222,7 @@ export class CatalogService
   private async getMainCategories(): Promise<CatalogItem[]> {
     try {
       const { data, error } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           pg_id,
@@ -294,7 +295,7 @@ export class CatalogService
    */
   private async getFallbackQuickAccess(): Promise<CatalogItem[]> {
     const { data } = await this.supabase
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias, pg_image')
       .eq('pg_featured', 1)
       .eq('pg_display', 1)
@@ -366,7 +367,7 @@ export class CatalogService
     try {
       this.logger.log(`🔍 Recherche catalogue: "${query}" avec filtres`);
 
-      let queryBuilder = this.supabase.from('pieces_gamme').select(`
+      let queryBuilder = this.supabase.from(TABLES.pieces_gamme).select(`
           pg_id,
           pg_name,
           pg_alias,
@@ -469,7 +470,7 @@ export class CatalogService
   async getAutoBrands(limit: number = 50) {
     try {
       const { data, error } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_id,
@@ -518,7 +519,7 @@ export class CatalogService
   async getModelsByBrand(marqueId: number, limit: number = 100) {
     try {
       const { data, error } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,
@@ -572,7 +573,7 @@ export class CatalogService
   async searchPieces(query: string, limit: number = 50, offset: number = 0) {
     try {
       const { data, error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -623,12 +624,13 @@ export class CatalogService
   }
 
   /**
-   * Récupérer les détails d'une pièce
+   * Récupérer les détails d'une pièce avec prix, marque et images
    */
   async getPieceById(pieceId: number) {
     try {
-      const { data, error } = await this.supabase
-        .from('pieces')
+      // Récupérer la pièce avec toutes les informations nécessaires
+      const { data: pieceData, error: pieceError } = await this.supabase
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -643,36 +645,184 @@ export class CatalogService
           piece_has_img,
           piece_year,
           piece_qty_sale,
-          piece_qty_pack
+          piece_qty_pack,
+          piece_pm_id,
+          piece_pg_id
         `,
         )
         .eq('piece_id', pieceId)
         .eq('piece_display', true)
         .single();
 
-      if (error) {
-        throw error;
+      if (pieceError || !pieceData) {
+        throw pieceError || new Error('Pièce non trouvée');
+      }
+
+      // Récupérer le prix
+      const { data: prixData, error: prixError } = await this.supabase
+        .from(TABLES.pieces_price)
+        .select('pri_vente_ttc, pri_consigne_ttc, pri_dispo')
+        .eq('pri_piece_id', pieceId)
+        .eq('pri_type', 0)
+        .single();
+
+      this.logger.log(`📊 Prix récupéré pour piece ${pieceId}:`, prixData);
+      if (prixError) this.logger.warn(`⚠️ Erreur prix:`, prixError);
+
+      // Récupérer la marque
+      const { data: marqueData, error: marqueError } = await this.supabase
+        .from(TABLES.pieces_marque)
+        .select('pm_name, pm_logo, pm_quality, pm_nb_stars')
+        .eq('pm_id', pieceData.piece_pm_id)
+        .single();
+
+      this.logger.log(
+        `🏷️ Marque récupérée pour pm_id ${pieceData.piece_pm_id}:`,
+        marqueData,
+      );
+      if (marqueError) this.logger.warn(`⚠️ Erreur marque:`, marqueError);
+
+      // Récupérer les images
+      const { data: imagesData } = await this.supabase
+        .from(TABLES.pieces_media_img)
+        .select('pmi_folder, pmi_name')
+        .eq('pmi_piece_id', pieceId)
+        .order('pmi_sort', { ascending: true });
+
+      // Récupérer les critères techniques
+      const { data: criteresData } = await this.supabase
+        .from(TABLES.pieces_criteria)
+        .select('pc_cri_id, pc_cri_value')
+        .eq('pc_piece_id', pieceId)
+        .eq('pc_display', 1)
+        .order('pc_sort', { ascending: true });
+
+      // Récupérer les liens des critères (jointure manuelle)
+      // 🎯 Filtre PHP: pcl_level='1' pour critères prioritaires, avec fallback si aucun résultat
+      let criteresTechniques: any[] = [];
+      if (criteresData && criteresData.length > 0) {
+        const criIds = [...new Set(criteresData.map((c) => c.pc_cri_id))];
+
+        // Étape 1: Essayer avec pcl_level='1' (critères prioritaires)
+        let { data: linksData } = await this.supabase
+          .from(TABLES.pieces_criteria_link)
+          .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
+          .in('pcl_cri_id', criIds)
+          .eq('pcl_display', 1)
+          .eq('pcl_level', '1')
+          .order('pcl_level', { ascending: true });
+
+        let usedFallback = false;
+
+        // Étape 2: Fallback si aucun critère level=1 trouvé
+        if (!linksData || linksData.length === 0) {
+          usedFallback = true;
+          const fallbackResult = await this.supabase
+            .from(TABLES.pieces_criteria_link)
+            .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
+            .in('pcl_cri_id', criIds)
+            .eq('pcl_display', 1)
+            .order('pcl_level', { ascending: true });
+          linksData = fallbackResult.data;
+          this.logger.warn(
+            `⚠️ [CRITÈRES FALLBACK] piece_id=${pieceId}: aucun critère level=1, utilisation de tous les niveaux`,
+          );
+        }
+
+        // Logging pour monitoring
+        this.logger.log(
+          `📊 [CRITÈRES] piece_id=${pieceId}: ${criIds.length} critères → ${linksData?.length || 0} level=1 ${usedFallback ? '(FALLBACK all levels)' : ''}`,
+        );
+
+        // Créer une map des liens (prendre le premier par cri_id)
+        const linksMap = new Map();
+        linksData?.forEach((link) => {
+          if (!linksMap.has(link.pcl_cri_id)) {
+            linksMap.set(link.pcl_cri_id, link);
+          }
+        });
+
+        // Formater les critères avec leurs liens
+        criteresTechniques = criteresData
+          .map((crit) => {
+            const link = linksMap.get(crit.pc_cri_id);
+            return link
+              ? {
+                  id: crit.pc_cri_id,
+                  name: link.pcl_cri_criteria,
+                  value: crit.pc_cri_value,
+                  unit: link.pcl_cri_unit || '',
+                  level: link.pcl_level || '5',
+                  priority: link.pcl_level === '1',
+                }
+              : null;
+          })
+          .filter(Boolean);
+      }
+
+      // Récupérer les références OEM constructeurs (Type 3) depuis pieces_ref_search
+      const { data: refOemData } = await this.supabase
+        .from(TABLES.pieces_ref_search)
+        .select('prs_ref, prs_prb_id')
+        .eq('prs_piece_id', pieceId)
+        .eq('prs_kind', '3') // Type 3 = références OEM constructeurs (RENAULT, BMW, AUDI...)
+        .limit(50);
+
+      // Grouper les références OEM constructeurs par marque
+      const referencesOem: Record<string, string[]> = {};
+
+      if (refOemData && refOemData.length > 0) {
+        const brandIds = [...new Set(refOemData.map((r) => r.prs_prb_id))];
+        const { data: brandsData } = await this.supabase
+          .from(TABLES.pieces_ref_brand)
+          .select('prb_id, prb_name')
+          .in('prb_id', brandIds);
+
+        const brandMap = new Map(
+          brandsData?.map((b) => [b.prb_id.toString(), b.prb_name]) || [],
+        );
+
+        refOemData.forEach((ref) => {
+          const brandName = brandMap.get(ref.prs_prb_id.toString());
+          if (brandName) {
+            if (!referencesOem[brandName]) {
+              referencesOem[brandName] = [];
+            }
+            if (!referencesOem[brandName].includes(ref.prs_ref)) {
+              referencesOem[brandName].push(ref.prs_ref);
+            }
+          }
+        });
       }
 
       return {
         success: true,
-        data: data
-          ? {
-              id: data.piece_id,
-              reference: data.piece_ref,
-              referenceClean: data.piece_ref_clean,
-              name: data.piece_name,
-              description: data.piece_des,
-              completeName: data.piece_name_comp,
-              side: data.piece_name_side,
-              weight: data.piece_weight_kgm,
-              hasOem: data.piece_has_oem,
-              hasImage: data.piece_has_img,
-              year: data.piece_year,
-              quantitySale: data.piece_qty_sale,
-              quantityPack: data.piece_qty_pack,
-            }
-          : null,
+        data: {
+          id: pieceData.piece_id,
+          nom: pieceData.piece_name,
+          reference: pieceData.piece_ref,
+          marque: marqueData?.pm_name || '',
+          marque_logo: marqueData?.pm_logo || null,
+          qualite: marqueData?.pm_quality || null,
+          nb_stars: marqueData?.pm_nb_stars || 0,
+          prix_ttc: prixData?.pri_vente_ttc
+            ? parseFloat(prixData.pri_vente_ttc)
+            : 0,
+          consigne_ttc: prixData?.pri_consigne_ttc
+            ? parseFloat(prixData.pri_consigne_ttc)
+            : 0,
+          dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
+          description: pieceData.piece_des,
+          image: imagesData?.[0]
+            ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}`
+            : '',
+          images:
+            imagesData?.map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
+          weight: pieceData.piece_weight_kgm,
+          hasOem: pieceData.piece_has_oem,
+          criteresTechniques,
+          referencesOem,
+        },
       };
     } catch (error) {
       this.logger.error('Erreur lors de la récupération de la pièce:', error);
@@ -691,19 +841,19 @@ export class CatalogService
     try {
       // Statistiques des marques
       const { count: brandsCount, error: brandsError } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true })
         .eq('marque_display', 1);
 
       // Statistiques des modèles
       const { count: modelsCount, error: modelsError } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true })
         .eq('modele_display', 1);
 
       // Statistiques des pièces
       const { count: piecesCount, error: piecesError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true);
 
@@ -842,7 +992,7 @@ export class CatalogService
       );
 
       const { data, error } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_id,

@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
  * Service de cache stratégique pour le contenu blog
@@ -89,41 +90,12 @@ export class BlogCacheService {
   }
 
   /**
-   * Fonction simple de décodage des entités HTML les plus courantes
+   * Fonction de décodage des entités HTML
+   * ✅ Délègue à decodeHtmlEntities centralisé (80+ entités supportées)
    * Utilisée pour nettoyer le contenu des tables legacy __blog_*
    */
   static decodeHtmlEntities(text: string | null | undefined): string {
     if (!text) return '';
-
-    return text
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&apos;/g, "'")
-      .replace(/&agrave;/g, 'à')
-      .replace(/&acirc;/g, 'â')
-      .replace(/&auml;/g, 'ä')
-      .replace(/&eacute;/g, 'é')
-      .replace(/&egrave;/g, 'è')
-      .replace(/&ecirc;/g, 'ê')
-      .replace(/&euml;/g, 'ë')
-      .replace(/&icirc;/g, 'î')
-      .replace(/&iuml;/g, 'ï')
-      .replace(/&ocirc;/g, 'ô')
-      .replace(/&ouml;/g, 'ö')
-      .replace(/&ugrave;/g, 'ù')
-      .replace(/&ucirc;/g, 'û')
-      .replace(/&uuml;/g, 'ü')
-      .replace(/&ccedil;/g, 'ç')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&rsquo;/g, "'")
-      .replace(/&lsquo;/g, "'")
-      .replace(/&rdquo;/g, '"')
-      .replace(/&ldquo;/g, '"')
-      .replace(/&hellip;/g, '…')
-      .replace(/&ndash;/g, '–')
-      .replace(/&mdash;/g, '—');
+    return decodeHtmlEntities(text);
   }
 }

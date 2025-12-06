@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -248,13 +249,13 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     // 🎯 Récupérer gammes et catalogue en parallèle
     const [gammesResult, catalogGammeResult] = await Promise.all([
       this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img, pg_level')
         .in('pg_id', pgIds)
         .eq('pg_display', '1'),
       // ⚠️ SUPPRIMÉ: .in('pg_level', ['1', '2']) - Trop restrictif, exclut beaucoup de gammes
       this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('mc_pg_id, mc_mf_id, mc_sort')
         .in('mc_pg_id', pgIdsAsStrings),
     ]);
@@ -273,7 +274,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
 
     // 🎯 Récupérer les familles (mf_id déjà en string depuis catalog_gamme)
     const { data: familiesData, error: familiesError } = await this.supabase
-      .from('catalog_family')
+      .from(TABLES.catalog_family)
       .select('mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort')
       .in('mf_id', mfIds)
       .eq('mf_display', '1');
@@ -360,8 +361,16 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       0,
     );
 
+    // 🎯 SEO Validation: Logique PHP pour robots index/noindex
+    // family_count >= 3 ET gamme_count >= 5 → index, follow
+    const seoValidation = {
+      familyCount: finalFamilies.length,
+      gammeCount: totalGammes,
+      isIndexable: finalFamilies.length >= 3 && totalGammes >= 5,
+    };
+
     this.logger.log(
-      `✅ [${queryType}] ${finalFamilies.length} familles, ${totalGammes} gammes compatibles`,
+      `✅ [${queryType}] ${finalFamilies.length} familles, ${totalGammes} gammes compatibles, SEO: ${seoValidation.isIndexable ? 'indexable' : 'noindex'}`,
     );
 
     return {
@@ -369,6 +378,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       families: finalFamilies,
       totalFamilies: finalFamilies.length,
       totalGammes,
+      seoValidation,
     };
   }
 
@@ -385,18 +395,18 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     const [familiesResult, gammesResult, catalogGammeResult] =
       await Promise.all([
         this.supabase
-          .from('catalog_family')
+          .from(TABLES.catalog_family)
           .select(
             'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort',
           )
           .eq('mf_display', 1),
         this.supabase
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img')
           .eq('pg_display', 1),
         // ⚠️ SUPPRIMÉ: .in('pg_level', [1, 2]) - Trop restrictif
         this.supabase
-          .from('catalog_gamme')
+          .from(TABLES.catalog_gamme)
           .select('mc_pg_id, mc_mf_id, mc_sort'),
       ]);
 
@@ -501,7 +511,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       // 🔥 OPTIMISATION: Sélectionner seulement rtp_pg_id (pas rtp_piece_id, rtp_pm_id)
       // pour réduire la quantité de données
       const { data: relationData, error } = await this.supabase
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_pg_id') // 🔥 Seulement ce qu'on utilise vraiment
         .eq('rtp_type_id', typeId)
         .limit(5000); // 🔥 Réduit à 5000 pour éviter timeout

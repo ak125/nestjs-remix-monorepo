@@ -4,350 +4,296 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 /**
  * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES
  *
- * Anciennement PiecesPhpLogicService - Renommé pour plus de clarté
- * Gère la compatibilité entre pièces automobiles et véhicules spécifiques
+ * ⚡ OPTIMISÉ V2: Utilise exclusivement la RPC get_pieces_for_type_gamme
+ * - 1 seule requête SQL au lieu de 9
+ * - Performance: ~30ms au lieu de 2-4 secondes
+ * - Images via CDN Supabase direct
+ *
+ * @see backend/sql/003-create-rpc-get-pieces-for-type-gamme.sql
  */
 @Injectable()
 export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
-   * 🎯 LOGIQUE PHP EXACTE INTÉGRÉE - Version finale fonctionnelle
-   * Extrait du fichier PHP analysé et optimisé avec l'approche V4 hybride
+   * 🚀 MÉTHODE PRINCIPALE: Appel RPC optimisé
+   *
+   * Remplace les 9 requêtes REST API par 1 seule requête SQL côté serveur.
+   * La RPC gère: relations, pièces, prix, marques, images, positions, groupements.
+   *
+   * @param typeId - ID du type de véhicule (ex: 33302)
+   * @param pgId - ID de la gamme de pièces (ex: 402)
+   * @returns Données complètes formatées pour le frontend
    */
-  async getPiecesExactPHP(typeId: number, pgId: number) {
+  async getPiecesViaRPC(typeId: number, pgId: number): Promise<PiecesResult> {
     const startTime = Date.now();
-    this.logger.log(`🚀 [PHP-LOGIC] type_id=${typeId}, pg_id=${pgId}`);
+    this.logger.log(`🚀 [RPC] get_pieces_for_type_gamme(${typeId}, ${pgId})`);
 
     try {
-      // 1️⃣ RÉCUPÉRATION DES RELATIONS (logique PHP: SELECT DISTINCT FROM pieces_relation_type)
-      const { data: relationsData, error: relationsError } = await this.client
-        .from('pieces_relation_type')
-        .select('rtp_piece_id, rtp_psf_id, rtp_pm_id')
-        .eq('rtp_type_id', typeId)
-        .eq('rtp_pg_id', pgId);
+      const { data, error } = await this.client.rpc(
+        'get_pieces_for_type_gamme',
+        {
+          p_type_id: typeId,
+          p_pg_id: pgId,
+        },
+      );
 
-      if (relationsError) {
-        this.logger.error('❌ Erreur relations:', relationsError);
-        return {
-          pieces: [],
-          count: 0,
-          minPrice: null,
-          error: relationsError.message,
-          success: false,
-        };
+      if (error) {
+        this.logger.error(`❌ [RPC] Erreur: ${error.message}`);
+        return this.createEmptyResult(error.message);
       }
-
-      if (!relationsData?.length) {
-        this.logger.log(
-          `⚠️ Aucune relation trouvée pour type_id=${typeId}, pg_id=${pgId}`,
-        );
-        return {
-          pieces: [],
-          count: 0,
-          minPrice: null,
-          message: 'Aucune pièce disponible pour ce véhicule et cette gamme',
-          success: true,
-        };
-      }
-
-      // 2️⃣ RÉCUPÉRATION PARALLÈLE DES DONNÉES (optimisation V4 hybride)
-      const pieceIds = [...new Set(relationsData.map((r) => r.rtp_piece_id))];
-      const pmIds = [
-        ...new Set(relationsData.map((r) => r.rtp_pm_id).filter(Boolean)),
-      ];
-
-      this.logger.log(
-        `🚀 [PARALLEL] ${relationsData.length} relations → ${pieceIds.length} pièces, ${pmIds.length} marques`,
-      );
-
-      const [piecesResult, marquesResult, pricesResult, filtresResult, imagesResult] =
-        await Promise.all([
-          // Pièces (logique PHP: SELECT * FROM pieces WHERE piece_id IN (...))
-          this.client
-            .from('pieces')
-            .select(
-              `
-            piece_id, piece_name, piece_ref, piece_ref_clean, piece_des,
-            piece_has_img, piece_has_oem, piece_qty_sale, piece_qty_pack,
-            piece_name_side, piece_name_comp, piece_fil_id, piece_fil_name,
-            piece_display, piece_pm_id
-          `,
-            )
-            .in('piece_id', pieceIds)
-            .eq('piece_display', 1),
-
-          // Marques d'équipementiers (logique PHP: SELECT * FROM pieces_marque WHERE pm_id IN (...))
-          // 🔥 Ne PAS filtrer par pm_display - on veut toutes les marques associées aux pièces
-          pmIds.length > 0
-            ? this.client
-                .from('pieces_marque')
-                .select(
-                  'pm_id, pm_name, pm_alias, pm_logo, pm_quality, pm_oes, pm_nb_stars, pm_display',
-                )
-                .in('pm_id', pmIds)
-            : { data: [], error: null },
-
-          // Prix (logique PHP: ORDER BY PRI_TYPE DESC pour prendre le meilleur prix)
-          this.client
-            .from('pieces_price')
-            .select(
-              'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
-            )
-            .in('pri_piece_id', pieceIds)
-            .eq('pri_dispo', 1) // Rétabli selon PHP
-            .order('pri_type', { ascending: false }), // PRI_TYPE DESC comme dans PHP
-
-          // Filtres de côté (logique PHP pour les sides)
-          this.client
-            .from('pieces_side_filtre')
-            .select('psf_id, psf_side, psf_sort')
-            .in(
-              'psf_id',
-              relationsData.map((r) => r.rtp_psf_id).filter(Boolean),
-            ),
-
-          // Images (depuis pieces_media_img)
-          this.client
-            .from('pieces_media_img')
-            .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display')
-            .in('pmi_piece_id', pieceIds.map((id) => id.toString()))
-            .eq('pmi_display', '1')
-            .order('pmi_sort', { ascending: true }),
-        ]);
-
-      if (piecesResult.error) {
-        this.logger.error('❌ Erreur pièces:', piecesResult.error);
-        return {
-          pieces: [],
-          count: 0,
-          minPrice: null,
-          error: piecesResult.error.message,
-          success: false,
-        };
-      }
-
-      // 3️⃣ CONSTRUCTION DES MAPS POUR PERFORMANCE O(1) (optimisation)
-      const piecesData = piecesResult.data || [];
-      const marquesData = marquesResult.data || [];
-      const pricesData = pricesResult.data || [];
-      const filtresData = filtresResult.data || [];
-      const imagesData = imagesResult.data || [];
-
-      // 🔍 DEBUG: Vérification des données récupérées
-      // Logs de debug pour diagnostiquer les prix
-      this.logger.log(
-        `🔍 [DEBUG] Données récupérées: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${filtresData.length} filtres, ${imagesData.length} images`,
-      );
-      if (pricesData.length > 0) {
-        this.logger.log(
-          `🔍 [DEBUG] Premier prix: ${JSON.stringify(pricesData[0])}`,
-        );
-      }
-
-      // Maps pour jointure rapide en mémoire
-      // 🔥 CRITIQUE: Convertir pm_id en string car Supabase retourne des strings
-      const marquesMap = new Map(
-        marquesData.map((m) => [m.pm_id.toString(), m]),
-      );
-      const filtresMap = new Map(filtresData.map((f) => [f.psf_id, f]));
-      const imagesMap = new Map(
-        imagesData.map((img) => [img.pmi_piece_id.toString(), img]),
-      );
-      const relationsMap = new Map(
-        relationsData.map((r) => [r.rtp_piece_id, r]),
-      );
-
-      // Debug: vérifier le contenu du marquesMap
-      this.logger.log(
-        `🔍 [DEBUG-MARQUES] ${marquesMap.size} marques dans le Map, clés: ${Array.from(marquesMap.keys()).slice(0, 5).join(', ')}`,
-      );
-
-      // Prix : garde le meilleur prix par pièce (logique PHP)
-      const pricesMap = new Map();
-      pricesData.forEach((p) => {
-        if (
-          !pricesMap.has(p.pri_piece_id) ||
-          p.pri_type > pricesMap.get(p.pri_piece_id).pri_type
-        ) {
-          pricesMap.set(p.pri_piece_id, p);
-        }
-      });
-
-      // 4️⃣ TRANSFORMATION DES DONNÉES SELON LOGIQUE PHP EXACTE
-      const pieces = piecesData.map((piece) => {
-        const relation = relationsMap.get(piece.piece_id);
-
-        // 🔥 Conversion en string pour correspondre aux clés de marquesMap
-        const marqueKey = (
-          relation?.rtp_pm_id || piece.piece_pm_id
-        )?.toString();
-
-        // Debug pour la première pièce
-        if (piece.piece_id === piecesData[0]?.piece_id) {
-          this.logger.log(
-            `🔍 [DEBUG-MARQUE] Pièce ${piece.piece_id}: relation.rtp_pm_id=${relation?.rtp_pm_id}, piece.piece_pm_id=${piece.piece_pm_id}, marqueKey=${marqueKey}`,
-          );
-          this.logger.log(
-            `🔍 [DEBUG-MARQUE] marquesMap.has("${marqueKey}")=${marquesMap.has(marqueKey)}`,
-          );
-        }
-
-        const marqueEquip = marquesMap.get(marqueKey);
-        const price = pricesMap.get(piece.piece_id.toString()); // 🔧 Conversion en string
-        const filtre = filtresMap.get(relation?.rtp_psf_id);
-
-        // Calcul du prix total (logique PHP EXACTE avec debug)
-        const prixUnitaire = parseFloat(price?.pri_vente_ttc || '0');
-        const quantiteVente = parseFloat(piece.piece_qty_sale || '1');
-        const prixTotal = prixUnitaire * quantiteVente;
-        const prixConsigne =
-          parseFloat(price?.pri_consigne_ttc || '0') * quantiteVente;
-
-        // Debug des prix pour la première pièce
-        if (piece.piece_id === piecesData[0]?.piece_id) {
-          this.logger.log(
-            `🔍 [DEBUG-PRIX] Pièce ${piece.piece_id}: prix_unitaire=${prixUnitaire}, qty=${quantiteVente}, total=${prixTotal}, consigne=${prixConsigne}`,
-          );
-          this.logger.log(
-            `🔍 [DEBUG-PRIX] Prix brut: ${JSON.stringify(price)}`,
-          );
-        }
-
-        // Détermination de la qualité selon pm_oes
-        let qualite = 'AFTERMARKET';
-        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O') {
-          qualite = 'OES';
-        }
-        if (prixConsigne > 0) {
-          qualite = 'Echange Standard';
-        }
-
-        // Nom complet de la pièce - ÉVITER LES RÉPÉTITIONS
-        const nomParts: string[] = [piece.piece_name];
-
-        // Ajouter le côté SEULEMENT s'il n'est pas déjà dans piece_name
-        const sideToAdd = piece.piece_name_side || filtre?.psf_side;
-        if (
-          sideToAdd &&
-          !piece.piece_name?.toLowerCase().includes(sideToAdd.toLowerCase())
-        ) {
-          nomParts.push(sideToAdd);
-        }
-
-        // Ajouter le complément SEULEMENT s'il existe et n'est pas déjà présent
-        if (
-          piece.piece_name_comp &&
-          !piece.piece_name
-            ?.toLowerCase()
-            .includes(piece.piece_name_comp.toLowerCase())
-        ) {
-          nomParts.push(piece.piece_name_comp);
-        }
-
-        const nomComplet = nomParts.filter(Boolean).join(' ').trim();
-
-        return {
-          id: piece.piece_id,
-          nom: nomComplet || 'Pièce sans nom',
-          reference: piece.piece_ref || '',
-          reference_clean: piece.piece_ref_clean || '',
-          description: piece.piece_des || '',
-          marque: marqueEquip?.pm_name || 'Marque inconnue',
-          marque_id: marqueEquip?.pm_id || null,
-          marque_logo: marqueEquip?.pm_logo || null,
-          prix_ttc: prixTotal,
-          prix_unitaire: prixUnitaire,
-          prix_consigne: prixConsigne,
-          prix_total: prixTotal + prixConsigne,
-          quantite_vente: quantiteVente,
-          qualite,
-          nb_stars: marqueEquip?.pm_nb_stars || 0,
-          has_image: piece.piece_has_img === 1,
-          has_oem: piece.piece_has_oem === 1,
-          filtre_gamme: piece.piece_fil_name || '',
-          filtre_side: filtre?.psf_side || '',
-          image: this.buildImageUrl(piece.piece_id, piece.piece_has_img, imagesMap),
-          url: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
-        };
-      });
-
-      // 5️⃣ CALCUL DU PRIX MINIMUM GLOBAL (logique PHP)
-      const validPrices = pieces
-        .map((p) => p.prix_ttc)
-        .filter((price) => price > 0);
-      const globalMinPrice =
-        validPrices.length > 0 ? Math.min(...validPrices) : null;
-
-      // 6️⃣ GROUPEMENT PAR FILTRE (comme dans le PHP original)
-      const groupedByFilter = pieces.reduce((acc: any, piece: any) => {
-        const key = `${piece.filtre_gamme}_${piece.filtre_side}`;
-        if (!acc[key]) {
-          acc[key] = {
-            filtre_gamme: piece.filtre_gamme,
-            filtre_side: piece.filtre_side,
-            pieces: [],
-          };
-        }
-        acc[key].pieces.push(piece);
-        return acc;
-      }, {});
 
       const duration = Date.now() - startTime;
+      const count = data?.count || 0;
+      const minPrice = data?.minPrice || null;
 
       this.logger.log(
-        `✅ [PHP-LOGIC] ${pieces.length} pièces trouvées, prix min: ${globalMinPrice}€ en ${duration}ms`,
+        `✅ [RPC] ${count} pièces, prix min: ${minPrice}€ en ${duration}ms`,
       );
 
       return {
-        pieces,
-        grouped_pieces: Object.values(groupedByFilter),
-        count: pieces.length,
-        minPrice: globalMinPrice,
-        relations_found: relationsData.length,
+        ...data,
         duration: `${duration}ms`,
+        method: 'RPC_V2',
         success: true,
-        optimization: 'PHP_LOGIC_INTEGRATED_V4_HYBRID',
       };
     } catch (error: any) {
+      this.logger.error(`❌ [RPC] Exception: ${error.message}`);
+      return this.createEmptyResult(error.message);
+    }
+  }
+
+  /**
+   * @deprecated Utiliser getPiecesViaRPC() à la place
+   * Maintenu pour rétrocompatibilité - redirige vers RPC
+   */
+  async getPiecesExactPHP(typeId: number, pgId: number): Promise<PiecesResult> {
+    this.logger.warn('⚠️ [DEPRECATED] getPiecesExactPHP appelé → RPC');
+    return this.getPiecesViaRPC(typeId, pgId);
+  }
+
+  /**
+   * Crée un résultat vide avec message d'erreur
+   */
+  private createEmptyResult(errorMessage?: string): PiecesResult {
+    return {
+      pieces: [],
+      grouped_pieces: [],
+      blocs: [],
+      count: 0,
+      minPrice: null,
+      relations_found: 0,
+      success: false,
+      error: errorMessage || 'Aucune donnée disponible',
+      method: 'RPC_V2',
+      duration: '0ms',
+    };
+  }
+
+  /**
+   * 🔧 Récupère les refs OEM constructeur pour une page liste
+   * Filtrées par la marque du véhicule (ex: RENAULT sur Clio)
+   *
+   * @param typeId - ID du type de véhicule
+   * @param pgId - ID de la gamme de pièces
+   * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
+   * @returns Liste des refs OEM de cette marque
+   */
+  async getOemRefsForVehicle(
+    typeId: number,
+    pgId: number,
+    marqueName: string,
+  ): Promise<OemRefsResult> {
+    const startTime = Date.now();
+    this.logger.log(
+      `🔧 [RPC] get_oem_refs_for_vehicle(${typeId}, ${pgId}, ${marqueName})`,
+    );
+
+    try {
+      const { data, error } = await this.client.rpc(
+        'get_oem_refs_for_vehicle',
+        {
+          p_type_id: typeId,
+          p_pg_id: pgId,
+          p_marque_name: marqueName,
+        },
+      );
+
+      if (error) {
+        this.logger.warn(`⚠️ [RPC OEM] Erreur: ${error.message}`);
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+          error: error.message,
+        };
+      }
+
       const duration = Date.now() - startTime;
-      this.logger.error(`❌ [PHP-LOGIC] Erreur: ${error.message}`);
+      this.logger.log(
+        `✅ [RPC OEM] ${data?.count || 0} refs ${marqueName} en ${duration}ms`,
+      );
+
       return {
-        pieces: [],
+        vehicleMarque: data?.vehicleMarque || marqueName.toUpperCase(),
+        oemRefs: data?.oemRefs || [],
+        count: data?.count || 0,
+        piecesWithOem: data?.piecesWithOem,
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ [RPC OEM] Exception: ${error.message}`);
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
         count: 0,
-        minPrice: null,
         error: error.message,
-        success: false,
-        duration: `${duration}ms`,
       };
     }
   }
 
   /**
-   * Construire l'URL de l'image depuis Supabase rack-images
-   * Ne pas vérifier piece_has_img car ce champ n'est pas fiable
+   * 🚀 Récupère les refs OEM de manière légère (sans RPC lente)
+   * Utilise les piece_ids déjà récupérés par getPiecesViaRPC
+   *
+   * @param pieceIds - Liste des IDs de pièces déjà récupérées
+   * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
+   * @returns Liste des refs OEM filtrées par marque
    */
-  private buildImageUrl(
-    pieceId: number,
-    hasImg: number,
-    imagesMap: Map<string, any>,
-  ): string {
-    // Chercher l'image directement dans la Map (ignore piece_has_img)
-    const image = imagesMap.get(pieceId.toString());
-    
-    if (image?.pmi_folder && image?.pmi_name) {
-      // URL Supabase rack-images directe (pmi_name contient déjà l'extension)
-      return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${image.pmi_folder}/${image.pmi_name}`;
+  async getOemRefsLightweight(
+    pieceIds: number[],
+    marqueName: string,
+  ): Promise<OemRefsResult> {
+    const startTime = Date.now();
+    this.logger.log(
+      `🔧 [OEM-LIGHT] Récupération refs OEM pour ${pieceIds.length} pièces, marque=${marqueName}`,
+    );
+
+    if (!pieceIds || pieceIds.length === 0) {
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
+        count: 0,
+      };
     }
 
-    return '/images/pieces/default.png';
-  }
+    try {
+      // 1. Récupérer le brand_id de la marque constructeur
+      const { data: brandData, error: brandError } = await this.client
+        .from('pieces_ref_brand')
+        .select('prb_id')
+        .eq('prb_name', marqueName.toUpperCase())
+        .limit(1)
+        .single();
 
-  private slugify(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+      if (brandError || !brandData) {
+        this.logger.warn(`⚠️ [OEM-LIGHT] Marque "${marqueName}" non trouvée`);
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+        };
+      }
+
+      // 2. Récupérer les refs OEM (kind=3) pour ces pièces et cette marque
+      // Limite à 100 pièces pour éviter les requêtes trop grosses
+      const limitedPieceIds = pieceIds.slice(0, 100);
+
+      const { data: refData, error: refError } = await this.client
+        .from('pieces_ref_search')
+        .select('prs_ref')
+        .in('prs_piece_id', limitedPieceIds)
+        .eq('prs_prb_id', brandData.prb_id)
+        .eq('prs_kind', '3') // Type 3 = OEM constructeurs
+        .limit(200);
+
+      if (refError) {
+        this.logger.warn(
+          `⚠️ [OEM-LIGHT] Erreur requête refs: ${refError.message}`,
+        );
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+          error: refError.message,
+        };
+      }
+
+      // 3. Extraire les refs uniques
+      const uniqueRefs = [...new Set((refData || []).map((r) => r.prs_ref))];
+      const duration = Date.now() - startTime;
+
+      this.logger.log(
+        `✅ [OEM-LIGHT] ${uniqueRefs.length} refs OEM ${marqueName} en ${duration}ms`,
+      );
+
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: uniqueRefs,
+        count: uniqueRefs.length,
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ [OEM-LIGHT] Exception: ${error.message}`);
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
+        count: 0,
+        error: error.message,
+      };
+    }
   }
+}
+
+/**
+ * Interface pour les résultats de la RPC
+ */
+export interface PiecesResult {
+  pieces: PieceItem[];
+  grouped_pieces: GroupedPieces[];
+  blocs: GroupedPieces[];
+  count: number;
+  minPrice: number | null;
+  relations_found: number;
+  success: boolean;
+  error?: string;
+  method: string;
+  duration: string;
+}
+
+/** 🔧 Résultat des refs OEM constructeur */
+export interface OemRefsResult {
+  vehicleMarque: string;
+  oemRefs: string[];
+  count: number;
+  piecesWithOem?: number;
+  error?: string;
+}
+
+export interface PieceItem {
+  id: number;
+  nom: string;
+  reference: string;
+  reference_clean: string;
+  description: string | null;
+  marque: string;
+  marque_id: number | null;
+  marque_logo: string | null;
+  nb_stars: number;
+  prix_unitaire: number;
+  prix_ttc: number;
+  prix_consigne: number;
+  prix_total: number;
+  quantite_vente: number;
+  dispo: boolean;
+  image: string;
+  qualite: string;
+  filtre_gamme: string | null;
+  filtre_side: string;
+  has_image: boolean;
+  has_oem: boolean;
+  url: string;
+}
+
+export interface GroupedPieces {
+  filtre_gamme: string;
+  filtre_side: string;
+  title_h2: string;
+  pieces: PieceItem[];
 }

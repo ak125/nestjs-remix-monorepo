@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/equipementiers.service.ts
 // 🏭 Service pour gérer les équipementiers (table pieces_marque)
 
@@ -77,7 +78,7 @@ export class EquipementiersService extends SupabaseBaseService {
 
       // Requête optimisée avec filtrage pm_display = 1
       const { data: equipementiers, error } = await this.supabase
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name, pm_top, pm_sort')
         .eq('pm_display', '1'); // Filtrer seulement les équipementiers à afficher (string car text field)
 
@@ -154,7 +155,7 @@ export class EquipementiersService extends SupabaseBaseService {
       this.logger.log(`🏭 Récupération équipementier ID: ${equipementierId}`);
 
       const { data: equipementier, error } = await this.supabase
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name')
         .eq('pm_id', equipementierId)
         .single();
@@ -186,7 +187,7 @@ export class EquipementiersService extends SupabaseBaseService {
       this.logger.log(`🔍 Recherche équipementiers: "${searchTerm}"`);
 
       const { data: equipementiers, error } = await this.supabase
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name')
         .ilike('pm_name', `%${searchTerm}%`)
         .order('pm_name', { ascending: true });

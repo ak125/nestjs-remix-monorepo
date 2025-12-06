@@ -4,7 +4,6 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  UseGuards,
   Logger,
 } from '@nestjs/common';
 import { AiContentService } from './ai-content.service';

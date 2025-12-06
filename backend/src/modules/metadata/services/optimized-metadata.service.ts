@@ -17,6 +17,7 @@
  */
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -72,7 +73,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
 
       // Récupérer depuis la table ___meta_tags_ariane
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .eq('mta_alias', cleanPath)
         .single();
@@ -154,7 +155,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
 
       // Upsert dans la table
       const { error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .upsert(dbData);
 
       if (error) {
@@ -185,7 +186,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
       const cleanPath = this.cleanPath(path);
 
       const { error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .delete()
         .eq('mta_alias', cleanPath);
 
@@ -212,7 +213,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   async generateSitemap(): Promise<string[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_alias')
         .not('mta_alias', 'is', null);
 
@@ -339,7 +340,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   > {
     try {
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .order('mta_id', { ascending: false });
 
@@ -373,7 +374,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
       const cleanPath = this.cleanPath(path);
 
       const { error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .delete()
         .eq('mta_url', cleanPath);
 
@@ -403,7 +404,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
       const cleanPath = this.cleanPath(path);
 
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_id')
         .eq('mta_url', cleanPath)
         .single();
@@ -421,7 +422,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   async countMetadata(): Promise<number> {
     try {
       const { count, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*', { count: 'exact', head: true });
 
       if (error) {

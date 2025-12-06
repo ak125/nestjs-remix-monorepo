@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../database/services/supabase-base.service';
 
 export interface RealPiece {
@@ -38,7 +39,7 @@ export class PiecesRealService extends SupabaseBaseService {
     try {
       // 1. D'abord, vérifions si la gamme existe
       const { data: gammeData, error: gammeError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias')
         .eq('pg_id', pgId)
         .single();
@@ -58,7 +59,7 @@ export class PiecesRealService extends SupabaseBaseService {
         error: piecesError,
         count,
       } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -117,14 +118,14 @@ export class PiecesRealService extends SupabaseBaseService {
     try {
       // Comptage des pièces dans cette gamme
       const { count } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_pg_id', pgId)
         .eq('piece_display', true);
 
       // Info gamme
       const { data: gammeData } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_name, pg_alias')
         .eq('pg_id', pgId)
         .single();

@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -107,7 +108,7 @@ export class VehicleNamingService extends SupabaseBaseService {
     try {
       // 1. Récupérer les types actifs
       const { data: types, error: typesError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
@@ -139,7 +140,7 @@ export class VehicleNamingService extends SupabaseBaseService {
         ),
       ];
       const { data: modeles, error: modelesError } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_name, modele_ful_name')
         .in('modele_id', modeleIds);
 
@@ -155,7 +156,7 @@ export class VehicleNamingService extends SupabaseBaseService {
         ),
       ];
       const { data: marques, error: marquesError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name')
         .in('marque_id', marqueIds);
 

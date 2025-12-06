@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export enum OrderLineStatusCode {
@@ -46,7 +47,7 @@ export class OrderStatusService extends SupabaseBaseService {
     try {
       // Récupérer la ligne actuelle avec Supabase
       const { data: currentLine, error: fetchError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('id', lineId)
         .single();
@@ -64,7 +65,7 @@ export class OrderStatusService extends SupabaseBaseService {
 
       // Mettre à jour la ligne avec Supabase
       const { data: updatedLine, error: updateError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({
           status: newStatus,
           updated_at: new Date().toISOString(),
@@ -153,7 +154,7 @@ export class OrderStatusService extends SupabaseBaseService {
    */
   private async checkAndUpdateOrderStatus(orderId: number): Promise<void> {
     const { data: lines, error } = await this.supabase
-      .from('___xtr_order_line')
+      .from(TABLES.xtr_order_line)
       .select('status')
       .eq('order_id', orderId);
 
@@ -171,7 +172,7 @@ export class OrderStatusService extends SupabaseBaseService {
       const globalStatus = this.mapLineStatusToOrderStatus(lines[0].status);
 
       const { error: updateError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           status: globalStatus,
           updated_at: new Date().toISOString(),
@@ -184,7 +185,7 @@ export class OrderStatusService extends SupabaseBaseService {
       }
 
       const { error: historyError } = await this.supabase
-        .from('___xtr_order_status')
+        .from(TABLES.xtr_order_status)
         .insert({
           order_id: orderId,
           status: globalStatus,
@@ -285,7 +286,7 @@ export class OrderStatusService extends SupabaseBaseService {
     comment?: string,
     userId?: number,
   ): Promise<void> {
-    const { error } = await this.supabase.from('___xtr_order_status').insert({
+    const { error } = await this.supabase.from(TABLES.xtr_order_status).insert({
       order_id: orderId,
       status: status,
       comment: comment || `Statut changé vers ${this.getStatusLabel(status)}`,

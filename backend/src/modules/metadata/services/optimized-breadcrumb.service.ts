@@ -19,6 +19,7 @@
  */
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -158,7 +159,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       // Vérifier si un enregistrement existe déjà
       const { data: existing } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_id')
         .eq('mta_url', cleanPath)
         .single();
@@ -167,7 +168,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       if (existing?.mta_id) {
         // Mettre à jour l'enregistrement existant
         result = await this.supabase
-          .from('___meta_tags_ariane')
+          .from(TABLES.meta_tags_ariane)
           .update({
             mta_ariane: arianeData,
           })
@@ -175,7 +176,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       } else {
         // Créer un nouvel enregistrement
         const newId = Date.now(); // Générer un ID temporaire
-        result = await this.supabase.from('___meta_tags_ariane').insert({
+        result = await this.supabase.from(TABLES.meta_tags_ariane).insert({
           mta_id: newId,
           mta_url: cleanPath,
           mta_alias: cleanPath,
@@ -283,7 +284,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   ): Promise<BreadcrumbItem[] | null> {
     try {
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_ariane, mta_title')
         .eq('mta_url', path)
         .single();

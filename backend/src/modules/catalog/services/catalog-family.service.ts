@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
@@ -38,7 +39,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
 
       // Récupérer les familles avec la même logique que le PHP
       const { data: familiesData, error: familiesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           catalog_gamme!inner(
@@ -58,8 +59,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
         )
         .eq('pg_display', 1)
         .eq('pg_level', 1)
-        .eq('catalog_gamme.catalog_family.mf_display', 1)
-        .order('catalog_gamme.catalog_family.mf_sort', { ascending: true });
+        .eq('catalog_gamme.catalog_family.mf_display', 1);
 
       if (familiesError) {
         this.logger.error('Erreur récupération familles:', familiesError);
@@ -86,7 +86,10 @@ export class CatalogFamilyService extends SupabaseBaseService {
         }
       });
 
-      const families = Array.from(uniqueFamilies.values());
+      // Trier les familles par mf_sort
+      const families = Array.from(uniqueFamilies.values()).sort(
+        (a, b) => a.mf_sort - b.mf_sort,
+      );
       this.logger.log(`${families.length} familles trouvées`);
 
       // Pour chaque famille, récupérer ses gammes (reproduction de la boucle PHP)
@@ -121,7 +124,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
   private async getGammesForFamily(mf_id: number): Promise<CatalogGamme[]> {
     try {
       const { data: gammesData, error: gammesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           pg_id,

@@ -1,6 +1,6 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // Module Workers (pour accès à SeoMonitorSchedulerService)
@@ -8,6 +8,9 @@ import { WorkerModule } from '../../workers/worker.module';
 
 // 🛡️ Module Catalog (pour accès à CatalogDataIntegrityService)
 import { CatalogModule } from '../catalog/catalog.module';
+
+// 🚀 Module Cache Redis personnalisé (CacheService avec TTL intelligent)
+import { CacheModule } from '../../cache/cache.module';
 
 // Services SEO existants
 import { SeoService } from './seo.service';
@@ -56,8 +59,17 @@ import { SeoKpisService } from './services/seo-kpis.service';
 // 🛡️ Service Validation Sitemap Véhicule-Pièces
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
+// 📊 Service Tracking Liens Internes (Maillage SEO)
+import { SeoLinkTrackingService } from './seo-link-tracking.service';
+
+// 🔗 Service Maillage Interne Centralisé
+import { InternalLinkingService } from './internal-linking.service';
+
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
+
+// 📊 Contrôleur Tracking Liens Internes
+import { SeoLinkTrackingController } from './seo-link-tracking.controller';
 
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
@@ -96,10 +108,11 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ConfigModule,
     WorkerModule, // 🔄 Import pour accès à SeoMonitorSchedulerService (exporté)
     CatalogModule, // 🛡️ Import pour accès à CatalogDataIntegrityService
+    CacheModule, // 🚀 Cache Redis personnalisé pour sitemap V2
     // Note: ScheduleModule.forRoot() est dans AppModule (global)
 
-    // 🎯 Cache Redis pour SEO V4 Ultimate
-    CacheModule.register({
+    // 🎯 Cache @nestjs/cache-manager pour SEO V4 Ultimate (in-memory fallback)
+    NestCacheModule.register({
       ttl: 3600, // 1 heure par défaut
       max: 1000, // 1000 entrées max
       isGlobal: false,
@@ -119,6 +132,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoMonitorController, // 🛡️ Contrôleur SEO Monitor (BullMQ)
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
     SeoVariationsController, // 📝 Contrôleur Variations SEO
+    SeoLinkTrackingController, // 📊 Contrôleur Tracking Liens Internes
   ],
 
   providers: [
@@ -139,6 +153,8 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs
     SeoKpisService, // 📊 Service KPIs Dashboard
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap Véhicule-Pièces
+    SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
+    InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -168,6 +184,8 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoHeadersService, // 📄 Service Headers SEO exporté
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap exporté
+    SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
+    InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
     // Note: SeoHeadersInterceptor est activé globalement via APP_INTERCEPTOR, pas besoin de l'exporter
   ],
 })

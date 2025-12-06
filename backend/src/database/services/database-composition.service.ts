@@ -179,7 +179,10 @@ export class DatabaseCompositionService {
         cartItemsCount: cartTotals.items.length,
         cartTotal: cartTotals.total,
         ordersCount: orders.length,
-        totalSpent: orders.reduce((sum, order) => sum + (order.totalTtc || 0), 0),
+        totalSpent: orders.reduce(
+          (sum, order) => sum + (order.totalTtc || 0),
+          0,
+        ),
       };
     } catch (error) {
       this.logger.error(`Failed to get user stats for ${userId}:`, error);

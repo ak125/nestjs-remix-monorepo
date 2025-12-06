@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import {
   Injectable,
   Logger,
@@ -113,7 +114,7 @@ export class LegalService extends SupabaseBaseService {
 
       // Créer le document dans ___xtr_msg
       const { data: legalMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert({
           msg_cst_id: documentData.createdBy || '1', // Utiliser ID par défaut si null
           msg_date: new Date().toISOString(),
@@ -153,7 +154,7 @@ export class LegalService extends SupabaseBaseService {
 
       // Essayer par ID de message d'abord
       const { data: messageById } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_id', identifier)
         .like('msg_content', '%"type":"legal_document"%')
@@ -164,7 +165,7 @@ export class LegalService extends SupabaseBaseService {
       } else {
         // Essayer par slug dans le contenu JSON
         const { data: messages } = await this.supabase
-          .from('___xtr_msg')
+          .from(TABLES.xtr_msg)
           .select('*')
           .like('msg_content', '%"type":"legal_document"%');
 
@@ -197,7 +198,7 @@ export class LegalService extends SupabaseBaseService {
   ): Promise<LegalDocument | null> {
     try {
       const { data: messages } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .like('msg_content', '%"type":"legal_document"%')
         .eq('msg_open', '0') // Seulement les documents publiés
@@ -233,7 +234,7 @@ export class LegalService extends SupabaseBaseService {
   }): Promise<LegalDocument[]> {
     try {
       let query = this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .like('msg_content', '%"type":"legal_document"%')
         .order('msg_date', { ascending: false });
@@ -296,7 +297,7 @@ export class LegalService extends SupabaseBaseService {
 
       // Mettre à jour le document
       const { data: updatedMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_subject: updates.title || document.msg_subject,
           msg_content: JSON.stringify(updatedContent),
@@ -340,7 +341,7 @@ export class LegalService extends SupabaseBaseService {
 
       // Mettre à jour le statut
       const { data: updatedMessage, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_content: JSON.stringify(content),
           msg_open: published ? '0' : '1', // 0 = publié, 1 = draft
@@ -376,7 +377,7 @@ export class LegalService extends SupabaseBaseService {
       }
 
       const { error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .delete()
         .eq('msg_id', documentId);
 
@@ -422,7 +423,7 @@ export class LegalService extends SupabaseBaseService {
         acceptedAt: new Date().toISOString(),
       };
 
-      const { error } = await this.supabase.from('___xtr_msg').insert({
+      const { error } = await this.supabase.from(TABLES.xtr_msg).insert({
         msg_cst_id: userId,
         msg_date: new Date().toISOString(),
         msg_subject: `Acceptation ${documentType}`,
@@ -458,7 +459,7 @@ export class LegalService extends SupabaseBaseService {
   > {
     try {
       const { data: messages } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_cst_id', userId)
         .like('msg_content', '%"type":"legal_acceptance"%')
@@ -518,7 +519,7 @@ export class LegalService extends SupabaseBaseService {
   ): Promise<LegalDocumentVersion[]> {
     try {
       const { data: messages } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .like('msg_content', `%"documentId":"${documentId}"%`)
         .like('msg_content', '%"type":"legal_version"%')
@@ -562,7 +563,7 @@ export class LegalService extends SupabaseBaseService {
   ): Promise<LegalDocumentVersion | null> {
     try {
       const { data: message } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_id', versionId)
         .like('msg_content', `%"documentId":"${documentId}"%`)
@@ -736,7 +737,7 @@ export class LegalService extends SupabaseBaseService {
         effectiveDate: document.effectiveDate.toISOString(),
       };
 
-      await this.supabase.from('___xtr_msg').insert({
+      await this.supabase.from(TABLES.xtr_msg).insert({
         msg_cst_id: createdBy,
         msg_date: new Date().toISOString(),
         msg_subject: `Version ${document.version} - ${document.title}`,

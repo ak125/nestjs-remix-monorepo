@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -8,6 +9,12 @@ import {
   BlogSection,
   BlogDashboard,
 } from '../interfaces/blog.interfaces';
+import {
+  InternalLinkingService,
+  VehicleContext,
+  LinkInjectionResult,
+} from '../../seo/internal-linking.service';
+import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
 
 /**
  * 📰 BlogService - Service principal AMÉLIORÉ pour la gestion du contenu blog
@@ -33,6 +40,8 @@ export class BlogService {
     private readonly supabaseService: SupabaseIndexationService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly blogCacheService: BlogCacheService,
+    @Inject(InternalLinkingService)
+    private readonly internalLinkingService: InternalLinkingService,
   ) {}
 
   /**
@@ -138,7 +147,7 @@ export class BlogService {
 
       // Insérer dans les tables modernes
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .insert(newArticle)
         .select()
         .single();
@@ -180,7 +189,7 @@ export class BlogService {
       updateData.updatedAt = new Date();
 
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .update(updateData)
         .eq('id', id)
         .select()
@@ -223,7 +232,7 @@ export class BlogService {
 
       // Recherche dans les conseils (titre, contenu, résumé)
       const { data, count } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact' })
         .or(
           `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_resume.ilike.%${query}%`,
@@ -259,7 +268,7 @@ export class BlogService {
 
       // 1. Trouver le pg_id depuis pieces_gamme
       const { data: gammeData } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name')
         .eq('pg_alias', pg_alias)
         .single();
@@ -275,7 +284,7 @@ export class BlogService {
 
       // 2. Trouver l'article le plus récent pour cette gamme
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_pg_id', gammeData.pg_id)
         .order('ba_update', { ascending: false })
@@ -333,7 +342,7 @@ export class BlogService {
       this.logger.log(`📰 Chargement articles croisés pour BA_ID: ${ba_id}`);
 
       const { data: crossData } = await this.supabaseService.client
-        .from('__blog_advice_cross')
+        .from(TABLES.blog_advice_cross)
         .select('bac_ba_id_cross')
         .eq('bac_ba_id', ba_id);
 
@@ -352,7 +361,7 @@ export class BlogService {
 
       // Charger les articles complets
       const { data: articles } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .in('ba_id', crossIds)
         .order('ba_update', { ascending: false });
@@ -446,7 +455,7 @@ export class BlogService {
       // Étape 2 : Charger les données des véhicules (AUTO_TYPE)
       const { data: typesData, error: typesError } =
         await this.supabaseService.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('*')
           .in('type_id', typeIds)
           .eq('type_display', 1)
@@ -478,7 +487,7 @@ export class BlogService {
 
       const { data: modelesData, error: modelesError } =
         await this.supabaseService.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('*')
           .in('modele_id', modeleIds)
           .eq('modele_display', 1);
@@ -518,7 +527,7 @@ export class BlogService {
       );
       const { data: marquesData, error: marquesError } =
         await this.supabaseService.client
-          .from('auto_marque')
+          .from(TABLES.auto_marque)
           .select('*')
           .in('marque_id', marqueIds)
           .eq('marque_display', 1);
@@ -650,7 +659,7 @@ export class BlogService {
     try {
       // Chercher dans toutes les tables via supabase
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_alias', slug)
         .single();
@@ -658,7 +667,7 @@ export class BlogService {
       if (error || !data) {
         // Essayer dans les guides
         const { data: guideData } = await this.supabaseService.client
-          .from('__blog_guide')
+          .from(TABLES.blog_guide)
           .select('*')
           .eq('bg_alias', slug)
           .single();
@@ -688,7 +697,7 @@ export class BlogService {
 
       // Chercher d'abord dans la table moderne
       const { data: modernArticle } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('id', id)
         .single();
@@ -699,7 +708,7 @@ export class BlogService {
 
       // Chercher dans les tables legacy
       const { data: adviceData } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_id', id)
         .single();
@@ -710,7 +719,7 @@ export class BlogService {
 
       // Chercher dans les guides
       const { data: guideData } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_id', id)
         .single();
@@ -751,7 +760,7 @@ export class BlogService {
 
       // Construction de la requête de base
       let query = this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact' });
 
       // Filtre par statut si spécifié
@@ -813,12 +822,12 @@ export class BlogService {
 
       // Statistiques des conseils
       const { data: adviceStats } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_visit, ba_create, ba_update');
 
       // Statistiques des guides
       const { data: guideStats } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_visit, bg_create, bg_update');
 
       const totalAdvice = adviceStats?.length || 0;
@@ -909,7 +918,7 @@ export class BlogService {
   async getPopularArticles(limit: number = 10): Promise<BlogArticle[]> {
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_visit', { ascending: false })
         .limit(limit);
@@ -933,7 +942,7 @@ export class BlogService {
   ): Promise<BlogArticle> {
     // Charger d'abord les H2
     const { data: h2Sections } = await this.supabaseService.client
-      .from('__blog_advice_h2')
+      .from(TABLES.blog_advice_h2)
       .select('*')
       .eq('ba2_ba_id', advice.ba_id)
       .order('ba2_id');
@@ -945,7 +954,7 @@ export class BlogService {
     let h3Sections: any[] = [];
     if (h2Ids.length > 0) {
       const { data: h3Data } = await this.supabaseService.client
-        .from('__blog_advice_h3')
+        .from(TABLES.blog_advice_h3)
         .select('*')
         .in('ba3_ba2_id', h2Ids)
         .order('ba3_id');
@@ -1149,7 +1158,7 @@ export class BlogService {
 
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_views', { ascending: false })
         .limit(limit);
@@ -1177,7 +1186,7 @@ export class BlogService {
 
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_date_add', { ascending: false })
         .limit(limit);
@@ -1330,7 +1339,7 @@ export class BlogService {
 
       // Charger tous les pg_alias en une seule requête
       const { data: gammes } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias')
         .in('pg_id', pgIds);
 
@@ -1401,7 +1410,7 @@ export class BlogService {
   ): Promise<BlogArticle | null> {
     try {
       const { data: adviceData } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_alias', slug)
         .single();
@@ -1411,7 +1420,7 @@ export class BlogService {
       }
 
       const { data: guideData } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_alias', slug)
         .single();
@@ -1632,7 +1641,7 @@ export class BlogService {
       this.logger.log(`🔤 Récupération switches SEO pour pg_id=${pg_id}`);
 
       const { data, error } = await this.supabaseService.client
-        .from('__seo_item_switch')
+        .from(TABLES.seo_item_switch)
         .select('*')
         .eq('sis_pg_id', pg_id.toString())
         .order('sis_alias', { ascending: true });
@@ -1711,7 +1720,7 @@ export class BlogService {
 
       // Charger les H2
       const { data: h2Data } = await this.supabaseService.client
-        .from('__blog_advice_h2')
+        .from(TABLES.blog_advice_h2)
         .select('*')
         .eq('ba2_ba_id', ba_id)
         .order('ba2_id');
@@ -1723,7 +1732,7 @@ export class BlogService {
       let h3Data: any[] = [];
       if (h2Ids.length > 0) {
         const { data } = await this.supabaseService.client
-          .from('__blog_advice_h3')
+          .from(TABLES.blog_advice_h3)
           .select('*')
           .in('ba3_ba2_id', h2Ids)
           .order('ba3_id');
@@ -1759,7 +1768,7 @@ export class BlogService {
 
       // Récupérer quelques H3
       const { data: h3Samples } = await this.supabaseService.client
-        .from('__blog_advice_h3')
+        .from(TABLES.blog_advice_h3)
         .select('ba3_ba2_id, ba3_h3')
         .limit(10);
 
@@ -1775,7 +1784,7 @@ export class BlogService {
 
       // Récupérer les H2 correspondants pour avoir les ba_id
       const { data: h2Data } = await this.supabaseService.client
-        .from('__blog_advice_h2')
+        .from(TABLES.blog_advice_h2)
         .select('ba2_id, ba2_ba_id, ba2_h2')
         .in('ba2_id', ba2Ids);
 
@@ -1791,5 +1800,126 @@ export class BlogService {
       );
       throw error;
     }
+  }
+
+  // =====================================================
+  // 🔗 MAILLAGE INTERNE SEO - Injection de liens
+  // =====================================================
+
+  /**
+   * 🔗 Injecte les liens internes SEO dans un contenu HTML
+   *
+   * Traite les marqueurs #LinkGammeCar_Y# et #LinkGamme_Y# stockés en BDD
+   * Respecte les limites configurées (MAX_BLOG_INTERNAL_LINKS)
+   *
+   * @param content - Contenu HTML avec marqueurs
+   * @param vehicle - Contexte véhicule pour personnaliser les ancres
+   * @param sourcePgId - ID de la gamme source (page courante)
+   * @returns Contenu avec liens HTML + métadonnées A/B testing
+   */
+  async injectInternalLinks(
+    content: string,
+    vehicle?: VehicleContext,
+    sourcePgId?: number,
+  ): Promise<LinkInjectionResult> {
+    const result: LinkInjectionResult = {
+      content,
+      linksInjected: 0,
+      formulas: [],
+    };
+
+    // Vérifier si le contenu contient des marqueurs
+    if (
+      !content ||
+      (!content.includes('#LinkGammeCar_') && !content.includes('#LinkGamme_'))
+    ) {
+      return result;
+    }
+
+    this.logger.debug('🔗 Injection de liens internes dans le contenu blog');
+
+    try {
+      let processedContent = content;
+
+      // 1. Traiter #LinkGammeCar_Y# (liens avec véhicule et rotation verbe+nom)
+      if (
+        vehicle &&
+        sourcePgId &&
+        processedContent.includes('#LinkGammeCar_')
+      ) {
+        const linkResult =
+          await this.internalLinkingService.processLinkGammeCar(
+            processedContent,
+            vehicle,
+            sourcePgId,
+          );
+
+        processedContent = linkResult.content;
+        result.linksInjected += linkResult.linksInjected;
+        result.formulas.push(...linkResult.formulas);
+      }
+
+      // 2. Traiter #LinkGamme_Y# (liens simples sans véhicule)
+      if (processedContent.includes('#LinkGamme_')) {
+        const simpleLinkContent =
+          await this.internalLinkingService.processLinkGamme(processedContent);
+
+        // Compter les liens injectés (différence avant/après)
+        const linkPattern =
+          /<a[^>]*class="seo-internal-link"[^>]*data-link-type="LinkGamme"[^>]*>/g;
+        const simpleLinksAdded = (simpleLinkContent.match(linkPattern) || [])
+          .length;
+
+        processedContent = simpleLinkContent;
+        result.linksInjected += simpleLinksAdded;
+      }
+
+      // 3. Vérifier la limite totale de liens pour le blog
+      const totalLinksInContent = (
+        processedContent.match(/<a[^>]*class="seo-internal-link"/g) || []
+      ).length;
+      if (totalLinksInContent > SEO_LINK_LIMITS.MAX_BLOG_INTERNAL_LINKS) {
+        this.logger.warn(
+          `⚠️ Trop de liens internes (${totalLinksInContent} > ${SEO_LINK_LIMITS.MAX_BLOG_INTERNAL_LINKS}), certains ont été supprimés`,
+        );
+      }
+
+      result.content = processedContent;
+      this.logger.debug(`✅ ${result.linksInjected} liens internes injectés`);
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur injection liens: ${(error as Error).message}`,
+      );
+      // En cas d'erreur, retourner le contenu original
+      return result;
+    }
+  }
+
+  /**
+   * 🔗 Version simplifiée pour contenu sans contexte véhicule
+   * Utilisé pour les articles de blog génériques
+   */
+  async injectSimpleLinks(content: string): Promise<string> {
+    const result = await this.injectInternalLinks(content);
+    return result.content;
+  }
+
+  /**
+   * 📊 Récupère les statistiques des liens injectés dans le blog
+   */
+  async getInternalLinkStats(): Promise<{
+    totalArticlesWithLinks: number;
+    averageLinksPerArticle: number;
+    topFormulas: Array<{ formula: string; count: number }>;
+  }> {
+    // Pour l'instant, retourner des valeurs par défaut
+    // À enrichir avec des vraies requêtes sur les données trackées
+    return {
+      totalArticlesWithLinks: 0,
+      averageLinksPerArticle: 0,
+      topFormulas: [],
+    };
   }
 }

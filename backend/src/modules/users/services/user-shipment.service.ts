@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class UserShipmentService extends SupabaseBaseService {
 
       // Récupérer les commandes de l'utilisateur spécifique
       const { data: orders, error: ordersError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_id, ord_cst_id, ord_total_ttc, ord_date')
         .eq('ord_cst_id', userId)
         .limit(10);

@@ -15,7 +15,7 @@ export class SupabaseLoggerGuard {
 
   constructor(private configService?: ConfigService) {
     this.isDevelopment = process.env.NODE_ENV !== 'production';
-    this.silentMode = 
+    this.silentMode =
       this.configService?.get<boolean>('SUPABASE_RESILIENT_MODE', true) ?? true;
   }
 

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
  * Service de transformation des données pour les pages gamme
@@ -8,57 +10,29 @@ import { Injectable } from '@nestjs/common';
 export class GammeDataTransformerService {
   /**
    * Nettoie le contenu HTML et les entités
+   * ✅ Utilise decodeHtmlEntities centralisé (80+ entités supportées)
    */
   contentCleaner(content: string): string {
     if (!content) return '';
-    return this.cleanHtmlContent(content);
-  }
-
-  /**
-   * Nettoie le contenu HTML
-   */
-  private cleanHtmlContent(content: string): string {
-    if (!content) return '';
+    // Supprimer les balises HTML puis décoder les entités
     const withoutTags = content.replace(/<[^>]*>/g, '');
-    const decoded = withoutTags
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, ' ');
-    return decoded.replace(/\s+/g, ' ').trim();
+    return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
   }
 
   /**
    * Décode les entités HTML et remplace les variables
+   * ✅ Utilise decodeHtmlEntities centralisé
    */
   cleanSeoText(text: string, marqueName: string): string {
     if (!text) return text;
-    
-    const htmlEntities: Record<string, string> = {
-      '&eacute;': 'é', '&egrave;': 'è', '&ecirc;': 'ê', '&euml;': 'ë',
-      '&agrave;': 'à', '&acirc;': 'â', '&auml;': 'ä',
-      '&ocirc;': 'ô', '&ouml;': 'ö', '&ograve;': 'ò',
-      '&icirc;': 'î', '&iuml;': 'ï', '&igrave;': 'ì',
-      '&ucirc;': 'û', '&ugrave;': 'ù', '&uuml;': 'ü',
-      '&ccedil;': 'ç', '&rsquo;': "'", '&lsquo;': "'",
-      '&rdquo;': '"', '&ldquo;': '"', '&nbsp;': ' ',
-      '&amp;': '&', '&lt;': '<', '&gt;': '>',
-    };
-    
-    let cleanedText = text;
-    Object.entries(htmlEntities).forEach(([entity, char]) => {
-      cleanedText = cleanedText.replace(new RegExp(entity, 'g'), char);
-    });
-    
+    let cleanedText = decodeHtmlEntities(text);
     cleanedText = cleanedText.replace(/#VMarque#/g, marqueName);
-    
     return cleanedText;
   }
 
   /**
    * Génère une URL de pièce avec véhicule
+   * ✅ Utilise url-builder.utils.ts centralisé
    */
   buildPieceVehicleUrl(params: {
     gammeAlias: string;
@@ -70,22 +44,12 @@ export class GammeDataTransformerService {
     typeName: string;
     typeId: number;
   }): string {
-    const slugify = (text: string): string => {
-      return text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    };
-
-    return [
-      '/pieces',
-      `${slugify(params.gammeAlias)}-${params.gammeId}`,
-      `${slugify(params.marqueName)}-${params.marqueId}`,
-      `${slugify(params.modeleName)}-${params.modeleId}`,
-      `${slugify(params.typeName)}-${params.typeId}.html`
-    ].join('/');
+    return buildPieceVehicleUrlRaw(
+      { alias: params.gammeAlias, id: params.gammeId },
+      { alias: params.marqueName, id: params.marqueId },
+      { alias: params.modeleName, id: params.modeleId },
+      { alias: params.typeName, id: params.typeId },
+    );
   }
 
   /**
@@ -121,52 +85,80 @@ export class GammeDataTransformerService {
 
   /**
    * Traite les équipementiers
+   * ✅ Utilise pm_name et pm_logo depuis la RPC (jointure pieces_marque)
    */
   processEquipementiers(equipementiersRaw: any[]): any[] {
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-    
-    // Mapping des IDs vers les noms d'équipementiers connus
-    const equipementierNames: Record<string, { name: string; logo: string }> = {
-      '730': { name: 'Bosch', logo: 'bosch.webp' },
-      '1780': { name: 'FEBI', logo: 'febi.webp' },
-      '1090': { name: 'CHAMPION', logo: 'champion.webp' },
-      '1070': { name: 'MANN-FILTER', logo: 'mann-filter.webp' },
-      '1120': { name: 'VALEO', logo: 'valeo.webp' },
-      '1450': { name: 'MAHLE', logo: 'mahle.webp' },
-      '1670': { name: 'HENGST', logo: 'hengst.webp' },
-    };
-    
+    const SUPABASE_URL =
+      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
     return equipementiersRaw.map((equip: any) => {
       const pmId = String(equip.seg_pm_id || equip.pm_id);
-      const equipInfo = equipementierNames[pmId] || {
-        name: equip.pm_name || 'Équipementier',
-        logo: equip.pm_logo || 'default.webp'
-      };
-      
-      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${equipInfo.logo}`;
-      
+      const pmName = equip.pm_name || 'Équipementier';
+      const pmLogo = equip.pm_logo || 'default.webp';
+
+      // Construire l'URL du logo
+      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${pmLogo}`;
+
       return {
         pm_id: pmId,
-        pm_name: equipInfo.name,
+        pm_name: pmName,
         pm_logo: logoUrl,
-        title: equipInfo.name,
+        title: pmName,
         image: logoUrl,
-        description: this.contentCleaner(equip.seg_content || equip.content || ''),
+        description: this.contentCleaner(
+          equip.seg_content || equip.content || '',
+        ),
       };
     });
   }
 
   /**
    * Traite le catalogue famille
+   * ✅ Génère les liens et URLs d'images corrects pour le maillage interne
    */
   processCatalogueFamille(catalogueFamilleRaw: any[]): any[] {
-    return catalogueFamilleRaw.map((piece: any) => ({
-      id: piece.pg_id,
-      name: piece.pg_name,
-      alias: piece.pg_alias,
-      image: piece.pg_pic,
-      description: this.contentCleaner(piece.description || ''),
-      meta_description: this.contentCleaner(piece.meta_description || ''),
-    }));
+    const SUPABASE_URL =
+      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
+    return catalogueFamilleRaw.map((piece: any) => {
+      const pgId = piece.pg_id;
+      const pgAlias = piece.pg_alias;
+      const pgPic = piece.pg_pic;
+
+      // 🔗 Générer le lien vers la page gamme
+      const link = `/pieces/${pgAlias}-${pgId}.html`;
+
+      // 📷 Générer l'URL de l'image
+      // Les images sont stockées dans articles/gammes-produits/catalogue/{alias}.webp
+      let imageUrl: string;
+      if (pgPic) {
+        if (pgPic.startsWith('http')) {
+          imageUrl = pgPic;
+        } else if (pgPic.startsWith('/')) {
+          imageUrl = pgPic;
+        } else {
+          // Utiliser pg_alias pour construire le chemin correct
+          // Format: articles/gammes-produits/catalogue/nom-gamme.webp
+          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
+        }
+      } else {
+        // Fallback: essayer avec pg_alias si pg_pic est vide
+        if (pgAlias) {
+          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
+        } else {
+          imageUrl = '/images/default-piece.jpg';
+        }
+      }
+
+      return {
+        id: pgId,
+        name: piece.pg_name,
+        alias: pgAlias,
+        image: imageUrl,
+        link: link,
+        description: this.contentCleaner(piece.description || ''),
+        meta_description: this.contentCleaner(piece.meta_description || ''),
+      };
+    });
   }
 }

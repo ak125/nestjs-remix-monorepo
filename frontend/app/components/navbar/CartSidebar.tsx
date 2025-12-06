@@ -1,29 +1,29 @@
-import { Badge } from '@fafa/ui';
 /**
  * 🛒 CartSidebar Component - PHASE 1 POC
- * 
+ *
  * Sidebar coulissante pour le panier (remplace le dropdown CartIcon)
  * Inspiré du pattern PHP legacy mais modernisé avec React.
- * 
+ *
  * Features:
  * - ✅ Affichage image + marque + référence (pattern PHP)
  * - ✅ Support consignes séparées (legal requirement)
  * - ✅ Animation slide-in depuis la droite
  * - ✅ Overlay avec fermeture au clic extérieur
  * - ✅ Responsive mobile/desktop
- * 
+ *
  * @example
  * ```tsx
  * <CartSidebar isOpen={isOpen} onClose={onClose} />
  * ```
  */
-
-import { Link } from '@remix-run/react';
-import { X, ShoppingBag, AlertCircle } from 'lucide-react';
-import { useCart, formatPrice, getProductImageUrl } from '../../hooks/useCart';
-import { cn } from '../../lib/utils';
-import  { type CartItem } from '../../types/cart';
-import { Button } from '../ui/button';
+import { Badge } from "@fafa/ui";
+import { Link } from "@remix-run/react";
+import { AlertCircle, ShoppingBag, X } from "lucide-react";
+import React from "react";
+import { useCart, formatPrice, getProductImageUrl } from "../../hooks/useCart";
+import { cn } from "../../lib/utils";
+import { type CartItem } from "../../types/cart";
+import { Button } from "../ui/button";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -38,7 +38,16 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     error,
     removeItem,
     updateQuantity,
+    clearCart,
   } = useCart();
+
+  // DEBUG: Log au render
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log("🔴 CartSidebar OPEN - items:", items);
+      console.log("🔴 CartSidebar - first item:", items[0]);
+    }
+  }, [isOpen, items]);
 
   return (
     <>
@@ -51,250 +60,258 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         />
       )}
 
-      {/* Sidebar avec design modernisé */}
+      {/* Sidebar compact */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full w-full sm:w-[500px] bg-gradient-to-br from-white to-gray-50 shadow-2xl z-50",
+          "fixed top-0 right-0 h-full w-full sm:w-[380px] bg-white shadow-2xl z-50",
           "transform transition-all duration-300 ease-in-out",
-          "flex flex-col border-l-4 border-blue-500",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          "flex flex-col",
+          isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        {/* Header avec gradient amélioré */}
-        <div className="flex items-center justify-between p-5 border-b-2 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-              <ShoppingBag className="h-7 w-7" />
-            </div>
+        {/* Header compact */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="h-5 w-5" />
             <div>
-              <h2 className="text-xl font-bold tracking-tight">Mon Panier</h2>
-              <p className="text-sm text-blue-100 font-medium">
-                <span className="bg-white/20 px-2 py-0.5 rounded-full">
-                  {summary.total_items} article{summary.total_items > 1 ? 's' : ''}
-                </span>
+              <h2 className="text-base font-bold">Mon Panier</h2>
+              <p className="text-xs text-blue-100">
+                {summary.total_items} article
+                {summary.total_items > 1 ? "s" : ""}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 h-10 w-10 p-0 rounded-xl flex items-center justify-center transition-all hover:rotate-90 hover:scale-110 backdrop-blur-sm"
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-lg flex items-center justify-center transition-all"
             aria-label="Fermer le panier"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Erreur avec style amélioré */}
         {error && (
-          <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 border-b-2 border-red-300 shadow-sm">
-            <div className="flex items-center gap-3 text-red-800">
-              <AlertCircle className="h-6 w-6 flex-shrink-0 animate-pulse" />
-              <p className="text-sm font-medium">{error}</p>
+          <div className="p-3 bg-red-50 border-b border-red-200">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <p className="text-xs font-medium">{error}</p>
             </div>
           </div>
         )}
 
-        {/* 🎯 Seuil Franco - Indicateur de progression */}
-        {items.length > 0 && summary.subtotal < 150 && (
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-green-800">
-                🚚 Livraison gratuite à 150€
-              </p>
-              <p className="text-sm font-bold text-green-700">
-                Plus que {formatPrice(150 - summary.subtotal)} !
-              </p>
-            </div>
-            {/* Barre de progression */}
-            <div className="w-full bg-green-100 rounded-full h-2.5 overflow-hidden shadow-inner">
-              <div
-                className="bg-gradient-to-r from-green-500 to-emerald-600 h-2.5 rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${Math.min((summary.subtotal / 150) * 100, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-green-700 mt-1 text-right font-medium">
-              {Math.round((summary.subtotal / 150) * 100)}%
-            </p>
-          </div>
-        )}
-
-        {/* 🎁 Livraison gratuite atteinte */}
-        {items.length > 0 && summary.subtotal >= 150 && (
-          <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-b-2 border-green-700 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                <ShoppingBag className="h-6 w-6" />
+        {/* 🚚 LIVRAISON GRATUITE - Bannière toujours visible */}
+        <div
+          className={cn(
+            "px-4 py-3 border-b-2",
+            items.length > 0 && summary.subtotal >= 150
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-600"
+              : "bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-200",
+          )}
+        >
+          {items.length > 0 && summary.subtotal >= 150 ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2 animate-bounce">
+                <span className="text-2xl">🎉</span>
+                <span className="text-2xl">🚚</span>
               </div>
-              <div>
-                <p className="font-bold text-lg">🎉 Livraison gratuite !</p>
-                <p className="text-sm text-green-100">Vous économisez 15,90€</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 📦 ETA Livraison */}
-        {items.length > 0 && (
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200 shadow-sm">
-            <div className="flex items-center gap-3 text-blue-800">
-              <div className="bg-blue-500/20 p-2 rounded-lg">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">Livraison estimée</p>
-                <p className="text-xs text-blue-600 font-medium">
-                  {summary.subtotal >= 150 ? '2-3 jours ouvrés' : '3-5 jours ouvrés'} • Suivi inclus
+              <div className="text-center">
+                <p className="font-black text-base tracking-wide">
+                  LIVRAISON GRATUITE !
+                </p>
+                <p className="text-xs opacity-90">
+                  Vous économisez 9,90€ • Expédition 24-48h
                 </p>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des articles avec style amélioré */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-transparent to-gray-50/50">
-          {isLoading && items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 gap-3">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent shadow-lg" />
-              <p className="text-sm font-medium text-gray-600">Chargement...</p>
-            </div>
-          ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12 px-6">
-              <div className="bg-gray-100 p-6 rounded-full mb-4 shadow-inner">
-                <ShoppingBag className="h-20 w-20 text-gray-400" />
-              </div>
-              <p className="text-xl font-bold text-gray-700 mb-2">Votre panier est vide</p>
-              <p className="text-sm text-center text-gray-500">
-                Ajoutez des articles pour commencer vos achats
-              </p>
+              <span className="text-2xl">✅</span>
             </div>
           ) : (
-            items.map((item) => (
-              <CartSidebarItem
-                key={item.id}
-                item={item}
-                onRemove={async () => {
-                  console.log('🗑️ CartSidebar - Clic supprimer:', item.id);
-                  await removeItem(item.id);
-                  console.log('✅ CartSidebar - Après removeItem');
-                }}
-                onQuantityChange={async (qty) => {
-                  console.log('🔄 CartSidebar - Clic quantité:', { itemId: item.id, qty });
-                  await updateQuantity(item.id, qty);
-                  console.log('✅ CartSidebar - Après updateQuantity');
-                }}
-              />
-            ))
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl animate-pulse">🚚</span>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">
+                      Livraison GRATUITE
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      à partir de 150€ d'achat
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                    dès 150€
+                  </span>
+                </div>
+              </div>
+              {items.length > 0 && (
+                <div className="relative mt-3">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                    <div
+                      className="bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 h-3 rounded-full transition-all duration-700 ease-out relative"
+                      style={{
+                        width: `${Math.min((summary.subtotal / 150) * 100, 100)}%`,
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between mt-2 items-center">
+                    <span className="text-sm font-bold text-gray-800">
+                      {formatPrice(summary.subtotal)}
+                    </span>
+                    <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
+                      <span>⚡</span>
+                      Plus que {formatPrice(150 - summary.subtotal)} !
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* 🎁 Upsell - Produits Recommandés */}
-        {items.length > 0 && items.length < 5 && (
-          <div className="border-t-2 bg-gradient-to-r from-purple-50 to-pink-50 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="bg-purple-500/20 p-1.5 rounded-lg">
-                <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-purple-900">Souvent acheté avec</h3>
+        {/* 📦 Liste des articles */}
+        <div className="flex-1 overflow-y-auto">
+          {isLoading && items.length === 0 ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             </div>
-            <div className="space-y-2">
-              {/* Mini cards recommandations - mock data */}
-              {[
-                { name: 'Filtre à huile', price: 12.90, ref: 'FO-123' },
-                { name: 'Bougies d\'allumage (x4)', price: 24.50, ref: 'BG-456' },
-              ].map((product, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 bg-white rounded-lg border border-purple-200 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-2xl">
-                    🔧
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{product.name}</p>
-                    <p className="text-xs text-gray-500">Réf: {product.ref}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-purple-600">{formatPrice(product.price)}</p>
-                    <button className="text-xs text-purple-600 hover:text-purple-800 font-medium">
-                      + Ajouter
-                    </button>
-                  </div>
-                </div>
+          ) : items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">
+              <ShoppingBag className="h-16 w-16 mb-4 opacity-50" />
+              <p className="font-medium text-lg">Votre panier est vide</p>
+              <p className="text-sm mt-1">Ajoutez des pièces pour commencer</p>
+            </div>
+          ) : (
+            <div className="divide-y-0">
+              {/* Titre liste */}
+              <div className="px-4 py-2.5 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+                <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                  <span>📦</span>
+                  <span>
+                    {items.length} article{items.length > 1 ? "s" : ""}
+                  </span>
+                </p>
+              </div>
+
+              {/* DEBUG VISUEL - Afficher les données brutes */}
+              <div className="p-2 bg-yellow-100 text-xs">
+                <pre className="whitespace-pre-wrap">
+                  {JSON.stringify(
+                    items.map((i) => ({
+                      id: i.id?.substring(0, 10),
+                      name: i.product_name,
+                      brand: i.product_brand,
+                      sku: i.product_sku,
+                      qty: i.quantity,
+                      price: i.price,
+                    })),
+                    null,
+                    2,
+                  )}
+                </pre>
+              </div>
+
+              {items.map((item, index) => (
+                <CartSidebarItem
+                  key={item.id || `item-${index}`}
+                  item={item}
+                  onRemove={() => removeItem(parseInt(item.product_id, 10))}
+                  onQuantityChange={(qty) =>
+                    updateQuantity(parseInt(item.product_id, 10), qty)
+                  }
+                />
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Footer avec totaux - Design amélioré */}
+        {/* Footer avec totaux */}
         {items.length > 0 && (
-          <div className="border-t-2 bg-gradient-to-br from-gray-50 to-gray-100 p-5 space-y-3 shadow-inner">
-            {/* Nombre de pièces - Badge style */}
-            <div className="flex justify-between items-center text-sm p-3 bg-white rounded-xl shadow-sm border border-gray-200">
-              <span className="text-gray-700 font-semibold flex items-center gap-2">
-                <span className="text-lg">🔢</span>
-                Nombre de pièces
-              </span>
-              <Badge variant="info">{summary.total_items}</Badge>
-            </div>
+          <div className="border-t-2 border-gray-200 bg-white p-4 space-y-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            {/* Détail des totaux */}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>
+                  Sous-total ({summary.total_items} pièce
+                  {summary.total_items > 1 ? "s" : ""})
+                </span>
+                <span className="font-medium">
+                  {formatPrice(summary.subtotal)}
+                </span>
+              </div>
 
-            {/* Subtotal produits */}
-            <div className="flex justify-between text-sm p-3 bg-white rounded-lg shadow-sm">
-              <span className="text-gray-700 font-medium">Sous-total produits</span>
-              <span className="font-semibold text-gray-900">{formatPrice(summary.subtotal)}</span>
-            </div>
-
-            {/* Total consignes avec style particulier */}
-            {summary.consigne_total > 0 && (
-              <div className="flex justify-between items-center text-sm p-3 bg-amber-50 rounded-lg shadow-sm border-2 border-amber-300">
-                <span className="text-amber-800 font-medium flex items-center gap-2">
-                  <span className="text-lg">♻️</span>
-                  Consignes
-                  <span className="text-xs bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
-                    remboursables
+              {summary.consigne_total > 0 && (
+                <div className="flex justify-between text-amber-700 bg-amber-50 -mx-4 px-4 py-1.5">
+                  <span className="flex items-center gap-1">
+                    <span>♻️</span>
+                    <span>Consignes (remboursables)</span>
                   </span>
-                </span>
-                <span className="font-bold text-amber-700">
-                  +{formatPrice(summary.consigne_total)}
-                </span>
-              </div>
-            )}
+                  <span className="font-medium">
+                    +{formatPrice(summary.consigne_total)}
+                  </span>
+                </div>
+              )}
 
-            {/* Total TTC avec style imposant */}
-            <div className="mt-4 pt-4 border-t-2 border-gray-300">
-              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg">
-                <span className="font-bold text-lg text-white">Total TTC</span>
-                <span className="font-bold text-3xl text-white">{formatPrice(summary.total_price)}</span>
+              {/* Livraison */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Livraison</span>
+                {summary.subtotal >= 150 ? (
+                  <span className="text-green-600 font-semibold flex items-center gap-1">
+                    <span className="line-through text-gray-400 text-xs">
+                      9,90€
+                    </span>
+                    GRATUITE
+                  </span>
+                ) : (
+                  <span className="text-gray-600">Calculée au checkout</span>
+                )}
               </div>
             </div>
 
-            {/* Boutons d'action avec design moderne */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="w-full border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-semibold"
-              >
-                Continuer
-              </Button>
+            {/* Total TTC */}
+            <div className="flex justify-between items-center pt-3 border-t-2 border-dashed border-gray-200">
+              <div>
+                <span className="font-bold text-lg">Total TTC</span>
+                <p className="text-[10px] text-gray-500">TVA incluse</p>
+              </div>
+              <span className="font-bold text-2xl text-blue-600">
+                {formatPrice(summary.total_price)}
+              </span>
+            </div>
+
+            {/* Boutons */}
+            <div className="space-y-2 pt-2">
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold shadow-md hover:shadow-lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-base py-5 shadow-lg"
               >
-                <Link to="/cart">
-                  🛒 Voir panier
+                <Link to="/checkout" onClick={onClose}>
+                  ✅ Valider ma commande
                 </Link>
               </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" asChild className="flex-1">
+                  <Link to="/cart" rel="nofollow" onClick={onClose}>
+                    📋 Voir détails
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm("Vider le panier ?")) {
+                      await clearCart();
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  🗑️ Vider
+                </Button>
+              </div>
             </div>
-
-            <Button
-              asChild
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 mt-3 py-6 text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-            >
-              <Link to="/checkout">
-                ✅ Passer commande
-              </Link>
-            </Button>
           </div>
         )}
       </div>
@@ -303,109 +320,125 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 }
 
 /**
- * 🧩 CartSidebarItem - Item compact pour sidebar
- * Affiche: image, marque, référence, prix, consigne
+ * 🧩 CartSidebarItem - Item lisible avec toutes les infos
  */
 interface CartSidebarItemProps {
   item: CartItem;
-  onRemove: () => void | Promise<void>;
-  onQuantityChange: (quantity: number) => void | Promise<void>;
+  onRemove: () => void;
+  onQuantityChange: (quantity: number) => void;
 }
 
-function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemProps) {
+function CartSidebarItem({
+  item,
+  onRemove,
+  onQuantityChange,
+}: CartSidebarItemProps) {
+  // Extraire les données avec fallbacks robustes
   const imageUrl = getProductImageUrl(item);
-  const unitPrice = item.unit_price || item.price || 0;
-  const totalPrice = unitPrice * item.quantity;
-  
+  const unitPrice = Number(item.unit_price) || Number(item.price) || 0;
+  const totalPrice = unitPrice * (item.quantity || 1);
+  const reference = item.product_ref || item.product_sku || item.product_id;
+  const brand = item.product_brand;
+  const name = item.product_name || item.name || `Produit #${item.product_id}`;
+  const qty = item.quantity || 1;
+
   return (
-    <div className="flex gap-3 p-4 bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-xl hover:shadow-lg hover:border-blue-300 transition-all hover:scale-[1.02]">
-      {/* Image avec overlay */}
-      <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex-shrink-0 shadow-md relative group">
-        <img
-          src={imageUrl}
-          alt={item.product_name || 'Produit'}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = '/images/no.png';
-          }}
-        />
-        {item.has_consigne && item.consigne_unit && item.consigne_unit > 0 && (
-          <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-lg shadow-sm">
-            ♻️
-          </div>
-        )}
+    <div className="flex gap-3 p-4 hover:bg-blue-50/50 transition-colors group border-b border-gray-100 last:border-b-0">
+      {/* Image avec badge quantité */}
+      <div className="relative flex-shrink-0">
+        <div className="w-20 h-20 bg-white rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm">
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-contain p-1"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/images/no.png";
+            }}
+          />
+        </div>
+        {/* Badge quantité sur l'image */}
+        <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg">
+          {qty}
+        </div>
       </div>
 
-      {/* Informations */}
-      <div className="flex-1 min-w-0">
-        {/* Marque avec badge */}
-        {item.product_brand && (
-          <p className="text-xs text-gray-600 font-semibold uppercase bg-primary/5 inline-block px-2 py-0.5 rounded-full mb-1">
-            {item.product_brand}
-          </p>
-        )}
-        
-        {/* Nom produit */}
-        <h3 className="text-sm font-bold text-gray-900 truncate leading-tight">
-          {item.product_name || 'Produit'}
-        </h3>
-        
-        {/* Référence avec style */}
-        {item.product_ref && (
-          <p className="text-xs text-gray-500 mt-1 font-mono bg-gray-100 inline-block px-2 py-0.5 rounded">
-            Réf: {item.product_ref}
-          </p>
-        )}
+      {/* Détails produit */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Ligne marque + ref */}
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {brand &&
+            brand !== "MARQUE INCONNUE" &&
+            brand !== "Non spécifiée" && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 font-semibold"
+              >
+                {brand}
+              </Badge>
+            )}
+          {reference && (
+            <span className="text-[10px] text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+              {reference}
+            </span>
+          )}
+        </div>
 
-        {/* Prix et quantité avec design amélioré */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200">
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg p-1 shadow-sm">
+        {/* Nom produit */}
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-2">
+          {name}
+        </h3>
+
+        {/* Ligne prix + quantité */}
+        <div className="flex items-center justify-between mt-auto">
+          {/* Sélecteur quantité */}
+          <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
             <button
-              onClick={() => {
-                console.log('➖ Bouton - cliqué, quantité actuelle:', item.quantity);
-                onQuantityChange(item.quantity - 1);
-              }}
-              disabled={item.quantity <= 1}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
-              aria-label="Diminuer la quantité"
+              onClick={() => onQuantityChange(qty - 1)}
+              disabled={qty <= 1}
+              className="h-7 w-7 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-gray-600"
             >
-              −
+              <span className="text-lg font-medium">−</span>
             </button>
-            <span className="text-sm font-bold w-8 text-center bg-white px-2 py-1 rounded">
-              {item.quantity}
+            <span className="w-8 text-center text-sm font-bold text-gray-900">
+              {qty}
             </span>
             <button
-              onClick={() => {
-                console.log('➕ Bouton + cliqué, quantité actuelle:', item.quantity);
-                onQuantityChange(item.quantity + 1);
-              }}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-success/20 font-bold hover:scale-110 transition-transform shadow-sm"
-              aria-label="Augmenter la quantité"
+              onClick={() => onQuantityChange(qty + 1)}
+              className="h-7 w-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600"
             >
-              +
+              <span className="text-lg font-medium">+</span>
             </button>
           </div>
 
+          {/* Prix */}
           <div className="text-right">
             <p className="text-base font-bold text-blue-600">
               {formatPrice(totalPrice)}
             </p>
-            {/* Consigne avec badge */}
-            {item.has_consigne && item.consigne_unit && item.consigne_unit > 0 && (
-              <p className="text-xs text-amber-700 font-semibold bg-amber-50 inline-block px-2 py-0.5 rounded-full mt-0.5">
-                +{formatPrice(item.consigne_unit * item.quantity)}
+            {qty > 1 && (
+              <p className="text-[10px] text-gray-500">
+                {formatPrice(unitPrice)} × {qty}
               </p>
             )}
           </div>
         </div>
+
+        {/* Consigne si applicable */}
+        {item.consigne_unit && Number(item.consigne_unit) > 0 && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-lg w-fit">
+            <span>♻️</span>
+            <span>
+              +{formatPrice(Number(item.consigne_unit) * qty)} consigne
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Bouton supprimer */}
       <button
         onClick={onRemove}
-        className="h-6 w-6 rounded text-gray-400 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center flex-shrink-0"
-        aria-label="Supprimer l'article"
+        className="opacity-0 group-hover:opacity-100 h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0 flex items-center justify-center self-start"
+        aria-label="Supprimer"
       >
         <X className="h-4 w-4" />
       </button>

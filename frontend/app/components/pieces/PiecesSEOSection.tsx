@@ -3,11 +3,15 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  * 
  * Contenu SEO enrichi avec H1, sections H2, description longue
+ * ✨ Utilise HtmlContent pour le maillage interne (liens SPA + tracking)
  */
 
 import React from 'react';
 import { Alert } from '~/components/ui/alert';
 import { type SEOEnrichedContent } from '../../types/pieces-route.types';
+import { cleanOrphanParagraphs, cleanInlineStyles } from '../../utils/seo-clean.utils';
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;
@@ -19,29 +23,30 @@ interface PiecesSEOSectionProps {
  * Section SEO principale avec contenu structuré
  */
 export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOSectionProps) {
+  // 🧹 Nettoyer les balises <p> orphelines dans tout le contenu SEO
+  const cleanH1 = cleanOrphanParagraphs(content.h1);
+  // 🎨 Nettoyer les styles inline (font-family:Calibri, font-size:11pt) qui écrasent font-heading
+  const cleanLongDescription = cleanInlineStyles(cleanOrphanParagraphs(content.longDescription));
   
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* En-tête SEO */}
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
         <h1 className="text-3xl font-bold text-gray-900 leading-tight">
-          {content.h1}
+          {cleanH1}
         </h1>
       </div>
 
       <div className="p-6 space-y-8">
         {/* Description longue - Support HTML depuis API backend */}
-        <div className="prose prose-gray max-w-none">
-          {content.longDescription.startsWith('<') ? (
-            <div 
-              className="text-lg text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: content.longDescription }}
-            />
-          ) : (
-            <p className="text-lg text-gray-700 leading-relaxed">
-              {content.longDescription}
-            </p>
-          )}
+        {/* ✨ HtmlContent pour maillage interne: convertit les <a> en <Link> Remix avec tracking */}
+        {/* 🎨 font-heading pour uniformiser la police avec le H1 (Montserrat) */}
+        <div className="prose prose-gray max-w-none font-heading">
+          <HtmlContent 
+            html={cleanLongDescription}
+            trackLinks={true}
+            className="text-lg text-gray-700 leading-relaxed"
+          />
         </div>
 
         {/* Sections H2 */}
