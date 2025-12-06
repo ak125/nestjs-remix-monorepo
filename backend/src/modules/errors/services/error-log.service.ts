@@ -84,7 +84,9 @@ export class ErrorLogService extends SupabaseBaseService {
         msg_close: '0', // Ouvert
       };
 
-      const { error } = await this.supabase.from(TABLES.xtr_msg).insert(errorLog);
+      const { error } = await this.supabase
+        .from(TABLES.xtr_msg)
+        .insert(errorLog);
 
       if (error) {
         this.logger.error('Failed to log error:', error);

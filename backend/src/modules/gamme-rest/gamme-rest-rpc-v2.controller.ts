@@ -4,11 +4,11 @@ import { GammeRpcService } from './services/gamme-rpc.service';
 
 /**
  * 🚀 GAMME REST CONTROLLER RPC V2 - VERSION ULTRA-OPTIMISÉE
- * 
+ *
  * 1 SEULE requête PostgreSQL RPC au lieu de 15+
  * Performance : ~75ms (au lieu de 680ms)
  * Gain : 9x plus rapide
- * 
+ *
  * ⚡ OPTIMISATIONS CACHE:
  * - Cache Redis 1h sur données gamme
  * - Stale-while-revalidate pattern
@@ -34,7 +34,9 @@ export class GammeRestRpcV2Controller {
     try {
       const result = await this.responseBuilder.buildRpcV2Response(pgId);
       const cacheInfo = '🔄 RPC';
-      console.log(`✅ RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`);
+      console.log(
+        `✅ RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`,
+      );
       return result;
     } catch (error) {
       console.error('❌ Erreur dans getPageDataRpcV2:', {
@@ -43,13 +45,16 @@ export class GammeRestRpcV2Controller {
         hint: error.hint,
         code: error.code,
       });
-      console.log(`⚠️ RPC V2 returned error: ${error.message || 'Erreur serveur'}`);
-      
+      console.log(
+        `⚠️ RPC V2 returned error: ${error.message || 'Erreur serveur'}`,
+      );
+
       // Retourner une erreur 503 pour que le client sache que c'est temporaire
       return {
         status: 503,
         error: 'Service temporairement indisponible',
-        message: 'Timeout de connexion à la base de données. Veuillez réessayer.',
+        message:
+          'Timeout de connexion à la base de données. Veuillez réessayer.',
         code: error.code,
         retryable: error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET',
       };
@@ -64,12 +69,30 @@ export class GammeRestRpcV2Controller {
   async warmCache(@Body() body: { pgIds?: string[] }) {
     // Gammes les plus populaires (à personnaliser selon analytics)
     const defaultPopularGammes = [
-      '4', '2', '103', '104', '105', '144', '145', '156', '158', '174',
-      '176', '178', '216', '217', '222', '223', '251', '252', '270', '410',
+      '4',
+      '2',
+      '103',
+      '104',
+      '105',
+      '144',
+      '145',
+      '156',
+      '158',
+      '174',
+      '176',
+      '178',
+      '216',
+      '217',
+      '222',
+      '223',
+      '251',
+      '252',
+      '270',
+      '410',
     ];
 
     const pgIds = body.pgIds || defaultPopularGammes;
-    
+
     console.log(`🔥 Warm cache pour ${pgIds.length} gammes...`);
     const result = await this.rpcService.warmCache(pgIds);
 
@@ -89,7 +112,7 @@ export class GammeRestRpcV2Controller {
   @Post(':pgId/cache/invalidate')
   async invalidateCache(@Param('pgId') pgId: string) {
     await this.rpcService.invalidateCache(pgId);
-    
+
     return {
       status: 200,
       message: `Cache invalidé pour gamme ${pgId}`,

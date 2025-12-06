@@ -1,13 +1,13 @@
-/**
- * 🛠️ Route Détail Pièce
+﻿/**
+ * ðŸ› ï¸ Route DÃ©tail PiÃ¨ce
  * URL: /piece/{id}/{slug}.html
  *
- * Page détail d'une pièce automobile avec toutes les informations :
+ * Page dÃ©tail d'une piÃ¨ce automobile avec toutes les informations :
  * - Images produit
- * - Prix et disponibilité
- * - Compatibilités véhicules
+ * - Prix et disponibilitÃ©
+ * - CompatibilitÃ©s vÃ©hicules
  * - Cross-selling
- * - SEO optimisé
+ * - SEO optimisÃ©
  */
 
 import {
@@ -41,20 +41,20 @@ interface LoaderData {
 }
 
 /**
- * 📥 Loader - Récupération des données pièce
+ * ðŸ“¥ Loader - RÃ©cupÃ©ration des donnÃ©es piÃ¨ce
  */
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { id, slug: _slug } = params;
 
   if (!id) {
-    throw new Response("ID de pièce manquant", { status: 400 });
+    throw new Response("ID de piÃ¨ce manquant", { status: 400 });
   }
 
   const _url = new URL(request.url);
   const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
   try {
-    // Appel API backend pour récupérer la pièce
+    // Appel API backend pour rÃ©cupÃ©rer la piÃ¨ce
     const response = await fetch(`${backendUrl}/api/catalog/pieces/${id}`, {
       headers: {
         Cookie: request.headers.get("Cookie") || "",
@@ -62,7 +62,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      throw new Response(`Pièce ${id} introuvable`, { status: 404 });
+      throw new Response(`PiÃ¨ce ${id} introuvable`, { status: 404 });
     }
 
     const data = await response.json();
@@ -73,29 +73,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       crossSelling: data.crossSelling || [],
     });
   } catch (error) {
-    console.error("❌ Erreur chargement pièce:", error);
-    throw new Response("Erreur lors du chargement de la pièce", {
+    console.error("âŒ Erreur chargement piÃ¨ce:", error);
+    throw new Response("Erreur lors du chargement de la piÃ¨ce", {
       status: 500,
     });
   }
 }
 
 /**
- * 🎯 Meta - SEO dynamique
+ * ðŸŽ¯ Meta - SEO dynamique
  */
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
-      { title: "Pièce introuvable" },
+      { title: "PiÃ¨ce introuvable" },
       { name: "robots", content: "noindex, nofollow" },
     ];
   }
 
   const { piece } = data;
-  const title = `${piece.nom} ${piece.marque} ${piece.reference} - Pièce Auto`;
+  const title = `${piece.nom} ${piece.marque} ${piece.reference} - PiÃ¨ce Auto`;
   const description =
     piece.description ||
-    `${piece.nom} de marque ${piece.marque}, référence ${piece.reference}. ${piece.dispo ? "En stock" : "Sur commande"}.`;
+    `${piece.nom} de marque ${piece.marque}, rÃ©fÃ©rence ${piece.reference}. ${piece.dispo ? "En stock" : "Sur commande"}.`;
 
   return [
     { title },
@@ -110,11 +110,14 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 /**
- * 🎨 Composant Page Détail Pièce
+ * ðŸŽ¨ Composant Page DÃ©tail PiÃ¨ce
  */
 export default function PieceDetailPage() {
-  const { piece, vehiclesCompatibles, crossSelling } =
-    useLoaderData<typeof loader>();
+  const {
+    piece,
+    vehiclesCompatibles,
+    crossSelling: _crossSelling,
+  } = useLoaderData<typeof loader>();
   const [selectedImage, setSelectedImage] = useState(piece.image);
 
   const allImages = [piece.image, ...(piece.images || [])].filter(Boolean);
@@ -128,11 +131,11 @@ export default function PieceDetailPage() {
             <Link to="/" className="hover:text-blue-600">
               Accueil
             </Link>
-            <span>›</span>
+            <span>â€º</span>
             <Link to="/pieces/catalogue" className="hover:text-blue-600">
-              Pièces
+              PiÃ¨ces
             </Link>
-            <span>›</span>
+            <span>â€º</span>
             <span className="text-gray-900 font-medium">{piece.nom}</span>
           </nav>
         </div>
@@ -195,23 +198,23 @@ export default function PieceDetailPage() {
                     {piece.nom}
                   </h1>
                   <p className="text-lg text-gray-600 mt-1">
-                    {piece.marque} - Réf: {piece.reference}
+                    {piece.marque} - RÃ©f: {piece.reference}
                   </p>
                 </div>
               </div>
 
-              {/* Badges qualité */}
+              {/* Badges qualitÃ© */}
               <div className="flex items-center gap-3 mb-6">
                 {piece.qualite === "OES" && (
                   <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm">
-                    🏆 Qualité OES
+                    ðŸ† QualitÃ© OES
                   </span>
                 )}
                 {piece.nb_stars && piece.nb_stars > 0 && (
                   <div className="flex items-center gap-1">
                     {Array.from({ length: piece.nb_stars }, (_, i) => (
                       <span key={i} className="text-yellow-400 text-lg">
-                        ★
+                        â˜…
                       </span>
                     ))}
                   </div>
@@ -222,11 +225,11 @@ export default function PieceDetailPage() {
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
                 <div className="text-sm text-gray-600 mb-2">Prix TTC</div>
                 <div className="text-4xl font-black text-blue-600">
-                  {piece.prix_ttc.toFixed(2)} €
+                  {piece.prix_ttc.toFixed(2)} â‚¬
                 </div>
               </div>
 
-              {/* Disponibilité */}
+              {/* DisponibilitÃ© */}
               <div className="mb-6">
                 {piece.dispo ? (
                   <div className="flex items-center gap-2 text-green-600 font-medium">
@@ -236,7 +239,7 @@ export default function PieceDetailPage() {
                 ) : (
                   <div className="flex items-center gap-2 text-orange-600 font-medium">
                     <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    Sur commande - Délai 2-5 jours
+                    Sur commande - DÃ©lai 2-5 jours
                   </div>
                 )}
               </div>
@@ -274,11 +277,11 @@ export default function PieceDetailPage() {
           </div>
         </div>
 
-        {/* Véhicules compatibles */}
+        {/* VÃ©hicules compatibles */}
         {vehiclesCompatibles.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Véhicules compatibles
+              VÃ©hicules compatibles
             </h2>
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
