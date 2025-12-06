@@ -413,7 +413,9 @@ export class SearchSimpleService extends SupabaseBaseService {
       piecesToSort = piecesToSort.filter((p) => p._prsKind <= 2);
       const filteredOut = beforeCount - piecesToSort.length;
       if (filteredOut > 0) {
-        this.logger.log(`🎯 Filtrage exact: ${filteredOut} équivalences exclues (prs_kind >= 3)`);
+        this.logger.log(
+          `🎯 Filtrage exact: ${filteredOut} équivalences exclues (prs_kind >= 3)`,
+        );
       }
     }
 
@@ -525,7 +527,10 @@ export class SearchSimpleService extends SupabaseBaseService {
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
-    const marqueMap = new Map<number, { name: string; oes: string | null; alias: string | null }>(
+    const marqueMap = new Map<
+      number,
+      { name: string; oes: string | null; alias: string | null }
+    >(
       (marquesResult.data || []).map((m: any) => [
         parseInt(m.pm_id, 10),
         { name: m.pm_name, oes: m.pm_oes, alias: m.pm_alias },
@@ -542,7 +547,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     const imageMap = new Map<number, string>(
       (imagesResult.data || []).map((img: any) => [
         parseInt(img.pmi_piece_id, 10),
-        img.pmi_folder && img.pmi_name 
+        img.pmi_folder && img.pmi_name
           ? `${SUPABASE_URL}/storage/v1/object/public/rack-images/${img.pmi_folder}/${img.pmi_name}`
           : '/images/pieces/default.png',
       ]),
@@ -576,7 +581,7 @@ export class SearchSimpleService extends SupabaseBaseService {
         hasImage: image !== '/images/pieces/default.png',
         inStock: (p._priceVenteTTC ?? 0) > 0, // ✅ En stock si prix > 0
         qualite: qualityLevel === 1 ? 'OES' : 'AFTERMARKET',
-        stars: qualityLevel === 1 ? 6 : (qualityLevel === 2 ? 5 : 3), // 🔧 Note qualité
+        stars: qualityLevel === 1 ? 6 : qualityLevel === 2 ? 5 : 3, // 🔧 Note qualité
         _isOEM: !!p._isOEM,
         _oemRef: p._oemRef ?? null,
         _qualityLevel: qualityLevel,
