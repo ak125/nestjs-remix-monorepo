@@ -769,7 +769,7 @@ export class CatalogService
         .limit(50);
 
       // Grouper les références OEM constructeurs par marque
-      let referencesOem: Record<string, string[]> = {};
+      const referencesOem: Record<string, string[]> = {};
 
       if (refOemData && refOemData.length > 0) {
         const brandIds = [...new Set(refOemData.map((r) => r.prs_prb_id))];

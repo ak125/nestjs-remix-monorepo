@@ -1,7 +1,18 @@
-import { Controller, Post, Body, Logger, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  HttpException,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { VehiclePiecesCompatibilityService, OemRefsResult } from '../services/vehicle-pieces-compatibility.service';
+import {
+  VehiclePiecesCompatibilityService,
+  OemRefsResult,
+} from '../services/vehicle-pieces-compatibility.service';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { VehiclesService } from '../../vehicles/vehicles.service';
 import { OemPlatformMappingService } from '../services/oem-platform-mapping.service';
@@ -60,10 +71,10 @@ interface BatchLoaderResponse {
 
 /**
  * 🚀 BATCH LOADER CONTROLLER - Optimisation Performance
- * 
+ *
  * Endpoint unique qui regroupe 4-5 appels API en 1 seul
  * Réduit le waterfall réseau de 8-10 calls → 2-3 calls
- * 
+ *
  * Regroupe :
  * - Validation compatibilité (integrity/validate)
  * - Récupération pièces (pieces/php-logic)
@@ -83,11 +94,13 @@ export class BatchLoaderController {
   ) {}
 
   @Post()
-  async batchLoad(@Body() request: BatchLoaderRequest): Promise<BatchLoaderResponse> {
+  async batchLoad(
+    @Body() request: BatchLoaderRequest,
+  ): Promise<BatchLoaderResponse> {
     const startTime = Date.now();
-    
+
     this.logger.log(
-      `🚀 [BATCH-LOADER] START: type=${request.typeId}, gamme=${request.gammeId}, marque=${request.marqueId}, modele=${request.modeleId}`
+      `🚀 [BATCH-LOADER] START: type=${request.typeId}, gamme=${request.gammeId}, marque=${request.marqueId}, modele=${request.modeleId}`,
     );
 
     try {
@@ -95,7 +108,7 @@ export class BatchLoaderController {
       if (!request.typeId || !request.gammeId) {
         throw new HttpException(
           'typeId et gammeId sont requis',
-          HttpStatus.BAD_REQUEST
+          HttpStatus.BAD_REQUEST,
         );
       }
 
@@ -106,7 +119,7 @@ export class BatchLoaderController {
       if (cached) {
         const loadTime = Date.now() - startTime;
         this.logger.log(
-          `⚡ [BATCH-LOADER] Cache HIT: type=${request.typeId}, gamme=${request.gammeId} (${loadTime}ms)`
+          `⚡ [BATCH-LOADER] Cache HIT: type=${request.typeId}, gamme=${request.gammeId} (${loadTime}ms)`,
         );
         return {
           ...cached,
@@ -116,34 +129,50 @@ export class BatchLoaderController {
       }
 
       // 🔥 PARALLÉLISATION MAXIMALE: 4 appels en parallèle
-      const [piecesResult, seoResult, crossSellingResult, vehicleResult] = await Promise.all([
-        // 1. Pièces via RPC optimisée (1 requête au lieu de 9)
-        this.piecesService.getPiecesViaRPC(request.typeId, request.gammeId).catch(error => {
-          this.logger.error(`❌ Erreur récupération pièces:`, error);
-          return { pieces: [], count: 0, minPrice: null, success: false, error: error.message };
-        }),
+      const [piecesResult, seoResult, crossSellingResult, vehicleResult] =
+        await Promise.all([
+          // 1. Pièces via RPC optimisée (1 requête au lieu de 9)
+          this.piecesService
+            .getPiecesViaRPC(request.typeId, request.gammeId)
+            .catch((error) => {
+              this.logger.error(`❌ Erreur récupération pièces:`, error);
+              return {
+                pieces: [],
+                count: 0,
+                minPrice: null,
+                success: false,
+                error: error.message,
+              };
+            }),
 
-        // 2. SEO content
-        this.gammeService.getGammeSeoContent(
-          request.gammeId,
-          request.typeId,
-          request.marqueId,
-          request.modeleId
-        ).catch(error => {
-          this.logger.warn(`⚠️ Erreur récupération SEO (fallback):`, error);
-          return { h1: null, content: null, title: null, description: null };
-        }),
+          // 2. SEO content
+          this.gammeService
+            .getGammeSeoContent(
+              request.gammeId,
+              request.typeId,
+              request.marqueId,
+              request.modeleId,
+            )
+            .catch((error) => {
+              this.logger.warn(`⚠️ Erreur récupération SEO (fallback):`, error);
+              return {
+                h1: null,
+                content: null,
+                title: null,
+                description: null,
+              };
+            }),
 
-        // 3. Cross-selling - Pour l'instant retourner vide car pas implémenté dans gammeService
-        // TODO: Implémenter getCrossSellingGammes dans GammeUnifiedService
-        Promise.resolve([]),
+          // 3. Cross-selling - Pour l'instant retourner vide car pas implémenté dans gammeService
+          // TODO: Implémenter getCrossSellingGammes dans GammeUnifiedService
+          Promise.resolve([]),
 
-        // 4. 🚗 Informations véhicule (type, modèle, marque) 
-        this.vehiclesService.getTypeById(request.typeId).catch(error => {
-          this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
-          return { data: null, error };
-        }),
-      ]);
+          // 4. 🚗 Informations véhicule (type, modèle, marque)
+          this.vehiclesService.getTypeById(request.typeId).catch((error) => {
+            this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
+            return { data: null, error };
+          }),
+        ]);
 
       // 🚗 Extraction des infos véhicule (avant l'appel OEM car on a besoin du nom de marque)
       let vehicleInfo: VehicleInfo | undefined;
@@ -153,7 +182,7 @@ export class BatchLoaderController {
         const modeleData = typeData.auto_modele;
         const marqueData = modeleData?.auto_marque;
         marqueName = marqueData?.marque_name;
-        
+
         vehicleInfo = {
           typeId: typeData.type_id,
           typeName: typeData.type_name || '',
@@ -173,8 +202,13 @@ export class BatchLoaderController {
       }
 
       // Extraction des données
-      const pieces = Array.isArray(piecesResult.pieces) ? piecesResult.pieces : [];
-      const grouped_pieces = (piecesResult as any).grouped_pieces || (piecesResult as any).blocs || [];
+      const pieces = Array.isArray(piecesResult.pieces)
+        ? piecesResult.pieces
+        : [];
+      const grouped_pieces =
+        (piecesResult as any).grouped_pieces ||
+        (piecesResult as any).blocs ||
+        [];
       const filters = (piecesResult as any).filters || null; // ✨ V2: Filtres intégrés depuis RPC
       const count = pieces.length;
       const minPrice = piecesResult.minPrice || null;
@@ -215,12 +249,13 @@ export class BatchLoaderController {
 
           // Filtrer les refs OEM par préfixes dominants pour SEO
           if (oemRefsData.oemRefs.length > 0) {
-            const seoResult = this.oemPlatformMappingService.filterOemRefsForSeo(
-              oemRefsData.oemRefs,
-              request.typeId,
-              request.gammeId,
-              marqueName,
-            );
+            const seoResult =
+              this.oemPlatformMappingService.filterOemRefsForSeo(
+                oemRefsData.oemRefs,
+                request.typeId,
+                request.gammeId,
+                marqueName,
+              );
             oemRefsSeo = seoResult.filteredRefs;
 
             this.logger.log(
@@ -234,25 +269,29 @@ export class BatchLoaderController {
             for (const group of grouped_pieces) {
               if (group.pieces && group.pieces.length > 0) {
                 // Extraire les IDs des pièces de ce groupe
-                const groupPieceIds = group.pieces.map((p: any) => p.id).filter(Boolean);
-                
+                const groupPieceIds = group.pieces
+                  .map((p: any) => p.id)
+                  .filter(Boolean);
+
                 // Récupérer les refs OEM spécifiques à ce groupe
-                const groupOemResult = await this.piecesService.getOemRefsLightweight(
-                  groupPieceIds,
-                  marqueName,
-                );
-                
-                // Filtrer et dédupliquer
-                if (groupOemResult.oemRefs.length > 0) {
-                  const groupSeoResult = this.oemPlatformMappingService.filterOemRefsForSeo(
-                    groupOemResult.oemRefs,
-                    request.typeId,
-                    request.gammeId,
+                const groupOemResult =
+                  await this.piecesService.getOemRefsLightweight(
+                    groupPieceIds,
                     marqueName,
                   );
+
+                // Filtrer et dédupliquer
+                if (groupOemResult.oemRefs.length > 0) {
+                  const groupSeoResult =
+                    this.oemPlatformMappingService.filterOemRefsForSeo(
+                      groupOemResult.oemRefs,
+                      request.typeId,
+                      request.gammeId,
+                      marqueName,
+                    );
                   group.oemRefs = groupSeoResult.filteredRefs;
                   group.oemRefsCount = groupSeoResult.filteredRefs.length;
-                  
+
                   this.logger.debug(
                     `🎯 [OEM-GROUPE] "${group.title_h2 || group.filtre_side}": ${group.oemRefsCount} refs`,
                   );
@@ -264,7 +303,9 @@ export class BatchLoaderController {
             }
           }
         } catch (oemError: any) {
-          this.logger.warn(`⚠️ [BATCH-LOADER] Erreur OEM (non bloquante): ${oemError.message}`);
+          this.logger.warn(
+            `⚠️ [BATCH-LOADER] Erreur OEM (non bloquante): ${oemError.message}`,
+          );
         }
       }
 
@@ -272,13 +313,13 @@ export class BatchLoaderController {
       const validation = {
         valid: count > 0,
         relationsCount: count,
-        dataQuality: this.analyzeDataQuality(pieces)
+        dataQuality: this.analyzeDataQuality(pieces),
       };
 
       const loadTime = Date.now() - startTime;
 
       this.logger.log(
-        `✅ [BATCH-LOADER] SUCCESS: ${count} pièces, min=${minPrice}€, SEO=${!!seoResult.content}, cross=${Array.isArray(crossSellingResult) ? crossSellingResult.length : 0}, vehicle=${!!vehicleInfo}, OEM=${oemRefsData?.count || 0}, OEMSEO=${oemRefsSeo?.length || 0}, ${loadTime}ms`
+        `✅ [BATCH-LOADER] SUCCESS: ${count} pièces, min=${minPrice}€, SEO=${!!seoResult.content}, cross=${Array.isArray(crossSellingResult) ? crossSellingResult.length : 0}, vehicle=${!!vehicleInfo}, OEM=${oemRefsData?.count || 0}, OEMSEO=${oemRefsSeo?.length || 0}, ${loadTime}ms`,
       );
 
       const response: BatchLoaderResponse = {
@@ -294,7 +335,9 @@ export class BatchLoaderController {
           title: seoResult.title || undefined,
           description: seoResult.description || undefined,
         },
-        crossSelling: Array.isArray(crossSellingResult) ? crossSellingResult : [],
+        crossSelling: Array.isArray(crossSellingResult)
+          ? crossSellingResult
+          : [],
         vehicleInfo, // 🚗 V3: Infos véhicule intégrées
         oemRefs: oemRefsData, // 🔧 V4: Refs OEM constructeur filtrées
         oemRefsSeo, // 🎯 V5: Refs OEM filtrées par préfixes dominants (SEO)
@@ -313,9 +356,9 @@ export class BatchLoaderController {
       return response;
     } catch (error: any) {
       const loadTime = Date.now() - startTime;
-      
+
       this.logger.error(
-        `❌ [BATCH-LOADER] ERROR: ${error.message}, ${loadTime}ms`
+        `❌ [BATCH-LOADER] ERROR: ${error.message}, ${loadTime}ms`,
       );
 
       throw new HttpException(
@@ -326,7 +369,7 @@ export class BatchLoaderController {
           timestamp: new Date().toISOString(),
           loadTime,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -340,34 +383,43 @@ export class BatchLoaderController {
     }
 
     const issues: string[] = [];
-    
+
     // Pièces sans marque
-    const withoutBrand = pieces.filter(p => !p.marque || p.marque === 'Marque inconnue');
+    const withoutBrand = pieces.filter(
+      (p) => !p.marque || p.marque === 'Marque inconnue',
+    );
     const percentWithoutBrand = (withoutBrand.length / pieces.length) * 100;
-    
+
     if (percentWithoutBrand > 80) {
       issues.push('missing_brands');
     }
 
     // Pièces sans image
-    const withoutImage = pieces.filter(p => !p.image || p.image === '/images/pieces/default.png');
+    const withoutImage = pieces.filter(
+      (p) => !p.image || p.image === '/images/pieces/default.png',
+    );
     const percentWithoutImage = (withoutImage.length / pieces.length) * 100;
-    
+
     if (percentWithoutImage > 50) {
       issues.push('missing_images');
     }
 
     // Pièces sans prix
-    const withoutPrice = pieces.filter(p => !p.prix_unitaire || p.prix_unitaire === 0);
+    const withoutPrice = pieces.filter(
+      (p) => !p.prix_unitaire || p.prix_unitaire === 0,
+    );
     const percentWithoutPrice = (withoutPrice.length / pieces.length) * 100;
-    
+
     if (percentWithoutPrice > 20) {
       issues.push('missing_prices');
     }
 
     // Score qualité (0-100)
     const quality = Math.round(
-      100 - (percentWithoutBrand * 0.5) - (percentWithoutImage * 0.3) - (percentWithoutPrice * 0.2)
+      100 -
+        percentWithoutBrand * 0.5 -
+        percentWithoutImage * 0.3 -
+        percentWithoutPrice * 0.2,
     );
 
     return {
