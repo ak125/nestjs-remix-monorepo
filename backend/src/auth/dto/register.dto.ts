@@ -73,7 +73,8 @@ export class RegisterDtoClass {
   email: string;
 
   @ApiProperty({
-    description: 'User password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
+    description:
+      'User password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
     example: 'SecurePass123!',
     type: String,
   })
@@ -132,4 +133,3 @@ export const validateRegister = (data: unknown): RegisterDto => {
  * Usage: @Body(new ZodValidationPipe(RegisterSchema)) userData: RegisterDto
  */
 export default RegisterSchema;
-

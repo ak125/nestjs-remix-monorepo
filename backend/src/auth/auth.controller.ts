@@ -14,8 +14,6 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiParam,
-  ApiBearerAuth,
   ApiCookieAuth,
 } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
@@ -25,7 +23,6 @@ import { AuthService } from './auth.service';
 import { UserService } from '../database/services/user.service';
 import { CartDataService } from '../database/services/cart-data.service';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { LogoutResponseDto } from './dto/logout-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import {
   ModuleAccessDto,
@@ -33,7 +30,10 @@ import {
   TokenValidationDto,
 } from './dto/module-access.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import RegisterSchema, { RegisterDto, RegisterDtoClass } from './dto/register.dto';
+import RegisterSchema, {
+  RegisterDto,
+  RegisterDtoClass,
+} from './dto/register.dto';
 
 @ApiTags('auth')
 @Controller()
