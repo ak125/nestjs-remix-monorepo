@@ -19,7 +19,7 @@ import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { buildCanonicalUrl } from "../utils/seo/canonical";
 import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { generateGammeMeta } from "../utils/seo/meta-generators";
-import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
+import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 
 // Lazy load PurchaseGuide (contains framer-motion ~167KB)

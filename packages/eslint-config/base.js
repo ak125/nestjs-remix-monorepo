@@ -4,7 +4,6 @@ module.exports = {
 		"@remix-run/eslint-config",
 		"@remix-run/eslint-config/node",
 		"prettier",
-		"plugin:import/recommended",
 	],
 	parser: "@typescript-eslint/parser",
 	rules: {
