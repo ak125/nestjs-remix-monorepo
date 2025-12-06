@@ -429,9 +429,9 @@ export class CrossSellingService extends SupabaseBaseService {
    * 🎯 CROSS-SELLING PAR CONFIGURATION OPTIMISÉ - Pattern PHP Legacy
    * Réplique exacte avec filtres PG_LEVEL, PG_DISPLAY, ORDER BY PGC_LEVEL + MC_SORT + PG_NAME
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async getCrossGammesByConfigOptimized(
     pgId: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _typeId: number,
   ): Promise<CrossGamme[]> {
     try {

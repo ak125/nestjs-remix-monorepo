@@ -209,6 +209,7 @@ export class InternalLinkingService implements OnModuleInit {
   async processLinkGammeCar(
     content: string,
     vehicle: VehicleContext,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _sourcePgId: number,
   ): Promise<LinkInjectionResult> {
     const result: LinkInjectionResult = {

@@ -24,7 +24,8 @@ import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { BrandSeoService } from './services/seo/brand-seo.service';
 
 // 🖼️ URL Supabase Storage pour les images
-const SUPABASE_STORAGE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+const SUPABASE_STORAGE_URL =
+  'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
 
 @Controller('api/brands')
 export class BrandsController {
@@ -36,7 +37,9 @@ export class BrandsController {
     private readonly typesService: VehicleTypesService,
     private readonly brandSeoService: BrandSeoService,
   ) {
-    this.logger.log('✅ BrandsController initialisé - Routes /api/brands/* actives');
+    this.logger.log(
+      '✅ BrandsController initialisé - Routes /api/brands/* actives',
+    );
   }
 
   /**
@@ -98,7 +101,7 @@ export class BrandsController {
     let seoData = null;
     const marqueId = (brand as any).marque_id;
     const marqueNom = (brand as any).marque_name || brandSlug;
-    
+
     if (marqueId) {
       seoData = await this.brandSeoService.getProcessedBrandSeo(
         marqueId,
@@ -133,7 +136,7 @@ export class BrandsController {
   ) {
     try {
       this.logger.log(`🔍 Recherche modèle: ${brandSlug}/${modelSlug}`);
-      
+
       // 1. Trouver marque par alias exact
       const brand = await this.brandsService.getBrandByAlias(brandSlug);
 
@@ -150,10 +153,15 @@ export class BrandsController {
       const marqueAlias = brandData.marque_alias || brandSlug;
 
       // 2. Trouver modèle par alias (méthode directe, pas de filtrage motorisations)
-      const model = await this.modelsService.getModelByBrandAndAlias(marqueId, modelSlug);
+      const model = await this.modelsService.getModelByBrandAndAlias(
+        marqueId,
+        modelSlug,
+      );
 
       if (!model) {
-        this.logger.warn(`❌ Modèle "${modelSlug}" introuvable pour "${brandSlug}"`);
+        this.logger.warn(
+          `❌ Modèle "${modelSlug}" introuvable pour "${brandSlug}"`,
+        );
         return {
           success: false,
           message: `Modèle "${modelSlug}" introuvable pour "${brandSlug}"`,
@@ -172,7 +180,9 @@ export class BrandsController {
       // ✅ Colonnes correctes: type_power_kw et type_power_ps (pas type_kw/type_ch)
       const formattedTypes = (typesResult.data || []).map((type: any) => ({
         id: type.type_id,
-        designation: type.type_name || `${type.type_power_kw || 0} kW / ${type.type_power_ps || 0} ch`,
+        designation:
+          type.type_name ||
+          `${type.type_power_kw || 0} kW / ${type.type_power_ps || 0} ch`,
         kw: type.type_power_kw || 0,
         ch: type.type_power_ps || 0,
         carburant: type.type_fuel || 'Inconnu',
@@ -200,7 +210,7 @@ export class BrandsController {
             id: marqueId,
             name: brandData.marque_name,
             alias: marqueAlias,
-            logo: brandData.marque_img 
+            logo: brandData.marque_img
               ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${brandData.marque_img}`
               : null,
           },
@@ -292,7 +302,8 @@ export class BrandsController {
   @Put(':id/seo')
   async updateBrandSeo(
     @Param('id', ParseIntPipe) marqueId: number,
-    @Body() seoData: {
+    @Body()
+    seoData: {
       sm_title?: string;
       sm_descrip?: string;
       sm_h1?: string;
