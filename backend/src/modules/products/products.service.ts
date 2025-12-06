@@ -1445,7 +1445,9 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🏪 getProductsForCommercial - Options:', options);
 
       // Étape 1 : Récupérer les pièces
-      let query = this.client.from(TABLES.pieces).select('*', { count: 'exact' });
+      let query = this.client
+        .from(TABLES.pieces)
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (search) {

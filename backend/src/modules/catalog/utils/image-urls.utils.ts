@@ -50,6 +50,7 @@ export function buildRackImageUrl(imageData?: PieceImageData | null): string {
  * @param _quality - Qualité 1-100 (défaut: 85) - non utilisé actuellement
  * @returns URL avec transformation WebP
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function buildRackImageUrlWithTransform(
   imageData?: PieceImageData | null,
   _width?: number,

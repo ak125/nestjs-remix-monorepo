@@ -206,7 +206,10 @@ export class OrdersService extends SupabaseBaseService {
       if (linesError) {
         this.logger.error('Erreur création lignes:', linesError);
         // Rollback manuel - supprimer la commande
-        await this.supabase.from(TABLES.xtr_order).delete().eq('ord_id', orderId);
+        await this.supabase
+          .from(TABLES.xtr_order)
+          .delete()
+          .eq('ord_id', orderId);
         throw new BadRequestException(
           `Échec création lignes: ${linesError.message}`,
         );

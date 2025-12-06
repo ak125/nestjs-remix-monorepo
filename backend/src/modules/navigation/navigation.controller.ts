@@ -4,8 +4,6 @@ import {
   Query,
   Logger,
   Delete,
-  HttpException,
-  HttpStatus,
   UseInterceptors,
 } from '@nestjs/common';
 import { NavigationService } from './navigation.service';
