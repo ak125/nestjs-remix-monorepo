@@ -8,18 +8,17 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
  * - 1 seule requête SQL au lieu de 9
  * - Performance: ~30ms au lieu de 2-4 secondes
  * - Images via CDN Supabase direct
- * 
+ *
  * @see backend/sql/003-create-rpc-get-pieces-for-type-gamme.sql
  */
 @Injectable()
 export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
-  
   /**
    * 🚀 MÉTHODE PRINCIPALE: Appel RPC optimisé
-   * 
+   *
    * Remplace les 9 requêtes REST API par 1 seule requête SQL côté serveur.
    * La RPC gère: relations, pièces, prix, marques, images, positions, groupements.
-   * 
+   *
    * @param typeId - ID du type de véhicule (ex: 33302)
    * @param pgId - ID de la gamme de pièces (ex: 402)
    * @returns Données complètes formatées pour le frontend
@@ -29,10 +28,13 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
     this.logger.log(`🚀 [RPC] get_pieces_for_type_gamme(${typeId}, ${pgId})`);
 
     try {
-      const { data, error } = await this.client.rpc('get_pieces_for_type_gamme', {
-        p_type_id: typeId,
-        p_pg_id: pgId,
-      });
+      const { data, error } = await this.client.rpc(
+        'get_pieces_for_type_gamme',
+        {
+          p_type_id: typeId,
+          p_pg_id: pgId,
+        },
+      );
 
       if (error) {
         this.logger.error(`❌ [RPC] Erreur: ${error.message}`);
@@ -89,22 +91,31 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
    * 🔧 Récupère les refs OEM constructeur pour une page liste
    * Filtrées par la marque du véhicule (ex: RENAULT sur Clio)
-   * 
+   *
    * @param typeId - ID du type de véhicule
    * @param pgId - ID de la gamme de pièces
    * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
    * @returns Liste des refs OEM de cette marque
    */
-  async getOemRefsForVehicle(typeId: number, pgId: number, marqueName: string): Promise<OemRefsResult> {
+  async getOemRefsForVehicle(
+    typeId: number,
+    pgId: number,
+    marqueName: string,
+  ): Promise<OemRefsResult> {
     const startTime = Date.now();
-    this.logger.log(`🔧 [RPC] get_oem_refs_for_vehicle(${typeId}, ${pgId}, ${marqueName})`);
+    this.logger.log(
+      `🔧 [RPC] get_oem_refs_for_vehicle(${typeId}, ${pgId}, ${marqueName})`,
+    );
 
     try {
-      const { data, error } = await this.client.rpc('get_oem_refs_for_vehicle', {
-        p_type_id: typeId,
-        p_pg_id: pgId,
-        p_marque_name: marqueName
-      });
+      const { data, error } = await this.client.rpc(
+        'get_oem_refs_for_vehicle',
+        {
+          p_type_id: typeId,
+          p_pg_id: pgId,
+          p_marque_name: marqueName,
+        },
+      );
 
       if (error) {
         this.logger.warn(`⚠️ [RPC OEM] Erreur: ${error.message}`);
@@ -112,18 +123,20 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           vehicleMarque: marqueName.toUpperCase(),
           oemRefs: [],
           count: 0,
-          error: error.message
+          error: error.message,
         };
       }
 
       const duration = Date.now() - startTime;
-      this.logger.log(`✅ [RPC OEM] ${data?.count || 0} refs ${marqueName} en ${duration}ms`);
+      this.logger.log(
+        `✅ [RPC OEM] ${data?.count || 0} refs ${marqueName} en ${duration}ms`,
+      );
 
       return {
         vehicleMarque: data?.vehicleMarque || marqueName.toUpperCase(),
         oemRefs: data?.oemRefs || [],
         count: data?.count || 0,
-        piecesWithOem: data?.piecesWithOem
+        piecesWithOem: data?.piecesWithOem,
       };
     } catch (error: any) {
       this.logger.error(`❌ [RPC OEM] Exception: ${error.message}`);
@@ -131,7 +144,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         vehicleMarque: marqueName.toUpperCase(),
         oemRefs: [],
         count: 0,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -139,7 +152,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
    * 🚀 Récupère les refs OEM de manière légère (sans RPC lente)
    * Utilise les piece_ids déjà récupérés par getPiecesViaRPC
-   * 
+   *
    * @param pieceIds - Liste des IDs de pièces déjà récupérées
    * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
    * @returns Liste des refs OEM filtrées par marque
@@ -192,7 +205,9 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         .limit(200);
 
       if (refError) {
-        this.logger.warn(`⚠️ [OEM-LIGHT] Erreur requête refs: ${refError.message}`);
+        this.logger.warn(
+          `⚠️ [OEM-LIGHT] Erreur requête refs: ${refError.message}`,
+        );
         return {
           vehicleMarque: marqueName.toUpperCase(),
           oemRefs: [],

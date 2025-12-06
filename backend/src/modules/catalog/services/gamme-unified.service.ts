@@ -722,10 +722,10 @@ export class GammeUnifiedService extends SupabaseBaseService {
     // Supprimer points orphelins en fin de phrase incomplète: "il faut ." → "il faut"
     result = result.replace(/\s+\.\s*$/gm, '');
     result = result.replace(/(\s+\w+)\s+\.\s+/g, '$1. '); // "faut . les" → "faut. les"
-    
+
     // 🎯 Corriger espace avant point: "freinage ." → "freinage."
     result = result.replace(/(\w)\s+\./g, '$1.');
-    
+
     // Corriger virgule suivie de point: ", ." → "."
     result = result.replace(/,\s*\./g, '.');
 

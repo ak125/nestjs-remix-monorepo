@@ -1,7 +1,10 @@
 import { TABLES } from '@repo/database-types';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { buildRackImageUrl, type PieceImageData } from '../utils/image-urls.utils';
+import {
+  buildRackImageUrl,
+  type PieceImageData,
+} from '../utils/image-urls.utils';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 
 @Injectable()
