@@ -17,7 +17,7 @@ import {
   fetchWithRetry,
   isValidSitemapXml,
   getSitemapHeaders,
-  generateEmptySitemap,
+  generateEmptyFallbackSitemap,
   logSitemapError,
 } from "~/lib/sitemap-fetch";
 
@@ -49,7 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const duration = Date.now() - startTime;
     logSitemapError('Types 1 (0-10000)', error, duration);
     
-    return new Response(generateEmptySitemap(), {
+    return new Response(generateEmptyFallbackSitemap(), {
       headers: getSitemapHeaders({
         responseTime: duration,
         isError: true,

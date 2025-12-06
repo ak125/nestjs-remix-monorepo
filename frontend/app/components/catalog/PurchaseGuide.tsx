@@ -474,14 +474,14 @@ export function PurchaseGuide({
                   </div>
 
                   {/* 🔗 Liens vers gammes connexes (maillage interne) */}
-                  {categoryData.step3.related_gammes && categoryData.step3.related_gammes.length > 0 && (
+                  {'related_gammes' in categoryData.step3 && categoryData.step3.related_gammes && categoryData.step3.related_gammes.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <ExternalLink className="w-4 h-4" />
                         Pièces complémentaires à vérifier
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {categoryData.step3.related_gammes.map((gamme: { pg_id: number; pg_name: string; pg_alias: string }) => (
+                        {(categoryData.step3 as { related_gammes: { pg_id: number; pg_name: string; pg_alias: string }[] }).related_gammes.map((gamme: { pg_id: number; pg_name: string; pg_alias: string }) => (
                           <Link
                             key={gamme.pg_id}
                             to={`/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`}

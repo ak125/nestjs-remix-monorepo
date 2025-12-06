@@ -652,7 +652,7 @@ export function ReportingModule() {
                       cy="50%"
                       outerRadius={100}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((Number(percent) || 0) * 100).toFixed(0)}%`}
                     >
                       {[
                         { name: 'Financier', value: 35, color: '#10b981' },

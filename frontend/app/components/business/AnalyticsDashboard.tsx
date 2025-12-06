@@ -51,6 +51,7 @@ interface CustomerSegment {
   count: number;
   value: number;
   color: string;
+  [key: string]: string | number; // Index signature for Recharts compatibility
 }
 
 // 📈 Composant principal du tableau de bord analytics
@@ -310,7 +311,7 @@ export function AnalyticsDashboard() {
                   cy="50%"
                   outerRadius={80}
                   dataKey="count"
-                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${((Number(percent) || 0) * 100).toFixed(0)}%`}
                 >
                   {customerSegments.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

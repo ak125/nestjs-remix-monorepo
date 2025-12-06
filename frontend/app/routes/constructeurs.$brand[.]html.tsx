@@ -312,7 +312,7 @@ export default function BrandCatalogPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" role="list" aria-label={`Pièces populaires ${manufacturer.marque_name}`}>
               {apiParts.map((part, index) => (
-                <div key={`${part.pg_id}-${part.cgc_type_id}-${index}`} role="listitem">
+                <div key={`${part.cgc_pg_id}-${part.cgc_type_id}-${index}`} role="listitem">
                   <ApiPartCard part={part} brandAlias={manufacturer.marque_alias} brandPrimary={brandPrimary} />
                 </div>
               ))}

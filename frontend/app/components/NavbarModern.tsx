@@ -29,7 +29,13 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
   const location = useLocation();
   const navigate = useNavigate();
-  const { summary, isOpen, toggleCart, closeCart } = useCart();
+  const { summary } = useCart();
+  
+  // Cart sidebar state (local state for UI control)
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const toggleCart = () => setIsCartOpen(prev => !prev);
+  const closeCart = () => setIsCartOpen(false);
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -385,7 +391,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
         </div>
 
         {/* Sidebar Panier */}
-        <CartSidebar isOpen={isOpen} onClose={closeCart} />
+        <CartSidebar isOpen={isCartOpen} onClose={closeCart} />
       </nav>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}

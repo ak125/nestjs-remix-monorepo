@@ -129,11 +129,13 @@ export function VehicleImage({
   alt,
   className = 'w-full h-full object-cover',
   loading = 'lazy',
+  sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
 }: {
   src?: string;
   alt: string;
   className?: string;
   loading?: 'lazy' | 'eager';
+  sizes?: string;
 }) {
   return (
     <ResponsiveImage
@@ -142,7 +144,7 @@ export function VehicleImage({
       fallback="/images/default-vehicle.png"
       className={className}
       loading={loading}
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      sizes={sizes}
       widths={[320, 480, 640]}
       quality={75}
       showPlaceholder
@@ -158,11 +160,13 @@ export function PartImage({
   alt,
   className = 'w-full h-full object-contain',
   loading = 'lazy',
+  sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw',
 }: {
   src?: string;
   alt: string;
   className?: string;
   loading?: 'lazy' | 'eager';
+  sizes?: string;
 }) {
   return (
     <ResponsiveImage
@@ -171,7 +175,7 @@ export function PartImage({
       fallback="/images/default-part.png"
       className={className}
       loading={loading}
-      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
+      sizes={sizes}
       widths={[160, 240, 320]}
       quality={80}
       showPlaceholder
@@ -187,11 +191,13 @@ export function BrandLogo({
   alt,
   className = 'w-full h-full object-contain',
   loading = 'eager',
+  sizes = '(max-width: 640px) 128px, 192px',
 }: {
   src?: string;
   alt: string;
   className?: string;
   loading?: 'lazy' | 'eager';
+  sizes?: string;
 }) {
   return (
     <ResponsiveImage
@@ -200,7 +206,7 @@ export function BrandLogo({
       fallback="/images/default-brand.png"
       className={className}
       loading={loading}
-      sizes="(max-width: 640px) 128px, 192px"
+      sizes={sizes}
       widths={[128, 192, 256]}
       quality={90}
     />

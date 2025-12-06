@@ -71,6 +71,7 @@ export const TABLES = {
     seo_equip_gamme: '__seo_equip_gamme',
     seo_family_gamme_car_switch: '__seo_family_gamme_car_switch',
     sitemap_p_link: '__sitemap_p_link',
+    sitemap_motorisation: '__sitemap_motorisation',
     promo_codes: 'promo_codes',
     quantity_discounts: 'quantity_discounts',
     shipping_rates_cache: 'shipping_rates_cache',

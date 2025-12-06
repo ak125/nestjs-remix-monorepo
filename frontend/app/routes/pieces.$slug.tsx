@@ -34,7 +34,7 @@ interface LoaderData {
     keywords: string;
     robots: string;
     canonical: string;
-    relfollow: number;
+    relfollow?: number;
   };
   breadcrumbs?: {
     items: Array<{
@@ -50,13 +50,14 @@ interface LoaderData {
   };
   performance?: {
     total_time_ms: number;
-    parallel_time_ms: number;
+    parallel_time_ms?: number;
+    rpc_time_ms?: number;
     motorisations_count: number;
-    catalogue_famille_count: number;
-    equipementiers_count: number;
-    conseils_count: number;
-    informations_count: number;
-    guide_available: number;
+    catalogue_famille_count?: number;
+    equipementiers_count?: number;
+    conseils_count?: number;
+    informations_count?: number;
+    guide_available?: number;
   };
   content?: {
     h1: string;
@@ -172,22 +173,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }).finally(() => clearTimeout(timeoutId));
     
     // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-    const data: LoaderData = {
+    const heroData = apiData.hero as { h1: string; content: string; image: string; wall: string; famille_info?: any; pg_name?: string; pg_alias?: string } | undefined;
+    // Note: API returns different shapes than LoaderData, using type assertion for compatibility
+    const data = {
       ...apiData,
-      content: apiData.hero ? {
-        h1: apiData.hero.h1,
-        content: apiData.hero.content,
-        pg_name: apiData.hero.pg_name || apiData.hero.famille_info?.mf_name || '',
-        pg_alias: apiData.hero.pg_alias || '',
-        pg_pic: apiData.hero.image,
-        pg_wall: apiData.hero.wall,
+      status: 200,
+      content: heroData ? {
+        h1: heroData.h1,
+        content: heroData.content,
+        pg_name: heroData.pg_name || heroData.famille_info?.mf_name || '',
+        pg_alias: heroData.pg_alias || '',
+        pg_pic: heroData.image,
+        pg_wall: heroData.wall,
       } : undefined,
       famille: apiData.hero?.famille_info,
       guide: apiData.guideAchat ? {
         ...apiData.guideAchat,
         date: apiData.guideAchat.updated,
       } : undefined,
-    };
+    } as unknown as LoaderData;
     
     // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
     const baseBreadcrumb = [
