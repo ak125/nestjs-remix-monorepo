@@ -89,7 +89,7 @@ export abstract class SupabaseBaseService {
             } else {
               signal = timeoutSignal;
             }
-          } catch (_e) {
+          } catch {
             // Fallback pour environnements plus anciens (ne devrait pas arriver en Node 22)
             const controller = new AbortController();
             setTimeout(() => controller.abort(), 15000);

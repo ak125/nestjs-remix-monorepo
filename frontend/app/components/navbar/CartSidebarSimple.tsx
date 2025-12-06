@@ -8,10 +8,10 @@
 
 import { Badge } from "@fafa/ui";
 import { Link } from "@remix-run/react";
-import { X, ShoppingBag } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 
-import { useRootCart } from "../../root";
 import { cn } from "../../lib/utils";
+import { useRootCart } from "../../root";
 
 interface CartSidebarSimpleProps {
   isOpen: boolean;

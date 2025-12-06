@@ -1,8 +1,8 @@
 /**
  * 🔍 QUICK SEARCH BAR - Phase 9
- * 
+ *
  * Barre de recherche rapide inline avec dropdown de résultats
- * 
+ *
  * Features:
  * ✅ Recherche instantanée avec debounce (300ms)
  * ✅ Dropdown de résultats sous l'input
@@ -14,18 +14,19 @@
  * ✅ Lien "Voir tous les résultats" si >10 produits
  */
 
-import { Link } from '@remix-run/react';
-import { Search, ShoppingCart, X } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { useProductSearch } from '../../hooks/useProductSearch';
-import { PartImage } from '~/components/ui/ResponsiveImage';
+import { Link } from "@remix-run/react";
+import { Search, ShoppingCart, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { PartImage } from "~/components/ui/ResponsiveImage";
+import { useProductSearch } from "../../hooks/useProductSearch";
 
 interface QuickSearchBarProps {
   className?: string;
 }
 
-export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export function QuickSearchBar({ className = "" }: QuickSearchBarProps) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +35,7 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
   const { results, isLoading } = useProductSearch(searchQuery, {
     debounceMs: 300,
     minQueryLength: 2,
-    limit: 10
+    limit: 10,
   });
 
   // Close dropdown when clicking outside
@@ -44,20 +45,20 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsOpen(false);
-        setSearchQuery('');
+        setSearchQuery("");
       }
     };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
   // Open dropdown when we have results
@@ -73,26 +74,26 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
   const handleAddToCart = async (productId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     try {
-      const response = await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, quantity: 1 }),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {
-        console.log('Added to cart!');
+        console.log("Added to cart!");
         // Could trigger cart refresh here or show toast
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error("Error adding to cart:", error);
     }
   };
 
   const clearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setIsOpen(false);
   };
 
@@ -146,7 +147,7 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
                   to={`/products/${product.piece_id}`}
                   onClick={() => {
                     setIsOpen(false);
-                    setSearchQuery('');
+                    setSearchQuery("");
                   }}
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
                 >
@@ -162,7 +163,7 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
                       <Search className="w-6 h-6 text-gray-400" />
                     </div>
                   )}
-                  
+
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 line-clamp-1">
                       {product.name}
@@ -204,14 +205,14 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
                   </div>
                 </Link>
               ))}
-              
+
               {results.length >= 10 && (
                 <div className="p-3 text-center">
                   <Link
                     to={`/products?search=${encodeURIComponent(searchQuery)}`}
                     onClick={() => {
                       setIsOpen(false);
-                      setSearchQuery('');
+                      setSearchQuery("");
                     }}
                     className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >

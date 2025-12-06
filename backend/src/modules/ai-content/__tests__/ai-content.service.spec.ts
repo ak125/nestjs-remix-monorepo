@@ -5,7 +5,6 @@ import { AiContentService } from '../ai-content.service';
 
 describe('AiContentService', () => {
   let service: AiContentService;
-  let _configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,7 +20,6 @@ describe('AiContentService', () => {
     }).compile();
 
     service = module.get<AiContentService>(AiContentService);
-    _configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
