@@ -8,7 +8,7 @@ import { GammeUnifiedService } from '../../catalog/services/gamme-unified.servic
 
 /**
  * 🚀 Service optimisé pour récupérer les données de page gamme
- * 
+ *
  * OPTIMISATIONS:
  * 1. Cache Redis avec TTL intelligent
  * 2. Appels parallèles (Promise.all) pour SEO + Pièces
@@ -17,7 +17,7 @@ import { GammeUnifiedService } from '../../catalog/services/gamme-unified.servic
 @Injectable()
 export class GammePageDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(GammePageDataService.name);
-  
+
   // TTL Cache: 30 min pour données page complètes
   private readonly CACHE_TTL_SECONDS = 1800;
 
@@ -33,7 +33,12 @@ export class GammePageDataService extends SupabaseBaseService {
   /**
    * 🔑 Génère la clé de cache pour page complète
    */
-  private getCacheKey(pgId: number, typeId: number | null, marqueId: number | null, modeleId: number | null): string {
+  private getCacheKey(
+    pgId: number,
+    typeId: number | null,
+    marqueId: number | null,
+    modeleId: number | null,
+  ): string {
     return `gamme:page:${pgId}:${typeId || 0}:${marqueId || 0}:${modeleId || 0}`;
   }
 
@@ -53,7 +58,9 @@ export class GammePageDataService extends SupabaseBaseService {
     const cached = await this.cacheService.get<any>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
-      this.logger.debug(`🎯 CACHE HIT page gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`);
+      this.logger.debug(
+        `🎯 CACHE HIT page gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`,
+      );
       return {
         ...cached,
         _cacheHit: true,
@@ -61,53 +68,67 @@ export class GammePageDataService extends SupabaseBaseService {
       };
     }
 
-    this.logger.log(`🚀 OPTIMISÉ PARALLÈLE - PG_ID=${pgIdNum} typeId=${typeId || 'none'}`);
+    this.logger.log(
+      `🚀 OPTIMISÉ PARALLÈLE - PG_ID=${pgIdNum} typeId=${typeId || 'none'}`,
+    );
 
     // 2. ⚡ APPELS PARALLÈLES - SEO + Pièces en même temps
     const [seoContent, piecesData] = await Promise.all([
       // Appel SEO
       this.gammeUnifiedService.getGammeSeoContent(
-        pgIdNum, 
-        typeId || 0, 
-        marqueId, 
-        modeleId
+        pgIdNum,
+        typeId || 0,
+        marqueId,
+        modeleId,
       ),
       // Appel Pièces (seulement si véhicule spécifié)
-      typeId 
-        ? this.vehiclePiecesCompatibilityService.getPiecesViaRPC(typeId, pgIdNum)
-        : Promise.resolve({ pieces: [], count: 0, minPrice: null, grouped_pieces: [] }),
+      typeId
+        ? this.vehiclePiecesCompatibilityService.getPiecesViaRPC(
+            typeId,
+            pgIdNum,
+          )
+        : Promise.resolve({
+            pieces: [],
+            count: 0,
+            minPrice: null,
+            grouped_pieces: [],
+          }),
     ]);
 
     const parallelTime = performance.now() - startTime;
-    this.logger.log(`⚡ Appels parallèles terminés en ${parallelTime.toFixed(1)}ms`);
+    this.logger.log(
+      `⚡ Appels parallèles terminés en ${parallelTime.toFixed(1)}ms`,
+    );
 
     // 3. Construire la réponse
     const response = {
-        status: 200,
-        pieces: piecesData.pieces || [],
-        count: piecesData.count || 0,
-        minPrice: piecesData.minPrice || null,
-        seo: {
-          h1: seoContent.h1 || undefined,
-          content: seoContent.content || undefined,
-          title: seoContent.title || undefined,
-          description: seoContent.description || undefined,
-        },
-        crossSelling: [], // TODO: Implémenter cross-selling
-        validation: {
-          valid: (piecesData.count || 0) > 0,
-          relationsCount: piecesData.count || 0,
-        },
-        success: true,
-        timestamp: new Date().toISOString(),
-        source: 'optimized_parallel',
-        _responseTime: performance.now() - startTime,
+      status: 200,
+      pieces: piecesData.pieces || [],
+      count: piecesData.count || 0,
+      minPrice: piecesData.minPrice || null,
+      seo: {
+        h1: seoContent.h1 || undefined,
+        content: seoContent.content || undefined,
+        title: seoContent.title || undefined,
+        description: seoContent.description || undefined,
+      },
+      crossSelling: [], // TODO: Implémenter cross-selling
+      validation: {
+        valid: (piecesData.count || 0) > 0,
+        relationsCount: piecesData.count || 0,
+      },
+      success: true,
+      timestamp: new Date().toISOString(),
+      source: 'optimized_parallel',
+      _responseTime: performance.now() - startTime,
     };
 
     // 4. Stocker en cache (async, non-bloquant)
-    this.cacheService.set(cacheKey, response, this.CACHE_TTL_SECONDS).catch(err => 
-      this.logger.error(`Erreur cache page gamme ${pgIdNum}:`, err)
-    );
+    this.cacheService
+      .set(cacheKey, response, this.CACHE_TTL_SECONDS)
+      .catch((err) =>
+        this.logger.error(`Erreur cache page gamme ${pgIdNum}:`, err),
+      );
 
     return response;
   }
