@@ -10,28 +10,15 @@ import {
 } from "lucide-react";
 
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
-import HomeFAQSection from "../components/home/HomeFAQSection";
-import HomeBottomSections from "../components/home/HomeBottomSections";
 import HomeBlogSection from "../components/home/HomeBlogSection";
+import HomeBottomSections from "../components/home/HomeBottomSections";
 import HomeCertifications from "../components/home/HomeCertifications";
+import HomeFAQSection from "../components/home/HomeFAQSection";
 import HomeSearchCards from "../components/home/HomeSearchCards";
 import ReferenceSearchModal from "../components/home/ReferenceSearchModal";
-import { TopBar } from "../components/navbar/TopBar";
-import { Navbar } from "../components/Navbar";
 import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "../components/ui/carousel";
+import { Card, CardContent } from "../components/ui/card";
+import { CarouselNext, CarouselPrevious } from "../components/ui/carousel";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { brandApi } from "../services/api/brand.api";
 import { hierarchyApi } from "../services/api/hierarchy.api";

@@ -35,7 +35,9 @@ export class VehicleFilteredCatalogV4Controller {
         seoValidation: result.catalog.seoValidation || {
           familyCount: result.catalog.totalFamilies || 0,
           gammeCount: result.catalog.totalGammes || 0,
-          isIndexable: (result.catalog.totalFamilies || 0) >= 3 && (result.catalog.totalGammes || 0) >= 5,
+          isIndexable:
+            (result.catalog.totalFamilies || 0) >= 3 &&
+            (result.catalog.totalGammes || 0) >= 5,
         },
         performance: {
           responseTime: `${responseTime}ms`,
