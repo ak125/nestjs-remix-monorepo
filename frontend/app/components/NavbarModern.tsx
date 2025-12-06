@@ -14,7 +14,7 @@
  */
 
 import { Link, useLocation, useNavigate } from "@remix-run/react";
-import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Menu, Phone, Truck } from 'lucide-react';
+import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Phone, Truck } from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
@@ -25,9 +25,9 @@ import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
-export const NavbarModern = ({ logo }: { logo: string }) => {
+export const NavbarModern = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
-  const location = useLocation();
+  const _location = useLocation();
   const navigate = useNavigate();
   const { summary } = useCart();
   
@@ -47,8 +47,8 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
   const rafIdRef = useRef<number>();
   
   // Role-based permissions
-  const isAdmin = user && (user.level ?? 0) >= 7;
-  const isSuperAdmin = user && (user.level ?? 0) >= 9;
+  const _isAdmin = user && (user.level ?? 0) >= 7;
+  const _isSuperAdmin = user && (user.level ?? 0) >= 9;
   
   // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
@@ -118,7 +118,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
     if (query) {
       const url = `/search?q=${encodeURIComponent(query)}`;
       // Réinitialiser immédiatement l'état local
-      const currentQuery = query; // Sauvegarder avant reset
+      const _currentQuery = query; // Sauvegarder avant reset
       setSearchQuery("");
       setShowSearch(false);
       // Navigation après reset

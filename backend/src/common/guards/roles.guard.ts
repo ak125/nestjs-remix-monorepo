@@ -4,7 +4,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /**
  * Guard pour vérifier les rôles utilisateur
- * 
+ *
  * @example
  * ```typescript
  * @Roles('admin', 'moderator')
@@ -21,10 +21,10 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     // Récupérer les rôles requis depuis le metadata
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // Si aucun rôle n'est requis, autoriser l'accès
     if (!requiredRoles || requiredRoles.length === 0) {
