@@ -21,7 +21,7 @@ describe('AiContentService', () => {
     }).compile();
 
     service = module.get<AiContentService>(AiContentService);
-    configService = module.get<ConfigService>(ConfigService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
