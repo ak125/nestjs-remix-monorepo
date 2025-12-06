@@ -14,8 +14,8 @@
 import { Link } from '@remix-run/react';
 import { BookOpen, Clock, ArrowRight, Newspaper } from 'lucide-react';
 import { useEffect } from 'react';
-import { type BlogArticle } from '../../types/pieces-route.types';
 import { useSeoLinkTracking } from '../../hooks/useSeoLinkTracking';
+import { type BlogArticle } from '../../types/pieces-route.types';
 
 interface PiecesRelatedArticlesProps {
   articles: BlogArticle[];

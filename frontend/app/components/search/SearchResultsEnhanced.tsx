@@ -66,7 +66,7 @@ export function SearchResultsEnhanced({
   }
 
   // 🖼️ HELPERS D'OPTIMISATION D'IMAGES WEBP
-  const optimizeImageUrl = (imageUrl: string, width: number = 400): string => {
+  const optimizeImageUrl = (imageUrl: string, _width: number = 400): string => {
     if (!imageUrl) return '';
     
     // Si c'est déjà une URL Supabase

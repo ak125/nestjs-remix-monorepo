@@ -15,10 +15,11 @@
 import { Link, useLocation } from '@remix-run/react';
 import parse, {
   domToReact,
-  HTMLReactParserOptions,
+  type HTMLReactParserOptions,
   Element,
-  DOMNode,
+  type DOMNode,
 } from 'html-react-parser';
+
 import { useSeoLinkTracking } from '~/hooks/useSeoLinkTracking';
 
 // =====================================================

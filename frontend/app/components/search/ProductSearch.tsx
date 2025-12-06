@@ -6,8 +6,8 @@ import { Badge } from '@fafa/ui';
 import { useNavigate } from '@remix-run/react';
 import { Search, Package, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
 import { PartImage } from '~/components/ui/ResponsiveImage';
+import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
 
 interface ProductSearchProps {
   variant?: 'hero' | 'compact'; // hero = grande pour homepage, compact = petite pour navbar
