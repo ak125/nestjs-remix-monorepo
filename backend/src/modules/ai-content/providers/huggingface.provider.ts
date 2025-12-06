@@ -84,7 +84,7 @@ ${userPrompt} [/INST]`;
 
       // Handle different response formats
       let generatedText = '';
-      
+
       if (Array.isArray(data) && data[0]?.generated_text) {
         generatedText = data[0].generated_text;
       } else if (data.generated_text) {
@@ -99,7 +99,7 @@ ${userPrompt} [/INST]`;
       }
 
       this.logger.log(`Generated ${generatedText.length} characters`);
-      
+
       return generatedText.trim();
     } catch (error) {
       this.logger.error(`HuggingFace generation error: ${error.message}`);
@@ -121,7 +121,7 @@ ${userPrompt} [/INST]`;
         },
       );
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

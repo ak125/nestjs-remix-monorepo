@@ -33,8 +33,8 @@ interface VehicleOption {
 
 export default function VehicleCombobox({
   placeholder = "🚗 Recherchez votre véhicule (ex: Peugeot 208 1.6 HDI)",
-  onSelect,
-  currentVehicle,
+  onSelect: _onSelect,
+  currentVehicle: _currentVehicle,
   className = ""
 }: VehicleComboboxProps) {
   

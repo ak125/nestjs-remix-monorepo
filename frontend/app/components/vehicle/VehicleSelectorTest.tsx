@@ -2,7 +2,7 @@
 // 🚗 VehicleSelector simplifié pour page de test
 
 import { useNavigate } from '@remix-run/react';
-import { Search, Car, Calendar, Settings, RotateCcw, FileText } from 'lucide-react';
+import { Search, Car, Calendar, Settings, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
@@ -202,7 +202,7 @@ export default function VehicleSelectorTest({
   };
 
   // 🧹 Reset complet
-  const handleReset = () => {
+  const _handleReset = () => {
     setSelectedBrand(null);
     setSelectedYear(null);
     setSelectedModel(null);
