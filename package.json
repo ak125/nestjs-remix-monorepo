@@ -23,7 +23,12 @@
     "docs:install": "cd .spec/docs && npm install",
     "docs:dev": "cd .spec/docs && npm start",
     "docs:build": "cd .spec/docs && npm run build",
-    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'"
+    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
+    "carto:deps": "depcruise --config .dependency-cruiserrc.js --output-type json packages/ backend/src frontend/app",
+    "carto:deps:graph": "depcruise --config .dependency-cruiserrc.js --output-type dot packages/ backend/src frontend/app | dot -T svg > .spec/reports/dependency-graph.svg",
+    "carto:circular": "madge --circular --json packages/ backend/src frontend/app",
+    "carto:report": "depcruise --config .dependency-cruiserrc.js --output-type err-html packages/ backend/src frontend/app > .spec/reports/dependency-report.html",
+    "carto:validate": "depcruise --config .dependency-cruiserrc.js --validate packages/ backend/src frontend/app"
   },
   "keywords": [],
   "author": "",
@@ -43,6 +48,8 @@
     "@types/file-type": "^10.9.3",
     "@types/multer": "^2.0.0",
     "depcheck": "^1.4.7",
+    "dependency-cruiser": "^16.5.0",
+    "madge": "^8.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",

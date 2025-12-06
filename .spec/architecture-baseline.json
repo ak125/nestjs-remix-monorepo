@@ -1,0 +1,123 @@
+{
+  "version": "2.31.0",
+  "createdAt": "2025-12-06T00:00:00.000Z",
+  "packages": [
+    "packages/design-tokens",
+    "packages/eslint-config",
+    "packages/patterns",
+    "packages/shared-types",
+    "packages/theme-admin",
+    "packages/theme-vitrine",
+    "packages/typescript-config",
+    "packages/ui",
+    "backend",
+    "frontend"
+  ],
+  "allowedDependencies": {
+    "frontend": ["packages/*", "@monorepo/*"],
+    "backend": ["packages/shared-types", "@monorepo/shared-types"],
+    "packages/ui": ["packages/design-tokens", "packages/patterns"],
+    "packages/theme-admin": ["packages/design-tokens"],
+    "packages/theme-vitrine": ["packages/design-tokens"]
+  },
+  "forbiddenImports": [
+    {
+      "from": "frontend",
+      "to": "backend/src",
+      "reason": "Frontend ne doit jamais importer directement depuis backend - utiliser les types partagés"
+    },
+    {
+      "from": "backend",
+      "to": "frontend",
+      "reason": "Backend ne doit jamais importer depuis frontend"
+    },
+    {
+      "from": "packages/ui",
+      "to": "frontend/app",
+      "reason": "Le package UI ne doit pas dépendre de l'application frontend"
+    },
+    {
+      "from": "packages/ui",
+      "to": "backend",
+      "reason": "Le package UI ne doit pas dépendre du backend"
+    },
+    {
+      "from": "packages/shared-types",
+      "to": "frontend",
+      "reason": "shared-types est une feuille - pas de dépendances vers les apps"
+    },
+    {
+      "from": "packages/shared-types",
+      "to": "backend",
+      "reason": "shared-types est une feuille - pas de dépendances vers les apps"
+    },
+    {
+      "from": "packages/design-tokens",
+      "to": "packages",
+      "reason": "design-tokens est une feuille - pas de dépendances internes"
+    }
+  ],
+  "layers": [
+    {
+      "name": "foundation",
+      "description": "Packages fondamentaux sans dépendances internes",
+      "packages": [
+        "packages/design-tokens",
+        "packages/shared-types",
+        "packages/typescript-config",
+        "packages/eslint-config"
+      ],
+      "canDependOn": []
+    },
+    {
+      "name": "ui",
+      "description": "Composants UI et thèmes",
+      "packages": [
+        "packages/ui",
+        "packages/patterns",
+        "packages/theme-admin",
+        "packages/theme-vitrine"
+      ],
+      "canDependOn": ["foundation"]
+    },
+    {
+      "name": "application",
+      "description": "Applications frontend et backend",
+      "packages": ["frontend", "backend"],
+      "canDependOn": ["foundation", "ui"]
+    }
+  ],
+  "maxBundleSizes": {
+    "frontend": 512000,
+    "backend": 1048576,
+    "packages/ui": 256000,
+    "packages/design-tokens": 32000
+  },
+  "minHealthScores": {
+    "packages/ui": 80,
+    "packages/shared-types": 90,
+    "packages/design-tokens": 95,
+    "frontend": 70,
+    "backend": 75
+  },
+  "kpiTargets": {
+    "circularDepsCount": 0,
+    "averagePackageHealth": 80,
+    "architectureDriftCount": 0,
+    "largestBundleSize": 512000,
+    "orphanPackagesCount": 5,
+    "outdatedDepsCount": 10,
+    "criticalIssuesCount": 0
+  },
+  "scanSchedule": {
+    "dailyScan": "0 6 * * *",
+    "quickCheck": "0 */4 * * *",
+    "weeklyReport": "0 8 * * 0"
+  },
+  "alertThresholds": {
+    "healthWarning": 70,
+    "healthCritical": 50,
+    "bundleWarning": 400000,
+    "bundleCritical": 600000
+  }
+}
