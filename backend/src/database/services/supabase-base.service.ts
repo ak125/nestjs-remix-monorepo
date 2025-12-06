@@ -74,34 +74,44 @@ export abstract class SupabaseBaseService {
         fetch: async (url, init) => {
           // ✅ FIX: Utilisation de undici.fetch pour éviter les conflits de polyfill (web-streams-polyfill)
           // ✅ FIX: Timeout strict de 15s via AbortSignal.timeout (Node 22+)
-          
+
           let signal: AbortSignal;
           try {
-             // Utiliser AbortSignal.timeout si disponible (Node 17.3+)
-             const timeoutSignal = AbortSignal.timeout(15000);
-             
-             // Combiner avec le signal existant si présent (AbortSignal.any Node 20+)
-             if (init?.signal) {
-                signal = AbortSignal.any([init.signal as AbortSignal, timeoutSignal]);
-             } else {
-                signal = timeoutSignal;
-             }
+            // Utiliser AbortSignal.timeout si disponible (Node 17.3+)
+            const timeoutSignal = AbortSignal.timeout(15000);
+
+            // Combiner avec le signal existant si présent (AbortSignal.any Node 20+)
+            if (init?.signal) {
+              signal = AbortSignal.any([
+                init.signal as AbortSignal,
+                timeoutSignal,
+              ]);
+            } else {
+              signal = timeoutSignal;
+            }
           } catch (e) {
-             // Fallback pour environnements plus anciens (ne devrait pas arriver en Node 22)
-             const controller = new AbortController();
-             setTimeout(() => controller.abort(), 15000);
-             signal = controller.signal;
+            // Fallback pour environnements plus anciens (ne devrait pas arriver en Node 22)
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 15000);
+            signal = controller.signal;
           }
 
           try {
             // Cast explicite pour satisfaire les types de Supabase qui attendent le fetch global
-            const response = await undiciFetch(url as string, {
-              ...init,
-              signal: signal,
-            } as any);
+            const response = await undiciFetch(
+              url as string,
+              {
+                ...init,
+                signal: signal,
+              } as any,
+            );
             return response as unknown as Response;
           } catch (error: any) {
-            if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.code === 'UND_ERR_CONNECT_TIMEOUT') {
+            if (
+              error.name === 'TimeoutError' ||
+              error.name === 'AbortError' ||
+              error.code === 'UND_ERR_CONNECT_TIMEOUT'
+            ) {
               this.logger.error(`❌ Supabase Request Timeout (15s) for ${url}`);
               throw new Error('Supabase Request Timeout (15s)');
             }
@@ -188,7 +198,7 @@ export abstract class SupabaseBaseService {
         const isCloudflareError =
           error?.message?.includes('500 Internal Server Error') ||
           error?.message?.includes('cloudflare');
-        
+
         const isTimeoutError =
           error?.code === 'ETIMEDOUT' ||
           error?.errno === 'ETIMEDOUT' ||

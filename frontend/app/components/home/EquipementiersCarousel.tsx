@@ -1,6 +1,5 @@
-import { Link } from "@remix-run/react";
-import { ChevronRight, ExternalLink } from "lucide-react";
 import { useMemo } from "react";
+
 import { type Equipementier } from "../../types/catalog.types";
 
 interface EquipementiersCarouselProps {
@@ -18,12 +17,11 @@ interface EquipementiersCarouselProps {
  * Affiche les fournisseurs équipementiers de la table PIECES_MARQUE
  * Basé sur: SELECT DISTINCT pm_name, pm_id FROM pieces_marque
  */
-export function EquipementiersCarousel({ 
-  equipementiersData, 
+export function EquipementiersCarousel({
+  equipementiersData,
   className = "",
-  title = "Nos partenaires équipementiers"
+  title: _title = "Nos partenaires équipementiers",
 }: EquipementiersCarouselProps) {
-  
   // Extraire les équipementiers
   const equipementiers = useMemo(() => {
     if (!equipementiersData?.data) return [];
@@ -38,11 +36,13 @@ export function EquipementiersCarousel({
   return (
     <div className={`bg-white py-12 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* En-tête de section - Compact */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Nos partenaires <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">équipementiers</span>
+            Nos partenaires{" "}
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              équipementiers
+            </span>
           </h2>
           <div className="h-0.5 w-16 bg-gradient-to-r from-purple-500 to-pink-600 mx-auto rounded mb-3"></div>
         </div>
@@ -54,25 +54,26 @@ export function EquipementiersCarousel({
             {equipementiers.slice(0, 24).map((equipementier) => {
               // Construire le nom du fichier logo depuis pm_name
               // Ex: "BOSCH" → "bosch.webp", "MANN FILTER" → "mann-filter.webp"
-              const logoFileName = equipementier.pm_name
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '') + '.webp';
-              
+              const logoFileName =
+                equipementier.pm_name
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-|-$/g, "") + ".webp";
+
               // URL du logo depuis Supabase Storage
               const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
 
               return (
-                <div 
-                  key={equipementier.pm_id} 
+                <div
+                  key={equipementier.pm_id}
                   className="flex-shrink-0 w-24 lg:w-auto bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-200 hover:border-purple-300"
                 >
                   {/* Logo équipementier */}
                   <div className="p-3">
                     <div className="aspect-square bg-gradient-to-br from-gray-50 to-slate-100 rounded-md flex items-center justify-center overflow-hidden">
-                      <img 
+                      <img
                         src={logoUrl}
-                        alt={`Logo ${equipementier.pm_name}`} 
+                        alt={`Logo ${equipementier.pm_name}`}
                         className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => {
