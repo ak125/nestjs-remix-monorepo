@@ -47,7 +47,9 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client.from(TABLES.blog_guide).select('*', { count: 'exact' });
+      let query = client
+        .from(TABLES.blog_guide)
+        .select('*', { count: 'exact' });
 
       // Appliquer les filtres
       if (filters.type) {

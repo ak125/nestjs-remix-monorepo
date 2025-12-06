@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
   Award,
   CheckCircle2,

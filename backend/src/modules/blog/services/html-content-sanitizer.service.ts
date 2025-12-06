@@ -1,4 +1,3 @@
-import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 
 /**

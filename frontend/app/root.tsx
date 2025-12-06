@@ -18,14 +18,14 @@ import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors"
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
-import { getCart } from "./services/cart.server";
-import type { CartData } from "./types/cart";
-import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import stylesheet from "./global.css?url";
+import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
+import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
+import { type CartData } from "./types/cart";
 // @ts-ignore
 
 export const links: LinksFunction = () => [
@@ -121,7 +121,7 @@ declare module "@remix-run/node" {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData("root") as { user: any; cart: CartData | null } | undefined;
-  const user = data?.user;
+  const _user = data?.user;
   const cart = data?.cart;
   const revalidator = useRevalidator();
   
