@@ -2,12 +2,7 @@
 // Utilise Design Tokens + shadcn/ui Accordion pour cohérence
 
 import { CheckCircle2, Shield } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '../ui/accordion';
+import { AccordionTrigger } from '../ui/accordion';
 
 export interface GuideSection {
   id: string;

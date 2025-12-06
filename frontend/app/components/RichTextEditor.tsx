@@ -6,10 +6,10 @@
  * Usage: Édition contenu SEO marques/gammes
  */
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 
 interface RichTextEditorProps {

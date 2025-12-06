@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from '@remix-run/react';
-import guideContent from '~/data/guide-content.json';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Shield, AlertTriangle, Info, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import guideContent from '~/data/guide-content.json';
 
 interface PurchaseGuideProps {
   familleId?: string | number;
@@ -29,7 +29,7 @@ function detectCategory(productName?: string, familleName?: string): 'plaquettes
 }
 
 export function PurchaseGuide({ 
-  familleId,
+  familleId: _familleId,
   familleName,
   productName,
   productAlias,
