@@ -169,8 +169,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         );
       }
 
-      // Attendre avant retry (backoff exponentiel)
-      await new Promise((resolve) => setTimeout(resolve, 500 * retryCount));
+      // Attendre avant retry (backoff exponentiel) - capture la valeur actuelle pour éviter no-loop-func
+      const currentRetry = retryCount;
+      await new Promise((resolve) => setTimeout(resolve, 500 * currentRetry));
     }
   }
 

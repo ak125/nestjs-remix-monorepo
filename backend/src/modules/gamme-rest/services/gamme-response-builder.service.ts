@@ -40,7 +40,13 @@ export class GammeResponseBuilderService {
     const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
     const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
     const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
-    const cgcLevelStats = aggregatedData?.cgc_level_stats || { level_1: 0, level_2: 0, level_3: 0, level_5: 0, total: 0 };
+    const cgcLevelStats = aggregatedData?.cgc_level_stats || {
+      level_1: 0,
+      level_2: 0,
+      level_3: 0,
+      level_5: 0,
+      total: 0,
+    };
     const motorisationsBlogRaw = aggregatedData?.motorisations_blog || [];
 
     // Traitement SEO
@@ -67,7 +73,10 @@ export class GammeResponseBuilderService {
 
     // Logique SEO pour pages GAMME: seul pg_relfollow compte
     // NOTE: La logique family_count >= 3 ET gamme_count >= 5 est pour les pages VÉHICULES, pas les gammes
-    const seoValidation = aggregatedData?.seo_validation || { family_count: 0, gamme_count: 0 };
+    const seoValidation = aggregatedData?.seo_validation || {
+      family_count: 0,
+      gamme_count: 0,
+    };
     // pg_relfollow est TEXT en BDD ('1' ou '0'), conversion pour comparaison
     const relfollow = String(pgRelfollow) === '1' ? 1 : 0;
     // Pour une page gamme: index si pg_relfollow='1', noindex sinon
@@ -125,7 +134,7 @@ export class GammeResponseBuilderService {
           return '';
         };
 
-        const explicationTechnique = getExplication();
+        const _explicationTechnique = getExplication();
 
         // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
         let carImage = null;
@@ -146,7 +155,7 @@ export class GammeResponseBuilderService {
 
         // Slugify pour les URLs
         // ✅ Utilise buildPieceVehicleUrlRaw centralisé
-        
+
         // Construire la période
         const yearFrom = item.type_year_from || '';
         const yearTo = item.type_year_to || "aujourd'hui";
@@ -206,12 +215,16 @@ export class GammeResponseBuilderService {
             cleanedFragment1 && cleanedFragment1.trim().length > 3;
           const hasFragment2 =
             cleanedFragment2 && cleanedFragment2.trim().length > 3;
-          
+
           // Vérifier si les fragments sont identiques ou très similaires
-          const fragmentsAreSimilar = hasFragment1 && hasFragment2 && 
-            (cleanedFragment1 === cleanedFragment2 || 
-             cleanedFragment1.toLowerCase().startsWith(cleanedFragment2.toLowerCase().slice(0, 10)));
-          
+          const fragmentsAreSimilar =
+            hasFragment1 &&
+            hasFragment2 &&
+            (cleanedFragment1 === cleanedFragment2 ||
+              cleanedFragment1
+                .toLowerCase()
+                .startsWith(cleanedFragment2.toLowerCase().slice(0, 10)));
+
           // Utiliser les informations de la DB (__seo_gamme_info) comme finitions dynamiques
           // Ces informations sont déjà chargées dans 'informations' depuis la RPC
           const getFinitionFromDb = (): string => {
@@ -219,18 +232,18 @@ export class GammeResponseBuilderService {
               // Fallback si pas d'informations en DB
               return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
             }
-            
+
             // Sélection rotative basée sur type_id + index
             const infoIndex = (item.type_id + index) % informations.length;
             const info = informations[infoIndex];
-            
+
             if (!info || info.length < 10) {
               return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
             }
-            
+
             // Extraire une partie pertinente de l'information
             let finition = info;
-            
+
             // Chercher "pour" dans le texte et extraire à partir de là
             const pourIndex = info.toLowerCase().indexOf(' pour ');
             if (pourIndex > 0 && pourIndex < info.length - 20) {
@@ -245,7 +258,9 @@ export class GammeResponseBuilderService {
                 finition = info.charAt(0).toLowerCase() + info.slice(1);
               } else {
                 // Chercher le verbe principal pour extraire la partie utile
-                const verbMatch = info.match(/(servent à|jouent|permettent|assurent|doivent être|sont)/i);
+                const verbMatch = info.match(
+                  /(servent à|jouent|permettent|assurent|doivent être|sont)/i,
+                );
                 if (verbMatch && verbMatch.index) {
                   // Ajouter "les plaquettes de frein" devant pour donner un sujet
                   const afterVerb = info.substring(verbMatch.index).trim();
@@ -255,31 +270,32 @@ export class GammeResponseBuilderService {
                 }
               }
             }
-            
+
             // Ajouter un point final si nécessaire
             if (!finition.endsWith('.')) {
               finition = finition + '.';
             }
-            
+
             return finition;
           };
-          
+
           const finition = getFinitionFromDb();
-          
+
           // Formater la finition pour la ponctuation correcte
           // Si la finition est une phrase longue, utiliser un point avant
           const isLongFinition = finition.length > 50;
           const separator = isLongFinition ? '. ' : ', ';
-          const formattedFinition = isLongFinition 
+          const formattedFinition = isLongFinition
             ? finition.charAt(0).toUpperCase() + finition.slice(1)
             : finition;
-          
+
           // Si fragments identiques, utiliser un seul fragment avec template amélioré
           if (fragmentsAreSimilar || (hasFragment1 && !hasFragment2)) {
             const fragment = cleanedFragment1;
-            const capitalizedFragment = fragment.charAt(0).toUpperCase() + fragment.slice(1);
+            const capitalizedFragment =
+              fragment.charAt(0).toUpperCase() + fragment.slice(1);
             const templateIndex = item.type_id % 5;
-            
+
             switch (templateIndex) {
               case 0:
                 return `${capitalizedFragment} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
@@ -293,12 +309,16 @@ export class GammeResponseBuilderService {
                 return `${capitalizedFragment} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
             }
           }
-          
+
           // Templates variés basés sur type_id avec deux fragments distincts
           if (hasFragment1 && hasFragment2) {
             const templateIndex = item.type_id % 4;
-            const cap1 = cleanedFragment1.charAt(0).toUpperCase() + cleanedFragment1.slice(1);
-            const cap2 = cleanedFragment2.charAt(0).toUpperCase() + cleanedFragment2.slice(1);
+            const cap1 =
+              cleanedFragment1.charAt(0).toUpperCase() +
+              cleanedFragment1.slice(1);
+            const cap2 =
+              cleanedFragment2.charAt(0).toUpperCase() +
+              cleanedFragment2.slice(1);
 
             switch (templateIndex) {
               case 0:
@@ -341,11 +361,14 @@ export class GammeResponseBuilderService {
 
     // Traitement motorisations blog (niveau 5)
     const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
-      const marqueAlias = item.marque_alias || item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const carImage = item.modele_pic && item.modele_pic !== 'no.webp'
-        ? `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`
-        : `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
-      
+      const marqueAlias =
+        item.marque_alias ||
+        item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const carImage =
+        item.modele_pic && item.modele_pic !== 'no.webp'
+          ? `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`
+          : `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
+
       const yearFrom = item.type_year_from || '';
       const yearTo = item.type_year_to || "aujourd'hui";
       const periode = `${yearFrom} - ${yearTo}`;
@@ -455,12 +478,13 @@ export class GammeResponseBuilderService {
               items: conseils,
             }
           : null,
-      informations: informations.length > 0 
-        ? {
-            title: `Informations sur ${pgNameSite || 'ce produit'}`,
-            items: informations,
-          }
-        : null,
+      informations:
+        informations.length > 0
+          ? {
+              title: `Informations sur ${pgNameSite || 'ce produit'}`,
+              items: informations,
+            }
+          : null,
       guideAchat,
       motorisationsBlog:
         motorisationsBlog.length > 0
@@ -484,12 +508,17 @@ export class GammeResponseBuilderService {
         level3: cgcLevelStats.level_3,
         level5: cgcLevelStats.level_5,
         total: cgcLevelStats.total,
-        description: 'CGC_LEVEL: 1=motorisations grille, 2=page marque, 3=page type, 5=section blog',
+        description:
+          'CGC_LEVEL: 1=motorisations grille, 2=page marque, 3=page type, 5=section blog',
       },
       // 🔗 SEO Switches pour maillage interne (ancres variées)
       seoSwitches: {
-        verbs: seoFragments1.slice(0, 20).map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
-        nouns: seoFragments2.slice(0, 20).map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        verbs: seoFragments1
+          .slice(0, 20)
+          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        nouns: seoFragments2
+          .slice(0, 20)
+          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
         verbCount: seoFragments1.length,
         nounCount: seoFragments2.length,
       },
