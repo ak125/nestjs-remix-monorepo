@@ -53,7 +53,7 @@ export function buildRackImageUrl(imageData?: PieceImageData | null): string {
 export function buildRackImageUrlWithTransform(
   imageData?: PieceImageData | null,
   width?: number,
-  _quality: number = 85,
+  _quality?: number,
 ): string {
   // Si pas de données, retourner défaut
   if (!imageData || !imageData.pmi_folder || !imageData.pmi_name) {
