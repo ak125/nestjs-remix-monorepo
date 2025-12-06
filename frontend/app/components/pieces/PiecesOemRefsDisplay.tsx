@@ -16,7 +16,7 @@ interface PiecesOemRefsDisplayProps {
  * 🔄 Normalise une ref OEM (supprime espaces/tirets, majuscules)
  */
 function normalizeRef(ref: string): string {
-  return ref.trim().toUpperCase().replace(/[\s\-]/g, '');
+  return ref.trim().toUpperCase().replace(/[\s-]/g, '');
 }
 
 /**
@@ -182,7 +182,7 @@ function groupRefsByPrefix(refs: string[]): Record<string, string[]> {
   
   for (const ref of refs) {
     // Extraire préfixe (3 premiers chars alphanumériques)
-    const cleanRef = ref.trim().toUpperCase().replace(/[\s\-]/g, '');
+    const cleanRef = ref.trim().toUpperCase().replace(/[\s-]/g, '');
     const prefix = cleanRef.length >= 3 ? cleanRef.substring(0, 3) : 'AUTRES';
     
     if (!groups[prefix]) {

@@ -52,9 +52,9 @@ const getReliabilityBgColor = (score: number) => {
 /**
  * Helper optimisation images WebP (96px pour miniatures liste)
  */
-const optimizeImageUrl = (
+const _optimizeImageUrl = (
   imageUrl: string | undefined,
-  width: number = 96,
+  _width: number = 96,
 ): string => {
   if (!imageUrl) return "";
 

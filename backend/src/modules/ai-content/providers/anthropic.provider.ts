@@ -32,7 +32,9 @@ export class AnthropicProvider implements AIProvider {
       this.logger.log('✅ Anthropic Claude provider initialized');
       this.logger.log(`   Default model: ${this.defaultModel}`);
     } else {
-      this.logger.warn('⚠️  ANTHROPIC_API_KEY not configured - AI features disabled');
+      this.logger.warn(
+        '⚠️  ANTHROPIC_API_KEY not configured - AI features disabled',
+      );
     }
   }
 
@@ -97,7 +99,7 @@ export class AnthropicProvider implements AIProvider {
         ],
       });
       return message.content.length > 0;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

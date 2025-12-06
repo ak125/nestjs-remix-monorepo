@@ -1,8 +1,9 @@
 // 📁 frontend/app/components/vehicle/VehicleCascadeSelector.tsx
 // 🚗 Sélecteur de véhicule en cascade - Design professionnel
 
-import { useState, useEffect } from 'react';
-import { ChevronDown, Car, Calendar, Fuel, Settings, Search } from 'lucide-react';
+import { Calendar, Car, ChevronDown, Fuel, Search, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 
 interface VehicleCascadeSelectorProps {
