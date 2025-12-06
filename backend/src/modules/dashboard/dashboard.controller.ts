@@ -1,4 +1,10 @@
-import { Controller, Get, Logger, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ModulePermissionGuard,
   RequireModule,
