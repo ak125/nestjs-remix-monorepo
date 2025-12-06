@@ -13,6 +13,9 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Form, useNavigation } from "@remix-run/react";
 import { useState, lazy, Suspense } from "react";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -23,9 +26,6 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Alert } from "~/components/ui/alert";
-import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Badge } from "~/components/ui/badge";
 
 // Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
 const RichTextEditor = lazy(() =>

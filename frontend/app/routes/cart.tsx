@@ -1,7 +1,7 @@
 /**
  * 🛒 CART PAGE - Route principale du panier
  * Version simplifiée sans CartContext
- * 
+ *
  * ✅ Fonctionnalités:
  * - Affichage du panier avec produits
  * - Actions via useFetcher (approche Remix native)
@@ -11,12 +11,32 @@
  */
 
 import { Alert, Badge } from "@fafa/ui";
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useNavigation, useRevalidator } from "@remix-run/react";
-import React from 'react';
-import { ShoppingBag, Truck, Shield, CreditCard, Package, Trash2, Plus, Minus, ArrowRight, ChevronLeft } from 'lucide-react';
-import { Button } from '~/components/ui/button';
-import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useNavigation,
+  useRevalidator,
+} from "@remix-run/react";
+import {
+  ShoppingBag,
+  Truck,
+  Shield,
+  CreditCard,
+  Package,
+  Trash2,
+  Plus,
+  Minus,
+  ArrowRight,
+  ChevronLeft,
+} from "lucide-react";
+import React from "react";
+import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getCart } from "../services/cart.server";
 
 // 🤖 SEO: Page transactionnelle non indexable
@@ -32,45 +52,45 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   // console.log("🛒 [CART LOADER] Chargement du panier depuis cart.tsx");
   try {
     const url = new URL(request.url);
-    const cleared = url.searchParams.get('cleared');
-    
+    const cleared = url.searchParams.get("cleared");
+
     const cartData = await getCart(request);
-    return json({ 
-      cart: cartData, 
-      success: true, 
+    return json({
+      cart: cartData,
+      success: true,
       error: null,
-      cleared: cleared === 'true' 
+      cleared: cleared === "true",
     });
   } catch (error) {
     console.error("Erreur lors du chargement du panier:", error);
-    return json({ 
-      cart: { 
-        items: [], 
-        summary: { 
-          total_items: 0, 
-          total_price: 0, 
-          subtotal: 0, 
-          tax_amount: 0, 
-          shipping_cost: 0, 
+    return json({
+      cart: {
+        items: [],
+        summary: {
+          total_items: 0,
+          total_price: 0,
+          subtotal: 0,
+          tax_amount: 0,
+          shipping_cost: 0,
           consigne_total: 0, // ✅ PHASE 4
-          currency: "EUR" 
-        } 
-      }, 
-      success: false, 
+          currency: "EUR",
+        },
+      },
+      success: false,
       error: "Erreur lors du chargement du panier",
-      cleared: false
+      cleared: false,
     });
   }
-}
+};
 
 // NOTE: Les fonctions API ont été supprimées.
 // Utiliser les méthodes du hook useCart() qui appellent cart.api.ts
 
 // Helper: formater le prix
 function formatPrice(price: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
   }).format(price);
 }
 
@@ -79,7 +99,7 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
   const progress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
   const remaining = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
   const isEligible = subtotal >= FREE_SHIPPING_THRESHOLD;
-  
+
   // Message dynamique selon la progression
   const getMessage = () => {
     if (progress >= 90) return "Vous y êtes presque ! 🔥";
@@ -87,21 +107,27 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
     if (progress >= 50) return "Vous êtes à mi-chemin !";
     return "Ajoutez des articles pour économiser !";
   };
-  
+
   return (
-    <div className={`rounded-2xl p-5 mb-6 transition-all duration-300 ${
-      isEligible 
-        ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg shadow-green-200' 
-        : 'bg-white border-2 border-blue-100 shadow-md'
-    }`}>
+    <div
+      className={`rounded-2xl p-5 mb-6 transition-all duration-300 ${
+        isEligible
+          ? "bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg shadow-green-200"
+          : "bg-white border-2 border-blue-100 shadow-md"
+      }`}
+    >
       {isEligible ? (
         <div className="flex items-center gap-4">
           <div className="bg-white/20 p-3 rounded-full animate-bounce">
             <Truck className="h-7 w-7" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-xl">🎉 Félicitations ! Livraison OFFERTE</p>
-            <p className="text-sm opacity-90">Vous économisez 9,90€ sur cette commande</p>
+            <p className="font-bold text-xl">
+              🎉 Félicitations ! Livraison OFFERTE
+            </p>
+            <p className="text-sm opacity-90">
+              Vous économisez 9,90€ sur cette commande
+            </p>
           </div>
           <div className="hidden sm:flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
             <span className="text-2xl">🚚</span>
@@ -117,7 +143,9 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
                 <Truck className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="font-bold text-gray-900">Livraison gratuite dès {formatPrice(FREE_SHIPPING_THRESHOLD)}</p>
+                <p className="font-bold text-gray-900">
+                  Livraison gratuite dès {formatPrice(FREE_SHIPPING_THRESHOLD)}
+                </p>
                 <p className="text-sm text-gray-500">{getMessage()}</p>
               </div>
             </div>
@@ -127,7 +155,7 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
               </Badge>
             </div>
           </div>
-          
+
           {/* Barre de progression améliorée */}
           <div className="relative w-full bg-gray-100 rounded-full h-4 overflow-hidden mb-4">
             <div
@@ -137,13 +165,20 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
             {/* Marqueur objectif */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow" />
           </div>
-          
+
           {/* Message incitatif avec montant restant */}
           <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3">
             <span className="text-xl">💡</span>
             <p className="text-gray-700">
-              Plus que <span className="font-extrabold text-xl text-blue-600 mx-1">{formatPrice(remaining)}</span> 
-              pour débloquer la <span className="font-bold text-green-600">livraison gratuite</span> !
+              Plus que{" "}
+              <span className="font-extrabold text-xl text-blue-600 mx-1">
+                {formatPrice(remaining)}
+              </span>
+              pour débloquer la{" "}
+              <span className="font-bold text-green-600">
+                livraison gratuite
+              </span>{" "}
+              !
             </p>
           </div>
         </div>
@@ -153,18 +188,30 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
 }
 
 // Composant CartSummary avec design amélioré
-function CartSummary({ summary, children, isUpdating }: { 
-  summary: any; 
+function CartSummary({
+  summary,
+  children,
+  isUpdating,
+}: {
+  summary: any;
   children?: React.ReactNode;
   isUpdating?: boolean;
 }) {
-  const total = summary.total_price || (summary.subtotal + (summary.consigne_total || 0) + summary.tax_amount + summary.shipping_cost - (summary.discount_amount || 0));
+  const total =
+    summary.total_price ||
+    summary.subtotal +
+      (summary.consigne_total || 0) +
+      summary.tax_amount +
+      summary.shipping_cost -
+      (summary.discount_amount || 0);
   const isEligibleFreeShipping = summary.subtotal >= FREE_SHIPPING_THRESHOLD;
-  
+
   return (
-    <div className={`bg-white border-2 border-gray-200 rounded-2xl shadow-xl overflow-hidden transition-all ${
-      isUpdating ? 'opacity-50 scale-[0.98]' : 'hover:shadow-2xl'
-    }`}>
+    <div
+      className={`bg-white border-2 border-gray-200 rounded-2xl shadow-xl overflow-hidden transition-all ${
+        isUpdating ? "opacity-50 scale-[0.98]" : "hover:shadow-2xl"
+      }`}
+    >
       {/* Header avec icône */}
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4">
         <h2 className="text-xl font-bold flex items-center gap-3">
@@ -178,7 +225,7 @@ function CartSummary({ summary, children, isUpdating }: {
           )}
         </h2>
       </div>
-      
+
       <div className="p-6 space-y-4">
         {/* Nombre de pièces */}
         <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl border border-blue-100">
@@ -194,9 +241,11 @@ function CartSummary({ summary, children, isUpdating }: {
         {/* Sous-total */}
         <div className="flex justify-between items-center py-3 border-b border-gray-100">
           <span className="text-gray-600">Sous-total produits</span>
-          <span className="font-semibold text-lg">{formatPrice(summary.subtotal)}</span>
+          <span className="font-semibold text-lg">
+            {formatPrice(summary.subtotal)}
+          </span>
         </div>
-        
+
         {/* Consignes */}
         {summary.consigne_total > 0 && (
           <div className="flex justify-between items-center p-3 bg-amber-50 rounded-xl border-2 border-amber-200">
@@ -207,10 +256,12 @@ function CartSummary({ summary, children, isUpdating }: {
                 remboursables
               </span>
             </span>
-            <span className="font-bold text-amber-700">+{formatPrice(summary.consigne_total)}</span>
+            <span className="font-bold text-amber-700">
+              +{formatPrice(summary.consigne_total)}
+            </span>
           </div>
         )}
-        
+
         {/* Livraison - Affichée uniquement si gratuite */}
         {isEligibleFreeShipping && (
           <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
@@ -223,45 +274,51 @@ function CartSummary({ summary, children, isUpdating }: {
             </span>
           </div>
         )}
-        
+
         {summary.tax_amount > 0 && (
           <div className="flex justify-between py-3 border-b border-gray-100">
             <span className="text-gray-600">TVA incluse</span>
-            <span className="font-medium">{formatPrice(summary.tax_amount)}</span>
+            <span className="font-medium">
+              {formatPrice(summary.tax_amount)}
+            </span>
           </div>
         )}
-        
+
         {summary.discount_amount > 0 && (
           <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
             <span className="text-green-700 font-medium flex items-center gap-2">
               <span className="text-xl">🎁</span>
               Remise appliquée
             </span>
-            <span className="font-bold text-green-700">-{formatPrice(summary.discount_amount)}</span>
+            <span className="font-bold text-green-700">
+              -{formatPrice(summary.discount_amount)}
+            </span>
           </div>
         )}
-        
+
         {/* Total */}
         <div className="mt-4 pt-4 border-t-2 border-gray-200">
           <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
             <span className="font-bold text-lg text-white">Total TTC</span>
-            <span className="font-extrabold text-3xl text-white">{formatPrice(total)}</span>
+            <span className="font-extrabold text-3xl text-white">
+              {formatPrice(total)}
+            </span>
           </div>
         </div>
       </div>
-      
-      {children && (
-        <div className="px-6 pb-6">
-          {children}
-        </div>
-      )}
+
+      {children && <div className="px-6 pb-6">{children}</div>}
     </div>
   );
 }
 
 // Composant CartItem simplifié avec design moderne et compact
-function CartItem({ item, onUpdate, onRemove }: { 
-  item: any; 
+function CartItem({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: any;
   onUpdate: (productId: number, quantity: number) => void;
   onRemove: (productId: number) => void;
 }) {
@@ -269,63 +326,68 @@ function CartItem({ item, onUpdate, onRemove }: {
   const [isRemoving, setIsRemoving] = React.useState(false);
   const [currentQuantity, setCurrentQuantity] = React.useState(item.quantity);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
-  
+
   const handleQuantityChange = async (newQuantity: number) => {
-    if (newQuantity < 1 || newQuantity === currentQuantity || isUpdating) return;
-    
+    if (newQuantity < 1 || newQuantity === currentQuantity || isUpdating)
+      return;
+
     const oldQuantity = currentQuantity;
     setIsUpdating(true);
     setCurrentQuantity(newQuantity);
-    
+
     try {
       await onUpdate(item.product_id, newQuantity);
     } catch (error) {
       setCurrentQuantity(oldQuantity);
-      console.error('Erreur mise à jour quantité:', error);
+      console.error("Erreur mise à jour quantité:", error);
     } finally {
       setIsUpdating(false);
     }
   };
-  
+
   const handleRemove = async () => {
     setIsRemoving(true);
     try {
       await onRemove(item.product_id);
     } catch (error) {
-      console.error('Erreur suppression:', error);
+      console.error("Erreur suppression:", error);
     } finally {
       setIsRemoving(false);
       setShowConfirmDelete(false);
     }
   };
-  
+
   // Calcul du prix
-  const isTotal = Math.abs(item.price - (item.price * item.quantity)) < 0.01;
+  const isTotal = Math.abs(item.price - item.price * item.quantity) < 0.01;
   const unitPrice = isTotal ? item.price / item.quantity : item.price;
   const totalPrice = isTotal ? item.price : item.price * item.quantity;
 
   return (
-    <div className={`bg-white rounded-xl border shadow-sm transition-all duration-300 overflow-hidden ${
-      isUpdating || isRemoving 
-        ? 'opacity-50 pointer-events-none' 
-        : 'hover:shadow-md hover:border-blue-200'
-    }`}>
+    <div
+      className={`bg-white rounded-xl border shadow-sm transition-all duration-300 overflow-hidden ${
+        isUpdating || isRemoving
+          ? "opacity-50 pointer-events-none"
+          : "hover:shadow-md hover:border-blue-200"
+      }`}
+    >
       <div className="p-4 sm:p-5">
         {/* En-tête avec nom produit et badge consigne */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">
-              {item.product_name || item.name || 'Produit sans nom'}
+              {item.product_name || item.name || "Produit sans nom"}
             </h3>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="inline-flex items-center text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
                 Réf: {item.product_sku || item.product_id}
               </span>
-              {item.product_brand && item.product_brand !== 'MARQUE INCONNUE' && item.product_brand !== 'Non spécifiée' && (
-                <Badge variant="secondary" size="sm">
-                  {item.product_brand}
-                </Badge>
-              )}
+              {item.product_brand &&
+                item.product_brand !== "MARQUE INCONNUE" &&
+                item.product_brand !== "Non spécifiée" && (
+                  <Badge variant="secondary" size="sm">
+                    {item.product_brand}
+                  </Badge>
+                )}
               {item.has_consigne && item.consigne_unit > 0 && (
                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
                   ♻️ +{formatPrice(item.consigne_unit)} consigne
@@ -333,7 +395,7 @@ function CartItem({ item, onUpdate, onRemove }: {
               )}
             </div>
           </div>
-          
+
           {/* Bouton supprimer - toujours visible */}
           {!showConfirmDelete ? (
             <button
@@ -357,17 +419,19 @@ function CartItem({ item, onUpdate, onRemove }: {
                 disabled={isRemoving}
                 className="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
               >
-                {isRemoving ? '...' : 'Confirmer'}
+                {isRemoving ? "..." : "Confirmer"}
               </button>
             </div>
           )}
         </div>
-        
+
         {/* Ligne inférieure : Quantité + Prix */}
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100">
           {/* Contrôle quantité compact */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:inline">Quantité:</span>
+            <span className="text-sm text-gray-500 hidden sm:inline">
+              Quantité:
+            </span>
             <div className="flex items-center border rounded-lg overflow-hidden bg-gray-50">
               <button
                 onClick={() => handleQuantityChange(currentQuantity - 1)}
@@ -388,7 +452,7 @@ function CartItem({ item, onUpdate, onRemove }: {
               </button>
             </div>
           </div>
-          
+
           {/* Prix */}
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">
@@ -401,18 +465,18 @@ function CartItem({ item, onUpdate, onRemove }: {
             )}
           </div>
         </div>
-        
+
         {/* Loader discret */}
         {(isUpdating || isRemoving) && (
           <div className="mt-3 flex items-center justify-center gap-2 text-blue-600 text-sm">
             <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-            <span>{isUpdating ? 'Mise à jour...' : 'Suppression...'}</span>
+            <span>{isUpdating ? "Mise à jour..." : "Suppression..."}</span>
           </div>
         )}
       </div>
     </div>
   );
-}// Composant panier vide avec design amélioré
+} // Composant panier vide avec design amélioré
 function EmptyCart() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -420,7 +484,9 @@ function EmptyCart() {
         <div className="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
           <ShoppingBag className="h-12 w-12 text-gray-400" />
         </div>
-        <h2 className="text-2xl font-bold mb-3 text-gray-800">Votre panier est vide</h2>
+        <h2 className="text-2xl font-bold mb-3 text-gray-800">
+          Votre panier est vide
+        </h2>
         <p className="text-gray-600 mb-8">
           Découvrez nos pièces auto et ajoutez-les à votre panier
         </p>
@@ -443,98 +509,104 @@ export default function CartPage() {
   const revalidator = useRevalidator();
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [notification, setNotification] = React.useState<{
-    type: 'success' | 'error';
+    type: "success" | "error";
     message: string;
   } | null>(null);
-  
+
   // Afficher une notification temporaire
-  const showNotification = (type: 'success' | 'error', message: string) => {
+  const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 3000);
   };
-  
+
   // Gérer la mise à jour de quantité via API directe
   const handleUpdateQuantity = async (productId: number, quantity: number) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          product_id: productId, 
+      const response = await fetch("/api/cart/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          product_id: productId,
           quantity,
-          replace: true 
+          replace: true,
         }),
       });
-      
+
       if (response.ok) {
-        showNotification('success', 'Quantité mise à jour');
+        showNotification("success", "Quantité mise à jour");
         revalidator.revalidate();
         // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event('cart:updated'));
+        window.dispatchEvent(new Event("cart:updated"));
       } else {
-        throw new Error('Erreur mise à jour');
+        throw new Error("Erreur mise à jour");
       }
     } catch (err) {
-      console.error('Erreur mise à jour quantité:', err);
-      showNotification('error', 'Erreur lors de la mise à jour');
+      console.error("Erreur mise à jour quantité:", err);
+      showNotification("error", "Erreur lors de la mise à jour");
     } finally {
       setIsProcessing(false);
     }
   };
-  
+
   // Gérer la suppression d'article via API directe
   const handleRemoveItem = async (productId: number) => {
     setIsProcessing(true);
     try {
       const response = await fetch(`/api/cart/items/${productId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
-      
+
       if (response.ok) {
-        showNotification('success', 'Article supprimé');
+        showNotification("success", "Article supprimé");
         revalidator.revalidate();
         // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event('cart:updated'));
+        window.dispatchEvent(new Event("cart:updated"));
       } else {
-        throw new Error('Erreur suppression');
+        throw new Error("Erreur suppression");
       }
     } catch (err) {
-      console.error('Erreur suppression:', err);
-      showNotification('error', 'Erreur lors de la suppression');
+      console.error("Erreur suppression:", err);
+      showNotification("error", "Erreur lors de la suppression");
     } finally {
       setIsProcessing(false);
     }
   };
-  
+
   // Vider le panier via API directe
   const handleClearCart = async () => {
-    if (!confirm('Vider le panier ? ' + cart.summary.total_items + ' article(s) seront supprimés')) {
+    if (
+      !confirm(
+        "Vider le panier ? " +
+          cart.summary.total_items +
+          " article(s) seront supprimés",
+      )
+    ) {
       return;
     }
-    
+
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/cart", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
-      
+
       if (response.ok) {
-        showNotification('success', 'Panier vidé');
+        showNotification("success", "Panier vidé");
         revalidator.revalidate();
         // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event('cart:updated'));
+        window.dispatchEvent(new Event("cart:updated"));
       } else {
-        throw new Error('Erreur vidage');
+        throw new Error("Erreur vidage");
       }
     } catch (err) {
-      console.error('Erreur vidage panier:', err);
-      showNotification('error', 'Erreur lors du vidage');
+      console.error("Erreur vidage panier:", err);
+      showNotification("error", "Erreur lors du vidage");
     } finally {
       setIsProcessing(false);
     }
@@ -547,8 +619,16 @@ export default function CartPage() {
           <div className="text-center py-12">
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
-            <p className="text-gray-600 mb-6">{error || "Une erreur est survenue"}</p>
-            <Button className="inline-block  px-6 py-3 rounded-lg" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
+            <p className="text-gray-600 mb-6">
+              {error || "Une erreur est survenue"}
+            </p>
+            <Button
+              className="inline-block  px-6 py-3 rounded-lg"
+              variant="blue"
+              asChild
+            >
+              <Link to="/">Retour à l'accueil</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -570,14 +650,19 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Panier" }]} />
-        
+
         {/* Notification de succès après vidage */}
         {cleared && (
-          <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>} className="mb-4">
+          <Alert
+            intent="success"
+            variant="solid"
+            icon={<span className="text-lg">✅</span>}
+            className="mb-4"
+          >
             Panier vidé avec succès !
           </Alert>
         )}
-        
+
         {/* En-tête amélioré */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -589,12 +674,14 @@ export default function CartPage() {
                 Mon Panier
               </h1>
               <p className="text-gray-600">
-                {cart.summary.total_items} article{cart.summary.total_items > 1 ? 's' : ''} • {formatPrice(cart.summary.subtotal)}
+                {cart.summary.total_items} article
+                {cart.summary.total_items > 1 ? "s" : ""} •{" "}
+                {formatPrice(cart.summary.subtotal)}
               </p>
             </div>
           </div>
         </div>
-        
+
         {/* Barre de progression livraison gratuite */}
         <FreeShippingProgress subtotal={cart.summary.subtotal} />
 
@@ -602,15 +689,19 @@ export default function CartPage() {
           {/* Liste des articles */}
           <div className="lg:col-span-2 space-y-4">
             {notification && (
-              <Alert 
-                intent={notification.type === 'success' ? 'success' : 'error'} 
+              <Alert
+                intent={notification.type === "success" ? "success" : "error"}
                 variant="solid"
-                icon={<span className="text-lg">{notification.type === 'success' ? '✅' : '❌'}</span>}
+                icon={
+                  <span className="text-lg">
+                    {notification.type === "success" ? "✅" : "❌"}
+                  </span>
+                }
               >
                 {notification.message}
               </Alert>
             )}
-            
+
             {cart.items.map((item) => (
               <CartItem
                 key={item.id}
@@ -619,17 +710,17 @@ export default function CartPage() {
                 onRemove={handleRemoveItem}
               />
             ))}
-            
+
             {/* Actions bas de liste */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Continuer mes achats
               </Link>
-              
+
               <button
                 type="button"
                 onClick={handleClearCart}
@@ -638,7 +729,7 @@ export default function CartPage() {
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span className="underline-offset-2 hover:underline">
-                  {isProcessing ? 'Vidage...' : 'Vider le panier'}
+                  {isProcessing ? "Vidage..." : "Vider le panier"}
                 </span>
               </button>
             </div>
@@ -647,14 +738,19 @@ export default function CartPage() {
           {/* Résumé et actions - Sticky sur desktop */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24 space-y-4">
-              <CartSummary summary={cart.summary} isUpdating={navigation.state === 'loading'}>                  
+              <CartSummary
+                summary={cart.summary}
+                isUpdating={navigation.state === "loading"}
+              >
                 <div className="space-y-3">
-                  <Link 
-                    to="/checkout" 
+                  <Link
+                    to="/checkout"
                     className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                   >
                     <span className="text-white text-lg">🛒</span>
-                    <span className="text-white font-bold text-lg">Finaliser ma commande</span>
+                    <span className="text-white font-bold text-lg">
+                      Finaliser ma commande
+                    </span>
                     <ArrowRight className="h-5 w-5 text-white" />
                   </Link>
                 </div>
@@ -667,28 +763,40 @@ export default function CartPage() {
                     <Shield className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Paiement sécurisé</h3>
-                    <p className="text-xs text-gray-600">Transactions cryptées SSL</p>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Paiement sécurisé
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      Transactions cryptées SSL
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <div className="bg-blue-100 p-2 rounded-lg">
                     <Truck className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Livraison rapide</h3>
-                    <p className="text-xs text-gray-600">Expédition sous 24-48h</p>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Livraison rapide
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      Expédition sous 24-48h
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <div className="bg-purple-100 p-2 rounded-lg">
                     <CreditCard className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Paiement flexible</h3>
-                    <p className="text-xs text-gray-600">CB, PayPal, virement</p>
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      Paiement flexible
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      CB, PayPal, virement
+                    </p>
                   </div>
                 </div>
               </div>

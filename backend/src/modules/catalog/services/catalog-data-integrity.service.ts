@@ -278,12 +278,12 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       .eq('rtp_type_id', String(typeId))
       .eq('rtp_pg_id', String(gammeId))
       .limit(100);
-    
+
     // Compter les pièces avec une marque (rtp_pm_id non null et > 0)
-    const piecesWithBrand = relations?.filter(
-      (r) => r.rtp_pm_id && parseInt(String(r.rtp_pm_id)) > 0
-    ).length || 0;
-    
+    const piecesWithBrand =
+      relations?.filter((r) => r.rtp_pm_id && parseInt(String(r.rtp_pm_id)) > 0)
+        .length || 0;
+
     const brandPercent = relations?.length
       ? (piecesWithBrand / relations.length) * 100
       : 0;
