@@ -1,9 +1,9 @@
 /**
  * 🔗 URL Builder Utilities
- * 
+ *
  * Fonctions centralisées pour la construction d'URLs SEO-friendly
  * Utilisées par les services SEO, gamme, pièces, etc.
- * 
+ *
  * @author Assistant
  * @version 1.0.0
  */
@@ -17,7 +17,7 @@
  */
 export function normalizeAlias(alias: string): string {
   if (!alias) return '';
-  
+
   return alias
     .toLowerCase()
     .normalize('NFD')
@@ -90,7 +90,10 @@ export function buildPieceVehicleUrlRaw(
  * Construit une URL de constructeur/marque
  * Format: /constructeurs/{marque_alias}-{marque_id}.html
  */
-export function buildConstructeurUrl(marqueAlias: string, marqueId: number): string {
+export function buildConstructeurUrl(
+  marqueAlias: string,
+  marqueId: number,
+): string {
   const cleanAlias = normalizeAlias(marqueAlias);
   return `/constructeurs/${cleanAlias}-${marqueId}.html`;
 }

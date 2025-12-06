@@ -35,7 +35,7 @@ import { Badge } from "./ui/badge";
 
 export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
-  const location = useLocation();
+  const _location = useLocation();
   const navigate = useNavigate();
 
   // 🛒 Panier: données depuis root loader + état local pour ouverture
@@ -43,7 +43,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = () => setIsCartOpen((prev) => !prev);
   const closeCart = () => setIsCartOpen(false);
-  const openCart = () => setIsCartOpen(true);
+  const _openCart = () => setIsCartOpen(true);
 
   // Résumé du panier depuis les données du root loader
   const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
@@ -60,8 +60,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const rafIdRef = useRef<number>();
 
   // Role-based permissions
-  const isAdmin = user && (user.level ?? 0) >= 7;
-  const isSuperAdmin = user && (user.level ?? 0) >= 9;
+  const _isAdmin = user && (user.level ?? 0) >= 7;
+  const _isSuperAdmin = user && (user.level ?? 0) >= 9;
 
   // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
