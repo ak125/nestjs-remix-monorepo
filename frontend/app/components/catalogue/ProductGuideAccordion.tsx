@@ -878,7 +878,7 @@ export function ProductGuideAccordion({
  * Helper: Génère des sections de guide génériques
  */
 export function generateGenericGuideSections(
-  productName: string,
+  _productName: string,
 ): GuideSection[] {
   return [
     {

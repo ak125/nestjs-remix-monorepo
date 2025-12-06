@@ -5,7 +5,7 @@ import { AiContentService } from '../ai-content.service';
 
 describe('AiContentService', () => {
   let service: AiContentService;
-  let configService: ConfigService;
+  let _configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

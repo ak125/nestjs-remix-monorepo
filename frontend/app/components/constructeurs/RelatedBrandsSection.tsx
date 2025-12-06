@@ -1,14 +1,15 @@
 /**
  * RelatedBrandsSection - Composant de maillage interne pour marques associées
- * 
+ *
  * Affiche les marques du même pays ou continent pour renforcer le maillage SEO.
  * Les textes d'ancrage sont variés pour un SEO naturel.
- * 
+ *
  * @author Automecanik SEO Team
  */
-import { Link } from '@remix-run/react';
-import { motion } from 'framer-motion';
-import type { RelatedBrand } from '~/types/brand.types';
+import { Link } from "@remix-run/react";
+import { motion } from "framer-motion";
+
+import { type RelatedBrand } from "~/types/brand.types";
 
 interface RelatedBrandsSectionProps {
   brands: RelatedBrand[];
@@ -30,7 +31,7 @@ function getAnchorText(brand: RelatedBrand, index: number): string {
     `Pièces détachées ${brand.marque_name}`,
     `Accessoires ${brand.marque_name}`,
   ];
-  
+
   // Rotation basée sur l'index pour varier naturellement
   return variations[index % variations.length];
 }
@@ -40,24 +41,24 @@ function getAnchorText(brand: RelatedBrand, index: number): string {
  */
 function getSectionTitle(currentBrandName: string, country?: string): string {
   if (!country) {
-    return 'Autres marques automobiles';
+    return "Autres marques automobiles";
   }
-  
+
   const countryTitles: Record<string, string> = {
-    'France': 'Autres marques françaises',
-    'Allemagne': 'Autres marques allemandes',
-    'Italie': 'Autres marques italiennes',
-    'Japon': 'Autres marques japonaises',
-    'Corée du Sud': 'Autres marques coréennes',
-    'États-Unis': 'Autres marques américaines',
-    'Royaume-Uni': 'Autres marques britanniques',
-    'Espagne': 'Autres marques espagnoles',
-    'Suède': 'Autres marques suédoises',
-    'République tchèque': 'Autres marques européennes',
-    'Roumanie': 'Autres marques européennes',
+    France: "Autres marques françaises",
+    Allemagne: "Autres marques allemandes",
+    Italie: "Autres marques italiennes",
+    Japon: "Autres marques japonaises",
+    "Corée du Sud": "Autres marques coréennes",
+    "États-Unis": "Autres marques américaines",
+    "Royaume-Uni": "Autres marques britanniques",
+    Espagne: "Autres marques espagnoles",
+    Suède: "Autres marques suédoises",
+    "République tchèque": "Autres marques européennes",
+    Roumanie: "Autres marques européennes",
   };
-  
-  return countryTitles[country] || 'Marques associées';
+
+  return countryTitles[country] || "Marques associées";
 }
 
 /**
@@ -72,7 +73,7 @@ export function RelatedBrandsSection({
   brands,
   currentBrandName,
   currentBrandCountry,
-  className = '',
+  className = "",
   onLinkClick,
 }: RelatedBrandsSectionProps) {
   // Ne pas afficher si aucune marque
@@ -83,21 +84,22 @@ export function RelatedBrandsSection({
   const sectionTitle = getSectionTitle(currentBrandName, currentBrandCountry);
 
   return (
-    <section 
+    <section
       className={`py-8 md:py-12 bg-gray-50 ${className}`}
       aria-labelledby="related-brands-title"
     >
       <div className="container mx-auto px-4">
         {/* En-tête de section */}
         <header className="mb-6 md:mb-8">
-          <h2 
+          <h2
             id="related-brands-title"
             className="text-xl md:text-2xl font-bold text-gray-900"
           >
             {sectionTitle}
           </h2>
           <p className="mt-2 text-sm md:text-base text-gray-600">
-            Découvrez également nos pièces détachées pour les autres constructeurs automobiles
+            Découvrez également nos pièces détachées pour les autres
+            constructeurs automobiles
           </p>
         </header>
 
@@ -106,7 +108,7 @@ export function RelatedBrandsSection({
           {brands.map((brand, index) => {
             const anchorText = getAnchorText(brand, index);
             const logoUrl = getLogoUrl(brand.marque_logo);
-            
+
             return (
               <motion.article
                 key={brand.marque_id}
@@ -146,8 +148,10 @@ export function RelatedBrandsSection({
                   </div>
 
                   {/* Texte d'ancrage varié */}
-                  <span className="text-xs md:text-sm font-medium text-gray-700 text-center 
-                                  group-hover:text-red-600 transition-colors line-clamp-2">
+                  <span
+                    className="text-xs md:text-sm font-medium text-gray-700 text-center 
+                                  group-hover:text-red-600 transition-colors line-clamp-2"
+                  >
                     {anchorText}
                   </span>
 
@@ -168,18 +172,20 @@ export function RelatedBrandsSection({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'ItemList',
+              "@context": "https://schema.org",
+              "@type": "ItemList",
               name: sectionTitle,
               numberOfItems: brands.length,
               itemListElement: brands.map((brand, index) => ({
-                '@type': 'ListItem',
+                "@type": "ListItem",
                 position: index + 1,
                 item: {
-                  '@type': 'Brand',
+                  "@type": "Brand",
                   name: brand.marque_name,
                   url: `https://www.automecanik.com${brand.link}`,
-                  ...(brand.marque_logo && { logo: getLogoUrl(brand.marque_logo) }),
+                  ...(brand.marque_logo && {
+                    logo: getLogoUrl(brand.marque_logo),
+                  }),
                 },
               })),
             }),

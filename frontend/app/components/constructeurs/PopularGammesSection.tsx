@@ -1,14 +1,15 @@
 /**
  * PopularGammesSection - Composant de maillage interne pour gammes populaires
- * 
+ *
  * Affiche les catégories de pièces les plus populaires pour la marque.
  * Optimisé pour le SEO avec textes d'ancrage variés et données structurées.
- * 
+ *
  * @author Automecanik SEO Team
  */
-import { Link } from '@remix-run/react';
-import { motion } from 'framer-motion';
-import type { PopularGamme } from '~/types/brand.types';
+import { Link } from "@remix-run/react";
+import { motion } from "framer-motion";
+
+import { type PopularGamme } from "~/types/brand.types";
 
 interface PopularGammesSectionProps {
   gammes: PopularGamme[];
@@ -23,24 +24,24 @@ interface PopularGammesSectionProps {
  * Icônes par type de gamme (fallback si pas d'image)
  */
 const GAMME_ICONS: Record<string, string> = {
-  'freinage': '🔴',
-  'plaquette': '🔴',
-  'disque': '💿',
-  'filtration': '🔧',
-  'filtre': '🔧',
-  'huile': '🛢️',
-  'vidange': '🛢️',
-  'embrayage': '⚙️',
-  'suspension': '🔩',
-  'amortisseur': '🔩',
-  'eclairage': '💡',
-  'phare': '💡',
-  'courroie': '🔗',
-  'distribution': '🔗',
-  'batterie': '🔋',
-  'demarrage': '🔋',
-  'echappement': '💨',
-  'default': '🔧',
+  freinage: "🔴",
+  plaquette: "🔴",
+  disque: "💿",
+  filtration: "🔧",
+  filtre: "🔧",
+  huile: "🛢️",
+  vidange: "🛢️",
+  embrayage: "⚙️",
+  suspension: "🔩",
+  amortisseur: "🔩",
+  eclairage: "💡",
+  phare: "💡",
+  courroie: "🔗",
+  distribution: "🔗",
+  batterie: "🔋",
+  demarrage: "🔋",
+  echappement: "💨",
+  default: "🔧",
 };
 
 /**
@@ -59,7 +60,11 @@ function getGammeIcon(gammeName: string): string {
 /**
  * Génère des textes d'ancrage variés pour le SEO
  */
-function getAnchorText(gamme: PopularGamme, brandName: string, index: number): string {
+function getAnchorText(
+  gamme: PopularGamme,
+  brandName: string,
+  index: number,
+): string {
   const variations = [
     `${gamme.pg_name} ${brandName}`,
     `${gamme.pg_name} pour ${brandName}`,
@@ -68,7 +73,7 @@ function getAnchorText(gamme: PopularGamme, brandName: string, index: number): s
     `Pièces ${gamme.pg_name.toLowerCase()} ${brandName}`,
     `${brandName} ${gamme.pg_name.toLowerCase()}`,
   ];
-  
+
   return variations[index % variations.length];
 }
 
@@ -80,7 +85,7 @@ function getDescription(gamme: PopularGamme, brandName: string): string {
   if (gamme.anchor) {
     return gamme.anchor;
   }
-    
+
   return `${gamme.pg_name} ${brandName} - Pièces de qualité`;
 }
 
@@ -97,7 +102,7 @@ export function PopularGammesSection({
   brandName,
   brandAlias,
   brandId,
-  className = '',
+  className = "",
   onLinkClick,
 }: PopularGammesSectionProps) {
   // Ne pas afficher si aucune gamme
@@ -106,21 +111,22 @@ export function PopularGammesSection({
   }
 
   return (
-    <section 
+    <section
       className={`py-8 md:py-12 ${className}`}
       aria-labelledby="popular-gammes-title"
     >
       <div className="container mx-auto px-4">
         {/* En-tête de section */}
         <header className="mb-6 md:mb-8">
-          <h2 
+          <h2
             id="popular-gammes-title"
             className="text-xl md:text-2xl font-bold text-gray-900"
           >
             Pièces détachées populaires {brandName}
           </h2>
           <p className="mt-2 text-sm md:text-base text-gray-600">
-            Les catégories de pièces les plus recherchées pour votre véhicule {brandName}
+            Les catégories de pièces les plus recherchées pour votre véhicule{" "}
+            {brandName}
           </p>
         </header>
 
@@ -131,10 +137,12 @@ export function PopularGammesSection({
             const description = getDescription(gamme, brandName);
             const icon = getGammeIcon(gamme.pg_name);
             const imageUrl = getGammeImageUrl(gamme.pg_img);
-            
+
             // Construit l'URL vers la page pièces avec la marque
-            const gammeUrl = gamme.link || `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`;
-            
+            const gammeUrl =
+              gamme.link ||
+              `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`;
+
             return (
               <motion.article
                 key={gamme.pg_id}
@@ -154,8 +162,10 @@ export function PopularGammesSection({
                   aria-label={description}
                 >
                   {/* Image ou icône */}
-                  <div className="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 mr-3 md:mr-4 
-                                rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <div
+                    className="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 mr-3 md:mr-4 
+                                rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden"
+                  >
                     {imageUrl ? (
                       <img
                         src={imageUrl}
@@ -166,7 +176,11 @@ export function PopularGammesSection({
                         height={64}
                       />
                     ) : (
-                      <span className="text-2xl md:text-3xl" role="img" aria-hidden="true">
+                      <span
+                        className="text-2xl md:text-3xl"
+                        role="img"
+                        aria-hidden="true"
+                      >
                         {icon}
                       </span>
                     )}
@@ -175,8 +189,10 @@ export function PopularGammesSection({
                   {/* Contenu textuel */}
                   <div className="flex-1 min-w-0">
                     {/* Texte d'ancrage principal */}
-                    <h3 className="text-sm md:text-base font-semibold text-gray-900 
-                                  group-hover:text-red-600 transition-colors line-clamp-2">
+                    <h3
+                      className="text-sm md:text-base font-semibold text-gray-900 
+                                  group-hover:text-red-600 transition-colors line-clamp-2"
+                    >
                       {anchorText}
                     </h3>
 
@@ -188,21 +204,23 @@ export function PopularGammesSection({
                     )}
 
                     {/* Indicateur visuel de lien */}
-                    <span className="inline-flex items-center mt-2 text-xs font-medium text-red-600 
-                                    group-hover:translate-x-1 transition-transform">
+                    <span
+                      className="inline-flex items-center mt-2 text-xs font-medium text-red-600 
+                                    group-hover:translate-x-1 transition-transform"
+                    >
                       Voir les pièces
-                      <svg 
-                        className="w-3 h-3 ml-1" 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className="w-3 h-3 ml-1"
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M9 5l7 7-7 7" 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
                         />
                       </svg>
                     </span>
@@ -218,19 +236,21 @@ export function PopularGammesSection({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'ItemList',
+              "@context": "https://schema.org",
+              "@type": "ItemList",
               name: `Pièces détachées populaires ${brandName}`,
               numberOfItems: gammes.length,
               itemListElement: gammes.map((gamme, index) => ({
-                '@type': 'ListItem',
+                "@type": "ListItem",
                 position: index + 1,
                 item: {
-                  '@type': 'Product',
+                  "@type": "Product",
                   name: `${gamme.pg_name} ${brandName}`,
                   category: gamme.pg_name,
                   url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`}`,
-                  ...(gamme.pg_img && { image: getGammeImageUrl(gamme.pg_img) }),
+                  ...(gamme.pg_img && {
+                    image: getGammeImageUrl(gamme.pg_img),
+                  }),
                 },
               })),
             }),

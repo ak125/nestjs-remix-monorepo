@@ -1,30 +1,29 @@
-import { Badge } from '@fafa/ui';
 /**
  * 🛒 CartSidebar Component - PHASE 1 POC
- * 
+ *
  * Sidebar coulissante pour le panier (remplace le dropdown CartIcon)
  * Inspiré du pattern PHP legacy mais modernisé avec React.
- * 
+ *
  * Features:
  * - ✅ Affichage image + marque + référence (pattern PHP)
  * - ✅ Support consignes séparées (legal requirement)
  * - ✅ Animation slide-in depuis la droite
  * - ✅ Overlay avec fermeture au clic extérieur
  * - ✅ Responsive mobile/desktop
- * 
+ *
  * @example
  * ```tsx
  * <CartSidebar isOpen={isOpen} onClose={onClose} />
  * ```
  */
-
-import { Link } from '@remix-run/react';
-import React from 'react';
-import { X, ShoppingBag, AlertCircle } from 'lucide-react';
-import { useCart, formatPrice, getProductImageUrl } from '../../hooks/useCart';
-import { cn } from '../../lib/utils';
-import  { type CartItem } from '../../types/cart';
-import { Button } from '../ui/button';
+import { Badge } from "@fafa/ui";
+import { Link } from "@remix-run/react";
+import { AlertCircle, ShoppingBag, X } from "lucide-react";
+import React from "react";
+import { useCart, formatPrice, getProductImageUrl } from "../../hooks/useCart";
+import { cn } from "../../lib/utils";
+import { type CartItem } from "../../types/cart";
+import { Button } from "../ui/button";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -45,8 +44,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   // DEBUG: Log au render
   React.useEffect(() => {
     if (isOpen) {
-      console.log('🔴 CartSidebar OPEN - items:', items);
-      console.log('🔴 CartSidebar - first item:', items[0]);
+      console.log("🔴 CartSidebar OPEN - items:", items);
+      console.log("🔴 CartSidebar - first item:", items[0]);
     }
   }, [isOpen, items]);
 
@@ -67,7 +66,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           "fixed top-0 right-0 h-full w-full sm:w-[380px] bg-white shadow-2xl z-50",
           "transform transition-all duration-300 ease-in-out",
           "flex flex-col",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
         {/* Header compact */}
@@ -77,7 +76,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             <div>
               <h2 className="text-base font-bold">Mon Panier</h2>
               <p className="text-xs text-blue-100">
-                {summary.total_items} article{summary.total_items > 1 ? 's' : ''}
+                {summary.total_items} article
+                {summary.total_items > 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -101,12 +101,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         )}
 
         {/* 🚚 LIVRAISON GRATUITE - Bannière toujours visible */}
-        <div className={cn(
-          "px-4 py-3 border-b-2",
-          items.length > 0 && summary.subtotal >= 150 
-            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-600" 
-            : "bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-200"
-        )}>
+        <div
+          className={cn(
+            "px-4 py-3 border-b-2",
+            items.length > 0 && summary.subtotal >= 150
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-600"
+              : "bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-200",
+          )}
+        >
           {items.length > 0 && summary.subtotal >= 150 ? (
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-2 animate-bounce">
@@ -114,8 +116,12 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="text-2xl">🚚</span>
               </div>
               <div className="text-center">
-                <p className="font-black text-base tracking-wide">LIVRAISON GRATUITE !</p>
-                <p className="text-xs opacity-90">Vous économisez 9,90€ • Expédition 24-48h</p>
+                <p className="font-black text-base tracking-wide">
+                  LIVRAISON GRATUITE !
+                </p>
+                <p className="text-xs opacity-90">
+                  Vous économisez 9,90€ • Expédition 24-48h
+                </p>
               </div>
               <span className="text-2xl">✅</span>
             </div>
@@ -125,8 +131,12 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-2xl animate-pulse">🚚</span>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">Livraison GRATUITE</p>
-                    <p className="text-xs text-gray-500">à partir de 150€ d'achat</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      Livraison GRATUITE
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      à partir de 150€ d'achat
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -140,13 +150,17 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                     <div
                       className="bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 h-3 rounded-full transition-all duration-700 ease-out relative"
-                      style={{ width: `${Math.min((summary.subtotal / 150) * 100, 100)}%` }}
+                      style={{
+                        width: `${Math.min((summary.subtotal / 150) * 100, 100)}%`,
+                      }}
                     >
                       <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </div>
                   </div>
                   <div className="flex justify-between mt-2 items-center">
-                    <span className="text-sm font-bold text-gray-800">{formatPrice(summary.subtotal)}</span>
+                    <span className="text-sm font-bold text-gray-800">
+                      {formatPrice(summary.subtotal)}
+                    </span>
                     <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
                       <span>⚡</span>
                       Plus que {formatPrice(150 - summary.subtotal)} !
@@ -176,30 +190,38 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <div className="px-4 py-2.5 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
                 <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
                   <span>📦</span>
-                  <span>{items.length} article{items.length > 1 ? 's' : ''}</span>
+                  <span>
+                    {items.length} article{items.length > 1 ? "s" : ""}
+                  </span>
                 </p>
               </div>
-              
+
               {/* DEBUG VISUEL - Afficher les données brutes */}
               <div className="p-2 bg-yellow-100 text-xs">
                 <pre className="whitespace-pre-wrap">
-                  {JSON.stringify(items.map(i => ({
-                    id: i.id?.substring(0, 10),
-                    name: i.product_name,
-                    brand: i.product_brand,
-                    sku: i.product_sku,
-                    qty: i.quantity,
-                    price: i.price
-                  })), null, 2)}
+                  {JSON.stringify(
+                    items.map((i) => ({
+                      id: i.id?.substring(0, 10),
+                      name: i.product_name,
+                      brand: i.product_brand,
+                      sku: i.product_sku,
+                      qty: i.quantity,
+                      price: i.price,
+                    })),
+                    null,
+                    2,
+                  )}
                 </pre>
               </div>
-              
+
               {items.map((item, index) => (
                 <CartSidebarItem
                   key={item.id || `item-${index}`}
                   item={item}
                   onRemove={() => removeItem(parseInt(item.product_id, 10))}
-                  onQuantityChange={(qty) => updateQuantity(parseInt(item.product_id, 10), qty)}
+                  onQuantityChange={(qty) =>
+                    updateQuantity(parseInt(item.product_id, 10), qty)
+                  }
                 />
               ))}
             </div>
@@ -212,17 +234,24 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             {/* Détail des totaux */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
-                <span>Sous-total ({summary.total_items} pièce{summary.total_items > 1 ? 's' : ''})</span>
-                <span className="font-medium">{formatPrice(summary.subtotal)}</span>
+                <span>
+                  Sous-total ({summary.total_items} pièce
+                  {summary.total_items > 1 ? "s" : ""})
+                </span>
+                <span className="font-medium">
+                  {formatPrice(summary.subtotal)}
+                </span>
               </div>
-              
+
               {summary.consigne_total > 0 && (
                 <div className="flex justify-between text-amber-700 bg-amber-50 -mx-4 px-4 py-1.5">
                   <span className="flex items-center gap-1">
                     <span>♻️</span>
                     <span>Consignes (remboursables)</span>
                   </span>
-                  <span className="font-medium">+{formatPrice(summary.consigne_total)}</span>
+                  <span className="font-medium">
+                    +{formatPrice(summary.consigne_total)}
+                  </span>
                 </div>
               )}
 
@@ -231,7 +260,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="text-gray-600">Livraison</span>
                 {summary.subtotal >= 150 ? (
                   <span className="text-green-600 font-semibold flex items-center gap-1">
-                    <span className="line-through text-gray-400 text-xs">9,90€</span>
+                    <span className="line-through text-gray-400 text-xs">
+                      9,90€
+                    </span>
                     GRATUITE
                   </span>
                 ) : (
@@ -246,7 +277,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="font-bold text-lg">Total TTC</span>
                 <p className="text-[10px] text-gray-500">TVA incluse</p>
               </div>
-              <span className="font-bold text-2xl text-blue-600">{formatPrice(summary.total_price)}</span>
+              <span className="font-bold text-2xl text-blue-600">
+                {formatPrice(summary.total_price)}
+              </span>
             </div>
 
             {/* Boutons */}
@@ -260,12 +293,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 </Link>
               </Button>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="flex-1"
-                >
+                <Button variant="outline" size="sm" asChild className="flex-1">
                   <Link to="/cart" rel="nofollow" onClick={onClose}>
                     📋 Voir détails
                   </Link>
@@ -274,7 +302,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={async () => {
-                    if (confirm('Vider le panier ?')) {
+                    if (confirm("Vider le panier ?")) {
                       await clearCart();
                     }
                   }}
@@ -300,7 +328,11 @@ interface CartSidebarItemProps {
   onQuantityChange: (quantity: number) => void;
 }
 
-function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemProps) {
+function CartSidebarItem({
+  item,
+  onRemove,
+  onQuantityChange,
+}: CartSidebarItemProps) {
   // Extraire les données avec fallbacks robustes
   const imageUrl = getProductImageUrl(item);
   const unitPrice = Number(item.unit_price) || Number(item.price) || 0;
@@ -309,7 +341,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
   const brand = item.product_brand;
   const name = item.product_name || item.name || `Produit #${item.product_id}`;
   const qty = item.quantity || 1;
-  
+
   return (
     <div className="flex gap-3 p-4 hover:bg-blue-50/50 transition-colors group border-b border-gray-100 last:border-b-0">
       {/* Image avec badge quantité */}
@@ -320,7 +352,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
             alt={name}
             className="w-full h-full object-contain p-1"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/no.png';
+              (e.target as HTMLImageElement).src = "/images/no.png";
             }}
           />
         </div>
@@ -334,18 +366,23 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Ligne marque + ref */}
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          {brand && brand !== 'MARQUE INCONNUE' && brand !== 'Non spécifiée' && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 font-semibold">
-              {brand}
-            </Badge>
-          )}
+          {brand &&
+            brand !== "MARQUE INCONNUE" &&
+            brand !== "Non spécifiée" && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 font-semibold"
+              >
+                {brand}
+              </Badge>
+            )}
           {reference && (
             <span className="text-[10px] text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
               {reference}
             </span>
           )}
         </div>
-        
+
         {/* Nom produit */}
         <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-2">
           {name}
@@ -362,7 +399,9 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
             >
               <span className="text-lg font-medium">−</span>
             </button>
-            <span className="w-8 text-center text-sm font-bold text-gray-900">{qty}</span>
+            <span className="w-8 text-center text-sm font-bold text-gray-900">
+              {qty}
+            </span>
             <button
               onClick={() => onQuantityChange(qty + 1)}
               className="h-7 w-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600"
@@ -373,9 +412,13 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
 
           {/* Prix */}
           <div className="text-right">
-            <p className="text-base font-bold text-blue-600">{formatPrice(totalPrice)}</p>
+            <p className="text-base font-bold text-blue-600">
+              {formatPrice(totalPrice)}
+            </p>
             {qty > 1 && (
-              <p className="text-[10px] text-gray-500">{formatPrice(unitPrice)} × {qty}</p>
+              <p className="text-[10px] text-gray-500">
+                {formatPrice(unitPrice)} × {qty}
+              </p>
             )}
           </div>
         </div>
@@ -384,7 +427,9 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
         {item.consigne_unit && Number(item.consigne_unit) > 0 && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-lg w-fit">
             <span>♻️</span>
-            <span>+{formatPrice(Number(item.consigne_unit) * qty)} consigne</span>
+            <span>
+              +{formatPrice(Number(item.consigne_unit) * qty)} consigne
+            </span>
           </div>
         )}
       </div>
