@@ -102,7 +102,7 @@ export class GroqProvider implements AIProvider {
         },
       });
       return response.ok;
-    } catch (_error) {
+    } catch {
       return false;
     }
   }

@@ -7,7 +7,7 @@
  * Utilise cart.api.ts pour TOUS les appels API.
  */
 
-import React, {
+import {
   createContext,
   useContext,
   useState,

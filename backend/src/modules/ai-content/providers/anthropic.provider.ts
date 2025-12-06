@@ -99,7 +99,7 @@ export class AnthropicProvider implements AIProvider {
         ],
       });
       return message.content.length > 0;
-    } catch (_error) {
+    } catch {
       return false;
     }
   }
