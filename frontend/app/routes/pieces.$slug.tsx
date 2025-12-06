@@ -1,8 +1,9 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
+import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { useEffect, lazy, Suspense } from "react";
-import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
@@ -10,17 +11,16 @@ import ConseilsSection from "../components/pieces/ConseilsSection";
 import EquipementiersSection from "../components/pieces/EquipementiersSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
-import { PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
+import { PiecesRelatedArticles as _PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import { hierarchyApi } from "../services/api/hierarchy.api";
 import { buildCanonicalUrl } from "../utils/seo/canonical";
-import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
-import { hierarchyApi } from "../services/api/hierarchy.api";
 
 // Lazy load PurchaseGuide (contains framer-motion ~167KB)
 const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
@@ -284,7 +284,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   return result;
 };
 
-export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
+export function headers({ loaderHeaders: _loaderHeaders }: { loaderHeaders: Headers }) {
   return {
     'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
   };
