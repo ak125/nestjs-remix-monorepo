@@ -1,19 +1,11 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
-  Award,
   CheckCircle2,
   ChevronRight,
-  Clock,
-  Headphones,
-  Package,
-  Phone,
-  Search,
   Shield,
-  Star,
   Truck,
   Users,
-  Zap,
   AlertCircle,
 } from "lucide-react";
 
