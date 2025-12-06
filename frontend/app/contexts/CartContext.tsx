@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cartApi } from '../services/cart.api';
-import type { CartItem, CartSummary, CartData } from '../types/cart';
+import { type CartItem, type CartSummary, type CartData } from '../types/cart';
 
 // ============================================================================
 // TYPES
@@ -85,7 +85,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
   
   const [items, setItems] = useState<CartItem[]>(initialData?.items || []);
   const [summary, setSummary] = useState<CartSummary>(initialData?.summary || defaultSummary);
-  const [isInitialized, setIsInitialized] = useState(!!initialData);
+  const [_isInitialized, _setIsInitialized] = useState(!!initialData);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -19,8 +19,8 @@
  * ```
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from '@remix-run/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Types pour le tracking A/B
 export interface LinkFormula {

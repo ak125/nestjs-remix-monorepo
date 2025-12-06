@@ -7,8 +7,8 @@ import { useState, useMemo } from 'react';
 import { type PieceData, type PiecesFilters, type SortBy, type ViewMode } from '../types/pieces-route.types';
 
 export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
-  // ✅ Protection: S'assurer que pieces est toujours un tableau
-  const pieces = inputPieces ?? [];
+  // ✅ Protection: S'assurer que pieces est toujours un tableau (stabilisé avec useMemo)
+  const pieces = useMemo(() => inputPieces ?? [], [inputPieces]);
   
   // État des filtres
   const [activeFilters, setActiveFilters] = useState<PiecesFilters>({
