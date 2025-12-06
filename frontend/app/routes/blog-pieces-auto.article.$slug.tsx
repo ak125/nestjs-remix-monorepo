@@ -1,34 +1,28 @@
-import { Alert } from '@fafa/ui';
-import { 
-  json, 
-  type LoaderFunctionArgs, 
-  type MetaFunction 
+import { Alert } from "@fafa/ui";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
-import { 
-  Link, 
-  useLoaderData,
-  useNavigate 
-} from "@remix-run/react";
-import { 
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import {
   ArrowLeft,
   Calendar,
   Clock,
   Eye,
   Share2,
   Bookmark,
-  Tag
-} from 'lucide-react';
+  Tag,
+} from "lucide-react";
 import { useState } from "react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 // UI Components
+import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-
-// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
-import { HtmlContent } from "~/components/seo/HtmlContent";
 
 // Types
 interface BlogArticle {
@@ -39,7 +33,7 @@ interface BlogArticle {
   content: string;
   h1?: string;
   h2?: string;
-  type: 'advice' | 'guide' | 'constructeur' | 'glossaire';
+  type: "advice" | "guide" | "constructeur" | "glossaire";
   keywords: string[];
   tags?: string[];
   publishedAt: string;
@@ -80,7 +74,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },
-      { name: "robots", content: "noindex" }
+      { name: "robots", content: "noindex" },
     ];
   }
 
@@ -91,13 +85,16 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title: `${title} - Blog Automecanik` },
     { name: "description", content: description },
-    { name: "keywords", content: article.keywords.join(', ') },
+    { name: "keywords", content: article.keywords.join(", ") },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "article" },
     { property: "article:published_time", content: article.publishedAt },
-    { property: "article:modified_time", content: article.updatedAt || article.publishedAt },
-    { property: "article:tag", content: article.keywords.join(', ') },
+    {
+      property: "article:modified_time",
+      content: article.updatedAt || article.publishedAt,
+    },
+    { property: "article:tag", content: article.keywords.join(", ") },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
@@ -110,11 +107,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const { slug } = params;
 
   if (!slug) {
-    return json<LoaderData>({ 
-      article: null, 
-      relatedArticles: [],
-      error: "Slug manquant" 
-    }, { status: 400 });
+    return json<LoaderData>(
+      {
+        article: null,
+        relatedArticles: [],
+        error: "Slug manquant",
+      },
+      { status: 400 },
+    );
   }
 
   let article: BlogArticle | null = null;
@@ -125,11 +125,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const articleResponse = await fetch(
       `http://localhost:3000/api/blog/article/${slug}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (articleResponse.ok) {
@@ -143,11 +143,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
         const similarResponse = await fetch(
           `http://localhost:3000/api/blog/popular?limit=4`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (similarResponse.ok) {
@@ -155,30 +155,35 @@ export async function loader({ params }: LoaderFunctionArgs) {
           relatedArticles = similarData.data || similarData || [];
         }
       } catch (e) {
-        console.warn('Articles similaires non disponibles');
+        console.warn("Articles similaires non disponibles");
       }
     }
-
   } catch (error) {
-    console.error('Erreur chargement article:', error);
-    return json<LoaderData>({ 
-      article: null, 
-      relatedArticles: [],
-      error: "Erreur de chargement" 
-    }, { status: 500 });
+    console.error("Erreur chargement article:", error);
+    return json<LoaderData>(
+      {
+        article: null,
+        relatedArticles: [],
+        error: "Erreur de chargement",
+      },
+      { status: 500 },
+    );
   }
 
   if (!article) {
-    return json<LoaderData>({ 
-      article: null, 
-      relatedArticles: [],
-      error: "Article non trouvé" 
-    }, { status: 404 });
+    return json<LoaderData>(
+      {
+        article: null,
+        relatedArticles: [],
+        error: "Article non trouvé",
+      },
+      { status: 404 },
+    );
   }
 
-  return json<LoaderData>({ 
-    article, 
-    relatedArticles 
+  return json<LoaderData>({
+    article,
+    relatedArticles,
   });
 }
 
@@ -198,9 +203,10 @@ export default function BlogArticle() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-6">
-              {error || "L'article que vous recherchez n'existe pas ou a été supprimé."}
+              {error ||
+                "L'article que vous recherchez n'existe pas ou a été supprimé."}
             </p>
-            <Button onClick={() => navigate('/blog')} variant="outline">
+            <Button onClick={() => navigate("/blog")} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Retour au blog
             </Button>
@@ -213,10 +219,10 @@ export default function BlogArticle() {
   // Fonctions utilitaires
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
@@ -228,10 +234,10 @@ export default function BlogArticle() {
 
   const getTypeLabel = (type: string) => {
     const labels = {
-      advice: 'Conseil',
-      guide: 'Guide',
-      constructeur: 'Constructeur',
-      glossaire: 'Glossaire'
+      advice: "Conseil",
+      guide: "Guide",
+      constructeur: "Constructeur",
+      glossaire: "Glossaire",
     };
     return labels[type as keyof typeof labels] || type;
   };
@@ -245,8 +251,8 @@ export default function BlogArticle() {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success('Lien copié !', {
-        description: 'Le lien de l\'article a été copié',
+      toast.success("Lien copié !", {
+        description: "Le lien de l'article a été copié",
         duration: 2000,
       });
     }
@@ -257,10 +263,12 @@ export default function BlogArticle() {
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
-          <PublicBreadcrumb items={[
-            { label: "Blog", href: "/blog-pieces-auto" },
-            { label: article.title }
-          ]} />
+          <PublicBreadcrumb
+            items={[
+              { label: "Blog", href: "/blog-pieces-auto" },
+              { label: article.title },
+            ]}
+          />
         </div>
       </div>
 
@@ -275,20 +283,20 @@ export default function BlogArticle() {
                   <Badge className="bg-white/20 text-white border-white/30">
                     {getTypeLabel(article.type)}
                   </Badge>
-                  
+
                   <div className="flex items-center gap-4 text-white/90 text-sm">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {formatDate(article.publishedAt)}
                     </span>
-                    
+
                     {article.readingTime && (
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         {article.readingTime} min
                       </span>
                     )}
-                    
+
                     <span className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
                       {formatViews(article.viewsCount)}
@@ -308,7 +316,7 @@ export default function BlogArticle() {
 
                 {/* Actions */}
                 <div className="flex gap-3 mt-6">
-                  <Button 
+                  <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleShare}
@@ -317,19 +325,21 @@ export default function BlogArticle() {
                     <Share2 className="w-4 h-4 mr-2" />
                     Partager
                   </Button>
-                  
-                  <Button 
+
+                  <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setIsBookmarked(!isBookmarked)}
                     className={`border-white/30 ${
-                      isBookmarked 
-                        ? 'bg-white text-blue-600' 
-                        : 'bg-white/20 hover:bg-white/30 text-white'
+                      isBookmarked
+                        ? "bg-white text-blue-600"
+                        : "bg-white/20 hover:bg-white/30 text-white"
                     }`}
                   >
-                    <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
-                    {isBookmarked ? 'Sauvegardé' : 'Sauvegarder'}
+                    <Bookmark
+                      className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current" : ""}`}
+                    />
+                    {isBookmarked ? "Sauvegardé" : "Sauvegarder"}
                   </Button>
                 </div>
               </div>
@@ -341,7 +351,7 @@ export default function BlogArticle() {
                 )}
 
                 {/* 🎯 AFFICHAGE DU CONTENU HTML - Utilise HtmlContent pour navigation SPA */}
-                <HtmlContent 
+                <HtmlContent
                   html={article.content}
                   className="prose prose-lg max-w-none
                     prose-headings:text-gray-900 prose-headings:font-bold
@@ -369,7 +379,7 @@ export default function BlogArticle() {
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
                           {section.title}
                         </h3>
-                        <HtmlContent 
+                        <HtmlContent
                           html={section.content}
                           className="prose prose-lg max-w-none text-gray-700"
                           trackLinks={true}
@@ -388,8 +398,8 @@ export default function BlogArticle() {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {article.keywords.map((keyword, index) => (
-                        <Badge 
-                          key={index} 
+                        <Badge
+                          key={index}
                           variant="secondary"
                           className="bg-info/20 text-info hover:bg-primary/30"
                         >
@@ -404,9 +414,9 @@ export default function BlogArticle() {
 
             {/* Navigation article précédent/suivant */}
             <div className="mt-8 flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/blog')}
+              <Button
+                variant="outline"
+                onClick={() => navigate("/blog")}
                 className="group"
               >
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
@@ -428,7 +438,7 @@ export default function BlogArticle() {
                 <CardContent>
                   <div className="space-y-4">
                     {relatedArticles.slice(0, 4).map((related) => (
-                      <Link 
+                      <Link
                         key={related.id}
                         to={`/blog-pieces-auto/article/${related.slug}`}
                         className="block group"
@@ -460,10 +470,10 @@ export default function BlogArticle() {
 
                   <hr className="my-4 border-gray-200" />
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full"
-                    onClick={() => navigate('/blog')}
+                    onClick={() => navigate("/blog")}
                   >
                     Voir tous les articles
                   </Button>

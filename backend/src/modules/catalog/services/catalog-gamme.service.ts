@@ -376,10 +376,14 @@ export class CatalogGammeService extends SupabaseBaseService {
         pg_alias: gamme.pg_alias,
         pg_img: gamme.pg_img,
         link: `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`,
-        anchor: anchorVariations[index % anchorVariations.length](gamme.pg_name),
+        anchor: anchorVariations[index % anchorVariations.length](
+          gamme.pg_name,
+        ),
       }));
 
-      this.logger.log(`✅ ${formattedGammes.length} gammes pour maillage récupérées`);
+      this.logger.log(
+        `✅ ${formattedGammes.length} gammes pour maillage récupérées`,
+      );
       return {
         data: formattedGammes,
         success: true,
@@ -400,18 +404,22 @@ export class CatalogGammeService extends SupabaseBaseService {
   async getPopularGammesForBrand(
     brandId: number,
     brandAlias: string,
-    limit: number = 8
-  ): Promise<{
-    id: string;
-    name: string;
-    alias: string;
-    image: string | null;
-    description: string | null;
-    url: string;
-    vehicleCount: number | null;
-  }[]> {
+    limit: number = 8,
+  ): Promise<
+    {
+      id: string;
+      name: string;
+      alias: string;
+      image: string | null;
+      description: string | null;
+      url: string;
+      vehicleCount: number | null;
+    }[]
+  > {
     try {
-      this.logger.log(`🔗 Récupération ${limit} gammes populaires pour marque ${brandId}...`);
+      this.logger.log(
+        `🔗 Récupération ${limit} gammes populaires pour marque ${brandId}...`,
+      );
 
       // Récupérer les gammes TOP avec images
       const { data: topGammes, error } = await this.supabase
@@ -432,7 +440,7 @@ export class CatalogGammeService extends SupabaseBaseService {
         id: String(gamme.pg_id),
         name: gamme.pg_name || '',
         alias: gamme.pg_alias || '',
-        image: gamme.pg_img 
+        image: gamme.pg_img
           ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/gammes/${gamme.pg_img}`
           : null,
         description: gamme.pg_desc || null,
@@ -441,7 +449,9 @@ export class CatalogGammeService extends SupabaseBaseService {
         vehicleCount: null, // Peut être enrichi avec une requête supplémentaire si besoin
       }));
 
-      this.logger.log(`✅ ${formattedGammes.length} gammes pour marque ${brandId} récupérées`);
+      this.logger.log(
+        `✅ ${formattedGammes.length} gammes pour marque ${brandId} récupérées`,
+      );
       return formattedGammes;
     } catch (error) {
       this.logger.error('❌ Erreur gammes pour marque:', error);

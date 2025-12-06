@@ -1,39 +1,34 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from "@fafa/ui";
 /**
  * Route : /blog-pieces-auto/guide/:slug
  * Affiche le détail d'un guide d'achat
- * 
+ *
  * Exemple :
  * /blog-pieces-auto/guide/pieces-auto-comment-s-y-retrouver
  */
 
-import { 
+import {
   json,
-  type LoaderFunctionArgs, 
-  type MetaFunction 
+  type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
-import { 
-  Link, 
-  useLoaderData 
-} from "@remix-run/react";
-import { 
+import { Link, useLoaderData } from "@remix-run/react";
+import {
   ArrowLeft,
   BookOpen,
   Calendar,
   Eye,
   List,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+} from "lucide-react";
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-
-// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
-import { HtmlContent } from "~/components/seo/HtmlContent";
 
 // Types
 interface GuideSection {
@@ -68,12 +63,15 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data?.guide) {
     return [
       { title: "Guide non trouvé - Pièces Auto" },
-      { name: "robots", content: "noindex" }
+      { name: "robots", content: "noindex" },
     ];
   }
 
   const { guide } = data;
-  const cleanTitle = guide.title.replace(/^Guide achat de pièce auto:?\s*/i, '');
+  const cleanTitle = guide.title.replace(
+    /^Guide achat de pièce auto:?\s*/i,
+    "",
+  );
 
   return [
     { title: `${cleanTitle} - Guide d'Achat Pièces Auto` },
@@ -97,7 +95,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    
+
     // Charger le guide depuis l'API
     const res = await fetch(`${backendUrl}/api/blog/guides/slug/${slug}`, {
       headers: { "Content-Type": "application/json" },
@@ -128,13 +126,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function GuideDetailPage() {
   const { guide } = useLoaderData<typeof loader>();
 
-  const cleanTitle = guide.title.replace(/^Guide achat de pièce auto:?\s*/i, '');
-  
+  const cleanTitle = guide.title.replace(
+    /^Guide achat de pièce auto:?\s*/i,
+    "",
+  );
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("fr-FR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -159,8 +160,8 @@ export default function GuideDetailPage() {
       {/* Back Button */}
       <section className="py-4 border-b bg-white">
         <div className="container mx-auto px-4">
-          <Link 
-            to="/blog-pieces-auto/guide" 
+          <Link
+            to="/blog-pieces-auto/guide"
             className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -222,11 +223,13 @@ export default function GuideDetailPage() {
 
               {/* Excerpt */}
               {guide.excerpt && (
-                <Alert intent="success"><p>{guide.excerpt}</p></Alert>
+                <Alert intent="success">
+                  <p>{guide.excerpt}</p>
+                </Alert>
               )}
 
               {/* Main Content */}
-              <HtmlContent 
+              <HtmlContent
                 html={guide.content}
                 className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6"
                 trackLinks={true}
@@ -235,24 +238,31 @@ export default function GuideDetailPage() {
               {/* Sections */}
               {guide.sections && guide.sections.length > 0 && (
                 <div className="mt-12 space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Détails du guide</h2>
-                  
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Détails du guide
+                  </h2>
+
                   {guide.sections.map((section, index) => {
                     const isH2 = section.level === 2;
                     const isH3 = section.level === 3;
-                    
+
                     if (isH2) {
                       // Afficher les sections H2 comme des cards principales
                       return (
-                        <Card key={`section-${index}`} className="border-2 border-green-100 hover:border-green-300 transition-colors">
+                        <Card
+                          key={`section-${index}`}
+                          className="border-2 border-green-100 hover:border-green-300 transition-colors"
+                        >
                           <CardContent className="p-6">
                             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                               <span className="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center text-sm font-bold">
-                                {guide.sections.filter(s => s.level === 2).indexOf(section) + 1}
+                                {guide.sections
+                                  .filter((s) => s.level === 2)
+                                  .indexOf(section) + 1}
                               </span>
                               {section.title}
                             </h3>
-                            <HtmlContent 
+                            <HtmlContent
                               html={section.content}
                               className="prose max-w-none text-gray-700"
                               trackLinks={true}
@@ -263,11 +273,14 @@ export default function GuideDetailPage() {
                     } else if (isH3) {
                       // Afficher les sections H3 comme des sous-sections indentées
                       return (
-                        <div key={`section-${index}`} className="ml-12 border-l-4 border-green-200 pl-6 py-4">
+                        <div
+                          key={`section-${index}`}
+                          className="ml-12 border-l-4 border-green-200 pl-6 py-4"
+                        >
                           <h4 className="text-lg font-semibold text-gray-900 mb-3">
                             {section.title}
                           </h4>
-                          <HtmlContent 
+                          <HtmlContent
                             html={section.content}
                             className="prose max-w-none text-gray-700"
                             trackLinks={true}
@@ -275,7 +288,7 @@ export default function GuideDetailPage() {
                         </div>
                       );
                     }
-                    
+
                     return null;
                   })}
                 </div>
@@ -286,7 +299,9 @@ export default function GuideDetailPage() {
           {/* Related Guides */}
           {guide.relatedGuides && guide.relatedGuides.length > 0 && (
             <section className="mt-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Guides similaires</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Guides similaires
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {guide.relatedGuides.map((relatedGuide) => (
                   <Link
@@ -297,7 +312,10 @@ export default function GuideDetailPage() {
                     <Card className="h-full hover:shadow-xl hover:border-green-300 transition-all">
                       <CardContent className="p-6">
                         <h3 className="font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
-                          {relatedGuide.title.replace(/^Guide achat de pièce auto:?\s*/i, '')}
+                          {relatedGuide.title.replace(
+                            /^Guide achat de pièce auto:?\s*/i,
+                            "",
+                          )}
                         </h3>
                         <p className="text-sm text-gray-600 line-clamp-2">
                           {relatedGuide.excerpt}
@@ -312,16 +330,26 @@ export default function GuideDetailPage() {
 
           {/* CTA */}
           <section className="mt-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-center text-white">
-            <h2 className="text-2xl font-bold mb-4">Besoin d'aide pour choisir ?</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Besoin d'aide pour choisir ?
+            </h2>
             <p className="text-green-100 mb-6 max-w-2xl mx-auto">
-              Nos experts vous conseillent gratuitement pour trouver les meilleures pièces adaptées à votre véhicule
+              Nos experts vous conseillent gratuitement pour trouver les
+              meilleures pièces adaptées à votre véhicule
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-success/20">
+              <Button
+                size="lg"
+                className="bg-white text-green-600 hover:bg-success/20"
+              >
                 Contacter un expert
               </Button>
               <Link to="/blog-pieces-auto/guide">
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-white text-white hover:bg-white/10"
+                >
                   Voir tous les guides
                 </Button>
               </Link>
