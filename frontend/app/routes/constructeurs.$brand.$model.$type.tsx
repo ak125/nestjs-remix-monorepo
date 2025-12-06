@@ -25,11 +25,11 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { HtmlContent } from "../components/seo/HtmlContent";
-import { hierarchyApi } from "../services/api/hierarchy.api";
 import {
   catalogFamiliesApi,
   type CatalogFamily as ApiCatalogFamily,
 } from "../services/api/catalog-families.api";
+import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles

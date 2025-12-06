@@ -436,10 +436,16 @@ export class EnhancedMetadataService extends SupabaseBaseService {
     try {
       // Estimation basée sur différentes sources
       const sources = await Promise.allSettled([
-        this.client.from(TABLES.pieces).select('*', { count: 'exact', head: true }),
+        this.client
+          .from(TABLES.pieces)
+          .select('*', { count: 'exact', head: true }),
         // Utiliser auto_type pour compter les types de véhicules
-        this.client.from(TABLES.auto_type).select('*', { count: 'exact', head: true }),
-        this.client.from(TABLES.auto_marque).select('*', { count: 'exact', head: true }),
+        this.client
+          .from(TABLES.auto_type)
+          .select('*', { count: 'exact', head: true }),
+        this.client
+          .from(TABLES.auto_marque)
+          .select('*', { count: 'exact', head: true }),
       ]);
 
       let total = 100; // Pages statiques de base
