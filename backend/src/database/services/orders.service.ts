@@ -3,7 +3,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../common/cache.service';
-import { Optional } from '@nestjs/common';
 // Services de délégation (optionnels pour compatibilité)
 // import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
 // import { OrderStatusService } from '../../modules/orders/services/order-status.service';
@@ -388,13 +387,15 @@ export class OrdersService extends SupabaseBaseService {
     comment?: string,
   ): Promise<void> {
     try {
-      const { error } = await this.supabase.from(TABLES.xtr_order_status).insert({
-        ords_ord_id: orderId,
-        ords_status: status,
-        ords_comment: comment || '',
-        ords_date: new Date().toISOString(),
-        ords_user_id: null, // Pourrait être l'utilisateur connecté
-      });
+      const { error } = await this.supabase
+        .from(TABLES.xtr_order_status)
+        .insert({
+          ords_ord_id: orderId,
+          ords_status: status,
+          ords_comment: comment || '',
+          ords_date: new Date().toISOString(),
+          ords_user_id: null, // Pourrait être l'utilisateur connecté
+        });
 
       if (error) {
         this.logger.warn(
