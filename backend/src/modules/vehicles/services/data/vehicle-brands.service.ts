@@ -507,14 +507,16 @@ export class VehicleBrandsService extends SupabaseBaseService {
   async getRelatedBrands(
     currentBrandId: number,
     limit: number = 6,
-  ): Promise<Array<{
-    marque_id: number;
-    marque_name: string;
-    marque_alias: string;
-    marque_logo: string | null;
-    marque_country: string | null;
-    link: string;
-  }>> {
+  ): Promise<
+    Array<{
+      marque_id: number;
+      marque_name: string;
+      marque_alias: string;
+      marque_logo: string | null;
+      marque_country: string | null;
+      link: string;
+    }>
+  > {
     const cacheKey = `related_brands:${currentBrandId}:${limit}`;
 
     return await this.cacheService.getOrSet(
@@ -522,7 +524,9 @@ export class VehicleBrandsService extends SupabaseBaseService {
       cacheKey,
       async () => {
         try {
-          this.logger.log(`🔗 Récupération marques liées pour ID: ${currentBrandId}`);
+          this.logger.log(
+            `🔗 Récupération marques liées pour ID: ${currentBrandId}`,
+          );
 
           // Récupérer les marques populaires (marque_top = 1) excluant la marque actuelle
           const { data: topBrands, error: topError } = await this.client
@@ -538,14 +542,19 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
           if (!topError && topBrands && topBrands.length > 0) {
             relatedBrands = topBrands;
-            this.logger.log(`✅ ${relatedBrands.length} marques TOP trouvées: ${relatedBrands.map(b => b.marque_name).join(', ')}`);
+            this.logger.log(
+              `✅ ${relatedBrands.length} marques TOP trouvées: ${relatedBrands.map((b) => b.marque_name).join(', ')}`,
+            );
           }
 
           // Si pas assez de marques TOP, compléter avec d'autres marques
           if (relatedBrands.length < limit) {
             const remainingLimit = limit - relatedBrands.length;
-            const excludeIds = [currentBrandId, ...relatedBrands.map(b => b.marque_id)];
-            
+            const excludeIds = [
+              currentBrandId,
+              ...relatedBrands.map((b) => b.marque_id),
+            ];
+
             const { data: otherBrands, error: otherError } = await this.client
               .from(TABLES.auto_marque)
               .select('marque_id, marque_name, marque_alias, marque_logo')
@@ -556,19 +565,25 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
             if (!otherError && otherBrands && otherBrands.length > 0) {
               relatedBrands = [...relatedBrands, ...otherBrands];
-              this.logger.log(`✅ Complété avec ${otherBrands.length} autres marques`);
+              this.logger.log(
+                `✅ Complété avec ${otherBrands.length} autres marques`,
+              );
             }
           }
 
           if (relatedBrands.length === 0) {
-            this.logger.warn(`Aucune marque liée trouvée pour ${currentBrandId}`);
+            this.logger.warn(
+              `Aucune marque liée trouvée pour ${currentBrandId}`,
+            );
             return [];
           }
 
-          this.logger.log(`🔗 Total ${relatedBrands.length} marques liées retournées`);
+          this.logger.log(
+            `🔗 Total ${relatedBrands.length} marques liées retournées`,
+          );
 
           // Formater avec les URLs (marque_country = null car colonne inexistante)
-          return relatedBrands.map(brand => ({
+          return relatedBrands.map((brand) => ({
             marque_id: brand.marque_id,
             marque_name: brand.marque_name,
             marque_alias: brand.marque_alias,
@@ -576,9 +591,11 @@ export class VehicleBrandsService extends SupabaseBaseService {
             marque_country: null,
             link: `/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`,
           }));
-
         } catch (error) {
-          this.logger.error(`Erreur getRelatedBrands ${currentBrandId}:`, error);
+          this.logger.error(
+            `Erreur getRelatedBrands ${currentBrandId}:`,
+            error,
+          );
           return [];
         }
       },
