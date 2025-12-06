@@ -1,40 +1,58 @@
 /**
  * 🏷️ ADMIN MARQUES SEO
- * 
+ *
  * Page d'administration pour gérer le contenu SEO des marques
  * Table: __seo_marque
  * Éditeur: TipTap WYSIWYG
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Form, useNavigation } from '@remix-run/react';
-import { useState, lazy, Suspense } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Alert } from '~/components/ui/alert';
-import { HtmlContent } from '~/components/seo/HtmlContent';
-import { Badge } from '~/components/ui/badge';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
+import { useLoaderData, Form, useNavigation } from "@remix-run/react";
+import { useState, lazy, Suspense } from "react";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Alert } from "~/components/ui/alert";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Badge } from "~/components/ui/badge";
 
 // Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
-const RichTextEditor = lazy(() => import('~/components/RichTextEditor').then(m => ({ default: m.RichTextEditor })));
+const RichTextEditor = lazy(() =>
+  import("~/components/RichTextEditor").then((m) => ({
+    default: m.RichTextEditor,
+  })),
+);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const brandSlug = url.searchParams.get('brand') || 'renault';
+  const brandSlug = url.searchParams.get("brand") || "renault";
 
   try {
     // Récupérer données marque avec SEO
-    const brandRes = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3000'}/api/brands/brand/${brandSlug}`);
+    const brandRes = await fetch(
+      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/brands/brand/${brandSlug}`,
+    );
     const brandData = await brandRes.json();
 
     if (!brandData.success) {
-      throw new Error('Marque introuvable');
+      throw new Error("Marque introuvable");
     }
 
     // Liste toutes les marques pour sélecteur
-    const brandsRes = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3000'}/api/brands?limit=100`);
+    const brandsRes = await fetch(
+      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/brands?limit=100`,
+    );
     const brandsData = await brandsRes.json();
 
     return json({
@@ -42,28 +60,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands: brandsData.data || [],
     });
   } catch (error) {
-    console.error('[Brands SEO Admin] Error:', error);
-    return json({ brand: null, brands: [], error: 'Erreur chargement données' });
+    console.error("[Brands SEO Admin] Error:", error);
+    return json({
+      brand: null,
+      brands: [],
+      error: "Erreur chargement données",
+    });
   }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const action = formData.get('_action');
+  const action = formData.get("_action");
 
-  if (action === 'update-seo') {
+  if (action === "update-seo") {
     // TODO: Implémenter API update
-    return json({ success: true, message: 'SEO mis à jour' });
+    return json({ success: true, message: "SEO mis à jour" });
   }
 
-  return json({ success: false, message: 'Action inconnue' });
+  return json({ success: false, message: "Action inconnue" });
 }
 
 export default function AdminBrandsSeo() {
   const { brand, brands } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [content, setContent] = useState(brand?.seo?.content || '');
-  const isSubmitting = navigation.state === 'submitting';
+  const [content, setContent] = useState(brand?.seo?.content || "");
+  const isSubmitting = navigation.state === "submitting";
 
   if (!brand) {
     return (
@@ -83,9 +105,7 @@ export default function AdminBrandsSeo() {
             Gérer le contenu SEO des pages marque (table __seo_marque)
           </p>
         </div>
-        <Badge variant="secondary">
-          {brands.length} marques
-        </Badge>
+        <Badge variant="secondary">{brands.length} marques</Badge>
       </div>
 
       {/* Sélecteur de marque */}
@@ -101,8 +121,8 @@ export default function AdminBrandsSeo() {
                 href={`/admin/brands-seo?brand=${b.marque_alias}`}
                 className={`p-3 rounded-lg border-2 text-center transition-all ${
                   b.marque_id === brand.marque_id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
                 }`}
               >
                 <div className="font-semibold">{b.marque_name}</div>
@@ -137,17 +157,23 @@ export default function AdminBrandsSeo() {
             <div className="space-y-2">
               <Label htmlFor="sm_title">
                 📋 Titre Meta
-                <span className="text-xs text-gray-500 ml-2">(Variables: #VMarque#, #PrixPasCher#)</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  (Variables: #VMarque#, #PrixPasCher#)
+                </span>
               </Label>
               <Input
                 id="sm_title"
                 name="sm_title"
-                defaultValue={brand.seo?.title || `Pièce #VMarque# #PrixPasCher# pour tous les modèles de véhicule`}
+                defaultValue={
+                  brand.seo?.title ||
+                  `Pièce #VMarque# #PrixPasCher# pour tous les modèles de véhicule`
+                }
                 maxLength={100}
                 className="font-medium"
               />
               <p className="text-xs text-gray-500">
-                ✨ Exemple: "Pièce RENAULT à prix pas cher pour tous les modèles de véhicule"
+                ✨ Exemple: "Pièce RENAULT à prix pas cher pour tous les modèles
+                de véhicule"
               </p>
             </div>
 
@@ -157,7 +183,7 @@ export default function AdminBrandsSeo() {
               <Input
                 id="sm_descrip"
                 name="sm_descrip"
-                defaultValue={brand.seo?.description || ''}
+                defaultValue={brand.seo?.description || ""}
                 maxLength={200}
               />
             </div>
@@ -168,7 +194,9 @@ export default function AdminBrandsSeo() {
               <Input
                 id="sm_h1"
                 name="sm_h1"
-                defaultValue={brand.seo?.h1 || `Modèles du constructeur #VMarque#`}
+                defaultValue={
+                  brand.seo?.h1 || `Modèles du constructeur #VMarque#`
+                }
                 maxLength={100}
               />
             </div>
@@ -178,15 +206,19 @@ export default function AdminBrandsSeo() {
               <Label>
                 📝 Contenu Riche
                 <span className="text-xs text-gray-500 ml-2">
-                  (Utilisez <code className="bg-gray-100 px-1 rounded">&lt;b&gt;</code> pour gras)
+                  (Utilisez{" "}
+                  <code className="bg-gray-100 px-1 rounded">&lt;b&gt;</code>{" "}
+                  pour gras)
                 </span>
               </Label>
-              <Suspense fallback={
-                <div className="border rounded-lg p-4 bg-gray-50 animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-32 bg-gray-200 rounded"></div>
-                </div>
-              }>
+              <Suspense
+                fallback={
+                  <div className="border rounded-lg p-4 bg-gray-50 animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-32 bg-gray-200 rounded"></div>
+                  </div>
+                }
+              >
                 <RichTextEditor
                   name="sm_content"
                   content={content}
@@ -195,7 +227,8 @@ export default function AdminBrandsSeo() {
                 />
               </Suspense>
               <Alert intent="info">
-                💡 Le contenu supporte le HTML basique: <strong>gras</strong>, <em>italique</em>, listes
+                💡 Le contenu supporte le HTML basique: <strong>gras</strong>,{" "}
+                <em>italique</em>, listes
               </Alert>
             </div>
 
@@ -205,7 +238,7 @@ export default function AdminBrandsSeo() {
               <Input
                 id="sm_keywords"
                 name="sm_keywords"
-                defaultValue={brand.seo?.keywords || ''}
+                defaultValue={brand.seo?.keywords || ""}
                 placeholder="pièces auto renault, freinage renault, distribution renault"
               />
             </div>
@@ -215,10 +248,11 @@ export default function AdminBrandsSeo() {
               <h3 className="font-semibold mb-2">👁️ Prévisualisation</h3>
               <div className="prose prose-sm max-w-none">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {brand.seo?.h1 || `Modèles du constructeur ${brand.marque_name}`}
+                  {brand.seo?.h1 ||
+                    `Modèles du constructeur ${brand.marque_name}`}
                 </h1>
-                <HtmlContent 
-                  html={content || brand.seo?.content || '<p>Aucun contenu</p>'}
+                <HtmlContent
+                  html={content || brand.seo?.content || "<p>Aucun contenu</p>"}
                   className="mt-4 text-gray-700"
                 />
               </div>
@@ -226,12 +260,8 @@ export default function AdminBrandsSeo() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-4 border-t">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? '⏳ Enregistrement...' : '💾 Enregistrer'}
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting ? "⏳ Enregistrement..." : "💾 Enregistrer"}
               </Button>
               <Button
                 type="button"

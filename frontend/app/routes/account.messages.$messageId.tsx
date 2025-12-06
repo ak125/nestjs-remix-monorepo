@@ -2,10 +2,15 @@ import { json, redirect, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
+import { HtmlContent } from "../components/seo/HtmlContent";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { HtmlContent } from "../components/seo/HtmlContent";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 
 /**
  * Route: /account/messages/:messageId
@@ -46,7 +51,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!messageResponse.ok) {
@@ -64,19 +69,16 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
 
     // Marquer le message comme lu si pas encore lu
     if (message.MSG_OPEN === 0) {
-      await fetch(
-        `${baseUrl}/rest/v1/___XTR_MSG?MSG_ID=eq.${messageId}`,
-        {
-          method: "PATCH",
-          headers: {
-            apikey: apiKey,
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({ MSG_OPEN: 1 }),
-        }
-      );
+      await fetch(`${baseUrl}/rest/v1/___XTR_MSG?MSG_ID=eq.${messageId}`, {
+        method: "PATCH",
+        headers: {
+          apikey: apiKey,
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ MSG_OPEN: 1 }),
+      });
     }
 
     return json({ message, user });
@@ -105,9 +107,7 @@ export default function MessageDetail() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">
-              {message.MSG_SUBJECT}
-            </CardTitle>
+            <CardTitle className="text-2xl">{message.MSG_SUBJECT}</CardTitle>
             {message.MSG_ORD_ID && (
               <Badge className="bg-primary">
                 Commande #{message.MSG_ORD_ID}/A
@@ -125,7 +125,7 @@ export default function MessageDetail() {
           </p>
         </CardHeader>
         <CardContent>
-          <HtmlContent 
+          <HtmlContent
             html={message.MSG_CONTENT}
             className="prose max-w-none"
           />
@@ -135,9 +135,7 @@ export default function MessageDetail() {
       {/* Actions */}
       <div className="mt-6 flex gap-4">
         <Button variant="outline" asChild>
-          <Link to="/profile">
-            Retour à mon compte
-          </Link>
+          <Link to="/profile">Retour à mon compte</Link>
         </Button>
         {message.MSG_ORD_ID && (
           <Button asChild>
