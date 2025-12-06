@@ -46,15 +46,10 @@ export function buildRackImageUrl(imageData?: PieceImageData | null): string {
  * ⚠️ À utiliser avec précaution : peut impacter le SEO (change l'URL)
  *
  * @param imageData - Données image (pmi_folder, pmi_name)
- * @param _width - Largeur cible (optionnel) - non utilisé actuellement
- * @param _quality - Qualité 1-100 (défaut: 85) - non utilisé actuellement
  * @returns URL avec transformation WebP
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function buildRackImageUrlWithTransform(
   imageData?: PieceImageData | null,
-  _width?: number,
-  _quality?: number,
 ): string {
   // Si pas de données, retourner défaut
   if (!imageData || !imageData.pmi_folder || !imageData.pmi_name) {
