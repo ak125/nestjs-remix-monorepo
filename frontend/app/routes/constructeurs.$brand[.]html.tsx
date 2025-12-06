@@ -4,7 +4,7 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { Car, Filter, Disc, Wrench, Droplet, Zap, Settings, ChevronRight, TrendingUp, Package } from "lucide-react";
+import { Car, Wrench, Zap, Settings, ChevronRight, TrendingUp, Package } from "lucide-react";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";

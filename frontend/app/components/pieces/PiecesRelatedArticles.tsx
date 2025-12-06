@@ -33,17 +33,17 @@ export function PiecesRelatedArticles({
 }: PiecesRelatedArticlesProps) {
   const { trackClick, trackImpression } = useSeoLinkTracking();
 
+  // Track les impressions au montage (doit être avant le return conditionnel)
+  useEffect(() => {
+    if (articles && articles.length > 0) {
+      trackImpression('RelatedArticles', articles.length);
+    }
+  }, [articles, trackImpression]);
+
   // Ne rien afficher si pas d'articles
   if (!articles || articles.length === 0) {
     return null;
   }
-
-  // Track les impressions au montage
-  useEffect(() => {
-    if (articles.length > 0) {
-      trackImpression('RelatedArticles', articles.length);
-    }
-  }, [articles.length, trackImpression]);
 
   // Handler pour tracker les clics avec ancres SEO enrichies
   const handleArticleClick = (article: BlogArticle) => {
