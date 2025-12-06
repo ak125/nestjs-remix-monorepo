@@ -556,7 +556,7 @@ export class SeoSwitchesService {
     // 🔗 Construire l'URL du lien vers la page gamme+véhicule
     // Format: /pieces/{gamme-alias}-{gamme-id}/{marque-alias}-{marque-id}/{modele-alias}-{modele-id}/{type-alias}-{type-id}.html
     let linkUrl: string;
-    
+
     if (vehicleInfo?.marqueId && vehicleInfo?.modeleId && vehicleInfo?.typeId) {
       // Lien complet vers gamme+véhicule
       const gammeSlug = `${targetGamme.pg_alias}-${targetPgId}`;
@@ -573,7 +573,7 @@ export class SeoSwitchesService {
     const verbId = switches1.indexOf(selected1);
     const nounId = switches2.indexOf(selected2);
     const formula = `${verbId}:${nounId}`;
-    
+
     const linkHtml = `<a href="${linkUrl}" class="seo-internal-link" data-link-type="LinkGammeCar" data-formula="${formula}" data-target-gamme="${targetPgId}">${anchorText}</a>`;
 
     return text.replace(new RegExp(marker, 'g'), linkHtml);
@@ -738,7 +738,7 @@ export class SeoSwitchesService {
   /**
    * 🎯 Remplace #PrixPasCher# par rotation simple
    * Équivalent PHP: $PrixPasCher = array(...); $rand = typeId % count
-   * 
+   *
    * @param text Texte avec marqueur #PrixPasCher#
    * @param typeId ID du type de véhicule pour rotation
    * @returns Texte avec variation de prix
