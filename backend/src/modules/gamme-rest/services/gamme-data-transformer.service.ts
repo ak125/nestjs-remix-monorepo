@@ -88,23 +88,26 @@ export class GammeDataTransformerService {
    * ✅ Utilise pm_name et pm_logo depuis la RPC (jointure pieces_marque)
    */
   processEquipementiers(equipementiersRaw: any[]): any[] {
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-    
+    const SUPABASE_URL =
+      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
     return equipementiersRaw.map((equip: any) => {
       const pmId = String(equip.seg_pm_id || equip.pm_id);
       const pmName = equip.pm_name || 'Équipementier';
       const pmLogo = equip.pm_logo || 'default.webp';
-      
+
       // Construire l'URL du logo
       const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${pmLogo}`;
-      
+
       return {
         pm_id: pmId,
         pm_name: pmName,
         pm_logo: logoUrl,
         title: pmName,
         image: logoUrl,
-        description: this.contentCleaner(equip.seg_content || equip.content || ''),
+        description: this.contentCleaner(
+          equip.seg_content || equip.content || '',
+        ),
       };
     });
   }
@@ -114,16 +117,17 @@ export class GammeDataTransformerService {
    * ✅ Génère les liens et URLs d'images corrects pour le maillage interne
    */
   processCatalogueFamille(catalogueFamilleRaw: any[]): any[] {
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-    
+    const SUPABASE_URL =
+      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
     return catalogueFamilleRaw.map((piece: any) => {
       const pgId = piece.pg_id;
       const pgAlias = piece.pg_alias;
       const pgPic = piece.pg_pic;
-      
+
       // 🔗 Générer le lien vers la page gamme
       const link = `/pieces/${pgAlias}-${pgId}.html`;
-      
+
       // 📷 Générer l'URL de l'image
       // Les images sont stockées dans articles/gammes-produits/catalogue/{alias}.webp
       let imageUrl: string;
@@ -145,7 +149,7 @@ export class GammeDataTransformerService {
           imageUrl = '/images/default-piece.jpg';
         }
       }
-      
+
       return {
         id: pgId,
         name: piece.pg_name,

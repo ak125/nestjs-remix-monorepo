@@ -15,23 +15,9 @@
  * - Mobile-first responsive
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate, useFetcher } from "@remix-run/react";
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-
-// 🎯 Composants partagés avec page pièces
-import { PiecesGridView } from "../components/pieces/PiecesGridView";
-import { PiecesListView } from "../components/pieces/PiecesListView";
-import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
-
-// Composants search spécifiques
-import { NoResults } from "../components/search/NoResults";
-import { SearchBar } from "../components/search/SearchBar";
-// SearchPagination supprimé - remplacé par lazy loading
-
-// UI
-import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Badge } from "@fafa/ui";
 import { 
   Search as SearchIcon, 
   Grid3X3, 
@@ -44,10 +30,24 @@ import {
   SortAsc,
   Package
 } from "lucide-react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+
+// 🎯 Composants partagés avec page pièces
+import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
+import { PiecesGridView } from "../components/pieces/PiecesGridView";
+import { PiecesListView } from "../components/pieces/PiecesListView";
+
+// Composants search spécifiques
+import { NoResults } from "../components/search/NoResults";
+import { SearchBar } from "../components/search/SearchBar";
+// SearchPagination supprimé - remplacé par lazy loading
+
+// UI
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 // Hook et types
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
-import type { PieceData } from "../types/pieces-route.types";
+import  { type PieceData } from "../types/pieces-route.types";
 
 // Mappers
 import { 
@@ -214,7 +214,7 @@ export default function SearchPage() {
     pieces: initialPieces,
     groupedPieces: initialGroupedPieces,
     query, 
-    filters, 
+    filters: _filters, 
     hasError, 
     errorMessage,
     performance 
@@ -299,7 +299,7 @@ export default function SearchPage() {
       setHasMore(fetcher.data!.results?.hasMore ?? false);
       setIsLoadingMore(false);
     }
-  }, [fetcher.data, currentPage]);
+  }, [fetcher.data, currentPage, query]);
   
   // Intersection Observer pour lazy loading
   useEffect(() => {
@@ -327,15 +327,15 @@ export default function SearchPage() {
     if (!query) return allPieces;
     
     const normalizedQuery = query.trim().toUpperCase();
-    const normalizedQueryClean = normalizedQuery.replace(/[\s\-\.]/g, '');
+    const normalizedQueryClean = normalizedQuery.replace(/[\s-]/g, '').replace(/\./g, '');
     
     // Fonction helper pour vérifier si une pièce matche la query (ref ou oemRef)
     // Normalisation: espaces/tirets/points sont ignorés (110991 = 1109 91 = 1109.91)
     const pieceMatchesQuery = (p: PieceData) => {
       const refUpper = p.reference?.toUpperCase() || '';
-      const refClean = refUpper.replace(/[\s\-\.]/g, '');
+      const refClean = refUpper.replace(/[\s-]/g, '').replace(/\./g, '');
       const oemUpper = p.oemRef?.toUpperCase() || '';
-      const oemClean = oemUpper.replace(/[\s\-\.]/g, '');
+      const oemClean = oemUpper.replace(/[\s-]/g, '').replace(/\./g, '');
       
       // Match sur référence équipementier
       if (refUpper === normalizedQuery || refClean === normalizedQueryClean) return true;
