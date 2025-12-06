@@ -22,16 +22,17 @@ import {
   DeltaConfig,
 } from '../interfaces/sitemap-delta.interface';
 import { SitemapEntry } from '../interfaces/sitemap-config.interface';
+import { CacheService } from '../../../cache/cache.service';
 
 @Injectable()
 export class SitemapDeltaService {
   private readonly logger = new Logger(SitemapDeltaService.name);
   private readonly config: DeltaConfig;
 
-  // Redis clients (à injecter via RedisModule)
-  // private readonly redis: Redis;
-
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private readonly cacheService: CacheService,
+  ) {
     this.config = {
       enabled: true,
       redisHashKey: 'sitemap:hashes',
@@ -43,6 +44,7 @@ export class SitemapDeltaService {
     };
 
     this.logger.log('🔄 SitemapDeltaService initialized');
+    this.logger.log('✅ Redis cache connected');
     this.logger.log(
       `⏰ Emission time: ${this.config.emissionTime} (auto: ${this.config.autoGenerateLatest})`,
     );
@@ -71,9 +73,9 @@ export class SitemapDeltaService {
   ): Promise<HashComparisonResult> {
     const newHash = this.calculateHash(newData);
 
-    // TODO: Récupérer l'ancien hash depuis Redis
-    // const oldHash = await this.redis.hget(this.config.redisHashKey, url);
-    const oldHash = null; // Mock pour l'instant
+    // 🔄 Récupérer l'ancien hash depuis Redis via CacheService
+    const hashKey = `${this.config.redisHashKey}:${this.normalizeUrlKey(url)}`;
+    const oldHash = await this.cacheService.get<string>(hashKey);
 
     if (!oldHash) {
       // Nouvelle URL
@@ -102,6 +104,13 @@ export class SitemapDeltaService {
       oldHash,
       newHash,
     };
+  }
+
+  /**
+   * Normaliser une URL pour l'utiliser comme clé Redis
+   */
+  private normalizeUrlKey(url: string): string {
+    return url.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 200);
   }
 
   /**
@@ -151,15 +160,23 @@ export class SitemapDeltaService {
   }
 
   /**
-   * Ajouter une URL au delta journalier (Redis Set)
+   * Ajouter une URL au delta journalier (Redis via CacheService)
    */
   private async addToDelta(url: string, changeType: UrlChangeType) {
     const today = this.getTodayKey();
     const deltaKey = `${this.config.redisDeltaPrefix}${today}`;
 
-    // TODO: Ajouter à Redis Set
-    // await this.redis.sadd(deltaKey, url);
-    // await this.redis.expire(deltaKey, this.config.deltaRetentionDays * 86400);
+    // Récupérer la liste actuelle ou créer une nouvelle
+    const currentDelta =
+      (await this.cacheService.get<string[]>(deltaKey)) || [];
+
+    // Ajouter l'URL si pas déjà présente
+    if (!currentDelta.includes(url)) {
+      currentDelta.push(url);
+      // TTL = 30 jours en secondes
+      const ttl = this.config.deltaRetentionDays * 86400;
+      await this.cacheService.set(deltaKey, currentDelta, ttl);
+    }
 
     this.logger.debug(
       `📝 Added to delta: ${deltaKey} → ${url} (${changeType})`,
@@ -170,8 +187,13 @@ export class SitemapDeltaService {
    * Mettre à jour le hash stocké dans Redis
    */
   private async updateStoredHash(url: string, hash: string) {
-    // TODO: Mettre à jour dans Redis Hash
-    // await this.redis.hset(this.config.redisHashKey, url, hash);
+    const hashKey = `${this.config.redisHashKey}:${this.normalizeUrlKey(url)}`;
+    // TTL long pour les hashes (30 jours)
+    await this.cacheService.set(
+      hashKey,
+      hash,
+      this.config.deltaRetentionDays * 86400,
+    );
 
     this.logger.debug(`💾 Updated hash: ${url} → ${hash.substring(0, 8)}...`);
   }
@@ -198,11 +220,12 @@ export class SitemapDeltaService {
     const today = this.getTodayKey();
     const deltaKey = this.getDeltaKey(today);
 
-    // TODO: Récupérer depuis Redis Set
-    // return await this.redis.smembers(deltaKey);
+    const delta = await this.cacheService.get<string[]>(deltaKey);
+    this.logger.debug(
+      `📊 Fetching delta: ${deltaKey} → ${delta?.length || 0} URLs`,
+    );
 
-    this.logger.debug(`📊 Fetching delta: ${deltaKey}`);
-    return []; // Mock pour l'instant
+    return delta || [];
   }
 
   /**
@@ -211,11 +234,12 @@ export class SitemapDeltaService {
   async getDeltaByDate(date: string): Promise<string[]> {
     const deltaKey = this.getDeltaKey(date);
 
-    // TODO: Récupérer depuis Redis Set
-    // return await this.redis.smembers(deltaKey);
+    const delta = await this.cacheService.get<string[]>(deltaKey);
+    this.logger.debug(
+      `📊 Fetching delta: ${deltaKey} → ${delta?.length || 0} URLs`,
+    );
 
-    this.logger.debug(`📊 Fetching delta: ${deltaKey}`);
-    return []; // Mock pour l'instant
+    return delta || [];
   }
 
   /**
@@ -282,9 +306,7 @@ ${urls
     const today = this.getTodayKey();
     const deltaKey = this.getDeltaKey(today);
 
-    // TODO: Supprimer le Set Redis
-    // await this.redis.del(deltaKey);
-
+    await this.cacheService.del(deltaKey);
     this.logger.log(`🗑️ Cleared delta: ${deltaKey}`);
   }
 
@@ -345,12 +367,11 @@ ${urls
       `🧹 Cleaning up deltas older than ${cutoffDate.toISOString().split('T')[0]}`,
     );
 
-    // TODO: Scanner et supprimer les clés Redis expirées
-    // const pattern = `${this.config.redisDeltaPrefix}*`;
-    // const keys = await this.redis.keys(pattern);
-    // Filtrer et supprimer les anciennes
+    // Utiliser clearByPattern du CacheService
+    await this.cacheService.clearByPattern(`${this.config.redisDeltaPrefix}*`);
 
-    return 0; // Nombre de deltas supprimés
+    this.logger.log('🧹 Delta cleanup completed (via pattern clear)');
+    return 0; // Le nombre exact n'est pas retourné par clearByPattern
   }
 
   /**

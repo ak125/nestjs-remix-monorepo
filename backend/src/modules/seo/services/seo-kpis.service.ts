@@ -211,7 +211,9 @@ export class SeoKpisService extends SupabaseBaseService {
       // Compter URLs par famille dans sitemap
       const [gammesCount, constructeursCount, modelesCount, blogCount] =
         await Promise.all([
-          this.client.from(TABLES.pieces_gamme).select('pg_id', { count: 'exact' }),
+          this.client
+            .from(TABLES.pieces_gamme)
+            .select('pg_id', { count: 'exact' }),
           this.client
             .from(TABLES.auto_marque)
             .select('marque_id', { count: 'exact' }),

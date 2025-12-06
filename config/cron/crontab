@@ -1,44 +1,53 @@
-# 📅 SUPERCRONIC CRONTAB
+# 📅 SUPERCRONIC CRONTAB - SYSTÈME UNIFIÉ V2
 # Format: minute hour day month weekday command
+# Container: docker-compose.worker.yml (Supercronic + BullMQ)
 
 # =====================================================
-# 🗺️ SITEMAPS
+# 🗺️ SITEMAPS - Stratégie V2 optimale
 # =====================================================
+# Architecture:
+# - Delta quotidien: détecte les URLs modifiées (Redis hashes)
+# - Streaming hebdo: génère .xml.gz compressés pour gros volumes
+# - Cleanup: nettoie les deltas > 30 jours
+# - Ping Google: notification après génération
 
-# Sitemaps - Génération delta quotidienne (3h du matin)
-0 3 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/generate
+# 1. Génération delta quotidienne (3h) - URLs modifiées uniquement
+0 3 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/generate >> /logs/sitemap-delta.log 2>&1
 
-# Sitemaps - Streaming complet hebdomadaire (dimanche 2h)
-0 2 * * 0 curl -X POST http://localhost:3000/sitemap-v2/streaming/generate?type=all
+# 2. Streaming complet hebdomadaire (dimanche 2h) - Regénération totale
+0 2 * * 0 curl -s -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=all" >> /logs/sitemap-streaming.log 2>&1
 
-# Sitemaps - Cleanup deltas expirés (tous les jours 4h)
-0 4 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/cleanup
+# 3. Cleanup deltas expirés (4h) - Nettoie Redis
+0 4 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/cleanup >> /logs/sitemap-cleanup.log 2>&1
+
+# 4. Ping Google après génération (3h15)
+15 3 * * * curl -s "https://www.google.com/ping?sitemap=https://www.automecanik.com/sitemap.xml"
 
 # =====================================================
 # 📊 SEO LINK TRACKING (Maillage interne)
 # =====================================================
 
-# SEO - Agrégation métriques quotidiennes (tous les jours 2h30)
-30 2 * * * curl -X POST http://localhost:3000/api/seo/aggregate
+# SEO - Agrégation métriques quotidiennes (2h30)
+30 2 * * * curl -s -X POST http://localhost:3000/api/seo/aggregate >> /logs/seo-aggregate.log 2>&1
 
-# SEO - Nettoyage données > 90 jours (tous les lundis 3h30)
-30 3 * * 1 curl -X POST http://localhost:3000/api/seo/cleanup?daysToKeep=90
+# SEO - Nettoyage données > 90 jours (lundis 3h30)
+30 3 * * 1 curl -s -X POST "http://localhost:3000/api/seo/cleanup?daysToKeep=90" >> /logs/seo-cleanup.log 2>&1
 
 # =====================================================
 # 🔧 MAINTENANCE SYSTÈME
 # =====================================================
 
-# Cache - Nettoyage Redis (tous les jours 5h)
-0 5 * * * node /app/backend/dist/scripts/cleanup-redis-cache.js
+# Cache - Nettoyage Redis (5h)
+0 5 * * * node /app/backend/dist/scripts/cleanup-redis-cache.js >> /logs/redis-cleanup.log 2>&1
 
 # Monitoring - Vérification santé système (toutes les heures)
-0 * * * * curl -f http://localhost:3000/health || echo "Health check failed"
+0 * * * * curl -sf http://localhost:3000/health || echo "[$(date)] Health check failed" >> /logs/health.log
 
-# BullMQ - Stats quotidiennes (tous les jours 6h)
-0 6 * * * node /app/backend/dist/scripts/bullmq-stats.js
+# BullMQ - Stats quotidiennes (6h)
+0 6 * * * node /app/backend/dist/scripts/bullmq-stats.js >> /logs/bullmq-stats.log 2>&1
 
-# Backup - Dump Redis (tous les jours 1h)
-0 1 * * * redis-cli --rdb /backups/redis-$(date +\%Y\%m\%d).rdb
+# Backup - Dump Redis (1h)
+0 1 * * * redis-cli --rdb /backups/redis-$(date +\%Y\%m\%d).rdb 2>&1
 
-# Logs - Rotation (tous les dimanches 23h)
+# Logs - Rotation (dimanches 23h)
 0 23 * * 0 find /logs -name "*.log" -mtime +7 -delete

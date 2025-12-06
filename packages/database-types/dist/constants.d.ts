@@ -183,6 +183,76 @@ export declare const DEFAULT_VALUES: {
         readonly premium: "A";
     };
 };
+export declare const LEVELS: {
+    readonly CGC: {
+        readonly GAMME_PAGE: "1";
+        readonly BRAND_PAGE: "2";
+        readonly VEHICLE_PAGE: "3";
+        readonly BLOG: "5";
+    };
+    readonly PCL: {
+        readonly CRITICAL: "1";
+        readonly SECONDARY: "2";
+    };
+    readonly PG: {
+        readonly MAIN: "1";
+        readonly SUB: "2";
+    };
+    readonly FM: {
+        readonly POLICIES: "1";
+        readonly LEGAL: "2";
+    };
+};
+export declare const CGC_LEVEL_CONFIG: {
+    readonly "1": {
+        readonly description: "Motorisations les plus consultées";
+        readonly displayContext: "grid";
+        readonly priority: "high";
+        readonly limit: 20;
+        readonly showOnPage: "gamme";
+        readonly section: "motorisations_enriched";
+    };
+    readonly "2": {
+        readonly description: "Véhicules populaires de la marque";
+        readonly displayContext: "grid";
+        readonly priority: "medium";
+        readonly limit: 50;
+        readonly showOnPage: "marque";
+        readonly section: "motorisations_brand";
+    };
+    readonly "3": {
+        readonly description: "Toutes les gammes compatibles";
+        readonly displayContext: "grid";
+        readonly priority: "low";
+        readonly limit: 48;
+        readonly showOnPage: "type";
+        readonly section: "gammes_compatibles";
+    };
+    readonly "5": {
+        readonly description: "Véhicules cités dans le blog/guide";
+        readonly displayContext: "blog";
+        readonly priority: "medium";
+        readonly limit: 10;
+        readonly showOnPage: "gamme";
+        readonly section: "motorisations_blog";
+    };
+};
+export declare const PCL_LEVEL_CONFIG: {
+    readonly listing: {
+        readonly maxCriteria: 3;
+        readonly levels: readonly ["1", "2"];
+        readonly description: "Aperçu rapide sur listing produits";
+    };
+    readonly detail: {
+        readonly maxCriteria: number;
+        readonly levels: readonly ["1", "2"];
+        readonly description: "Affichage complet sur fiche détaillée";
+    };
+};
+export type CgcLevel = typeof LEVELS.CGC[keyof typeof LEVELS.CGC];
+export type PclLevel = typeof LEVELS.PCL[keyof typeof LEVELS.PCL];
+export type PgLevel = typeof LEVELS.PG[keyof typeof LEVELS.PG];
+export type FmLevel = typeof LEVELS.FM[keyof typeof LEVELS.FM];
 export type TableNames = typeof TABLES;
 export type ColumnNames = typeof COLUMNS;
 //# sourceMappingURL=constants.d.ts.map

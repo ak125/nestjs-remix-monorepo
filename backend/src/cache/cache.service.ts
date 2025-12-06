@@ -237,4 +237,26 @@ export class CacheService implements OnModuleInit {
     const key = `login_attempts:${email}`;
     await this.del(key);
   }
+
+  /**
+   * 🧹 Clear cache by pattern (for sitemap invalidation)
+   */
+  async clearByPattern(pattern: string): Promise<number> {
+    try {
+      if (!this.redisClient || !this.redisReady) {
+        console.warn(`⚠️ Redis non prêt pour clearByPattern ${pattern}`);
+        return 0;
+      }
+
+      const keys = await this.redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await this.redisClient.del(...keys);
+        console.log(`🧹 Cleared ${keys.length} cache entries matching: ${pattern}`);
+      }
+      return keys.length;
+    } catch (error) {
+      console.error(`❌ Cache clearByPattern ${pattern} error:`, error);
+      return 0;
+    }
+  }
 }

@@ -106,7 +106,9 @@ export class InternalLinkingService implements OnModuleInit {
    * 🚀 Initialisation du module - Cache warming des switches SEO
    */
   async onModuleInit() {
-    this.logger.log('🚀 Initialisation InternalLinkingService avec préchargement...');
+    this.logger.log(
+      '🚀 Initialisation InternalLinkingService avec préchargement...',
+    );
 
     try {
       await Promise.allSettled([
@@ -121,7 +123,10 @@ export class InternalLinkingService implements OnModuleInit {
           `Gammes: ${this.cache.gammes.size}`,
       );
     } catch (error) {
-      this.logger.error('❌ Erreur cache warming InternalLinkingService:', error);
+      this.logger.error(
+        '❌ Erreur cache warming InternalLinkingService:',
+        error,
+      );
     }
   }
 

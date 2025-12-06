@@ -7,15 +7,47 @@ import {
   HttpStatus,
   Logger,
   Header,
+  Inject,
+  Optional,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { SitemapService } from './sitemap.service';
+import { SitemapScalableService } from './services/sitemap-scalable.service';
+import { SitemapDeltaService } from './services/sitemap-delta.service';
+import { SitemapStreamingService } from './services/sitemap-streaming.service';
 
+/**
+ * 🗺️ SITEMAP CONTROLLER UNIFIÉ
+ *
+ * Routes legacy (/api/sitemap/*) maintenues pour compatibilité
+ * mais redirigent vers le système v2 scalable pour:
+ * - Delta journalier (sitemap-latest.xml)
+ * - Streaming gzip pour gros volumes
+ * - Sharding intelligent (types, modèles)
+ * - Filtres SEO (relfollow, display)
+ */
 @Controller('api/sitemap')
 export class SitemapController {
   private readonly logger = new Logger(SitemapController.name);
 
-  constructor(private readonly sitemapService: SitemapService) {}
+  constructor(
+    private readonly sitemapService: SitemapService,
+    @Optional()
+    @Inject(SitemapScalableService)
+    private readonly scalableService?: SitemapScalableService,
+    @Optional()
+    @Inject(SitemapDeltaService)
+    private readonly deltaService?: SitemapDeltaService,
+    @Optional()
+    @Inject(SitemapStreamingService)
+    private readonly streamingService?: SitemapStreamingService,
+  ) {
+    this.logger.log('🗺️ SitemapController initialized');
+    if (this.scalableService) this.logger.log('  ✅ ScalableService available');
+    if (this.deltaService) this.logger.log('  ✅ DeltaService available');
+    if (this.streamingService)
+      this.logger.log('  ✅ StreamingService available');
+  }
 
   /**
    * GET /api/sitemap ou /api/sitemap/index.xml - Index des sitemaps
@@ -30,6 +62,24 @@ export class SitemapController {
       this.logger.error('Erreur génération index sitemap:', error);
       throw new HttpException(
         'Erreur lors de la génération du sitemap index',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🏠 GET /sitemap/racine.xml - Homepage uniquement (aligné PHP: https-sitemap-racine.xml)
+   */
+  @Get('racine.xml')
+  @Header('Content-Type', 'application/xml')
+  async getRacineSitemap(@Res() res: Response) {
+    try {
+      const xmlContent = await this.sitemapService.generateRacineSitemap();
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap racine:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap racine',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -251,36 +301,117 @@ export class SitemapController {
   }
 
   /**
-   * POST /sitemap/regenerate - Regénère les sitemaps (admin only)
+   * 🔄 GET /api/sitemap/regenerate - Regénère TOUS les sitemaps via système v2
+   *
+   * Stratégie optimale:
+   * 1. Génère delta journalier (URLs modifiées)
+   * 2. Regénère sitemaps complets via v2 scalable
+   * 3. Nettoie les caches expirés
    */
   @Get('regenerate')
   async regenerateSitemaps() {
     try {
-      this.logger.log('Début regénération des sitemaps...');
+      this.logger.log('🔄 Début regénération des sitemaps (système v2)...');
+      const startTime = Date.now();
 
-      const results = {
-        main: await this.sitemapService.generateMainSitemap(),
-        constructeurs: await this.sitemapService.generateConstructeursSitemap(),
-        products: await this.sitemapService.generateProductsSitemap(),
-        blog: await this.sitemapService.generateBlogSitemap(),
-        index: await this.sitemapService.generateSitemapIndex(),
+      const results: any = {
+        timestamp: new Date().toISOString(),
+        v2_enabled: !!this.scalableService,
+        delta_enabled: !!this.deltaService,
+        streaming_enabled: !!this.streamingService,
       };
 
-      this.logger.log('Regénération des sitemaps terminée avec succès');
+      // 1. Générer delta si service disponible
+      if (this.deltaService?.isEnabled()) {
+        this.logger.log('  📊 Génération delta journalier...');
+        await this.deltaService.nightlyDeltaGeneration();
+        results.delta = { success: true };
+      }
+
+      // 2. Générer sitemaps via v2 scalable si disponible
+      if (this.scalableService) {
+        this.logger.log('  🗺️ Génération sitemaps v2 scalable...');
+
+        const sitemapsToGenerate = [
+          'pages',
+          'constructeurs',
+          'modeles-a-m',
+          'modeles-n-z',
+          'products-niveau1',
+          'products-niveau2',
+        ];
+
+        const v2Results: Record<
+          string,
+          { success: boolean; urlCount?: number; error?: string }
+        > = {};
+
+        for (const name of sitemapsToGenerate) {
+          try {
+            const xml = await this.scalableService.generateSitemap(name);
+            const urlCount = xml.split('<url>').length - 1;
+            v2Results[name] = { success: true, urlCount };
+            this.logger.log(`    ✅ ${name}: ${urlCount} URLs`);
+          } catch (error) {
+            v2Results[name] = {
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown',
+            };
+            this.logger.warn(
+              `    ⚠️ ${name}: échec - ${v2Results[name].error}`,
+            );
+          }
+        }
+
+        results.v2 = v2Results;
+      } else {
+        // Fallback vers v1 si v2 non disponible
+        this.logger.log('  📋 Fallback vers v1 (v2 non disponible)...');
+
+        const v1Results = {
+          main:
+            (await this.sitemapService.generateMainSitemap()).split('<url>')
+              .length - 1,
+          constructeurs:
+            (await this.sitemapService.generateConstructeursSitemap()).split(
+              '<url>',
+            ).length - 1,
+          products:
+            (await this.sitemapService.generateProductsSitemap()).split('<url>')
+              .length - 1,
+          blog:
+            (await this.sitemapService.generateBlogSitemap()).split('<url>')
+              .length - 1,
+          modeles:
+            (await this.sitemapService.generateModelesSitemap()).split('<url>')
+              .length - 1,
+          types1:
+            (await this.sitemapService.generateTypes1Sitemap()).split('<url>')
+              .length - 1,
+          types2:
+            (await this.sitemapService.generateTypes2Sitemap()).split('<url>')
+              .length - 1,
+        };
+
+        results.v1 = v1Results;
+      }
+
+      // 3. Générer index principal
+      await this.sitemapService.generateSitemapIndex();
+      results.index = { success: true };
+
+      const duration = Date.now() - startTime;
+      results.duration_ms = duration;
+
+      this.logger.log(`✅ Regénération terminée en ${duration}ms`);
 
       return {
         success: true,
         message: 'Sitemaps regénérés avec succès',
-        results: {
-          mainEntries: results.main.split('<url>').length - 1,
-          constructeursEntries: results.constructeurs.split('<url>').length - 1,
-          productsEntries: results.products.split('<url>').length - 1,
-          blogEntries: results.blog.split('<url>').length - 1,
-        },
-        timestamp: new Date().toISOString(),
+        ...results,
       };
     } catch (error) {
-      this.logger.error('Erreur regénération sitemaps:', error);
+      this.logger.error('❌ Erreur regénération sitemaps:', error);
       throw new HttpException(
         'Erreur lors de la regénération des sitemaps',
         HttpStatus.INTERNAL_SERVER_ERROR,

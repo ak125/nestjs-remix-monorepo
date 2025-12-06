@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { 
-  buildGammeUrl, 
+import {
+  buildGammeUrl,
   buildPieceVehicleUrlRaw,
   buildConstructeurTypeUrl,
   normalizeAlias,
@@ -13,7 +13,7 @@ import {
  * 🔍 Service de Vérification Compatibilité URLs
  *
  * ✅ Utilise url-builder.utils.ts pour la génération centralisée des URLs.
- * 
+ *
  * Génère les URLs EXACTEMENT comme l'ancien sitemap nginx pour :
  * - Gammes : /pieces/{pg_alias}-{pg_id}.html
  * - Constructeurs : /constructeurs/{marque_alias}-{marque_id}.html
@@ -76,7 +76,14 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     typeId: number,
     typeAlias: string,
   ): string {
-    return buildConstructeurTypeUrl(marqueAlias, marqueId, modeleAlias, modeleId, typeAlias, typeId);
+    return buildConstructeurTypeUrl(
+      marqueAlias,
+      marqueId,
+      modeleAlias,
+      modeleId,
+      typeAlias,
+      typeId,
+    );
   }
 
   /**

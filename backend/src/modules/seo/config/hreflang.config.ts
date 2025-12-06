@@ -135,6 +135,9 @@ export enum MultilingualContentType {
 
 /**
  * Configuration du support multilingue par type de contenu
+ * ⚠️ DÉSACTIVÉ: Le site cible uniquement la France (fr-FR)
+ * Le hreflang n'est utile que pour les sites multilingues/multi-régions
+ * Réactiver si le site s'étend à d'autres pays/langues
  */
 export const MULTILINGUAL_SUPPORT: Record<
   MultilingualContentType,
@@ -144,27 +147,27 @@ export const MULTILINGUAL_SUPPORT: Record<
   }
 > = {
   [MultilingualContentType.STATIC_PAGE]: {
-    enabled: true,
-    languages: ['fr-FR', 'fr-BE', 'en-GB', 'de-DE', 'es-ES', 'it-IT'],
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
   [MultilingualContentType.PRODUCT]: {
-    enabled: true,
-    languages: ['fr-FR', 'fr-BE', 'en-GB', 'de-DE', 'es-ES', 'it-IT'],
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
   [MultilingualContentType.CATEGORY]: {
-    enabled: true,
-    languages: ['fr-FR', 'fr-BE', 'en-GB', 'de-DE', 'es-ES', 'it-IT'],
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
   [MultilingualContentType.BLOG]: {
-    enabled: true,
-    languages: ['fr-FR', 'en-GB'], // Blog uniquement FR et EN pour l'instant
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
   [MultilingualContentType.CONSTRUCTEUR]: {
-    enabled: true,
-    languages: ['fr-FR', 'fr-BE', 'en-GB', 'de-DE', 'es-ES', 'it-IT'],
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
   [MultilingualContentType.MODELE]: {
-    enabled: true,
-    languages: ['fr-FR', 'fr-BE', 'en-GB', 'de-DE', 'es-ES', 'it-IT'],
+    enabled: false, // Désactivé - site FR uniquement
+    languages: ['fr-FR'],
   },
 };

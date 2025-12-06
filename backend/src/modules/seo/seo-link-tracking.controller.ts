@@ -257,9 +257,7 @@ export class SeoLinkTrackingController {
     description: 'Nombre de jours à conserver (défaut: 90)',
   })
   @ApiResponse({ status: 200, description: 'Nettoyage effectué' })
-  async cleanupOldData(
-    @Query('daysToKeep') daysToKeep?: string,
-  ): Promise<{
+  async cleanupOldData(@Query('daysToKeep') daysToKeep?: string): Promise<{
     success: boolean;
     deletedClicks: number;
     deletedImpressions: number;

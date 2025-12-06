@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Param, Logger } from '@nestjs/common';
+﻿import { Controller, Get, Header, Param, Logger } from '@nestjs/common';
 import { SitemapScalableService } from '../services/sitemap-scalable.service';
 
 @Controller('sitemap-v2')
@@ -8,7 +8,7 @@ export class SitemapScalableController {
   constructor(private readonly sitemapService: SitemapScalableService) {}
 
   /**
-   * Index maître - Point d'entrée principal
+   * Index maÃ®tre - Point d'entrÃ©e principal
    * GET /sitemap-v2/sitemap-index.xml
    */
   @Get('sitemap-index.xml')
@@ -78,7 +78,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap modèles A-M
+   * Sitemap modÃ¨les A-M
    * GET /sitemap-v2/sitemap-modeles-a-m.xml
    */
   @Get('sitemap-modeles-a-m.xml')
@@ -89,7 +89,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap modèles N-Z
+   * Sitemap modÃ¨les N-Z
    * GET /sitemap-v2/sitemap-modeles-n-z.xml
    */
   @Get('sitemap-modeles-n-z.xml')
@@ -100,7 +100,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap types (sharding numérique)
+   * Sitemap types (sharding numÃ©rique)
    * GET /sitemap-v2/sitemap-types-0-10000.xml
    * GET /sitemap-v2/sitemap-types-10001-20000.xml
    * etc.
@@ -129,7 +129,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap blog par année
+   * Sitemap blog par annÃ©e
    * GET /sitemap-v2/sitemap-blog-2025.xml
    * GET /sitemap-v2/sitemap-blog-2024.xml
    * etc.
@@ -180,19 +180,49 @@ export class SitemapScalableController {
   }
 
   // ============================================================================
-  // HELPERS & DEBUG
+  // PIÃˆCES PRÃ‰-CALCULÃ‰ES (714k+ URLs depuis __sitemap_p_link)
   // ============================================================================
 
   /**
-   * Endpoint générique pour tester n'importe quel sitemap
+   * Sous-index piÃ¨ces
+   * GET /sitemap-v2/sitemap-pieces-index.xml
+   */
+  @Get('sitemap-pieces-index.xml')
+  @Header('Content-Type', 'application/xml')
+  async getPiecesIndex() {
+    this.logger.log('GET /sitemap-v2/sitemap-pieces-index.xml');
+    return this.sitemapService.generateSitemap('pieces-index');
+  }
+
+  /**
+   * Sitemap piÃ¨ces (sharding par 50k URLs)
+   * GET /sitemap-v2/sitemap-pieces-0-50000.xml
+   * GET /sitemap-v2/sitemap-pieces-50001-100000.xml
+   * etc.
+   */
+  @Get('sitemap-pieces-:range.xml')
+  @Header('Content-Type', 'application/xml')
+  async getPieces(@Param('range') range: string) {
+    this.logger.log(`GET /sitemap-v2/sitemap-pieces-${range}.xml`);
+    const configName = `pieces-${range}`;
+    return this.sitemapService.generateSitemap(configName);
+  }
+
+  // ============================================================================
+  // ENDPOINT GÃ‰NÃ‰RIQUE (DOIT ÃŠTRE EN DERNIER)
+  // ============================================================================
+
+  /**
+   * Endpoint gÃ©nÃ©rique pour tester n'importe quel sitemap
    * GET /sitemap-v2/:name
+   * âš ï¸ DOIT ÃŠTRE EN DERNIER car il capture tout
    */
   @Get(':name')
   @Header('Content-Type', 'application/xml')
   async getGeneric(@Param('name') name: string) {
-    // Retirer .xml si présent
+    // Retirer .xml si prÃ©sent
     const configName = name.replace('.xml', '');
-    this.logger.log(`GET /sitemap-v2/${name} → config: ${configName}`);
+    this.logger.log(`GET /sitemap-v2/${name} â†’ config: ${configName}`);
     return this.sitemapService.generateSitemap(configName);
   }
 }
