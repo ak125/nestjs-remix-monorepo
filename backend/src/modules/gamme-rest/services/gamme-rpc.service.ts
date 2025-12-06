@@ -204,7 +204,7 @@ export class GammeRpcService extends SupabaseBaseService {
       try {
         await this.getPageDataRpcV2(pgId);
         success++;
-      } catch (error) {
+      } catch (_error) {
         this.logger.error(`❌ Warm cache failed pour gamme ${pgId}`);
         failed++;
       }
