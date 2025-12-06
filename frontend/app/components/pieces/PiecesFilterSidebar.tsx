@@ -6,28 +6,11 @@
  * ✅ Support dark mode via tokens
  */
 
-import {
-  Badge,
-  Checkbox,
-  FilterOption,
-  FilterSection,
-  Label,
-  RadioGroup,
-  RadioGroupItem,
-  ScrollArea,
-} from "@fafa/ui";
-import {
-  Box,
-  DollarSign,
-  Package,
-  RotateCcw,
-  Search,
-  Star,
-} from "lucide-react";
+import { Badge, FilterSection, ScrollArea } from "@fafa/ui";
+import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import React from "react";
 
 import { type PiecesFilters } from "../../types/pieces-route.types";
-import { StarRating } from "../common/StarRating";
 
 interface FilterOptionData {
   id: number | string;
@@ -73,7 +56,7 @@ export function PiecesFilterSidebar({
   resetAllFilters,
   getBrandCount,
   getQualityCount,
-  getPriceRangeCount,
+  getPriceRangeCount: _getPriceRangeCount,
   filtersData,
   availablePositions = [],
   positionLabel = "Position",

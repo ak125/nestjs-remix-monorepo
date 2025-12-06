@@ -47,7 +47,9 @@ export const GenerateProductDescriptionSchema = z.object({
   length: z.enum(['short', 'medium', 'long']).optional().default('medium'),
 });
 
-export type GenerateProductDescriptionDto = z.infer<typeof GenerateProductDescriptionSchema>;
+export type GenerateProductDescriptionDto = z.infer<
+  typeof GenerateProductDescriptionSchema
+>;
 
 export const GenerateSEOMetaSchema = z.object({
   pageTitle: z.string().min(1),
@@ -79,4 +81,6 @@ export const BatchGenerateContentSchema = z.object({
   requests: z.array(GenerateContentSchema).min(1).max(10),
 });
 
-export type BatchGenerateContentDto = z.infer<typeof BatchGenerateContentSchema>;
+export type BatchGenerateContentDto = z.infer<
+  typeof BatchGenerateContentSchema
+>;
