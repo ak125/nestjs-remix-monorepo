@@ -31,7 +31,7 @@ export interface LinkClickEvent {
     | 'RelatedArticles'
     | 'TopMarques'
     | 'GammesPopulaires'
-    | string;  // Support custom types
+    | string; // Support custom types
   sourceUrl: string;
   destinationUrl: string;
   anchorText?: string;
@@ -48,12 +48,12 @@ export interface LinkClickEvent {
   userAgent?: string;
   referer?: string;
   deviceType?: 'mobile' | 'desktop' | 'tablet';
-  
+
   // 🧪 A/B Testing: Tracking des formulations de switches
-  switchVerbId?: number;       // ID du verbe utilisé (SGCS_ALIAS=1)
-  switchNounId?: number;       // ID du nom utilisé (SGCS_ALIAS=2)
-  switchFormula?: string;      // Formule complète "verb_id:noun_id"
-  targetGammeId?: number;      // ID de la gamme cible du lien
+  switchVerbId?: number; // ID du verbe utilisé (SGCS_ALIAS=1)
+  switchNounId?: number; // ID du nom utilisé (SGCS_ALIAS=2)
+  switchFormula?: string; // Formule complète "verb_id:noun_id"
+  targetGammeId?: number; // ID de la gamme cible du lien
 }
 
 export interface LinkImpressionEvent {
@@ -460,7 +460,9 @@ export class SeoLinkTrackingService {
         .lt('clicked_at', cutoffStr);
 
       if (clicksError) {
-        this.logger.error(`❌ Erreur suppression clics: ${clicksError.message}`);
+        this.logger.error(
+          `❌ Erreur suppression clics: ${clicksError.message}`,
+        );
       }
 
       // Supprimer les impressions anciennes

@@ -36,86 +36,91 @@ export class RobotsTxtService {
   }
 
   /**
-   * Robots.txt PRODUCTION - Autoriser crawl
+   * 🤖 Robots.txt PRODUCTION - Aligné avec l'ancien système PHP
+   *
+   * Règles PHP originales:
+   * - Disallow: /_form.get.car.* (formulaires AJAX)
+   * - Disallow: /fiche/ (fiches produits - duplicate content)
+   * - Disallow: /find/ (recherche générale)
+   * - Disallow: /searchmine/ (recherche par type mine)
+   * - Disallow: /account/ (espace client privé)
+   *
+   * ✅ Ce qui N'EST PAS bloqué (stratégie positive):
+   * - /constructeurs/ → Indexé (sitemap constructeurs)
+   * - /pieces/ → Indexé (sitemap gammes produits)
+   * - /blog-pieces-auto/ → Indexé (sitemap blog)
+   * - / → Indexé (homepage)
    */
   private generateProduction(): string {
-    return `# Robots.txt Production - AutoMecanik.com
-# Generated: ${new Date().toISOString()}
+    return `# ===========================================
+# 🤖 ROBOTS.TXT PRODUCTION - AutoMecanik.com
+# ===========================================
+# Migré depuis PHP le ${new Date().toISOString().split('T')[0]}
+# Structure alignée sur l'ancien système
+# ===========================================
 
-# 🌍 All crawlers (default)
+# 🌍 Règles par défaut (tous les crawlers)
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /admin/
-Disallow: /checkout/
-Disallow: /panier/
-Disallow: /compte/
-Disallow: /search?*
+
+# ❌ Blocages hérités du système PHP
+Disallow: /_form.get.car.*    # Formulaires AJAX sélection véhicule
+Disallow: /fiche/              # Fiches produits (duplicate avec /pieces/)
+Disallow: /find/               # Résultats recherche générale
+Disallow: /searchmine/         # Recherche par type mine
+Disallow: /account/            # Espace client privé
+
+# ❌ Blocages additionnels NestJS
+Disallow: /api/                # Endpoints API REST
+Disallow: /admin/              # Backoffice administration
+Disallow: /checkout/           # Processus de commande
+Disallow: /panier/             # Panier d'achat
+Disallow: /private/            # Ressources privées
+
+# ❌ Paramètres de tracking (éviter duplicate content)
 Disallow: /*?utm_*
 Disallow: /*?fbclid=*
 Disallow: /*?gclid=*
+Disallow: /search?*
+
+# ⏱️ Crawl-delay recommandé
 Crawl-delay: 1
 
-# 🤖 Googlebot (prioritaire)
+# 🤖 Googlebot (prioritaire, sans délai)
 User-agent: Googlebot
 Allow: /
+Disallow: /_form.get.car.*
+Disallow: /fiche/
+Disallow: /find/
+Disallow: /searchmine/
+Disallow: /account/
 Disallow: /api/
 Disallow: /admin/
-Disallow: /checkout/
-Disallow: /panier/
-Disallow: /compte/
 Crawl-delay: 0.5
 
-# 🖼️ Googlebot-Image
+# 🖼️ Googlebot-Image (autorisé sur /images/)
 User-agent: Googlebot-Image
 Allow: /
 Allow: /images/
 Allow: /uploads/
 Disallow: /api/
 
-# 📱 Googlebot-Mobile
-User-agent: Googlebot-Mobile
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Crawl-delay: 0.5
-
-# 🛒 Shopping bots
+# 🛒 Googlebot-Shopping (e-commerce)
 User-agent: Googlebot-Shopping
 Allow: /pieces/
-Allow: /produits/
-Allow: /categories/
+Allow: /constructeurs/
 Disallow: /api/
+Disallow: /fiche/
 
-# 🔍 Bing
+# 🔍 Bingbot
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
+Disallow: /fiche/
 Crawl-delay: 1
 
-# 🦆 DuckDuckGo
-User-agent: DuckDuckBot
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Crawl-delay: 1
-
-# 📊 Yandex
-User-agent: YandexBot
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Crawl-delay: 2
-
-# 🌐 Baidu
-User-agent: Baiduspider
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Crawl-delay: 2
-
-# 🚫 Bad bots (bloquer)
+# 🚫 Bad bots (bloquer complètement)
 User-agent: AhrefsBot
 Disallow: /
 
@@ -131,24 +136,37 @@ Disallow: /
 User-agent: BLEXBot
 Disallow: /
 
-# 📍 Sitemaps
+User-agent: PetalBot
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# ===========================================
+# 📍 SITEMAPS - Structure PHP migrée
+# ===========================================
+# Index principal (contient tous les sitemaps)
 Sitemap: ${this.baseUrl}/sitemap.xml
-Sitemap: ${this.baseUrl}/sitemap-v2/index.xml
+
+# Sitemaps individuels (alignés sur PHP)
+Sitemap: ${this.baseUrl}/sitemap-racine.xml
+Sitemap: ${this.baseUrl}/sitemap-gamme-produits.xml
+Sitemap: ${this.baseUrl}/sitemap-constructeurs.xml
+Sitemap: ${this.baseUrl}/sitemap-modeles.xml
+Sitemap: ${this.baseUrl}/sitemap-types-1.xml
+Sitemap: ${this.baseUrl}/sitemap-types-2.xml
 Sitemap: ${this.baseUrl}/sitemap-blog.xml
-Sitemap: ${this.baseUrl}/sitemap-pages.xml
-Sitemap: ${this.baseUrl}/sitemap-conseils.xml
 
-# 🌍 Sitemaps multilingues
-Sitemap: ${this.baseUrl}/sitemap-fr.xml
-Sitemap: https://be.automecanik.com/sitemap-be.xml
-Sitemap: https://uk.automecanik.com/sitemap-uk.xml
-Sitemap: https://de.automecanik.com/sitemap-de.xml
-Sitemap: https://es.automecanik.com/sitemap-es.xml
-Sitemap: https://it.automecanik.com/sitemap-it.xml
-
-# ℹ️ Info
-# Contact: seo@automecanik.com
-# Last updated: ${new Date().toISOString()}
+# ===========================================
+# ℹ️ INFORMATIONS
+# ===========================================
+# Contact SEO: seo@automecanik.com
+# Documentation: /docs/seo/sitemap-strategy.md
+# Dernière mise à jour: ${new Date().toISOString().split('T')[0]}
+# ===========================================
 `;
   }
 

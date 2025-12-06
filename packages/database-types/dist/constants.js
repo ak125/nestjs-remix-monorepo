@@ -183,4 +183,70 @@ export const DEFAULT_VALUES = {
         premium: 'A',
     },
 };
+export const LEVELS = {
+    CGC: {
+        GAMME_PAGE: '1',
+        BRAND_PAGE: '2',
+        VEHICLE_PAGE: '3',
+        BLOG: '5',
+    },
+    PCL: {
+        CRITICAL: '1',
+        SECONDARY: '2',
+    },
+    PG: {
+        MAIN: '1',
+        SUB: '2',
+    },
+    FM: {
+        POLICIES: '1',
+        LEGAL: '2',
+    },
+};
+export const CGC_LEVEL_CONFIG = {
+    [LEVELS.CGC.GAMME_PAGE]: {
+        description: 'Motorisations les plus consultées',
+        displayContext: 'grid',
+        priority: 'high',
+        limit: 20,
+        showOnPage: 'gamme',
+        section: 'motorisations_enriched',
+    },
+    [LEVELS.CGC.BRAND_PAGE]: {
+        description: 'Véhicules populaires de la marque',
+        displayContext: 'grid',
+        priority: 'medium',
+        limit: 50,
+        showOnPage: 'marque',
+        section: 'motorisations_brand',
+    },
+    [LEVELS.CGC.VEHICLE_PAGE]: {
+        description: 'Toutes les gammes compatibles',
+        displayContext: 'grid',
+        priority: 'low',
+        limit: 48,
+        showOnPage: 'type',
+        section: 'gammes_compatibles',
+    },
+    [LEVELS.CGC.BLOG]: {
+        description: 'Véhicules cités dans le blog/guide',
+        displayContext: 'blog',
+        priority: 'medium',
+        limit: 10,
+        showOnPage: 'gamme',
+        section: 'motorisations_blog',
+    },
+};
+export const PCL_LEVEL_CONFIG = {
+    listing: {
+        maxCriteria: 3,
+        levels: [LEVELS.PCL.CRITICAL, LEVELS.PCL.SECONDARY],
+        description: 'Aperçu rapide sur listing produits',
+    },
+    detail: {
+        maxCriteria: Infinity,
+        levels: [LEVELS.PCL.CRITICAL, LEVELS.PCL.SECONDARY],
+        description: 'Affichage complet sur fiche détaillée',
+    },
+};
 //# sourceMappingURL=constants.js.map

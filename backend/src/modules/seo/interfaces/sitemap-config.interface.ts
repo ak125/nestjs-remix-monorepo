@@ -27,11 +27,14 @@ export enum SitemapCategory {
 }
 
 export interface ShardFilter {
-  type: 'alphabetic' | 'numeric' | 'temporal' | 'custom';
+  type: 'alphabetic' | 'numeric' | 'temporal' | 'custom' | 'offset';
   pattern?: string | RegExp;
   range?: { min: number; max: number };
   year?: number;
   customFn?: (item: any) => boolean;
+  // Sharding par offset (pour les IDs stockés comme strings)
+  offset?: number;
+  limit?: number;
 }
 
 export interface ShardConfig {

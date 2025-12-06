@@ -1,4 +1,4 @@
-import {
+﻿import {
   SitemapConfig,
   SitemapType,
   SitemapCategory,
@@ -6,12 +6,12 @@ import {
 } from '../interfaces/sitemap-config.interface';
 
 /**
- * Configuration centralisée de tous les sitemaps
- * Architecture hiérarchique: Index Maître → Sous-Indexes → Sitemaps Finaux
+ * Configuration centralisÃ©e de tous les sitemaps
+ * Architecture hiÃ©rarchique: Index MaÃ®tre â†’ Sous-Indexes â†’ Sitemaps Finaux
  */
 export const SITEMAP_CONFIGS: SitemapConfig[] = [
   // ============================================================================
-  // NIVEAU 1: INDEX MAÎTRE
+  // NIVEAU 1: INDEX MAÃŽTRE
   // ============================================================================
   {
     name: 'master-index',
@@ -50,7 +50,8 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     name: 'dynamic-index',
     type: SitemapType.SUB_INDEX,
     path: '/sitemap-dynamic.xml',
-    children: ['catalog-index', 'blog-index', 'products-index'],
+    // pieces-index réactivé: 714k URLs depuis __sitemap_p_link (SANS filtre de stock)
+    children: ['catalog-index', 'blog-index', 'products-index', 'pieces-index'],
     cacheTTL: 1800, // 30min
   },
 
@@ -66,11 +67,8 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
       'constructeurs',
       'modeles-a-m',
       'modeles-n-z',
-      'types-0-10000',
-      'types-10001-20000',
-      'types-20001-30000',
-      'types-30001-40000',
-      'types-40001-48918',
+      // Types: un seul sitemap pour tous les types (temporaire)
+      'types-all',
     ],
     cacheTTL: 3600, // 1h
   },
@@ -86,7 +84,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // Modèles (sharding alphabétique A-M)
+  // ModÃ¨les (sharding alphabÃ©tique A-M)
   {
     name: 'modeles-a-m',
     type: SitemapType.FINAL,
@@ -109,7 +107,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // Modèles (sharding alphabétique N-Z)
+  // ModÃ¨les (sharding alphabÃ©tique N-Z)
   {
     name: 'modeles-n-z',
     type: SitemapType.FINAL,
@@ -132,104 +130,25 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // Types (sharding numérique 0-10000)
+  // Types/Motorisations depuis __sitemap_motorisation (~12,756 URLs prÃ©-calculÃ©es)
+  // Source: table PHP d'origine avec URLs validÃ©es
   {
-    name: 'types-0-10000',
+    name: 'types-all',
     type: SitemapType.FINAL,
     category: SitemapCategory.CATALOG,
-    path: '/sitemap-types-0-10000.xml',
+    path: '/sitemap-types-all.xml',
     sharding: ShardingStrategy.NUMERIC,
     shards: [
       {
-        name: '0-10000',
-        path: '/sitemap-types-0-10000.xml',
-        filter: { type: 'numeric', range: { min: 0, max: 10000 } },
-        estimatedCount: 10000,
+        name: 'all',
+        path: '/sitemap-types-all.xml',
+        filter: { type: 'offset', offset: 0, limit: 15000 },
+        estimatedCount: 12756,
       },
     ],
     changefreq: 'monthly',
-    priority: 0.5,
-    cacheTTL: 14400, // 4h
-  },
-
-  // Types (sharding numérique 10001-20000)
-  {
-    name: 'types-10001-20000',
-    type: SitemapType.FINAL,
-    category: SitemapCategory.CATALOG,
-    path: '/sitemap-types-10001-20000.xml',
-    sharding: ShardingStrategy.NUMERIC,
-    shards: [
-      {
-        name: '10001-20000',
-        path: '/sitemap-types-10001-20000.xml',
-        filter: { type: 'numeric', range: { min: 10001, max: 20000 } },
-        estimatedCount: 10000,
-      },
-    ],
-    changefreq: 'monthly',
-    priority: 0.5,
-    cacheTTL: 14400, // 4h
-  },
-
-  // Types (sharding numérique 20001-30000)
-  {
-    name: 'types-20001-30000',
-    type: SitemapType.FINAL,
-    category: SitemapCategory.CATALOG,
-    path: '/sitemap-types-20001-30000.xml',
-    sharding: ShardingStrategy.NUMERIC,
-    shards: [
-      {
-        name: '20001-30000',
-        path: '/sitemap-types-20001-30000.xml',
-        filter: { type: 'numeric', range: { min: 20001, max: 30000 } },
-        estimatedCount: 10000,
-      },
-    ],
-    changefreq: 'monthly',
-    priority: 0.5,
-    cacheTTL: 14400, // 4h
-  },
-
-  // Types (sharding numérique 30001-40000)
-  {
-    name: 'types-30001-40000',
-    type: SitemapType.FINAL,
-    category: SitemapCategory.CATALOG,
-    path: '/sitemap-types-30001-40000.xml',
-    sharding: ShardingStrategy.NUMERIC,
-    shards: [
-      {
-        name: '30001-40000',
-        path: '/sitemap-types-30001-40000.xml',
-        filter: { type: 'numeric', range: { min: 30001, max: 40000 } },
-        estimatedCount: 10000,
-      },
-    ],
-    changefreq: 'monthly',
-    priority: 0.5,
-    cacheTTL: 14400, // 4h
-  },
-
-  // Types (sharding numérique 40001-48918)
-  {
-    name: 'types-40001-48918',
-    type: SitemapType.FINAL,
-    category: SitemapCategory.CATALOG,
-    path: '/sitemap-types-40001-48918.xml',
-    sharding: ShardingStrategy.NUMERIC,
-    shards: [
-      {
-        name: '40001-48918',
-        path: '/sitemap-types-40001-48918.xml',
-        filter: { type: 'numeric', range: { min: 40001, max: 48918 } },
-        estimatedCount: 8918,
-      },
-    ],
-    changefreq: 'monthly',
-    priority: 0.5,
-    cacheTTL: 14400, // 4h
+    priority: 0.7,
+    cacheTTL: 21600, // 6h
   },
 
   // ============================================================================
@@ -260,7 +179,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     ],
     changefreq: 'weekly',
     priority: 0.9,
-    cacheTTL: 1800, // 30min (contenu récent)
+    cacheTTL: 1800, // 30min (contenu rÃ©cent)
   },
 
   {
@@ -354,6 +273,309 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     changefreq: 'weekly',
     priority: 0.7,
     cacheTTL: 7200, // 2h
+  },
+
+  // ============================================================================
+  // NIVEAU 3: PIÈCES PRÉ-CALCULÉES (depuis __sitemap_p_link - ~714k URLs SANS filtre stock)
+  // Sharding par tranches de 50,000 URLs (limite Google)
+  // Stratégie: TOUTES les URLs, priority/changefreq ajustés selon map_has_item
+  // ============================================================================
+  {
+    name: 'pieces-index',
+    type: SitemapType.SUB_INDEX,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-index.xml',
+    children: [
+      'pieces-0-50000',
+      'pieces-50001-100000',
+      'pieces-100001-150000',
+      'pieces-150001-200000',
+      'pieces-200001-250000',
+      'pieces-250001-300000',
+      'pieces-300001-350000',
+      'pieces-350001-400000',
+      'pieces-400001-450000',
+      'pieces-450001-500000',
+      'pieces-500001-550000',
+      'pieces-550001-600000',
+      'pieces-600001-650000',
+      'pieces-650001-700000',
+      'pieces-700001-750000',
+    ],
+    cacheTTL: 3600, // 1h
+  },
+
+  // Pièces shards (50k URLs chacun) - Catégorie CATALOG pour utiliser fetchPiecesFromSitemapPLink
+  {
+    name: 'pieces-0-50000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-0-50000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '0-50000',
+        path: '/sitemap-pieces-0-50000.xml',
+        filter: { type: 'numeric', range: { min: 0, max: 50000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400, // 4h
+  },
+  {
+    name: 'pieces-50001-100000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-50001-100000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '50001-100000',
+        path: '/sitemap-pieces-50001-100000.xml',
+        filter: { type: 'numeric', range: { min: 50001, max: 100000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-100001-150000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-100001-150000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '100001-150000',
+        path: '/sitemap-pieces-100001-150000.xml',
+        filter: { type: 'numeric', range: { min: 100001, max: 150000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-150001-200000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-150001-200000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '150001-200000',
+        path: '/sitemap-pieces-150001-200000.xml',
+        filter: { type: 'numeric', range: { min: 150001, max: 200000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-200001-250000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-200001-250000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '200001-250000',
+        path: '/sitemap-pieces-200001-250000.xml',
+        filter: { type: 'numeric', range: { min: 200001, max: 250000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-250001-300000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-250001-300000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '250001-300000',
+        path: '/sitemap-pieces-250001-300000.xml',
+        filter: { type: 'numeric', range: { min: 250001, max: 300000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-300001-350000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-300001-350000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '300001-350000',
+        path: '/sitemap-pieces-300001-350000.xml',
+        filter: { type: 'numeric', range: { min: 300001, max: 350000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-350001-400000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-350001-400000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '350001-400000',
+        path: '/sitemap-pieces-350001-400000.xml',
+        filter: { type: 'numeric', range: { min: 350001, max: 400000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-400001-450000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-400001-450000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '400001-450000',
+        path: '/sitemap-pieces-400001-450000.xml',
+        filter: { type: 'numeric', range: { min: 400001, max: 450000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-450001-500000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-450001-500000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '450001-500000',
+        path: '/sitemap-pieces-450001-500000.xml',
+        filter: { type: 'numeric', range: { min: 450001, max: 500000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  // Nouveaux shards pour 714k URLs (500k-750k)
+  {
+    name: 'pieces-500001-550000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-500001-550000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '500001-550000',
+        path: '/sitemap-pieces-500001-550000.xml',
+        filter: { type: 'numeric', range: { min: 500001, max: 550000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-550001-600000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-550001-600000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '550001-600000',
+        path: '/sitemap-pieces-550001-600000.xml',
+        filter: { type: 'numeric', range: { min: 550001, max: 600000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-600001-650000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-600001-650000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '600001-650000',
+        path: '/sitemap-pieces-600001-650000.xml',
+        filter: { type: 'numeric', range: { min: 600001, max: 650000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-650001-700000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-650001-700000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '650001-700000',
+        path: '/sitemap-pieces-650001-700000.xml',
+        filter: { type: 'numeric', range: { min: 650001, max: 700000 } },
+        estimatedCount: 50000,
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
+  },
+  {
+    name: 'pieces-700001-750000',
+    type: SitemapType.FINAL,
+    category: SitemapCategory.CATALOG,
+    path: '/sitemap-pieces-700001-750000.xml',
+    sharding: ShardingStrategy.NUMERIC,
+    shards: [
+      {
+        name: '700001-750000',
+        path: '/sitemap-pieces-700001-750000.xml',
+        filter: { type: 'numeric', range: { min: 700001, max: 750000 } },
+        estimatedCount: 14336, // 714336 - 700000
+      },
+    ],
+    changefreq: 'weekly',
+    priority: 0.6,
+    cacheTTL: 14400,
   },
 ];
 

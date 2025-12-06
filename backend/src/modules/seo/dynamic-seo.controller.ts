@@ -677,7 +677,7 @@ export class DynamicSeoController {
       throw new HttpException(
         {
           success: false,
-          error: 'Erreur lors de l\'audit SEO',
+          error: "Erreur lors de l'audit SEO",
           details: error.message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -725,12 +725,11 @@ export class DynamicSeoController {
         `🧪 [A/B Test] Génération variantes: pgId=${pgId}, typeId=${typeId}`,
       );
 
-      const variants =
-        await this.dynamicSeoService.generateAbTestVariants(
-          pgId,
-          typeId,
-          variables,
-        );
+      const variants = await this.dynamicSeoService.generateAbTestVariants(
+        pgId,
+        typeId,
+        variables,
+      );
 
       return {
         success: true,

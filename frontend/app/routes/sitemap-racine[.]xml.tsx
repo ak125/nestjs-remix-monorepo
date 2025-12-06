@@ -1,14 +1,13 @@
-// app/routes/sitemap-constructeurs[.]xml.tsx
+// app/routes/sitemap-racine[.]xml.tsx
 /**
- * 🚗 SITEMAP CONSTRUCTEURS - Système V2 avec filtres SEO
- * Filtre: marque_display=1, marque_relfollow=1 ou null
- * Format URL: /constructeurs/{marque_alias}-{marque_id}.html
- * Priority: 0.9
+ * 🏠 SITEMAP RACINE - Homepage uniquement
+ * Aligné avec PHP: https-sitemap-racine.xml
+ * Priority: 1.0 (maximale)
  * 
  * Optimisations v2:
  * - Timeout 5s + retry avec backoff
  * - Validation XML
- * - Cache stable (données rarement modifiées)
+ * - Stale-while-revalidate
  */
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -24,9 +23,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
   
   try {
-    const response = await fetchWithRetry(`${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/sitemap-constructeurs.xml`);
+    // ✅ V2 avec cache Redis (TTL 24h)
+    const response = await fetchWithRetry(`${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/sitemap-pages.xml`);
     const sitemap = await response.text();
     
+    // Validation XML
     if (!isValidSitemapXml(sitemap)) {
       throw new Error('Invalid XML response from backend');
     }
@@ -38,10 +39,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    logSitemapError('Constructeurs', error, duration);
+    logSitemapError('Racine', error, duration);
     
-    // Fallback avec page constructeurs générique
-    const fallbackSitemap = generateSingleUrlFallback(`${SITEMAP_CONFIG.BASE_URL}/constructeurs`, 0.9);
+    // Fallback avec homepage uniquement (priority 1.0)
+    const fallbackSitemap = generateSingleUrlFallback(`${SITEMAP_CONFIG.BASE_URL}/`, 1.0);
     
     return new Response(fallbackSitemap, {
       headers: getSitemapHeaders({

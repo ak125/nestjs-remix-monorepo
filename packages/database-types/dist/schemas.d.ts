@@ -1199,9 +1199,9 @@ export declare const PromoCodesSchema: z.ZodObject<{
     usage_limit_per_customer: z.ZodNullable<z.ZodString>;
     stackable: z.ZodNullable<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
+    type: string | null;
     value: string | null;
     code: string | null;
-    type: string | null;
     id: string | null;
     min_amount: string | null;
     max_discount: string | null;
@@ -1221,9 +1221,9 @@ export declare const PromoCodesSchema: z.ZodObject<{
     usage_limit_per_customer: string | null;
     stackable: string | null;
 }, {
+    type: string | null;
     value: string | null;
     code: string | null;
-    type: string | null;
     id: string | null;
     min_amount: string | null;
     max_discount: string | null;

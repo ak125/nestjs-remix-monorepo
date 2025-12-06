@@ -1,6 +1,6 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // Module Workers (pour accès à SeoMonitorSchedulerService)
@@ -8,6 +8,9 @@ import { WorkerModule } from '../../workers/worker.module';
 
 // 🛡️ Module Catalog (pour accès à CatalogDataIntegrityService)
 import { CatalogModule } from '../catalog/catalog.module';
+
+// 🚀 Module Cache Redis personnalisé (CacheService avec TTL intelligent)
+import { CacheModule } from '../../cache/cache.module';
 
 // Services SEO existants
 import { SeoService } from './seo.service';
@@ -105,10 +108,11 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ConfigModule,
     WorkerModule, // 🔄 Import pour accès à SeoMonitorSchedulerService (exporté)
     CatalogModule, // 🛡️ Import pour accès à CatalogDataIntegrityService
+    CacheModule, // 🚀 Cache Redis personnalisé pour sitemap V2
     // Note: ScheduleModule.forRoot() est dans AppModule (global)
 
-    // 🎯 Cache Redis pour SEO V4 Ultimate
-    CacheModule.register({
+    // 🎯 Cache @nestjs/cache-manager pour SEO V4 Ultimate (in-memory fallback)
+    NestCacheModule.register({
       ttl: 3600, // 1 heure par défaut
       max: 1000, // 1000 entrées max
       isGlobal: false,
