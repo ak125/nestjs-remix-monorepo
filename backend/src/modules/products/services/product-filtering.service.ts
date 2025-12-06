@@ -86,7 +86,9 @@ export class ProductFilteringService extends SupabaseBaseService {
         return this.emptyResult(startTime);
       }
 
-      const allPieceIds = [...new Set(displayedPieces.map((p) => p.rtp_piece_id))];
+      const allPieceIds = [
+        ...new Set(displayedPieces.map((p) => p.rtp_piece_id)),
+      ];
 
       // ✅ ÉTAPE 2: Filtrer uniquement les pièces avec piece_display = 1
       const { data: visiblePieces, error: visError } = await this.client
@@ -113,15 +115,17 @@ export class ProductFilteringService extends SupabaseBaseService {
         .in('rtp_piece_id', visiblePieceIds);
 
       if (relError || !relations || relations.length === 0) {
-        this.logger.warn(
-          `⚠️ Aucune relation filtrée pour pièces visibles`,
-        );
+        this.logger.warn(`⚠️ Aucune relation filtrée pour pièces visibles`);
         return this.emptyResult(startTime);
       }
 
       // Extraire les IDs uniques (uniquement des pièces affichables grâce au JOIN)
-      const psfIds = [...new Set(relations.map((r) => r.rtp_psf_id).filter(Boolean))];
-      const pmIds = [...new Set(relations.map((r) => r.rtp_pm_id).filter(Boolean))];
+      const psfIds = [
+        ...new Set(relations.map((r) => r.rtp_psf_id).filter(Boolean)),
+      ];
+      const pmIds = [
+        ...new Set(relations.map((r) => r.rtp_pm_id).filter(Boolean)),
+      ];
       const pieceIds = [...new Set(relations.map((r) => r.rtp_piece_id))];
 
       // 🔧 FILTRES CÔTÉ (psf_id != 9999 selon PHP)
@@ -164,7 +168,8 @@ export class ProductFilteringService extends SupabaseBaseService {
           response_time: Date.now() - startTime,
           service_name: 'FilteringServiceV6RealDB',
           api_version: 'V6_REAL_DB',
-          methodology: 'Requêtes réelles sur pieces_side_filtre + pieces_marque',
+          methodology:
+            'Requêtes réelles sur pieces_side_filtre + pieces_marque',
         },
       };
 
@@ -256,31 +261,40 @@ export class ProductFilteringService extends SupabaseBaseService {
     });
 
     // Mapping des labels selon valeurs DB (OES, A, O, null)
-    const qualityLabels: Record<string, { label: string; icon: string; color: string }> = {
-      'OES': { label: 'Origine Équipementier (OES)', icon: '🏆', color: '#ffc107' },
-      'A': { label: 'Aftermarket', icon: '⭐', color: '#28a745' },
-      'O': { label: 'Occasion', icon: '🔄', color: '#17a2b8' },
-      'aftermarket': { label: 'Aftermarket', icon: '✅', color: '#28a745' },
-      'null': { label: 'Non spécifié', icon: '🔧', color: '#6c757d' },
+    const qualityLabels: Record<
+      string,
+      { label: string; icon: string; color: string }
+    > = {
+      OES: {
+        label: 'Origine Équipementier (OES)',
+        icon: '🏆',
+        color: '#ffc107',
+      },
+      A: { label: 'Aftermarket', icon: '⭐', color: '#28a745' },
+      O: { label: 'Occasion', icon: '🔄', color: '#17a2b8' },
+      aftermarket: { label: 'Aftermarket', icon: '✅', color: '#28a745' },
+      null: { label: 'Non spécifié', icon: '🔧', color: '#6c757d' },
     };
 
-    const options: FilterOption[] = Array.from(oesMap.entries()).map(([oes, count]) => {
-      const meta = qualityLabels[oes] || qualityLabels['aftermarket'];
-      return {
-        id: oes,
-        value: oes,
-        label: meta.label,
-        alias: oes.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        count,
-        trending: oes === 'OES',
-        metadata: {
-          description: meta.label,
-          icon: meta.icon,
-          color: meta.color,
-          compatibility: oes === 'OES' ? 'premium' : 'universal',
-        },
-      };
-    });
+    const options: FilterOption[] = Array.from(oesMap.entries()).map(
+      ([oes, count]) => {
+        const meta = qualityLabels[oes] || qualityLabels['aftermarket'];
+        return {
+          id: oes,
+          value: oes,
+          label: meta.label,
+          alias: oes.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+          count,
+          trending: oes === 'OES',
+          metadata: {
+            description: meta.label,
+            icon: meta.icon,
+            color: meta.color,
+            compatibility: oes === 'OES' ? 'premium' : 'universal',
+          },
+        };
+      },
+    );
 
     return {
       type: 'quality',

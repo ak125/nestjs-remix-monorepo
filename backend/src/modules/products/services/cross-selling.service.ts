@@ -431,7 +431,7 @@ export class CrossSellingService extends SupabaseBaseService {
    */
   private async getCrossGammesByConfigOptimized(
     pgId: number,
-    typeId: number,
+    _typeId: number,
   ): Promise<CrossGamme[]> {
     try {
       // 🚀 TIMEOUT 10s pour éviter blocage 36s
