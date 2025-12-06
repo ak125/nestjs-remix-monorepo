@@ -29,7 +29,7 @@ const getFamilyColor = (family: FamilyWithGammes): string => {
     'bg-primary', 'bg-success', 'bg-destructive', 'bg-purple-500',
     'bg-warning', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
   ];
-  const index = parseInt(family.mf_id) % colors.length;
+  const index = parseInt(String(family.mf_id)) % colors.length;
   return colors[index];
 };
 
@@ -76,7 +76,7 @@ export default function FamilyGammeHierarchy({
       
       // ✅ AUTO-EXPAND TOUTES LES FAMILLES PAR DÉFAUT pour afficher toutes les sous-catégories
       if (hierarchyData.families.length > 0) {
-        setExpandedFamilies(hierarchyData.families.map(f => f.mf_id));
+        setExpandedFamilies(hierarchyData.families.map(f => String(f.mf_id)));
       }
       setLoading(false);
     } else {
@@ -174,7 +174,7 @@ export default function FamilyGammeHierarchy({
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {families.map((family) => {
-            const isExpanded = expandedFamilies.includes(family.mf_id);
+            const isExpanded = expandedFamilies.includes(String(family.mf_id));
             const familyIcon = getFamilyIcon(family);
             const familyColor = getFamilyColor(family);
             const familyImage = getFamilyImage(family);
@@ -196,7 +196,7 @@ export default function FamilyGammeHierarchy({
                       {family.gammes_count} sous-catégories
                     </span>
                     <button
-                      onClick={() => toggleFamily(family.mf_id)}
+                      onClick={() => toggleFamily(String(family.mf_id))}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-colors"
                     >
                       <svg
@@ -295,7 +295,7 @@ export default function FamilyGammeHierarchy({
           </div>
           <div className="space-x-3">
             <button
-              onClick={() => setExpandedFamilies(families.map(f => f.mf_id))}
+              onClick={() => setExpandedFamilies(families.map(f => String(f.mf_id)))}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
               Tout déplier

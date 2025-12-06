@@ -87,19 +87,19 @@ export function cleanInlineStyles(html: string): string {
  * @param seoData - Objet contenant h1, title, description, content, longDescription
  * @returns Objet avec champs nettoyés
  */
-export function cleanSEOContent<T extends Record<string, any>>(seoData: T): T {
+export function cleanSEOContent<T extends Record<string, unknown>>(seoData: T): T {
   if (!seoData || typeof seoData !== 'object') {
     return seoData;
   }
 
-  const result = { ...seoData };
+  const result: Record<string, unknown> = { ...seoData };
   const fieldsToClean = ['h1', 'title', 'description', 'content', 'longDescription'];
 
   for (const field of fieldsToClean) {
     if (result[field] && typeof result[field] === 'string') {
-      result[field] = cleanOrphanParagraphs(result[field]);
+      result[field] = cleanOrphanParagraphs(result[field] as string);
     }
   }
 
-  return result;
+  return result as T;
 }

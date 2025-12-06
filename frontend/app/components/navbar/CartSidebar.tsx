@@ -198,8 +198,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <CartSidebarItem
                   key={item.id || `item-${index}`}
                   item={item}
-                  onRemove={() => removeItem(item.id)}
-                  onQuantityChange={(qty) => updateQuantity(item.id, qty)}
+                  onRemove={() => removeItem(parseInt(item.product_id, 10))}
+                  onQuantityChange={(qty) => updateQuantity(parseInt(item.product_id, 10), qty)}
                 />
               ))}
             </div>

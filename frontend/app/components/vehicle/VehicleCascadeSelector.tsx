@@ -86,7 +86,7 @@ export default function VehicleCascadeSelector({
   const loadModels = async (brandId: number, year: number) => {
     setLoadingModels(true);
     try {
-      const data = await enhancedVehicleApi.getModelsByBrandAndYear(brandId, year);
+      const data = await enhancedVehicleApi.getModels(brandId, { year, page: 1, limit: 100 });
       setModels(data);
     } catch (error) {
       console.error('❌ Erreur chargement modèles:', error);
@@ -98,7 +98,7 @@ export default function VehicleCascadeSelector({
   const loadTypes = async (modelId: number) => {
     setLoadingTypes(true);
     try {
-      const data = await enhancedVehicleApi.getTypesByModel(modelId);
+      const data = await enhancedVehicleApi.getTypes(modelId);
       setTypes(data);
     } catch (error) {
       console.error('❌ Erreur chargement motorisations:', error);

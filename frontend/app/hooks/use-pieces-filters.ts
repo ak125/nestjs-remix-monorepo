@@ -264,7 +264,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       quality: "all", 
       availability: "all",
       searchText: "",
-      minStars: undefined,
+      minNote: undefined,
     });
     setSortBy("name");
   };

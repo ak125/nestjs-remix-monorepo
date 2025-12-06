@@ -862,8 +862,8 @@ export default function VehicleDetailPage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {catalogFamilies.map((family, index) => {
-                const familyColor = hierarchyApi.getFamilyColor(family);
-                const familyImage = hierarchyApi.getFamilyImage(family);
+                const familyColor = hierarchyApi.getFamilyColor(family as unknown as Parameters<typeof hierarchyApi.getFamilyColor>[0]);
+                const familyImage = hierarchyApi.getFamilyImage(family as unknown as Parameters<typeof hierarchyApi.getFamilyImage>[0]);
                 const isExpanded = expandedFamilies.has(family.mf_id);
                 const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 5);
                 

@@ -133,7 +133,7 @@ export default function CouleursConstructeursAdminPage() {
                   <div className="flex items-center gap-2 mt-4">
                     <div className={`flex-1 h-2 rounded-full bg-gradient-to-r ${brandColor} shadow-lg`}></div>
                     <span className="text-white/70 text-xs font-mono whitespace-nowrap">
-                      {brandColor.split(' ').slice(0, 2).join(' ')}...
+                      {brandColor.backgroundImage.split(' ').slice(0, 2).join(' ')}...
                     </span>
                   </div>
                 </div>
@@ -155,19 +155,19 @@ export default function CouleursConstructeursAdminPage() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">
-                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).includes('green')).length}
+                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).backgroundImage.includes('green')).length}
               </div>
               <div className="text-sm text-gray-600 mt-1">Couleurs vertes</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-red-600">
-                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).includes('red')).length}
+                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).backgroundImage.includes('red')).length}
               </div>
               <div className="text-sm text-gray-600 mt-1">Couleurs rouges</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">
-                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).includes('blue')).length}
+                {brands.filter(b => brandColorsService.getBrandGradient(b.marque_alias).backgroundImage.includes('blue')).length}
               </div>
               <div className="text-sm text-gray-600 mt-1">Couleurs bleues</div>
             </div>

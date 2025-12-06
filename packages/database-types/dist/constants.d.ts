@@ -71,6 +71,7 @@ export declare const TABLES: {
     readonly seo_equip_gamme: "__seo_equip_gamme";
     readonly seo_family_gamme_car_switch: "__seo_family_gamme_car_switch";
     readonly sitemap_p_link: "__sitemap_p_link";
+    readonly sitemap_motorisation: "__sitemap_motorisation";
     readonly promo_codes: "promo_codes";
     readonly quantity_discounts: "quantity_discounts";
     readonly shipping_rates_cache: "shipping_rates_cache";
