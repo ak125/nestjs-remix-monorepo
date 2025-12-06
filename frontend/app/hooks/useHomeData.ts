@@ -3,9 +3,10 @@
  * Encapsule toute la logique métier liée au catalogue et aux marques
  */
 
-import { useState, useEffect } from 'react';
 import { useLoaderData } from '@remix-run/react';
-import type { FamilyWithGammes } from '~/services/api/hierarchy.api';
+import { useState, useEffect } from 'react';
+
+import { type FamilyWithGammes } from '~/services/api/hierarchy.api';
 
 export function useHomeData() {
   const loaderData = useLoaderData<any>();

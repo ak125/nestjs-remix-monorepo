@@ -475,15 +475,18 @@ export class CartController {
       // Déterminer si c'est un ID complet ou juste un product_id
       const userId = req.user?.id;
       const userIdForCart = userId || sessionId;
-      
+
       // Si c'est un numéro (product_id), utiliser removeCartItem
       // Sinon, c'est un ID complet, utiliser deleteCartItem
       const isProductId = /^\d+$/.test(itemId);
-      
+
       if (isProductId) {
         // C'est un product_id numérique
         this.logger.log(`🗑️ Suppression par product_id: ${itemId}`);
-        await this.cartDataService.removeCartItem(userIdForCart, parseInt(itemId, 10));
+        await this.cartDataService.removeCartItem(
+          userIdForCart,
+          parseInt(itemId, 10),
+        );
       } else {
         // C'est un ID complet (format: sessionId-productId-timestamp)
         this.logger.log(`🗑️ Suppression par item ID complet: ${itemId}`);

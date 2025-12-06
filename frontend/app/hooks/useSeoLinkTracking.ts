@@ -19,8 +19,8 @@
  * ```
  */
 
-import { useCallback, useEffect, useRef } from 'react';
 import { useLocation } from '@remix-run/react';
+import { useCallback, useEffect, useRef } from 'react';
 
 // Types de liens supportés
 export type LinkType = 
@@ -282,7 +282,7 @@ export function useSeoLinkTracking(): UseSeoLinkTrackingReturn {
     (linkType: LinkType, href: string, options?: TrackClickOptions) => {
       return {
         href,
-        onClick: (e: React.MouseEvent) => {
+        onClick: (_e: React.MouseEvent) => {
           trackClick(linkType, href, options);
           // Ne pas empêcher la navigation
         },

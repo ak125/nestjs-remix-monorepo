@@ -701,8 +701,8 @@ export class CatalogService
       // 🎯 Filtre PHP: pcl_level='1' pour critères prioritaires, avec fallback si aucun résultat
       let criteresTechniques: any[] = [];
       if (criteresData && criteresData.length > 0) {
-        const criIds = [...new Set(criteresData.map(c => c.pc_cri_id))];
-        
+        const criIds = [...new Set(criteresData.map((c) => c.pc_cri_id))];
+
         // Étape 1: Essayer avec pcl_level='1' (critères prioritaires)
         let { data: linksData } = await this.supabase
           .from(TABLES.pieces_criteria_link)
@@ -711,9 +711,9 @@ export class CatalogService
           .eq('pcl_display', 1)
           .eq('pcl_level', '1')
           .order('pcl_level', { ascending: true });
-        
+
         let usedFallback = false;
-        
+
         // Étape 2: Fallback si aucun critère level=1 trouvé
         if (!linksData || linksData.length === 0) {
           usedFallback = true;
@@ -724,32 +724,38 @@ export class CatalogService
             .eq('pcl_display', 1)
             .order('pcl_level', { ascending: true });
           linksData = fallbackResult.data;
-          this.logger.warn(`⚠️ [CRITÈRES FALLBACK] piece_id=${pieceId}: aucun critère level=1, utilisation de tous les niveaux`);
+          this.logger.warn(
+            `⚠️ [CRITÈRES FALLBACK] piece_id=${pieceId}: aucun critère level=1, utilisation de tous les niveaux`,
+          );
         }
-        
+
         // Logging pour monitoring
-        this.logger.log(`📊 [CRITÈRES] piece_id=${pieceId}: ${criIds.length} critères → ${linksData?.length || 0} level=1 ${usedFallback ? '(FALLBACK all levels)' : ''}`);
-        
+        this.logger.log(
+          `📊 [CRITÈRES] piece_id=${pieceId}: ${criIds.length} critères → ${linksData?.length || 0} level=1 ${usedFallback ? '(FALLBACK all levels)' : ''}`,
+        );
+
         // Créer une map des liens (prendre le premier par cri_id)
         const linksMap = new Map();
-        linksData?.forEach(link => {
+        linksData?.forEach((link) => {
           if (!linksMap.has(link.pcl_cri_id)) {
             linksMap.set(link.pcl_cri_id, link);
           }
         });
-        
+
         // Formater les critères avec leurs liens
         criteresTechniques = criteresData
-          .map(crit => {
+          .map((crit) => {
             const link = linksMap.get(crit.pc_cri_id);
-            return link ? {
-              id: crit.pc_cri_id,
-              name: link.pcl_cri_criteria,
-              value: crit.pc_cri_value,
-              unit: link.pcl_cri_unit || '',
-              level: link.pcl_level || '5',
-              priority: link.pcl_level === '1',
-            } : null;
+            return link
+              ? {
+                  id: crit.pc_cri_id,
+                  name: link.pcl_cri_criteria,
+                  value: crit.pc_cri_value,
+                  unit: link.pcl_cri_unit || '',
+                  level: link.pcl_level || '5',
+                  priority: link.pcl_level === '1',
+                }
+              : null;
           })
           .filter(Boolean);
       }
@@ -764,19 +770,19 @@ export class CatalogService
 
       // Grouper les références OEM constructeurs par marque
       let referencesOem: Record<string, string[]> = {};
-      
+
       if (refOemData && refOemData.length > 0) {
-        const brandIds = [...new Set(refOemData.map(r => r.prs_prb_id))];
+        const brandIds = [...new Set(refOemData.map((r) => r.prs_prb_id))];
         const { data: brandsData } = await this.supabase
           .from(TABLES.pieces_ref_brand)
           .select('prb_id, prb_name')
           .in('prb_id', brandIds);
-        
+
         const brandMap = new Map(
-          brandsData?.map(b => [b.prb_id.toString(), b.prb_name]) || []
+          brandsData?.map((b) => [b.prb_id.toString(), b.prb_name]) || [],
         );
-        
-        refOemData.forEach(ref => {
+
+        refOemData.forEach((ref) => {
           const brandName = brandMap.get(ref.prs_prb_id.toString());
           if (brandName) {
             if (!referencesOem[brandName]) {

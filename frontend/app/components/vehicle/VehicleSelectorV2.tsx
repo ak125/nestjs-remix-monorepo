@@ -78,7 +78,7 @@ export default function VehicleSelectorV2({
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(false);
   
-  const [_searchQuery, _setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchMode, setSearchMode] = useState<'vehicle' | 'mine'>('vehicle');
   const [mineCode, setMineCode] = useState('');
   
