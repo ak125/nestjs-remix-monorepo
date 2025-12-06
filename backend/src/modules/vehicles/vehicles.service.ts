@@ -1435,21 +1435,21 @@ export class VehiclesService extends SupabaseBaseService {
         const pgIds = parts.map((p) => p.pg_id || p.cgc_pg_id);
 
         // Récupérer TOUS les switches courts (alias 1, 2, 3)
-        const { data: itemSwitches, error: itemError } = await this.client
+        const { data: itemSwitches } = await this.client
           .from(TABLES.seo_item_switch)
           .select('sis_pg_id, sis_alias, sis_content')
           .in('sis_pg_id', pgIds.map(String))
           .in('sis_alias', ['1', '2', '3']);
 
         // Récupérer les switches détaillés (alias 11, 12)
-        const { data: familySwitches, error: familyError } = await this.client
+        const { data: familySwitches } = await this.client
           .from(TABLES.seo_family_gamme_car_switch)
           .select('sfgcs_pg_id, sfgcs_alias, sfgcs_content')
           .in('sfgcs_pg_id', pgIds.map(String))
           .in('sfgcs_alias', ['11', '12']);
 
         // Récupérer les switches gamme car (alias 1, 2, 3)
-        const { data: gammeSwitches, error: gammeError } = await this.client
+        const { data: gammeSwitches } = await this.client
           .from(TABLES.seo_gamme_car_switch)
           .select('sgcs_pg_id, sgcs_alias, sgcs_content')
           .in('sgcs_pg_id', pgIds.map(String))
