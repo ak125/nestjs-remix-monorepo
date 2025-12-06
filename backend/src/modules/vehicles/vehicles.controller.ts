@@ -10,7 +10,7 @@ import { CatalogGammeService } from '../catalog/services/catalog-gamme.service';
 @Controller('api/vehicles')
 export class VehiclesController {
   private readonly logger = new Logger(VehiclesController.name);
-  
+
   constructor(
     private readonly vehiclesService: VehiclesService,
     private readonly vehicleBrandsService: VehicleBrandsService,
@@ -51,11 +51,11 @@ export class VehiclesController {
   ) {
     const params = this.parseQueryParams(query);
     params.brandId = brandId;
-    
+
     // 🔍 Header pour traçabilité du cache (debugging)
     res.setHeader('X-Cache-Source', 'vehicles.service.findModelsByBrand');
     res.setHeader('X-Filter-Year', query.year || 'none');
-    
+
     return this.vehiclesService.findModelsByBrand(brandId, params);
   }
 
