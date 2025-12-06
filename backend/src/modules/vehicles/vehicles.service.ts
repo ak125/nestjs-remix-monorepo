@@ -352,17 +352,18 @@ export class VehiclesService extends SupabaseBaseService {
   ): Promise<VehicleResponseDto> {
     try {
       const brandIdNum = parseInt(brandId, 10);
-      
+
       // 🖼️ Récupérer le marque_alias pour générer les URLs d'images (comme getBrandBestsellers)
       const { data: brandData } = await this.client
         .from(TABLES.auto_marque)
         .select('marque_alias')
         .eq('marque_id', brandIdNum)
         .single();
-      
+
       const marqueAlias = brandData?.marque_alias || '';
-      const SUPABASE_STORAGE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-      
+      const SUPABASE_STORAGE_URL =
+        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
       // 🎯 FILTRAGE OPTIMISÉ : Requête unique pour modèles avec motorisations
       if (filters?.year) {
         this.logger.debug(
@@ -378,7 +379,9 @@ export class VehiclesService extends SupabaseBaseService {
           .lte('type_year_from', filters.year)
           .or(`type_year_to.is.null,type_year_to.gte.${filters.year}`);
 
-        this.logger.log(`🔍 Requête types: marque=${brandIdNum}, année=${filters.year}, résultats=${modelIdsWithTypes?.length || 0}`);
+        this.logger.log(
+          `🔍 Requête types: marque=${brandIdNum}, année=${filters.year}, résultats=${modelIdsWithTypes?.length || 0}`,
+        );
 
         if (typeError) {
           this.logger.error(
@@ -402,12 +405,18 @@ export class VehiclesService extends SupabaseBaseService {
           ...new Set(modelIdsWithTypes.map((t) => t.type_modele_id)),
         ];
 
-        this.logger.log(`🔍 ${uniqueModelIds.length} modèles avec motorisations pour marque ${brandId} année ${filters.year}`);
-        this.logger.log(`🔍 K2500 (88031) dans la liste: ${uniqueModelIds.includes(88031) ? 'OUI ❌' : 'NON ✅'}`);
+        this.logger.log(
+          `🔍 ${uniqueModelIds.length} modèles avec motorisations pour marque ${brandId} année ${filters.year}`,
+        );
+        this.logger.log(
+          `🔍 K2500 (88031) dans la liste: ${uniqueModelIds.includes(88031) ? 'OUI ❌' : 'NON ✅'}`,
+        );
 
         // 🚫 Si aucun modèle avec motorisations, retourner vide
         if (uniqueModelIds.length === 0) {
-          this.logger.log(`❌ Aucun modèle KIA avec motorisations pour l'année ${filters.year}`);
+          this.logger.log(
+            `❌ Aucun modèle KIA avec motorisations pour l'année ${filters.year}`,
+          );
           return {
             data: [],
             total: 0,
@@ -445,14 +454,16 @@ export class VehiclesService extends SupabaseBaseService {
           `,
           )
           .eq('modele_marque_id', brandIdNum)
-          .eq('modele_display', 1)  // ✅ Filtrer uniquement les modèles destinés à l'affichage
+          .eq('modele_display', 1) // ✅ Filtrer uniquement les modèles destinés à l'affichage
           .in('modele_id', uniqueModelIds);
 
         if (filters?.search) {
           query = query.ilike('modele_name', `%${filters.search}%`);
         }
 
-        this.logger.log(`🔍 DEBUG: ${uniqueModelIds.length} modèles avec motorisations pour KIA ${filters.year}`);
+        this.logger.log(
+          `🔍 DEBUG: ${uniqueModelIds.length} modèles avec motorisations pour KIA ${filters.year}`,
+        );
 
         const offset = (filters?.page || 0) * (filters?.limit || 50);
         const { data, error } = await query
@@ -469,7 +480,7 @@ export class VehiclesService extends SupabaseBaseService {
           .from(TABLES.auto_modele)
           .select('modele_id', { count: 'exact' })
           .eq('modele_marque_id', brandIdNum)
-          .eq('modele_display', 1)  // ✅ Même filtre pour le comptage
+          .eq('modele_display', 1) // ✅ Même filtre pour le comptage
           .in('modele_id', uniqueModelIds);
 
         this.logger.debug(
@@ -479,9 +490,10 @@ export class VehiclesService extends SupabaseBaseService {
         // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
         const enrichedData = (data || []).map((model: any) => ({
           ...model,
-          image_url: model.modele_pic && model.modele_pic !== 'no.webp'
-            ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
-            : null,
+          image_url:
+            model.modele_pic && model.modele_pic !== 'no.webp'
+              ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
+              : null,
         }));
 
         return {
@@ -498,13 +510,15 @@ export class VehiclesService extends SupabaseBaseService {
         .from(TABLES.auto_modele)
         .select(`*`)
         .eq('modele_marque_id', brandId)
-        .eq('modele_display', 1);  // ✅ Filtrer uniquement les modèles affichables
+        .eq('modele_display', 1); // ✅ Filtrer uniquement les modèles affichables
 
       if (filters?.search) {
         query = query.ilike('modele_name', `%${filters.search}%`);
       }
 
-      const { data, error } = await query.order('modele_name', { ascending: true });
+      const { data, error } = await query.order('modele_name', {
+        ascending: true,
+      });
 
       if (error) {
         this.logger.error('Erreur findModelsByBrand:', error);
@@ -514,9 +528,10 @@ export class VehiclesService extends SupabaseBaseService {
       // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
       const enrichedData = (data || []).map((model: any) => ({
         ...model,
-        image_url: model.modele_pic && model.modele_pic !== 'no.webp'
-          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
-          : null,
+        image_url:
+          model.modele_pic && model.modele_pic !== 'no.webp'
+            ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
+            : null,
       }));
 
       // 🎯 Trier : modèles avec images en premier, puis par nom
@@ -530,7 +545,10 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Pagination après tri
       const offset = (filters?.page || 0) * (filters?.limit || 50);
-      const paginatedData = sortedData.slice(offset, offset + (filters?.limit || 50));
+      const paginatedData = sortedData.slice(
+        offset,
+        offset + (filters?.limit || 50),
+      );
 
       return {
         data: paginatedData,
@@ -1287,7 +1305,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       const cacheKey = `brand_bestsellers_${brandAlias}_${limitVehicles}_${limitParts}`;
       const cached = await this.cacheManager.get(cacheKey);
-      
+
       if (cached) {
         this.logger.log(`✅ Cache hit: ${cacheKey}`);
         return cached as any;
@@ -1336,7 +1354,7 @@ export class VehiclesService extends SupabaseBaseService {
       let vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
         ...vehicle,
         vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
-        image_url: vehicle.modele_pic 
+        image_url: vehicle.modele_pic
           ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
           : null,
       }));
@@ -1347,16 +1365,19 @@ export class VehiclesService extends SupabaseBaseService {
           .from('__seo_type_switch')
           .select('sts_id, sts_alias, sts_content')
           .eq('sts_alias', '1');
-        
+
         if (typeSwitches && typeSwitches.length > 0) {
           // 🎯 Mélanger les switches pour plus de variété (Fisher-Yates shuffle basé sur marque_id)
           const shuffledSwitches = [...typeSwitches];
           const seed = brand.marque_id || 1;
           for (let i = shuffledSwitches.length - 1; i > 0; i--) {
             const j = (seed * (i + 1) * 7) % (i + 1);
-            [shuffledSwitches[i], shuffledSwitches[j]] = [shuffledSwitches[j], shuffledSwitches[i]];
+            [shuffledSwitches[i], shuffledSwitches[j]] = [
+              shuffledSwitches[j],
+              shuffledSwitches[i],
+            ];
           }
-          
+
           vehicles = vehicles.map((vehicle: any, index: number) => {
             const marque = vehicle.marque_name || '';
             const modele = vehicle.modele_name || '';
@@ -1364,20 +1385,26 @@ export class VehiclesService extends SupabaseBaseService {
             const puissance = vehicle.type_power_ps || '';
             const yearFrom = vehicle.type_year_from || '';
             const yearTo = vehicle.type_year_to || '';
-            const yearRange = yearTo ? `${yearFrom}-${yearTo}` : `depuis ${yearFrom}`;
-            
+            const yearRange = yearTo
+              ? `${yearFrom}-${yearTo}`
+              : `depuis ${yearFrom}`;
+
             // 🔄 Sélection variée basée sur index + hash du type_id pour éviter les répétitions
-            const typeIdNum = parseInt(vehicle.cgc_type_id) || parseInt(vehicle.type_id) || index;
-            const hashBase = (typeIdNum * 31 + index * 17) % shuffledSwitches.length;
+            const typeIdNum =
+              parseInt(vehicle.cgc_type_id) ||
+              parseInt(vehicle.type_id) ||
+              index;
+            const hashBase =
+              (typeIdNum * 31 + index * 17) % shuffledSwitches.length;
             const switchIdx = Math.abs(hashBase);
             const seoSwitch = shuffledSwitches[switchIdx]?.sts_content || '';
-            
+
             // Construire les contenus SEO
             const seoTitle = `Pièces ${marque} ${modele} ${type} ${puissance} ch`;
             const seoDescription = `Trouvez vos pièces auto ${marque} ${modele} ${type} ${seoSwitch}. Moteur ${puissance} ch, ${yearRange}.`;
             const seoSubtitle = `${type} • ${puissance} ch • ${yearRange}`;
             const seoBenefit = seoSwitch;
-            
+
             return {
               ...vehicle,
               seo_title: seoTitle,
@@ -1387,8 +1414,10 @@ export class VehiclesService extends SupabaseBaseService {
               seo_year_range: yearRange,
             };
           });
-          
-          this.logger.debug(`✅ ${vehicles.length} véhicules enrichis avec SEO type switches (${shuffledSwitches.length} switches disponibles)`);
+
+          this.logger.debug(
+            `✅ ${vehicles.length} véhicules enrichis avec SEO type switches (${shuffledSwitches.length} switches disponibles)`,
+          );
         }
       }
 
@@ -1403,22 +1432,22 @@ export class VehiclesService extends SupabaseBaseService {
       // 🎯 ENRICHISSEMENT SWITCHES SEO DYNAMIQUES - VERSION MULTI-ALIAS
       // Récupère plusieurs alias pour un contenu SEO plus riche
       if (parts.length > 0) {
-        const pgIds = parts.map(p => p.pg_id || p.cgc_pg_id);
-        
+        const pgIds = parts.map((p) => p.pg_id || p.cgc_pg_id);
+
         // Récupérer TOUS les switches courts (alias 1, 2, 3)
         const { data: itemSwitches, error: itemError } = await this.client
           .from(TABLES.seo_item_switch)
           .select('sis_pg_id, sis_alias, sis_content')
           .in('sis_pg_id', pgIds.map(String))
           .in('sis_alias', ['1', '2', '3']);
-        
+
         // Récupérer les switches détaillés (alias 11, 12)
         const { data: familySwitches, error: familyError } = await this.client
           .from(TABLES.seo_family_gamme_car_switch)
           .select('sfgcs_pg_id, sfgcs_alias, sfgcs_content')
           .in('sfgcs_pg_id', pgIds.map(String))
           .in('sfgcs_alias', ['11', '12']);
-        
+
         // Récupérer les switches gamme car (alias 1, 2, 3)
         const { data: gammeSwitches, error: gammeError } = await this.client
           .from(TABLES.seo_gamme_car_switch)
@@ -1426,58 +1455,75 @@ export class VehiclesService extends SupabaseBaseService {
           .in('sgcs_pg_id', pgIds.map(String))
           .in('sgcs_alias', ['1', '2', '3']);
 
-        const totalSwitches = (itemSwitches?.length || 0) + (familySwitches?.length || 0) + (gammeSwitches?.length || 0);
-        
+        const totalSwitches =
+          (itemSwitches?.length || 0) +
+          (familySwitches?.length || 0) +
+          (gammeSwitches?.length || 0);
+
         if (totalSwitches > 0) {
-          this.logger.debug(`🔄 Switches SEO: ${itemSwitches?.length || 0} items + ${familySwitches?.length || 0} family + ${gammeSwitches?.length || 0} gamme`);
-          
+          this.logger.debug(
+            `🔄 Switches SEO: ${itemSwitches?.length || 0} items + ${familySwitches?.length || 0} family + ${gammeSwitches?.length || 0} gamme`,
+          );
+
           // Enrichir chaque pièce avec tous ses switches
-          parts = parts.map(part => {
+          parts = parts.map((part) => {
             const partPgId = part.pg_id || part.cgc_pg_id;
             const partTypeId = parseInt(part.cgc_type_id) || 0;
-            
+
             // === Switches courts alias 1 (verbes d'action) ===
-            const itemList1 = itemSwitches?.filter(s => s.sis_pg_id === String(partPgId) && s.sis_alias === '1') || [];
+            const itemList1 =
+              itemSwitches?.filter(
+                (s) => s.sis_pg_id === String(partPgId) && s.sis_alias === '1',
+              ) || [];
             let shortDesc = '';
             if (itemList1.length > 0) {
               const idx = (partTypeId + 1) % itemList1.length;
               shortDesc = itemList1[idx]?.sis_content || '';
             }
-            
+
             // === Switches alias 2 (fonctions/bénéfices) ===
-            const itemList2 = itemSwitches?.filter(s => s.sis_pg_id === String(partPgId) && s.sis_alias === '2') || [];
+            const itemList2 =
+              itemSwitches?.filter(
+                (s) => s.sis_pg_id === String(partPgId) && s.sis_alias === '2',
+              ) || [];
             let benefitDesc = '';
             if (itemList2.length > 0) {
               const idx = (partTypeId + 2) % itemList2.length;
               benefitDesc = itemList2[idx]?.sis_content || '';
             }
-            
+
             // === Switches gamme car (descriptions complètes) ===
-            const gammeList = gammeSwitches?.filter(s => s.sgcs_pg_id === String(partPgId)) || [];
+            const gammeList =
+              gammeSwitches?.filter((s) => s.sgcs_pg_id === String(partPgId)) ||
+              [];
             let gammeDesc = '';
             if (gammeList.length > 0) {
               const idx = (partTypeId + partPgId) % gammeList.length;
               gammeDesc = gammeList[idx]?.sgcs_content || '';
             }
-            
+
             // === Switches détaillés alias 11 ===
-            const familyList = familySwitches?.filter(s => s.sfgcs_pg_id === String(partPgId) && s.sfgcs_alias === '11') || [];
+            const familyList =
+              familySwitches?.filter(
+                (s) =>
+                  s.sfgcs_pg_id === String(partPgId) && s.sfgcs_alias === '11',
+              ) || [];
             let detailDesc = '';
             if (familyList.length > 0) {
               const idx = (partTypeId + partPgId + 2) % familyList.length;
               detailDesc = familyList[idx]?.sfgcs_content || '';
             }
-            
+
             // Infos véhicule
             const marque = (part.marque_name || '').toUpperCase();
             const modele = part.modele_name || '';
             const type = part.type_name || '';
             const puissance = part.type_power_ps || '';
             const gamme = part.pg_name || '';
-            
+
             // Titre enrichi
             const enrichedTitle = `${gamme} pour ${marque} ${modele} ${type}`;
-            
+
             // Description enrichie (format prioritaire)
             let enrichedDesc = '';
             if (shortDesc && detailDesc) {
@@ -1491,16 +1537,22 @@ export class VehiclesService extends SupabaseBaseService {
             } else {
               enrichedDesc = `${gamme} pour ${marque} ${modele} ${type} ${puissance} ch`;
             }
-            
+
             // Sous-description commerciale
             let commercialDesc = '';
             if (benefitDesc) {
               commercialDesc = `${gamme} ${marque} ${modele} ${type} ${benefitDesc}`;
             } else {
-              const priceTerms = ['prix bas', 'mini coût', 'bas coût', 'meilleur prix', 'tarif réduit'];
+              const priceTerms = [
+                'prix bas',
+                'mini coût',
+                'bas coût',
+                'meilleur prix',
+                'tarif réduit',
+              ];
               commercialDesc = `${gamme} ${marque} ${modele} ${type} ${priceTerms[(partPgId + partTypeId) % priceTerms.length]}.`;
             }
-            
+
             return {
               ...part,
               // Contenus SEO principaux
@@ -1515,8 +1567,10 @@ export class VehiclesService extends SupabaseBaseService {
               seo_commercial: commercialDesc,
             };
           });
-          
-          this.logger.debug(`✅ ${parts.filter(p => p.seo_switch_content).length} pièces enrichies avec multi-alias`);
+
+          this.logger.debug(
+            `✅ ${parts.filter((p) => p.seo_switch_content).length} pièces enrichies avec multi-alias`,
+          );
         } else {
           this.logger.warn(`⚠️ Aucun switch SEO trouvé`);
         }

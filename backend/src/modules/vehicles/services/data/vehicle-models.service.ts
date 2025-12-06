@@ -247,14 +247,14 @@ export class VehicleModelsService extends SupabaseBaseService {
 
           // Garder uniquement les modèles ayant au moins une motorisation pour cette année
           modelIdsWithTypes = Array.from(modelIdsByType.entries())
-            .filter(([_, types]) => {
+            .filter(([, types]) => {
               return types.some((type: any) => {
                 const yearFrom = type.type_year_from || 0;
                 const yearTo = type.type_year_to || 9999;
                 return yearFrom <= year && year <= yearTo;
               });
             })
-            .map(([modelIdStr, _]) => parseInt(modelIdStr, 10));
+            .map(([modelIdStr]) => parseInt(modelIdStr, 10));
 
           this.logger.debug(
             `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations pour ${year}`,

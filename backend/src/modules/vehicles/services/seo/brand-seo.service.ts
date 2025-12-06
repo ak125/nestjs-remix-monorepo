@@ -134,7 +134,7 @@ export class BrandSeoService {
    */
   private stripHtmlTags(html: string): string {
     if (!html) return '';
-    
+
     return html
       .replace(/<[^>]*>/g, '') // Supprime toutes les balises
       .replace(/\s+/g, ' ') // Normalise espaces
@@ -162,7 +162,7 @@ export class BrandSeoService {
    */
   private decodeHtmlContent(html: string): string {
     if (!html) return '';
-    
+
     return html
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
@@ -214,7 +214,7 @@ export class BrandSeoService {
    */
   generateDefaultBrandSeo(marqueNom: string): ProcessedBrandSeo {
     const content = `Découvrez notre catalogue complet de pièces auto pour ${marqueNom}. Toutes les pièces d'usure et d'entretien disponibles en stock.`;
-    
+
     return {
       title: `Pièces auto ${marqueNom} pas cher - Automecanik`,
       description: `Achetez des pièces détachées d'origine pour ${marqueNom}. Freinage, embrayage, distribution. Livraison rapide et garantie constructeur.`,
