@@ -16,7 +16,6 @@ import { TABLES } from '@repo/database-types';
 import {
   SEO_LINK_LIMITS,
   SEO_AB_TESTING_CONFIG,
-  SEO_SWITCH_TYPES,
 } from '../../config/seo-link-limits.config';
 
 // =====================================================
@@ -210,7 +209,7 @@ export class InternalLinkingService implements OnModuleInit {
   async processLinkGammeCar(
     content: string,
     vehicle: VehicleContext,
-    sourcePgId: number,
+    _sourcePgId: number,
   ): Promise<LinkInjectionResult> {
     const result: LinkInjectionResult = {
       content,

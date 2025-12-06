@@ -1,9 +1,9 @@
 /**
  * 🏷️ BRANDS CONTROLLER
- * 
+ *
  * API REST pour les marques automobiles et leurs modèles
  * Routes: /api/brands/*
- * 
+ *
  * Utilise VehicleBrandsService et VehicleModelsService
  * Tables: auto_marque, auto_modele, auto_type
  */
