@@ -17,12 +17,17 @@ export class PromptTemplateService {
 
   private initializeDefaultTemplates() {
     // Add some default templates
-    const defaultTemplates: Omit<PromptTemplate, 'id' | 'createdAt' | 'updatedAt'>[] = [
+    const defaultTemplates: Omit<
+      PromptTemplate,
+      'id' | 'createdAt' | 'updatedAt'
+    >[] = [
       {
         name: 'Description Produit Standard',
-        description: 'Template pour générer des descriptions de produits standards',
+        description:
+          'Template pour générer des descriptions de produits standards',
         category: 'product',
-        systemPrompt: 'Tu es un expert en rédaction de fiches produits e-commerce.',
+        systemPrompt:
+          'Tu es un expert en rédaction de fiches produits e-commerce.',
         userPromptTemplate: `Crée une description pour le produit suivant :
 
 Nom : {{productName}}
@@ -37,11 +42,38 @@ Caractéristiques :
 Ton : {{tone}}
 Longueur : {{length}}`,
         variables: [
-          { name: 'productName', type: 'string', required: true, description: 'Nom du produit' },
-          { name: 'category', type: 'string', required: false, description: 'Catégorie du produit' },
-          { name: 'features', type: 'array', required: false, description: 'Liste des caractéristiques' },
-          { name: 'tone', type: 'string', required: false, defaultValue: 'professional', description: 'Ton de la description' },
-          { name: 'length', type: 'string', required: false, defaultValue: 'medium', description: 'Longueur souhaitée' },
+          {
+            name: 'productName',
+            type: 'string',
+            required: true,
+            description: 'Nom du produit',
+          },
+          {
+            name: 'category',
+            type: 'string',
+            required: false,
+            description: 'Catégorie du produit',
+          },
+          {
+            name: 'features',
+            type: 'array',
+            required: false,
+            description: 'Liste des caractéristiques',
+          },
+          {
+            name: 'tone',
+            type: 'string',
+            required: false,
+            defaultValue: 'professional',
+            description: 'Ton de la description',
+          },
+          {
+            name: 'length',
+            type: 'string',
+            required: false,
+            defaultValue: 'medium',
+            description: 'Longueur souhaitée',
+          },
         ],
         defaultSettings: {
           temperature: 0.7,
@@ -52,9 +84,11 @@ Longueur : {{length}}`,
       },
       {
         name: 'SEO Meta Description',
-        description: 'Template pour générer des méta-descriptions SEO optimisées',
+        description:
+          'Template pour générer des méta-descriptions SEO optimisées',
         category: 'seo',
-        systemPrompt: 'Tu es un expert SEO qui crée des méta-descriptions optimisées pour le référencement.',
+        systemPrompt:
+          'Tu es un expert SEO qui crée des méta-descriptions optimisées pour le référencement.',
         userPromptTemplate: `Génère une méta-description SEO pour :
 
 Titre de la page : {{pageTitle}}
@@ -67,9 +101,24 @@ La méta-description doit :
 - Contenir un appel à l'action
 - Être engageante et inciter au clic`,
         variables: [
-          { name: 'pageTitle', type: 'string', required: true, description: 'Titre de la page' },
-          { name: 'targetKeyword', type: 'string', required: false, description: 'Mot-clé principal' },
-          { name: 'keywords', type: 'array', required: false, description: 'Mots-clés secondaires' },
+          {
+            name: 'pageTitle',
+            type: 'string',
+            required: true,
+            description: 'Titre de la page',
+          },
+          {
+            name: 'targetKeyword',
+            type: 'string',
+            required: false,
+            description: 'Mot-clé principal',
+          },
+          {
+            name: 'keywords',
+            type: 'array',
+            required: false,
+            description: 'Mots-clés secondaires',
+          },
         ],
         defaultSettings: {
           temperature: 0.7,
@@ -79,9 +128,11 @@ La méta-description doit :
       },
       {
         name: 'Post Réseaux Sociaux',
-        description: 'Template pour créer des posts engageants pour les réseaux sociaux',
+        description:
+          'Template pour créer des posts engageants pour les réseaux sociaux',
         category: 'social',
-        systemPrompt: 'Tu es un expert des réseaux sociaux qui crée du contenu viral et engageant.',
+        systemPrompt:
+          'Tu es un expert des réseaux sociaux qui crée du contenu viral et engageant.',
         userPromptTemplate: `Crée un post pour {{platform}} :
 
 Message principal : {{message}}
@@ -92,10 +143,31 @@ Message principal : {{message}}
 - Inclus 3-5 hashtags stratégiques
 - Crée un contenu qui génère de l'engagement`,
         variables: [
-          { name: 'platform', type: 'string', required: true, description: 'Plateforme sociale (Facebook, LinkedIn, etc.)' },
-          { name: 'message', type: 'string', required: true, description: 'Message principal' },
-          { name: 'callToAction', type: 'string', required: false, description: 'Appel à l\'action' },
-          { name: 'tone', type: 'string', required: false, defaultValue: 'friendly', description: 'Ton du post' },
+          {
+            name: 'platform',
+            type: 'string',
+            required: true,
+            description: 'Plateforme sociale (Facebook, LinkedIn, etc.)',
+          },
+          {
+            name: 'message',
+            type: 'string',
+            required: true,
+            description: 'Message principal',
+          },
+          {
+            name: 'callToAction',
+            type: 'string',
+            required: false,
+            description: "Appel à l'action",
+          },
+          {
+            name: 'tone',
+            type: 'string',
+            required: false,
+            defaultValue: 'friendly',
+            description: 'Ton du post',
+          },
         ],
         defaultSettings: {
           temperature: 0.8,
@@ -117,7 +189,9 @@ Message principal : {{message}}
       });
     });
 
-    this.logger.log(`Initialized ${this.templates.size} default prompt templates`);
+    this.logger.log(
+      `Initialized ${this.templates.size} default prompt templates`,
+    );
   }
 
   async listTemplates(): Promise<PromptTemplate[]> {
@@ -126,7 +200,7 @@ Message principal : {{message}}
 
   async getTemplate(id: string): Promise<PromptTemplate> {
     const template = this.templates.get(id);
-    
+
     if (!template) {
       throw new NotFoundException(`Template with id ${id} not found`);
     }
@@ -136,7 +210,7 @@ Message principal : {{message}}
 
   async createTemplate(dto: CreatePromptTemplateDto): Promise<PromptTemplate> {
     const id = this.generateId();
-    
+
     const template = {
       ...dto,
       id,
@@ -151,7 +225,10 @@ Message principal : {{message}}
     return template;
   }
 
-  async updateTemplate(id: string, dto: UpdatePromptTemplateDto): Promise<PromptTemplate> {
+  async updateTemplate(
+    id: string,
+    dto: UpdatePromptTemplateDto,
+  ): Promise<PromptTemplate> {
     const existing = await this.getTemplate(id);
 
     const updated = {
@@ -168,7 +245,7 @@ Message principal : {{message}}
 
   async deleteTemplate(id: string): Promise<void> {
     const exists = this.templates.has(id);
-    
+
     if (!exists) {
       throw new NotFoundException(`Template with id ${id} not found`);
     }
@@ -177,15 +254,24 @@ Message principal : {{message}}
     this.logger.log(`Deleted prompt template: ${id}`);
   }
 
-  async testTemplate(id: string, variables: Record<string, any>): Promise<{ rendered: string }> {
+  async testTemplate(
+    id: string,
+    variables: Record<string, any>,
+  ): Promise<{ rendered: string }> {
     const template = await this.getTemplate(id);
-    
-    const rendered = this.renderTemplate(template.userPromptTemplate, variables);
+
+    const rendered = this.renderTemplate(
+      template.userPromptTemplate,
+      variables,
+    );
 
     return { rendered };
   }
 
-  async renderPrompt(id: string, variables: Record<string, any>): Promise<{
+  async renderPrompt(
+    id: string,
+    variables: Record<string, any>,
+  ): Promise<{
     system: string;
     user: string;
   }> {
@@ -201,7 +287,10 @@ Message principal : {{message}}
     };
   }
 
-  private renderTemplate(template: string, variables: Record<string, any>): string {
+  private renderTemplate(
+    template: string,
+    variables: Record<string, any>,
+  ): string {
     let rendered = template;
 
     // Simple template rendering - replace {{variable}} with values
@@ -211,18 +300,26 @@ Message principal : {{message}}
     });
 
     // Handle conditional blocks {{#if variable}}...{{/if}}
-    rendered = rendered.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, variable, content) => {
-      return variables[variable] ? content : '';
-    });
+    rendered = rendered.replace(
+      /{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g,
+      (match, variable, content) => {
+        return variables[variable] ? content : '';
+      },
+    );
 
     // Handle array iteration {{#each array}}...{{/each}}
-    rendered = rendered.replace(/{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g, (match, variable, content) => {
-      const array = variables[variable];
-      if (Array.isArray(array)) {
-        return array.map(item => content.replace(/{{this}}/g, String(item))).join('');
-      }
-      return '';
-    });
+    rendered = rendered.replace(
+      /{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g,
+      (match, variable, content) => {
+        const array = variables[variable];
+        if (Array.isArray(array)) {
+          return array
+            .map((item) => content.replace(/{{this}}/g, String(item)))
+            .join('');
+        }
+        return '';
+      },
+    );
 
     // Clean up extra whitespace
     rendered = rendered.replace(/\n\s*\n\s*\n/g, '\n\n').trim();
