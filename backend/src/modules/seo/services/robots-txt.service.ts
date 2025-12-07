@@ -16,7 +16,7 @@ export class RobotsTxtService {
     this.isProduction = this.configService.get('NODE_ENV') === 'production';
     this.baseUrl = this.configService.get(
       'BASE_URL',
-      'https://automecanik.com',
+      'https://www.automecanik.com',
     );
 
     this.logger.log(

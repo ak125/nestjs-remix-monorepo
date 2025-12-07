@@ -218,7 +218,7 @@ function generateOrganizationSchema(org: OrganizationData) {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": org.name,
-    "url": org.url || "https://automecanik.com",
+    "url": org.url || "https://www.automecanik.com",
     "logo": org.logo || "https://automecanik.com/logo.png",
     ...(org.contactPoint && {
       "contactPoint": {
@@ -292,7 +292,7 @@ function generateItemListSchema(itemList: ItemListData) {
       "@type": "ListItem",
       "position": item.position || index + 1,
       "name": item.name,
-      "url": item.url.startsWith('http') ? item.url : `https://automecanik.com${item.url}`,
+      "url": item.url.startsWith('http') ? item.url : `https://www.automecanik.com${item.url}`,
       ...(item.image && { "image": item.image }),
       ...(item.description && { "description": item.description })
     }))

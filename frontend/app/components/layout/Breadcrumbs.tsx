@@ -76,7 +76,7 @@ export function Breadcrumbs({
               name: item.label,
               // Pour le dernier élément (page actuelle), utiliser l'URL de la page
               item: item.href
-                ? `https://automecanik.com${item.href}`
+                ? `https://www.automecanik.com${item.href}`
                 : typeof window !== "undefined"
                   ? window.location.href
                   : undefined,

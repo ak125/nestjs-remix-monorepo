@@ -73,7 +73,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
       if (childConfig) {
         entries.push({
-          loc: `https://automecanik.com${childConfig.path}`,
+          loc: `https://www.automecanik.com${childConfig.path}`,
           lastmod: new Date().toISOString(),
         });
       }
@@ -98,7 +98,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
       if (childConfig) {
         entries.push({
-          loc: `https://automecanik.com${childConfig.path}`,
+          loc: `https://www.automecanik.com${childConfig.path}`,
           lastmod: await this.getLastModified(),
         });
       }

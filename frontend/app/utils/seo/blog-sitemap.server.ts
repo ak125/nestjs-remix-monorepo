@@ -91,7 +91,7 @@ async function fetchBlogArticles(): Promise<BlogArticle[]> {
  */
 function buildBlogSitemapXml(articles: BlogArticle[]): string {
   const urls = articles.map((article) => {
-    const loc = `https://automecanik.com/blog/${article.slug}`;
+    const loc = `https://www.automecanik.com/blog/${article.slug}`;
     const lastmod = article.updatedAt || article.publishedAt;
     const changefreq = 'monthly';
     const priority = 0.6;
