@@ -132,7 +132,7 @@ export default function BrandCatalogPage() {
   // Reconstruction de la description Ã  partir des données disponibles ou fallback
   const brandDescription: BrandDescription = {
     history: blog_content?.content
-      ? blog_content.content.replace(/<[^>]*>?/gm, "").substring(0, 300) + "..."
+      ? blog_content.content.replace(/<[^>]*>?/gm, –).substring(0, 300) + "..."
       : `Constructeur automobile proposant une large gamme de véhicules alliant performance et innovation.`,
     strengths: [
       "Qualité reconnue",
@@ -491,7 +491,7 @@ export default function BrandCatalogPage() {
               <HtmlContent
                 html={blog_content.content}
                 trackLinks={true}
-                className=""
+                className=–
               />
             ) : (
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
@@ -628,8 +628,8 @@ function VehicleCard({
 
   // Détection du carburant depuis type_fuel ou type_name
   const detectFuel = (): string | null => {
-    const fuel = vehicle.type_fuel?.toLowerCase() || "";
-    const typeName = vehicle.type_name?.toLowerCase() || "";
+    const fuel = vehicle.type_fuel?.toLowerCase() || –;
+    const typeName = vehicle.type_name?.toLowerCase() || –;
 
     if (
       fuel.includes("diesel") ||
@@ -770,7 +770,7 @@ function ApiPartCard({
     [part.marque_name, part.modele_name, part.type_name]
       .filter(Boolean)
       .join(" ") || part.pg_name;
-  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : "";
+  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : –;
   const fullContext = powerSuffix
     ? `${vehicleContext} ${powerSuffix}`
     : vehicleContext;
