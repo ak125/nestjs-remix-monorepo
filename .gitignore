@@ -76,8 +76,7 @@ cache/temp-*.rdb
 # Vite timestamped config artifacts (ne jamais versionner)
 frontend/vite.config.ts.timestamp-*
 
-# AI Agents - Python System (local only, ne jamais versionner)
-ai-agents-python/
+# AI Agents - Python System (garder le code, ignorer les résultats/cache)
 ai-agents-python/**/*.json
 ai-agents-python/**/*.log
 ai-agents-python/.temp/
@@ -85,6 +84,8 @@ ai-agents-python/__pycache__/
 ai-agents-python/**/__pycache__/
 ai-agents-python/*.pyc
 ai-agents-python/**/*.pyc
+ai-agents-python/.venv/
+ai-agents-python/venv/
 
 
 
