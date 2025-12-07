@@ -111,7 +111,6 @@ export function getSitemapHeaders(options: {
 
   const headers: Record<string, string> = {
     "Content-Type": "application/xml; charset=utf-8",
-    "X-Robots-Tag": "noindex",
     "Vary": "Accept-Encoding",
   };
 
