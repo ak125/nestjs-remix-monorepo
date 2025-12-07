@@ -36,7 +36,7 @@ import { Badge } from "./ui/badge";
 export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
   const _location = useLocation();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // 🛒 Panier: données depuis root loader + état local pour ouverture
   const cartData = useRootCart();
