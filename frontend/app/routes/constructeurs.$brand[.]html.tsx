@@ -1,4 +1,4 @@
-﻿// ðŸŽ¨ VERSION AMÃ‰LIORÃ‰E â€” PAGE CATALOGUE CONSTRUCTEUR
+// ðŸŽ¨ VERSION AMÃ‰LIORÃ‰E â€” PAGE CATALOGUE CONSTRUCTEUR
 // Format: /constructeurs/{constructeur}-{id}.html
 // Exemple: /constructeurs/bmw-33.html, /constructeurs/renault-140.html
 
