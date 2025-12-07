@@ -149,14 +149,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
         {/* Google Analytics 4 */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-311870207" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-311870207', {
+              gtag('config', 'G-ZVG6K5R740', {
                 page_title: document.title,
                 page_location: window.location.href
               });
