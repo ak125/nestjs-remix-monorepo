@@ -377,7 +377,7 @@ ${shards
     // Mock: générer quelques URLs de test
     for (let i = 1; i <= (options.maxUrls || 1000); i++) {
       urls.push({
-        loc: `https://automecanik.com/pieces/produit-${i}.html`,
+        loc: `https://www.automecanik.com/pieces/produit-${i}.html`,
         lastmod: new Date().toISOString(),
         changefreq: 'weekly',
         priority: 0.8,
