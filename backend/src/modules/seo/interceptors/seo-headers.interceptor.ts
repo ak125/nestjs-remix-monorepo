@@ -46,12 +46,12 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     }
     // Produits
     else if (path.startsWith('/pieces/') || path.startsWith('/produits/')) {
-      const canonical = `https://automecanik.com${path.split('?')[0]}`;
+      const canonical = `https://www.automecanik.com${path.split('?')[0]}`;
       headers = this.seoHeadersService.getProductHeaders(canonical);
     }
     // Blog
     else if (path.startsWith('/blog/') || path.startsWith('/conseils/')) {
-      const canonical = `https://automecanik.com${path.split('?')[0]}`;
+      const canonical = `https://www.automecanik.com${path.split('?')[0]}`;
       headers = this.seoHeadersService.getBlogHeaders(canonical);
     }
     // Vérifier si doit être indexé

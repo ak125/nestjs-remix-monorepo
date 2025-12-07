@@ -856,7 +856,7 @@ ${entries
     const lastmod = entry.lastmod || new Date().toISOString();
 
     let urlXml = `  <url>
-    <loc>https://automecanik.com${entry.loc}</loc>
+    <loc>https://www.automecanik.com${entry.loc}</loc>
     <lastmod>${lastmod}</lastmod>`;
 
     // Ajouter changefreq si présent
@@ -1286,7 +1286,7 @@ ${entries
 
       // Générer la liste des sitemaps
       const sitemaps = [];
-      const baseUrl = process.env.BASE_URL || 'https://automecanik.com';
+      const baseUrl = process.env.BASE_URL || 'https://www.automecanik.com';
 
       // Ajouter les autres sitemaps statiques
       sitemaps.push({

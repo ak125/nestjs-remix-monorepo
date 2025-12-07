@@ -14,7 +14,7 @@ export interface CanonicalUrlOptions {
   page?: number;
   /** Inclure le domaine complet */
   includeHost?: boolean;
-  /** Domaine (par défaut: automecanik.com) */
+  /** Domaine (par défaut: www.automecanik.com) */
   host?: string;
   /** Protocole (par défaut: https) */
   protocol?: 'http' | 'https';
@@ -82,7 +82,7 @@ const TRACKING_PARAMS = [
  *   params: { marque: 'renault', utm_source: 'google' },
  *   includeHost: true
  * })
- * // => "https://automecanik.com/pieces/plaquette-de-frein-402?marque=renault"
+ * // => "https://www.automecanik.com/pieces/plaquette-de-frein-402?marque=renault"
  */
 export function buildCanonicalUrl(options: CanonicalUrlOptions): string {
   const {
@@ -90,7 +90,7 @@ export function buildCanonicalUrl(options: CanonicalUrlOptions): string {
     params = {},
     page,
     includeHost = false,
-    host = 'automecanik.com',
+    host = 'www.automecanik.com',
     protocol = 'https',
   } = options;
 
@@ -311,7 +311,7 @@ export function generatePaginationTags(options: PaginationTagsOptions): Paginati
  */
 export function cleanUrl(url: string): string {
   try {
-    const urlObj = new URL(url, 'https://automecanik.com');
+    const urlObj = new URL(url, 'https://www.automecanik.com');
     const params = new URLSearchParams(urlObj.search);
 
     // Supprimer tous les paramètres de tracking
@@ -336,7 +336,7 @@ export function cleanUrl(url: string): string {
  */
 export function normalizeUrl(url: string): string {
   try {
-    const urlObj = new URL(url, 'https://automecanik.com');
+    const urlObj = new URL(url, 'https://www.automecanik.com');
     const params = new URLSearchParams(urlObj.search);
 
     // Trier les paramètres
