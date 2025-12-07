@@ -325,7 +325,7 @@ export default function TestHomepageModern() {
       {/* 📂 CATALOGUE COMPLET - Version optimisée */}
       <section
         id="catalogue"
-        className="py-12 bg-gradient-to-br from-slate-50 to-blue-50"
+        className="py-12 bg-gradient-to-br from-slate-50 to-blue-50 scroll-mt-24"
       >
         <div className="container mx-auto px-4">
           {/* En-tête simplifié */}

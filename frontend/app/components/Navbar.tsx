@@ -195,18 +195,14 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
             <Link
               to="/#catalogue"
               onClick={(e) => {
-                e.preventDefault();
+                const isHomepage = window.location.pathname === '/';
                 const catalogueSection = document.getElementById("catalogue");
-                if (catalogueSection) {
-                  const offset = 100;
-                  const elementPosition =
-                    catalogueSection.getBoundingClientRect().top;
-                  const offsetPosition =
-                    elementPosition + window.pageYOffset - offset;
-                  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                } else {
-                  navigate("/pieces");
+                
+                if (isHomepage && catalogueSection) {
+                  e.preventDefault();
+                  catalogueSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+                // Sinon : laisse le lien naviguer vers /#catalogue naturellement
               }}
               className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
             >
@@ -220,19 +216,14 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
             <Link
               to="/#toutes-les-marques"
               onClick={(e) => {
-                e.preventDefault();
-                const marquesSection =
-                  document.getElementById("toutes-les-marques");
-                if (marquesSection) {
-                  const offset = 100;
-                  const elementPosition =
-                    marquesSection.getBoundingClientRect().top;
-                  const offsetPosition =
-                    elementPosition + window.pageYOffset - offset;
-                  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                } else {
-                  navigate("/constructeurs");
+                const isHomepage = window.location.pathname === '/';
+                const marquesSection = document.getElementById("toutes-les-marques");
+                
+                if (isHomepage && marquesSection) {
+                  e.preventDefault();
+                  marquesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+                // Sinon : laisse le lien naviguer vers /#toutes-les-marques naturellement
               }}
               className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
             >
