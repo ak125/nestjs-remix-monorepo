@@ -17,10 +17,7 @@
  * les problèmes de routage avec le backend v2
  */
 import { type LoaderFunctionArgs } from "@remix-run/node";
-import {
-  SITEMAP_CONFIG,
-  getSitemapHeaders,
-} from "~/lib/sitemap-fetch";
+import { getSitemapHeaders } from "~/lib/sitemap-fetch";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
