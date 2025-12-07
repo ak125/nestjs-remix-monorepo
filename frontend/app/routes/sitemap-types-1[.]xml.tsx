@@ -25,9 +25,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
   
   try {
-    // ✅ V2 avec cache Redis (TTL 6h) + filtre type_relfollow=1
+    // ✅ Utiliser l'API sitemap legacy qui fonctionne
     const response = await fetchWithRetry(
-      `${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/types-0-10000`
+      `${SITEMAP_CONFIG.BACKEND_URL}/api/sitemap/types-1.xml`
     );
     
     const sitemap = await response.text();

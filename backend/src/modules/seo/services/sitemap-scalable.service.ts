@@ -643,7 +643,7 @@ export class SitemapScalableService extends SupabaseBaseService {
         const hasStock = parseInt(p.map_has_item || '0', 10) > 0;
 
         return {
-          loc: `https://automecanik.com/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+          loc: `https://www.automecanik.com/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
           lastmod: new Date().toISOString().split('T')[0],
           // Pages avec stock: priorité haute, mise à jour fréquente
           // Pages sans stock: priorité basse, mise à jour rare
@@ -779,7 +779,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     return allGammes.map((gamme) => ({
-      loc: `https://automecanik.com/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`,
+      loc: `https://www.automecanik.com/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`,
       lastmod: new Date().toISOString(),
       changefreq: 'weekly',
       priority: 0.8,
