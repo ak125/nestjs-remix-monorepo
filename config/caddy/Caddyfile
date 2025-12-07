@@ -1,17 +1,13 @@
-# 🚀 Configuration Caddy pour NestJS + Remix Monorepo
-# Date: 21 octobre 2025
+# Configuration Caddy pour NestJS + Remix Monorepo
+# Date: 7 decembre 2025
 # Production-ready reverse proxy avec redirections SEO
 
 # ===== CONFIGURATION GLOBALE =====
 {
-    # Email pour certificats Let's Encrypt (remplacez par le vôtre)
-    email admin@automecanik.fr
-    
-    # Options de performance
+    email admin@automecanik.com
     admin off
     auto_https on
     
-    # Logs globaux (format optimisé pour Vector)
     log {
         output file /var/log/caddy/access.log {
             roll_size 100mb
@@ -28,34 +24,27 @@
     }
 }
 
-# ===== SITE PRINCIPAL =====
-# Configuration pour automecanik.fr
-automecanik.fr {
+# ===== REDIRECTION .FR VERS .COM =====
+automecanik.fr, www.automecanik.fr {
+    redir https://www.automecanik.com{uri} permanent
+}
+
+# ===== SITE PRINCIPAL .COM =====
+automecanik.com, www.automecanik.com {
     
-    # ===== REDIRECTIONS 301 PIÈCES AUTO =====
-    # Ces règles seront générées automatiquement via le script
-    # generate-caddy-config.sh et insérées ici
-    
-    # Exemple de redirection manuelle (à supprimer après génération auto)
-    # redir /pieces/ancien-slug/* /pieces/nouveau-slug/{uri} 301
+    # Redirection apex vers www
+    @apex host automecanik.com
+    redir @apex https://www.automecanik.com{uri} permanent
     
     # ===== REDIRECTIONS 301 IMAGES SUPABASE (SEO) =====
-    # Préserve les anciennes URLs publiques pour le SEO et liens externes
-    # Redirige vers Supabase Storage avec code 301 permanent
-    
-    # Images produits: /rack/{folder}/{filename} → Supabase rack-images bucket
     @rack_images path_regexp rack_path ^/rack/(.+)$
     redir @rack_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1} 301
     
-    # Images uploads: /upload/* → Supabase uploads bucket
-    # Couvre 8 formats: gammes, familles, constructeurs, équipementiers, blog, favicon, etc.
     @upload_images path_regexp upload_path ^/upload/(.+)$
     redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
     
     # ===== ASSETS STATIQUES AVEC CACHE =====
-    # Cache agressif pour assets avec hash (build)
     @hashed path /build/*
-    
     handle @hashed {
         header Cache-Control "public, max-age=31536000, immutable"
         reverse_proxy monorepo_prod:3000 {
@@ -67,9 +56,7 @@ automecanik.fr {
         }
     }
     
-    # Cache modéré pour autres assets statiques
     @static path *.css *.js *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webp *.avif /public/* /assets/*
-    
     handle @static {
         header Cache-Control "public, max-age=86400"
         reverse_proxy monorepo_prod:3000 {
@@ -82,47 +69,31 @@ automecanik.fr {
     }
     
     # ===== CACHE INTELLIGENT POUR PAGES PUBLIQUES =====
-    # Cache uniquement pour les visiteurs anonymes (sans cookie de session)
-    # Les utilisateurs connectés passent directement au backend
-    
     @public_cached {
-        # Seulement les requêtes GET/HEAD
         method GET HEAD
-        
-        # Exclure les routes API
         not path /api/*
         not path /admin/*
         not path /auth/*
         not path /cart/*
         not path /checkout/*
         not path /account/*
-        
-        # Exclure si cookie de session présent
         not header_regexp Cookie (?i)(connect\.sid|session)
     }
     
-    # Pages publiques cachées avec TTL adapté
     handle @public_cached {
-        # Page d'accueil : cache court (60s)
         @homepage path /
         header @homepage Cache-Control "public, max-age=60, stale-while-revalidate=120"
         
-        # Pages produits et pièces : cache moyen (5min)
         @products path_regexp ^/(products|pieces|catalog|vehicule)/
         header @products Cache-Control "public, max-age=300, stale-while-revalidate=600"
         
-        # Pages blog et guides : cache long (30min)
         @content path_regexp ^/(blog-pieces-auto|blog|guides|articles|conseils)/
         header @content Cache-Control "public, max-age=1800, stale-while-revalidate=3600"
         
-        # Pages de recherche : cache très court (30s)
         @search path /search
         header @search Cache-Control "public, max-age=30, stale-while-revalidate=60"
         
-        # Autres pages publiques : cache par défaut (2min)
         header Cache-Control "public, max-age=120, stale-while-revalidate=240"
-        
-        # Headers de variance pour cache correct
         header Vary "Accept-Encoding, Cookie"
         
         reverse_proxy monorepo_prod:3000 {
@@ -134,12 +105,10 @@ automecanik.fr {
         }
     }
     
-    # ===== TOUTES LES AUTRES ROUTES (API + FRONTEND) =====
-    # Routes privées et authentifiées - JAMAIS de cache
+    # ===== ROUTES PRIVEES =====
     @private {
         path /api/* /admin/* /auth/* /cart/* /checkout/* /account/*
     }
-    
     handle @private {
         header Cache-Control "private, no-cache, no-store, must-revalidate"
         header Pragma "no-cache"
@@ -154,18 +123,14 @@ automecanik.fr {
         }
     }
     
-    # Fallback pour toutes les autres routes
-    # Fallback pour toutes les autres routes
-    # Le monorepo gère tout : NestJS backend + Remix frontend
+    # ===== FALLBACK =====
     reverse_proxy monorepo_prod:3000 {
-        # En-têtes de proxy
         header_up Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
         header_up X-Forwarded-Host {host}
         
-        # Health checks au format Caddy v2
         health_checks {
             active {
                 path /health
@@ -175,7 +140,6 @@ automecanik.fr {
             }
         }
         
-        # Timeouts adaptés (API + SSR)
         transport http {
             dial_timeout 10s
             response_header_timeout 60s
@@ -185,46 +149,25 @@ automecanik.fr {
     
     # ===== GESTION DES ERREURS =====
     handle_errors {
-        @404 {
-            expression {http.error.status_code} == 404
-        }
-        @500 {
-            expression {http.error.status_code} >= 500
-        }
-        
-        # Redirection personnalisée pour 404
+        @404 expression {http.error.status_code} == 404
+        @500 expression {http.error.status_code} >= 500
         redir @404 /404 302
-        
-        # Page d'erreur pour 500+
-        respond @500 "Une erreur est survenue. Veuillez réessayer plus tard." 500
+        respond @500 "Une erreur est survenue. Veuillez reessayer plus tard." 500
     }
     
-    # ===== HEADERS DE SÉCURITÉ =====
+    # ===== HEADERS DE SECURITE =====
     header {
-        # Sécurité basique
         X-Frame-Options "SAMEORIGIN"
         X-Content-Type-Options "nosniff"
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
-        
-        # HSTS (désactivé en dev, activer en prod)
-        # Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        
-        # CSP (à adapter selon vos besoins)
-        # Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
-        
-        # Permissions Policy
         Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
-        
-        # Retirer les headers qui révèlent des infos serveur
         -Server
         -X-Powered-By
     }
     
-    # ===== COMPRESSION =====
     encode gzip zstd
     
-    # ===== LOGGING SPÉCIFIQUE AU DOMAINE (format optimisé pour Vector) =====
     log {
         output file /var/log/caddy/automecanik.log {
             roll_size 50mb
@@ -239,14 +182,3 @@ automecanik.fr {
         level INFO
     }
 }
-
-# ===== REDIRECTION WWW VERS APEX =====
-www.automecanik.fr {
-    redir https://automecanik.fr{uri} permanent
-}
-
-# ===== CONFIGURATION LOCALE (DÉVELOPPEMENT) =====
-# Décommentez pour tester en local
-# localhost:80, localhost:443 {
-#     reverse_proxy localhost:3000
-# }
