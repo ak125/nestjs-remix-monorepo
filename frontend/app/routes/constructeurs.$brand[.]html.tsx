@@ -1,4 +1,4 @@
-﻿// ðŸŽ¨ VERSION AMÉLIORÉE "€” PAGE CATALOGUE CONSTRUCTEUR
+﻿// ðŸŽ¨ VERSION AMÃ‰LIORÃ‰E â€” PAGE CATALOGUE CONSTRUCTEUR
 // Format: /constructeurs/{constructeur}-{id}.html
 // Exemple: /constructeurs/bmw-33.html, /constructeurs/renault-140.html
 
@@ -60,7 +60,7 @@ interface BrandDescription {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data || !data.seo) {
-    return [{ title: "Pièces Auto" }];
+    return [{ title: "PiÃ¨ces Auto" }];
   }
   return [
     { title: data.seo.title },
@@ -92,7 +92,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const marque_id = parseInt(match[2], 10);
 
   try {
-    // Récupération des données via l'API optimisée
+    // RÃ©cupÃ©ration des donnÃ©es via l'API optimisÃ©e
     const bestsellersResponse = await brandApi.getBrandPageData(marque_id);
 
     if (!bestsellersResponse.success || !bestsellersResponse.data) {
@@ -101,7 +101,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json(bestsellersResponse.data);
   } catch (error) {
-    console.error("Erreur récupération bestsellers:", error);
+    console.error("Erreur rÃ©cupÃ©ration bestsellers:", error);
     throw new Response("Error loading brand page", { status: 500 });
   }
 }
@@ -125,24 +125,24 @@ export default function BrandCatalogPage() {
   const apiParts = popular_parts;
   const apiVehicles = popular_vehicles;
 
-  // Données de maillage interne
+  // DonnÃ©es de maillage interne
   const _relatedBrands: RelatedBrand[] = related_brands || [];
   const popularGammes: PopularGamme[] = popular_gammes || [];
 
-  // Reconstruction de la description Ã  partir des données disponibles ou fallback
+  // Reconstruction de la description Ã  partir des donnÃ©es disponibles ou fallback
   const brandDescription: BrandDescription = {
     history: blog_content?.content
-      ? blog_content.content.replace(/<[^>]*>?/gm, –).substring(0, 300) + "..."
-      : `Constructeur automobile proposant une large gamme de véhicules alliant performance et innovation.`,
+      ? blog_content.content.replace(/<[^>]*>?/gm, "").substring(0, 300) + "..."
+      : `Constructeur automobile proposant une large gamme de vÃ©hicules alliant performance et innovation.`,
     strengths: [
-      "Qualité reconnue",
+      "QualitÃ© reconnue",
       "Technologies modernes",
-      "Large réseau",
+      "Large rÃ©seau",
     ],
-    models: [], // On pourrait extraire ça des véhicules populaires si besoin
+    models: [], // On pourrait extraire Ã§a des vÃ©hicules populaires si besoin
   };
 
-  // ðŸŽ¨ Récupérer la couleur thématique du constructeur
+  // ðŸŽ¨ RÃ©cupÃ©rer la couleur thÃ©matique du constructeur
   const brandColor = brandColorsService.getBrandGradient(
     manufacturer.marque_alias,
   );
@@ -150,12 +150,12 @@ export default function BrandCatalogPage() {
     manufacturer.marque_alias,
   );
 
-  // ðŸ–¼ï¸ Mapping pour les logos qui ont un nom différent de l'alias DB
+  // ðŸ–¼ï¸ Mapping pour les logos qui ont un nom diffÃ©rent de l'alias DB
   const getLogoAlias = (dbAlias: string): string => {
     const logoMapping: Record<string, string> = {
       "mercedes-benz": "mercedes",
       "alfa-romeo": "alfa-romeo",
-      // Ajouter d'autres mappings si nécessaire
+      // Ajouter d'autres mappings si nÃ©cessaire
     };
     return logoMapping[dbAlias] || dbAlias;
   };
@@ -184,7 +184,7 @@ export default function BrandCatalogPage() {
         </div>
       </nav>
 
-      {/* ðŸŽï¸ Hero Section - Couleur thématique du constructeur */}
+      {/* ðŸŽï¸ Hero Section - Couleur thÃ©matique du constructeur */}
       <section
         className="relative overflow-hidden text-white py-12 md:py-16 lg:py-20"
         style={brandColor}
@@ -209,7 +209,7 @@ export default function BrandCatalogPage() {
           aria-hidden="true"
         />
 
-        {/* Formes décoratives organiques */}
+        {/* Formes dÃ©coratives organiques */}
         <div
           className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite] z-[1]"
           aria-hidden="true"
@@ -220,16 +220,16 @@ export default function BrandCatalogPage() {
         ></div>
 
         <div className="relative z-10 container mx-auto px-4 max-w-7xl">
-          {/* Titre H1 dynamique optimisé SEO */}
+          {/* Titre H1 dynamique optimisÃ© SEO */}
           <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
-                Catalogue pièces auto {manufacturer.marque_name}
+                Catalogue piÃ¨ces auto {manufacturer.marque_name}
               </span>
             </h1>
             <p className="text-white/90 text-base md:text-lg mt-3 drop-shadow-lg">
-              Trouvez rapidement les pièces adaptées : entretien, freinage,
-              suspension, moteur"€¦
+              Trouvez rapidement les piÃ¨ces adaptÃ©es : entretien, freinage,
+              suspension, moteurâ€¦
             </p>
           </div>
 
@@ -239,17 +239,17 @@ export default function BrandCatalogPage() {
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
-                  Sélectionnez votre véhicule {manufacturer.marque_name}{" "}
-                  pour voir les pièces compatibles
+                  SÃ©lectionnez votre vÃ©hicule {manufacturer.marque_name}{" "}
+                  pour voir les piÃ¨ces compatibles
                 </p>
               </div>
 
-              {/* Layout horizontal : Logo + VehicleSelector côte Ã  côte */}
+              {/* Layout horizontal : Logo + VehicleSelector cÃ´te Ã  cÃ´te */}
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
                 {/* Logo constructeur Ã  gauche */}
                 <div className="flex-shrink-0 w-full lg:w-64">
                   <div className="relative group">
-                    {/* Cercle décoratif arrière-plan */}
+                    {/* Cercle dÃ©coratif arriÃ¨re-plan */}
                     <div className="absolute inset-0 -z-10">
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
                     </div>
@@ -273,7 +273,7 @@ export default function BrandCatalogPage() {
                       </div>
                     </div>
 
-                    {/* Particule décorative */}
+                    {/* Particule dÃ©corative */}
                     <div
                       className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl animate-[float_8s_ease-in-out_infinite]"
                       aria-hidden="true"
@@ -306,7 +306,7 @@ export default function BrandCatalogPage() {
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Car className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
-                50 000+ pièces
+                50 000+ piÃ¨ces
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
@@ -318,7 +318,7 @@ export default function BrandCatalogPage() {
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Wrench className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
-                Paiement sécurisé
+                Paiement sÃ©curisÃ©
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
@@ -331,11 +331,11 @@ export default function BrandCatalogPage() {
         </div>
       </section>
 
-      {/* ðŸ“¦ Pièces populaires depuis l'API */}
+      {/* ðŸ“¦ PiÃ¨ces populaires depuis l'API */}
       {apiParts.length > 0 && (
         <div className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-16 border-b border-gray-100">
           <div className="container mx-auto px-4">
-            {/* En-tête avec gradient de marque */}
+            {/* En-tÃªte avec gradient de marque */}
             <div className="relative mb-8 md:mb-12">
               <div
                 className="relative rounded-2xl p-6 md:p-8 shadow-xl overflow-hidden"
@@ -350,10 +350,10 @@ export default function BrandCatalogPage() {
                     </div>
                     <div>
                       <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-0.5 md:mb-1">
-                        Pièces {manufacturer.marque_name} populaires
+                        PiÃ¨ces {manufacturer.marque_name} populaires
                       </h2>
                       <p className="text-white/80 text-xs md:text-sm">
-                        Les pièces les plus recherchées par nos clients
+                        Les piÃ¨ces les plus recherchÃ©es par nos clients
                       </p>
                     </div>
                   </div>
@@ -365,7 +365,7 @@ export default function BrandCatalogPage() {
                         {apiParts.length}
                       </span>
                       <span className="text-white/80 text-xs md:text-sm ml-1.5">
-                        pièces
+                        piÃ¨ces
                       </span>
                     </div>
                     {/* Indicateur SEO enrichi */}
@@ -390,7 +390,7 @@ export default function BrandCatalogPage() {
             <div
               className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4"
               role="list"
-              aria-label={`Pièces populaires ${manufacturer.marque_name}`}
+              aria-label={`PiÃ¨ces populaires ${manufacturer.marque_name}`}
             >
               {apiParts.map((part, index) => (
                 <div
@@ -409,11 +409,11 @@ export default function BrandCatalogPage() {
         </div>
       )}
 
-      {/* ðŸš— Véhicules les plus recherchés */}
+      {/* ðŸš— VÃ©hicules les plus recherchÃ©s */}
       {apiVehicles.length > 0 && (
         <div className="bg-gradient-to-b from-white to-gray-50 py-10 md:py-16 border-b border-gray-100">
           <div className="container mx-auto px-4">
-            {/* En-tête avec gradient de marque atténué */}
+            {/* En-tÃªte avec gradient de marque attÃ©nuÃ© */}
             <div className="relative mb-6 md:mb-12">
               <div
                 className="relative rounded-2xl p-4 md:p-8 shadow-xl overflow-hidden"
@@ -432,11 +432,11 @@ export default function BrandCatalogPage() {
                     </div>
                     <div>
                       <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-0.5 md:mb-1">
-                        Véhicules {manufacturer.marque_name} les plus
-                        recherchés
+                        VÃ©hicules {manufacturer.marque_name} les plus
+                        recherchÃ©s
                       </h2>
                       <p className="text-white/80 text-xs md:text-sm">
-                        Découvrez les modèles préférés de nos clients
+                        DÃ©couvrez les modÃ¨les prÃ©fÃ©rÃ©s de nos clients
                       </p>
                     </div>
                   </div>
@@ -447,7 +447,7 @@ export default function BrandCatalogPage() {
                       {apiVehicles.length}
                     </span>
                     <span className="text-white/80 text-xs md:text-sm ml-1.5 md:ml-2">
-                      véhicules
+                      vÃ©hicules
                     </span>
                   </div>
                 </div>
@@ -457,7 +457,7 @@ export default function BrandCatalogPage() {
             <div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
               role="list"
-              aria-label={`Véhicules ${manufacturer.marque_name} populaires`}
+              aria-label={`VÃ©hicules ${manufacturer.marque_name} populaires`}
             >
               {apiVehicles.map((vehicle) => (
                 <div key={vehicle.cgc_type_id} role="listitem">
@@ -480,7 +480,7 @@ export default function BrandCatalogPage() {
         />
       )}
 
-      {/* ðŸ“˜ Présentation Constructeur */}
+      {/* ðŸ“˜ PrÃ©sentation Constructeur */}
       <div className="bg-white py-8 md:py-12 border-t border-gray-200">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6">
@@ -491,7 +491,7 @@ export default function BrandCatalogPage() {
               <HtmlContent
                 html={blog_content.content}
                 trackLinks={true}
-                className=–
+                className=""
               />
             ) : (
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
@@ -507,7 +507,7 @@ export default function BrandCatalogPage() {
                 <ul className="space-y-2">
                   {brandDescription.strengths.map((strength, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">"”</span>
+                      <span className="text-blue-600 mt-1">âœ”</span>
                       <span className="text-gray-700">{strength}</span>
                     </li>
                   ))}
@@ -518,7 +518,7 @@ export default function BrandCatalogPage() {
         </div>
       </div>
 
-      {/* ðŸ”— Schema.org - Données structurées SEO */}
+      {/* ðŸ”— Schema.org - DonnÃ©es structurÃ©es SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -544,7 +544,7 @@ export default function BrandCatalogPage() {
                   {
                     "@type": "ListItem",
                     position: 3,
-                    name: `Pièces ${manufacturer.marque_name}`,
+                    name: `PiÃ¨ces ${manufacturer.marque_name}`,
                     item: `https://www.automecanik.com/constructeurs/${manufacturer.marque_alias}-${manufacturer.marque_id}.html`,
                   },
                 ],
@@ -558,10 +558,10 @@ export default function BrandCatalogPage() {
                   manufacturer.marque_logo ||
                   `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${manufacturer.marque_alias}.webp`,
               },
-              // ItemList - Véhicules populaires
+              // ItemList - VÃ©hicules populaires
               {
                 "@type": "ItemList",
-                name: `Véhicules ${manufacturer.marque_name} les plus recherchés`,
+                name: `VÃ©hicules ${manufacturer.marque_name} les plus recherchÃ©s`,
                 numberOfItems: apiVehicles.length,
                 itemListElement: apiVehicles.slice(0, 10).map((v, idx) => ({
                   "@type": "ListItem",
@@ -583,10 +583,10 @@ export default function BrandCatalogPage() {
                   },
                 })),
               },
-              // ItemList - Pièces populaires
+              // ItemList - PiÃ¨ces populaires
               {
                 "@type": "ItemList",
-                name: `Pièces ${manufacturer.marque_name} populaires`,
+                name: `PiÃ¨ces ${manufacturer.marque_name} populaires`,
                 numberOfItems: apiParts.length,
                 itemListElement: apiParts.slice(0, 10).map((p, idx) => ({
                   "@type": "ListItem",
@@ -608,7 +608,7 @@ export default function BrandCatalogPage() {
   );
 }
 
-// ðŸš— Composant Carte de véhicule API - Version améliorée avec SEO complet
+// ðŸš— Composant Carte de vÃ©hicule API - Version amÃ©liorÃ©e avec SEO complet
 function VehicleCard({
   vehicle,
   brandPrimary,
@@ -623,13 +623,13 @@ function VehicleCard({
       ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
       : `depuis ${vehicle.type_year_from}`);
 
-  // Titre SEO complet : "Pièces auto RENAULT CLIO II 1.9 D"
-  const seoTitle = `Pièces auto ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`;
+  // Titre SEO complet : "PiÃ¨ces auto RENAULT CLIO II 1.9 D"
+  const seoTitle = `PiÃ¨ces auto ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`;
 
-  // Détection du carburant depuis type_fuel ou type_name
+  // DÃ©tection du carburant depuis type_fuel ou type_name
   const detectFuel = (): string | null => {
-    const fuel = vehicle.type_fuel?.toLowerCase() || –;
-    const typeName = vehicle.type_name?.toLowerCase() || –;
+    const fuel = vehicle.type_fuel?.toLowerCase() || "";
+    const typeName = vehicle.type_name?.toLowerCase() || "";
 
     if (
       fuel.includes("diesel") ||
@@ -649,8 +649,8 @@ function VehicleCard({
       return "Essence";
     }
     if (fuel.includes("hybrid")) return "Hybride";
-    if (fuel.includes("electr")) return "Électrique";
-    // Par défaut, détecter depuis le nom de motorisation
+    if (fuel.includes("electr")) return "Ã‰lectrique";
+    // Par dÃ©faut, dÃ©tecter depuis le nom de motorisation
     if (typeName.match(/^\d+\.\d+$/)) return "Essence"; // Ex: "1.2" sans suffixe = essence
     return null;
   };
@@ -661,9 +661,9 @@ function VehicleCard({
     <Link
       to={vehicle.vehicle_url || "#"}
       className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      aria-label={`Voir les pièces pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch - ${yearRange}`}
+      aria-label={`Voir les piÃ¨ces pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch - ${yearRange}`}
     >
-      {/* ðŸ–¼ï¸ Image responsive du véhicule avec srcset */}
+      {/* ðŸ–¼ï¸ Image responsive du vÃ©hicule avec srcset */}
       <div className="relative h-40 md:h-44 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
         <VehicleImage
           src={vehicle.image_url || "/images/default-vehicle.png"}
@@ -671,7 +671,7 @@ function VehicleCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
         />
-        {/* Badges superposés sur l'image */}
+        {/* Badges superposÃ©s sur l'image */}
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end">
           {/* Badge puissance */}
           {vehicle.type_power_ps && (
@@ -708,7 +708,7 @@ function VehicleCard({
       </div>
 
       <div className="p-4">
-        {/* Marque + Modèle */}
+        {/* Marque + ModÃ¨le */}
         <p className="font-bold text-base md:text-lg text-gray-900 mb-0.5 line-clamp-1">
           {vehicle.marque_name} {vehicle.modele_name}
         </p>
@@ -724,8 +724,8 @@ function VehicleCard({
         {/* Description SEO enrichie - toujours visible */}
         <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2 min-h-[2.25rem] italic">
           {vehicle.seo_benefit
-            ? `Pièces ${vehicle.seo_benefit}`
-            : `Pièces détachées disponibles pour votre ${vehicle.marque_name}`}
+            ? `PiÃ¨ces ${vehicle.seo_benefit}`
+            : `PiÃ¨ces dÃ©tachÃ©es disponibles pour votre ${vehicle.marque_name}`}
         </p>
 
         {/* Infos techniques */}
@@ -746,7 +746,7 @@ function VehicleCard({
               color: brandPrimary,
             }}
           >
-            Voir les pièces
+            Voir les piÃ¨ces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
         </div>
@@ -755,7 +755,7 @@ function VehicleCard({
   );
 }
 
-// ðŸ“¦ Composant Carte de pièce API - Version améliorée style ancien HTML avec multi-alias SEO
+// ðŸ“¦ Composant Carte de piÃ¨ce API - Version amÃ©liorÃ©e style ancien HTML avec multi-alias SEO
 function ApiPartCard({
   part,
   brandAlias: _brandAlias,
@@ -765,12 +765,12 @@ function ApiPartCard({
   brandAlias: string;
   brandPrimary: string;
 }) {
-  // ðŸ”’ Contexte véhicule avec gestion des valeurs nulles/undefined
+  // ðŸ”’ Contexte vÃ©hicule avec gestion des valeurs nulles/undefined
   const vehicleContext =
     [part.marque_name, part.modele_name, part.type_name]
       .filter(Boolean)
       .join(" ") || part.pg_name;
-  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : –;
+  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : "";
   const fullContext = powerSuffix
     ? `${vehicleContext} ${powerSuffix}`
     : vehicleContext;
@@ -782,9 +782,9 @@ function ApiPartCard({
     >
       {/* Contenu */}
       <div className="p-3 md:p-4 flex flex-col h-full">
-        {/* En-tête : Image + Titre */}
+        {/* En-tÃªte : Image + Titre */}
         <div className="flex items-start gap-3 mb-3">
-          {/* ðŸ–¼ï¸ Image responsive de la pièce avec srcset */}
+          {/* ðŸ–¼ï¸ Image responsive de la piÃ¨ce avec srcset */}
           <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
             <PartImage
               src={part.image_url || "/images/default-part.png"}
@@ -800,7 +800,7 @@ function ApiPartCard({
             <h4 className="font-bold text-sm md:text-base text-gray-900 mb-0.5 group-hover:text-red-600 transition-colors">
               {part.pg_name}
             </h4>
-            {/* Sous-titre avec contexte véhicule */}
+            {/* Sous-titre avec contexte vÃ©hicule */}
             <p className="text-xs text-gray-500 line-clamp-2">
               {part.seo_title || `${part.pg_name} pour ${vehicleContext}`}
             </p>
@@ -815,7 +815,7 @@ function ApiPartCard({
             </p>
           ) : (
             <p className="text-xs text-gray-600 leading-relaxed">
-              Pièce de qualité pour {fullContext}
+              PiÃ¨ce de qualitÃ© pour {fullContext}
             </p>
           )}
         </div>
@@ -833,10 +833,10 @@ function ApiPartCard({
             className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1"
             style={{ color: brandPrimary }}
           >
-            Voir les pièces
+            Voir les piÃ¨ces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
-          {/* Badge motorisation - affiché uniquement si puissance disponible */}
+          {/* Badge motorisation - affichÃ© uniquement si puissance disponible */}
           {part.type_power_ps ? (
             <span
               className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full"
