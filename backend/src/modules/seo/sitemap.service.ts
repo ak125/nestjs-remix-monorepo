@@ -808,27 +808,27 @@ Crawl-delay: 1`;
       const { count: displayCount } = await this.client
         .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
-        .eq('pg_display', 1);
+        .eq('pg_display', '1');
 
       // Avec pg_level IN [1, 2]
       const { count: levelCount } = await this.client
         .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
-        .in('pg_level', [1, 2]);
+        .in('pg_level', ['1', '2']);
 
       // Avec les deux filtres
       const { count: bothCount } = await this.client
         .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
-        .eq('pg_display', 1)
-        .in('pg_level', [1, 2]);
+        .eq('pg_display', '1')
+        .in('pg_level', ['1', '2']);
 
       // Échantillon avec les filtres
       const { data: samples } = await this.client
         .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name, pg_display, pg_level')
-        .eq('pg_display', 1)
-        .in('pg_level', [1, 2])
+        .eq('pg_display', '1')
+        .in('pg_level', ['1', '2'])
         .limit(10);
 
       return {
@@ -961,7 +961,7 @@ ${entries
         .from(TABLES.auto_modele)
         .select('modele_id, modele_alias, modele_name, modele_name_url')
         .eq('modele_marque_id', marqueId)
-        .eq('modele_display', 1)
+        .eq('modele_display', '1')
         .order('modele_name');
 
       const entries: SitemapEntry[] = [];
