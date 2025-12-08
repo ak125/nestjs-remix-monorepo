@@ -18,7 +18,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     code: 'fr',
     region: 'FR',
     hreflang: 'fr-FR',
-    domain: 'https://automecanik.com',
+    domain: 'https://www.automecanik.com',
     isDefault: true, // Langue par défaut
   },
   {
@@ -64,7 +64,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
 export const X_DEFAULT_LANGUAGE: LanguageConfig = {
   code: 'fr',
   hreflang: 'x-default',
-  domain: 'https://automecanik.com',
+  domain: 'https://www.automecanik.com',
   isDefault: true,
 };
 

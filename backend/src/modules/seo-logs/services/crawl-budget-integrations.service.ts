@@ -268,7 +268,7 @@ export class CrawlBudgetOrchestratorService {
       .split('T')[0];
 
     const gscStats = await this.gsc.getCrawlStats(
-      process.env.GSC_SITE_URL || 'https://automecanik.com',
+      process.env.GSC_SITE_URL || 'https://www.automecanik.com',
       startDate,
       endDate,
     );
@@ -295,7 +295,7 @@ export class CrawlBudgetOrchestratorService {
     const today = new Date().toISOString().split('T')[0];
 
     const gscStats = await this.gsc.getCrawlStats(
-      process.env.GSC_SITE_URL || 'https://automecanik.com',
+      process.env.GSC_SITE_URL || 'https://www.automecanik.com',
       today,
       today,
     );
