@@ -737,10 +737,10 @@ ${sitemaps
 Allow: /
 
 # Sitemaps
-Sitemap: https://automecanik.com/sitemap.xml
-Sitemap: https://automecanik.com/sitemap-constructeurs.xml
-Sitemap: https://automecanik.com/sitemap-products.xml
-Sitemap: https://automecanik.com/sitemap-blog.xml
+Sitemap: https://www.automecanik.com/sitemap.xml
+Sitemap: https://www.automecanik.com/sitemap-constructeurs.xml
+Sitemap: https://www.automecanik.com/sitemap-products.xml
+Sitemap: https://www.automecanik.com/sitemap-blog.xml
 
 # Restrictions
 Disallow: /admin/
