@@ -764,8 +764,8 @@ export class SitemapScalableService extends SupabaseBaseService {
       const { data } = await this.supabase
         .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name')
-        .eq('pg_display', 1)
-        .eq('pg_level', level)
+        .eq('pg_display', '1')
+        .eq('pg_level', String(level))
         .range(offset, offset + batchSize - 1)
         .order('pg_id');
 
