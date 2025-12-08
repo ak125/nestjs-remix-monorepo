@@ -233,7 +233,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   // Construire l'URL canonique avec les utilitaires SEO
   // Note: L'URL canonique sera gérée via <link rel="canonical"> dans le component
-  const searchParams = new URL(location.pathname + location.search, 'https://automecanik.com').searchParams;
+  const searchParams = new URL(location.pathname + location.search, 'https://www.automecanik.com').searchParams;
   const paramsObj: Record<string, string> = {};
   searchParams.forEach((value, key) => {
     paramsObj[key] = value;
@@ -361,8 +361,8 @@ export default function PiecesDetailPage() {
           breadcrumbs,
           organization: {
             name: "Automecanik",
-            logo: "https://automecanik.com/logo.png",
-            url: "https://automecanik.com",
+            logo: "https://www.automecanik.com/logo.png",
+            url: "https://www.automecanik.com",
             contactPoint: {
               telephone: "+33-1-XX-XX-XX-XX",
               contactType: "Service Client",

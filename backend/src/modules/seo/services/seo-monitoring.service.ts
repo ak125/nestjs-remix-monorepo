@@ -45,7 +45,7 @@ export class SeoMonitoringService {
   constructor(private configService: ConfigService) {
     this.baseUrl = this.configService.get<string>(
       'BASE_URL',
-      'https://automecanik.com',
+      'https://www.automecanik.com',
     );
     this.slackWebhook = this.configService.get<string>('SLACK_WEBHOOK_URL', '');
 

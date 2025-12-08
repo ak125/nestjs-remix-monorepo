@@ -41,7 +41,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Configuration des variables globales (reproduction PHP)
 const PHP_LEGACY_CONFIG: PhpLegacyVariables = {
-  domain: "https://automecanik.com",
+  domain: "https://www.automecanik.com",
   auto: "constructeurs",
   piece: "pieces", 
   blog: "blog",

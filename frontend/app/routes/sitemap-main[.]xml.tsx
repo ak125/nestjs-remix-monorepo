@@ -28,17 +28,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://automecanik.com/</loc>
+    <loc>https://www.automecanik.com/</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://automecanik.com/products</loc>
+    <loc>https://www.automecanik.com/products</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://automecanik.com/constructeurs</loc>
+    <loc>https://www.automecanik.com/constructeurs</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <priority>0.8</priority>
   </url>

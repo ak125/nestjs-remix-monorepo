@@ -219,7 +219,7 @@ function generateOrganizationSchema(org: OrganizationData) {
     "@type": "Organization",
     "name": org.name,
     "url": org.url || "https://www.automecanik.com",
-    "logo": org.logo || "https://automecanik.com/logo.png",
+    "logo": org.logo || "https://www.automecanik.com/logo.png",
     ...(org.contactPoint && {
       "contactPoint": {
         "@type": "ContactPoint",

@@ -189,13 +189,13 @@ export function createProductSeoMeta(product: {
     { property: "og:type", content: "product" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
-    { property: "og:image", content: product.image || 'https://automecanik.com/images/og-product-default.jpg' },
+    { property: "og:image", content: product.image || 'https://www.automecanik.com/images/og-product-default.jpg' },
     
     // Twitter
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: product.image || 'https://automecanik.com/images/og-product-default.jpg' },
+    { name: "twitter:image", content: product.image || 'https://www.automecanik.com/images/og-product-default.jpg' },
   ];
   
   if (product.price) {
@@ -237,7 +237,7 @@ export function createArticleSeoMeta(article: {
     { property: "og:type", content: "article" },
     { property: "og:title", content: title },
     { property: "og:description", content: article.description },
-    { property: "og:image", content: article.image || 'https://automecanik.com/images/og-blog-default.jpg' },
+    { property: "og:image", content: article.image || 'https://www.automecanik.com/images/og-blog-default.jpg' },
     { property: "article:author", content: article.author },
     { property: "article:published_time", content: article.publishedTime },
     
@@ -245,7 +245,7 @@ export function createArticleSeoMeta(article: {
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: article.description },
-    { name: "twitter:image", content: article.image || 'https://automecanik.com/images/og-blog-default.jpg' },
+    { name: "twitter:image", content: article.image || 'https://www.automecanik.com/images/og-blog-default.jpg' },
   ];
   
   if (article.modifiedTime) {
