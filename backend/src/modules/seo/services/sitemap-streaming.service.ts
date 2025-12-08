@@ -36,7 +36,7 @@ export class SitemapStreamingService {
       outputDirectory: path.join(process.cwd(), 'public', 'sitemaps'),
       shardSize: 50000, // 50k URLs par shard (limite Google)
       autoGenerateIndex: true,
-      publicBaseUrl: 'https://automecanik.com/public/sitemaps',
+      publicBaseUrl: 'https://www.automecanik.com/public/sitemaps',
       cleanupBeforeGeneration: false,
     };
 

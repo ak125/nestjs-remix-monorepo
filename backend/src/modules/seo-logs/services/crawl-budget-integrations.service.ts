@@ -142,12 +142,12 @@ export class SitemapGeneratorService {
     // Mock data
     return [
       {
-        url: 'https://automecanik.com/products/piece-1',
+        url: 'https://www.automecanik.com/products/piece-1',
         familyCode: 'PIECE_MOTEUR',
         priority: 0.8,
       },
       {
-        url: 'https://automecanik.com/products/piece-2',
+        url: 'https://www.automecanik.com/products/piece-2',
         familyCode: 'PNEU_VIEUX',
         priority: 0.5,
       },

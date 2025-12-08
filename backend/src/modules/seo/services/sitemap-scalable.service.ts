@@ -322,25 +322,25 @@ export class SitemapScalableService extends SupabaseBaseService {
   private async fetchStaticPages(): Promise<SitemapEntry[]> {
     return [
       {
-        loc: 'https://automecanik.com/',
+        loc: 'https://www.automecanik.com/',
         lastmod: new Date().toISOString(),
         changefreq: 'daily',
         priority: 1.0,
       },
       {
-        loc: 'https://automecanik.com/products',
+        loc: 'https://www.automecanik.com/products',
         lastmod: new Date().toISOString(),
         changefreq: 'daily',
         priority: 0.9,
       },
       {
-        loc: 'https://automecanik.com/constructeurs',
+        loc: 'https://www.automecanik.com/constructeurs',
         lastmod: new Date().toISOString(),
         changefreq: 'weekly',
         priority: 0.8,
       },
       {
-        loc: 'https://automecanik.com/support',
+        loc: 'https://www.automecanik.com/support',
         lastmod: new Date().toISOString(),
         changefreq: 'monthly',
         priority: 0.5,
@@ -383,7 +383,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     if (!marques) return [];
 
     return marques.map((marque) => ({
-      loc: `https://automecanik.com/constructeurs/${marque.marque_alias}-${marque.marque_id}.html`,
+      loc: `https://www.automecanik.com/constructeurs/${marque.marque_alias}-${marque.marque_id}.html`,
       lastmod: new Date().toISOString(),
       changefreq: 'weekly',
       priority: 0.8,
@@ -454,7 +454,7 @@ export class SitemapScalableService extends SupabaseBaseService {
         'modele';
 
       return {
-        loc: `https://automecanik.com/constructeurs/${marqueAlias}-${modele.modele_marque_id}/${modeleAlias}-${modele.modele_id}.html`,
+        loc: `https://www.automecanik.com/constructeurs/${marqueAlias}-${modele.modele_marque_id}/${modeleAlias}-${modele.modele_id}.html`,
         lastmod: new Date().toISOString(),
         changefreq: 'weekly',
         priority: 0.7,
@@ -546,7 +546,7 @@ export class SitemapScalableService extends SupabaseBaseService {
           m.map_marque_alias && m.map_modele_alias && m.map_type_alias,
       )
       .map((m: any) => ({
-        loc: `https://automecanik.com/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
+        loc: `https://www.automecanik.com/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
         lastmod: new Date().toISOString().split('T')[0],
         changefreq: 'monthly',
         priority: 0.7,
@@ -731,7 +731,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     );
 
     return filteredArticles.map((article) => ({
-      loc: `https://automecanik.com/blog-pieces-auto/conseils/${article.alias}`,
+      loc: `https://www.automecanik.com/blog-pieces-auto/conseils/${article.alias}`,
       lastmod: article.lastmod
         ? new Date(article.lastmod).toISOString()
         : new Date(article.date).toISOString(),
