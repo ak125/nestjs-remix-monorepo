@@ -1,56 +1,56 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🧪 Script de validation du fil d'ariane Schema.org
+# ðŸ§ª Script de validation du fil d'ariane Schema.org
 
-echo "🍞 Validation du fil d'ariane (Breadcrumb)"
+echo "ðŸž Validation du fil d'ariane (Breadcrumb)"
 echo "=========================================="
 echo ""
 
-# URL à tester (remplacer par votre URL de production)
+# URL Ã  tester (remplacer par votre URL de production)
 URL="${1:-http://localhost:3000/constructeurs/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html}"
 
-echo "🔍 URL testée: $URL"
+echo "ðŸ” URL testÃ©e: $URL"
 echo ""
 
 # 1. Extraire le JSON-LD
-echo "📊 Extraction du JSON-LD Schema.org..."
+echo "ðŸ“Š Extraction du JSON-LD Schema.org..."
 SCHEMA=$(curl -s "$URL" | grep -oP '(?<=<script type="application/ld\+json">).*?(?=</script>)' | jq '.')
 
 if [ -z "$SCHEMA" ]; then
-    echo "❌ Aucun schema JSON-LD trouvé"
+    echo "âŒ Aucun schema JSON-LD trouvÃ©"
     exit 1
 fi
 
-echo "✅ Schema trouvé:"
+echo "âœ… Schema trouvÃ©:"
 echo "$SCHEMA"
 echo ""
 
 # 2. Valider la structure
-echo "🔍 Validation de la structure..."
+echo "ðŸ” Validation de la structure..."
 
-# Vérifier le type
+# VÃ©rifier le type
 TYPE=$(echo "$SCHEMA" | jq -r '.["@type"]')
 if [ "$TYPE" != "BreadcrumbList" ]; then
-    echo "❌ Type incorrect: $TYPE (attendu: BreadcrumbList)"
+    echo "âŒ Type incorrect: $TYPE (attendu: BreadcrumbList)"
     exit 1
 fi
-echo "✅ Type correct: BreadcrumbList"
+echo "âœ… Type correct: BreadcrumbList"
 
-# Vérifier le contexte
+# VÃ©rifier le contexte
 CONTEXT=$(echo "$SCHEMA" | jq -r '.["@context"]')
 if [ "$CONTEXT" != "https://schema.org" ]; then
-    echo "❌ Contexte incorrect: $CONTEXT"
+    echo "âŒ Contexte incorrect: $CONTEXT"
     exit 1
 fi
-echo "✅ Contexte correct: https://schema.org"
+echo "âœ… Contexte correct: https://schema.org"
 
-# Compter les éléments
+# Compter les Ã©lÃ©ments
 ITEMS_COUNT=$(echo "$SCHEMA" | jq '.itemListElement | length')
-echo "✅ Nombre d'éléments: $ITEMS_COUNT"
+echo "âœ… Nombre d'Ã©lÃ©ments: $ITEMS_COUNT"
 
-# Valider chaque élément
+# Valider chaque Ã©lÃ©ment
 echo ""
-echo "🔍 Validation des éléments..."
+echo "ðŸ” Validation des Ã©lÃ©ments..."
 for i in $(seq 0 $((ITEMS_COUNT - 1))); do
     ITEM=$(echo "$SCHEMA" | jq ".itemListElement[$i]")
     POSITION=$(echo "$ITEM" | jq -r '.position')
@@ -59,21 +59,21 @@ for i in $(seq 0 $((ITEMS_COUNT - 1))); do
     
     echo "  [$POSITION] $NAME"
     if [ "$ITEM_URL" != "N/A" ]; then
-        echo "      → $ITEM_URL"
+        echo "      â†’ $ITEM_URL"
     fi
 done
 
 echo ""
-echo "🎉 Validation terminée avec succès!"
+echo "ðŸŽ‰ Validation terminÃ©e avec succÃ¨s!"
 echo ""
 
 # 3. Tester avec Google Rich Results (optionnel)
-echo "🌐 Pour tester avec Google Rich Results Test:"
+echo "ðŸŒ Pour tester avec Google Rich Results Test:"
 echo "   https://search.google.com/test/rich-results?url=$(echo $URL | jq -sRr @uri)"
 echo ""
 
 # 4. Suggestions
-echo "💡 Suggestions:"
-echo "   - Vérifier dans Google Search Console après indexation"
-echo "   - Tester avec différents navigateurs"
+echo "ðŸ’¡ Suggestions:"
+echo "   - VÃ©rifier dans Google Search Console aprÃ¨s indexation"
+echo "   - Tester avec diffÃ©rents navigateurs"
 echo "   - Valider avec https://validator.schema.org/"

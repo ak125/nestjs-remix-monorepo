@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
 # Colors for output
@@ -8,7 +8,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}📊 Specification Coverage Report${NC}"
+echo -e "${BLUE}ðŸ“Š Specification Coverage Report${NC}"
 echo "================================"
 echo ""
 
@@ -19,7 +19,7 @@ REPORT_FILE=".spec/reports/coverage-$(date +%Y%m%d-%H%M%S).md"
 
 # Start report
 cat > "$REPORT_FILE" << 'EOF'
-# 📊 Specification Coverage Report
+# ðŸ“Š Specification Coverage Report
 
 **Generated:** $(date +"%Y-%m-%d %H:%M:%S")
 
@@ -234,9 +234,9 @@ cat >> "$REPORT_FILE" << 'EOF'
 EOF
 
 # ASCII bar chart
-BACKEND_BAR=$(printf '█%.0s' $(seq 1 $((BACKEND_PERCENT / 5))))
-FRONTEND_BAR=$(printf '█%.0s' $(seq 1 $((FRONTEND_PERCENT / 5))))
-OVERALL_BAR=$(printf '█%.0s' $(seq 1 $((OVERALL_PERCENT / 5))))
+BACKEND_BAR=$(printf 'â–ˆ%.0s' $(seq 1 $((BACKEND_PERCENT / 5))))
+FRONTEND_BAR=$(printf 'â–ˆ%.0s' $(seq 1 $((FRONTEND_PERCENT / 5))))
+OVERALL_BAR=$(printf 'â–ˆ%.0s' $(seq 1 $((OVERALL_PERCENT / 5))))
 
 cat >> "$REPORT_FILE" << EOF
 \`\`\`
@@ -256,20 +256,20 @@ EOF
 # Add recommendations
 if [ "$TOTAL" -eq 0 ]; then
     cat >> "$REPORT_FILE" << 'EOF'
-- 🚀 **Start creating specifications** using templates in `.spec/templates/`
-- 📝 **Begin with critical features** like authentication, payments, cart
-- 🏗️ **Document key architecture decisions** that guide development
+- ðŸš€ **Start creating specifications** using templates in `.spec/templates/`
+- ðŸ“ **Begin with critical features** like authentication, payments, cart
+- ðŸ—ï¸ **Document key architecture decisions** that guide development
 EOF
 elif [ "$FEATURE_COUNT" -eq 0 ]; then
-    echo "- 📝 **Create feature specifications** for user-facing functionality" >> "$REPORT_FILE"
+    echo "- ðŸ“ **Create feature specifications** for user-facing functionality" >> "$REPORT_FILE"
 fi
 
 if [ "$API_COUNT" -eq 0 ]; then
-    echo "- 🔌 **Document API contracts** using OpenAPI specifications" >> "$REPORT_FILE"
+    echo "- ðŸ”Œ **Document API contracts** using OpenAPI specifications" >> "$REPORT_FILE"
 fi
 
 if [ "$ARCH_COUNT" -eq 0 ]; then
-    echo "- 🏗️ **Record architecture decisions** using ADR template" >> "$REPORT_FILE"
+    echo "- ðŸ—ï¸ **Record architecture decisions** using ADR template" >> "$REPORT_FILE"
 fi
 
 # Finish report
@@ -281,7 +281,7 @@ cat >> "$REPORT_FILE" << 'EOF'
 EOF
 
 # Display report
-echo -e "${GREEN}✅ Report generated: $REPORT_FILE${NC}"
+echo -e "${GREEN}âœ… Report generated: $REPORT_FILE${NC}"
 echo ""
 cat "$REPORT_FILE"
 echo ""

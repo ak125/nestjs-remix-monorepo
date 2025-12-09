@@ -1,12 +1,12 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script pour préfixer automatiquement les imports non utilisés avec underscore
+# Script pour prÃ©fixer automatiquement les imports non utilisÃ©s avec underscore
 
 set -e
 
-echo "🔧 Correction des imports non utilisés..."
+echo "ðŸ”§ Correction des imports non utilisÃ©s..."
 
-# Liste des imports à traiter
+# Liste des imports Ã  traiter
 IMPORTS=(
   "UseGuards"
   "Post"
@@ -48,21 +48,21 @@ IMPORTS=(
 FIXED=0
 
 for import in "${IMPORTS[@]}"; do
-  # Chercher les fichiers avec cet import non utilisé
+  # Chercher les fichiers avec cet import non utilisÃ©
   files=$(npm run lint 2>&1 | grep -B 1 "'${import}' is defined but never used" | grep "^/" | sort -u || true)
   
   if [ -z "$files" ]; then
     continue
   fi
   
-  echo "📝 Traitement de '$import'..."
+  echo "ðŸ“ Traitement de '$import'..."
   
   for file in $files; do
     if [ ! -f "$file" ]; then
       continue
     fi
     
-    # Préfixer l'import avec type ... as _
+    # PrÃ©fixer l'import avec type ... as _
     # Pattern 1: import { Import, ...
     if sed -i.bak "s/import { ${import},/import { type ${import} as _${import},/g" "$file" 2>/dev/null; then
       rm -f "$file.bak"
@@ -84,12 +84,12 @@ for import in "${IMPORTS[@]}"; do
       rm -f "$file.bak"
     fi
     
-    echo "  ✓ $file"
+    echo "  âœ“ $file"
   done
 done
 
 echo ""
-echo "✅ Corrections terminées!"
-echo "📊 Fichiers modifiés: $FIXED"
+echo "âœ… Corrections terminÃ©es!"
+echo "ðŸ“Š Fichiers modifiÃ©s: $FIXED"
 echo ""
-echo "🔍 Vérification avec npm run lint..."
+echo "ðŸ” VÃ©rification avec npm run lint..."

@@ -1,7 +1,7 @@
-#!/bin/bash
-# ═══════════════════════════════════════════════════════════════
-# 🧪 Script de test automatisé - API Paiement
-# ═══════════════════════════════════════════════════════════════
+﻿#!/bin/bash
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ðŸ§ª Script de test automatisÃ© - API Paiement
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 set -e
 
@@ -20,9 +20,9 @@ TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}🧪 TESTS AUTOMATISÉS - API PAIEMENT${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+echo -e "${BLUE}ðŸ§ª TESTS AUTOMATISÃ‰S - API PAIEMENT${NC}"
+echo -e "${BLUE}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
 echo ""
 echo "Base URL: $BASE_URL"
 echo "API URL: $API_URL"
@@ -38,7 +38,7 @@ test_endpoint() {
   
   ((TESTS_RUN++))
   
-  echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: $name... "
+  echo -ne "${YELLOW}â³${NC} Test $TESTS_RUN: $name... "
   
   if [ "$method" = "GET" ]; then
     response=$(curl -s -w "\n%{http_code}" "$url")
@@ -52,32 +52,32 @@ test_endpoint() {
   body=$(echo "$response" | head -n -1)
   
   if [ "$status_code" = "$expected_status" ]; then
-    echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
+    echo -e "${GREEN}âœ… PASS${NC} (HTTP $status_code)"
     ((TESTS_PASSED++))
     return 0
   else
-    echo -e "${RED}❌ FAIL${NC} (Expected $expected_status, got $status_code)"
+    echo -e "${RED}âŒ FAIL${NC} (Expected $expected_status, got $status_code)"
     echo "Response: $body"
     ((TESTS_FAILED++))
     return 1
   fi
 }
 
-# Fonction pour extraire un ID de la réponse JSON
+# Fonction pour extraire un ID de la rÃ©ponse JSON
 extract_id() {
   echo "$1" | jq -r '.data.id' 2>/dev/null || echo ""
 }
 
-# Variables globales pour stocker les IDs créés
+# Variables globales pour stocker les IDs crÃ©Ã©s
 PAYMENT_ID=""
 PAYMENT_ID_CONSIGNES=""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 SECTION 1 : ENDPOINTS DE BASE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“‹ SECTION 1 : ENDPOINTS DE BASE"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# Test 1: Méthodes de paiement disponibles
+# Test 1: MÃ©thodes de paiement disponibles
 test_endpoint \
   "GET /methods/available" \
   "GET" \
@@ -86,12 +86,12 @@ test_endpoint \
   "200"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 SECTION 2 : CRÉATION DE PAIEMENTS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“‹ SECTION 2 : CRÃ‰ATION DE PAIEMENTS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# Test 2: Créer un paiement simple
+# Test 2: CrÃ©er un paiement simple
 response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -100,7 +100,7 @@ response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}" \
     "method": "CYBERPLUS",
     "userId": "test-user-autotest",
     "orderId": "ORD-AUTOTEST-001",
-    "description": "Test automatisé",
+    "description": "Test automatisÃ©",
     "customerEmail": "autotest@test.com"
   }')
 
@@ -108,19 +108,19 @@ status_code=$(echo "$response" | tail -n 1)
 body=$(echo "$response" | head -n -1)
 
 ((TESTS_RUN++))
-echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: POST /payments (création simple)... "
+echo -ne "${YELLOW}â³${NC} Test $TESTS_RUN: POST /payments (crÃ©ation simple)... "
 
 if [ "$status_code" = "201" ]; then
   PAYMENT_ID=$(extract_id "$body")
-  echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
-  echo -e "   ${BLUE}→${NC} Payment ID: $PAYMENT_ID"
+  echo -e "${GREEN}âœ… PASS${NC} (HTTP $status_code)"
+  echo -e "   ${BLUE}â†’${NC} Payment ID: $PAYMENT_ID"
   ((TESTS_PASSED++))
 else
-  echo -e "${RED}❌ FAIL${NC} (Expected 201, got $status_code)"
+  echo -e "${RED}âŒ FAIL${NC} (Expected 201, got $status_code)"
   ((TESTS_FAILED++))
 fi
 
-# Test 3: Créer un paiement avec consignes
+# Test 3: CrÃ©er un paiement avec consignes
 response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/test/create-with-consignes" \
   -H "Content-Type: application/json" \
   -d '{"orderId": "ORD-AUTOTEST-CONSIGNES"}')
@@ -129,25 +129,25 @@ status_code=$(echo "$response" | tail -n 1)
 body=$(echo "$response" | head -n -1)
 
 ((TESTS_RUN++))
-echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: POST /test/create-with-consignes... "
+echo -ne "${YELLOW}â³${NC} Test $TESTS_RUN: POST /test/create-with-consignes... "
 
 if [ "$status_code" = "200" ]; then
   PAYMENT_ID_CONSIGNES=$(echo "$body" | jq -r '.payment.id' 2>/dev/null || echo "")
-  echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
-  echo -e "   ${BLUE}→${NC} Payment ID: $PAYMENT_ID_CONSIGNES"
+  echo -e "${GREEN}âœ… PASS${NC} (HTTP $status_code)"
+  echo -e "   ${BLUE}â†’${NC} Payment ID: $PAYMENT_ID_CONSIGNES"
   ((TESTS_PASSED++))
 else
-  echo -e "${RED}❌ FAIL${NC} (Expected 200, got $status_code)"
+  echo -e "${RED}âŒ FAIL${NC} (Expected 200, got $status_code)"
   ((TESTS_FAILED++))
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 SECTION 3 : CONSULTATION DE PAIEMENTS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“‹ SECTION 3 : CONSULTATION DE PAIEMENTS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# Test 4: Récupérer le paiement par ID
+# Test 4: RÃ©cupÃ©rer le paiement par ID
 if [ -n "$PAYMENT_ID" ]; then
   test_endpoint \
     "GET /payments/:id" \
@@ -157,7 +157,7 @@ if [ -n "$PAYMENT_ID" ]; then
     "200"
 fi
 
-# Test 5: Récupérer les paiements d'un utilisateur
+# Test 5: RÃ©cupÃ©rer les paiements d'un utilisateur
 test_endpoint \
   "GET /payments/user/:userId" \
   "GET" \
@@ -165,7 +165,7 @@ test_endpoint \
   "" \
   "200"
 
-# Test 6: Récupérer par commande
+# Test 6: RÃ©cupÃ©rer par commande
 test_endpoint \
   "GET /payments/order/:orderId" \
   "GET" \
@@ -174,22 +174,22 @@ test_endpoint \
   "200"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 SECTION 4 : VALIDATION DES ERREURS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“‹ SECTION 4 : VALIDATION DES ERREURS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# Test 7: Montant négatif
+# Test 7: Montant nÃ©gatif
 test_endpoint \
-  "POST /payments (montant négatif)" \
+  "POST /payments (montant nÃ©gatif)" \
   "POST" \
   "${API_URL}" \
   '{"amount": -50, "currency": "EUR", "method": "CYBERPLUS", "userId": "test", "orderId": "INVALID-001"}' \
   "400"
 
-# Test 8: Données manquantes
+# Test 8: DonnÃ©es manquantes
 test_endpoint \
-  "POST /payments (données manquantes)" \
+  "POST /payments (donnÃ©es manquantes)" \
   "POST" \
   "${API_URL}" \
   '{"amount": 100}' \
@@ -204,9 +204,9 @@ test_endpoint \
   "404"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 SECTION 5 : SÉCURITÉ"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“‹ SECTION 5 : SÃ‰CURITÃ‰"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
 # Test 10: Callback avec signature invalide
@@ -218,31 +218,31 @@ test_endpoint \
   "200"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 RÉSULTATS FINAUX"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“Š RÃ‰SULTATS FINAUX"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
-echo "Tests exécutés : $TESTS_RUN"
-echo -e "Tests réussis  : ${GREEN}$TESTS_PASSED ✅${NC}"
+echo "Tests exÃ©cutÃ©s : $TESTS_RUN"
+echo -e "Tests rÃ©ussis  : ${GREEN}$TESTS_PASSED âœ…${NC}"
 
 if [ $TESTS_FAILED -gt 0 ]; then
-  echo -e "Tests échoués  : ${RED}$TESTS_FAILED ❌${NC}"
+  echo -e "Tests Ã©chouÃ©s  : ${RED}$TESTS_FAILED âŒ${NC}"
 else
-  echo -e "Tests échoués  : ${GREEN}0 ✅${NC}"
+  echo -e "Tests Ã©chouÃ©s  : ${GREEN}0 âœ…${NC}"
 fi
 
 echo ""
 
 if [ $TESTS_FAILED -eq 0 ]; then
   PERCENTAGE=100
-  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}✅ TOUS LES TESTS SONT PASSÉS ! (100%)${NC}"
-  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${GREEN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+  echo -e "${GREEN}âœ… TOUS LES TESTS SONT PASSÃ‰S ! (100%)${NC}"
+  echo -e "${GREEN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
   exit 0
 else
   PERCENTAGE=$((TESTS_PASSED * 100 / TESTS_RUN))
-  echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${YELLOW}⚠️  CERTAINS TESTS ONT ÉCHOUÉ ($PERCENTAGE% de réussite)${NC}"
-  echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+  echo -e "${YELLOW}âš ï¸  CERTAINS TESTS ONT Ã‰CHOUÃ‰ ($PERCENTAGE% de rÃ©ussite)${NC}"
+  echo -e "${YELLOW}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
   exit 1
 fi

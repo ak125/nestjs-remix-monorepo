@@ -1,10 +1,10 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script de démarrage simplifié pour le développement
+# Script de dÃ©marrage simplifiÃ© pour le dÃ©veloppement
 
 set -e
 
-echo "🚀 Démarrage de l'environnement de développement..."
+echo "ðŸš€ DÃ©marrage de l'environnement de dÃ©veloppement..."
 echo ""
 
 # Couleurs
@@ -13,58 +13,58 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Vérifier si Redis tourne
-echo "🔍 Vérification de Redis..."
+# VÃ©rifier si Redis tourne
+echo "ðŸ” VÃ©rification de Redis..."
 if docker ps | grep -q redis-dev; then
-    echo -e "${GREEN}✅ Redis déjà actif${NC}"
+    echo -e "${GREEN}âœ… Redis dÃ©jÃ  actif${NC}"
 else
-    echo -e "${YELLOW}⚠️  Redis non détecté, démarrage...${NC}"
+    echo -e "${YELLOW}âš ï¸  Redis non dÃ©tectÃ©, dÃ©marrage...${NC}"
     
     # Nettoyer les anciens conteneurs Redis
     docker ps -a | grep redis | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
     
-    # Démarrer Redis
+    # DÃ©marrer Redis
     docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine
     
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Redis démarré avec succès${NC}"
+        echo -e "${GREEN}âœ… Redis dÃ©marrÃ© avec succÃ¨s${NC}"
     else
-        echo -e "${RED}❌ Erreur lors du démarrage de Redis${NC}"
+        echo -e "${RED}âŒ Erreur lors du dÃ©marrage de Redis${NC}"
         exit 1
     fi
 fi
 
 echo ""
-echo "🔍 Vérification des ports..."
+echo "ðŸ” VÃ©rification des ports..."
 
-# Vérifier le port 3000
+# VÃ©rifier le port 3000
 if lsof -i :3000 > /dev/null 2>&1; then
-    echo -e "${YELLOW}⚠️  Port 3000 déjà utilisé${NC}"
+    echo -e "${YELLOW}âš ï¸  Port 3000 dÃ©jÃ  utilisÃ©${NC}"
     PID=$(lsof -t -i :3000)
     echo "   Processus : PID $PID"
-    ps -p $PID -o cmd= 2>/dev/null || echo "   (détails non disponibles)"
+    ps -p $PID -o cmd= 2>/dev/null || echo "   (dÃ©tails non disponibles)"
     echo ""
-    read -p "Voulez-vous arrêter ce processus ? (y/n) " -n 1 -r
+    read -p "Voulez-vous arrÃªter ce processus ? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         kill -9 $PID
-        echo -e "${GREEN}✅ Processus arrêté${NC}"
+        echo -e "${GREEN}âœ… Processus arrÃªtÃ©${NC}"
     else
-        echo -e "${YELLOW}⏭️  Continuer avec le processus existant${NC}"
+        echo -e "${YELLOW}â­ï¸  Continuer avec le processus existant${NC}"
     fi
 fi
 
 echo ""
-echo "📊 État des services :"
+echo "ðŸ“Š Ã‰tat des services :"
 echo ""
 echo "   Backend + Frontend : http://localhost:3000"
 echo "   Redis             : localhost:6379"
 echo ""
-echo -e "${GREEN}✅ Environnement prêt !${NC}"
+echo -e "${GREEN}âœ… Environnement prÃªt !${NC}"
 echo ""
-echo "💡 Pour démarrer le serveur :"
+echo "ðŸ’¡ Pour dÃ©marrer le serveur :"
 echo "   npm run dev"
 echo ""
-echo "🔍 Pour vérifier l'état :"
+echo "ðŸ” Pour vÃ©rifier l'Ã©tat :"
 echo "   ./scripts/dev-status.sh"
 echo ""

@@ -1,12 +1,12 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Script pour corriger automatiquement les 290 erreurs de linting restantes
-# Types d'erreurs: variables/imports non utilisés
+# Types d'erreurs: variables/imports non utilisÃ©s
 
-echo "🔧 Correction automatique des erreurs de linting..."
+echo "ðŸ”§ Correction automatique des erreurs de linting..."
 echo ""
 
-# Liste des fichiers avec des variables 'error' non utilisées → préfixer avec _
+# Liste des fichiers avec des variables 'error' non utilisÃ©es â†’ prÃ©fixer avec _
 FILES_WITH_ERROR=(
   "src/auth/auth.controller.ts"
   "src/auth/auth.service.ts"
@@ -21,23 +21,23 @@ FILES_WITH_ERROR=(
   "src/pieces/pieces-real.service.ts"
 )
 
-echo "📝 Préfixage des variables 'error' non utilisées avec '_'..."
+echo "ðŸ“ PrÃ©fixage des variables 'error' non utilisÃ©es avec '_'..."
 for file in "${FILES_WITH_ERROR[@]}"; do
   if [ -f "$file" ]; then
-    # Remplacer catch (error) par catch (_error) seulement si error n'est pas utilisé ensuite
+    # Remplacer catch (error) par catch (_error) seulement si error n'est pas utilisÃ© ensuite
     sed -i 's/catch (error)/catch (_error)/g' "$file"
-    echo "  ✅ $file"
+    echo "  âœ… $file"
   fi
 done
 
 echo ""
-echo "🧹 Suppression des imports non utilisés..."
+echo "ðŸ§¹ Suppression des imports non utilisÃ©s..."
 
-# Supprimer les imports non utilisés dans des fichiers spécifiques
-# (nécessite une analyse manuelle pour chaque cas)
+# Supprimer les imports non utilisÃ©s dans des fichiers spÃ©cifiques
+# (nÃ©cessite une analyse manuelle pour chaque cas)
 
 echo ""
-echo "✅ Correction automatique terminée!"
+echo "âœ… Correction automatique terminÃ©e!"
 echo ""
-echo "🔍 Exécution du lint pour vérifier les erreurs restantes..."
+echo "ðŸ” ExÃ©cution du lint pour vÃ©rifier les erreurs restantes..."
 npm run lint 2>&1 | tail -5

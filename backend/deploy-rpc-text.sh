@@ -1,14 +1,14 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
-echo "🚀 DÉPLOIEMENT VIA API REST SUPABASE"
+echo "ðŸš€ DÃ‰PLOIEMENT VIA API REST SUPABASE"
 echo ""
 
 source .env
 
 SQL_CONTENT=$(cat prisma/supabase-functions/get_gamme_page_data_optimized_TEXT.sql)
 
-echo "📡 Exécution du SQL via l'API Supabase..."
+echo "ðŸ“¡ ExÃ©cution du SQL via l'API Supabase..."
 
 # Utiliser l'endpoint SQL de Supabase
 curl -s -X POST \
@@ -20,11 +20,11 @@ curl -s -X POST \
   | jq '.'
 
 echo ""
-echo "⏳ Attente 3s pour propagation..."
+echo "â³ Attente 3s pour propagation..."
 sleep 3
 
 echo ""
-echo "🧪 Test de la fonction avec p_pg_id TEXT..."
+echo "ðŸ§ª Test de la fonction avec p_pg_id TEXT..."
 curl -s -X POST \
   "${SUPABASE_URL}/rest/v1/rpc/get_gamme_page_data_optimized" \
   -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
@@ -35,9 +35,9 @@ curl -s -X POST \
 
 echo ""
 echo ""
-echo "🧪 Test via NestJS endpoint..."
+echo "ðŸ§ª Test via NestJS endpoint..."
 curl -s http://localhost:3000/api/gamme-rest-optimized/10/page-data-rpc-v2 \
   | jq -c 'if .error then {error, message} else {success: true, meta_title: .meta.title[0:50]} end'
 
 echo ""
-echo "✅ Déploiement terminé"
+echo "âœ… DÃ©ploiement terminÃ©"

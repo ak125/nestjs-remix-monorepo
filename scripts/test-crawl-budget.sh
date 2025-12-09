@@ -1,8 +1,8 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 🧪 Script de test A/B Testing Crawl Budget
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+# ðŸ§ª Script de test A/B Testing Crawl Budget
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 set -e
 
@@ -12,38 +12,38 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🧪 Test A/B Testing Crawl Budget"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ§ª Test A/B Testing Crawl Budget"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 # Test 1: Stats globales
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 echo -e "${YELLOW}[1/6]${NC} Test endpoint /stats..."
 STATS_RESPONSE=$(curl -s "$BASE_URL/seo-logs/crawl-budget/stats")
 STATS_SUCCESS=$(echo "$STATS_RESPONSE" | jq -r '.success' 2>/dev/null || echo "false")
 
 if [ "$STATS_SUCCESS" = "true" ]; then
-  echo -e "${GREEN}✅ Stats endpoint OK${NC}"
+  echo -e "${GREEN}âœ… Stats endpoint OK${NC}"
   echo "$STATS_RESPONSE" | jq
 else
-  echo -e "${RED}❌ Stats endpoint failed${NC}"
+  echo -e "${RED}âŒ Stats endpoint failed${NC}"
   echo "$STATS_RESPONSE"
   exit 1
 fi
 
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Test 2: Créer une expérience
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${YELLOW}[2/6]${NC} Création d'une expérience de test..."
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+# Test 2: CrÃ©er une expÃ©rience
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+echo -e "${YELLOW}[2/6]${NC} CrÃ©ation d'une expÃ©rience de test..."
 CREATE_RESPONSE=$(curl -s -X POST "$BASE_URL/seo-logs/crawl-budget/experiments" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test automatique - exclusion pneus anciens",
-    "description": "Test créé par le script de validation",
+    "description": "Test crÃ©Ã© par le script de validation",
     "action": "exclude",
     "targetFamilies": ["PNEU_VIEUX", "PNEU_OCCASION"],
     "durationDays": 7
@@ -53,56 +53,56 @@ CREATE_SUCCESS=$(echo "$CREATE_RESPONSE" | jq -r '.success' 2>/dev/null || echo 
 EXPERIMENT_ID=$(echo "$CREATE_RESPONSE" | jq -r '.data.id' 2>/dev/null || echo "")
 
 if [ "$CREATE_SUCCESS" = "true" ] && [ -n "$EXPERIMENT_ID" ]; then
-  echo -e "${GREEN}✅ Expérience créée: $EXPERIMENT_ID${NC}"
+  echo -e "${GREEN}âœ… ExpÃ©rience crÃ©Ã©e: $EXPERIMENT_ID${NC}"
   echo "$CREATE_RESPONSE" | jq '.data | {id, name, status, action}'
 else
-  echo -e "${RED}❌ Création expérience failed${NC}"
+  echo -e "${RED}âŒ CrÃ©ation expÃ©rience failed${NC}"
   echo "$CREATE_RESPONSE"
   exit 1
 fi
 
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Test 3: Récupérer l'expérience
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${YELLOW}[3/6]${NC} Récupération de l'expérience..."
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+# Test 3: RÃ©cupÃ©rer l'expÃ©rience
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+echo -e "${YELLOW}[3/6]${NC} RÃ©cupÃ©ration de l'expÃ©rience..."
 GET_RESPONSE=$(curl -s "$BASE_URL/seo-logs/crawl-budget/experiments/$EXPERIMENT_ID")
 GET_SUCCESS=$(echo "$GET_RESPONSE" | jq -r '.success' 2>/dev/null || echo "false")
 
 if [ "$GET_SUCCESS" = "true" ]; then
-  echo -e "${GREEN}✅ Expérience récupérée${NC}"
+  echo -e "${GREEN}âœ… ExpÃ©rience rÃ©cupÃ©rÃ©e${NC}"
   echo "$GET_RESPONSE" | jq '.data | {id, name, status, target_families, baseline}'
 else
-  echo -e "${RED}❌ Récupération failed${NC}"
+  echo -e "${RED}âŒ RÃ©cupÃ©ration failed${NC}"
   echo "$GET_RESPONSE"
   exit 1
 fi
 
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Test 4: Télécharger sitemap filtré
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${YELLOW}[4/6]${NC} Téléchargement du sitemap filtré..."
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+# Test 4: TÃ©lÃ©charger sitemap filtrÃ©
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+echo -e "${YELLOW}[4/6]${NC} TÃ©lÃ©chargement du sitemap filtrÃ©..."
 SITEMAP_RESPONSE=$(curl -s "$BASE_URL/seo-logs/crawl-budget/experiments/$EXPERIMENT_ID/sitemap.xml")
 
 if echo "$SITEMAP_RESPONSE" | grep -q "<urlset"; then
   URL_COUNT=$(echo "$SITEMAP_RESPONSE" | grep -c "<loc>" || echo 0)
-  echo -e "${GREEN}✅ Sitemap généré: $URL_COUNT URLs${NC}"
+  echo -e "${GREEN}âœ… Sitemap gÃ©nÃ©rÃ©: $URL_COUNT URLs${NC}"
   echo "$SITEMAP_RESPONSE" | head -20
 else
-  echo -e "${RED}❌ Sitemap generation failed${NC}"
+  echo -e "${RED}âŒ Sitemap generation failed${NC}"
   echo "$SITEMAP_RESPONSE"
   exit 1
 fi
 
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Test 5: Activer l'expérience
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${YELLOW}[5/6]${NC} Activation de l'expérience..."
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+# Test 5: Activer l'expÃ©rience
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+echo -e "${YELLOW}[5/6]${NC} Activation de l'expÃ©rience..."
 ACTIVATE_RESPONSE=$(curl -s -X PATCH "$BASE_URL/seo-logs/crawl-budget/experiments/$EXPERIMENT_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "running"}')
@@ -111,43 +111,43 @@ ACTIVATE_SUCCESS=$(echo "$ACTIVATE_RESPONSE" | jq -r '.success' 2>/dev/null || e
 NEW_STATUS=$(echo "$ACTIVATE_RESPONSE" | jq -r '.data.status' 2>/dev/null || echo "")
 
 if [ "$ACTIVATE_SUCCESS" = "true" ] && [ "$NEW_STATUS" = "running" ]; then
-  echo -e "${GREEN}✅ Expérience activée: status=$NEW_STATUS${NC}"
+  echo -e "${GREEN}âœ… ExpÃ©rience activÃ©e: status=$NEW_STATUS${NC}"
 else
-  echo -e "${RED}❌ Activation failed${NC}"
+  echo -e "${RED}âŒ Activation failed${NC}"
   echo "$ACTIVATE_RESPONSE"
   exit 1
 fi
 
 echo ""
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 # Test 6: Recommandations
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${YELLOW}[6/6]${NC} Récupération des recommandations..."
+# â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+echo -e "${YELLOW}[6/6]${NC} RÃ©cupÃ©ration des recommandations..."
 RECO_RESPONSE=$(curl -s "$BASE_URL/seo-logs/crawl-budget/experiments/$EXPERIMENT_ID/recommendations")
 RECO_SUCCESS=$(echo "$RECO_RESPONSE" | jq -r '.success' 2>/dev/null || echo "false")
 
 if [ "$RECO_SUCCESS" = "true" ]; then
-  echo -e "${GREEN}✅ Recommandations récupérées${NC}"
+  echo -e "${GREEN}âœ… Recommandations rÃ©cupÃ©rÃ©es${NC}"
   echo "$RECO_RESPONSE" | jq
 else
-  echo -e "${RED}❌ Recommandations failed${NC}"
+  echo -e "${RED}âŒ Recommandations failed${NC}"
   echo "$RECO_RESPONSE"
   exit 1
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo -e "${GREEN}🎉 Tous les tests sont passés avec succès !${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo -e "${GREEN}ðŸŽ‰ Tous les tests sont passÃ©s avec succÃ¨s !${NC}"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
-echo "📊 Résumé:"
-echo "  - Expérience ID: $EXPERIMENT_ID"
+echo "ðŸ“Š RÃ©sumÃ©:"
+echo "  - ExpÃ©rience ID: $EXPERIMENT_ID"
 echo "  - Status: running"
 echo "  - URLs dans sitemap: $URL_COUNT"
 echo ""
-echo "🚀 Prochaines étapes:"
-echo "  1. Soumettre sitemap à Google Search Console"
-echo "  2. Attendre 7-30 jours pour collecter données"
+echo "ðŸš€ Prochaines Ã©tapes:"
+echo "  1. Soumettre sitemap Ã  Google Search Console"
+echo "  2. Attendre 7-30 jours pour collecter donnÃ©es"
 echo "  3. Analyser les recommandations"
 echo ""

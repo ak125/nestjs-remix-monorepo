@@ -1,43 +1,43 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script pour démarrer le projet en mode développement LOCAL (sans Docker)
+# Script pour dÃ©marrer le projet en mode dÃ©veloppement LOCAL (sans Docker)
 
 set -e
 
-echo "🚀 Démarrage du projet en mode développement local..."
+echo "ðŸš€ DÃ©marrage du projet en mode dÃ©veloppement local..."
 echo ""
 
-# Vérifier si le backend tourne déjà
+# VÃ©rifier si le backend tourne dÃ©jÃ 
 if lsof -i :3000 > /dev/null 2>&1; then
-    echo "⚠️  Le port 3000 est déjà utilisé (backend probablement actif)"
+    echo "âš ï¸  Le port 3000 est dÃ©jÃ  utilisÃ© (backend probablement actif)"
     echo "   Processus en cours :"
     lsof -i :3000 | grep LISTEN
     echo ""
-    read -p "Voulez-vous arrêter le processus existant ? (y/n) " -n 1 -r
+    read -p "Voulez-vous arrÃªter le processus existant ? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         PID=$(lsof -t -i :3000)
         kill -9 $PID
-        echo "✅ Processus arrêté"
+        echo "âœ… Processus arrÃªtÃ©"
     else
-        echo "⏭️  Continuer avec le processus existant"
+        echo "â­ï¸  Continuer avec le processus existant"
     fi
 fi
 
-# Vérifier si le frontend tourne déjà
+# VÃ©rifier si le frontend tourne dÃ©jÃ 
 if lsof -i :5173 > /dev/null 2>&1; then
-    echo "⚠️  Le port 5173 est déjà utilisé (frontend probablement actif)"
+    echo "âš ï¸  Le port 5173 est dÃ©jÃ  utilisÃ© (frontend probablement actif)"
     echo "   Processus en cours :"
     lsof -i :5173 | grep LISTEN
     echo ""
 fi
 
 echo ""
-echo "📋 État actuel :"
+echo "ðŸ“‹ Ã‰tat actuel :"
 echo "   Backend:  http://localhost:3000"
 echo "   Frontend: http://localhost:5173"
 echo ""
-echo "💡 Pour démarrer les services :"
+echo "ðŸ’¡ Pour dÃ©marrer les services :"
 echo ""
 echo "   Terminal 1 (Backend):"
 echo "   cd backend && npm run dev"

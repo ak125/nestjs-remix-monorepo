@@ -1,17 +1,17 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script pour générer des logs Caddy test pour Vector
+# Script pour gÃ©nÃ©rer des logs Caddy test pour Vector
 # ==================================================
 
 LOG_FILE=${1:-"/var/log/caddy/access.json"}
 NUM_LOGS=${2:-50}
 
-echo "🧪 Génération de $NUM_LOGS logs test dans $LOG_FILE"
+echo "ðŸ§ª GÃ©nÃ©ration de $NUM_LOGS logs test dans $LOG_FILE"
 
-# Créer le dossier si nécessaire
+# CrÃ©er le dossier si nÃ©cessaire
 mkdir -p "$(dirname "$LOG_FILE")"
 
-# Paires cohérentes marque/modèle pour auto parts
+# Paires cohÃ©rentes marque/modÃ¨le pour auto parts
 # Format: "marque|modele1,modele2,modele3"
 MARQUES_MODELES=(
     "renault|clio,megane,captur,scenic,twingo,kadjar"
@@ -48,9 +48,9 @@ REFERERS=(
     ""
 )
 
-# Fonction pour générer un log JSON
+# Fonction pour gÃ©nÃ©rer un log JSON
 generate_log() {
-    # Choisir une paire marque/modèle cohérente
+    # Choisir une paire marque/modÃ¨le cohÃ©rente
     local pair=${MARQUES_MODELES[$RANDOM % ${#MARQUES_MODELES[@]}]}
     local marque=$(echo "$pair" | cut -d'|' -f1)
     local modeles=$(echo "$pair" | cut -d'|' -f2)
@@ -68,12 +68,12 @@ generate_log() {
     local bytes=$((RANDOM % 50000 + 1000))
     local method="GET"
     
-    # Générer différents types de chemins
+    # GÃ©nÃ©rer diffÃ©rents types de chemins
     local path_type=$((RANDOM % 10))
     local uri=""
     
     if [ $path_type -lt 6 ]; then
-        # 60% - URLs de pièces auto (structure: /pieces/{category}/{marque}/{modele}/{type})
+        # 60% - URLs de piÃ¨ces auto (structure: /pieces/{category}/{marque}/{modele}/{type})
         uri="/pieces/$pieces_category/$marque/$modele/$motorisation"
     elif [ $path_type -lt 8 ]; then
         # 20% - Autres pages
@@ -94,32 +94,32 @@ generate_log() {
 EOF
 }
 
-# Générer les logs
+# GÃ©nÃ©rer les logs
 for i in $(seq 1 $NUM_LOGS); do
     generate_log >> "$LOG_FILE"
     
     # Progression
     if [ $((i % 10)) -eq 0 ]; then
-        echo "  ✅ $i/$NUM_LOGS logs générés..."
+        echo "  âœ… $i/$NUM_LOGS logs gÃ©nÃ©rÃ©s..."
     fi
     
-    # Petit délai pour simuler des logs réalistes
+    # Petit dÃ©lai pour simuler des logs rÃ©alistes
     sleep 0.05
 done
 
 echo ""
-echo "✅ $NUM_LOGS logs générés avec succès dans $LOG_FILE"
+echo "âœ… $NUM_LOGS logs gÃ©nÃ©rÃ©s avec succÃ¨s dans $LOG_FILE"
 echo ""
-echo "📊 Statistiques:"
+echo "ðŸ“Š Statistiques:"
 echo "  - Fichier: $LOG_FILE"
 echo "  - Taille: $(du -h "$LOG_FILE" 2>/dev/null | cut -f1 || echo 'N/A')"
 echo "  - Lignes: $(wc -l < "$LOG_FILE" 2>/dev/null || echo '0')"
 echo ""
-echo "🔍 Aperçu (3 premières lignes):"
+echo "ðŸ” AperÃ§u (3 premiÃ¨res lignes):"
 head -3 "$LOG_FILE" | jq -r '"\(.ts) [\(.status)] \(.request.method) \(.request.uri) - \(.duration*1000)ms"' 2>/dev/null || head -3 "$LOG_FILE"
 echo ""
-echo "💡 Pour tester Vector:"
+echo "ðŸ’¡ Pour tester Vector:"
 echo "  docker logs vector-seo-pipeline --tail 50"
 echo ""
-echo "💡 Pour vérifier Meilisearch:"
+echo "ðŸ’¡ Pour vÃ©rifier Meilisearch:"
 echo "  source .env.vector && curl -s \"http://localhost:7700/indexes/access_logs/stats\" -H \"Authorization: Bearer \$MEILISEARCH_API_KEY\""

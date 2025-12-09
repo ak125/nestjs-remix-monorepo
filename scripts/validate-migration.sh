@@ -1,6 +1,6 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🎯 Script de Validation Visuelle - Migration Tokens
+# ðŸŽ¯ Script de Validation Visuelle - Migration Tokens
 # Usage: ./validate-migration.sh [composant]
 # Exemple: ./validate-migration.sh navbar
 
@@ -16,33 +16,33 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo "🎨 Validation de Migration - Design Tokens"
+echo "ðŸŽ¨ Validation de Migration - Design Tokens"
 echo "=========================================="
 echo ""
 
-# Créer le dossier screenshots si nécessaire
+# CrÃ©er le dossier screenshots si nÃ©cessaire
 mkdir -p "$SCREENSHOTS_DIR"
 
-# Fonction pour capturer l'état actuel
+# Fonction pour capturer l'Ã©tat actuel
 capture_before() {
     local component=$1
-    echo -e "${YELLOW}📸 Capture AVANT migration : $component${NC}"
-    echo "   → Ouvrez http://localhost:3000 dans votre navigateur"
-    echo "   → Capturez un screenshot et enregistrez-le dans:"
+    echo -e "${YELLOW}ðŸ“¸ Capture AVANT migration : $component${NC}"
+    echo "   â†’ Ouvrez http://localhost:3000 dans votre navigateur"
+    echo "   â†’ Capturez un screenshot et enregistrez-le dans:"
     echo "      $SCREENSHOTS_DIR/before-${component}-${TIMESTAMP}.png"
     echo ""
-    read -p "Appuyez sur Entrée quand le screenshot AVANT est fait..."
+    read -p "Appuyez sur EntrÃ©e quand le screenshot AVANT est fait..."
 }
 
-# Fonction pour capturer après migration
+# Fonction pour capturer aprÃ¨s migration
 capture_after() {
     local component=$1
-    echo -e "${YELLOW}📸 Capture APRÈS migration : $component${NC}"
-    echo "   → Rechargez http://localhost:3000"
-    echo "   → Capturez un screenshot et enregistrez-le dans:"
+    echo -e "${YELLOW}ðŸ“¸ Capture APRÃˆS migration : $component${NC}"
+    echo "   â†’ Rechargez http://localhost:3000"
+    echo "   â†’ Capturez un screenshot et enregistrez-le dans:"
     echo "      $SCREENSHOTS_DIR/after-${component}-${TIMESTAMP}.png"
     echo ""
-    read -p "Appuyez sur Entrée quand le screenshot APRÈS est fait..."
+    read -p "Appuyez sur EntrÃ©e quand le screenshot APRÃˆS est fait..."
 }
 
 # Fonction de validation
@@ -50,57 +50,57 @@ validate() {
     local component=$1
     
     echo ""
-    echo -e "${GREEN}✅ Checklist de Validation - $component${NC}"
+    echo -e "${GREEN}âœ… Checklist de Validation - $component${NC}"
     echo "=================================="
     echo ""
     
     # Questions de validation
-    echo "1. Layout identique (pas de décalage) ?"
-    read -p "   Réponse (o/n): " layout
+    echo "1. Layout identique (pas de dÃ©calage) ?"
+    read -p "   RÃ©ponse (o/n): " layout
     
     echo "2. Couleurs visuellement identiques ?"
-    read -p "   Réponse (o/n): " colors
+    read -p "   RÃ©ponse (o/n): " colors
     
     echo "3. Hover states fonctionnent ?"
-    read -p "   Réponse (o/n): " hover
+    read -p "   RÃ©ponse (o/n): " hover
     
     echo "4. Focus states fonctionnent ?"
-    read -p "   Réponse (o/n): " focus
+    read -p "   RÃ©ponse (o/n): " focus
     
     echo "5. Responsive OK (mobile/tablet/desktop) ?"
-    read -p "   Réponse (o/n): " responsive
+    read -p "   RÃ©ponse (o/n): " responsive
     
     echo "6. Aucune erreur console ?"
-    read -p "   Réponse (o/n): " console_errors
+    read -p "   RÃ©ponse (o/n): " console_errors
     
     echo "7. Contraste texte suffisant ?"
-    read -p "   Réponse (o/n): " contrast
+    read -p "   RÃ©ponse (o/n): " contrast
     
     echo ""
     
-    # Analyse des réponses
+    # Analyse des rÃ©ponses
     if [[ "$layout" == "o" && "$colors" == "o" && "$hover" == "o" && \
           "$focus" == "o" && "$responsive" == "o" && "$console_errors" == "o" && \
           "$contrast" == "o" ]]; then
-        echo -e "${GREEN}✅ VALIDATION RÉUSSIE - Aucune régression détectée${NC}"
+        echo -e "${GREEN}âœ… VALIDATION RÃ‰USSIE - Aucune rÃ©gression dÃ©tectÃ©e${NC}"
         echo ""
-        echo "📝 Vous pouvez maintenant commiter :"
+        echo "ðŸ“ Vous pouvez maintenant commiter :"
         echo "   git add ."
         echo "   git commit -m \"feat(tokens): migrate $component to semantic tokens\""
         return 0
     else
-        echo -e "${RED}❌ VALIDATION ÉCHOUÉE - Régression détectée${NC}"
+        echo -e "${RED}âŒ VALIDATION Ã‰CHOUÃ‰E - RÃ©gression dÃ©tectÃ©e${NC}"
         echo ""
-        echo "⚠️  Points à corriger :"
-        [[ "$layout" != "o" ]] && echo "   - Layout modifié"
-        [[ "$colors" != "o" ]] && echo "   - Couleurs différentes"
-        [[ "$hover" != "o" ]] && echo "   - Hover states cassés"
-        [[ "$focus" != "o" ]] && echo "   - Focus states cassés"
-        [[ "$responsive" != "o" ]] && echo "   - Responsive cassé"
+        echo "âš ï¸  Points Ã  corriger :"
+        [[ "$layout" != "o" ]] && echo "   - Layout modifiÃ©"
+        [[ "$colors" != "o" ]] && echo "   - Couleurs diffÃ©rentes"
+        [[ "$hover" != "o" ]] && echo "   - Hover states cassÃ©s"
+        [[ "$focus" != "o" ]] && echo "   - Focus states cassÃ©s"
+        [[ "$responsive" != "o" ]] && echo "   - Responsive cassÃ©"
         [[ "$console_errors" != "o" ]] && echo "   - Erreurs console"
         [[ "$contrast" != "o" ]] && echo "   - Contraste insuffisant"
         echo ""
-        echo "🔄 Rollback recommandé :"
+        echo "ðŸ”„ Rollback recommandÃ© :"
         echo "   git reset --hard HEAD"
         return 1
     fi
@@ -111,23 +111,23 @@ run_validation() {
     local component=$1
     
     echo ""
-    echo "🔍 Validation du composant : $component"
+    echo "ðŸ” Validation du composant : $component"
     echo "======================================"
     echo ""
     
     # Capture avant
     capture_before "$component"
     
-    # Demander à l'utilisateur de faire les modifications
+    # Demander Ã  l'utilisateur de faire les modifications
     echo ""
-    echo -e "${YELLOW}✏️  MIGRATION${NC}"
+    echo -e "${YELLOW}âœï¸  MIGRATION${NC}"
     echo "   1. Ouvrez frontend/app/components/$component.tsx"
     echo "   2. Remplacez les couleurs Tailwind par les tokens"
     echo "   3. Sauvegardez et rechargez le navigateur"
     echo ""
-    read -p "Appuyez sur Entrée quand la migration est terminée..."
+    read -p "Appuyez sur EntrÃ©e quand la migration est terminÃ©e..."
     
-    # Capture après
+    # Capture aprÃ¨s
     capture_after "$component"
     
     # Validation
@@ -146,9 +146,9 @@ case $COMPONENT in
         run_validation "_index"
         ;;
     all)
-        echo "🎯 Mode : Validation complète"
+        echo "ðŸŽ¯ Mode : Validation complÃ¨te"
         echo ""
-        echo "Ordre de migration recommandé :"
+        echo "Ordre de migration recommandÃ© :"
         echo "1. Footer (moins visible)"
         echo "2. Navbar (plus visible)"
         echo "3. Index (page principale)"
@@ -160,7 +160,7 @@ case $COMPONENT in
             run_validation "Navbar" && \
             run_validation "_index"
         else
-            echo "Migration annulée"
+            echo "Migration annulÃ©e"
             exit 0
         fi
         ;;
@@ -179,5 +179,5 @@ case $COMPONENT in
 esac
 
 echo ""
-echo "✨ Validation terminée !"
+echo "âœ¨ Validation terminÃ©e !"
 echo ""

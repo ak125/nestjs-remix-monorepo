@@ -1,7 +1,7 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
-echo "🚀 Déploiement de la fonction RPC get_gamme_page_data_optimized via psql..."
+echo "ðŸš€ DÃ©ploiement de la fonction RPC get_gamme_page_data_optimized via psql..."
 
 # Lire les variables d'environnement
 source .env
@@ -12,10 +12,10 @@ DB_URL="postgresql://postgres.cxpojprgwgubzjyqzmoq:${SUPABASE_DB_PASSWORD}@${SUP
 # Chemin du fichier SQL
 SQL_FILE="prisma/supabase-functions/DROP_AND_CREATE_get_gamme_page_data_optimized.sql"
 
-echo "📄 Exécution de: $SQL_FILE"
-echo "🔗 Sur: $SUPABASE_DB_HOST"
+echo "ðŸ“„ ExÃ©cution de: $SQL_FILE"
+echo "ðŸ”— Sur: $SUPABASE_DB_HOST"
 
-# Exécuter le SQL via psql
+# ExÃ©cuter le SQL via psql
 PGPASSWORD="${SUPABASE_DB_PASSWORD}" psql \
   -h "${SUPABASE_DB_HOST}" \
   -p 6543 \
@@ -24,12 +24,12 @@ PGPASSWORD="${SUPABASE_DB_PASSWORD}" psql \
   -f "$SQL_FILE"
 
 if [ $? -eq 0 ]; then
-  echo "✅ Fonction déployée avec succès!"
+  echo "âœ… Fonction dÃ©ployÃ©e avec succÃ¨s!"
   echo ""
-  echo "🧪 Test de la fonction..."
+  echo "ðŸ§ª Test de la fonction..."
   sleep 2
   curl -s http://localhost:3000/api/gamme-rest-optimized/10/page-data-rpc-v2 | jq -c 'if .error then {error, message} else {success: true, has_data: (.data != null)} end'
 else
-  echo "❌ Erreur lors du déploiement"
+  echo "âŒ Erreur lors du dÃ©ploiement"
   exit 1
 fi

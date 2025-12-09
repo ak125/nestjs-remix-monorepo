@@ -1,16 +1,16 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Script de migration automatique Design System
-# Remplace les patterns hardcodés par composants @fafa/ui
+# Remplace les patterns hardcodÃ©s par composants @fafa/ui
 
 set -e
 
 FRONTEND_DIR="/workspaces/nestjs-remix-monorepo/frontend/app"
 
-echo "🚀 Migration Design System - Script Automatique"
+echo "ðŸš€ Migration Design System - Script Automatique"
 echo "================================================"
 
-# Fichiers à migrer
+# Fichiers Ã  migrer
 FILES=(
   "routes/admin.users.\$id.tsx"
   "routes/admin.config._index.tsx"
@@ -26,12 +26,12 @@ for file in "${FILES[@]}"; do
   filepath="$FRONTEND_DIR/$file"
   
   if [ ! -f "$filepath" ]; then
-    echo "⚠️  Fichier introuvable: $file"
+    echo "âš ï¸  Fichier introuvable: $file"
     continue
   fi
   
   echo ""
-  echo "📝 Traitement: $file"
+  echo "ðŸ“ Traitement: $file"
   
   # Backup
   cp "$filepath" "${filepath}.backup"
@@ -62,27 +62,27 @@ for file in "${FILES[@]}"; do
   # Pattern 7: Alert warning
   sed -i 's/<div className="bg-yellow-50 border border-yellow-200[^"]*">/<Alert intent="warning" variant="solid">/g' "$filepath"
   
-  # Compter après
+  # Compter aprÃ¨s
   AFTER=$(grep -cE "bg-(green|red|yellow|blue)-(50|100|200)" "$filepath" || echo 0)
   
   CHANGES=$((BEFORE - AFTER))
   TOTAL_CHANGES=$((TOTAL_CHANGES + CHANGES))
   
-  echo "   ✅ Changements: $CHANGES patterns remplacés"
+  echo "   âœ… Changements: $CHANGES patterns remplacÃ©s"
   
 done
 
 echo ""
 echo "================================================"
-echo "✅ MIGRATION TERMINÉE"
-echo "   Fichiers traités: ${#FILES[@]}"
-echo "   Patterns remplacés: ~$TOTAL_CHANGES"
+echo "âœ… MIGRATION TERMINÃ‰E"
+echo "   Fichiers traitÃ©s: ${#FILES[@]}"
+echo "   Patterns remplacÃ©s: ~$TOTAL_CHANGES"
 echo ""
-echo "⚠️  ÉTAPES MANUELLES REQUISES:"
+echo "âš ï¸  Ã‰TAPES MANUELLES REQUISES:"
 echo "1. Ajouter: import { Alert, Badge } from '@fafa/ui'"
-echo "2. Remplacer <span> par <Badge> pour patterns migrés"
+echo "2. Remplacer <span> par <Badge> pour patterns migrÃ©s"
 echo "3. Valider TypeScript: npm run typecheck"
 echo "4. Tester en dev: npm run dev"
 echo ""
-echo "💾 Backups créés: *.backup"
+echo "ðŸ’¾ Backups crÃ©Ã©s: *.backup"
 echo "   Pour restaurer: mv file.tsx.backup file.tsx"

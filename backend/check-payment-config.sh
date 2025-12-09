@@ -1,7 +1,7 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script de vérification de configuration de paiement
-# Vérifie SystemPay et Paybox
+# Script de vÃ©rification de configuration de paiement
+# VÃ©rifie SystemPay et Paybox
 
 set -e
 
@@ -14,22 +14,22 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}💳 VÉRIFICATION CONFIGURATION PAIEMENT${NC}"
+echo -e "${BLUE}ðŸ’³ VÃ‰RIFICATION CONFIGURATION PAIEMENT${NC}"
 echo -e "${BLUE}=========================================${NC}\n"
 
-# Vérifier si .env existe
+# VÃ©rifier si .env existe
 if [ ! -f .env ]; then
-    echo -e "${RED}❌ Fichier .env introuvable${NC}"
+    echo -e "${RED}âŒ Fichier .env introuvable${NC}"
     exit 1
 fi
 
 # ========================================
-# SYSTEMPAY (SYSTÈME PRINCIPAL)
+# SYSTEMPAY (SYSTÃˆME PRINCIPAL)
 # ========================================
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}🏦 SystemPay/Lyra (Système principal)${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+echo -e "${CYAN}ðŸ¦ SystemPay/Lyra (SystÃ¨me principal)${NC}"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}\n"
 
 SYSTEMPAY_SITE=$(grep "^SYSTEMPAY_SITE_ID=" .env | cut -d'=' -f2 || echo "")
 SYSTEMPAY_CERT_PROD=$(grep "^SYSTEMPAY_CERTIFICATE_PROD=" .env | cut -d'=' -f2 || echo "")
@@ -38,72 +38,72 @@ SYSTEMPAY_MODE=$(grep "^SYSTEMPAY_MODE=" .env | cut -d'=' -f2 || echo "")
 SYSTEMPAY_URL=$(grep "^SYSTEMPAY_API_URL=" .env | cut -d'=' -f2 || echo "")
 SYSTEMPAY_SIGNATURE=$(grep "^SYSTEMPAY_SIGNATURE_METHOD=" .env | cut -d'=' -f2 || echo "SHA1")
 
-echo "  📋 Configuration actuelle :"
-echo "     • Site ID : ${SYSTEMPAY_SITE}"
-echo "     • Certificat PROD : ${SYSTEMPAY_CERT_PROD}"
-echo "     • Certificat TEST : ${SYSTEMPAY_CERT_TEST}"
-echo "     • Mode : ${SYSTEMPAY_MODE}"
-echo "     • URL API : ${SYSTEMPAY_URL}"
-echo "     • Méthode signature : ${SYSTEMPAY_SIGNATURE}"
+echo "  ðŸ“‹ Configuration actuelle :"
+echo "     â€¢ Site ID : ${SYSTEMPAY_SITE}"
+echo "     â€¢ Certificat PROD : ${SYSTEMPAY_CERT_PROD}"
+echo "     â€¢ Certificat TEST : ${SYSTEMPAY_CERT_TEST}"
+echo "     â€¢ Mode : ${SYSTEMPAY_MODE}"
+echo "     â€¢ URL API : ${SYSTEMPAY_URL}"
+echo "     â€¢ MÃ©thode signature : ${SYSTEMPAY_SIGNATURE}"
 echo ""
 
-# Vérification SystemPay
+# VÃ©rification SystemPay
 SYSTEMPAY_OK=true
 
 if [ "$SYSTEMPAY_SITE" = "43962882" ]; then
-    echo -e "${GREEN}  ✅ Site ID correct (43962882)${NC}"
+    echo -e "${GREEN}  âœ… Site ID correct (43962882)${NC}"
 else
-    echo -e "${RED}  ❌ Site ID incorrect : ${SYSTEMPAY_SITE}${NC}"
+    echo -e "${RED}  âŒ Site ID incorrect : ${SYSTEMPAY_SITE}${NC}"
     SYSTEMPAY_OK=false
 fi
 
 if [ "$SYSTEMPAY_CERT_PROD" = "9816635272016068" ]; then
-    echo -e "${GREEN}  ✅ Certificat PRODUCTION correct${NC}"
+    echo -e "${GREEN}  âœ… Certificat PRODUCTION correct${NC}"
 else
-    echo -e "${RED}  ❌ Certificat PRODUCTION incorrect${NC}"
+    echo -e "${RED}  âŒ Certificat PRODUCTION incorrect${NC}"
     SYSTEMPAY_OK=false
 fi
 
 if [ "$SYSTEMPAY_CERT_TEST" = "9300172162563656" ]; then
-    echo -e "${GREEN}  ✅ Certificat TEST correct${NC}"
+    echo -e "${GREEN}  âœ… Certificat TEST correct${NC}"
 else
-    echo -e "${YELLOW}  ⚠️  Certificat TEST différent${NC}"
+    echo -e "${YELLOW}  âš ï¸  Certificat TEST diffÃ©rent${NC}"
 fi
 
 if [ "$SYSTEMPAY_MODE" = "PRODUCTION" ]; then
-    echo -e "${GREEN}  ✅ Mode PRODUCTION actif${NC}"
+    echo -e "${GREEN}  âœ… Mode PRODUCTION actif${NC}"
 elif [ "$SYSTEMPAY_MODE" = "TEST" ]; then
-    echo -e "${YELLOW}  ⚠️  Mode TEST actif${NC}"
+    echo -e "${YELLOW}  âš ï¸  Mode TEST actif${NC}"
 else
-    echo -e "${RED}  ❌ Mode invalide : ${SYSTEMPAY_MODE}${NC}"
+    echo -e "${RED}  âŒ Mode invalide : ${SYSTEMPAY_MODE}${NC}"
     SYSTEMPAY_OK=false
 fi
 
 if [[ "$SYSTEMPAY_URL" == *"paiement.systempay.fr"* ]]; then
-    echo -e "${GREEN}  ✅ URL API correcte${NC}"
+    echo -e "${GREEN}  âœ… URL API correcte${NC}"
 else
-    echo -e "${RED}  ❌ URL API incorrecte : ${SYSTEMPAY_URL}${NC}"
+    echo -e "${RED}  âŒ URL API incorrecte : ${SYSTEMPAY_URL}${NC}"
     SYSTEMPAY_OK=false
 fi
 
 echo ""
 
 if [ "$SYSTEMPAY_OK" = true ]; then
-    echo -e "${GREEN}  ✅ SystemPay : Configuration valide pour la PRODUCTION${NC}"
-    echo -e "${GREEN}     Ce système est actuellement utilisé pour les paiements CB et PayPal${NC}"
+    echo -e "${GREEN}  âœ… SystemPay : Configuration valide pour la PRODUCTION${NC}"
+    echo -e "${GREEN}     Ce systÃ¨me est actuellement utilisÃ© pour les paiements CB et PayPal${NC}"
 else
-    echo -e "${RED}  ❌ SystemPay : Configuration invalide${NC}"
+    echo -e "${RED}  âŒ SystemPay : Configuration invalide${NC}"
 fi
 
 echo ""
 
 # ========================================
-# PAYBOX (SYSTÈME SECONDAIRE)
+# PAYBOX (SYSTÃˆME SECONDAIRE)
 # ========================================
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}🔐 Paybox/Verifone (Système secondaire)${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+echo -e "${CYAN}ðŸ” Paybox/Verifone (SystÃ¨me secondaire)${NC}"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}\n"
 
 PAYBOX_SITE=$(grep "^PAYBOX_SITE=" .env | cut -d'=' -f2 || echo "")
 PAYBOX_RANG=$(grep "^PAYBOX_RANG=" .env | cut -d'=' -f2 || echo "")
@@ -112,111 +112,111 @@ PAYBOX_HMAC=$(grep "^PAYBOX_HMAC_KEY=" .env | cut -d'=' -f2 || echo "")
 PAYBOX_MODE=$(grep "^PAYBOX_MODE=" .env | cut -d'=' -f2 || echo "")
 PAYBOX_URL=$(grep "^PAYBOX_PAYMENT_URL=" .env | cut -d'=' -f2 || echo "")
 
-echo "  📋 Configuration actuelle :"
-echo "     • Site : ${PAYBOX_SITE}"
-echo "     • Rang : ${PAYBOX_RANG}"
-echo "     • Identifiant : ${PAYBOX_IDENT}"
-echo "     • Clé HMAC : ${PAYBOX_HMAC:0:20}... (${#PAYBOX_HMAC} caractères)"
-echo "     • Mode : ${PAYBOX_MODE}"
-echo "     • URL : ${PAYBOX_URL}"
+echo "  ðŸ“‹ Configuration actuelle :"
+echo "     â€¢ Site : ${PAYBOX_SITE}"
+echo "     â€¢ Rang : ${PAYBOX_RANG}"
+echo "     â€¢ Identifiant : ${PAYBOX_IDENT}"
+echo "     â€¢ ClÃ© HMAC : ${PAYBOX_HMAC:0:20}... (${#PAYBOX_HMAC} caractÃ¨res)"
+echo "     â€¢ Mode : ${PAYBOX_MODE}"
+echo "     â€¢ URL : ${PAYBOX_URL}"
 echo ""
 
-# Vérification Paybox
+# VÃ©rification Paybox
 PAYBOX_IS_TEST=false
 PAYBOX_IS_PROD=false
 PAYBOX_HMAC_OK=false
 
-# Vérifier le type de compte
+# VÃ©rifier le type de compte
 if [ "$PAYBOX_SITE" = "1999888" ] && [ "$PAYBOX_RANG" = "32" ] && [ "$PAYBOX_IDENT" = "107904482" ]; then
-    echo -e "${BLUE}  ℹ️  Identifiants : Compte TEST officiel Paybox${NC}"
+    echo -e "${BLUE}  â„¹ï¸  Identifiants : Compte TEST officiel Paybox${NC}"
     PAYBOX_IS_TEST=true
 elif [ "$PAYBOX_SITE" = "5259250" ] && [ "$PAYBOX_IDENT" = "822188223" ]; then
-    echo -e "${YELLOW}  ⚠️  Identifiants : Compte PRODUCTION (SITE=5259250)${NC}"
+    echo -e "${YELLOW}  âš ï¸  Identifiants : Compte PRODUCTION (SITE=5259250)${NC}"
     PAYBOX_IS_PROD=true
 else
-    echo -e "${YELLOW}  ⚠️  Identifiants : Compte personnalisé (SITE=${PAYBOX_SITE})${NC}"
+    echo -e "${YELLOW}  âš ï¸  Identifiants : Compte personnalisÃ© (SITE=${PAYBOX_SITE})${NC}"
 fi
 
-# Vérifier la clé HMAC
+# VÃ©rifier la clÃ© HMAC
 if [ "${PAYBOX_HMAC:0:16}" = "0123456789ABCDEF" ]; then
-    echo -e "${GREEN}  ✅ Clé HMAC : Clé TEST officielle Paybox${NC}"
+    echo -e "${GREEN}  âœ… ClÃ© HMAC : ClÃ© TEST officielle Paybox${NC}"
     PAYBOX_HMAC_OK=true
 elif [ "${PAYBOX_HMAC:0:10}" = "7731B42256" ]; then
-    echo -e "${RED}  ❌ Clé HMAC : Clé SystemPay (INCORRECTE pour Paybox !)${NC}"
-    echo -e "${RED}     Cette clé appartient à SystemPay, pas à Paybox${NC}"
+    echo -e "${RED}  âŒ ClÃ© HMAC : ClÃ© SystemPay (INCORRECTE pour Paybox !)${NC}"
+    echo -e "${RED}     Cette clÃ© appartient Ã  SystemPay, pas Ã  Paybox${NC}"
     PAYBOX_HMAC_OK=false
 elif [ ${#PAYBOX_HMAC} -eq 128 ]; then
-    echo -e "${BLUE}  ℹ️  Clé HMAC : Clé personnalisée (128 caractères)${NC}"
+    echo -e "${BLUE}  â„¹ï¸  ClÃ© HMAC : ClÃ© personnalisÃ©e (128 caractÃ¨res)${NC}"
     PAYBOX_HMAC_OK=true
 else
-    echo -e "${RED}  ❌ Clé HMAC : Longueur invalide (${#PAYBOX_HMAC} caractères, attendu: 128)${NC}"
+    echo -e "${RED}  âŒ ClÃ© HMAC : Longueur invalide (${#PAYBOX_HMAC} caractÃ¨res, attendu: 128)${NC}"
     PAYBOX_HMAC_OK=false
 fi
 
-# Vérifier l'URL
+# VÃ©rifier l'URL
 if [[ "$PAYBOX_URL" == *"preprod"* ]] || [[ "$PAYBOX_URL" == *"test.php"* ]]; then
-    echo -e "${BLUE}  ℹ️  URL : Environnement TEST/PREPROD${NC}"
+    echo -e "${BLUE}  â„¹ï¸  URL : Environnement TEST/PREPROD${NC}"
 elif [[ "$PAYBOX_URL" == "https://tpeweb.paybox.com"* ]]; then
-    echo -e "${YELLOW}  ⚠️  URL : Environnement PRODUCTION${NC}"
+    echo -e "${YELLOW}  âš ï¸  URL : Environnement PRODUCTION${NC}"
 else
-    echo -e "${YELLOW}  ⚠️  URL : URL personnalisée${NC}"
+    echo -e "${YELLOW}  âš ï¸  URL : URL personnalisÃ©e${NC}"
 fi
 
-# Vérifier le mode
+# VÃ©rifier le mode
 if [ "$PAYBOX_MODE" = "TEST" ]; then
-    echo -e "${BLUE}  ℹ️  Mode TEST actif${NC}"
+    echo -e "${BLUE}  â„¹ï¸  Mode TEST actif${NC}"
 elif [ "$PAYBOX_MODE" = "PRODUCTION" ]; then
-    echo -e "${YELLOW}  ⚠️  Mode PRODUCTION configuré${NC}"
+    echo -e "${YELLOW}  âš ï¸  Mode PRODUCTION configurÃ©${NC}"
 fi
 
 echo ""
 
 # Statut Paybox
 if [ "$PAYBOX_IS_TEST" = true ] && [ "$PAYBOX_HMAC_OK" = true ] && [ "$PAYBOX_MODE" = "TEST" ]; then
-    echo -e "${BLUE}  ℹ️  Paybox : Configuration TEST valide (compte de test officiel)${NC}"
-    echo -e "${BLUE}     ⚠️  Ce système n'est PAS utilisé en production${NC}"
-    echo -e "${BLUE}     ⚠️  Votre système principal est SystemPay${NC}"
+    echo -e "${BLUE}  â„¹ï¸  Paybox : Configuration TEST valide (compte de test officiel)${NC}"
+    echo -e "${BLUE}     âš ï¸  Ce systÃ¨me n'est PAS utilisÃ© en production${NC}"
+    echo -e "${BLUE}     âš ï¸  Votre systÃ¨me principal est SystemPay${NC}"
 elif [ "$PAYBOX_IS_PROD" = true ] && [ "$PAYBOX_HMAC_OK" = false ]; then
-    echo -e "${RED}  ❌ Paybox : Configuration PRODUCTION invalide${NC}"
-    echo -e "${RED}     Raison : Clé HMAC incorrecte (clé SystemPay détectée)${NC}"
-    echo -e "${YELLOW}     Solution : Obtenir la vraie clé HMAC Paybox ou utiliser identifiants TEST${NC}"
+    echo -e "${RED}  âŒ Paybox : Configuration PRODUCTION invalide${NC}"
+    echo -e "${RED}     Raison : ClÃ© HMAC incorrecte (clÃ© SystemPay dÃ©tectÃ©e)${NC}"
+    echo -e "${YELLOW}     Solution : Obtenir la vraie clÃ© HMAC Paybox ou utiliser identifiants TEST${NC}"
 else
-    echo -e "${YELLOW}  ⚠️  Paybox : Configuration personnalisée${NC}"
+    echo -e "${YELLOW}  âš ï¸  Paybox : Configuration personnalisÃ©e${NC}"
 fi
 
 echo ""
 
 # ========================================
-# RÉSUMÉ GLOBAL
+# RÃ‰SUMÃ‰ GLOBAL
 # ========================================
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}📊 RÉSUMÉ${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+echo -e "${BLUE}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+echo -e "${BLUE}ðŸ“Š RÃ‰SUMÃ‰${NC}"
+echo -e "${BLUE}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}\n"
 
 if [ "$SYSTEMPAY_OK" = true ]; then
-    echo -e "${GREEN}✅ Système de paiement PRINCIPAL : SystemPay/Lyra${NC}"
-    echo -e "${GREEN}   • Configuration valide pour la PRODUCTION${NC}"
-    echo -e "${GREEN}   • Utilisé pour les paiements CB et PayPal${NC}"
+    echo -e "${GREEN}âœ… SystÃ¨me de paiement PRINCIPAL : SystemPay/Lyra${NC}"
+    echo -e "${GREEN}   â€¢ Configuration valide pour la PRODUCTION${NC}"
+    echo -e "${GREEN}   â€¢ UtilisÃ© pour les paiements CB et PayPal${NC}"
     echo ""
 else
-    echo -e "${RED}❌ Système de paiement PRINCIPAL : SystemPay/Lyra${NC}"
-    echo -e "${RED}   • Configuration invalide${NC}"
-    echo -e "${RED}   • Vérifier les paramètres SystemPay${NC}"
+    echo -e "${RED}âŒ SystÃ¨me de paiement PRINCIPAL : SystemPay/Lyra${NC}"
+    echo -e "${RED}   â€¢ Configuration invalide${NC}"
+    echo -e "${RED}   â€¢ VÃ©rifier les paramÃ¨tres SystemPay${NC}"
     echo ""
 fi
 
 if [ "$PAYBOX_IS_TEST" = true ] && [ "$PAYBOX_HMAC_OK" = true ]; then
-    echo -e "${BLUE}ℹ️  Système SECONDAIRE : Paybox/Verifone (Mode TEST)${NC}"
-    echo -e "${BLUE}   • Configuration TEST valide${NC}"
-    echo -e "${BLUE}   • Non utilisé en production${NC}"
+    echo -e "${BLUE}â„¹ï¸  SystÃ¨me SECONDAIRE : Paybox/Verifone (Mode TEST)${NC}"
+    echo -e "${BLUE}   â€¢ Configuration TEST valide${NC}"
+    echo -e "${BLUE}   â€¢ Non utilisÃ© en production${NC}"
     echo ""
 elif [ "$PAYBOX_IS_PROD" = true ]; then
-    echo -e "${YELLOW}⚠️  Système SECONDAIRE : Paybox/Verifone${NC}"
-    echo -e "${YELLOW}   • Configuration PRODUCTION détectée${NC}"
+    echo -e "${YELLOW}âš ï¸  SystÃ¨me SECONDAIRE : Paybox/Verifone${NC}"
+    echo -e "${YELLOW}   â€¢ Configuration PRODUCTION dÃ©tectÃ©e${NC}"
     if [ "$PAYBOX_HMAC_OK" = false ]; then
-        echo -e "${RED}   • ❌ Clé HMAC incorrecte (clé SystemPay utilisée par erreur)${NC}"
-        echo -e "${YELLOW}   • Solution : Obtenir la vraie clé HMAC Paybox auprès de Verifone${NC}"
+        echo -e "${RED}   â€¢ âŒ ClÃ© HMAC incorrecte (clÃ© SystemPay utilisÃ©e par erreur)${NC}"
+        echo -e "${YELLOW}   â€¢ Solution : Obtenir la vraie clÃ© HMAC Paybox auprÃ¨s de Verifone${NC}"
     fi
     echo ""
 fi
@@ -225,32 +225,32 @@ fi
 # RECOMMANDATIONS
 # ========================================
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}💡 RECOMMANDATIONS${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+echo -e "${CYAN}ðŸ’¡ RECOMMANDATIONS${NC}"
+echo -e "${CYAN}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}\n"
 
 if [ "$SYSTEMPAY_OK" = true ]; then
-    echo -e "${GREEN}✅ Votre configuration SystemPay est opérationnelle${NC}"
-    echo -e "   → Aucune action requise pour SystemPay\n"
+    echo -e "${GREEN}âœ… Votre configuration SystemPay est opÃ©rationnelle${NC}"
+    echo -e "   â†’ Aucune action requise pour SystemPay\n"
 fi
 
 if [ "$PAYBOX_IS_PROD" = true ] && [ "$PAYBOX_HMAC_OK" = false ]; then
-    echo -e "${YELLOW}⚠️  Configuration Paybox invalide détectée${NC}"
+    echo -e "${YELLOW}âš ï¸  Configuration Paybox invalide dÃ©tectÃ©e${NC}"
     echo -e "   Vous avez deux options :\n"
-    echo -e "   ${BLUE}Option 1 : Désactiver Paybox (recommandé si non utilisé)${NC}"
-    echo -e "     → Paybox est déjà en mode TEST, aucune action requise\n"
+    echo -e "   ${BLUE}Option 1 : DÃ©sactiver Paybox (recommandÃ© si non utilisÃ©)${NC}"
+    echo -e "     â†’ Paybox est dÃ©jÃ  en mode TEST, aucune action requise\n"
     echo -e "   ${BLUE}Option 2 : Activer Paybox en production${NC}"
     echo -e "     1. Contactez Paybox/Verifone :"
-    echo -e "        📧 support@paybox.com"
-    echo -e "        ☎️  +33 (0)5 56 49 39 00"
-    echo -e "     2. Demandez votre clé HMAC PRODUCTION Paybox"
-    echo -e "     3. Mettez à jour PAYBOX_HMAC_KEY dans .env\n"
+    echo -e "        ðŸ“§ support@paybox.com"
+    echo -e "        â˜Žï¸  +33 (0)5 56 49 39 00"
+    echo -e "     2. Demandez votre clÃ© HMAC PRODUCTION Paybox"
+    echo -e "     3. Mettez Ã  jour PAYBOX_HMAC_KEY dans .env\n"
 fi
 
-echo -e "${BLUE}📄 Documentation complète :${NC}"
-echo -e "   • SYSTEME-PAIEMENT-ACTUEL.md"
-echo -e "   • PAYBOX-PRODUCTION-SETUP.md\n"
+echo -e "${BLUE}ðŸ“„ Documentation complÃ¨te :${NC}"
+echo -e "   â€¢ SYSTEME-PAIEMENT-ACTUEL.md"
+echo -e "   â€¢ PAYBOX-PRODUCTION-SETUP.md\n"
 
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}Vérification terminée${NC}"
+echo -e "${BLUE}VÃ©rification terminÃ©e${NC}"
 echo -e "${BLUE}=========================================${NC}"

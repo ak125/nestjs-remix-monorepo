@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # ============================================
-# Requêtes Meilisearch - SEO & E-commerce
+# RequÃªtes Meilisearch - SEO & E-commerce
 # ============================================
 
 MEILISEARCH_URL="http://localhost:7700"
-MEILISEARCH_KEY="masterKey"  # À changer en production
+MEILISEARCH_KEY="masterKey"  # Ã€ changer en production
 INDEX="access_logs"
 
 # Couleurs pour output
@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 # ============================================
 # 1. Toutes les 404 d'hier sur /pieces/
 # ============================================
-echo -e "${YELLOW}📊 404 d'hier sur /pieces/${NC}"
+echo -e "${YELLOW}ðŸ“Š 404 d'hier sur /pieces/${NC}"
 
 YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
 
@@ -45,9 +45,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }'
 
 # ============================================
-# 2. Top 10 brands par nombre de requêtes (aujourd'hui)
+# 2. Top 10 brands par nombre de requÃªtes (aujourd'hui)
 # ============================================
-echo -e "\n${YELLOW}📊 Top 10 brands (aujourd'hui)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Top 10 brands (aujourd'hui)${NC}"
 
 TODAY=$(date +%Y-%m-%d)
 
@@ -63,7 +63,7 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
 # ============================================
 # 3. Crawling Googlebot sur Renault Clio (7 derniers jours)
 # ============================================
-echo -e "\n${YELLOW}📊 Googlebot sur Renault Clio (7j)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Googlebot sur Renault Clio (7j)${NC}"
 
 SEVEN_DAYS_AGO=$(date -d "7 days ago" +%Y-%m-%d)
 
@@ -87,9 +87,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }'
 
 # ============================================
-# 4. Erreurs 5xx par brand (dernières 24h)
+# 4. Erreurs 5xx par brand (derniÃ¨res 24h)
 # ============================================
-echo -e "\n${YELLOW}📊 Erreurs 5xx par brand (24h)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Erreurs 5xx par brand (24h)${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -112,9 +112,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }'
 
 # ============================================
-# 5. Top 10 gammes les plus crawlées (tous bots)
+# 5. Top 10 gammes les plus crawlÃ©es (tous bots)
 # ============================================
-echo -e "\n${YELLOW}📊 Top 10 gammes crawlées par bots${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Top 10 gammes crawlÃ©es par bots${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -126,9 +126,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }" | jq '.facetDistribution.gamme | to_entries | sort_by(-.value) | .[0:10] | map({gamme: .key, crawls: .value})'
 
 # ============================================
-# 6. Distribution géographique pour BMW (ce mois)
+# 6. Distribution gÃ©ographique pour BMW (ce mois)
 # ============================================
-echo -e "\n${YELLOW}📊 Distribution pays pour BMW (ce mois)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Distribution pays pour BMW (ce mois)${NC}"
 
 THIS_MONTH=$(date +%Y-%m)
 
@@ -144,7 +144,7 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
 # ============================================
 # 7. Latence moyenne par brand (aujourd'hui)
 # ============================================
-echo -e "\n${YELLOW}📊 Latence moyenne par brand${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Latence moyenne par brand${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -161,9 +161,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }] | sort_by(-.count)'
 
 # ============================================
-# 8. Top referers pour une gamme spécifique (Peugeot 208)
+# 8. Top referers pour une gamme spÃ©cifique (Peugeot 208)
 # ============================================
-echo -e "\n${YELLOW}📊 Top referers pour Peugeot 208${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Top referers pour Peugeot 208${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -175,9 +175,9 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   }" | jq '[.hits | map(.referer) | group_by(.) | .[] | {referer: .[0], count: length}] | sort_by(-.count) | .[0:10]'
 
 # ============================================
-# 9. Activité bots par jour (7 derniers jours)
+# 9. ActivitÃ© bots par jour (7 derniers jours)
 # ============================================
-echo -e "\n${YELLOW}📊 Activité bots par jour (7j)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š ActivitÃ© bots par jour (7j)${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -194,7 +194,7 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
 # ============================================
 # 10. Routes les plus lentes (p95 latence)
 # ============================================
-echo -e "\n${YELLOW}📊 Routes les plus lentes (p95)${NC}"
+echo -e "\n${YELLOW}ðŸ“Š Routes les plus lentes (p95)${NC}"
 
 curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
   -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
@@ -211,4 +211,4 @@ curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
     count: length
   }] | sort_by(-.p95_latency) | .[0:10]'
 
-echo -e "\n${GREEN}✅ Requêtes terminées${NC}"
+echo -e "\n${GREEN}âœ… RequÃªtes terminÃ©es${NC}"

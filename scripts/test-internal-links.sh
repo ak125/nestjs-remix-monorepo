@@ -1,9 +1,9 @@
-#!/bin/bash
+﻿#!/bin/bash
 # =====================================================
 # Test Script - SEO Internal Links
 # scripts/test-internal-links.sh
 # 
-# Tests de non-régression pour le maillage interne SEO
+# Tests de non-rÃ©gression pour le maillage interne SEO
 # Usage: ./scripts/test-internal-links.sh [BASE_URL]
 # =====================================================
 
@@ -38,11 +38,11 @@ BODY=$(echo "$RESPONSE" | sed '$d')
 if [ "$HTTP_CODE" = "200" ]; then
     success "API blog/advice accessible (status 200)"
     
-    # Vérifier si le contenu contient des liens internes
+    # VÃ©rifier si le contenu contient des liens internes
     if echo "$BODY" | grep -q 'href="/pieces'; then
-        success "Liens internes trouvés dans le contenu"
+        success "Liens internes trouvÃ©s dans le contenu"
     else
-        warn "Aucun lien interne trouvé (normal si pas de #LinkGammeCar#)"
+        warn "Aucun lien interne trouvÃ© (normal si pas de #LinkGammeCar#)"
     fi
     
     # Compter les liens avec data-link-type
@@ -92,7 +92,7 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 
 if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-    success "Click tracké avec succès (status $HTTP_CODE)"
+    success "Click trackÃ© avec succÃ¨s (status $HTTP_CODE)"
 else
     fail "Erreur tracking: HTTP $HTTP_CODE"
 fi
@@ -125,7 +125,7 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 
 if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-    success "Impression trackée avec succès (status $HTTP_CODE)"
+    success "Impression trackÃ©e avec succÃ¨s (status $HTTP_CODE)"
 else
     warn "Impression endpoint peut ne pas exister: HTTP $HTTP_CODE"
 fi
@@ -144,7 +144,7 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | sed '$d')
 
 if [ "$HTTP_CODE" = "200" ]; then
-    success "Cache stats récupérées"
+    success "Cache stats rÃ©cupÃ©rÃ©es"
     echo "$BODY" | jq -r '.verbsCached, .nounsCached, .gammesCached, .hitRate' 2>/dev/null || echo "$BODY"
 else
     warn "Endpoint stats peut ne pas exister (optionnel)"
@@ -164,17 +164,17 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | sed '$d')
 
 if [ "$HTTP_CODE" = "200" ]; then
-    success "Page blog chargée (status 200)"
+    success "Page blog chargÃ©e (status 200)"
     
-    # Vérifier la présence de liens internes
+    # VÃ©rifier la prÃ©sence de liens internes
     INTERNAL_LINKS=$(echo "$BODY" | grep -o 'href="/pieces[^"]*"' | wc -l)
-    info "Liens vers /pieces trouvés: $INTERNAL_LINKS"
+    info "Liens vers /pieces trouvÃ©s: $INTERNAL_LINKS"
     
-    # Vérifier la présence d'attributs de tracking
+    # VÃ©rifier la prÃ©sence d'attributs de tracking
     TRACKING_LINKS=$(echo "$BODY" | grep -o 'data-link-type=' | wc -l)
     info "Liens avec tracking: $TRACKING_LINKS"
 else
-    warn "Page frontend peut ne pas être disponible: HTTP $HTTP_CODE"
+    warn "Page frontend peut ne pas Ãªtre disponible: HTTP $HTTP_CODE"
 fi
 
 # =====================================================
@@ -187,14 +187,14 @@ if [ "$2" = "-v" ]; then
 fi
 
 # =====================================================
-# Résumé
+# RÃ©sumÃ©
 # =====================================================
 
 echo -e "\n${YELLOW}=== RESUME ===${NC}"
-echo "Tests exécutés sur: $BASE_URL"
+echo "Tests exÃ©cutÃ©s sur: $BASE_URL"
 echo "Pour mode verbeux: ./scripts/test-internal-links.sh $BASE_URL -v"
 echo ""
-echo "Prochaines étapes:"
-echo "  1. Démarrer le backend: cd backend && npm run start:dev"
-echo "  2. Démarrer le frontend: cd frontend && npm run dev"
+echo "Prochaines Ã©tapes:"
+echo "  1. DÃ©marrer le backend: cd backend && npm run start:dev"
+echo "  2. DÃ©marrer le frontend: cd frontend && npm run dev"
 echo "  3. Relancer ce script: ./scripts/test-internal-links.sh"

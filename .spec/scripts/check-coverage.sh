@@ -1,10 +1,10 @@
-#!/bin/bash
+﻿#!/bin/bash
 # .spec/scripts/check-coverage.sh
-# Vérification de la couverture des spécifications
+# VÃ©rification de la couverture des spÃ©cifications
 
 set -e
 
-echo "🔍 Vérification couverture SpecKit..."
+echo "ðŸ” VÃ©rification couverture SpecKit..."
 echo ""
 
 # Couleurs pour output
@@ -19,10 +19,10 @@ TOTAL_MODULES=0
 MODULES_WITH_SPEC=0
 
 # =============================================================================
-# 1. VÉRIFIER MODULES BACKEND
+# 1. VÃ‰RIFIER MODULES BACKEND
 # =============================================================================
 
-echo -e "${BLUE}📦 Modules Backend${NC}"
+echo -e "${BLUE}ðŸ“¦ Modules Backend${NC}"
 echo "-------------------"
 
 if [ -d "backend/src/modules" ]; then
@@ -33,12 +33,12 @@ if [ -d "backend/src/modules" ]; then
     module=$(basename "$module_path")
     TOTAL_MODULES=$((TOTAL_MODULES + 1))
     
-    # Vérifier si spec existe
+    # VÃ©rifier si spec existe
     if [ -f ".spec/features/${module}.md" ] || ls .spec/features/${module}-*.md >/dev/null 2>&1; then
-      echo -e "  ${GREEN}✓${NC} $module"
+      echo -e "  ${GREEN}âœ“${NC} $module"
       MODULES_WITH_SPEC=$((MODULES_WITH_SPEC + 1))
     else
-      echo -e "  ${RED}✗${NC} $module ${YELLOW}(spec manquante)${NC}"
+      echo -e "  ${RED}âœ—${NC} $module ${YELLOW}(spec manquante)${NC}"
       MISSING_BACKEND_SPECS+=("$module")
     fi
   done
@@ -48,36 +48,36 @@ if [ -d "backend/src/modules" ]; then
     echo ""
     echo -e "Coverage Backend: ${GREEN}${MODULES_WITH_SPEC}/${TOTAL_MODULES}${NC} modules (${BACKEND_COVERAGE}%)"
   else
-    echo -e "  ${YELLOW}⚠ Aucun module trouvé${NC}"
+    echo -e "  ${YELLOW}âš  Aucun module trouvÃ©${NC}"
   fi
 else
-  echo -e "  ${YELLOW}⚠ Dossier backend/src/modules non trouvé${NC}"
+  echo -e "  ${YELLOW}âš  Dossier backend/src/modules non trouvÃ©${NC}"
 fi
 
 echo ""
 
 # =============================================================================
-# 2. VÉRIFIER ROUTES FRONTEND (approximatif)
+# 2. VÃ‰RIFIER ROUTES FRONTEND (approximatif)
 # =============================================================================
 
-echo -e "${BLUE}🎨 Routes Frontend (Remix)${NC}"
+echo -e "${BLUE}ðŸŽ¨ Routes Frontend (Remix)${NC}"
 echo "-------------------------"
 
 if [ -d "frontend/app/routes" ]; then
   FRONTEND_ROUTES=$(find frontend/app/routes -name "*.tsx" ! -name "_*" 2>/dev/null | wc -l)
-  echo "  Routes détectées: $FRONTEND_ROUTES"
-  echo "  ${YELLOW}Note: Vérification manuelle recommandée pour routes complexes${NC}"
+  echo "  Routes dÃ©tectÃ©es: $FRONTEND_ROUTES"
+  echo "  ${YELLOW}Note: VÃ©rification manuelle recommandÃ©e pour routes complexes${NC}"
 else
-  echo "  ${YELLOW}⚠ Dossier frontend/app/routes non trouvé${NC}"
+  echo "  ${YELLOW}âš  Dossier frontend/app/routes non trouvÃ©${NC}"
 fi
 
 echo ""
 
 # =============================================================================
-# 3. VÉRIFIER WORKFLOWS SPECKIT
+# 3. VÃ‰RIFIER WORKFLOWS SPECKIT
 # =============================================================================
 
-echo -e "${BLUE}📋 Workflows SpecKit${NC}"
+echo -e "${BLUE}ðŸ“‹ Workflows SpecKit${NC}"
 echo "-------------------"
 
 WORKFLOWS=(
@@ -94,9 +94,9 @@ MISSING_WORKFLOWS=()
 
 for workflow in "${WORKFLOWS[@]}"; do
   if [ -f ".spec/workflows/$workflow" ]; then
-    echo -e "  ${GREEN}✓${NC} $workflow"
+    echo -e "  ${GREEN}âœ“${NC} $workflow"
   else
-    echo -e "  ${RED}✗${NC} $workflow ${YELLOW}(manquant)${NC}"
+    echo -e "  ${RED}âœ—${NC} $workflow ${YELLOW}(manquant)${NC}"
     MISSING_WORKFLOWS+=("$workflow")
   fi
 done
@@ -104,28 +104,28 @@ done
 echo ""
 
 # =============================================================================
-# 4. VÉRIFIER CONSTITUTION
+# 4. VÃ‰RIFIER CONSTITUTION
 # =============================================================================
 
-echo -e "${BLUE}📜 Constitution & Standards${NC}"
+echo -e "${BLUE}ðŸ“œ Constitution & Standards${NC}"
 echo "--------------------------"
 
 if [ -f ".spec/constitution.md" ]; then
-  echo -e "  ${GREEN}✓${NC} constitution.md"
+  echo -e "  ${GREEN}âœ“${NC} constitution.md"
   CONSTITUTION_EXISTS=1
 else
-  echo -e "  ${RED}✗${NC} constitution.md ${YELLOW}(manquant)${NC}"
+  echo -e "  ${RED}âœ—${NC} constitution.md ${YELLOW}(manquant)${NC}"
   CONSTITUTION_EXISTS=0
 fi
 
 echo ""
 
 # =============================================================================
-# 5. RÉSUMÉ & RECOMMANDATIONS
+# 5. RÃ‰SUMÃ‰ & RECOMMANDATIONS
 # =============================================================================
 
 echo "==============================================="
-echo -e "${BLUE}📊 RÉSUMÉ${NC}"
+echo -e "${BLUE}ðŸ“Š RÃ‰SUMÃ‰${NC}"
 echo "==============================================="
 echo ""
 
@@ -145,17 +145,17 @@ echo ""
 
 # Afficher specs manquantes
 if [ ${#MISSING_BACKEND_SPECS[@]} -gt 0 ]; then
-  echo -e "${RED}❌ Specs Backend manquantes (${#MISSING_BACKEND_SPECS[@]}):${NC}"
+  echo -e "${RED}âŒ Specs Backend manquantes (${#MISSING_BACKEND_SPECS[@]}):${NC}"
   for module in "${MISSING_BACKEND_SPECS[@]}"; do
     echo "   - backend/src/modules/$module"
-    echo "     → Créer: .spec/features/$module.md"
+    echo "     â†’ CrÃ©er: .spec/features/$module.md"
   done
   echo ""
 fi
 
 # Afficher workflows manquants
 if [ ${#MISSING_WORKFLOWS[@]} -gt 0 ]; then
-  echo -e "${RED}❌ Workflows SpecKit manquants (${#MISSING_WORKFLOWS[@]}):${NC}"
+  echo -e "${RED}âŒ Workflows SpecKit manquants (${#MISSING_WORKFLOWS[@]}):${NC}"
   for workflow in "${MISSING_WORKFLOWS[@]}"; do
     echo "   - .spec/workflows/$workflow"
   done
@@ -163,21 +163,21 @@ if [ ${#MISSING_WORKFLOWS[@]} -gt 0 ]; then
 fi
 
 # Recommandations
-echo -e "${BLUE}💡 Recommandations:${NC}"
+echo -e "${BLUE}ðŸ’¡ Recommandations:${NC}"
 echo ""
 
 if [ $TOTAL_MODULES -gt 0 ] && (( $(echo "$BACKEND_COVERAGE < 80" | bc -l 2>/dev/null || echo "1") )); then
-  echo -e "  ${YELLOW}⚠${NC} Coverage backend < 80% → Créer specs pour modules manquants"
+  echo -e "  ${YELLOW}âš ${NC} Coverage backend < 80% â†’ CrÃ©er specs pour modules manquants"
 fi
 
 if [ ${#MISSING_WORKFLOWS[@]} -gt 0 ]; then
-  echo -e "  ${YELLOW}⚠${NC} Workflows manquants → Compléter suite SpecKit"
+  echo -e "  ${YELLOW}âš ${NC} Workflows manquants â†’ ComplÃ©ter suite SpecKit"
 fi
 
 if (( $(echo "$GLOBAL_SCORE < 90" | bc -l 2>/dev/null || echo "1") )); then
-  echo -e "  ${YELLOW}⚠${NC} Score global < 90% → Améliorer couverture documentation"
+  echo -e "  ${YELLOW}âš ${NC} Score global < 90% â†’ AmÃ©liorer couverture documentation"
 else
-  echo -e "  ${GREEN}✓${NC} Excellente couverture documentation !"
+  echo -e "  ${GREEN}âœ“${NC} Excellente couverture documentation !"
 fi
 
 echo ""
@@ -186,7 +186,7 @@ echo ""
 # 6. EXIT CODE
 # =============================================================================
 
-# Success si au moins workflows critiques présents
+# Success si au moins workflows critiques prÃ©sents
 CRITICAL_WORKFLOWS=("speckit-specify.md" "speckit-plan.md" "speckit-implement.md")
 CRITICAL_MISSING=0
 
@@ -197,9 +197,9 @@ for workflow in "${CRITICAL_WORKFLOWS[@]}"; do
 done
 
 if [ $CRITICAL_MISSING -gt 0 ]; then
-  echo -e "${RED}❌ ATTENTION: $CRITICAL_MISSING workflow(s) critique(s) manquant(s)${NC}"
+  echo -e "${RED}âŒ ATTENTION: $CRITICAL_MISSING workflow(s) critique(s) manquant(s)${NC}"
   exit 1
 fi
 
-echo -e "${GREEN}✅ Vérification réussie !${NC}"
+echo -e "${GREEN}âœ… VÃ©rification rÃ©ussie !${NC}"
 exit 0

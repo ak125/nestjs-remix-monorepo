@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script pour corriger automatiquement les variables non utilisées
-# en les préfixant avec _
+# Script pour corriger automatiquement les variables non utilisÃ©es
+# en les prÃ©fixant avec _
 
-echo "🔧 Correction automatique des variables non utilisées..."
+echo "ðŸ”§ Correction automatique des variables non utilisÃ©es..."
 
-# Fonction pour traiter les imports non utilisés
+# Fonction pour traiter les imports non utilisÃ©s
 fix_unused_imports() {
     local file="$1"
     local var="$2"
@@ -29,25 +29,25 @@ fix_catch_errors() {
     sed -i 's/catch(err)/catch(_err)/g' "$file"
 }
 
-# Fonction pour traiter les paramètres de fonction non utilisés
+# Fonction pour traiter les paramÃ¨tres de fonction non utilisÃ©s
 fix_unused_params() {
     local file="$1"
     local param="$2"
     
-    # Renommer le paramètre avec _
+    # Renommer le paramÃ¨tre avec _
     sed -i "s/\b${param}\b:/_${param}:/g" "$file"
 }
 
-# Fonction pour traiter les variables assignées mais non utilisées
+# Fonction pour traiter les variables assignÃ©es mais non utilisÃ©es
 fix_unused_assignments() {
     local file="$1"
     local var="$2"
     
-    # const var = ... → const _var = ...
+    # const var = ... â†’ const _var = ...
     sed -i "s/const ${var} =/const _${var} =/g" "$file"
-    # let var = ... → let _var = ...  
+    # let var = ... â†’ let _var = ...  
     sed -i "s/let ${var} =/let _${var} =/g" "$file"
-    # { var, ... } → { _var, ... }
+    # { var, ... } â†’ { _var, ... }
     sed -i "s/{ ${var},/{ _${var},/g" "$file"
     sed -i "s/, ${var},/, _${var},/g" "$file"
     sed -i "s/, ${var} }/, _${var} }/g" "$file"
@@ -56,16 +56,16 @@ fix_unused_assignments() {
 # Traiter tous les fichiers avec des warnings
 npm run lint 2>&1 | grep "^/" | sort | uniq | while read -r file; do
     if [ -f "$file" ]; then
-        echo "📝 Traitement: $file"
+        echo "ðŸ“ Traitement: $file"
         
         # Corriger les catch blocks
         fix_catch_errors "$file"
         
-        # Note: Pour les autres cas, il faut être plus prudent car sed peut créer des bugs
+        # Note: Pour les autres cas, il faut Ãªtre plus prudent car sed peut crÃ©er des bugs
         # On laisse les corrections manuelles pour les cas complexes
     fi
 done
 
-echo "✅ Corrections automatiques terminées!"
-echo "⚠️  Vérifiez les modifications avec 'git diff' avant de commit"
-echo "🔍 Relancez 'npm run lint' pour voir les warnings restants"
+echo "âœ… Corrections automatiques terminÃ©es!"
+echo "âš ï¸  VÃ©rifiez les modifications avec 'git diff' avant de commit"
+echo "ðŸ” Relancez 'npm run lint' pour voir les warnings restants"
