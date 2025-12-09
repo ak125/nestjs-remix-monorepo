@@ -1,13 +1,13 @@
-#!/bin/bash
-# Attendre que Meilisearch soit prêt
-echo "⏳ Attente Meilisearch..."
+﻿#!/bin/bash
+# Attendre que Meilisearch soit prÃªt
+echo "â³ Attente Meilisearch..."
 until curl -s http://localhost:7700/health > /dev/null; do
   sleep 2
 done
 
-echo "✅ Meilisearch prêt"
+echo "âœ… Meilisearch prÃªt"
 
-# Créer index access_logs
+# CrÃ©er index access_logs
 curl -X POST 'http://localhost:7700/indexes' \
   -H 'Authorization: Bearer masterKey' \
   -H 'Content-Type: application/json' \
@@ -56,4 +56,4 @@ curl -X PATCH 'http://localhost:7700/indexes/access_logs/settings' \
     }
   }'
 
-echo "✅ Index Meilisearch configuré"
+echo "âœ… Index Meilisearch configurÃ©"

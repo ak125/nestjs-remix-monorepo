@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # sync-configs.sh - Synchroniser config/ vers racine (rollback d'urgence)
 # Usage: ./scripts/sync-configs.sh [--reverse]
 
@@ -9,12 +9,12 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$ROOT_DIR"
 
-echo "🔄 sync-configs.sh - Synchronisation des configurations"
+echo "ðŸ”„ sync-configs.sh - Synchronisation des configurations"
 echo "=================================================="
 
 if [[ "$1" == "--reverse" ]]; then
-  echo "⚠️  Mode REVERSE: Copie de la racine vers config/"
-  echo "   (Utilisé pour sauvegarder les configs après modifications manuelles)"
+  echo "âš ï¸  Mode REVERSE: Copie de la racine vers config/"
+  echo "   (UtilisÃ© pour sauvegarder les configs aprÃ¨s modifications manuelles)"
   echo ""
   
   # Caddy
@@ -48,10 +48,10 @@ if [[ "$1" == "--reverse" ]]; then
   fi
   
   echo ""
-  echo "✅ Synchronisation REVERSE terminée (racine → config/)"
+  echo "âœ… Synchronisation REVERSE terminÃ©e (racine â†’ config/)"
   
 else
-  echo "📋 Mode NORMAL: Copie de config/ vers la racine"
+  echo "ðŸ“‹ Mode NORMAL: Copie de config/ vers la racine"
   echo "   (Rollback d'urgence si docker-compose ne fonctionne pas)"
   echo ""
   
@@ -86,12 +86,12 @@ else
   fi
   
   echo ""
-  echo "✅ Synchronisation NORMALE terminée (config/ → racine)"
-  echo "⚠️  Note: Les fichiers Docker-compose pointent maintenant vers config/"
+  echo "âœ… Synchronisation NORMALE terminÃ©e (config/ â†’ racine)"
+  echo "âš ï¸  Note: Les fichiers Docker-compose pointent maintenant vers config/"
   echo "   Cette commande est un rollback d'urgence uniquement!"
 fi
 
 echo ""
-echo "📊 État actuel:"
+echo "ðŸ“Š Ã‰tat actuel:"
 echo "   - Configs dans config/: $(find config -type f | wc -l) fichiers"
-echo "   - Fichiers à la racine: $(ls -1 | wc -l) fichiers/dossiers"
+echo "   - Fichiers Ã  la racine: $(ls -1 | wc -l) fichiers/dossiers"

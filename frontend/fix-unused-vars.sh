@@ -1,31 +1,31 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🔧 Script de correction automatique des variables inutilisées
+# ðŸ”§ Script de correction automatique des variables inutilisÃ©es
 # Usage: bash fix-unused-vars.sh
 
-echo "🔧 Correction automatique des variables inutilisées..."
+echo "ðŸ”§ Correction automatique des variables inutilisÃ©es..."
 
-# Fonction pour préfixer une variable avec underscore
+# Fonction pour prÃ©fixer une variable avec underscore
 prefix_unused() {
     local file=$1
     local var=$2
     local type=$3  # import, const, let, param
     
-    echo "  📝 Préfixage de '$var' dans $file"
+    echo "  ðŸ“ PrÃ©fixage de '$var' dans $file"
     
     if [ "$type" = "import" ]; then
-        # Pour les imports, on les supprime carrément s'ils sont jamais utilisés
+        # Pour les imports, on les supprime carrÃ©ment s'ils sont jamais utilisÃ©s
         sed -i "s/,\s*$var\s*,/, /g" "$file"
         sed -i "s/,\s*$var\s*}/}/g" "$file"
         sed -i "s/{\s*$var\s*,/{/g" "$file"
     else
-        # Pour les variables locales, on préfixe avec _
+        # Pour les variables locales, on prÃ©fixe avec _
         sed -i "s/\bconst $var\b/const _$var/g" "$file"
         sed -i "s/\blet $var\b/let _$var/g" "$file"
     fi
 }
 
-# Liste des fichiers avec des variables inutilisées simples
+# Liste des fichiers avec des variables inutilisÃ©es simples
 declare -A FILES_TO_FIX=(
     ["app/components/business/AnalyticsDashboard.tsx"]="LineChart,Line,Legend"
     ["app/components/business/CustomerIntelligence.tsx"]="LineChart,Line,PieChart,Pie,Cell,ScatterChart,Scatter,riskColors"
@@ -55,51 +55,51 @@ declare -A FILES_TO_FIX=(
 )
 
 echo ""
-echo "📋 Fichiers à corriger: ${#FILES_TO_FIX[@]}"
+echo "ðŸ“‹ Fichiers Ã  corriger: ${#FILES_TO_FIX[@]}"
 echo ""
 
 # Correction automatique par recherche/remplacement
 for file in "${!FILES_TO_FIX[@]}"; do
     if [ -f "$file" ]; then
-        echo "🔧 Traitement de $file..."
+        echo "ðŸ”§ Traitement de $file..."
         vars="${FILES_TO_FIX[$file]}"
         
-        # Pour les imports inutilisés, on les commente
+        # Pour les imports inutilisÃ©s, on les commente
         IFS=',' read -ra VAR_ARRAY <<< "$vars"
         for var in "${VAR_ARRAY[@]}"; do
             # Supprimer les espaces
             var=$(echo "$var" | xargs)
             
-            # Si la variable commence par _, c'est déjà corrigé
+            # Si la variable commence par _, c'est dÃ©jÃ  corrigÃ©
             if [[ $var == _* ]]; then
                 continue
             fi
             
-            # Supprimer les imports inutilisés de lucide-react et autres
+            # Supprimer les imports inutilisÃ©s de lucide-react et autres
             sed -i "s/, $var,/,/g" "$file"
             sed -i "s/, $var }/}/g" "$file"
             sed -i "s/{ $var,/{/g" "$file"
             sed -i "s/{ $var }/\/\/ { $var }/g" "$file"
             
-            # Préfixer les variables locales
+            # PrÃ©fixer les variables locales
             sed -i "s/const $var =/const _$var =/g" "$file"
             sed -i "s/let $var =/let _$var =/g" "$file"
             
-            echo "  ✓ Traité: $var"
+            echo "  âœ“ TraitÃ©: $var"
         done
         echo ""
     else
-        echo "⚠️  Fichier non trouvé: $file"
+        echo "âš ï¸  Fichier non trouvÃ©: $file"
     fi
 done
 
 echo ""
-echo "✅ Correction terminée!"
+echo "âœ… Correction terminÃ©e!"
 echo ""
-echo "🧪 Vérification avec ESLint..."
-npm run lint 2>&1 | grep -E "✖.*problems"
+echo "ðŸ§ª VÃ©rification avec ESLint..."
+npm run lint 2>&1 | grep -E "âœ–.*problems"
 echo ""
-echo "💡 Pour valider les changements:"
+echo "ðŸ’¡ Pour valider les changements:"
 echo "   git diff"
 echo "   git add -A"
 echo "   git commit -m 'fix: correct unused variables and imports'"

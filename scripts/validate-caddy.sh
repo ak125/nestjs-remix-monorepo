@@ -1,10 +1,10 @@
-#!/bin/bash
-# 🔍 Script de validation de la configuration Caddy
+﻿#!/bin/bash
+# ðŸ” Script de validation de la configuration Caddy
 # Date: 21 octobre 2025
 
 set -e
 
-echo "🔍 Validation de la configuration Caddy..."
+echo "ðŸ” Validation de la configuration Caddy..."
 echo ""
 
 # Couleurs
@@ -17,30 +17,30 @@ NC='\033[0m' # No Color
 # Fonction de validation
 check() {
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓${NC} $1"
+        echo -e "${GREEN}âœ“${NC} $1"
     else
-        echo -e "${RED}✗${NC} $1"
+        echo -e "${RED}âœ—${NC} $1"
         return 1
     fi
 }
 
 # Fonction d'avertissement
 warn() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}âš ${NC} $1"
 }
 
 # Fonction d'info
 info() {
-    echo -e "${BLUE}ℹ${NC} $1"
+    echo -e "${BLUE}â„¹${NC} $1"
 }
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "1️⃣  VALIDATION DE LA SYNTAXE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "1ï¸âƒ£  VALIDATION DE LA SYNTAXE"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
-# Vérifier si Caddy est installé
+# VÃ©rifier si Caddy est installÃ©
 if command -v caddy > /dev/null 2>&1; then
-    info "Caddy installé : $(caddy version)"
+    info "Caddy installÃ© : $(caddy version)"
     
     # Valider le Caddyfile principal
     if [ -f "Caddyfile" ]; then
@@ -50,12 +50,12 @@ if command -v caddy > /dev/null 2>&1; then
         else
             check "ERREUR dans Caddyfile"
             echo ""
-            echo "Détails de l'erreur:"
+            echo "DÃ©tails de l'erreur:"
             caddy validate --config Caddyfile
             exit 1
         fi
     else
-        warn "Caddyfile non trouvé"
+        warn "Caddyfile non trouvÃ©"
     fi
     
     # Valider le Caddyfile dev
@@ -66,24 +66,24 @@ if command -v caddy > /dev/null 2>&1; then
         else
             check "ERREUR dans Caddyfile.dev"
             echo ""
-            echo "Détails de l'erreur:"
+            echo "DÃ©tails de l'erreur:"
             caddy validate --config Caddyfile.dev
             exit 1
         fi
     else
-        warn "Caddyfile.dev non trouvé"
+        warn "Caddyfile.dev non trouvÃ©"
     fi
 else
-    warn "Caddy non installé, validation syntaxique impossible"
+    warn "Caddy non installÃ©, validation syntaxique impossible"
     info "Pour installer : https://caddyserver.com/docs/install"
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "2️⃣  VALIDATION DOCKER COMPOSE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "2ï¸âƒ£  VALIDATION DOCKER COMPOSE"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
-# Vérifier la syntaxe docker-compose
+# VÃ©rifier la syntaxe docker-compose
 if [ -f "docker-compose.caddy.yml" ]; then
     echo -n "Validation docker-compose.caddy.yml... "
     if docker compose -f docker-compose.caddy.yml config > /dev/null 2>&1; then
@@ -91,20 +91,20 @@ if [ -f "docker-compose.caddy.yml" ]; then
     else
         check "ERREUR dans docker-compose.caddy.yml"
         echo ""
-        echo "Détails de l'erreur:"
+        echo "DÃ©tails de l'erreur:"
         docker compose -f docker-compose.caddy.yml config
         exit 1
     fi
 else
-    warn "docker-compose.caddy.yml non trouvé"
+    warn "docker-compose.caddy.yml non trouvÃ©"
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "3️⃣  VÉRIFICATION DES FICHIERS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "3ï¸âƒ£  VÃ‰RIFICATION DES FICHIERS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
-# Vérifier les fichiers requis
+# VÃ©rifier les fichiers requis
 FILES=(
     "Caddyfile"
     "Caddyfile.dev"
@@ -115,77 +115,77 @@ FILES=(
 
 for file in "${FILES[@]}"; do
     if [ -f "$file" ]; then
-        check "Fichier présent: $file"
+        check "Fichier prÃ©sent: $file"
     else
         warn "Fichier manquant: $file"
     fi
 done
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "4️⃣  ANALYSE DE LA CONFIGURATION"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "4ï¸âƒ£  ANALYSE DE LA CONFIGURATION"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
-# Vérifier les noms de domaine à remplacer
+# VÃ©rifier les noms de domaine Ã  remplacer
 if [ -f "Caddyfile" ]; then
     if grep -q "your-domain.com" Caddyfile; then
         warn "Remplacer 'your-domain.com' par votre vrai domaine"
     else
-        check "Domaine configuré"
+        check "Domaine configurÃ©"
     fi
     
     if grep -q "admin@your-domain.com" Caddyfile; then
         warn "Remplacer 'admin@your-domain.com' par votre email"
     else
-        check "Email Let's Encrypt configuré"
+        check "Email Let's Encrypt configurÃ©"
     fi
     
-    # Vérifier les reverse_proxy
+    # VÃ©rifier les reverse_proxy
     if grep -q "monorepo_prod:3000" Caddyfile; then
-        check "Reverse proxy vers monorepo_prod configuré"
+        check "Reverse proxy vers monorepo_prod configurÃ©"
     else
-        warn "Aucun reverse_proxy vers monorepo_prod trouvé"
+        warn "Aucun reverse_proxy vers monorepo_prod trouvÃ©"
     fi
     
-    # Vérifier le health check
+    # VÃ©rifier le health check
     if grep -q "health_uri /health" Caddyfile; then
-        check "Health check configuré sur /health"
+        check "Health check configurÃ© sur /health"
     else
-        warn "Health check non configuré"
+        warn "Health check non configurÃ©"
     fi
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "5️⃣  VÉRIFICATION DES PERMISSIONS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "5ï¸âƒ£  VÃ‰RIFICATION DES PERMISSIONS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
-# Créer le répertoire de logs si nécessaire
+# CrÃ©er le rÃ©pertoire de logs si nÃ©cessaire
 if [ ! -d "logs/caddy" ]; then
     mkdir -p logs/caddy
-    check "Répertoire logs/caddy créé"
+    check "RÃ©pertoire logs/caddy crÃ©Ã©"
 else
-    check "Répertoire logs/caddy existe"
+    check "RÃ©pertoire logs/caddy existe"
 fi
 
-# Vérifier les permissions
+# VÃ©rifier les permissions
 if [ -w "logs/caddy" ]; then
-    check "Répertoire logs/caddy accessible en écriture"
+    check "RÃ©pertoire logs/caddy accessible en Ã©criture"
 else
-    warn "Répertoire logs/caddy non accessible en écriture"
+    warn "RÃ©pertoire logs/caddy non accessible en Ã©criture"
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "6️⃣  CHECKLIST DÉPLOIEMENT PRODUCTION"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "6ï¸âƒ£  CHECKLIST DÃ‰PLOIEMENT PRODUCTION"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 
 PROD_CHECKS=(
-    "[ ] Remplacer 'your-domain.com' par votre domaine réel"
+    "[ ] Remplacer 'your-domain.com' par votre domaine rÃ©el"
     "[ ] Configurer l'email Let's Encrypt"
     "[ ] Ports 80/443 ouverts sur le firewall"
     "[ ] DNS pointant vers le serveur"
-    "[ ] Activer HSTS après validation SSL (décommenter dans Caddyfile)"
+    "[ ] Activer HSTS aprÃ¨s validation SSL (dÃ©commenter dans Caddyfile)"
     "[ ] Tester les redirections SEO"
     "[ ] Configurer la rotation des logs"
     "[ ] Backup des certificats SSL (/data volume)"
@@ -197,14 +197,14 @@ for check in "${PROD_CHECKS[@]}"; do
 done
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ Validation terminée"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "âœ… Validation terminÃ©e"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
 info "Pour tester localement:"
 echo "  docker compose -f docker-compose.dev.yml -f docker-compose.caddy.yml up -d"
 echo ""
-info "Pour déployer en production:"
+info "Pour dÃ©ployer en production:"
 echo "  docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d"
 echo ""

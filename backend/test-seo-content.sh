@@ -1,18 +1,18 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Test API SEO marque - versions HTML et texte
 
-echo "🧪 Test SEO marque Renault"
+echo "ðŸ§ª Test SEO marque Renault"
 echo "=========================="
 echo ""
 
 RESPONSE=$(curl -s "http://localhost:3000/api/brands/brand/renault")
 
 if [ -z "$RESPONSE" ]; then
-  echo "❌ Serveur non disponible"
+  echo "âŒ Serveur non disponible"
   exit 1
 fi
 
-echo "✅ Réponse reçue"
+echo "âœ… RÃ©ponse reÃ§ue"
 echo ""
 
 echo "$RESPONSE" | python3 << 'PYEOF'
@@ -22,22 +22,22 @@ try:
     data = json.load(sys.stdin)
     seo = data['data']['seo']
     
-    print("📋 Title:")
+    print("ðŸ“‹ Title:")
     print(f"  {seo['title']}\n")
     
-    print("📝 Content HTML (200 premiers caractères):")
+    print("ðŸ“ Content HTML (200 premiers caractÃ¨res):")
     print(f"  {seo['content'][:200]}...\n")
     
-    print("📄 Content Text (200 premiers caractères):")
+    print("ðŸ“„ Content Text (200 premiers caractÃ¨res):")
     print(f"  {seo['contentText'][:200]}...\n")
     
-    # Vérifier absence de balises HTML dans contentText
+    # VÃ©rifier absence de balises HTML dans contentText
     if '<' in seo['contentText'] or '>' in seo['contentText']:
-        print("⚠️  ATTENTION: Des balises HTML restent dans contentText")
+        print("âš ï¸  ATTENTION: Des balises HTML restent dans contentText")
     else:
-        print("✅ Content text propre (sans HTML)")
+        print("âœ… Content text propre (sans HTML)")
         
 except Exception as e:
-    print(f"❌ Erreur: {e}")
+    print(f"âŒ Erreur: {e}")
     
 PYEOF

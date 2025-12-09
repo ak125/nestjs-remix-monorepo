@@ -1,113 +1,113 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🧪 Test curl breadcrumb dynamique
+# ðŸ§ª Test curl breadcrumb dynamique
 # Utilise les vraies URLs de votre application
 
-echo "🧪 Tests curl - Fil d'ariane dynamique"
+echo "ðŸ§ª Tests curl - Fil d'ariane dynamique"
 echo "======================================"
 echo ""
 
-# URL de test (celle qui fonctionne d'après vos logs)
+# URL de test (celle qui fonctionne d'aprÃ¨s vos logs)
 TEST_URL="http://localhost:3000/pieces/pompe-de-direction-assistee-12.html"
 
 # Cookie de test (Renault Avantime)
 VEHICLE_COOKIE='selected_vehicle=%7B%22marque_id%22%3A140%2C%22marque_name%22%3A%22Renault%22%2C%22marque_alias%22%3A%22renault%22%2C%22modele_id%22%3A1234%2C%22modele_name%22%3A%22Avantime%22%2C%22modele_alias%22%3A%22avantime%22%2C%22type_id%22%3A5678%2C%22type_name%22%3A%222.0%2016V%22%2C%22type_alias%22%3A%222-0-16v%22%2C%22selected_at%22%3A%222025-10-28T10%3A00%3A00.000Z%22%7D'
 
-echo "📍 URL de test: $TEST_URL"
+echo "ðŸ“ URL de test: $TEST_URL"
 echo ""
 
-# Vérifier si le serveur répond
+# VÃ©rifier si le serveur rÃ©pond
 if ! curl -s --connect-timeout 3 "http://localhost:3000" > /dev/null 2>&1; then
-    echo "❌ ERREUR: Le serveur ne répond pas sur le port 3000"
+    echo "âŒ ERREUR: Le serveur ne rÃ©pond pas sur le port 3000"
     echo ""
-    echo "➡️  Démarrez le backend avec:"
+    echo "âž¡ï¸  DÃ©marrez le backend avec:"
     echo "    cd backend && npm run dev"
     echo ""
     exit 1
 fi
 
-echo "✅ Serveur accessible"
+echo "âœ… Serveur accessible"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🧪 TEST 1: SANS cookie (attendu: 3 niveaux)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ§ª TEST 1: SANS cookie (attendu: 3 niveaux)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# Faire la requête et regarder les logs backend
-echo "📤 Envoi de la requête..."
+# Faire la requÃªte et regarder les logs backend
+echo "ðŸ“¤ Envoi de la requÃªte..."
 RESPONSE_1=$(curl -s "$TEST_URL" 2>&1)
 
-# Vérifier le code de statut
+# VÃ©rifier le code de statut
 STATUS_1=$(curl -s -o /dev/null -w "%{http_code}" "$TEST_URL")
 
-echo "📊 Code HTTP: $STATUS_1"
+echo "ðŸ“Š Code HTTP: $STATUS_1"
 
 if [ "$STATUS_1" = "200" ]; then
-    echo "✅ Page chargée avec succès"
+    echo "âœ… Page chargÃ©e avec succÃ¨s"
     
-    # Chercher "Renault Avantime" dans la réponse
+    # Chercher "Renault Avantime" dans la rÃ©ponse
     if echo "$RESPONSE_1" | grep -q "Renault Avantime"; then
-        echo "⚠️  Véhicule trouvé SANS cookie (inattendu)"
+        echo "âš ï¸  VÃ©hicule trouvÃ© SANS cookie (inattendu)"
     else
-        echo "✅ Pas de véhicule dans le breadcrumb (correct)"
+        echo "âœ… Pas de vÃ©hicule dans le breadcrumb (correct)"
     fi
 else
-    echo "❌ Erreur HTTP $STATUS_1"
+    echo "âŒ Erreur HTTP $STATUS_1"
     echo ""
-    echo "➡️  Vérifiez que la route existe dans votre application"
+    echo "âž¡ï¸  VÃ©rifiez que la route existe dans votre application"
     echo "    ou changez TEST_URL dans le script"
 fi
 
 echo ""
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🧪 TEST 2: AVEC cookie (attendu: 4 niveaux)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ§ª TEST 2: AVEC cookie (attendu: 4 niveaux)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-echo "📤 Envoi de la requête avec cookie..."
+echo "ðŸ“¤ Envoi de la requÃªte avec cookie..."
 RESPONSE_2=$(curl -s -H "Cookie: $VEHICLE_COOKIE" "$TEST_URL" 2>&1)
 
-# Vérifier le code de statut
+# VÃ©rifier le code de statut
 STATUS_2=$(curl -s -o /dev/null -w "%{http_code}" -H "Cookie: $VEHICLE_COOKIE" "$TEST_URL")
 
-echo "📊 Code HTTP: $STATUS_2"
+echo "ðŸ“Š Code HTTP: $STATUS_2"
 
 if [ "$STATUS_2" = "200" ]; then
-    echo "✅ Page chargée avec succès"
+    echo "âœ… Page chargÃ©e avec succÃ¨s"
     
-    # Chercher "Renault Avantime" dans la réponse
+    # Chercher "Renault Avantime" dans la rÃ©ponse
     if echo "$RESPONSE_2" | grep -q "Renault Avantime"; then
-        echo "✅ Véhicule 'Renault Avantime' détecté dans la réponse (correct)"
+        echo "âœ… VÃ©hicule 'Renault Avantime' dÃ©tectÃ© dans la rÃ©ponse (correct)"
     else
-        echo "❌ Véhicule 'Renault Avantime' NON détecté (erreur)"
+        echo "âŒ VÃ©hicule 'Renault Avantime' NON dÃ©tectÃ© (erreur)"
     fi
 else
-    echo "❌ Erreur HTTP $STATUS_2"
+    echo "âŒ Erreur HTTP $STATUS_2"
 fi
 
 echo ""
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 RÉSUMÉ"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“Š RÃ‰SUMÃ‰"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
 if [ "$STATUS_1" = "200" ] && [ "$STATUS_2" = "200" ]; then
-    echo "✅ Tests terminés avec succès"
+    echo "âœ… Tests terminÃ©s avec succÃ¨s"
     echo ""
-    echo "➡️  Vérifiez les logs du backend pour voir:"
-    echo "    🚗 Véhicule depuis cookie: ..."
-    echo "    🍞 Breadcrumb généré: ..."
+    echo "âž¡ï¸  VÃ©rifiez les logs du backend pour voir:"
+    echo "    ðŸš— VÃ©hicule depuis cookie: ..."
+    echo "    ðŸž Breadcrumb gÃ©nÃ©rÃ©: ..."
 else
-    echo "⚠️  Certains tests ont échoué"
+    echo "âš ï¸  Certains tests ont Ã©chouÃ©"
     echo ""
-    echo "📝 Actions recommandées:"
-    echo "1. Vérifiez que l'URL $TEST_URL existe"
-    echo "2. Vérifiez les logs backend pour plus de détails"
+    echo "ðŸ“ Actions recommandÃ©es:"
+    echo "1. VÃ©rifiez que l'URL $TEST_URL existe"
+    echo "2. VÃ©rifiez les logs backend pour plus de dÃ©tails"
     echo "3. Testez directement dans le navigateur"
 fi
 

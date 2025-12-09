@@ -1,10 +1,10 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 ##############################################################################
-# 🤖 CRON JOB - GÉNÉRATION SITEMAPS NIGHTLY
+# ðŸ¤– CRON JOB - GÃ‰NÃ‰RATION SITEMAPS NIGHTLY
 #
-# Exécution : Tous les jours à 3h du matin
-# Durée : ~10-15 minutes (selon volume)
+# ExÃ©cution : Tous les jours Ã  3h du matin
+# DurÃ©e : ~10-15 minutes (selon volume)
 # Environnement : Production
 ##############################################################################
 
@@ -41,13 +41,13 @@ warn() {
 }
 
 ##############################################################################
-# Vérifications préliminaires
+# VÃ©rifications prÃ©liminaires
 ##############################################################################
 
-# Créer répertoire logs si nécessaire
+# CrÃ©er rÃ©pertoire logs si nÃ©cessaire
 mkdir -p "$LOG_DIR"
 
-# Vérifier lock file (éviter exécutions simultanées)
+# VÃ©rifier lock file (Ã©viter exÃ©cutions simultanÃ©es)
 if [ -f "$LOCK_FILE" ]; then
     PID=$(cat "$LOCK_FILE")
     if ps -p "$PID" > /dev/null 2>&1; then
@@ -59,24 +59,24 @@ if [ -f "$LOCK_FILE" ]; then
     fi
 fi
 
-# Créer lock file
+# CrÃ©er lock file
 echo $$ > "$LOCK_FILE"
 
 # Cleanup lock file on exit
 trap "rm -f $LOCK_FILE" EXIT
 
 ##############################################################################
-# Génération sitemaps
+# GÃ©nÃ©ration sitemaps
 ##############################################################################
 
-log "🚀 Starting nightly sitemap generation..."
-log "📁 Project root: $PROJECT_ROOT"
-log "📝 Log file: $LOG_FILE"
+log "ðŸš€ Starting nightly sitemap generation..."
+log "ðŸ“ Project root: $PROJECT_ROOT"
+log "ðŸ“ Log file: $LOG_FILE"
 
 cd "$PROJECT_ROOT"
 
-# 1. Générer delta sitemap (changements du jour)
-log "🔄 Step 1/4: Generating delta sitemap..."
+# 1. GÃ©nÃ©rer delta sitemap (changements du jour)
+log "ðŸ”„ Step 1/4: Generating delta sitemap..."
 START_TIME=$(date +%s)
 
 if curl -X POST "http://localhost:3000/sitemap-v2/delta/generate" \
@@ -84,14 +84,14 @@ if curl -X POST "http://localhost:3000/sitemap-v2/delta/generate" \
     -o /dev/null -s -w "%{http_code}" | grep -q "200"; then
     
     DELTA_TIME=$(($(date +%s) - START_TIME))
-    log "✅ Delta sitemap generated successfully (${DELTA_TIME}s)"
+    log "âœ… Delta sitemap generated successfully (${DELTA_TIME}s)"
 else
-    error "❌ Failed to generate delta sitemap"
+    error "âŒ Failed to generate delta sitemap"
     exit 1
 fi
 
-# 2. Générer sitemaps streaming (produits, catalog)
-log "🗜️ Step 2/4: Generating streaming sitemaps..."
+# 2. GÃ©nÃ©rer sitemaps streaming (produits, catalog)
+log "ðŸ—œï¸ Step 2/4: Generating streaming sitemaps..."
 START_TIME=$(date +%s)
 
 if curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=all&includeHreflang=true&includeImages=true" \
@@ -99,14 +99,14 @@ if curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=all&in
     -o /dev/null -s -w "%{http_code}" | grep -q "200"; then
     
     STREAMING_TIME=$(($(date +%s) - START_TIME))
-    log "✅ Streaming sitemaps generated successfully (${STREAMING_TIME}s)"
+    log "âœ… Streaming sitemaps generated successfully (${STREAMING_TIME}s)"
 else
-    error "❌ Failed to generate streaming sitemaps"
+    error "âŒ Failed to generate streaming sitemaps"
     exit 1
 fi
 
 # 3. Nettoyer anciens deltas (> 30 jours)
-log "🧹 Step 3/4: Cleaning up old deltas..."
+log "ðŸ§¹ Step 3/4: Cleaning up old deltas..."
 START_TIME=$(date +%s)
 
 if curl -X POST "http://localhost:3000/sitemap-v2/delta/cleanup" \
@@ -114,33 +114,33 @@ if curl -X POST "http://localhost:3000/sitemap-v2/delta/cleanup" \
     -o /dev/null -s -w "%{http_code}" | grep -q "200"; then
     
     CLEANUP_TIME=$(($(date +%s) - START_TIME))
-    log "✅ Old deltas cleaned up successfully (${CLEANUP_TIME}s)"
+    log "âœ… Old deltas cleaned up successfully (${CLEANUP_TIME}s)"
 else
-    warn "⚠️ Failed to cleanup old deltas (non-critical)"
+    warn "âš ï¸ Failed to cleanup old deltas (non-critical)"
 fi
 
-# 4. Vérifier statistiques
-log "📊 Step 4/4: Fetching generation statistics..."
+# 4. VÃ©rifier statistiques
+log "ðŸ“Š Step 4/4: Fetching generation statistics..."
 
 STATS=$(curl -s "http://localhost:3000/sitemap-v2/delta/stats")
-log "📈 Delta stats: $STATS"
+log "ðŸ“ˆ Delta stats: $STATS"
 
 FILES=$(curl -s "http://localhost:3000/sitemap-v2/streaming/files" | jq -r '.data | length')
-log "📦 Total sitemap files: $FILES"
+log "ðŸ“¦ Total sitemap files: $FILES"
 
 ##############################################################################
 # Notification (optionnel)
 ##############################################################################
 
 TOTAL_TIME=$((DELTA_TIME + STREAMING_TIME + CLEANUP_TIME))
-log "🎉 Nightly sitemap generation completed successfully!"
-log "⏱️ Total execution time: ${TOTAL_TIME}s"
+log "ðŸŽ‰ Nightly sitemap generation completed successfully!"
+log "â±ï¸ Total execution time: ${TOTAL_TIME}s"
 
 # Envoyer notification Slack/Discord (optionnel)
 if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
     curl -X POST "$SLACK_WEBHOOK_URL" \
         -H "Content-Type: application/json" \
-        -d "{\"text\":\"✅ Sitemap generation completed in ${TOTAL_TIME}s\"}" \
+        -d "{\"text\":\"âœ… Sitemap generation completed in ${TOTAL_TIME}s\"}" \
         > /dev/null 2>&1 || warn "Failed to send Slack notification"
 fi
 
@@ -148,8 +148,8 @@ fi
 # Archivage logs (garder 7 derniers jours)
 ##############################################################################
 
-log "🗂️ Archiving old logs..."
+log "ðŸ—‚ï¸ Archiving old logs..."
 find "$LOG_DIR" -name "sitemap-nightly-*.log" -mtime +7 -delete
-log "✅ Old logs cleaned up"
+log "âœ… Old logs cleaned up"
 
 exit 0

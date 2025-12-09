@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🔍 Script de diagnostic Supabase
-# Teste la connectivité et la latence vers Supabase
+# ðŸ” Script de diagnostic Supabase
+# Teste la connectivitÃ© et la latence vers Supabase
 
 set -e
 
-echo "🔍 ===== DIAGNOSTIC SUPABASE ====="
+echo "ðŸ” ===== DIAGNOSTIC SUPABASE ====="
 echo ""
 
 # Couleurs
@@ -18,17 +18,17 @@ NC='\033[0m' # No Color
 SUPABASE_URL="${SUPABASE_URL:-https://cxpojprgwgubzjyqzmoq.supabase.co}"
 SUPABASE_HOST=$(echo "$SUPABASE_URL" | sed -e 's|^https\?://||' -e 's|/.*||')
 
-echo -e "${BLUE}📍 Supabase URL: ${NC}$SUPABASE_URL"
-echo -e "${BLUE}📍 Supabase Host: ${NC}$SUPABASE_HOST"
+echo -e "${BLUE}ðŸ“ Supabase URL: ${NC}$SUPABASE_URL"
+echo -e "${BLUE}ðŸ“ Supabase Host: ${NC}$SUPABASE_HOST"
 echo ""
 
 # 1. Test DNS
 echo -e "${YELLOW}1. Test DNS...${NC}"
 if nslookup "$SUPABASE_HOST" > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ DNS résolu${NC}"
+    echo -e "${GREEN}âœ… DNS rÃ©solu${NC}"
     nslookup "$SUPABASE_HOST" | grep "Address:" | tail -n1
 else
-    echo -e "${RED}❌ Échec résolution DNS${NC}"
+    echo -e "${RED}âŒ Ã‰chec rÃ©solution DNS${NC}"
     exit 1
 fi
 echo ""
@@ -36,12 +36,12 @@ echo ""
 # 2. Test Ping
 echo -e "${YELLOW}2. Test Ping (5 packets)...${NC}"
 if ping -c 5 "$SUPABASE_HOST" 2>&1 | tee /tmp/ping_result.txt; then
-    echo -e "${GREEN}✅ Ping réussi${NC}"
+    echo -e "${GREEN}âœ… Ping rÃ©ussi${NC}"
     # Extraire le temps moyen
     avg_time=$(grep "avg" /tmp/ping_result.txt | awk -F'/' '{print $5}' || echo "N/A")
-    echo -e "${BLUE}⏱️  Latence moyenne: ${avg_time}ms${NC}"
+    echo -e "${BLUE}â±ï¸  Latence moyenne: ${avg_time}ms${NC}"
 else
-    echo -e "${YELLOW}⚠️  Ping échoué (normal si ICMP bloqué)${NC}"
+    echo -e "${YELLOW}âš ï¸  Ping Ã©chouÃ© (normal si ICMP bloquÃ©)${NC}"
 fi
 echo ""
 
@@ -50,7 +50,7 @@ echo -e "${YELLOW}3. Traceroute (premiers 10 hops)...${NC}"
 if command -v traceroute > /dev/null; then
     traceroute -m 10 "$SUPABASE_HOST" 2>&1 || echo "Traceroute partiel"
 else
-    echo -e "${YELLOW}⚠️  traceroute non disponible${NC}"
+    echo -e "${YELLOW}âš ï¸  traceroute non disponible${NC}"
 fi
 echo ""
 
@@ -63,13 +63,13 @@ if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$SUPABASE_URL/rest/v1/"
     http_code=$(cat /tmp/http_code.txt)
     
     if [ "$http_code" = "200" ] || [ "$http_code" = "401" ] || [ "$http_code" = "404" ]; then
-        echo -e "${GREEN}✅ HTTPS connexion OK (HTTP $http_code)${NC}"
-        echo -e "${BLUE}⏱️  Temps de réponse: ${elapsed_ms}ms${NC}"
+        echo -e "${GREEN}âœ… HTTPS connexion OK (HTTP $http_code)${NC}"
+        echo -e "${BLUE}â±ï¸  Temps de rÃ©ponse: ${elapsed_ms}ms${NC}"
     else
-        echo -e "${RED}❌ HTTPS erreur (HTTP $http_code)${NC}"
+        echo -e "${RED}âŒ HTTPS erreur (HTTP $http_code)${NC}"
     fi
 else
-    echo -e "${RED}❌ Échec connexion HTTPS${NC}"
+    echo -e "${RED}âŒ Ã‰chec connexion HTTPS${NC}"
 fi
 echo ""
 
@@ -81,9 +81,9 @@ for timeout in 5 10 30; do
     if curl -s -o /dev/null --max-time "$timeout" "$SUPABASE_URL/rest/v1/" 2>&1; then
         end=$(date +%s%N)
         elapsed=$(( (end - start) / 1000000 ))
-        echo -e "${GREEN}✅ Réussi en ${elapsed}ms${NC}"
+        echo -e "${GREEN}âœ… RÃ©ussi en ${elapsed}ms${NC}"
     else
-        echo -e "${RED}❌ Timeout${NC}"
+        echo -e "${RED}âŒ Timeout${NC}"
     fi
 done
 echo ""
@@ -103,20 +103,20 @@ if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
     body=$(echo "$response" | head -n-1)
     
     if [ "$http_code" = "200" ]; then
-        echo -e "${GREEN}✅ API accessible${NC}"
-        echo -e "${BLUE}⏱️  Temps: ${elapsed_ms}ms${NC}"
-        echo -e "${BLUE}📦 Response: ${body}${NC}"
+        echo -e "${GREEN}âœ… API accessible${NC}"
+        echo -e "${BLUE}â±ï¸  Temps: ${elapsed_ms}ms${NC}"
+        echo -e "${BLUE}ðŸ“¦ Response: ${body}${NC}"
     else
-        echo -e "${RED}❌ API erreur (HTTP $http_code)${NC}"
+        echo -e "${RED}âŒ API erreur (HTTP $http_code)${NC}"
         echo "$body"
     fi
 else
-    echo -e "${YELLOW}⚠️  SUPABASE_SERVICE_ROLE_KEY non défini, skip test API${NC}"
+    echo -e "${YELLOW}âš ï¸  SUPABASE_SERVICE_ROLE_KEY non dÃ©fini, skip test API${NC}"
 fi
 echo ""
 
-# 7. Test multiple (10 requêtes)
-echo -e "${YELLOW}7. Test de charge (10 requêtes séquentielles)...${NC}"
+# 7. Test multiple (10 requÃªtes)
+echo -e "${YELLOW}7. Test de charge (10 requÃªtes sÃ©quentielles)...${NC}"
 success=0
 failed=0
 total_time=0
@@ -138,27 +138,27 @@ echo ""
 
 if [ $success -gt 0 ]; then
     avg_time=$((total_time / success))
-    echo -e "${GREEN}✅ $success/10 requêtes réussies${NC}"
-    echo -e "${BLUE}⏱️  Temps moyen: ${avg_time}ms${NC}"
+    echo -e "${GREEN}âœ… $success/10 requÃªtes rÃ©ussies${NC}"
+    echo -e "${BLUE}â±ï¸  Temps moyen: ${avg_time}ms${NC}"
 else
-    echo -e "${RED}❌ Toutes les requêtes ont échoué${NC}"
+    echo -e "${RED}âŒ Toutes les requÃªtes ont Ã©chouÃ©${NC}"
 fi
 
 if [ $failed -gt 0 ]; then
-    echo -e "${RED}❌ $failed/10 requêtes échouées${NC}"
+    echo -e "${RED}âŒ $failed/10 requÃªtes Ã©chouÃ©es${NC}"
 fi
 echo ""
 
-# Résumé
+# RÃ©sumÃ©
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}RÉSUMÉ:${NC}"
+echo -e "${BLUE}RÃ‰SUMÃ‰:${NC}"
 if [ $success -ge 8 ]; then
-    echo -e "${GREEN}✅ Connexion Supabase STABLE${NC}"
+    echo -e "${GREEN}âœ… Connexion Supabase STABLE${NC}"
 elif [ $success -ge 5 ]; then
-    echo -e "${YELLOW}⚠️  Connexion Supabase INSTABLE (timeouts fréquents)${NC}"
-    echo -e "${YELLOW}💡 Recommandation: Augmenter timeout à 30s + activer retry${NC}"
+    echo -e "${YELLOW}âš ï¸  Connexion Supabase INSTABLE (timeouts frÃ©quents)${NC}"
+    echo -e "${YELLOW}ðŸ’¡ Recommandation: Augmenter timeout Ã  30s + activer retry${NC}"
 else
-    echo -e "${RED}❌ Connexion Supabase PROBLÉMATIQUE${NC}"
-    echo -e "${RED}💡 Vérifier: Réseau, Firewall, Quotas Supabase${NC}"
+    echo -e "${RED}âŒ Connexion Supabase PROBLÃ‰MATIQUE${NC}"
+    echo -e "${RED}ðŸ’¡ VÃ©rifier: RÃ©seau, Firewall, Quotas Supabase${NC}"
 fi
 echo -e "${BLUE}========================================${NC}"

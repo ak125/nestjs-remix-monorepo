@@ -1,18 +1,18 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🔄 SCRIPT DE DÉPLOIEMENT - MIGRATION URLs PIÈCES
+# ðŸ”„ SCRIPT DE DÃ‰PLOIEMENT - MIGRATION URLs PIÃˆCES
 # 
-# Script automatisé pour déployer le système de redirection 301
-# et configurer les redirections pour tous les véhicules
+# Script automatisÃ© pour dÃ©ployer le systÃ¨me de redirection 301
+# et configurer les redirections pour tous les vÃ©hicules
 #
 # Version: 1.0.0
 # Date: 2025-09-14
 # Auteur: SEO Migration Team
 
-set -e  # Arrêt en cas d'erreur
+set -e  # ArrÃªt en cas d'erreur
 
 # ====================================
-# 🎯 CONFIGURATION
+# ðŸŽ¯ CONFIGURATION
 # ====================================
 
 BACKEND_URL="${BACKEND_URL:-http://localhost:3000}"
@@ -31,7 +31,7 @@ SUCCESSFUL_MIGRATIONS=0
 FAILED_MIGRATIONS=0
 
 # ====================================
-# 🛠️ FONCTIONS UTILITAIRES
+# ðŸ› ï¸ FONCTIONS UTILITAIRES
 # ====================================
 
 log_info() {
@@ -50,7 +50,7 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Test de connectivité backend
+# Test de connectivitÃ© backend
 test_backend_connection() {
     log_info "Test de connexion au backend: $BACKEND_URL"
     
@@ -58,8 +58,8 @@ test_backend_connection() {
         log_success "Backend accessible"
         return 0
     else
-        log_error "Backend non accessible à $BACKEND_URL"
-        log_error "Vérifiez que le service backend est démarré"
+        log_error "Backend non accessible Ã  $BACKEND_URL"
+        log_error "VÃ©rifiez que le service backend est dÃ©marrÃ©"
         return 1
     fi
 }
@@ -75,16 +75,16 @@ test_migration_service() {
     response=$(curl -s --max-time 10 "$API_ENDPOINT/test/$test_url" 2>/dev/null)
     
     if [[ $? -eq 0 ]] && echo "$response" | grep -q '"success":true'; then
-        log_success "Service de migration opérationnel"
+        log_success "Service de migration opÃ©rationnel"
         return 0
     else
         log_error "Service de migration non fonctionnel"
-        log_error "Réponse: $response"
+        log_error "RÃ©ponse: $response"
         return 1
     fi
 }
 
-# Migration d'un véhicule spécifique
+# Migration d'un vÃ©hicule spÃ©cifique
 migrate_vehicle() {
     local brand_slug="$1"
     local brand_id="$2"
@@ -114,18 +114,18 @@ migrate_vehicle() {
     if [[ $? -eq 0 ]] && echo "$response" | grep -q '"success":true'; then
         local created_count
         created_count=$(echo "$response" | grep -o '"redirections_created":\\[[^]]*\\]' | grep -o '{[^}]*}' | wc -l)
-        log_success "✅ $brand_slug $model_slug: $created_count redirections créées"
+        log_success "âœ… $brand_slug $model_slug: $created_count redirections crÃ©Ã©es"
         ((SUCCESSFUL_MIGRATIONS++))
         return 0
     else
-        log_error "❌ $brand_slug $model_slug: échec migration"
-        log_error "Réponse: $response"
+        log_error "âŒ $brand_slug $model_slug: Ã©chec migration"
+        log_error "RÃ©ponse: $response"
         ((FAILED_MIGRATIONS++))
         return 1
     fi
 }
 
-# Aperçu des redirections pour un véhicule
+# AperÃ§u des redirections pour un vÃ©hicule
 preview_vehicle_redirections() {
     local brand_slug="$1"
     local brand_id="$2"
@@ -134,7 +134,7 @@ preview_vehicle_redirections() {
     local type_slug="$5"
     local type_id="$6"
     
-    log_info "Aperçu redirections: $brand_slug $model_slug $type_slug"
+    log_info "AperÃ§u redirections: $brand_slug $model_slug $type_slug"
     
     local response
     response=$(curl -s --max-time 15 \\
@@ -143,7 +143,7 @@ preview_vehicle_redirections() {
     if [[ $? -eq 0 ]] && echo "$response" | grep -q '"success":true'; then
         local total_redirections
         total_redirections=$(echo "$response" | grep -o '"total_redirections":[0-9]*' | cut -d: -f2)
-        echo "   → $total_redirections redirections seraient créées"
+        echo "   â†’ $total_redirections redirections seraient crÃ©Ã©es"
         
         # Afficher quelques exemples
         echo "$response" | python3 -c "
@@ -152,7 +152,7 @@ try:
     data = json.load(sys.stdin)
     redirections = data.get('redirections', [])
     for i, r in enumerate(redirections[:3]):
-        print(f'     {i+1}. {r[\"legacy_url\"]} → {r[\"modern_url\"]}')
+        print(f'     {i+1}. {r[\"legacy_url\"]} â†’ {r[\"modern_url\"]}')
     if len(redirections) > 3:
         print(f'     ... et {len(redirections) - 3} autres')
 except:
@@ -161,32 +161,32 @@ except:
         
         return 0
     else
-        log_error "Impossible de récupérer l'aperçu"
+        log_error "Impossible de rÃ©cupÃ©rer l'aperÃ§u"
         return 1
     fi
 }
 
 # ====================================
-# 📋 VÉHICULES D'EXEMPLE
+# ðŸ“‹ VÃ‰HICULES D'EXEMPLE
 # ====================================
 
-# Liste des véhicules à migrer (exemples)
+# Liste des vÃ©hicules Ã  migrer (exemples)
 declare -a VEHICLES=(
     # Format: "brand_slug brand_id model_slug model_id type_slug type_id"
     "audi 22 a7-sportback 22059 3-0-tfsi-quattro 34940"
     "bmw 5 serie-3-e90 1234 320-i 5678"
     "peugeot 3 208 9876 1-6-hdi 4321"
     "renault 10 clio 5555 1-2-tce 7777"
-    # Ajoutez d'autres véhicules selon vos besoins
+    # Ajoutez d'autres vÃ©hicules selon vos besoins
 )
 
 # ====================================
-# 🚀 FONCTIONS PRINCIPALES
+# ðŸš€ FONCTIONS PRINCIPALES
 # ====================================
 
-# Tests préliminaires
+# Tests prÃ©liminaires
 run_preliminary_tests() {
-    log_info "=== TESTS PRÉLIMINAIRES ==="
+    log_info "=== TESTS PRÃ‰LIMINAIRES ==="
     
     if ! test_backend_connection; then
         exit 1
@@ -196,13 +196,13 @@ run_preliminary_tests() {
         exit 1
     fi
     
-    log_success "Tous les tests préliminaires sont OK"
+    log_success "Tous les tests prÃ©liminaires sont OK"
     echo
 }
 
-# Aperçu général
+# AperÃ§u gÃ©nÃ©ral
 show_preview() {
-    log_info "=== APERÇU DES MIGRATIONS ==="
+    log_info "=== APERÃ‡U DES MIGRATIONS ==="
     
     for vehicle_data in "${VEHICLES[@]}"; do
         read -r brand_slug brand_id model_slug model_id type_slug type_id <<< "$vehicle_data"
@@ -211,13 +211,13 @@ show_preview() {
     done
     
     echo
-    log_info "Total véhicules à traiter: $TOTAL_VEHICLES"
+    log_info "Total vÃ©hicules Ã  traiter: $TOTAL_VEHICLES"
     echo
 }
 
-# Migration complète
+# Migration complÃ¨te
 run_migrations() {
-    log_info "=== MIGRATION DES VÉHICULES ==="
+    log_info "=== MIGRATION DES VÃ‰HICULES ==="
     
     for vehicle_data in "${VEHICLES[@]}"; do
         read -r brand_slug brand_id model_slug model_id type_slug type_id <<< "$vehicle_data"
@@ -228,7 +228,7 @@ run_migrations() {
     done
 }
 
-# Test des redirections créées
+# Test des redirections crÃ©Ã©es
 test_redirections() {
     log_info "=== TEST DES REDIRECTIONS ==="
     
@@ -255,9 +255,9 @@ try:
 except:
     print('erreur')
             " 2>/dev/null)
-            log_success "✅ → $new_url"
+            log_success "âœ… â†’ $new_url"
         else
-            log_error "❌ Test échoué"
+            log_error "âŒ Test Ã©chouÃ©"
         fi
     done
 }
@@ -266,50 +266,50 @@ except:
 show_final_report() {
     echo
     log_info "=== RAPPORT FINAL ==="
-    echo "📊 Véhicules traités: $TOTAL_VEHICLES"
-    echo "✅ Migrations réussies: $SUCCESSFUL_MIGRATIONS"
-    echo "❌ Migrations échouées: $FAILED_MIGRATIONS"
+    echo "ðŸ“Š VÃ©hicules traitÃ©s: $TOTAL_VEHICLES"
+    echo "âœ… Migrations rÃ©ussies: $SUCCESSFUL_MIGRATIONS"
+    echo "âŒ Migrations Ã©chouÃ©es: $FAILED_MIGRATIONS"
     
     if [[ $FAILED_MIGRATIONS -eq 0 ]]; then
         echo
-        log_success "🎉 DÉPLOIEMENT RÉUSSI ! Toutes les redirections sont configurées."
+        log_success "ðŸŽ‰ DÃ‰PLOIEMENT RÃ‰USSI ! Toutes les redirections sont configurÃ©es."
     else
         echo
-        log_warning "⚠️  $FAILED_MIGRATIONS migration(s) en échec. Vérifiez les logs ci-dessus."
+        log_warning "âš ï¸  $FAILED_MIGRATIONS migration(s) en Ã©chec. VÃ©rifiez les logs ci-dessus."
     fi
     
     echo
-    echo "📋 Prochaines étapes:"
+    echo "ðŸ“‹ Prochaines Ã©tapes:"
     echo "   1. Tester les redirections en production"
     echo "   2. Monitorer les logs 404 pour identifier d'autres URLs"
-    echo "   3. Ajouter d'autres véhicules si nécessaire"
+    echo "   3. Ajouter d'autres vÃ©hicules si nÃ©cessaire"
     echo
 }
 
 # ====================================
-# 🎯 MENU PRINCIPAL
+# ðŸŽ¯ MENU PRINCIPAL
 # ====================================
 
 show_menu() {
     echo
-    echo "🔄 SYSTÈME DE MIGRATION URLs PIÈCES"
+    echo "ðŸ”„ SYSTÃˆME DE MIGRATION URLs PIÃˆCES"
     echo "=================================="
-    echo "1. Tests préliminaires uniquement"
-    echo "2. Aperçu des migrations (sans créer)"
-    echo "3. Migration complète (avec création)"
+    echo "1. Tests prÃ©liminaires uniquement"
+    echo "2. AperÃ§u des migrations (sans crÃ©er)"
+    echo "3. Migration complÃ¨te (avec crÃ©ation)"
     echo "4. Test des redirections existantes"
-    echo "5. Tout exécuter (tests + aperçu + migration + test)"
+    echo "5. Tout exÃ©cuter (tests + aperÃ§u + migration + test)"
     echo "q. Quitter"
     echo
     read -p "Choisissez une option: " choice
 }
 
 # ====================================
-# 🚀 POINT D'ENTRÉE PRINCIPAL
+# ðŸš€ POINT D'ENTRÃ‰E PRINCIPAL
 # ====================================
 
 main() {
-    echo "🔄 SCRIPT DE DÉPLOIEMENT - MIGRATION URLs PIÈCES"
+    echo "ðŸ”„ SCRIPT DE DÃ‰PLOIEMENT - MIGRATION URLs PIÃˆCES"
     echo "Date: $(date)"
     echo "Backend: $BACKEND_URL"
     echo
@@ -366,7 +366,7 @@ main() {
                     run_migrations
                     show_final_report
                 else
-                    log_info "Migration annulée"
+                    log_info "Migration annulÃ©e"
                 fi
                 ;;
             4)
@@ -377,13 +377,13 @@ main() {
                 run_preliminary_tests
                 show_preview
                 echo
-                read -p "Lancer la migration complète ? (y/N): " confirm
+                read -p "Lancer la migration complÃ¨te ? (y/N): " confirm
                 if [[ $confirm =~ ^[Yy]$ ]]; then
                     run_migrations
                     test_redirections
                     show_final_report
                 else
-                    log_info "Migration annulée"
+                    log_info "Migration annulÃ©e"
                 fi
                 ;;
             q|Q)
@@ -396,9 +396,9 @@ main() {
         esac
         
         echo
-        read -p "Appuyez sur Entrée pour continuer..."
+        read -p "Appuyez sur EntrÃ©e pour continuer..."
     done
 }
 
-# Exécution
+# ExÃ©cution
 main "$@"

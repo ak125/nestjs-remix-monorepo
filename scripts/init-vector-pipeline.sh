@@ -1,28 +1,28 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Init script pour Vector log pipeline
 
 set -e
 
-echo "🚀 Initialisation Vector Log Pipeline..."
+echo "ðŸš€ Initialisation Vector Log Pipeline..."
 
-# 1. Créer les répertoires nécessaires
-echo "📁 Création répertoires..."
+# 1. CrÃ©er les rÃ©pertoires nÃ©cessaires
+echo "ðŸ“ CrÃ©ation rÃ©pertoires..."
 mkdir -p geoip
 mkdir -p grafana/provisioning/datasources
 mkdir -p grafana/provisioning/dashboards
 mkdir -p grafana/dashboards
 
-# 2. Télécharger GeoIP database (GeoLite2-City)
+# 2. TÃ©lÃ©charger GeoIP database (GeoLite2-City)
 if [ ! -f "geoip/GeoLite2-City.mmdb" ]; then
-  echo "📥 Téléchargement GeoIP database..."
-  echo "⚠️  Vous devez obtenir GeoLite2-City.mmdb depuis MaxMind"
+  echo "ðŸ“¥ TÃ©lÃ©chargement GeoIP database..."
+  echo "âš ï¸  Vous devez obtenir GeoLite2-City.mmdb depuis MaxMind"
   echo "    https://dev.maxmind.com/geoip/geolite2-free-geolocation-data"
   echo "    Placez le fichier dans: ./geoip/GeoLite2-City.mmdb"
 else
-  echo "✅ GeoIP database déjà présente"
+  echo "âœ… GeoIP database dÃ©jÃ  prÃ©sente"
 fi
 
-# 3. Créer datasource Loki pour Grafana
+# 3. CrÃ©er datasource Loki pour Grafana
 cat > grafana/provisioning/datasources/loki.yml <<EOF
 apiVersion: 1
 
@@ -43,7 +43,7 @@ datasources:
           url: '\$\${__value.raw}'
 EOF
 
-# 4. Créer datasource Prometheus pour Grafana
+# 4. CrÃ©er datasource Prometheus pour Grafana
 cat > grafana/provisioning/datasources/prometheus.yml <<EOF
 apiVersion: 1
 
@@ -59,7 +59,7 @@ datasources:
       timeInterval: 15s
 EOF
 
-# 5. Créer dashboard provisioning config
+# 5. CrÃ©er dashboard provisioning config
 cat > grafana/provisioning/dashboards/dashboards.yml <<EOF
 apiVersion: 1
 
@@ -75,9 +75,9 @@ providers:
       path: /var/lib/grafana/dashboards
 EOF
 
-# 6. Créer .env si n'existe pas
+# 6. CrÃ©er .env si n'existe pas
 if [ ! -f ".env.vector" ]; then
-  echo "📝 Création .env.vector..."
+  echo "ðŸ“ CrÃ©ation .env.vector..."
   cat > .env.vector <<EOF
 # Environment
 NODE_ENV=production
@@ -94,24 +94,24 @@ GRAFANA_ADMIN_USER=admin
 GRAFANA_ADMIN_PASSWORD=admin_CHANGE_ME_IN_PRODUCTION
 GRAFANA_ROOT_URL=http://localhost:3001
 EOF
-  echo "✅ .env.vector créé (CHANGEZ LES MOTS DE PASSE!)"
+  echo "âœ… .env.vector crÃ©Ã© (CHANGEZ LES MOTS DE PASSE!)"
 else
-  echo "✅ .env.vector déjà présent"
+  echo "âœ… .env.vector dÃ©jÃ  prÃ©sent"
 fi
 
-# 7. Créer index Meilisearch
-echo "📊 Configuration index Meilisearch..."
+# 7. CrÃ©er index Meilisearch
+echo "ðŸ“Š Configuration index Meilisearch..."
 cat > init-meilisearch.sh <<'EOF'
 #!/bin/bash
-# Attendre que Meilisearch soit prêt
-echo "⏳ Attente Meilisearch..."
+# Attendre que Meilisearch soit prÃªt
+echo "â³ Attente Meilisearch..."
 until curl -s http://localhost:7700/health > /dev/null; do
   sleep 2
 done
 
-echo "✅ Meilisearch prêt"
+echo "âœ… Meilisearch prÃªt"
 
-# Créer index access_logs
+# CrÃ©er index access_logs
 curl -X POST 'http://localhost:7700/indexes' \
   -H 'Authorization: Bearer masterKey' \
   -H 'Content-Type: application/json' \
@@ -160,25 +160,25 @@ curl -X PATCH 'http://localhost:7700/indexes/access_logs/settings' \
     }
   }'
 
-echo "✅ Index Meilisearch configuré"
+echo "âœ… Index Meilisearch configurÃ©"
 EOF
 
 chmod +x init-meilisearch.sh
 
 echo ""
-echo "✅ Initialisation terminée!"
+echo "âœ… Initialisation terminÃ©e!"
 echo ""
-echo "📝 Prochaines étapes:"
-echo "   1. Télécharger GeoLite2-City.mmdb → ./geoip/"
-echo "   2. Éditer .env.vector (changer mots de passe)"
+echo "ðŸ“ Prochaines Ã©tapes:"
+echo "   1. TÃ©lÃ©charger GeoLite2-City.mmdb â†’ ./geoip/"
+echo "   2. Ã‰diter .env.vector (changer mots de passe)"
 echo "   3. Lancer: docker-compose -f docker-compose.vector.yml up -d"
-echo "   4. Exécuter: ./init-meilisearch.sh (après démarrage)"
+echo "   4. ExÃ©cuter: ./init-meilisearch.sh (aprÃ¨s dÃ©marrage)"
 echo ""
-echo "🌐 URLs:"
-echo "   • Vector API: http://localhost:8686"
-echo "   • Loki: http://localhost:3100"
-echo "   • Grafana: http://localhost:3001"
-echo "   • Meilisearch: http://localhost:7700"
-echo "   • Prometheus: http://localhost:9090"
-echo "   • Vector metrics: http://localhost:9598/metrics"
+echo "ðŸŒ URLs:"
+echo "   â€¢ Vector API: http://localhost:8686"
+echo "   â€¢ Loki: http://localhost:3100"
+echo "   â€¢ Grafana: http://localhost:3001"
+echo "   â€¢ Meilisearch: http://localhost:7700"
+echo "   â€¢ Prometheus: http://localhost:9090"
+echo "   â€¢ Vector metrics: http://localhost:9598/metrics"
 echo ""

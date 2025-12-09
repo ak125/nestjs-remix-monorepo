@@ -1,13 +1,13 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
-echo "🔍 TEST DIRECT DE LA FONCTION RPC DANS SUPABASE"
+echo "ðŸ” TEST DIRECT DE LA FONCTION RPC DANS SUPABASE"
 echo ""
 
 source .env
 
 # Test 1: Appeler la fonction via l'API REST Supabase directement
-echo "📡 Test 1: Appel RPC direct via API Supabase..."
+echo "ðŸ“¡ Test 1: Appel RPC direct via API Supabase..."
 curl -s -X POST \
   "${SUPABASE_URL}/rest/v1/rpc/get_gamme_page_data_optimized" \
   -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
@@ -19,8 +19,8 @@ curl -s -X POST \
 echo ""
 echo ""
 
-# Test 2: Vérifier si la fonction existe
-echo "🔍 Test 2: Vérification existence de la fonction..."
+# Test 2: VÃ©rifier si la fonction existe
+echo "ðŸ” Test 2: VÃ©rification existence de la fonction..."
 PGPASSWORD="${SUPABASE_DB_PASSWORD}" psql \
   -h "${SUPABASE_DB_HOST}" \
   -p 6543 \
@@ -30,4 +30,4 @@ PGPASSWORD="${SUPABASE_DB_PASSWORD}" psql \
   2>&1 | head -20
 
 echo ""
-echo "✅ Tests terminés"
+echo "âœ… Tests terminÃ©s"

@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # ==============================================================================
 # Script de nettoyage des logs anciens dans Meilisearch
 # ==============================================================================
 # 
-# Purge les logs de plus de RETENTION_DAYS jours pour éviter la surcharge
-# Meilisearch n'est pas une base time-series, on garde seulement les données récentes
+# Purge les logs de plus de RETENTION_DAYS jours pour Ã©viter la surcharge
+# Meilisearch n'est pas une base time-series, on garde seulement les donnÃ©es rÃ©centes
 #
 # Usage: ./cleanup-old-logs.sh [retention_days]
 # Exemple: ./cleanup-old-logs.sh 90
@@ -17,18 +17,18 @@ RETENTION_DAYS=${1:-90}
 MEILISEARCH_HOST=${MEILISEARCH_HOST:-http://localhost:7700}
 MEILISEARCH_API_KEY=${MEILISEARCH_API_KEY:-}
 
-# Vérifier que la clé API est fournie
+# VÃ©rifier que la clÃ© API est fournie
 if [ -z "$MEILISEARCH_API_KEY" ]; then
-    echo "❌ Erreur: MEILISEARCH_API_KEY non définie"
+    echo "âŒ Erreur: MEILISEARCH_API_KEY non dÃ©finie"
     echo "Usage: MEILISEARCH_API_KEY=xxx ./cleanup-old-logs.sh [retention_days]"
     echo "Ou: source .env.vector && ./cleanup-old-logs.sh [retention_days]"
     exit 1
 fi
 
-echo "🧹 Nettoyage des logs Meilisearch"
+echo "ðŸ§¹ Nettoyage des logs Meilisearch"
 echo "================================="
 echo "Host: $MEILISEARCH_HOST"
-echo "Rétention: $RETENTION_DAYS jours"
+echo "RÃ©tention: $RETENTION_DAYS jours"
 echo ""
 
 # Calculer le timestamp limite (Unix timestamp en secondes)
@@ -42,9 +42,9 @@ else
     CUTOFF_DATE=$(date -d "$RETENTION_DAYS days ago" +%Y-%m-%d)
 fi
 
-echo "📅 Date limite: $CUTOFF_DATE"
-echo "🕐 Timestamp limite: $CUTOFF_TIMESTAMP"
-echo "🗑️  Suppression des logs avant cette date..."
+echo "ðŸ“… Date limite: $CUTOFF_DATE"
+echo "ðŸ• Timestamp limite: $CUTOFF_TIMESTAMP"
+echo "ðŸ—‘ï¸  Suppression des logs avant cette date..."
 echo ""
 
 # Compter les documents avant suppression
@@ -52,7 +52,7 @@ BEFORE_COUNT=$(curl -s "$MEILISEARCH_HOST/indexes/access_logs/stats" \
     -H "Authorization: Bearer $MEILISEARCH_API_KEY" | \
     jq -r '.numberOfDocuments // 0')
 
-echo "📊 Documents avant: $BEFORE_COUNT"
+echo "ðŸ“Š Documents avant: $BEFORE_COUNT"
 
 # Supprimer les documents anciens (ts < cutoff_timestamp)
 RESPONSE=$(curl -s -X POST "$MEILISEARCH_HOST/indexes/access_logs/documents/delete" \
@@ -63,15 +63,15 @@ RESPONSE=$(curl -s -X POST "$MEILISEARCH_HOST/indexes/access_logs/documents/dele
 TASK_UID=$(echo "$RESPONSE" | jq -r '.taskUid // empty')
 
 if [ -z "$TASK_UID" ]; then
-    echo "❌ Erreur lors de la suppression:"
+    echo "âŒ Erreur lors de la suppression:"
     echo "$RESPONSE" | jq
     exit 1
 fi
 
-echo "✅ Tâche de suppression créée: $TASK_UID"
-echo "⏳ Attente de la fin de la tâche..."
+echo "âœ… TÃ¢che de suppression crÃ©Ã©e: $TASK_UID"
+echo "â³ Attente de la fin de la tÃ¢che..."
 
-# Attendre la fin de la tâche (max 30 secondes)
+# Attendre la fin de la tÃ¢che (max 30 secondes)
 for i in {1..30}; do
     sleep 1
     
@@ -80,10 +80,10 @@ for i in {1..30}; do
         jq -r '.status // empty')
     
     if [ "$TASK_STATUS" == "succeeded" ]; then
-        echo "✅ Suppression terminée avec succès"
+        echo "âœ… Suppression terminÃ©e avec succÃ¨s"
         break
     elif [ "$TASK_STATUS" == "failed" ]; then
-        echo "❌ Erreur lors de la suppression:"
+        echo "âŒ Erreur lors de la suppression:"
         curl -s "$MEILISEARCH_HOST/tasks/$TASK_UID" \
             -H "Authorization: Bearer $MEILISEARCH_API_KEY" | jq
         exit 1
@@ -95,25 +95,25 @@ done
 echo ""
 echo ""
 
-# Compter les documents après suppression
+# Compter les documents aprÃ¨s suppression
 AFTER_COUNT=$(curl -s "$MEILISEARCH_HOST/indexes/access_logs/stats" \
     -H "Authorization: Bearer $MEILISEARCH_API_KEY" | \
     jq -r '.numberOfDocuments // 0')
 
 DELETED_COUNT=$((BEFORE_COUNT - AFTER_COUNT))
 
-echo "📊 Résultat:"
+echo "ðŸ“Š RÃ©sultat:"
 echo "  - Documents avant: $BEFORE_COUNT"
-echo "  - Documents après: $AFTER_COUNT"
-echo "  - Documents supprimés: $DELETED_COUNT"
+echo "  - Documents aprÃ¨s: $AFTER_COUNT"
+echo "  - Documents supprimÃ©s: $DELETED_COUNT"
 echo ""
 
 if [ $DELETED_COUNT -gt 0 ]; then
-    echo "🎉 Nettoyage réussi! $DELETED_COUNT logs anciens supprimés"
+    echo "ðŸŽ‰ Nettoyage rÃ©ussi! $DELETED_COUNT logs anciens supprimÃ©s"
 else
-    echo "ℹ️  Aucun log ancien à supprimer (tous < $RETENTION_DAYS jours)"
+    echo "â„¹ï¸  Aucun log ancien Ã  supprimer (tous < $RETENTION_DAYS jours)"
 fi
 
 echo ""
-echo "💡 Pour automatiser, ajouter dans crontab:"
+echo "ðŸ’¡ Pour automatiser, ajouter dans crontab:"
 echo "   0 2 * * * cd /path/to/project && source .env.vector && ./scripts/cleanup-old-logs.sh $RETENTION_DAYS >> /var/log/meilisearch-cleanup.log 2>&1"

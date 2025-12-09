@@ -1,41 +1,41 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Script d'initialisation Meilisearch pour FAFA AUTO
 # ==================================================
 
-echo "🚀 Initialisation de Meilisearch pour FAFA AUTO"
+echo "ðŸš€ Initialisation de Meilisearch pour FAFA AUTO"
 
 # Variables d'environnement
 MEILISEARCH_HOST=${MEILISEARCH_HOST:-"http://localhost:7700"}
 MEILISEARCH_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-"masterKey123"}
 
-echo "📡 Connexion à Meilisearch : $MEILISEARCH_HOST"
+echo "ðŸ“¡ Connexion Ã  Meilisearch : $MEILISEARCH_HOST"
 
-# Fonction pour vérifier la connexion
+# Fonction pour vÃ©rifier la connexion
 check_meilisearch() {
-    echo "⏳ Vérification de la connexion..."
+    echo "â³ VÃ©rification de la connexion..."
     if curl -s "$MEILISEARCH_HOST/health" > /dev/null; then
-        echo "✅ Meilisearch est accessible"
+        echo "âœ… Meilisearch est accessible"
         return 0
     else
-        echo "❌ Meilisearch n'est pas accessible"
+        echo "âŒ Meilisearch n'est pas accessible"
         return 1
     fi
 }
 
-# Fonction pour créer les index
+# Fonction pour crÃ©er les index
 create_indexes() {
-    echo "📊 Création des index..."
+    echo "ðŸ“Š CrÃ©ation des index..."
     
-    # Index des véhicules
-    echo "🚗 Création de l'index vehicles..."
+    # Index des vÃ©hicules
+    echo "ðŸš— CrÃ©ation de l'index vehicles..."
     curl -X POST "$MEILISEARCH_HOST/indexes" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" \
         -H "Content-Type: application/json" \
         -d '{"uid": "vehicles", "primaryKey": "id"}'
     
     # Index des produits
-    echo "📄 Création de l'index products..."
+    echo "ðŸ“„ CrÃ©ation de l'index products..."
     curl -X POST "$MEILISEARCH_HOST/indexes" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" \
         -H "Content-Type: application/json" \
@@ -44,10 +44,10 @@ create_indexes() {
 
 # Fonction pour configurer les index
 configure_indexes() {
-    echo "⚙️  Configuration des index..."
+    echo "âš™ï¸  Configuration des index..."
     
     # Configuration de l'index vehicles
-    echo "🚗 Configuration de l'index vehicles..."
+    echo "ðŸš— Configuration de l'index vehicles..."
     curl -X PATCH "$MEILISEARCH_HOST/indexes/vehicles/settings" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" \
         -H "Content-Type: application/json" \
@@ -58,14 +58,14 @@ configure_indexes() {
             "rankingRules": ["words", "typo", "proximity", "attribute", "sort", "exactness", "price:asc"],
             "stopWords": ["le", "la", "les", "de", "du", "des", "un", "une"],
             "synonyms": {
-                "voiture": ["véhicule", "auto", "automobile"],
+                "voiture": ["vÃ©hicule", "auto", "automobile"],
                 "diesel": ["gasoil"],
                 "essence": ["gasoline", "sp95", "sp98"]
             }
         }'
     
     # Configuration de l'index products
-    echo "📄 Configuration de l'index products..."
+    echo "ðŸ“„ Configuration de l'index products..."
     curl -X PATCH "$MEILISEARCH_HOST/indexes/products/settings" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" \
         -H "Content-Type: application/json" \
@@ -79,20 +79,20 @@ configure_indexes() {
 
 # Fonction pour afficher le statut
 show_status() {
-    echo "📊 Statut des index..."
+    echo "ðŸ“Š Statut des index..."
     
-    echo "🚗 Index vehicles:"
+    echo "ðŸš— Index vehicles:"
     curl -s "$MEILISEARCH_HOST/indexes/vehicles/stats" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" | jq .
     
-    echo "📄 Index products:"
+    echo "ðŸ“„ Index products:"
     curl -s "$MEILISEARCH_HOST/indexes/products/stats" \
         -H "Authorization: Bearer $MEILISEARCH_MASTER_KEY" | jq .
 }
 
-# Exécution du script
+# ExÃ©cution du script
 main() {
-    echo "🔧 Initialisation en cours..."
+    echo "ðŸ”§ Initialisation en cours..."
     
     if check_meilisearch; then
         create_indexes
@@ -100,9 +100,9 @@ main() {
         configure_indexes
         sleep 2
         show_status
-        echo "✅ Initialisation terminée avec succès!"
+        echo "âœ… Initialisation terminÃ©e avec succÃ¨s!"
     else
-        echo "❌ Échec de l'initialisation"
+        echo "âŒ Ã‰chec de l'initialisation"
         exit 1
     fi
 }

@@ -1,36 +1,36 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-echo "🔍 Diagnostic Bestsellers - Page BMW"
+echo "ðŸ” Diagnostic Bestsellers - Page BMW"
 echo "===================================="
 echo ""
 
 # 1. Test backend API
-echo "1️⃣  Test Backend API..."
+echo "1ï¸âƒ£  Test Backend API..."
 RESPONSE=$(curl -s 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=2&limitParts=2')
 
 VEHICLES_COUNT=$(echo "$RESPONSE" | jq '.data.vehicles | length')
 PARTS_COUNT=$(echo "$RESPONSE" | jq '.data.parts | length')
 
 if [ "$VEHICLES_COUNT" -gt 0 ]; then
-    echo "   ✅ Backend: $VEHICLES_COUNT véhicules retournés"
+    echo "   âœ… Backend: $VEHICLES_COUNT vÃ©hicules retournÃ©s"
 else
-    echo "   ❌ Backend: Aucun véhicule"
+    echo "   âŒ Backend: Aucun vÃ©hicule"
 fi
 
 if [ "$PARTS_COUNT" -gt 0 ]; then
-    echo "   ✅ Backend: $PARTS_COUNT pièces retournées"
+    echo "   âœ… Backend: $PARTS_COUNT piÃ¨ces retournÃ©es"
 else
-    echo "   ❌ Backend: Aucune pièce"
+    echo "   âŒ Backend: Aucune piÃ¨ce"
 fi
 
 echo ""
 
-# 2. Vérifier les champs des véhicules
-echo "2️⃣  Vérification données véhicule..."
+# 2. VÃ©rifier les champs des vÃ©hicules
+echo "2ï¸âƒ£  VÃ©rification donnÃ©es vÃ©hicule..."
 VEHICLE=$(echo "$RESPONSE" | jq '.data.vehicles[0]')
 
 echo "   Marque: $(echo "$VEHICLE" | jq -r '.marque_name')"
-echo "   Modèle: $(echo "$VEHICLE" | jq -r '.modele_name')"
+echo "   ModÃ¨le: $(echo "$VEHICLE" | jq -r '.modele_name')"
 echo "   Type: $(echo "$VEHICLE" | jq -r '.type_name')"
 echo "   Puissance: $(echo "$VEHICLE" | jq -r '.type_power_ps') ch"
 echo "   Image: $(echo "$VEHICLE" | jq -r '.modele_pic')"
@@ -38,7 +38,7 @@ echo "   Image: $(echo "$VEHICLE" | jq -r '.modele_pic')"
 echo ""
 
 # 3. Construire URLs attendues
-echo "3️⃣  URLs générées (frontend)..."
+echo "3ï¸âƒ£  URLs gÃ©nÃ©rÃ©es (frontend)..."
 MARQUE_ALIAS=$(echo "$VEHICLE" | jq -r '.marque_alias')
 MARQUE_ID=$(echo "$VEHICLE" | jq -r '.marque_id')
 MODELE_ALIAS=$(echo "$VEHICLE" | jq -r '.modele_alias')
@@ -55,8 +55,8 @@ echo "   Image URL: $IMAGE_URL"
 
 echo ""
 
-# 4. Vérifier les pièces
-echo "4️⃣  Vérification données pièce..."
+# 4. VÃ©rifier les piÃ¨ces
+echo "4ï¸âƒ£  VÃ©rification donnÃ©es piÃ¨ce..."
 PART=$(echo "$RESPONSE" | jq '.data.parts[0]')
 
 PG_NAME=$(echo "$PART" | jq -r '.pg_name')
@@ -74,34 +74,34 @@ echo "   Image URL: $PART_IMAGE"
 echo ""
 
 # 5. Test cache
-echo "5️⃣  Test Cache Redis..."
-echo "   Requête 1..."
+echo "5ï¸âƒ£  Test Cache Redis..."
+echo "   RequÃªte 1..."
 TIME1=$(curl -s -w "%{time_total}" -o /dev/null 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=5&limitParts=5')
 echo "   Temps: ${TIME1}s"
 
 sleep 1
 
-echo "   Requête 2 (cachée)..."
+echo "   RequÃªte 2 (cachÃ©e)..."
 TIME2=$(curl -s -w "%{time_total}" -o /dev/null 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=5&limitParts=5')
 echo "   Temps: ${TIME2}s"
 
 # Calcul ratio
 if (( $(echo "$TIME1 > $TIME2" | bc -l) )); then
-    echo "   ✅ Cache actif ($(echo "scale=1; $TIME1 / $TIME2" | bc)× plus rapide)"
+    echo "   âœ… Cache actif ($(echo "scale=1; $TIME1 / $TIME2" | bc)Ã— plus rapide)"
 else
-    echo "   ⚠️  Cache non détecté"
+    echo "   âš ï¸  Cache non dÃ©tectÃ©"
 fi
 
 echo ""
-echo "════════════════════════════════════════════════════════════"
-echo "✅ Diagnostic terminé!"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
+echo "âœ… Diagnostic terminÃ©!"
 echo ""
-echo "📋 Prochaines étapes:"
-echo "   1. Frontend doit être lancé: cd frontend && npm run dev"
+echo "ðŸ“‹ Prochaines Ã©tapes:"
+echo "   1. Frontend doit Ãªtre lancÃ©: cd frontend && npm run dev"
 echo "   2. Ouvrir: http://localhost:5173/constructeurs/bmw-33.html"
-echo "   3. Vérifier que les sections apparaissent:"
-echo "      - 🚗 Véhicules BMW les plus recherchés (6 cartes)"
-echo "      - 📦 Pièces BMW populaires (8 cartes)"
-echo "   4. Vérifier que les images chargent"
-echo "   5. Vérifier que les liens fonctionnent"
-echo "════════════════════════════════════════════════════════════"
+echo "   3. VÃ©rifier que les sections apparaissent:"
+echo "      - ðŸš— VÃ©hicules BMW les plus recherchÃ©s (6 cartes)"
+echo "      - ðŸ“¦ PiÃ¨ces BMW populaires (8 cartes)"
+echo "   4. VÃ©rifier que les images chargent"
+echo "   5. VÃ©rifier que les liens fonctionnent"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"

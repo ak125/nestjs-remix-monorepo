@@ -1,180 +1,180 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
 echo "   CORRECTION CONFIGURATION PAIEMENT - VPS PRODUCTION"
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
 echo "Date: $(date)"
 echo ""
 
-# Vérification que nous sommes dans le bon répertoire
+# VÃ©rification que nous sommes dans le bon rÃ©pertoire
 if [ ! -f .env ]; then
-    echo "❌ ERREUR: Fichier .env introuvable dans le répertoire actuel!"
-    echo "   Assurez-vous d'être dans ~/production/"
+    echo "âŒ ERREUR: Fichier .env introuvable dans le rÃ©pertoire actuel!"
+    echo "   Assurez-vous d'Ãªtre dans ~/production/"
     exit 1
 fi
 
 # Backup automatique
 BACKUP_FILE=".env.backup.$(date +%Y%m%d_%H%M%S)"
 cp .env "$BACKUP_FILE"
-echo "✅ Backup créé : $BACKUP_FILE"
+echo "âœ… Backup crÃ©Ã© : $BACKUP_FILE"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔧 CORRECTIONS AUTOMATIQUES"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ”§ CORRECTIONS AUTOMATIQUES"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-# 1. Supprimer la première définition de APP_URL (la ligne https://automecanik.fr)
-echo "1️⃣  Suppression de la duplication APP_URL..."
+# 1. Supprimer la premiÃ¨re dÃ©finition de APP_URL (la ligne https://automecanik.fr)
+echo "1ï¸âƒ£  Suppression de la duplication APP_URL..."
 sed -i '/^APP_URL=https:\/\/automecanik\.fr$/d' .env
-echo "   ✅ Première définition de APP_URL supprimée"
+echo "   âœ… PremiÃ¨re dÃ©finition de APP_URL supprimÃ©e"
 
 # 2. Corriger APP_URL pour utiliser HTTPS et le bon domaine
 echo ""
-echo "2️⃣  Correction de APP_URL..."
+echo "2ï¸âƒ£  Correction de APP_URL..."
 if grep -q "^APP_URL=" .env; then
     sed -i 's|^APP_URL=.*|APP_URL=https://www.automecanik.com|' .env
-    echo "   ✅ APP_URL = https://www.automecanik.com"
+    echo "   âœ… APP_URL = https://www.automecanik.com"
 else
     echo "APP_URL=https://www.automecanik.com" >> .env
-    echo "   ✅ APP_URL ajoutée"
+    echo "   âœ… APP_URL ajoutÃ©e"
 fi
 
 # 3. Corriger BASE_URL
 echo ""
-echo "3️⃣  Correction de BASE_URL..."
+echo "3ï¸âƒ£  Correction de BASE_URL..."
 if grep -q "^BASE_URL=" .env; then
     sed -i 's|^BASE_URL=.*|BASE_URL=https://www.automecanik.com|' .env
-    echo "   ✅ BASE_URL = https://www.automecanik.com"
+    echo "   âœ… BASE_URL = https://www.automecanik.com"
 else
     echo "BASE_URL=https://www.automecanik.com" >> .env
-    echo "   ✅ BASE_URL ajoutée"
+    echo "   âœ… BASE_URL ajoutÃ©e"
 fi
 
 # 4. Ajouter FRONTEND_URL si elle n'existe pas
 echo ""
-echo "4️⃣  Configuration de FRONTEND_URL..."
+echo "4ï¸âƒ£  Configuration de FRONTEND_URL..."
 if grep -q "^FRONTEND_URL=" .env; then
     sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://www.automecanik.com|' .env
-    echo "   ✅ FRONTEND_URL mise à jour"
+    echo "   âœ… FRONTEND_URL mise Ã  jour"
 else
     echo "FRONTEND_URL=https://www.automecanik.com" >> .env
-    echo "   ✅ FRONTEND_URL ajoutée"
+    echo "   âœ… FRONTEND_URL ajoutÃ©e"
 fi
 
-# 5. Vérifier que SystemPay est en PRODUCTION
+# 5. VÃ©rifier que SystemPay est en PRODUCTION
 echo ""
-echo "5️⃣  Vérification SystemPay..."
+echo "5ï¸âƒ£  VÃ©rification SystemPay..."
 if grep -q "^SYSTEMPAY_MODE=PRODUCTION" .env; then
-    echo "   ✅ SYSTEMPAY_MODE = PRODUCTION (déjà correct)"
+    echo "   âœ… SYSTEMPAY_MODE = PRODUCTION (dÃ©jÃ  correct)"
 else
     sed -i 's/^SYSTEMPAY_MODE=.*/SYSTEMPAY_MODE=PRODUCTION/' .env
-    echo "   ✅ SYSTEMPAY_MODE mis à PRODUCTION"
+    echo "   âœ… SYSTEMPAY_MODE mis Ã  PRODUCTION"
 fi
 
-# 6. Vérifier que Paybox est en PRODUCTION
+# 6. VÃ©rifier que Paybox est en PRODUCTION
 echo ""
-echo "6️⃣  Vérification Paybox..."
+echo "6ï¸âƒ£  VÃ©rification Paybox..."
 if grep -q "^PAYBOX_MODE=PRODUCTION" .env; then
-    echo "   ✅ PAYBOX_MODE = PRODUCTION (déjà correct)"
+    echo "   âœ… PAYBOX_MODE = PRODUCTION (dÃ©jÃ  correct)"
 else
     sed -i 's/^PAYBOX_MODE=.*/PAYBOX_MODE=PRODUCTION/' .env
-    echo "   ✅ PAYBOX_MODE mis à PRODUCTION"
+    echo "   âœ… PAYBOX_MODE mis Ã  PRODUCTION"
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 RÉSUMÉ DES CHANGEMENTS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ“Š RÃ‰SUMÃ‰ DES CHANGEMENTS"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
-echo "✅ URLs corrigées vers HTTPS :"
+echo "âœ… URLs corrigÃ©es vers HTTPS :"
 echo "   APP_URL = https://www.automecanik.com"
 echo "   BASE_URL = https://www.automecanik.com"
 echo "   FRONTEND_URL = https://www.automecanik.com"
 echo ""
-echo "✅ Modes de paiement vérifiés :"
+echo "âœ… Modes de paiement vÃ©rifiÃ©s :"
 echo "   SYSTEMPAY_MODE = PRODUCTION"
 echo "   PAYBOX_MODE = PRODUCTION"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "⚠️  ACTIONS MANUELLES REQUISES"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "âš ï¸  ACTIONS MANUELLES REQUISES"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
-echo "🔐 IMPORTANT - CLÉS HMAC"
+echo "ðŸ” IMPORTANT - CLÃ‰S HMAC"
 echo ""
-echo "Les clés HMAC actuelles sont identiques pour :"
+echo "Les clÃ©s HMAC actuelles sont identiques pour :"
 echo "  - PAYBOX_HMAC_KEY"
 echo "  - SYSTEMPAY_HMAC_KEY_TEST"
 echo "  - SYSTEMPAY_HMAC_KEY_PROD"
 echo ""
-echo "📞 CONTACTEZ LES FOURNISSEURS :"
+echo "ðŸ“ž CONTACTEZ LES FOURNISSEURS :"
 echo ""
-echo "1️⃣  PAYBOX - Obtenir la clé HMAC de PRODUCTION"
-echo "   📧 Email : support@paybox.com"
-echo "   📞 Tél : +33 (0)5 56 49 39 00"
+echo "1ï¸âƒ£  PAYBOX - Obtenir la clÃ© HMAC de PRODUCTION"
+echo "   ðŸ“§ Email : support@paybox.com"
+echo "   ðŸ“ž TÃ©l : +33 (0)5 56 49 39 00"
 echo ""
-echo "   Informations à fournir :"
+echo "   Informations Ã  fournir :"
 echo "   - SITE : 5259250"
 echo "   - RANG : 001"
 echo "   - IDENTIFIANT : 822188223"
 echo "   - Domaine : https://www.automecanik.com"
 echo ""
-echo "2️⃣  SYSTEMPAY - Vérifier la clé HMAC de PRODUCTION"
-echo "   Confirmer que la clé PROD actuelle est bien différente de TEST"
+echo "2ï¸âƒ£  SYSTEMPAY - VÃ©rifier la clÃ© HMAC de PRODUCTION"
+echo "   Confirmer que la clÃ© PROD actuelle est bien diffÃ©rente de TEST"
 echo ""
-echo "Une fois les clés reçues, modifiez manuellement le .env :"
+echo "Une fois les clÃ©s reÃ§ues, modifiez manuellement le .env :"
 echo "  nano .env"
 echo ""
-echo "Puis mettez à jour :"
+echo "Puis mettez Ã  jour :"
 echo "  PAYBOX_HMAC_KEY=<nouvelle_cle_paybox_prod>"
 echo "  SYSTEMPAY_HMAC_KEY_PROD=<nouvelle_cle_systempay_prod>"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔄 REDÉMARRAGE DES SERVICES"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+echo "ðŸ”„ REDÃ‰MARRAGE DES SERVICES"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo ""
 
-read -p "Voulez-vous redémarrer les conteneurs Docker maintenant ? (y/N) " -n 1 -r
+read -p "Voulez-vous redÃ©marrer les conteneurs Docker maintenant ? (y/N) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
-    echo "🔄 Redémarrage en cours..."
+    echo "ðŸ”„ RedÃ©marrage en cours..."
     
     if command -v docker-compose &> /dev/null; then
         docker-compose restart
-        echo "✅ Services redémarrés avec docker-compose"
+        echo "âœ… Services redÃ©marrÃ©s avec docker-compose"
     elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
         docker compose restart
-        echo "✅ Services redémarrés avec docker compose"
+        echo "âœ… Services redÃ©marrÃ©s avec docker compose"
     else
-        echo "⚠️  Docker Compose introuvable. Redémarrez manuellement :"
+        echo "âš ï¸  Docker Compose introuvable. RedÃ©marrez manuellement :"
         echo "   docker-compose restart"
         echo "   OU"
         echo "   docker compose restart"
     fi
 else
     echo ""
-    echo "⚠️  N'oubliez pas de redémarrer les services après avoir mis à jour les clés HMAC :"
+    echo "âš ï¸  N'oubliez pas de redÃ©marrer les services aprÃ¨s avoir mis Ã  jour les clÃ©s HMAC :"
     echo "   docker-compose restart"
     echo "   OU"
     echo "   docker compose restart"
 fi
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
-echo "✅ CORRECTION TERMINÉE"
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
+echo "âœ… CORRECTION TERMINÃ‰E"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
 echo ""
-echo "📋 Récapitulatif :"
-echo "  ✅ URLs corrigées (HTTP → HTTPS)"
-echo "  ✅ Duplication APP_URL supprimée"
-echo "  ✅ Modes PRODUCTION vérifiés"
-echo "  ⚠️  Clés HMAC à obtenir auprès des fournisseurs"
+echo "ðŸ“‹ RÃ©capitulatif :"
+echo "  âœ… URLs corrigÃ©es (HTTP â†’ HTTPS)"
+echo "  âœ… Duplication APP_URL supprimÃ©e"
+echo "  âœ… Modes PRODUCTION vÃ©rifiÃ©s"
+echo "  âš ï¸  ClÃ©s HMAC Ã  obtenir auprÃ¨s des fournisseurs"
 echo ""
-echo "💾 Backup sauvegardé : $BACKUP_FILE"
+echo "ðŸ’¾ Backup sauvegardÃ© : $BACKUP_FILE"
 echo ""
-echo "📝 Pour vérifier les changements :"
+echo "ðŸ“ Pour vÃ©rifier les changements :"
 echo "   diff $BACKUP_FILE .env"
 echo ""

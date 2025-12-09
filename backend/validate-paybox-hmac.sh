@@ -1,13 +1,13 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# Script pour tester et valider les clés HMAC Paybox
+# Script pour tester et valider les clÃ©s HMAC Paybox
 
 echo "======================================"
-echo "🔐 VALIDATION CLÉ HMAC PAYBOX"
+echo "ðŸ” VALIDATION CLÃ‰ HMAC PAYBOX"
 echo "======================================"
 echo ""
 
-# Lire la clé actuelle
+# Lire la clÃ© actuelle
 HMAC_KEY=$(grep "^PAYBOX_HMAC_KEY=" .env | cut -d'=' -f2)
 SITE=$(grep "^PAYBOX_SITE=" .env | cut -d'=' -f2)
 MODE=$(grep "^PAYBOX_MODE=" .env | cut -d'=' -f2)
@@ -15,72 +15,72 @@ MODE=$(grep "^PAYBOX_MODE=" .env | cut -d'=' -f2)
 echo "Configuration actuelle:"
 echo "  SITE: $SITE"
 echo "  MODE: $MODE"
-echo "  HMAC (début): ${HMAC_KEY:0:20}..."
+echo "  HMAC (dÃ©but): ${HMAC_KEY:0:20}..."
 echo "  HMAC (fin): ...${HMAC_KEY: -20}"
-echo "  Longueur: ${#HMAC_KEY} caractères"
+echo "  Longueur: ${#HMAC_KEY} caractÃ¨res"
 echo ""
 
 # Validation
 if [ ${#HMAC_KEY} -ne 128 ]; then
-    echo "❌ ERREUR: La clé HMAC doit faire 128 caractères (512 bits)"
+    echo "âŒ ERREUR: La clÃ© HMAC doit faire 128 caractÃ¨res (512 bits)"
     echo "   Longueur actuelle: ${#HMAC_KEY}"
     exit 1
 fi
 
-echo "✅ Longueur de la clé correcte (128 caractères)"
+echo "âœ… Longueur de la clÃ© correcte (128 caractÃ¨res)"
 echo ""
 
-# Vérification de cohérence
-echo "🔍 Vérification de cohérence:"
+# VÃ©rification de cohÃ©rence
+echo "ðŸ” VÃ©rification de cohÃ©rence:"
 echo "=============================="
 
 if [ "$SITE" == "5259250" ] && [ "$MODE" == "PRODUCTION" ]; then
-    echo "✅ Configuration PRODUCTION détectée"
+    echo "âœ… Configuration PRODUCTION dÃ©tectÃ©e"
     echo ""
-    echo "⚠️  IMPORTANT: Vérifiez que la clé HMAC est bien celle de PRODUCTION"
+    echo "âš ï¸  IMPORTANT: VÃ©rifiez que la clÃ© HMAC est bien celle de PRODUCTION"
     echo ""
-    echo "La clé HMAC actuelle commence par: ${HMAC_KEY:0:20}"
+    echo "La clÃ© HMAC actuelle commence par: ${HMAC_KEY:0:20}"
     echo ""
-    echo "❓ Est-ce la clé de PRODUCTION fournie par Paybox?"
+    echo "â“ Est-ce la clÃ© de PRODUCTION fournie par Paybox?"
     echo ""
-    echo "📋 Pour obtenir la bonne clé:"
+    echo "ðŸ“‹ Pour obtenir la bonne clÃ©:"
     echo "   1. Connexion: https://www1.paybox.com/"
-    echo "   2. Menu: Profil Marchand > Clé HMAC"
-    echo "   3. Copier la clé HMAC de PRODUCTION"
-    echo "   4. Mettre à jour dans .env: PAYBOX_HMAC_KEY=..."
+    echo "   2. Menu: Profil Marchand > ClÃ© HMAC"
+    echo "   3. Copier la clÃ© HMAC de PRODUCTION"
+    echo "   4. Mettre Ã  jour dans .env: PAYBOX_HMAC_KEY=..."
     echo ""
     
-    # Vérifier si c'est une clé connue de TEST
+    # VÃ©rifier si c'est une clÃ© connue de TEST
     if [[ "$HMAC_KEY" == "0123456789ABCDEF"* ]] || [[ "$HMAC_KEY" == "7731B4225651B0C4"* ]]; then
-        echo "🚨 ALERTE: Cette clé ressemble à une clé de TEST!"
+        echo "ðŸš¨ ALERTE: Cette clÃ© ressemble Ã  une clÃ© de TEST!"
         echo "   Elle commence par: ${HMAC_KEY:0:16}"
         echo ""
-        echo "   Vous DEVEZ utiliser la clé HMAC de PRODUCTION"
+        echo "   Vous DEVEZ utiliser la clÃ© HMAC de PRODUCTION"
         echo "   fournie par Paybox pour votre compte 5259250"
         echo ""
         exit 1
     fi
     
 elif [ "$SITE" == "1999888" ] && [ "$MODE" == "TEST" ]; then
-    echo "✅ Configuration TEST détectée"
-    echo "   La clé HMAC de test est: 0123456789ABCDEF... (standard)"
+    echo "âœ… Configuration TEST dÃ©tectÃ©e"
+    echo "   La clÃ© HMAC de test est: 0123456789ABCDEF... (standard)"
 else
-    echo "⚠️  Configuration mixte détectée"
+    echo "âš ï¸  Configuration mixte dÃ©tectÃ©e"
 fi
 
 echo ""
 echo "======================================"
-echo "📝 RÉSUMÉ"
+echo "ðŸ“ RÃ‰SUMÃ‰"
 echo "======================================"
 echo ""
 echo "Pour tester un paiement:"
-echo "  1. Assurez-vous que la clé HMAC est correcte"
-echo "  2. Redémarrez: pm2 restart backend"
+echo "  1. Assurez-vous que la clÃ© HMAC est correcte"
+echo "  2. RedÃ©marrez: pm2 restart backend"
 echo "  3. Consultez les logs: pm2 logs backend | grep -i 'hmac\|signature'"
-echo "  4. Testez un paiement de 1€"
+echo "  4. Testez un paiement de 1â‚¬"
 echo ""
-echo "Si l'erreur persiste après avoir mis la bonne clé:"
-echo "  • Vérifiez l'ordre des paramètres dans la signature"
-echo "  • Contactez le support Paybox"
-echo "  • Fournissez: SITE=$SITE, RANG=001, IDENTIFIANT=$(grep '^PAYBOX_IDENTIFIANT=' .env | cut -d'=' -f2)"
+echo "Si l'erreur persiste aprÃ¨s avoir mis la bonne clÃ©:"
+echo "  â€¢ VÃ©rifiez l'ordre des paramÃ¨tres dans la signature"
+echo "  â€¢ Contactez le support Paybox"
+echo "  â€¢ Fournissez: SITE=$SITE, RANG=001, IDENTIFIANT=$(grep '^PAYBOX_IDENTIFIANT=' .env | cut -d'=' -f2)"
 echo ""

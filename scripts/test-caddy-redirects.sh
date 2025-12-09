@@ -1,12 +1,12 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# 🧪 TEST DES REDIRECTIONS CADDY - IMAGES SUPABASE
-# Vérifie que les anciennes URLs publiques redirigent correctement vers Supabase
+# ðŸ§ª TEST DES REDIRECTIONS CADDY - IMAGES SUPABASE
+# VÃ©rifie que les anciennes URLs publiques redirigent correctement vers Supabase
 
-echo "🧪 TEST DES REDIRECTIONS CADDY - IMAGES SUPABASE"
+echo "ðŸ§ª TEST DES REDIRECTIONS CADDY - IMAGES SUPABASE"
 echo ""
-echo "⚠️  Ce script teste les redirections 301 configurées dans Caddy"
-echo "📍 Assurez-vous que Caddy est en cours d'exécution"
+echo "âš ï¸  Ce script teste les redirections 301 configurÃ©es dans Caddy"
+echo "ðŸ“ Assurez-vous que Caddy est en cours d'exÃ©cution"
 echo ""
 
 # Configuration
@@ -30,62 +30,62 @@ test_redirect() {
     echo "[$TOTAL_TESTS] Testing: $test_name"
     echo "    URL: ${DOMAIN}${old_url}"
     
-    # Faire une requête HEAD pour suivre la redirection
+    # Faire une requÃªte HEAD pour suivre la redirection
     local response=$(curl -sI -L "${DOMAIN}${old_url}" 2>&1)
     local http_code=$(echo "$response" | grep -i "HTTP/" | head -1 | awk '{print $2}')
     local location=$(echo "$response" | grep -i "Location:" | head -1 | awk '{print $2}' | tr -d '\r')
     
-    # Vérifier la redirection 301
+    # VÃ©rifier la redirection 301
     if echo "$response" | grep -q "301"; then
-        echo "    ✓ Code 301 Moved Permanently"
+        echo "    âœ“ Code 301 Moved Permanently"
     else
-        echo "    ✗ Pas de redirection 301 trouvée (code: $http_code)"
+        echo "    âœ— Pas de redirection 301 trouvÃ©e (code: $http_code)"
         FAILED_TESTS=$((FAILED_TESTS + 1))
         echo ""
         return
     fi
     
-    # Vérifier l'URL de destination
+    # VÃ©rifier l'URL de destination
     local expected_url="${EXPECTED_SUPABASE_URL}/${expected_bucket}/${expected_path}"
     if [ "$location" = "$expected_url" ]; then
-        echo "    ✓ Redirige vers: $location"
+        echo "    âœ“ Redirige vers: $location"
         PASSED_TESTS=$((PASSED_TESTS + 1))
     else
-        echo "    ✗ URL incorrecte"
+        echo "    âœ— URL incorrecte"
         echo "      Attendu: $expected_url"
-        echo "      Reçu:    $location"
+        echo "      ReÃ§u:    $location"
         FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
     
     echo ""
 }
 
-echo "🔍 TEST 1: Images produits (/rack/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 1: Images produits (/rack/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Image produit" \
     "/rack/101/34407_1.JPG" \
     "rack-images" \
     "101/34407_1.JPG"
 
-echo "🔍 TEST 2: Images gammes produits (/upload/articles/gammes-produits/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 2: Images gammes produits (/upload/articles/gammes-produits/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
-    "Gamme - Filtre à huile" \
+    "Gamme - Filtre Ã  huile" \
     "/upload/articles/gammes-produits/catalogue/filtre-a-huile.webp" \
     "uploads" \
     "articles/gammes-produits/catalogue/filtre-a-huile.webp"
 
-echo "🔍 TEST 3: Images familles produits (/upload/articles/familles-produits/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 3: Images familles produits (/upload/articles/familles-produits/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Famille - Filtres" \
     "/upload/articles/familles-produits/Filtres.webp" \
     "uploads" \
     "articles/familles-produits/Filtres.webp"
 
-echo "🔍 TEST 4: Logos constructeurs (/upload/constructeurs-automobiles/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 4: Logos constructeurs (/upload/constructeurs-automobiles/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Icon BMW" \
     "/upload/constructeurs-automobiles/icon/bmw.webp" \
@@ -104,54 +104,54 @@ test_redirect \
     "uploads" \
     "constructeurs-automobiles/marques-logos/bmw.webp"
 
-echo "🔍 TEST 5: Logos équipementiers (/upload/equipementiers-automobiles/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 5: Logos Ã©quipementiers (/upload/equipementiers-automobiles/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Logo Bosch" \
     "/upload/equipementiers-automobiles/bosch.webp" \
     "uploads" \
     "equipementiers-automobiles/bosch.webp"
 
-echo "🔍 TEST 6: Blog/Conseils (/upload/blog/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 6: Blog/Conseils (/upload/blog/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Article blog" \
     "/upload/blog/conseils/20190819125821.jpg" \
     "uploads" \
     "blog/conseils/20190819125821.jpg"
 
-echo "🔍 TEST 7: Assets/Favicon (/upload/upload/)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ðŸ” TEST 7: Assets/Favicon (/upload/upload/)"
+echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 test_redirect \
     "Favicon 32x32" \
     "/upload/upload/favicon/favicon-32x32.png" \
     "uploads" \
     "upload/favicon/favicon-32x32.png"
 
-# Résumé
-echo "═══════════════════════════════════════════════════════════"
-echo "📊 RÉSUMÉ DES TESTS"
-echo "═══════════════════════════════════════════════════════════"
+# RÃ©sumÃ©
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
+echo "ðŸ“Š RÃ‰SUMÃ‰ DES TESTS"
+echo "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
 echo "Total:    $TOTAL_TESTS tests"
-echo "✅ Réussis: $PASSED_TESTS"
-echo "❌ Échoués:  $FAILED_TESTS"
+echo "âœ… RÃ©ussis: $PASSED_TESTS"
+echo "âŒ Ã‰chouÃ©s:  $FAILED_TESTS"
 echo ""
 
 if [ $FAILED_TESTS -eq 0 ]; then
-    echo "🎉 TOUS LES TESTS SONT PASSÉS !"
+    echo "ðŸŽ‰ TOUS LES TESTS SONT PASSÃ‰S !"
     echo ""
-    echo "✨ Les redirections 301 fonctionnent correctement"
-    echo "🔗 Les anciennes URLs publiques préservent le SEO"
-    echo "📍 Toutes les images redirigent vers Supabase Storage"
+    echo "âœ¨ Les redirections 301 fonctionnent correctement"
+    echo "ðŸ”— Les anciennes URLs publiques prÃ©servent le SEO"
+    echo "ðŸ“ Toutes les images redirigent vers Supabase Storage"
     exit 0
 else
-    echo "⚠️  CERTAINS TESTS ONT ÉCHOUÉ"
+    echo "âš ï¸  CERTAINS TESTS ONT Ã‰CHOUÃ‰"
     echo ""
-    echo "🔧 Vérifiez la configuration Caddy:"
+    echo "ðŸ”§ VÃ©rifiez la configuration Caddy:"
     echo "   - config/caddy/Caddyfile"
-    echo "   - Les règles de redirection @rack_images et @upload_images"
+    echo "   - Les rÃ¨gles de redirection @rack_images et @upload_images"
     echo ""
-    echo "🐳 Redémarrez Caddy si nécessaire:"
+    echo "ðŸ³ RedÃ©marrez Caddy si nÃ©cessaire:"
     echo "   docker-compose -f docker-compose.caddy.yml restart caddy"
     exit 1
 fi
