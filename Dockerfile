@@ -66,5 +66,6 @@ COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./pac
 COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
 
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
+RUN chmod +x ./backend/start.sh
 
-ENTRYPOINT [ "backend/start.sh" ]
+ENTRYPOINT [ "/bin/sh", "./backend/start.sh" ]

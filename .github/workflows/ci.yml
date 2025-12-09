@@ -119,7 +119,9 @@ jobs:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:production
-          cd ~/production
-          docker compose -f docker-compose.prod.yml up -d
+          cd /home/deploy/app
+          git pull origin main
+          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml down
+          docker build -t massdoc/nestjs-remix-monorepo:production .
+          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
           docker system prune --all --volumes --force
