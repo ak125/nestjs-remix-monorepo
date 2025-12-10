@@ -128,78 +128,96 @@ export class BatchLoaderController {
         };
       }
 
-      // 🔥 PARALLÉLISATION MAXIMALE: 4 appels en parallèle
-      const [piecesResult, seoResult, crossSellingResult, vehicleResult] =
-        await Promise.all([
-          // 1. Pièces via RPC optimisée (1 requête au lieu de 9)
-          this.piecesService
-            .getPiecesViaRPC(request.typeId, request.gammeId)
-            .catch((error) => {
-              this.logger.error(`❌ Erreur récupération pièces:`, error);
-              return {
-                pieces: [],
-                count: 0,
-                minPrice: null,
-                success: false,
-                error: error.message,
-              };
-            }),
-
-          // 2. SEO content
-          this.gammeService
-            .getGammeSeoContent(
-              request.gammeId,
-              request.typeId,
-              request.marqueId,
-              request.modeleId,
-            )
-            .catch((error) => {
-              this.logger.warn(`⚠️ Erreur récupération SEO (fallback):`, error);
-              return {
-                h1: null,
-                content: null,
-                title: null,
-                description: null,
-              };
-            }),
-
-          // 3. Cross-selling - Pour l'instant retourner vide car pas implémenté dans gammeService
-          // TODO: Implémenter getCrossSellingGammes dans GammeUnifiedService
-          Promise.resolve([]),
-
-          // 4. 🚗 Informations véhicule (type, modèle, marque)
-          this.vehiclesService.getTypeById(request.typeId).catch((error) => {
-            this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
-            return { data: null, error };
-          }),
-        ]);
-
-      // 🚗 Extraction des infos véhicule (avant l'appel OEM car on a besoin du nom de marque)
+      // 🚗 OPTIMISATION V6: Récupérer vehicleInfo EN PREMIER avec cache long
+      // Les infos véhicule sont statiques → cache 24h
+      const vehicleCacheKey = `vehicle-info:${request.typeId}`;
       let vehicleInfo: VehicleInfo | undefined;
       let marqueName: string | undefined;
-      if (vehicleResult?.data?.[0]) {
-        const typeData = vehicleResult.data[0];
-        const modeleData = typeData.auto_modele;
-        const marqueData = modeleData?.auto_marque;
-        marqueName = marqueData?.marque_name;
 
-        vehicleInfo = {
-          typeId: typeData.type_id,
-          typeName: typeData.type_name || '',
-          typeBody: typeData.type_body || undefined,
-          typeEngine: typeData.type_engine || undefined,
-          typePowerPs: typeData.type_power_ps || undefined,
-          typeDateStart: typeData.type_date_start || undefined,
-          typeDateEnd: typeData.type_date_end || undefined,
-          modeleId: modeleData?.modele_id || request.modeleId,
-          modeleName: modeleData?.modele_name || '',
-          modelePic: modeleData?.modele_pic || undefined,
-          modeleAlias: modeleData?.modele_alias || undefined,
-          marqueId: marqueData?.marque_id || request.marqueId,
-          marqueName: marqueName || '',
-          marqueAlias: marqueData?.marque_alias || undefined,
-        };
+      const cachedVehicle =
+        await this.cacheManager.get<VehicleInfo>(vehicleCacheKey);
+      if (cachedVehicle) {
+        vehicleInfo = cachedVehicle;
+        marqueName = cachedVehicle.marqueName;
+        this.logger.log(
+          `⚡ [BATCH-LOADER] Vehicle Cache HIT: type=${request.typeId}`,
+        );
+      } else {
+        const vehicleResult = await this.vehiclesService
+          .getTypeById(request.typeId)
+          .catch((error) => {
+            this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
+            return { data: null, error };
+          });
+
+        if (vehicleResult?.data?.[0]) {
+          const typeData = vehicleResult.data[0];
+          const modeleData = typeData.auto_modele;
+          const marqueData = modeleData?.auto_marque;
+          marqueName = marqueData?.marque_name;
+
+          vehicleInfo = {
+            typeId: typeData.type_id,
+            typeName: typeData.type_name || '',
+            typeBody: typeData.type_body || undefined,
+            typeEngine: typeData.type_engine || undefined,
+            typePowerPs: typeData.type_power_ps || undefined,
+            typeDateStart: typeData.type_date_start || undefined,
+            typeDateEnd: typeData.type_date_end || undefined,
+            modeleId: modeleData?.modele_id || request.modeleId,
+            modeleName: modeleData?.modele_name || '',
+            modelePic: modeleData?.modele_pic || undefined,
+            modeleAlias: modeleData?.modele_alias || undefined,
+            marqueId: marqueData?.marque_id || request.marqueId,
+            marqueName: marqueName || '',
+            marqueAlias: marqueData?.marque_alias || undefined,
+          };
+
+          // Cache 24h (86400000ms) car les infos véhicule sont statiques
+          await this.cacheManager.set(vehicleCacheKey, vehicleInfo, 86400000);
+          this.logger.log(
+            `💾 [BATCH-LOADER] Vehicle mis en cache 24h: type=${request.typeId}`,
+          );
+        }
       }
+
+      // 🔥 PARALLÉLISATION: 3 appels en parallèle (vehicleInfo déjà récupéré)
+      const [piecesResult, seoResult, crossSellingResult] = await Promise.all([
+        // 1. Pièces via RPC optimisée (1 requête au lieu de 9)
+        this.piecesService
+          .getPiecesViaRPC(request.typeId, request.gammeId)
+          .catch((error) => {
+            this.logger.error(`❌ Erreur récupération pièces:`, error);
+            return {
+              pieces: [],
+              count: 0,
+              minPrice: null,
+              success: false,
+              error: error.message,
+            };
+          }),
+
+        // 2. SEO content
+        this.gammeService
+          .getGammeSeoContent(
+            request.gammeId,
+            request.typeId,
+            request.marqueId,
+            request.modeleId,
+          )
+          .catch((error) => {
+            this.logger.warn(`⚠️ Erreur récupération SEO (fallback):`, error);
+            return {
+              h1: null,
+              content: null,
+              title: null,
+              description: null,
+            };
+          }),
+
+        // 3. Cross-selling - Pour l'instant retourner vide car pas implémenté dans gammeService
+        Promise.resolve([]),
+      ]);
 
       // Extraction des données
       const pieces = Array.isArray(piecesResult.pieces)

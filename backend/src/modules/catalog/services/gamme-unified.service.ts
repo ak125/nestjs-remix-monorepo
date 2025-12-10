@@ -318,18 +318,18 @@ export class GammeUnifiedService extends SupabaseBaseService {
         `✅ SEO template trouvé (${data.sgc_content?.length || 0} caractères)`,
       );
 
-      // Récupérer infos véhicule pour remplacement variables
-      const vehicleInfo = await this.getVehicleInfo(typeId, marqueId, modeleId);
-      const gammeInfo = await this.getGammeInfo(pgId);
+      // 🚀 OPTIMISATION V6: Paralléliser vehicleInfo, gammeInfo et catalogGamme
+      const [vehicleInfo, gammeInfo, catalogGammeResult] = await Promise.all([
+        this.getVehicleInfoCached(typeId, marqueId, modeleId),
+        this.getGammeInfoCached(pgId),
+        this.supabase
+          .from(TABLES.catalog_gamme)
+          .select('mc_mf_prime')
+          .eq('mc_pg_id', pgId)
+          .single(),
+      ]);
 
-      // Récupérer mf_id pour les switches famille
-      const { data: catalogGamme } = await this.supabase
-        .from(TABLES.catalog_gamme)
-        .select('mc_mf_prime')
-        .eq('mc_pg_id', pgId)
-        .single();
-
-      const mfId = catalogGamme?.mc_mf_prime;
+      const mfId = catalogGammeResult.data?.mc_mf_prime;
 
       this.logger.log(
         `🔍 [DEBUG-SEO] vehicleInfo:`,
@@ -582,6 +582,68 @@ export class GammeUnifiedService extends SupabaseBaseService {
       name: data?.pg_name || '',
       alias: data?.pg_alias || '',
     };
+  }
+
+  /**
+   * 🚀 OPTIMISATION V6: Version cachée de getVehicleInfo
+   * Cache Redis 24h car les données véhicule sont statiques
+   */
+  private async getVehicleInfoCached(
+    typeId: number,
+    marqueId?: number,
+    modeleId?: number,
+  ) {
+    const cacheKey = `vehicle-info-seo:${typeId}`;
+
+    try {
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && typeof cached === 'string') {
+        this.logger.log(`⚡ Cache HIT vehicleInfo type_id=${typeId}`);
+        return JSON.parse(cached);
+      }
+    } catch {
+      // Ignorer erreur cache
+    }
+
+    const result = await this.getVehicleInfo(typeId, marqueId, modeleId);
+
+    // Cache 24h (86400s)
+    try {
+      await this.cacheService.set(cacheKey, JSON.stringify(result), 86400);
+    } catch {
+      // Ignorer erreur cache
+    }
+
+    return result;
+  }
+
+  /**
+   * 🚀 OPTIMISATION V6: Version cachée de getGammeInfo
+   * Cache Redis 24h car les données gamme sont statiques
+   */
+  private async getGammeInfoCached(pgId: number) {
+    const cacheKey = `gamme-info-seo:${pgId}`;
+
+    try {
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && typeof cached === 'string') {
+        this.logger.log(`⚡ Cache HIT gammeInfo pg_id=${pgId}`);
+        return JSON.parse(cached);
+      }
+    } catch {
+      // Ignorer erreur cache
+    }
+
+    const result = await this.getGammeInfo(pgId);
+
+    // Cache 24h (86400s)
+    try {
+      await this.cacheService.set(cacheKey, JSON.stringify(result), 86400);
+    } catch {
+      // Ignorer erreur cache
+    }
+
+    return result;
   }
 
   /**
