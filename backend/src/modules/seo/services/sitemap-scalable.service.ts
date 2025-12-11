@@ -26,13 +26,13 @@ export class SitemapScalableService extends SupabaseBaseService {
   ) {
     super();
     this.logger.log('âœ… SitemapScalableService initialized');
-    this.logger.log('ðŸ§¹ Hygiene validation enabled');
-    this.logger.log('ðŸŒ Hreflang multilingual enabled');
-    this.logger.log('ðŸ–¼ï¸ Product images enabled');
+    this.logger.log('🧹 Hygiene validation enabled');
+    this.logger.log('�� Hreflang multilingual enabled');
+    this.logger.log('🖼️ Product images enabled');
   }
 
   /**
-   * Point d'entrÃ©e principal: gÃ©nÃ¨re un sitemap selon son nom
+   * Point d'entrée principal: génère un sitemap selon son nom
    */
   async generateSitemap(configName: string): Promise<string> {
     const config = getSitemapConfig(configName);
@@ -43,7 +43,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       );
     }
 
-    this.logger.log(`GÃ©nÃ©ration sitemap: ${configName} (${config.type})`);
+    this.logger.log(`Génération sitemap: ${configName} (${config.type})`);
 
     switch (config.type) {
       case SitemapType.INDEX:
@@ -61,10 +61,10 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * GÃ©nÃ¨re un index maÃ®tre (liste de sous-indexes)
+   * Génère un index maître (liste de sous-indexes)
    */
   private async generateIndex(config: SitemapConfig): Promise<string> {
-    this.logger.log(`GÃ©nÃ©ration index: ${config.name}`);
+    this.logger.log(`Génération index: ${config.name}`);
 
     const entries: SitemapIndexEntry[] = [];
 
@@ -80,16 +80,16 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `Index ${config.name} gÃ©nÃ©rÃ©: ${entries.length} entrÃ©es`,
+      `Index ${config.name} généré: ${entries.length} entrées`,
     );
     return this.buildSitemapIndexXml(entries);
   }
 
   /**
-   * GÃ©nÃ¨re un sous-index (liste de sitemaps finaux)
+   * Génère un sous-index (liste de sitemaps finaux)
    */
   private async generateSubIndex(config: SitemapConfig): Promise<string> {
-    this.logger.log(`GÃ©nÃ©ration sous-index: ${config.name}`);
+    this.logger.log(`Génération sous-index: ${config.name}`);
 
     const entries: SitemapIndexEntry[] = [];
 
@@ -105,34 +105,34 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `Sous-index ${config.name} gÃ©nÃ©rÃ©: ${entries.length} entrÃ©es`,
+      `Sous-index ${config.name} généré: ${entries.length} entrées`,
     );
     return this.buildSitemapIndexXml(entries);
   }
 
   /**
-   * GÃ©nÃ¨re un sitemap final avec URLs
+   * Génère un sitemap final avec URLs
    */
   private async generateFinalSitemap(config: SitemapConfig): Promise<string> {
-    this.logger.log(`GÃ©nÃ©ration sitemap final: ${config.name}`);
+    this.logger.log(`Génération sitemap final: ${config.name}`);
 
     // 1. Fetch URLs brutes
     const rawUrls = await this.fetchUrls(config);
-    this.logger.log(`URLs fetchÃ©es: ${rawUrls.length}`);
+    this.logger.log(`URLs fetchées: ${rawUrls.length}`);
 
     // 2. Valider et filtrer les URLs (avec hreflang)
     const validatedUrls = await this.validateAndFilterUrls(rawUrls, config);
     this.logger.log(
-      `URLs aprÃ¨s validation: ${validatedUrls.length} (${rawUrls.length - validatedUrls.length} exclues)`,
+      `URLs après validation: ${validatedUrls.length} (${rawUrls.length - validatedUrls.length} exclues)`,
     );
 
-    // 3. DÃ©dupliquer
+    // 3. Dédupliquer
     const { unique: uniqueUrlStrings, duplicates } =
       this.hygieneService.deduplicateUrls(validatedUrls.map((u) => u.loc));
 
     if (duplicates.size > 0) {
       this.logger.warn(
-        `âš ï¸  Doublons dÃ©tectÃ©s: ${duplicates.size} groupes de doublons`,
+        `⚠️  Doublons détectés: ${duplicates.size} groupes de doublons`,
       );
       duplicates.forEach((variants, normalized) => {
         this.logger.debug(
@@ -147,13 +147,13 @@ export class SitemapScalableService extends SupabaseBaseService {
     );
 
     this.logger.log(
-      `âœ… Sitemap ${config.name} gÃ©nÃ©rÃ©: ${finalUrls.length} URLs (${duplicates.size} doublons supprimÃ©s)`,
+      `âœ… Sitemap ${config.name} généré: ${finalUrls.length} URLs (${duplicates.size} doublons supprimés)`,
     );
     return this.buildSitemapXml(finalUrls, config);
   }
 
   /**
-   * Valide et filtre les URLs selon les rÃ¨gles d'hygiÃ¨ne SEO
+   * Valide et filtre les URLs selon les règles d'hygiène SEO
    * et ajoute les liens hreflang pour le multilingue
    * et ajoute les images pour les produits (e-commerce)
    */
@@ -165,26 +165,26 @@ export class SitemapScalableService extends SupabaseBaseService {
     const excludedReasons = new Map<string, number>();
 
     for (const url of urls) {
-      // Pour l'instant, on considÃ¨re toutes les URLs comme valides (HTTP 200, indexable, canonical)
+      // Pour l'instant, on considère toutes les URLs comme valides (HTTP 200, indexable, canonical)
       // TODO: Ajouter des champs dans la database pour tracker ces informations
       const validation = this.hygieneService.validateUrl(url.loc, {
-        statusCode: 200, // AssumÃ© pour les URLs gÃ©nÃ©rÃ©es
-        isIndexable: true, // AssumÃ© pour les URLs gÃ©nÃ©rÃ©es
-        isCanonical: true, // AssumÃ© pour les URLs gÃ©nÃ©rÃ©es
+        statusCode: 200, // Assumé pour les URLs générées
+        isIndexable: true, // Assumé pour les URLs générées
+        isCanonical: true, // Assumé pour les URLs générées
         hasSufficientContent: true, // TODO: Ajouter validation du contenu depuis DB
       });
 
       if (validation.isValid) {
-        // DÃ©terminer le type de contenu pour hreflang
+        // Déterminer le type de contenu pour hreflang
         const contentType = this.getContentTypeFromConfig(config);
 
-        // GÃ©nÃ©rer les liens hreflang
+        // Générer les liens hreflang
         const hreflangLinks = this.hreflangService.generateHreflangLinks(
           validation.normalizedUrl,
           contentType,
         );
 
-        // GÃ©nÃ©rer les images pour les produits (boost e-commerce SEO)
+        // Générer les images pour les produits (boost e-commerce SEO)
         let images;
         if (this.shouldIncludeImages(config)) {
           images = await this.generateProductImages(url);
@@ -192,7 +192,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
         validatedUrls.push({
           ...url,
-          loc: validation.normalizedUrl, // URL normalisÃ©e
+          loc: validation.normalizedUrl, // URL normalisée
           alternates: hreflangLinks.length > 0 ? hreflangLinks : undefined, // Hreflang si disponibles
           images: images && images.length > 0 ? images : undefined, // Images si disponibles
           // lastmod: validation.lastModified.toISOString(), // TODO: Activer quand on aura les vraies dates
@@ -207,7 +207,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     // Logger les raisons d'exclusion
     if (excludedReasons.size > 0) {
-      this.logger.log("ðŸ“Š Raisons d'exclusion:");
+      this.logger.log("📊 Raisons d'exclusion:");
       excludedReasons.forEach((count, reason) => {
         this.logger.log(`   - ${reason}: ${count} URLs`);
       });
@@ -217,7 +217,7 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * VÃ©rifie si ce sitemap doit inclure des images
+   * Vérifie si ce sitemap doit inclure des images
    */
   private shouldIncludeImages(config: SitemapConfig): boolean {
     // Activer les images uniquement pour les produits e-commerce
@@ -229,11 +229,11 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * GÃ©nÃ¨re les images pour un produit
+   * Génère les images pour un produit
    * Format: 1 image principale + 2-4 vues utiles
    */
   private async generateProductImages(url: SitemapEntry): Promise<any[]> {
-    // Extraire product ID de l'URL selon le format rÃ©el
+    // Extraire product ID de l'URL selon le format réel
     // Format possible 1: /products/12345-reference-produit
     // Format possible 2: /pieces/slug-12345.html (format actuel)
     let match = url.loc.match(/products\/(\d+)/);
@@ -243,18 +243,18 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     if (!match) {
-      // Pas de product ID trouvÃ©, retourner tableau vide
+      // Pas de product ID trouvé, retourner tableau vide
       return [];
     }
 
     const productId = parseInt(match[1], 10);
 
-    // Pour l'instant, gÃ©nÃ©ration simple
-    // TODO: IntÃ©grer avec vraie database pour rÃ©cupÃ©rer les infos produit
+    // Pour l'instant, génération simple
+    // TODO: Intégrer avec vraie database pour récupérer les infos produit
     const images = await this.productImageService.getProductSitemapImages(
       productId,
-      `Produit ${productId}`, // TODO: RÃ©cupÃ©rer vrai nom depuis DB
-      `REF-${productId}`, // TODO: RÃ©cupÃ©rer vraie rÃ©fÃ©rence depuis DB
+      `Produit ${productId}`, // TODO: Récupérer vrai nom depuis DB
+      `REF-${productId}`, // TODO: Récupérer vraie référence depuis DB
       5, // Max 5 images par produit
     );
 
@@ -262,7 +262,7 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * DÃ©termine le type de contenu multilingue Ã  partir de la configuration
+   * Détermine le type de contenu multilingue Ã  partir de la configuration
    */
   private getContentTypeFromConfig(
     config: SitemapConfig,
@@ -287,12 +287,12 @@ export class SitemapScalableService extends SupabaseBaseService {
       return MultilingualContentType.PRODUCT;
     }
 
-    // Par dÃ©faut, pages statiques
+    // Par défaut, pages statiques
     return MultilingualContentType.STATIC_PAGE;
   }
 
   /**
-   * RÃ©cupÃ¨re les URLs selon la configuration
+   * Récupère les URLs selon la configuration
    */
   private async fetchUrls(config: SitemapConfig): Promise<SitemapEntry[]> {
     const shard = config.shards?.[0]; // Pour l'instant, un seul shard par config
@@ -391,7 +391,7 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * Fetch modÃ¨les avec sharding alphabÃ©tique
+   * Fetch modèles avec sharding alphabétique
    */
   private async fetchModeles(shard?: ShardConfig): Promise<SitemapEntry[]> {
     // Charger les marques
@@ -405,7 +405,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       marques.map((m) => [m.marque_id, m.marque_alias]),
     );
 
-    // Charger tous les modÃ¨les avec pagination
+    // Charger tous les modèles avec pagination
     const allModeles = [];
     const batchSize = 1000;
     let offset = 0;
@@ -442,7 +442,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `ModÃ¨les filtrÃ©s (shard ${shard?.name}): ${filteredModeles.length}/${allModeles.length}`,
+      `Modèles filtrés (shard ${shard?.name}): ${filteredModeles.length}/${allModeles.length}`,
     );
 
     return filteredModeles.map((modele) => {
@@ -463,22 +463,22 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * ðŸŽï¸ Fetch types/motorisations depuis __sitemap_motorisation (table prÃ©-calculÃ©e PHP)
+   * 🏎️ Fetch types/motorisations depuis __sitemap_motorisation (table pré-calculée PHP)
    *
-   * Cette table contient ~12,756 URLs validÃ©es avec tous les alias prÃ©-calculÃ©s:
+   * Cette table contient ~12,756 URLs validées avec tous les alias pré-calculés:
    * - map_marque_alias, map_marque_id
    * - map_modele_alias, map_modele_id
    * - map_type_alias, map_type_id
    *
-   * Avantages vs cascade auto_type â†’ auto_modele â†’ auto_marque:
-   * - Performance: 1 seule requÃªte au lieu de 3 avec jointures
-   * - CohÃ©rence: MÃªme source que le sitemap PHP original
-   * - FiabilitÃ©: URLs prÃ©-validÃ©es (pas de types orphelins)
+   * Avantages vs cascade auto_type ←’ auto_modele ←’ auto_marque:
+   * - Performance: 1 seule requête au lieu de 3 avec jointures
+   * - Cohérence: Même source que le sitemap PHP original
+   * - Fiabilité: URLs pré-validées (pas de types orphelins)
    */
   private async fetchTypesFromSitemapMotorisation(
     shard?: ShardConfig,
   ): Promise<SitemapEntry[]> {
-    // RÃ©cupÃ©rer offset/limit depuis la config du shard
+    // Récupérer offset/limit depuis la config du shard
     let shardOffset = 0;
     let shardLimit = 15000; // Suffisant pour les ~12,756 URLs
 
@@ -490,13 +490,13 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `ðŸŽï¸ fetchTypesFromSitemapMotorisation: offset=${shardOffset}, limit=${shardLimit}`,
+      `🏎️ fetchTypesFromSitemapMotorisation: offset=${shardOffset}, limit=${shardLimit}`,
     );
 
-    // Charger toutes les entrÃ©es de __sitemap_motorisation avec pagination
-    // âš ï¸ Supabase limite Ã  1000 lignes par requÃªte par dÃ©faut
+    // Charger toutes les entrées de __sitemap_motorisation avec pagination
+    // ⚠️ Supabase limite Ã  1000 lignes par requête par défaut
     const allMotorisations: any[] = [];
-    const batchSize = 1000; // Limite Supabase par dÃ©faut
+    const batchSize = 1000; // Limite Supabase par défaut
     let currentOffset = 0;
     let hasMore = true;
 
@@ -519,7 +519,7 @@ export class SitemapScalableService extends SupabaseBaseService {
         currentOffset += batchSize;
         hasMore = data.length === batchSize;
         this.logger.log(
-          `ðŸ“¦ Batch ${Math.ceil(currentOffset / batchSize)}: ${data.length} motorisations (total: ${allMotorisations.length})`,
+          `📦 Batch ${Math.ceil(currentOffset / batchSize)}: ${data.length} motorisations (total: ${allMotorisations.length})`,
         );
       } else {
         hasMore = false;
@@ -527,7 +527,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `ðŸŽï¸ __sitemap_motorisation: ${allMotorisations.length} entrÃ©es chargÃ©es`,
+      `🏎️ __sitemap_motorisation: ${allMotorisations.length} entrées chargées`,
     );
 
     // Appliquer le sharding par offset
@@ -536,10 +536,10 @@ export class SitemapScalableService extends SupabaseBaseService {
       shardOffset + shardLimit,
     );
     this.logger.log(
-      `ðŸŽï¸ Shard appliquÃ©: ${shardedData.length} motorisations`,
+      `🏎️ Shard appliqué: ${shardedData.length} motorisations`,
     );
 
-    // GÃ©nÃ©rer les URLs directement (pas besoin de jointures, tout est prÃ©-calculÃ©)
+    // Générer les URLs directement (pas besoin de jointures, tout est pré-calculé)
     const entries: SitemapEntry[] = shardedData
       .filter(
         (m: any) =>
@@ -661,7 +661,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
   /**
    * Fetch URLs du blog avec sharding temporel
-   * âš ï¸ Colonnes corrigÃ©es: ba_create/ba_update au lieu de ba_date (n'existe pas)
+   * ⚠️ Colonnes corrigées: ba_create/ba_update au lieu de ba_date (n'existe pas)
    */
   private async fetchBlogUrls(
     config: SitemapConfig,
@@ -679,7 +679,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       );
     } else {
       this.logger.log(
-        `ðŸ“ Blog advice chargÃ©s: ${adviceArticles?.length || 0} articles`,
+        `📝 Blog advice chargés: ${adviceArticles?.length || 0} articles`,
       );
     }
 
@@ -695,7 +695,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       );
     } else {
       this.logger.log(
-        `ðŸ“– Blog guide chargÃ©s: ${guideArticles?.length || 0} articles`,
+        `📖 Blog guide chargés: ${guideArticles?.length || 0} articles`,
       );
     }
 
@@ -703,12 +703,12 @@ export class SitemapScalableService extends SupabaseBaseService {
     const allArticles = [
       ...(adviceArticles || []).map((a) => ({
         alias: a.ba_alias,
-        date: a.ba_create, // Date de crÃ©ation pour filtrage temporel
+        date: a.ba_create, // Date de création pour filtrage temporel
         lastmod: a.ba_update, // Date de mise Ã  jour pour lastmod
       })),
       ...(guideArticles || []).map((g) => ({
         alias: g.bg_alias,
-        date: g.bg_create, // Date de crÃ©ation pour filtrage temporel
+        date: g.bg_create, // Date de création pour filtrage temporel
         lastmod: g.bg_update, // Date de mise Ã  jour pour lastmod
       })),
     ];
@@ -727,7 +727,7 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `Blog articles filtrÃ©s (${shard?.name}): ${filteredArticles.length}/${allArticles.length}`,
+      `Blog articles filtrés (${shard?.name}): ${filteredArticles.length}/${allArticles.length}`,
     );
 
     return filteredArticles.map((article) => ({
@@ -787,11 +787,11 @@ export class SitemapScalableService extends SupabaseBaseService {
   }
 
   /**
-   * Obtient la date de derniÃ¨re modification d'un sitemap
+   * Obtient la date de dernière modification d'un sitemap
    */
   private async getLastModified(): Promise<string> {
     // Pour l'instant, retourne la date actuelle
-    // TODO: ImplÃ©menter un systÃ¨me de tracking des modifications
+    // TODO: Implémenter un système de tracking des modifications
     return new Date().toISOString();
   }
 
@@ -816,12 +816,12 @@ ${entries
    * Construit le XML d'un sitemap final avec support hreflang et images
    */
   private buildSitemapXml(urls: SitemapEntry[], config: SitemapConfig): string {
-    // VÃ©rifier si au moins une URL a des alternates
+    // Vérifier si au moins une URL a des alternates
     const hasHreflang = urls.some(
       (url) => url.alternates && url.alternates.length > 0,
     );
 
-    // VÃ©rifier si au moins une URL a des images
+    // Vérifier si au moins une URL a des images
     const hasImages = urls.some((url) => url.images && url.images.length > 0);
 
     // Namespaces XML requis
@@ -891,7 +891,7 @@ ${urls
   }
 
   /**
-   * Ã‰chapper les caractÃ¨res spÃ©ciaux XML
+   * Échapper les caractères spéciaux XML
    */
   private escapeXml(text: string): string {
     return text

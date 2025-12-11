@@ -1,6 +1,6 @@
-﻿// ðŸ”§ Route piÃ¨ces avec vÃ©hicule - Version REFACTORISÃ‰E
+﻿// 🔧 Route pièces avec véhicule - Version REFACTORISÉE
 // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
-// âš ï¸ URLs PRÃ‰SERVÃ‰ES - Ne jamais modifier le format d'URL
+// ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
 
 import {
   json,
@@ -17,10 +17,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 // ========================================
-// ðŸ“¦ IMPORTS DES MODULES REFACTORISÃ‰S
+// 📦 IMPORTS DES MODULES REFACTORISÉS
 // ========================================
 
-// Composants UI (ordre alphabÃ©tique)
+// Composants UI (ordre alphabétique)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Breadcrumbs as _Breadcrumbs } from "../components/layout/Breadcrumbs";
@@ -51,7 +51,7 @@ import {
   fetchRelatedArticlesForGamme,
 } from "../services/pieces/pieces-route.service";
 
-// Types centralisÃ©s
+// Types centralisés
 import {
   type GammeData,
   type LoaderData as _LoaderData,
@@ -73,17 +73,17 @@ import {
 } from "../utils/pieces-route.utils";
 
 // ========================================
-// ðŸ”„ LOADER - RÃ©cupÃ©ration des donnÃ©es
+// 🔄 LOADER - Récupération des données
 // ========================================
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const startTime = Date.now();
 
-  // Debug URL complÃ¨te
+  // Debug URL complète
   const url = new URL(request.url);
-  console.log("ðŸ” [LOADER] URL complÃ¨te:", url.pathname);
+  console.log("📍 [LOADER] URL complète:", url.pathname);
 
-  // 1. Parse des paramÃ¨tres URL
+  // 1. Parse des paramètres URL
   const {
     gamme: rawGamme,
     marque: rawMarque,
@@ -92,7 +92,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   } = params;
 
   if (!rawGamme || !rawMarque || !rawModele || !rawType) {
-    throw new Response(`ParamÃ¨tres manquants`, { status: 400 });
+    throw new Response(`Paramètres manquants`, { status: 400 });
   }
 
   // 2. Parse les IDs depuis les URLs
@@ -101,7 +101,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const modeleData = parseUrlParam(rawModele);
   const typeData = parseUrlParam(rawType);
 
-  // 3. RÃ©solution des IDs via API
+  // 3. Résolution des IDs via API
   const vehicleIds = await resolveVehicleIds(rawMarque, rawModele, rawType);
   const gammeId = await resolveGammeId(rawGamme);
 
@@ -115,8 +115,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   // 4. Batch Loader & Parallel Fetches
-  // ðŸš€ OPTIMISÃ‰ V3: batch-loader inclut maintenant vehicleInfo et filters
-  // ðŸ›¡ï¸ ROBUSTESSE: Gestion des erreurs rÃ©seau avec retry pour Ã©viter faux 410
+  // 🚀 OPTIMISÉ V3: batch-loader inclut maintenant vehicleInfo et filters
+  // 🛡️ ROBUSTESSE: Gestion des erreurs réseau avec retry pour éviter faux 410
 
   let batchResponse: any = null;
   let retryCount = 0;
@@ -147,18 +147,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     } catch (error) {
       retryCount++;
       console.warn(
-        `âš ï¸ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} Ã©chouÃ©e:`,
+        `⚠️ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} échouée:`,
         error,
       );
 
       if (retryCount > maxRetries) {
-        // ðŸš¨ Erreur rÃ©seau confirmÃ©e aprÃ¨s retries â†’ 503 (pas 410!)
-        // Cela Ã©vite la dÃ©sindexation SEO pour une erreur temporaire
+        // 🚨 Erreur réseau confirmée après retries ←’ 503 (pas 410!)
+        // Cela évite la désindexation SEO pour une erreur temporaire
         console.error(
-          `âŒ [BATCH-LOADER] Ã‰chec aprÃ¨s ${maxRetries + 1} tentatives - Backend inaccessible`,
+          `âŒ [BATCH-LOADER] Échec après ${maxRetries + 1} tentatives - Backend inaccessible`,
         );
         throw new Response(
-          `Service temporairement indisponible. Veuillez rÃ©essayer dans quelques instants.`,
+          `Service temporairement indisponible. Veuillez réessayer dans quelques instants.`,
           {
             status: 503,
             statusText: "Service Unavailable",
@@ -187,7 +187,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 5. Construction des objets Vehicle & Gamme
 
-  // ðŸš€ OPTIMISÃ‰ V3: Utilise vehicleInfo du batch-loader au lieu d'appels sÃ©parÃ©s
+  // 🚀 OPTIMISÉ V3: Utilise vehicleInfo du batch-loader au lieu d'appels séparés
   const vehicleInfo = batchResponse.vehicleInfo;
   const typeName = vehicleInfo?.typeName || toTitleCaseFromSlug(typeData.alias);
   const modelePic = vehicleInfo?.modelePic || undefined;
@@ -210,14 +210,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     id: gammeId,
     name: toTitleCaseFromSlug(gammeData.alias),
     alias: gammeData.alias,
-    description: `${toTitleCaseFromSlug(gammeData.alias)} de qualitÃ© pour votre vÃ©hicule`,
+    description: `${toTitleCaseFromSlug(gammeData.alias)} de qualité pour votre véhicule`,
     image: undefined,
   };
 
   // Fetch Blog Article (needs constructed objects)
   const blogArticle = await fetchBlogArticle(gamme, vehicle);
 
-  // 6. Traitement de la rÃ©ponse Batch
+  // 6. Traitement de la réponse Batch
 
   // Validation
   if (batchResponse.validation && !batchResponse.validation.valid) {
@@ -235,11 +235,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  // Mapping PiÃ¨ces
+  // Mapping Pièces
   const piecesData: PieceData[] = (batchResponse.pieces || []).map(
     (piece: any) => ({
       id: piece.id,
-      name: piece.nom || piece.name || "PiÃ¨ce",
+      name: piece.nom || piece.name || "Pièce",
       brand: piece.marque || piece.brand || "Marque inconnue",
       reference: piece.reference || "",
       price: piece.prix_unitaire || piece.prix_ttc || piece.price || 0,
@@ -253,8 +253,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       images: piece.images || [], // âœ… Mapping des images
       stock: piece.dispo ? "En stock" : "Sur commande",
       quality: piece.qualite || "",
-      stars: piece.nb_stars ? parseInt(piece.nb_stars) : undefined, // âœ… Ã‰toiles qualitÃ© marque
-      side: piece.filtre_side || undefined, // âœ… Position (Avant/ArriÃ¨re ou Gauche/Droite)
+      stars: piece.nb_stars ? parseInt(piece.nb_stars) : undefined, // âœ… Étoiles qualité marque
+      side: piece.filtre_side || undefined, // âœ… Position (Avant/Arrière ou Gauche/Droite)
       description: piece.description || "",
       url: piece.url || "",
       marque_id: piece.marque_id,
@@ -310,7 +310,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     engines: [vehicle.type],
     years: "2010-2024",
     notes: [
-      "VÃ©rifiez la rÃ©fÃ©rence d'origine avant commande",
+      "Vérifiez la référence d'origine avant commande",
       "Compatible avec toutes les versions du moteur",
     ],
   };
@@ -336,8 +336,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           image: g.image
             ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.image}`
             : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp`,
-          description: `Automecanik vous conseils de contrÃ´lez l'Ã©tat du ${g.name.toLowerCase()} de votre vÃ©hicule`,
-          meta_description: `${g.name} pas cher Ã  contrÃ´ler rÃ©guliÃ¨rement`,
+          description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule`,
+          meta_description: `${g.name} pas cher Ã  contrôler régulièrement`,
           sort: g.sort_order,
         })),
       };
@@ -346,7 +346,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const loadTime = Date.now() - startTime;
 
-  // ðŸš€ OPTIMISÃ‰ V3: filters inclus dans batch-loader, plus d'appel sÃ©parÃ©
+  // 🚀 OPTIMISÉ V3: filters inclus dans batch-loader, plus d'appel séparé
   const filtersData =
     batchResponse.filters?.data || batchResponse.filters || null;
 
@@ -369,11 +369,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       blogArticle: blogArticle || undefined,
       catalogueMameFamille,
       famille,
-      // ðŸ”§ RÃ©fÃ©rences OEM constructeur
+      // 🔧 Références OEM constructeur
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
       seo: {
-        title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | PiÃ¨ces Auto`,
+        title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
         h1: seoContent.h1,
         description: seoContent.longDescription.substring(0, 160),
       },
@@ -390,24 +390,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 // ========================================
-// ðŸ“„ META - SEO (Schema.org gÃ©nÃ©rÃ© par composant Breadcrumbs)
+// 📔 META - SEO (Schema.org généré par composant Breadcrumbs)
 // ========================================
 
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
-      { title: "PiÃ¨ces automobile" },
-      { name: "description", content: "Catalogue de piÃ¨ces dÃ©tachÃ©es" },
+      { title: "Pièces automobile" },
+      { name: "description", content: "Catalogue de pièces détachées" },
     ];
   }
 
-  // Construire URL canonique complÃ¨te
+  // Construire URL canonique complète
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
-  // GÃ©nÃ©rer Schema.org Product pour rich snippets (premiÃ¨re piÃ¨ce comme exemple)
+  // Générer Schema.org Product pour rich snippets (première pièce comme exemple)
   const firstPiece = data.pieces[0];
 
-  // ðŸ”— PrÃ©parer les produits liÃ©s pour isRelatedTo (cross-selling)
+  // 🔗 Préparer les produits liés pour isRelatedTo (cross-selling)
   const relatedProducts =
     data.crossSellingGammes?.slice(0, 3).map((gamme: any) => ({
       "@type": "Product",
@@ -447,7 +447,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                 reviewCount: data.count,
               }
             : undefined,
-        // ðŸ”— SEO: Produits liÃ©s pour maillage interne
+        // 🔗 SEO: Produits liés pour maillage interne
         ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
       }
     : null;
@@ -462,7 +462,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     // âœ¨ NOUVEAU: Canonical URL
     { tagName: "link", rel: "canonical", href: canonicalUrl },
 
-    // âœ¨ NOUVEAU: Resource Hints pour Supabase (prÃ©connexion)
+    // âœ¨ NOUVEAU: Resource Hints pour Supabase (préconnexion)
     {
       tagName: "link",
       rel: "preconnect",
@@ -486,14 +486,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 };
 
 // ========================================
-// ðŸŽ¨ COMPOSANT PRINCIPAL
+// 🎨 COMPOSANT PRINCIPAL
 // ========================================
 
 export default function PiecesVehicleRoute() {
   const data = useLoaderData<typeof loader>();
   const { trackClick, trackImpression } = useSeoLinkTracking();
 
-  // Hook custom pour la logique de filtrage (gÃ¨re son propre Ã©tat)
+  // Hook custom pour la logique de filtrage (gère son propre état)
   const {
     activeFilters,
     sortBy,
@@ -511,10 +511,10 @@ export default function PiecesVehicleRoute() {
     togglePieceSelection,
   } = usePiecesFilters(data.pieces);
 
-  // Ã‰tat pour catalogue collapsible (fermÃ© par dÃ©faut)
+  // État pour catalogue collapsible (fermé par défaut)
   const [catalogueOpen, setCatalogueOpen] = useState(false);
 
-  // ðŸ“Š Track les impressions de la section "Voir aussi" au montage
+  // 📊 Track les impressions de la section "Voir aussi" au montage
   useEffect(() => {
     trackImpression("VoirAussi", 4); // 4 liens dans la section
     if (data.crossSellingGammes?.length > 0) {
@@ -522,7 +522,7 @@ export default function PiecesVehicleRoute() {
     }
   }, [trackImpression, data.crossSellingGammes?.length]);
 
-  // ðŸ“Š Handlers pour tracker les clics "Voir aussi"
+  // 📊 Handlers pour tracker les clics "Voir aussi"
   const handleVoirAussiClick = useCallback(
     (url: string, anchorText: string) => {
       trackClick("VoirAussi", url, { anchorText, position: "voiraussi" });
@@ -530,8 +530,8 @@ export default function PiecesVehicleRoute() {
     [trackClick],
   );
 
-  // Actions de sÃ©lection pour mode comparaison
-  // âš¡ OptimisÃ© avec useCallback pour Ã©viter re-crÃ©ation Ã  chaque render
+  // Actions de sélection pour mode comparaison
+  // âš¡ Optimisé avec useCallback pour éviter re-création Ã  chaque render
   const handleSelectPiece = useCallback(
     (pieceId: number) => {
       if (viewMode === "comparison") {
@@ -557,24 +557,24 @@ export default function PiecesVehicleRoute() {
     return [...new Set(positions)];
   }, [data.grouped_pieces]);
 
-  // âœ¨ Label du filtre position adaptÃ© selon la gamme
+  // âœ¨ Label du filtre position adapté selon la gamme
   const positionLabel = useMemo(() => {
     const gammeAlias = data.gamme?.alias?.toLowerCase() || "";
-    // RÃ©troviseurs, essuie-glaces, clignotants â†’ CÃ´tÃ© (Gauche/Droite)
+    // Rétroviseurs, essuie-glaces, clignotants ←’ Côté (Gauche/Droite)
     if (
       ["retroviseur", "essuie-glace", "clignotant", "feu", "phare"].some((k) =>
         gammeAlias.includes(k),
       )
     ) {
-      return "CÃ´tÃ©";
+      return "Côté";
     }
-    // Plaquettes, disques, amortisseurs â†’ Position (Avant/ArriÃ¨re)
+    // Plaquettes, disques, amortisseurs ←’ Position (Avant/Arrière)
     return "Position";
   }, [data.gamme]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
-      {/* Pattern d'arriÃ¨re-plan subtil */}
+      {/* Pattern d'arrière-plan subtil */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
 
       {/* Header moderne */}
@@ -587,7 +587,7 @@ export default function PiecesVehicleRoute() {
         />
       </div>
 
-      {/* ðŸž Fil d'ariane SEO optimisÃ© - Liens HTML natifs + JSON-LD Schema */}
+      {/* 🍞 Fil d'ariane SEO optimisé - Liens HTML natifs + JSON-LD Schema */}
       <div
         className="bg-white border-b border-gray-200 relative z-[100]"
         style={{ pointerEvents: "auto", position: "relative" }}
@@ -619,7 +619,7 @@ export default function PiecesVehicleRoute() {
                   {
                     "@type": "ListItem",
                     position: 3,
-                    name: `PiÃ¨ces ${data.vehicle.marque}`,
+                    name: `Pièces ${data.vehicle.marque}`,
                     item: `https://www.automecanik.com/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`,
                   },
                   {
@@ -677,7 +677,7 @@ export default function PiecesVehicleRoute() {
                 itemType="https://schema.org/ListItem"
                 style={{ pointerEvents: "auto" }}
               >
-                <span className="text-gray-400 mx-2">â†’</span>
+                <span className="text-gray-400 mx-2">←’</span>
                 <a
                   href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
                   itemProp="item"
@@ -701,7 +701,7 @@ export default function PiecesVehicleRoute() {
                 itemType="https://schema.org/ListItem"
                 style={{ pointerEvents: "auto" }}
               >
-                <span className="text-gray-400 mx-2">â†’</span>
+                <span className="text-gray-400 mx-2">←’</span>
                 <a
                   href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`}
                   itemProp="item"
@@ -714,7 +714,7 @@ export default function PiecesVehicleRoute() {
                   }}
                   className="hover:underline font-medium"
                 >
-                  <span itemProp="name">PiÃ¨ces {data.vehicle.marque}</span>
+                  <span itemProp="name">Pièces {data.vehicle.marque}</span>
                 </a>
                 <meta itemProp="position" content="3" />
               </li>
@@ -725,7 +725,7 @@ export default function PiecesVehicleRoute() {
                 itemType="https://schema.org/ListItem"
                 style={{ pointerEvents: "auto" }}
               >
-                <span className="text-gray-400 mx-2">â†’</span>
+                <span className="text-gray-400 mx-2">←’</span>
                 <a
                   href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`}
                   itemProp="item"
@@ -751,7 +751,7 @@ export default function PiecesVehicleRoute() {
                 itemScope
                 itemType="https://schema.org/ListItem"
               >
-                <span className="text-gray-400 mx-2">â†’</span>
+                <span className="text-gray-400 mx-2">←’</span>
                 <span className="text-gray-800 font-semibold" itemProp="name">
                   {data.gamme.name} {data.vehicle.marque} {data.vehicle.modele}
                 </span>
@@ -764,7 +764,7 @@ export default function PiecesVehicleRoute() {
 
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        {/* ðŸš— SÃ©lecteur de vÃ©hicule - Mode compact sticky */}
+        {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
         <div className="mb-6 sticky top-4 z-20 animate-in fade-in slide-in-from-top duration-500">
           <VehicleSelectorV2
             mode="compact"
@@ -772,7 +772,7 @@ export default function PiecesVehicleRoute() {
             variant="card"
             redirectOnSelect={false}
             onVehicleSelect={(vehicle) => {
-              console.log("ðŸ”„ VÃ©hicule sÃ©lectionnÃ©:", vehicle);
+              console.log("🔄 Véhicule sélectionné:", vehicle);
               // Construire URL avec format alias-id
               const brandSlug = `${vehicle.brand.marque_alias || vehicle.brand.marque_name.toLowerCase()}-${vehicle.brand.marque_id}`;
               const modelSlug = `${vehicle.model.modele_alias || vehicle.model.modele_name.toLowerCase()}-${vehicle.model.modele_id}`;
@@ -855,7 +855,7 @@ export default function PiecesVehicleRoute() {
                             />
                           </svg>
                           Catalogue{" "}
-                          {data.famille?.mf_name || "SystÃ¨me de freinage"}
+                          {data.famille?.mf_name || "Système de freinage"}
                           <span className="text-xs font-normal opacity-75">
                             ({data.catalogueMameFamille.items.length})
                           </span>
@@ -909,7 +909,7 @@ export default function PiecesVehicleRoute() {
                                     </p>
                                   </div>
 
-                                  {/* Badge "Voir" au hover - apparaÃ®t en haut Ã  droite */}
+                                  {/* Badge "Voir" au hover - apparaît en haut Ã  droite */}
                                   <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                                     <div className="bg-white/90 backdrop-blur-sm text-gray-900 text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
                                       <svg
@@ -959,7 +959,7 @@ export default function PiecesVehicleRoute() {
               {/* Barre d'outils vue */}
               <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5 animate-in fade-in slide-in-from-top duration-500 delay-150 sticky top-24 z-10">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  {/* Compteur de rÃ©sultats */}
+                  {/* Compteur de résultats */}
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
                       <svg
@@ -973,7 +973,7 @@ export default function PiecesVehicleRoute() {
                         <span className="text-blue-600">
                           {filteredProducts.length}
                         </span>{" "}
-                        piÃ¨ce{filteredProducts.length > 1 ? "s" : ""}
+                        pièce{filteredProducts.length > 1 ? "s" : ""}
                       </span>
                     </div>
                     {data.minPrice > 0 && (
@@ -991,7 +991,7 @@ export default function PiecesVehicleRoute() {
                           ></path>
                         </svg>
                         <span className="text-sm font-semibold text-gray-900">
-                          DÃ¨s{" "}
+                          Dès{" "}
                           <span className="text-green-600">
                             {data.minPrice.toFixed(2)}â‚¬
                           </span>
@@ -1000,7 +1000,7 @@ export default function PiecesVehicleRoute() {
                     )}
                   </div>
 
-                  {/* SÃ©lecteur de vue */}
+                  {/* Sélecteur de vue */}
                   <div className="flex items-center gap-2 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-1.5 border border-gray-200 shadow-inner">
                     <button
                       onClick={() => setViewMode("grid")}
@@ -1069,7 +1069,7 @@ export default function PiecesVehicleRoute() {
                     </button>
                   </div>
 
-                  {/* Tri avec boutons visuels - icÃ´nes seules */}
+                  {/* Tri avec boutons visuels - icônes seules */}
                   <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
                     <button
                       onClick={() => setSortBy("name")}
@@ -1078,7 +1078,7 @@ export default function PiecesVehicleRoute() {
                           ? "bg-blue-500 text-white shadow-md"
                           : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
                       }`}
-                      title="Trier par nom (Aâ†’Z)"
+                      title="Trier par nom (A←’Z)"
                     >
                       <svg
                         className="w-5 h-5"
@@ -1124,7 +1124,7 @@ export default function PiecesVehicleRoute() {
                           ? "bg-rose-500 text-white shadow-md"
                           : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
                       }`}
-                      title="Prix dÃ©croissant"
+                      title="Prix décroissant"
                     >
                       <svg
                         className="w-5 h-5"
@@ -1167,12 +1167,12 @@ export default function PiecesVehicleRoute() {
                 </div>
               </div>
 
-              {/* Affichage des piÃ¨ces selon le mode */}
+              {/* Affichage des pièces selon le mode */}
               {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
-                // âœ¨ AFFICHAGE GROUPÃ‰ avec titres H2
+                // âœ¨ AFFICHAGE GROUPÉ avec titres H2
                 <div className="space-y-8">
                   {data.grouped_pieces
-                    // ðŸŽ¯ Filtrer les groupes par position (Avant/ArriÃ¨re ou Gauche/Droite)
+                    // 🎯 Filtrer les groupes par position (Avant/Arrière ou Gauche/Droite)
                     .filter((group: any) => {
                       if (
                         !activeFilters.position ||
@@ -1183,14 +1183,14 @@ export default function PiecesVehicleRoute() {
                       return group.filtre_side === activeFilters.position;
                     })
                     .map((group: any, idx: number) => {
-                      // Filtrer les piÃ¨ces du groupe selon les filtres actifs
-                      // âœ… Protection: group.pieces peut Ãªtre undefined
+                      // Filtrer les pièces du groupe selon les filtres actifs
+                      // âœ… Protection: group.pieces peut être undefined
                       const groupPieces = (group.pieces || []).filter(
                         (p: any) => {
-                          // Mapper l'objet API vers PieceData pour compatibilitÃ© avec filtres
+                          // Mapper l'objet API vers PieceData pour compatibilité avec filtres
                           const pieceData = {
                             id: p.id,
-                            name: p.nom || p.name || "PiÃ¨ce",
+                            name: p.nom || p.name || "Pièce",
                             brand: p.marque || p.brand || "Marque inconnue",
                             reference: p.reference || "",
                             price:
@@ -1229,14 +1229,14 @@ export default function PiecesVehicleRoute() {
                           ) {
                             return false;
                           }
-                          // ðŸŽ¯ Filtre par qualitÃ©
+                          // 🎯 Filtre par qualité
                           if (
                             activeFilters.quality !== "all" &&
                             pieceData.quality !== activeFilters.quality
                           ) {
                             return false;
                           }
-                          // ðŸŽ¯ Filtre par prix
+                          // 🎯 Filtre par prix
                           if (activeFilters.priceRange !== "all") {
                             const price = pieceData.price;
                             if (
@@ -1255,14 +1255,14 @@ export default function PiecesVehicleRoute() {
                             )
                               return false;
                           }
-                          // ðŸŽ¯ Filtre par disponibilitÃ©
+                          // 🎯 Filtre par disponibilité
                           if (
                             activeFilters.availability === "stock" &&
                             pieceData.stock !== "En stock"
                           ) {
                             return false;
                           }
-                          // ðŸŽ¯ Filtre par note minimale (sur 10)
+                          // 🎯 Filtre par note minimale (sur 10)
                           if (
                             activeFilters.minNote &&
                             activeFilters.minNote > 0
@@ -1282,7 +1282,7 @@ export default function PiecesVehicleRoute() {
                           key={`${group.filtre_gamme}-${group.filtre_side}-${idx}`}
                           className="animate-in fade-in slide-in-from-top duration-500"
                         >
-                          {/* Titre H2 dynamique avec modÃ¨le vÃ©hicule */}
+                          {/* Titre H2 dynamique avec modèle véhicule */}
                           <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
                             <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
                             {group.title_h2 ||
@@ -1294,12 +1294,12 @@ export default function PiecesVehicleRoute() {
                             </span>
                           </h2>
 
-                          {/* Grille de piÃ¨ces du groupe */}
+                          {/* Grille de pièces du groupe */}
                           {viewMode === "grid" && (
                             <PiecesGridView
                               pieces={groupPieces.map((p: any) => ({
                                 id: p.id,
-                                name: p.nom || p.name || "PiÃ¨ce",
+                                name: p.nom || p.name || "Pièce",
                                 brand: p.marque || p.brand || "Marque inconnue",
                                 reference: p.reference || "",
                                 price:
@@ -1332,7 +1332,7 @@ export default function PiecesVehicleRoute() {
                             <PiecesListView
                               pieces={groupPieces.map((p: any) => ({
                                 id: p.id,
-                                name: p.nom || p.name || "PiÃ¨ce",
+                                name: p.nom || p.name || "Pièce",
                                 brand: p.marque || p.brand || "Marque inconnue",
                                 reference: p.reference || "",
                                 price:
@@ -1393,7 +1393,7 @@ export default function PiecesVehicleRoute() {
                 />
               )}
 
-              {/* PiÃ¨ces recommandÃ©es */}
+              {/* Pièces recommandées */}
               {recommendedPieces.length > 0 && viewMode !== "comparison" && (
                 <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
                   <h3 className="text-lg font-bold text-orange-900 mb-4 flex items-center gap-2">
@@ -1435,13 +1435,13 @@ export default function PiecesVehicleRoute() {
                   gammeName={data.gamme.name}
                 />
 
-                {/* ðŸŽ¯ Section RÃ©fÃ©rences OEM Constructeur - SEO optimisÃ©e */}
+                {/* 🎯 Section Références OEM Constructeur - SEO optimisée */}
                 {data.grouped_pieces &&
                   data.grouped_pieces.some(
                     (g: any) => g.oemRefs && g.oemRefs.length > 0,
                   ) && (
                     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                      {/* En-tÃªte de section */}
+                      {/* En-tête de section */}
                       <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
                         <h2 className="text-xl font-bold text-white flex items-center gap-3">
                           <svg
@@ -1457,16 +1457,16 @@ export default function PiecesVehicleRoute() {
                               d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                             />
                           </svg>
-                          RÃ©fÃ©rences constructeur (OEM){" "}
+                          Références constructeur (OEM){" "}
                           {data.vehicle.marque}
                         </h2>
                         <p className="text-slate-300 text-sm mt-1">
-                          NumÃ©ros de piÃ¨ce d'origine pour votre{" "}
+                          Numéros de pièce d'origine pour votre{" "}
                           {data.vehicle.marque} {data.vehicle.modele}
                         </p>
                       </div>
 
-                      {/* Contenu avec groupes sÃ©parÃ©s */}
+                      {/* Contenu avec groupes séparés */}
                       <div className="p-6 space-y-6">
                         {/* Introduction SEO enrichie */}
                         <div className="prose prose-gray max-w-none">
@@ -1478,14 +1478,14 @@ export default function PiecesVehicleRoute() {
                               {data.vehicle.type}
                             </strong>{" "}
                             ? Ci-dessous, retrouvez toutes les{" "}
-                            <em>rÃ©fÃ©rences OEM</em> (Original Equipment
-                            Manufacturer) correspondant Ã  votre vÃ©hicule. Ces
-                            numÃ©ros de piÃ¨ce d'origine {data.vehicle.marque}{" "}
-                            vous garantissent une compatibilitÃ© parfaite.
+                            <em>références OEM</em> (Original Equipment
+                            Manufacturer) correspondant Ã  votre véhicule. Ces
+                            numéros de pièce d'origine {data.vehicle.marque}{" "}
+                            vous garantissent une compatibilité parfaite.
                           </p>
                         </div>
 
-                        {/* Qu'est-ce qu'une rÃ©fÃ©rence OEM ? */}
+                        {/* Qu'est-ce qu'une référence OEM ? */}
                         <details className="group bg-blue-50 rounded-lg border border-blue-100">
                           <summary className="flex items-center justify-between cursor-pointer p-4 text-blue-900 font-medium">
                             <span className="flex items-center gap-2">
@@ -1502,7 +1502,7 @@ export default function PiecesVehicleRoute() {
                                   d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                 />
                               </svg>
-                              Qu'est-ce qu'une rÃ©fÃ©rence OEM ?
+                              Qu'est-ce qu'une référence OEM ?
                             </span>
                             <svg
                               className="w-5 h-5 text-blue-500 transition-transform group-open:rotate-180"
@@ -1520,24 +1520,24 @@ export default function PiecesVehicleRoute() {
                           </summary>
                           <div className="px-4 pb-4 text-sm text-blue-800 space-y-2">
                             <p>
-                              Une <strong>rÃ©fÃ©rence OEM</strong> est le
-                              numÃ©ro de piÃ¨ce attribuÃ© par le constructeur
+                              Une <strong>référence OEM</strong> est le
+                              numéro de pièce attribué par le constructeur
                               automobile (ici {data.vehicle.marque}) pour
-                              identifier une piÃ¨ce spÃ©cifique. Par exemple,
-                              la rÃ©fÃ©rence
+                              identifier une pièce spécifique. Par exemple,
+                              la référence
                               <code className="bg-white px-1.5 py-0.5 rounded text-xs mx-1">
                                 {data.grouped_pieces?.[0]?.oemRefs?.[0] ||
                                   "41 06 003 79R"}
                               </code>
-                              dÃ©signe une piÃ¨ce d'origine{" "}
+                              désigne une pièce d'origine{" "}
                               {data.vehicle.marque}.
                             </p>
                             <p>
                               <strong>Pourquoi c'est utile ?</strong> Cette
-                              rÃ©fÃ©rence vous permet de trouver des piÃ¨ces
-                              Ã©quivalentes chez d'autres fabricants (Bosch,
-                              TRW, Brembo...) qui respectent les mÃªmes
-                              spÃ©cifications techniques que la piÃ¨ce
+                              référence vous permet de trouver des pièces
+                              équivalentes chez d'autres fabricants (Bosch,
+                              TRW, Brembo...) qui respectent les mêmes
+                              spécifications techniques que la pièce
                               d'origine.
                             </p>
                           </div>
@@ -1558,16 +1558,16 @@ export default function PiecesVehicleRoute() {
                                   .toLowerCase()
                                   .includes("avant");
                               const positionText = isAvant
-                                ? "Ã  l'avant"
-                                : "Ã  l'arriÃ¨re";
-                              const _positionIcon = isAvant ? "ðŸ”µ" : "ðŸŸ ";
+                                ? "à l'avant"
+                                : "Ã  l'arrière";
+                              const _positionIcon = isAvant ? "🔵" : "🟠";
 
                               return (
                                 <div
                                   key={idx}
                                   className={`rounded-lg border p-5 ${isAvant ? "bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200" : "bg-gradient-to-br from-orange-50 to-slate-50 border-orange-200"}`}
                                 >
-                                  {/* Titre H3 OEM avec prÃ©fixe et modÃ¨le */}
+                                  {/* Titre H3 OEM avec préfixe et modèle */}
                                   <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
                                     <svg
                                       className={`w-4 h-4 flex-shrink-0 ${isAvant ? "text-blue-600" : "text-orange-600"}`}
@@ -1583,7 +1583,7 @@ export default function PiecesVehicleRoute() {
                                       />
                                     </svg>
                                     <span>
-                                      RÃ©fÃ©rences OEM{" "}
+                                      Références OEM{" "}
                                       {group.title_h2 ||
                                         `${group.filtre_gamme} ${group.filtre_side}`}{" "}
                                       {data.vehicle.modele}
@@ -1591,18 +1591,18 @@ export default function PiecesVehicleRoute() {
                                     <span
                                       className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${isAvant ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}
                                     >
-                                      {group.oemRefs.length} rÃ©f
+                                      {group.oemRefs.length} réf
                                       {group.oemRefs.length > 1 ? "s" : ""}
                                     </span>
                                   </h3>
 
                                   {/* Texte explicatif dynamique */}
                                   <p className="text-sm text-gray-600 mb-3">
-                                    Ces rÃ©fÃ©rences {data.vehicle.marque}{" "}
+                                    Ces références {data.vehicle.marque}{" "}
                                     correspondent aux {data.gamme.name}{" "}
-                                    montÃ©es {positionText} de votre{" "}
+                                    montées {positionText} de votre{" "}
                                     {data.vehicle.modele}. Utilisez-les pour
-                                    trouver des Ã©quivalences chez nos marques
+                                    trouver des équivalences chez nos marques
                                     partenaires.
                                   </p>
 
@@ -1613,7 +1613,7 @@ export default function PiecesVehicleRoute() {
                                         <span
                                           key={i}
                                           className={`px-2.5 py-1.5 bg-white border rounded-md text-xs font-mono text-gray-800 shadow-sm hover:shadow transition-all cursor-default ${isAvant ? "border-blue-200 hover:border-blue-400 hover:bg-blue-50" : "border-orange-200 hover:border-orange-400 hover:bg-orange-50"}`}
-                                          title={`RÃ©fÃ©rence OEM ${data.vehicle.marque} - ${group.title_h2 || group.filtre_gamme}`}
+                                          title={`Référence OEM ${data.vehicle.marque} - ${group.title_h2 || group.filtre_gamme}`}
                                         >
                                           {ref}
                                         </span>
@@ -1625,9 +1625,9 @@ export default function PiecesVehicleRoute() {
                             })}
                         </div>
 
-                        {/* Ã‰quivalences et conseils */}
+                        {/* Équivalences et conseils */}
                         <div className="grid gap-4 md:grid-cols-2">
-                          {/* Conseil Ã©quivalences */}
+                          {/* Conseil équivalences */}
                           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                             <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
                               <svg
@@ -1643,20 +1643,20 @@ export default function PiecesVehicleRoute() {
                                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                 />
                               </svg>
-                              Ã‰quivalences de qualitÃ©
+                              Équivalences de qualité
                             </h4>
                             <p className="text-sm text-green-800">
                               Les grandes marques comme <strong>Bosch</strong>,{" "}
                               <strong>TRW</strong>, <strong>Brembo</strong> ou{" "}
-                              <strong>Ferodo</strong> fabriquent des piÃ¨ces
-                              Ã©quivalentes aux rÃ©fÃ©rences{" "}
+                              <strong>Ferodo</strong> fabriquent des pièces
+                              équivalentes aux références{" "}
                               {data.vehicle.marque}. Elles offrent souvent le
-                              mÃªme niveau de qualitÃ© (voire supÃ©rieur) Ã 
-                              un prix plus compÃ©titif.
+                              même niveau de qualité (voire supérieur) Ã 
+                              un prix plus compétitif.
                             </p>
                           </div>
 
-                          {/* Conseil sÃ©curitÃ© */}
+                          {/* Conseil sécurité */}
                           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                             <h4 className="font-medium text-amber-900 mb-2 flex items-center gap-2">
                               <svg
@@ -1672,14 +1672,14 @@ export default function PiecesVehicleRoute() {
                                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                                 />
                               </svg>
-                              SÃ©curitÃ© freinage
+                              Sécurité freinage
                             </h4>
                             <p className="text-sm text-amber-800">
-                              Le systÃ¨me de freinage est un Ã©lÃ©ment de
-                              sÃ©curitÃ© critique. PrivilÃ©giez toujours des
-                              piÃ¨ces de qualitÃ© <strong>OES</strong>{" "}
-                              (premiÃ¨re monte) ou{" "}
-                              <strong>certifiÃ©es ECE R90</strong> pour
+                              Le système de freinage est un élément de
+                              sécurité critique. Privilégiez toujours des
+                              pièces de qualité <strong>OES</strong>{" "}
+                              (première monte) ou{" "}
+                              <strong>certifiées ECE R90</strong> pour
                               garantir des performances de freinage optimales.
                             </p>
                           </div>
@@ -1717,7 +1717,7 @@ export default function PiecesVehicleRoute() {
           </div>
         )}
 
-        {/* Articles liÃ©s - Maillage de contenu */}
+        {/* Articles liés - Maillage de contenu */}
         {data.relatedArticles && data.relatedArticles.length > 0 && (
           <div className="container mx-auto px-4">
             <PiecesRelatedArticles
@@ -1759,9 +1759,9 @@ export default function PiecesVehicleRoute() {
                       `Voir toutes les ${data.gamme.name} neuves - Prix discount`,
                     )
                   }
-                  title={`DÃ©couvrez notre gamme complÃ¨te de ${data.gamme.name} neuves Ã  prix rÃ©duit`}
+                  title={`Découvrez notre gamme complète de ${data.gamme.name} neuves Ã  prix réduit`}
                 >
-                  <span className="text-gray-400">â†’</span>
+                  <span className="text-gray-400">←’</span>
                   Voir toutes les {data.gamme.name} neuves
                 </Link>
               </li>
@@ -1773,16 +1773,16 @@ export default function PiecesVehicleRoute() {
                   onClick={() =>
                     handleVoirAussiClick(
                       `/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`,
-                      `Toutes les piÃ¨ces auto ${data.vehicle.marque} pas chÃ¨res`,
+                      `Toutes les pièces auto ${data.vehicle.marque} pas chères`,
                     )
                   }
-                  title={`Catalogue complet de piÃ¨ces dÃ©tachÃ©es ${data.vehicle.marque} - QualitÃ© origine`}
+                  title={`Catalogue complet de pièces détachées ${data.vehicle.marque} - Qualité origine`}
                 >
-                  <span className="text-gray-400">â†’</span>
-                  PiÃ¨ces auto {data.vehicle.marque} pas chÃ¨res
+                  <span className="text-gray-400">←’</span>
+                  Pièces auto {data.vehicle.marque} pas chères
                 </Link>
               </li>
-              {/* Lien vers le modÃ¨le - Ancre enrichie avec marque + modÃ¨le */}
+              {/* Lien vers le modèle - Ancre enrichie avec marque + modèle */}
               <li>
                 <Link
                   to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`}
@@ -1790,13 +1790,13 @@ export default function PiecesVehicleRoute() {
                   onClick={() =>
                     handleVoirAussiClick(
                       `/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`,
-                      `PiÃ¨ces dÃ©tachÃ©es ${data.vehicle.marque} ${data.vehicle.modele} - Livraison rapide`,
+                      `Pièces détachées ${data.vehicle.marque} ${data.vehicle.modele} - Livraison rapide`,
                     )
                   }
-                  title={`Toutes les piÃ¨ces dÃ©tachÃ©es pour ${data.vehicle.marque} ${data.vehicle.modele} - Livraison 24/48h`}
+                  title={`Toutes les pièces détachées pour ${data.vehicle.marque} ${data.vehicle.modele} - Livraison 24/48h`}
                 >
-                  <span className="text-gray-400">â†’</span>
-                  PiÃ¨ces {data.vehicle.marque} {data.vehicle.modele}
+                  <span className="text-gray-400">←’</span>
+                  Pièces {data.vehicle.marque} {data.vehicle.modele}
                 </Link>
               </li>
               {/* Lien vers catalogue complet - Ancre descriptive */}
@@ -1807,13 +1807,13 @@ export default function PiecesVehicleRoute() {
                   onClick={() =>
                     handleVoirAussiClick(
                       "/pieces",
-                      "Catalogue piÃ¨ces auto toutes marques",
+                      "Catalogue pièces auto toutes marques",
                     )
                   }
-                  title="Explorer notre catalogue complet de piÃ¨ces dÃ©tachÃ©es auto pour toutes les marques"
+                  title="Explorer notre catalogue complet de pièces détachées auto pour toutes les marques"
                 >
-                  <span className="text-gray-400">â†’</span>
-                  Catalogue piÃ¨ces toutes marques
+                  <span className="text-gray-400">←’</span>
+                  Catalogue pièces toutes marques
                 </Link>
               </li>
             </ul>
@@ -1828,8 +1828,8 @@ export default function PiecesVehicleRoute() {
       {process.env.NODE_ENV === "development" && (
         <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
           <div>âš¡ Load: {data.performance.loadTime}ms</div>
-          <div>ðŸ“¦ PiÃ¨ces: {data.count}</div>
-          <div>ðŸ” FiltrÃ©es: {filteredProducts.length}</div>
+          <div>📦 Pièces: {data.count}</div>
+          <div>📍 Filtrées: {filteredProducts.length}</div>
         </div>
       )}
     </div>
@@ -1837,21 +1837,21 @@ export default function PiecesVehicleRoute() {
 }
 
 // ========================================
-// ðŸš¨ ERROR BOUNDARY - Gestion 410 Gone & 503 Service Unavailable
+// 🚨 ERROR BOUNDARY - Gestion 410 Gone & 503 Service Unavailable
 // ========================================
 
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  // Log dÃ©taillÃ© de l'erreur pour debug
-  console.error("ðŸš¨ [ERROR BOUNDARY] Erreur capturÃ©e:", error);
-  console.error("ðŸš¨ [ERROR BOUNDARY] Type:", typeof error);
+  // Log détaillé de l'erreur pour debug
+  console.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
+  console.error("🚨 [ERROR BOUNDARY] Type:", typeof error);
   console.error(
-    "ðŸš¨ [ERROR BOUNDARY] Stack:",
+    "🚨 [ERROR BOUNDARY] Stack:",
     error instanceof Error ? error.stack : "N/A",
   );
 
-  // ðŸ›¡ï¸ Gestion spÃ©cifique du 503 Service Unavailable (erreur rÃ©seau temporaire)
+  // 🛡️ Gestion spécifique du 503 Service Unavailable (erreur réseau temporaire)
   if (isRouteErrorResponse(error) && error.status === 503) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -1876,7 +1876,7 @@ export function ErrorBoundary() {
               Chargement en cours...
             </h1>
             <p className="text-gray-600 mb-4">
-              Notre service est temporairement surchargÃ©. La page va se
+              Notre service est temporairement surchargé. La page va se
               recharger automatiquement.
             </p>
           </div>
@@ -1886,17 +1886,17 @@ export function ErrorBoundary() {
               onClick={() => window.location.reload()}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              ðŸ”„ RÃ©essayer maintenant
+              🔄 Réessayer maintenant
             </button>
             <a
               href="/"
               className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              â† Retour Ã  l'accueil
+              ← Retour Ã  l'accueil
             </a>
           </div>
 
-          {/* Auto-reload aprÃ¨s 5s */}
+          {/* Auto-reload après 5s */}
           <script
             dangerouslySetInnerHTML={{
               __html: `
@@ -1913,7 +1913,7 @@ export function ErrorBoundary() {
     );
   }
 
-  // Gestion spÃ©cifique du 410 Gone (page sans rÃ©sultats)
+  // Gestion spécifique du 410 Gone (page sans résultats)
   if (isRouteErrorResponse(error) && error.status === 410) {
     return (
       <>
@@ -1931,7 +1931,7 @@ export function ErrorBoundary() {
     );
   }
 
-  // Message d'erreur dÃ©taillÃ© pour le dÃ©veloppement
+  // Message d'erreur détaillé pour le développement
   const errorMessage =
     error instanceof Error
       ? error.message
@@ -1953,11 +1953,11 @@ export function ErrorBoundary() {
         </h1>
         <p className="text-gray-600 mb-4">{errorMessage}</p>
 
-        {/* DÃ©tails de l'erreur en mode dÃ©veloppement */}
+        {/* Détails de l'erreur en mode développement */}
         {process.env.NODE_ENV === "development" && (
           <details className="mb-6 bg-gray-100 rounded p-4">
             <summary className="cursor-pointer font-semibold text-sm text-gray-700 mb-2">
-              DÃ©tails techniques (dÃ©veloppement)
+              Détails techniques (développement)
             </summary>
             <pre className="text-xs text-gray-600 overflow-auto max-h-64 whitespace-pre-wrap">
               {errorDetails}
@@ -1969,7 +1969,7 @@ export function ErrorBoundary() {
           href="/"
           className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium transition-colors"
         >
-          Retour Ã  l'accueil
+          Retour à l'accueil
         </a>
       </div>
     </div>
