@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de diagnostic Paybox - Identifier "AccÃ¨s refusÃ©"
 # Usage: ./diagnose-paybox-error.sh

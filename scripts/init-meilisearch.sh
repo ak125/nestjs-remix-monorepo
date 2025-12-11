@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script d'initialisation Meilisearch pour FAFA AUTO
 # ==================================================

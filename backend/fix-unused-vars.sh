@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour corriger automatiquement les variables non utilisÃ©es
 # en les prÃ©fixant avec _

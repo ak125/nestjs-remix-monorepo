@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 
 echo "ðŸš€ DÃ©ploiement de la fonction RPC get_gamme_page_data_optimized via psql..."

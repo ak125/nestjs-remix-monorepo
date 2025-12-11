@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ”„ SCRIPT DE DÃ‰PLOIEMENT - MIGRATION URLs PIÃˆCES
 # 

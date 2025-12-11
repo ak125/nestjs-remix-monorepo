@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================
 # Analytics trafic par brand/gamme/country/bot

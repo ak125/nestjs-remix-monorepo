@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Tests curl simplifiÃ©s pour fil d'ariane dynamique
 # Ã€ exÃ©cuter quand le serveur est dÃ©marrÃ© (npm run dev)

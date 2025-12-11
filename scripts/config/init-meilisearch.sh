@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Attendre que Meilisearch soit prÃªt
 echo "â³ Attente Meilisearch..."
 until curl -s http://localhost:7700/health > /dev/null; do

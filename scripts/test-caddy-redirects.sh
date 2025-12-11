@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª TEST DES REDIRECTIONS CADDY - IMAGES SUPABASE
 # VÃ©rifie que les anciennes URLs publiques redirigent correctement vers Supabase

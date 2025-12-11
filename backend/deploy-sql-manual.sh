@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Couleurs pour l'affichage
 GREEN='\033[0;32m'

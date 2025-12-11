@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Tests curl ultra-rapides
 # Juste pour valider que le cookie fonctionne

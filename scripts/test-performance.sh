@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸš€ Script de test de performance pour automecanik.fr
 # Usage: ./scripts/test-performance.sh

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ==============================================================================
 # Script de nettoyage des logs anciens dans Meilisearch

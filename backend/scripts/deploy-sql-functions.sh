@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸš€ Script pour dÃ©ployer les fonctions SQL optimisÃ©es dans Supabase
 # Usage: ./scripts/deploy-sql-functions.sh

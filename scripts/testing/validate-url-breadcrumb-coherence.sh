@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ” Script de validation de cohÃ©rence URL â†” Breadcrumb
 # Usage: ./validate-url-breadcrumb-coherence.sh <url>

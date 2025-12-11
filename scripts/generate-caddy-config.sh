@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # ðŸ”„ GÃ©nÃ©rateur de configuration Caddy pour redirections URLs piÃ¨ces
 # Date: 14 septembre 2025
 # Usage: ./generate-caddy-config.sh [category]

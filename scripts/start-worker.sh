@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 # ðŸš€ SCRIPT DE DÃ‰MARRAGE WORKER
 # Lance Supercronic + BullMQ Worker en parallÃ¨le
 

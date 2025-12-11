@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================
 # RequÃªtes Meilisearch - SEO & E-commerce

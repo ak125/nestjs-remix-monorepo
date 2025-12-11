@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # GÃ©nÃ©ration de contenus spÃ©cifiques par type de piÃ¨ce
 API_URL="http://localhost:3000/api/ai-content/generate"

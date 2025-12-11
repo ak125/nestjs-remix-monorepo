@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour dÃ©ployer la fonction RPC sur Supabase via l'API SQL
 

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Script de test du flux complet : Panier â†’ Connexion â†’ Fusion
 # Ce script teste le scÃ©nario suivant :

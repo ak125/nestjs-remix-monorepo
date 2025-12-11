@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 ###############################################################################
 # ðŸ” SEO Weekly Audit - Validation Sitemap & DÃ©tection d'incohÃ©rences

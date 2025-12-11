@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de tÃ©lÃ©chargement GeoLite2-City.mmdb
 # ===========================================

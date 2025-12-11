@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸŽ¯ Script de Validation Visuelle - Migration Tokens
 # Usage: ./validate-migration.sh [composant]

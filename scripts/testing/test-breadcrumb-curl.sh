@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Tests curl pour fil d'ariane dynamique
 # Valide le comportement avec et sans cookie de vÃ©hicule

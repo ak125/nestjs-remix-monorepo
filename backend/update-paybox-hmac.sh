@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Script pour mettre Ã  jour la clÃ© HMAC Paybox
 
 echo "ðŸ” Mise Ã  jour de la clÃ© HMAC Paybox"

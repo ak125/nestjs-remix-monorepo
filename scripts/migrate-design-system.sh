@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de migration automatique Design System
 # Remplace les patterns hardcodÃ©s par composants @fafa/ui

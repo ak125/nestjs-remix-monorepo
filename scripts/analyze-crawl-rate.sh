@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ==============================================================================
 # Script d'analyse du taux de crawl du sitemap

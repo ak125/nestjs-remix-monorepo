@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de test de performance pour l'endpoint optimisÃ©
 

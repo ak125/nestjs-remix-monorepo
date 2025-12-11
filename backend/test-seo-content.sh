@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Test API SEO marque - versions HTML et texte
 
 echo "ðŸ§ª Test SEO marque Renault"

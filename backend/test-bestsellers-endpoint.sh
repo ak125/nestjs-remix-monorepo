@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de test pour l'endpoint bestsellers
 # Usage: ./test-bestsellers-endpoint.sh

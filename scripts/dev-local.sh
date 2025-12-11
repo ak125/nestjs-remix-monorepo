@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour dÃ©marrer le projet en mode dÃ©veloppement LOCAL (sans Docker)
 

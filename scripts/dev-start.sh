@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de dÃ©marrage simplifiÃ© pour le dÃ©veloppement
 

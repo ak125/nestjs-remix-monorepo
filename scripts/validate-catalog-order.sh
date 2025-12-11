@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # ðŸ” Script de validation de l'ordre du catalogue
 # VÃ©rifie que l'ordre est correct depuis la BDD jusqu'au frontend
 

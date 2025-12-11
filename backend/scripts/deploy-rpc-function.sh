@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # âš¡ Script de dÃ©ploiement de la fonction RPC optimisÃ©e vers Supabase
 # Objectif : passer de 138s Ã  <5s en remplaÃ§ant 15+ requÃªtes HTTP par 1 RPC SQL

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ==============================================================================
 # Script d'initialisation de l'index Meilisearch pour les logs
