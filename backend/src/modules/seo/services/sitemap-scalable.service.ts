@@ -79,9 +79,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       }
     }
 
-    this.logger.log(
-      `Index ${config.name} généré: ${entries.length} entrées`,
-    );
+    this.logger.log(`Index ${config.name} généré: ${entries.length} entrées`);
     return this.buildSitemapIndexXml(entries);
   }
 
@@ -535,9 +533,7 @@ export class SitemapScalableService extends SupabaseBaseService {
       shardOffset,
       shardOffset + shardLimit,
     );
-    this.logger.log(
-      `🏎️ Shard appliqué: ${shardedData.length} motorisations`,
-    );
+    this.logger.log(`🏎️ Shard appliqué: ${shardedData.length} motorisations`);
 
     // Générer les URLs directement (pas besoin de jointures, tout est pré-calculé)
     const entries: SitemapEntry[] = shardedData
