@@ -48,6 +48,7 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import {
   fetchBlogArticle,
   fetchCrossSellingGammes as _fetchCrossSellingGammes,
+  fetchRelatedArticlesForGamme,
 } from "../services/pieces/pieces-route.service";
 
 // Types centralisÃ©s
@@ -62,7 +63,7 @@ import {
 import {
   generateBuyingGuide,
   generateFAQ,
-  generateRelatedArticles,
+  generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
   generateSEOContent,
   parseUrlParam,
   resolveGammeId,
@@ -299,7 +300,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Generated Content
   const faqItems = generateFAQ(vehicle, gamme);
-  const relatedArticles = generateRelatedArticles(vehicle, gamme);
+  
+  // 📚 Fetch real blog articles for this gamme (replaces fake static articles)
+  // Fallback to static generation if API fails
+  const relatedArticles = await fetchRelatedArticlesForGamme(gamme, vehicle);
+  
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
   const compatibilityInfo = {
     engines: [vehicle.type],

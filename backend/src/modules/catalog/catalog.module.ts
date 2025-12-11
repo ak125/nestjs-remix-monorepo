@@ -39,6 +39,7 @@ import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { SeoSwitchesService } from './services/seo-switches.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
+import { UnifiedPageDataService } from './services/unified-page-data.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -104,6 +105,8 @@ import { OemPlatformMappingService } from './services/oem-platform-mapping.servi
     SeoSwitchesService,
     // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)
     OemPlatformMappingService,
+    // ⚡ UNIFIED PAGE DATA - RPC V2 (1 requête au lieu de ~33)
+    UnifiedPageDataService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
