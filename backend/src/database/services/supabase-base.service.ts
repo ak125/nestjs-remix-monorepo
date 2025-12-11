@@ -10,6 +10,47 @@ interface CircuitBreakerState {
   state: 'closed' | 'open' | 'half-open';
 }
 
+/**
+ * 🚀 Sémaphore global pour limiter les connexions concurrentes à Supabase
+ * Plan Small = max ~60 connexions, on limite à 20 pour laisser de la marge
+ */
+class ConnectionSemaphore {
+  private current = 0;
+  private readonly max: number;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(maxConcurrent: number) {
+    this.max = maxConcurrent;
+  }
+
+  async acquire(): Promise<void> {
+    if (this.current < this.max) {
+      this.current++;
+      return;
+    }
+
+    return new Promise((resolve) => {
+      this.queue.push(() => {
+        this.current++;
+        resolve();
+      });
+    });
+  }
+
+  release(): void {
+    this.current--;
+    const next = this.queue.shift();
+    if (next) next();
+  }
+
+  get stats() {
+    return { current: this.current, max: this.max, queued: this.queue.length };
+  }
+}
+
+// Singleton global - 20 connexions max pour le plan Small
+const supabaseSemaphore = new ConnectionSemaphore(20);
+
 @Injectable()
 export abstract class SupabaseBaseService {
   protected readonly logger = new Logger(SupabaseBaseService.name);
@@ -96,6 +137,8 @@ export abstract class SupabaseBaseService {
             signal = controller.signal;
           }
 
+          // 🚀 OPTIMISATION: Utiliser le sémaphore pour limiter les connexions concurrentes
+          await supabaseSemaphore.acquire();
           try {
             // Cast explicite pour satisfaire les types de Supabase qui attendent le fetch global
             const response = await undiciFetch(
@@ -116,6 +159,8 @@ export abstract class SupabaseBaseService {
               throw new Error('Supabase Request Timeout (15s)');
             }
             throw error;
+          } finally {
+            supabaseSemaphore.release();
           }
         },
       },

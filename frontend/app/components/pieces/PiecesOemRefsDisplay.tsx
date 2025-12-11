@@ -1,6 +1,10 @@
 /**
  * 🔧 Affichage des références OEM constructeur
  * Composant SEO pour afficher les refs OEM filtrées par plateforme véhicule
+ * 
+ * NOTE: La déduplication avec normalisation est maintenant faite côté backend
+ * (OemPlatformMappingService.deduplicateOemRefs). Ce composant ne fait plus
+ * que le groupage par préfixe pour l'affichage.
  */
 
 import React, { useState } from 'react';
@@ -10,42 +14,6 @@ interface PiecesOemRefsDisplayProps {
   oemRefs?: OemRefsData;
   oemRefsSeo?: string[];
   gammeName: string;
-}
-
-/**
- * 🔄 Normalise une ref OEM (supprime espaces/tirets, majuscules)
- */
-function normalizeRef(ref: string): string {
-  return ref.trim().toUpperCase().replace(/[\s-]/g, '');
-}
-
-/**
- * 🔄 Déduplique les références OEM côté frontend
- * Garde la version avec espaces (plus lisible) en cas de doublon
- */
-function deduplicateRefs(refs: string[]): string[] {
-  if (!refs || refs.length === 0) return [];
-  
-  const seen = new Map<string, string>();
-  
-  for (const ref of refs) {
-    const normalized = normalizeRef(ref);
-    if (!normalized) continue;
-    
-    const existing = seen.get(normalized);
-    if (!existing) {
-      seen.set(normalized, ref);
-    } else {
-      // Préférer la version avec espaces (plus lisible)
-      const hasSpaces = ref.includes(' ') || ref.includes('-');
-      const existingHasSpaces = existing.includes(' ') || existing.includes('-');
-      if (hasSpaces && !existingHasSpaces) {
-        seen.set(normalized, ref);
-      }
-    }
-  }
-  
-  return Array.from(seen.values());
 }
 
 /**
@@ -66,14 +34,14 @@ export function PiecesOemRefsDisplay({
 
   const marque = oemRefs?.vehicleMarque || 'Constructeur';
   
-  // 🔄 Dédupliquer toutes les refs pour le mode "Voir plus"
-  const allRefsDeduped = deduplicateRefs(oemRefs?.oemRefs || []);
+  // Les refs sont déjà dédupliquées côté backend
+  const allRefs = oemRefs?.oemRefs || [];
   
   const refsToDisplay = showAll 
-    ? allRefsDeduped
-    : (oemRefsSeo || allRefsDeduped.slice(0, 20));
+    ? allRefs
+    : (oemRefsSeo || allRefs.slice(0, 20));
   
-  const totalRefs = allRefsDeduped.length;
+  const totalRefs = allRefs.length;
   const displayedCount = refsToDisplay.length;
   const hasMore = !showAll && totalRefs > displayedCount;
 

@@ -16,6 +16,10 @@ import {
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { VehiclesService } from '../../vehicles/vehicles.service';
 import { OemPlatformMappingService } from '../services/oem-platform-mapping.service';
+import { UnifiedPageDataService } from '../services/unified-page-data.service';
+
+// ⚡ Feature flag pour activer le mode RPC V2 unifié (1 requête au lieu de ~33)
+const USE_UNIFIED_RPC = process.env.USE_UNIFIED_RPC === 'true';
 
 interface BatchLoaderRequest {
   typeId: number;
@@ -90,6 +94,7 @@ export class BatchLoaderController {
     private readonly gammeService: GammeUnifiedService,
     private readonly vehiclesService: VehiclesService,
     private readonly oemPlatformMappingService: OemPlatformMappingService,
+    private readonly unifiedPageDataService: UnifiedPageDataService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -111,6 +116,13 @@ export class BatchLoaderController {
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      // ⚡ MODE RPC V2 UNIFIÉ: 1 requête Supabase au lieu de ~33
+      if (USE_UNIFIED_RPC) {
+        return this.batchLoadUnified(request, startTime);
+      }
+
+      // 🐌 MODE LEGACY: ~33 requêtes Supabase (à deprecate)
 
       // ✅ CACHE REDIS: Vérifier le cache (5 minutes TTL)
       const cacheKey = `batch-loader:${request.typeId}:${request.gammeId}:${request.marqueId || 0}:${request.modeleId || 0}`;
@@ -250,7 +262,9 @@ export class BatchLoaderController {
         }
       }
 
-      // 🔧 V5: Récupération OEM légère + filtrage par préfixes SEO
+      // 🔧 V7: OEM refs maintenant inclus directement dans la RPC V3
+      // Les grouped_pieces contiennent déjà oemRefs et oemRefsCount
+      // On garde juste le filtrage SEO pour la liste globale si nécessaire
       let oemRefsData: OemRefsResult | undefined;
       let oemRefsSeo: string[] | undefined;
 
@@ -265,7 +279,7 @@ export class BatchLoaderController {
             marqueName,
           );
 
-          // Filtrer les refs OEM par préfixes dominants pour SEO
+          // Filtrer les refs OEM par préfixes dominants pour SEO (liste globale)
           if (oemRefsData.oemRefs.length > 0) {
             const seoResult =
               this.oemPlatformMappingService.filterOemRefsForSeo(
@@ -282,41 +296,15 @@ export class BatchLoaderController {
             );
           }
 
-          // 🎯 V6: Ajouter les refs OEM par groupe (AV/AR) pour affichage ciblé
+          // 🎯 V7: Les OEM refs par groupe sont maintenant fournis par la RPC V3
+          // Plus besoin de boucle séparée - grouped_pieces contient déjà oemRefs
           if (grouped_pieces && grouped_pieces.length > 0) {
             for (const group of grouped_pieces) {
-              if (group.pieces && group.pieces.length > 0) {
-                // Extraire les IDs des pièces de ce groupe
-                const groupPieceIds = group.pieces
-                  .map((p: any) => p.id)
-                  .filter(Boolean);
-
-                // Récupérer les refs OEM spécifiques à ce groupe
-                const groupOemResult =
-                  await this.piecesService.getOemRefsLightweight(
-                    groupPieceIds,
-                    marqueName,
-                  );
-
-                // Filtrer et dédupliquer
-                if (groupOemResult.oemRefs.length > 0) {
-                  const groupSeoResult =
-                    this.oemPlatformMappingService.filterOemRefsForSeo(
-                      groupOemResult.oemRefs,
-                      request.typeId,
-                      request.gammeId,
-                      marqueName,
-                    );
-                  group.oemRefs = groupSeoResult.filteredRefs;
-                  group.oemRefsCount = groupSeoResult.filteredRefs.length;
-
-                  this.logger.debug(
-                    `🎯 [OEM-GROUPE] "${group.title_h2 || group.filtre_side}": ${group.oemRefsCount} refs`,
-                  );
-                } else {
-                  group.oemRefs = [];
-                  group.oemRefsCount = 0;
-                }
+              // Log pour debug - les oemRefs viennent de la RPC
+              if (group.oemRefs && group.oemRefs.length > 0) {
+                this.logger.debug(
+                  `🎯 [OEM-GROUPE-RPC] "${group.title_h2 || group.filtre_side}": ${group.oemRefsCount || group.oemRefs.length} refs`,
+                );
               }
             }
           }
@@ -447,5 +435,119 @@ export class BatchLoaderController {
       pieces_with_price_percent: Math.round(100 - percentWithoutPrice),
       issues: issues.length > 0 ? issues : undefined,
     };
+  }
+
+  /**
+   * ⚡ MODE RPC V2 UNIFIÉ - 1 requête Supabase au lieu de ~33
+   * 
+   * Utilise get_pieces_for_type_gamme_v2 qui retourne TOUT en 1 appel:
+   * - vehicle_info (type, modele, marque)
+   * - gamme_info (pg_name, pg_alias, mf_id)
+   * - seo_templates (h1, content, title, description bruts)
+   * - oem_refs (filtrées par marque véhicule)
+   * - pieces, grouped_pieces, filters
+   * 
+   * Le traitement des SEO switches reste côté JS pour flexibilité
+   */
+  private async batchLoadUnified(
+    request: BatchLoaderRequest,
+    startTime: number,
+  ): Promise<BatchLoaderResponse> {
+    this.logger.log(`⚡ [BATCH-LOADER] Mode RPC V2 unifié activé`);
+
+    try {
+      // Appel unique au service unifié
+      const pageData = await this.unifiedPageDataService.getPageData(
+        request.typeId,
+        request.gammeId,
+      );
+
+      const loadTime = Date.now() - startTime;
+
+      // Mapper vers le format BatchLoaderResponse existant
+      const vehicleInfo: VehicleInfo | undefined = pageData.vehicle
+        ? {
+            typeId: pageData.vehicle.type.id,
+            typeName: pageData.vehicle.type.name,
+            typeBody: pageData.vehicle.type.body || undefined,
+            typeEngine: pageData.vehicle.type.engine || undefined,
+            typePowerPs: pageData.vehicle.type.power_ps
+              ? parseInt(pageData.vehicle.type.power_ps)
+              : undefined,
+            typeDateStart: pageData.vehicle.type.yearFrom || undefined,
+            typeDateEnd: pageData.vehicle.type.yearTo || undefined,
+            modeleId: pageData.vehicle.modele.id,
+            modeleName: pageData.vehicle.modele.name,
+            modelePic: pageData.vehicle.modele.pic || undefined,
+            modeleAlias: pageData.vehicle.modele.alias || undefined,
+            marqueId: pageData.vehicle.marque.id,
+            marqueName: pageData.vehicle.marque.name,
+            marqueAlias: pageData.vehicle.marque.alias || undefined,
+          }
+        : undefined;
+
+      // Construire oemRefs dans le format attendu
+      const oemRefsData: OemRefsResult | undefined =
+        pageData.oemRefs.length > 0
+          ? {
+              oemRefs: pageData.oemRefs,
+              count: pageData.oemRefs.length,
+              vehicleMarque: pageData.vehicle?.marque.name || '',
+            }
+          : undefined;
+
+      this.logger.log(
+        `✅ [BATCH-LOADER-V2] SUCCESS: ${pageData.count} pièces, ` +
+          `min=${pageData.minPrice}€, SEO=${pageData.seo.success}, ` +
+          `OEM=${pageData.oemRefs.length}, cache=${pageData.cacheHit}, ` +
+          `source=${pageData.source}, ${loadTime}ms`,
+      );
+
+      return {
+        pieces: pageData.pieces,
+        grouped_pieces: pageData.groupedPieces,
+        blocs: pageData.blocs,
+        filters: pageData.filters,
+        count: pageData.count,
+        minPrice: pageData.minPrice || null,
+        seo: {
+          h1: pageData.seo.h1 || undefined,
+          content: pageData.seo.content || undefined,
+          title: pageData.seo.title || undefined,
+          description: pageData.seo.description || undefined,
+        },
+        crossSelling: [], // Non implémenté en V2 pour l'instant
+        vehicleInfo,
+        oemRefs: oemRefsData,
+        oemRefsSeo: pageData.oemRefs, // Déjà filtrées par la RPC
+        validation: {
+          valid: pageData.count > 0,
+          relationsCount: pageData.count,
+          dataQuality: this.analyzeDataQuality(pageData.pieces),
+        },
+        success: pageData.success,
+        timestamp: new Date().toISOString(),
+        loadTime,
+      };
+    } catch (error: any) {
+      const loadTime = Date.now() - startTime;
+
+      this.logger.error(
+        `❌ [BATCH-LOADER-V2] ERROR: ${error.message}, ${loadTime}ms - Fallback vers mode legacy`,
+      );
+
+      // En cas d'erreur, on pourrait fallback vers le mode legacy
+      // Pour l'instant, on renvoie l'erreur
+      throw new HttpException(
+        {
+          success: false,
+          message: error.message,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          loadTime,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

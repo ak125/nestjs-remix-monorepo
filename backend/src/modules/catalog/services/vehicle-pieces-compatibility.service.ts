@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { OemPlatformMappingService } from './oem-platform-mapping.service';
 
 /**
  * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES
@@ -13,6 +14,11 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
  */
 @Injectable()
 export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
+  constructor(
+    private readonly oemPlatformMappingService: OemPlatformMappingService,
+  ) {
+    super();
+  }
   /**
    * 🚀 MÉTHODE PRINCIPALE: Appel RPC optimisé
    *
@@ -152,10 +158,13 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
    * 🚀 Récupère les refs OEM de manière légère (sans RPC lente)
    * Utilise les piece_ids déjà récupérés par getPiecesViaRPC
+   * 
+   * V2: Dédoublonnage avec normalisation via OemPlatformMappingService
+   *     Suppression des limites arbitraires (slice/limit)
    *
    * @param pieceIds - Liste des IDs de pièces déjà récupérées
    * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
-   * @returns Liste des refs OEM filtrées par marque
+   * @returns Liste des refs OEM filtrées par marque, dédupliquées et normalisées
    */
   async getOemRefsLightweight(
     pieceIds: number[],
@@ -179,7 +188,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       const { data: brandData, error: brandError } = await this.client
         .from('pieces_ref_brand')
         .select('prb_id')
-        .eq('prb_name', marqueName.toUpperCase())
+        .ilike('prb_name', marqueName) // ilike pour ignorer la casse
         .limit(1)
         .single();
 
@@ -193,16 +202,14 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       }
 
       // 2. Récupérer les refs OEM (kind=3) pour ces pièces et cette marque
-      // Limite à 100 pièces pour éviter les requêtes trop grosses
-      const limitedPieceIds = pieceIds.slice(0, 100);
-
+      // LIMIT 500 pour couvrir la majorité des cas, le dédoublonnage réduira
       const { data: refData, error: refError } = await this.client
         .from('pieces_ref_search')
         .select('prs_ref')
-        .in('prs_piece_id', limitedPieceIds)
+        .in('prs_piece_id', pieceIds) // Plus de slice arbitraire
         .eq('prs_prb_id', brandData.prb_id)
         .eq('prs_kind', '3') // Type 3 = OEM constructeurs
-        .limit(200);
+        .limit(500); // Limite raisonnable, dédoublonnage après
 
       if (refError) {
         this.logger.warn(
@@ -216,12 +223,13 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         };
       }
 
-      // 3. Extraire les refs uniques
-      const uniqueRefs = [...new Set((refData || []).map((r) => r.prs_ref))];
+      // 3. Dédoublonner avec normalisation ("77 01 206 343" = "7701206343")
+      const rawRefs = (refData || []).map((r) => r.prs_ref);
+      const uniqueRefs = this.oemPlatformMappingService.deduplicateOemRefs(rawRefs);
       const duration = Date.now() - startTime;
 
       this.logger.log(
-        `✅ [OEM-LIGHT] ${uniqueRefs.length} refs OEM ${marqueName} en ${duration}ms`,
+        `✅ [OEM-LIGHT] ${rawRefs.length} refs brutes → ${uniqueRefs.length} uniques (${marqueName}) en ${duration}ms`,
       );
 
       return {

@@ -4,10 +4,14 @@
  * 
  * ⚠️ IMPORTANT: Ce fichier complète pieces.service.ts existant
  * ⚠️ URLs API strictement préservées - NE PAS MODIFIER
+ * 
+ * 📝 CHANGELOG:
+ * - 2025-12-11: Ajout fetchRelatedArticlesForGamme() pour vrais articles blog
+ * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
 
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
-import { slugify } from '../../utils/pieces-route.utils';
+import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
 
 /**
  * 🔄 Récupération des gammes cross-selling depuis l'API réelle
@@ -64,6 +68,7 @@ export async function fetchCrossSellingGammes(
  * 📝 Récupération d'un article de blog depuis l'API réelle
  * 
  * ⚠️ URLs API multiples pour fallback:
+ * - /api/blog/article/by-gamme/{pg_alias} (PRIORITÉ - vrais articles)
  * - /api/blog/search?q={gamme}&limit=1
  * - /api/blog/popular?limit=1&category=entretien
  * - /api/blog/homepage
@@ -75,8 +80,30 @@ export async function fetchBlogArticle(
   _vehicle: VehicleData
 ): Promise<BlogArticle | null> {
   try {
-    // ⚠️ Essai 1: Recherche par gamme spécifique - URL EXACTE
-    let response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`);
+    // ⚠️ PRIORITÉ 1: Endpoint by-gamme (vrais articles depuis blog_advice)
+    console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
+    let response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`✅ Blog by-gamme data:`, data);
+      
+      // L'endpoint retourne { success: true, data: {...} }
+      const article = data.data || data.article || data;
+      if (article && (article.h1 || article.title)) {
+        return {
+          id: article.id?.toString() || 'blog-gamme-' + Date.now(),
+          title: article.h1 || article.title,
+          excerpt: article.excerpt || article.description || '',
+          slug: article.slug || '',
+          image: article.featuredImage || article.image || undefined,
+          date: article.updatedAt || article.publishedAt || article.created_at || new Date().toISOString(),
+          readTime: article.readingTime || article.reading_time || 5
+        };
+      }
+    }
+    
+    // ⚠️ Essai 2: Recherche par gamme spécifique - URL EXACTE
+    response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`);
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ Blog search data:`, data);
@@ -166,6 +193,89 @@ export async function fetchBlogArticle(
   } catch (error) {
     console.error('❌ Erreur fetchBlogArticle:', error);
     return null;
+  }
+}
+
+/**
+ * 📚 Récupération des articles liés depuis l'API réelle par gamme
+ * 
+ * Cette fonction remplace generateRelatedArticles() qui générait des slugs fictifs.
+ * Elle appelle l'endpoint /api/blog/article/by-gamme/:pg_alias qui retourne:
+ * - L'article principal de la gamme
+ * - Les articles liés (relatedArticles) depuis la table blog_advice
+ * 
+ * @param gamme - Données de la gamme (id, alias, name)
+ * @param vehicle - Données du véhicule pour le fallback
+ * @returns BlogArticle[] - Liste d'articles réels ou fallback statique
+ */
+export async function fetchRelatedArticlesForGamme(
+  gamme: GammeData, 
+  vehicle: VehicleData
+): Promise<BlogArticle[]> {
+  try {
+    console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
+    
+    // Appel à l'endpoint by-gamme qui retourne { success: true, data: {...} }
+    const response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`);
+    
+    if (!response.ok) {
+      console.warn(`⚠️ [RelatedArticles] API non disponible: ${response.status}`);
+      // Fallback vers articles statiques
+      return generateRelatedArticles(vehicle, gamme);
+    }
+    
+    const responseData = await response.json();
+    console.log(`✅ [RelatedArticles] API response:`, {
+      success: responseData.success,
+      hasData: !!responseData.data
+    });
+    
+    // Structure: { success: true, data: { id, title, slug, h1, excerpt, relatedArticles?, ... } }
+    const articleData = responseData.data;
+    
+    if (!articleData || !articleData.slug) {
+      console.log(`🔄 [RelatedArticles] No valid article data, using fallback`);
+      return generateRelatedArticles(vehicle, gamme);
+    }
+    
+    const articles: BlogArticle[] = [];
+    
+    // 1. Ajouter l'article principal
+    articles.push({
+      id: articleData.id?.toString() || 'main-' + gamme.id,
+      title: articleData.h1 || articleData.title || `Guide ${gamme.name}`,
+      excerpt: articleData.excerpt || `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`,
+      slug: articleData.slug,
+      image: articleData.featuredImage || undefined,
+      date: articleData.updatedAt || articleData.publishedAt || new Date().toISOString(),
+      readTime: articleData.readingTime || 8
+    });
+    
+    // 2. Ajouter les articles liés (related) s'ils existent
+    const relatedArticles = articleData.relatedArticles || [];
+    if (Array.isArray(relatedArticles)) {
+      for (const related of relatedArticles.slice(0, 3)) { // Max 3 articles liés
+        if (related && related.slug) {
+          articles.push({
+            id: related.id?.toString() || 'related-' + Date.now(),
+            title: related.h1 || related.title,
+            excerpt: related.excerpt || '',
+            slug: related.slug,
+            image: related.featuredImage || undefined,
+            date: related.updatedAt || related.publishedAt || new Date().toISOString(),
+            readTime: related.readingTime || 5
+          });
+        }
+      }
+    }
+    
+    console.log(`✅ [RelatedArticles] Returning ${articles.length} real articles`);
+    return articles;
+    
+  } catch (error) {
+    console.error('❌ Erreur fetchRelatedArticlesForGamme:', error);
+    // Fallback vers articles statiques en cas d'erreur
+    return generateRelatedArticles(vehicle, gamme);
   }
 }
 
