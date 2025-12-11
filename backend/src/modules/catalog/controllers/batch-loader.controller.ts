@@ -439,14 +439,14 @@ export class BatchLoaderController {
 
   /**
    * ⚡ MODE RPC V2 UNIFIÉ - 1 requête Supabase au lieu de ~33
-   * 
+   *
    * Utilise get_pieces_for_type_gamme_v2 qui retourne TOUT en 1 appel:
    * - vehicle_info (type, modele, marque)
    * - gamme_info (pg_name, pg_alias, mf_id)
    * - seo_templates (h1, content, title, description bruts)
    * - oem_refs (filtrées par marque véhicule)
    * - pieces, grouped_pieces, filters
-   * 
+   *
    * Le traitement des SEO switches reste côté JS pour flexibilité
    */
   private async batchLoadUnified(
