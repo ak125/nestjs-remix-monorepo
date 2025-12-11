@@ -161,12 +161,13 @@ export class UnifiedPageDataService extends SupabaseBaseService {
     if (this.useSeparateOemRpc) {
       this.logger.log('⚠️ Mode OEM séparé activé (USE_SEPARATE_OEM_RPC=true)');
     }
-    
+
     // Feature flag: si true, utilise RPC V3 avec SEO intégré côté PostgreSQL
     // Par défaut true pour bénéficier des performances optimisées
-    this.useRpcV3 =
-      this.appConfigService.get<string>('USE_RPC_V3') !== 'false';
-    this.logger.log(`🚀 Mode RPC: ${this.useRpcV3 ? 'V3 (SEO intégré)' : 'V2 (SEO JS)'}`);
+    this.useRpcV3 = this.appConfigService.get<string>('USE_RPC_V3') !== 'false';
+    this.logger.log(
+      `🚀 Mode RPC: ${this.useRpcV3 ? 'V3 (SEO intégré)' : 'V2 (SEO JS)'}`,
+    );
   }
 
   /**
@@ -186,7 +187,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       const cached = await this.cacheService.get(cacheKey);
       if (cached && typeof cached === 'string') {
         const result = JSON.parse(cached) as UnifiedPageData;
-        
+
         // ⚠️ Validation cache: rejeter si OEM vide alors qu'il devrait y en avoir
         // (bug corrigé le 10/12/2025 - anciennes entrées cache corrompues)
         if (result.oemRefs?.length === 0 && result.count > 0) {
@@ -259,7 +260,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
   ): Promise<UnifiedPageData | null> {
     try {
       this.logger.log(`🚀 Appel RPC V3 pour type=${typeId} pg=${pgId}`);
-      
+
       const { data, error } = await this.supabase.rpc(
         'get_pieces_for_type_gamme_v3',
         {
@@ -280,42 +281,49 @@ export class UnifiedPageDataService extends SupabaseBaseService {
 
       this.rpcV3Available = true;
       const rpcResult = data as RpcV3Result;
-      
+
       // 🎯 V3: Les OEM refs sont maintenant intégrées DIRECTEMENT dans grouped_pieces
       // Plus besoin d'enrichissement côté JS - tout est fait dans la RPC PostgreSQL
-      const groupedPiecesWithOem = (rpcResult.grouped_pieces || []).map((g: any) => ({
-        ...g,
-        // La RPC V3 fournit déjà oemRefs et oemRefsCount par groupe (avec déduplication globale)
-        oemRefs: g.oemRefs || [],
-        oemRefsCount: g.oemRefsCount || g.oemRefs?.length || 0,
-      }));
-      
+      const groupedPiecesWithOem = (rpcResult.grouped_pieces || []).map(
+        (g: any) => ({
+          ...g,
+          // La RPC V3 fournit déjà oemRefs et oemRefsCount par groupe (avec déduplication globale)
+          oemRefs: g.oemRefs || [],
+          oemRefsCount: g.oemRefsCount || g.oemRefs?.length || 0,
+        }),
+      );
+
       // Compter le total des OEM refs par groupe pour le log
-      const totalGroupOem = groupedPiecesWithOem.reduce((sum: number, g: any) => sum + (g.oemRefsCount || 0), 0);
-      
+      const totalGroupOem = groupedPiecesWithOem.reduce(
+        (sum: number, g: any) => sum + (g.oemRefsCount || 0),
+        0,
+      );
+
       this.logger.log(
         `✅ RPC V3 retourné en ${rpcResult.duration} - ${rpcResult.count} pièces, ` +
-        `oem_global=${rpcResult.oem_refs?.length || 0}, oem_groupes=${totalGroupOem}`,
+          `oem_global=${rpcResult.oem_refs?.length || 0}, oem_groupes=${totalGroupOem}`,
       );
 
       // SEO déjà processé côté PostgreSQL - juste décoder les entités HTML
-      const seo = rpcResult.seo ? {
-        success: true,
-        h1: decodeHtmlEntities(rpcResult.seo.h1 || ''),
-        content: decodeHtmlEntities(rpcResult.seo.content || ''),
-        description: decodeHtmlEntities(rpcResult.seo.description || ''),
-        title: decodeHtmlEntities(rpcResult.seo.title || ''),
-        preview: decodeHtmlEntities(rpcResult.seo.preview || ''),
-        keywords: null,
-      } : {
-        success: false,
-        h1: null,
-        content: null,
-        description: null,
-        title: null,
-        preview: null,
-        keywords: null,
-      };
+      const seo = rpcResult.seo
+        ? {
+            success: true,
+            h1: decodeHtmlEntities(rpcResult.seo.h1 || ''),
+            content: decodeHtmlEntities(rpcResult.seo.content || ''),
+            description: decodeHtmlEntities(rpcResult.seo.description || ''),
+            title: decodeHtmlEntities(rpcResult.seo.title || ''),
+            preview: decodeHtmlEntities(rpcResult.seo.preview || ''),
+            keywords: null,
+          }
+        : {
+            success: false,
+            h1: null,
+            content: null,
+            description: null,
+            title: null,
+            preview: null,
+            keywords: null,
+          };
 
       const result: UnifiedPageData = {
         seo,
@@ -418,10 +426,16 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       }
 
       // DEBUG: Voir la structure exacte du résultat
-      this.logger.log(`🔍 DEBUG RPC V2 data keys: ${Object.keys(data || {}).join(', ')}`);
-      this.logger.log(`🔍 DEBUG RPC V2 oem_refs type: ${typeof data?.oem_refs}, isArray: ${Array.isArray(data?.oem_refs)}, length: ${data?.oem_refs?.length}`);
+      this.logger.log(
+        `🔍 DEBUG RPC V2 data keys: ${Object.keys(data || {}).join(', ')}`,
+      );
+      this.logger.log(
+        `🔍 DEBUG RPC V2 oem_refs type: ${typeof data?.oem_refs}, isArray: ${Array.isArray(data?.oem_refs)}, length: ${data?.oem_refs?.length}`,
+      );
       if (data?.oem_refs?.length > 0) {
-        this.logger.log(`🔍 DEBUG First 3 OEM refs: ${JSON.stringify(data.oem_refs.slice(0, 3))}`);
+        this.logger.log(
+          `🔍 DEBUG First 3 OEM refs: ${JSON.stringify(data.oem_refs.slice(0, 3))}`,
+        );
       }
 
       const rpcResult = data as RpcV2Result;
@@ -432,10 +446,12 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       // 2b. OEM refs: utiliser celles de la RPC V2
       // NOTE: On ne fait plus d'appel RPC OEM séparé car ça cause des timeouts
       // La RPC V2 contient déjà les OEM refs quand disponibles
-      let oemRefs = rpcResult.oem_refs || [];
-      
+      const oemRefs = rpcResult.oem_refs || [];
+
       if (oemRefs.length > 0) {
-        this.logger.log(`✅ OEM refs incluses dans RPC V2: ${oemRefs.length} références`);
+        this.logger.log(
+          `✅ OEM refs incluses dans RPC V2: ${oemRefs.length} références`,
+        );
       } else {
         this.logger.log(`ℹ️ Pas d'OEM refs disponibles pour ce véhicule/gamme`);
       }
@@ -604,23 +620,35 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       const mfIdNumber = gammeInfo.mf_id
         ? parseInt(gammeInfo.mf_id)
         : undefined;
-      
+
       const seoStartTime = Date.now();
       this.logger.log(
         `🚀 [SEO] Super prefetch pour pgId=${pgId}, mfId=${mfIdNumber}`,
       );
       const prefetchStartTime = Date.now();
-      
+
       // Utiliser le super prefetch qui analyse TOUS les templates et charge TOUT en batch
-      const allTemplates = [templates.h1, templates.content, templates.description, templates.title, templates.preview];
-      const { prefetched: prefetchedSwitches, gammesMap, switchesByPgAndAlias, switchesByPg } = 
-        await this.seoSwitchesService.prefetchAllSwitchesForTemplates(
-          this.supabase,
-          allTemplates,
-          pgId,
-          mfIdNumber,
-        );
-      this.logger.log(`⏱️ [SEO] Super prefetch: ${Date.now() - prefetchStartTime}ms (gammes: ${gammesMap.size}, switches: ${switchesByPg.size} pgIds)`);
+      const allTemplates = [
+        templates.h1,
+        templates.content,
+        templates.description,
+        templates.title,
+        templates.preview,
+      ];
+      const {
+        prefetched: prefetchedSwitches,
+        gammesMap,
+        switchesByPgAndAlias,
+        switchesByPg,
+      } = await this.seoSwitchesService.prefetchAllSwitchesForTemplates(
+        this.supabase,
+        allTemplates,
+        pgId,
+        mfIdNumber,
+      );
+      this.logger.log(
+        `⏱️ [SEO] Super prefetch: ${Date.now() - prefetchStartTime}ms (gammes: ${gammesMap.size}, switches: ${switchesByPg.size} pgIds)`,
+      );
 
       // Traitement parallèle des 5 champs SEO - SANS nouvelles requêtes DB
       const batchCacheData = { gammesMap, switchesByPgAndAlias, switchesByPg };
@@ -677,8 +705,10 @@ export class UnifiedPageDataService extends SupabaseBaseService {
           batchCacheData,
         ),
       ]);
-      
-      this.logger.log(`⏱️ [SEO] Traitement 5 champs complet: ${Date.now() - seoStartTime}ms`);
+
+      this.logger.log(
+        `⏱️ [SEO] Traitement 5 champs complet: ${Date.now() - seoStartTime}ms`,
+      );
 
       return {
         success: true,
@@ -715,7 +745,10 @@ export class UnifiedPageDataService extends SupabaseBaseService {
     context: { typeId: number; pgId: number; mfId: string },
     prefetchedSwitches: any,
     batchCacheData?: {
-      gammesMap: Map<number, { pg_id: number; pg_name: string; pg_alias: string }>;
+      gammesMap: Map<
+        number,
+        { pg_id: number; pg_name: string; pg_alias: string }
+      >;
       switchesByPgAndAlias: Map<string, any[]>;
       switchesByPg: Map<number, any[]>;
     },
@@ -892,7 +925,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
   /**
    * 🎯 Enrichit les groupedPieces avec les OEM refs distribuées par groupe
    *    Fetch toutes les OEM refs en 1 batch, puis distribue selon les pièces de chaque groupe
-   * 
+   *
    * @param groupedPieces - Les groupes de pièces (Avant, Arrière, etc.)
    * @param allOemRefs - Les OEM refs retournées par RPC (niveau racine)
    * @param marqueName - Nom de la marque véhicule pour filtrer les OEM
@@ -907,21 +940,25 @@ export class UnifiedPageDataService extends SupabaseBaseService {
   ): Promise<any[]> {
     // Si pas d'OEM refs ou pas de groupes, retourner tel quel
     if (!allOemRefs?.length || !groupedPieces?.length) {
-      this.logger.log('ℹ️ Pas d\'OEM refs ou pas de groupes à enrichir');
-      return groupedPieces.map(g => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
+      this.logger.log("ℹ️ Pas d'OEM refs ou pas de groupes à enrichir");
+      return groupedPieces.map((g) => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
     }
 
     try {
       // Récupérer tous les IDs de pièces
-      const allPieceIds = pieces.map(p => p.id?.toString()).filter(Boolean);
+      const allPieceIds = pieces.map((p) => p.id?.toString()).filter(Boolean);
       if (!allPieceIds.length) {
         this.logger.warn('⚠️ Aucun ID de pièce trouvé');
-        return groupedPieces.map(g => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
+        return groupedPieces.map((g) => ({
+          ...g,
+          oemRefs: [],
+          oemRefsCount: 0,
+        }));
       }
 
       // Récupérer le prb_id de la marque véhicule
       this.logger.log(`🔍 Recherche OEM pour marque véhicule: "${marqueName}"`);
-      
+
       const { data: brandData } = await this.supabase
         .from('pieces_ref_brand')
         .select('prb_id, prb_name')
@@ -930,11 +967,19 @@ export class UnifiedPageDataService extends SupabaseBaseService {
         .single();
 
       if (!brandData?.prb_id) {
-        this.logger.warn(`⚠️ Marque OEM non trouvée dans pieces_ref_brand: ${marqueName}`);
-        return groupedPieces.map(g => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
+        this.logger.warn(
+          `⚠️ Marque OEM non trouvée dans pieces_ref_brand: ${marqueName}`,
+        );
+        return groupedPieces.map((g) => ({
+          ...g,
+          oemRefs: [],
+          oemRefsCount: 0,
+        }));
       }
 
-      this.logger.log(`✅ Marque OEM trouvée: "${brandData.prb_name}" (prb_id=${brandData.prb_id}) - Filtrage OEM uniquement pour cette marque`);
+      this.logger.log(
+        `✅ Marque OEM trouvée: "${brandData.prb_name}" (prb_id=${brandData.prb_id}) - Filtrage OEM uniquement pour cette marque`,
+      );
 
       // Récupérer les OEM refs avec leur piece_id associé (1 batch query)
       const { data: oemData, error } = await this.supabase
@@ -947,7 +992,11 @@ export class UnifiedPageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Erreur fetch OEM par pièce:', error);
-        return groupedPieces.map(g => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
+        return groupedPieces.map((g) => ({
+          ...g,
+          oemRefs: [],
+          oemRefsCount: 0,
+        }));
       }
 
       // Construire Map: pieceId -> Set<oemRef>
@@ -960,17 +1009,21 @@ export class UnifiedPageDataService extends SupabaseBaseService {
         oemByPiece.get(pieceId)!.add(row.prs_ref);
       }
 
-      this.logger.log(`🔗 OEM mapping: ${oemByPiece.size} pièces avec OEM refs`);
+      this.logger.log(
+        `🔗 OEM mapping: ${oemByPiece.size} pièces avec OEM refs`,
+      );
 
       // Distribuer les OEM refs à chaque groupe selon ses pièces
-      const enrichedGroups = groupedPieces.map(group => {
-        const groupPieceIds = (group.pieces || []).map((p: any) => p.id?.toString()).filter(Boolean);
+      const enrichedGroups = groupedPieces.map((group) => {
+        const groupPieceIds = (group.pieces || [])
+          .map((p: any) => p.id?.toString())
+          .filter(Boolean);
         const groupOemRefs = new Set<string>();
 
         for (const pieceId of groupPieceIds) {
           const refs = oemByPiece.get(pieceId);
           if (refs) {
-            refs.forEach(ref => groupOemRefs.add(ref));
+            refs.forEach((ref) => groupOemRefs.add(ref));
           }
         }
 
@@ -982,13 +1035,18 @@ export class UnifiedPageDataService extends SupabaseBaseService {
         };
       });
 
-      const totalOemInGroups = enrichedGroups.reduce((sum, g) => sum + (g.oemRefsCount || 0), 0);
-      this.logger.log(`✅ OEM refs distribuées: ${totalOemInGroups} refs dans ${enrichedGroups.filter(g => g.oemRefsCount > 0).length} groupes`);
+      const totalOemInGroups = enrichedGroups.reduce(
+        (sum, g) => sum + (g.oemRefsCount || 0),
+        0,
+      );
+      this.logger.log(
+        `✅ OEM refs distribuées: ${totalOemInGroups} refs dans ${enrichedGroups.filter((g) => g.oemRefsCount > 0).length} groupes`,
+      );
 
       return enrichedGroups;
     } catch (err) {
       this.logger.error('❌ Exception enrichGroupsWithOemRefs:', err);
-      return groupedPieces.map(g => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
+      return groupedPieces.map((g) => ({ ...g, oemRefs: [], oemRefsCount: 0 }));
     }
   }
 }
