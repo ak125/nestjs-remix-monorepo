@@ -60,22 +60,25 @@ export class SeoSwitchesService {
     mfId?: number,
   ): Promise<{
     prefetched: PrefetchedSwitches;
-    gammesMap: Map<number, { pg_id: number; pg_name: string; pg_alias: string }>;
+    gammesMap: Map<
+      number,
+      { pg_id: number; pg_name: string; pg_alias: string }
+    >;
     switchesByPgAndAlias: Map<string, GammeCarSwitch[]>;
     switchesByPg: Map<number, GammeCarSwitch[]>;
   }> {
     // Combiner tous les templates pour extraire tous les patterns
     const allText = templates.filter(Boolean).join(' ');
-    
+
     // Extraire tous les pgIds cibles depuis les patterns
     const allTargetPgIds = new Set<number>();
-    
+
     // Patterns à scanner
     const crossPattern = /#CompSwitch_(\d+)_(\d+)#/g;
     const linkGammeCarPattern = /#LinkGammeCar_(\d+)#/g;
     const linkGammePattern = /#LinkGamme_(\d+)#/g;
     const aliasPattern = /#CompSwitch_(\d+)#/g;
-    
+
     for (const match of allText.matchAll(crossPattern)) {
       allTargetPgIds.add(parseInt(match[2]));
     }
@@ -91,57 +94,83 @@ export class SeoSwitchesService {
         allTargetPgIds.add(parseInt(alias));
       }
     }
-    
+
     // Exclure la gamme courante des cibles (elle est chargée séparément)
     allTargetPgIds.delete(pgId);
-    
+
     const targetPgIdsArray = Array.from(allTargetPgIds);
-    this.logger.log(`🔍 [SUPER PREFETCH] pgIds cibles trouvés: [${targetPgIdsArray.join(', ')}]`);
-    
+    this.logger.log(
+      `🔍 [SUPER PREFETCH] pgIds cibles trouvés: [${targetPgIdsArray.join(', ')}]`,
+    );
+
     // Charger TOUT en parallèle (5 requêtes max)
-    const [itemResult, gammeResult, familyResult, targetGammesResult, targetSwitchesResult] = await Promise.all([
+    const [
+      itemResult,
+      gammeResult,
+      familyResult,
+      targetGammesResult,
+      targetSwitchesResult,
+    ] = await Promise.all([
       // 1. Switches globaux
       supabase.from(TABLES.seo_item_switch).select('*').eq('sis_pg_id', 0),
-      
+
       // 2. Switches de la gamme courante
-      supabase.from(TABLES.seo_gamme_car_switch).select('*').eq('sgcs_pg_id', pgId),
-      
+      supabase
+        .from(TABLES.seo_gamme_car_switch)
+        .select('*')
+        .eq('sgcs_pg_id', pgId),
+
       // 3. Switches famille
       mfId
-        ? supabase.from(TABLES.seo_family_gamme_car_switch).select('*').eq('sfgcs_mf_id', mfId).or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`)
+        ? supabase
+            .from(TABLES.seo_family_gamme_car_switch)
+            .select('*')
+            .eq('sfgcs_mf_id', mfId)
+            .or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`)
         : Promise.resolve({ data: [], error: null }),
-      
+
       // 4. Infos gammes cibles (pour LinkGamme)
       targetPgIdsArray.length > 0
-        ? supabase.from(TABLES.pieces_gamme).select('pg_id, pg_name, pg_alias').in('pg_id', targetPgIdsArray)
+        ? supabase
+            .from(TABLES.pieces_gamme)
+            .select('pg_id, pg_name, pg_alias')
+            .in('pg_id', targetPgIdsArray)
         : Promise.resolve({ data: [], error: null }),
-      
+
       // 5. Switches des gammes cibles
       targetPgIdsArray.length > 0
-        ? supabase.from(TABLES.seo_gamme_car_switch).select('*').in('sgcs_pg_id', targetPgIdsArray)
+        ? supabase
+            .from(TABLES.seo_gamme_car_switch)
+            .select('*')
+            .in('sgcs_pg_id', targetPgIdsArray)
         : Promise.resolve({ data: [], error: null }),
     ]);
-    
-    this.logger.log(`🔍 [SUPER PREFETCH] Résultats: gammes=${targetGammesResult.data?.length || 0}, switches=${targetSwitchesResult.data?.length || 0}`);
-    
+
+    this.logger.log(
+      `🔍 [SUPER PREFETCH] Résultats: gammes=${targetGammesResult.data?.length || 0}, switches=${targetSwitchesResult.data?.length || 0}`,
+    );
+
     // Construire les Maps
-    const gammesMap = new Map<number, { pg_id: number; pg_name: string; pg_alias: string }>();
-    for (const g of (targetGammesResult.data || [])) {
+    const gammesMap = new Map<
+      number,
+      { pg_id: number; pg_name: string; pg_alias: string }
+    >();
+    for (const g of targetGammesResult.data || []) {
       gammesMap.set(g.pg_id, g);
     }
-    
+
     const switchesByPgAndAlias = new Map<string, GammeCarSwitch[]>();
     const switchesByPg = new Map<number, GammeCarSwitch[]>();
-    
-    for (const sw of (targetSwitchesResult.data || [])) {
+
+    for (const sw of targetSwitchesResult.data || []) {
       const key = `${sw.sgcs_pg_id}_${sw.sgcs_alias}`;
       if (!switchesByPgAndAlias.has(key)) switchesByPgAndAlias.set(key, []);
       switchesByPgAndAlias.get(key)!.push(sw);
-      
+
       if (!switchesByPg.has(sw.sgcs_pg_id)) switchesByPg.set(sw.sgcs_pg_id, []);
       switchesByPg.get(sw.sgcs_pg_id)!.push(sw);
     }
-    
+
     return {
       prefetched: {
         itemSwitches: itemResult.data || [],
@@ -740,7 +769,10 @@ export class SeoSwitchesService {
     },
     // 🚀 Nouveau: données pré-chargées pour éviter requêtes DB
     batchCacheData?: {
-      gammesMap: Map<number, { pg_id: number; pg_name: string; pg_alias: string }>;
+      gammesMap: Map<
+        number,
+        { pg_id: number; pg_name: string; pg_alias: string }
+      >;
       switchesByPgAndAlias: Map<string, GammeCarSwitch[]>;
       switchesByPg: Map<number, GammeCarSwitch[]>;
     },
@@ -757,7 +789,10 @@ export class SeoSwitchesService {
     const linkGammeMatches = [...text.matchAll(linkGammePattern)];
 
     // Variables pour les Maps
-    let gammesMap: Map<number, { pg_id: number; pg_name: string; pg_alias: string }>;
+    let gammesMap: Map<
+      number,
+      { pg_id: number; pg_name: string; pg_alias: string }
+    >;
     let switchesByPgAndAlias: Map<string, GammeCarSwitch[]>;
     let switchesByPg: Map<number, GammeCarSwitch[]>;
 
@@ -770,7 +805,7 @@ export class SeoSwitchesService {
       // Fallback: charger les données (ancienne logique)
       // Collecter tous les pgIds nécessaires
       const allTargetPgIds = new Set<number>();
-      
+
       for (const match of aliasMatches) {
         const alias = match[1];
         if (/^\d+$/.test(alias) && parseInt(alias) !== context.pgId) {
@@ -791,29 +826,36 @@ export class SeoSwitchesService {
       }
 
       const targetPgIdsArray = Array.from(allTargetPgIds);
-      
+
       const [gammesResult, switchesResult] = await Promise.all([
         targetPgIdsArray.length > 0
-          ? supabase.from(TABLES.pieces_gamme).select('pg_id, pg_name, pg_alias').in('pg_id', targetPgIdsArray)
+          ? supabase
+              .from(TABLES.pieces_gamme)
+              .select('pg_id, pg_name, pg_alias')
+              .in('pg_id', targetPgIdsArray)
           : Promise.resolve({ data: [], error: null }),
         targetPgIdsArray.length > 0
-          ? supabase.from(TABLES.seo_gamme_car_switch).select('sgcs_id, sgcs_pg_id, sgcs_alias, sgcs_content').in('sgcs_pg_id', targetPgIdsArray)
+          ? supabase
+              .from(TABLES.seo_gamme_car_switch)
+              .select('sgcs_id, sgcs_pg_id, sgcs_alias, sgcs_content')
+              .in('sgcs_pg_id', targetPgIdsArray)
           : Promise.resolve({ data: [], error: null }),
       ]);
 
       gammesMap = new Map();
-      for (const gamme of (gammesResult.data || [])) {
+      for (const gamme of gammesResult.data || []) {
         gammesMap.set(gamme.pg_id, gamme);
       }
 
       switchesByPgAndAlias = new Map();
       switchesByPg = new Map();
-      for (const sw of (switchesResult.data || [])) {
+      for (const sw of switchesResult.data || []) {
         const key = `${sw.sgcs_pg_id}_${sw.sgcs_alias}`;
         if (!switchesByPgAndAlias.has(key)) switchesByPgAndAlias.set(key, []);
         switchesByPgAndAlias.get(key)!.push(sw);
-        
-        if (!switchesByPg.has(sw.sgcs_pg_id)) switchesByPg.set(sw.sgcs_pg_id, []);
+
+        if (!switchesByPg.has(sw.sgcs_pg_id))
+          switchesByPg.set(sw.sgcs_pg_id, []);
         switchesByPg.get(sw.sgcs_pg_id)!.push(sw);
       }
     }
@@ -822,7 +864,12 @@ export class SeoSwitchesService {
     let result = text;
 
     // 1. Traiter #CompSwitch# (générique) - utilise prefetched
-    result = await this.processGenericSwitch(supabase, result, context, prefetched);
+    result = await this.processGenericSwitch(
+      supabase,
+      result,
+      context,
+      prefetched,
+    );
 
     // 2. Traiter #CompSwitch_X# (alias gamme courante ou cross-gamme)
     for (const match of aliasMatches) {
@@ -831,7 +878,7 @@ export class SeoSwitchesService {
       if (!result.includes(marker)) continue;
 
       let switches: GammeCarSwitch[] = [];
-      
+
       // Cas 1: Alias numérique qui pourrait être un pgId différent
       if (/^\d+$/.test(alias) && parseInt(alias) !== context.pgId) {
         const targetPgId = parseInt(alias);
@@ -842,30 +889,45 @@ export class SeoSwitchesService {
           switches = switchesByPg.get(targetPgId) || [];
         }
       }
-      
+
       // Cas 2: Alias pour la gamme courante (utilise prefetched)
       if (switches.length === 0 && prefetched) {
         switches = prefetched.gammeSwitches.filter(
           (s) => String(s.sgcs_alias) === String(alias),
         );
       }
-      
+
       // Cas 3: Requête pour la gamme courante SEULEMENT si pas de batchCacheData
       // (évite les requêtes N+1 quand on a déjà tout pré-chargé)
       if (switches.length === 0 && !batchCacheData) {
-        switches = await this.getGammeCarSwitches(supabase, context.pgId, alias, prefetched);
+        switches = await this.getGammeCarSwitches(
+          supabase,
+          context.pgId,
+          alias,
+          prefetched,
+        );
       }
 
       const offset = alias === '3' ? context.pgId : 0;
-      const selected = this.selectSwitchByRotation(switches, context.typeId, offset);
+      const selected = this.selectSwitchByRotation(
+        switches,
+        context.typeId,
+        offset,
+      );
       result = selected
-        ? result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), selected.sgcs_content)
-        : result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+        ? result.replace(
+            new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+            selected.sgcs_content,
+          )
+        : result.replace(
+            new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+            '',
+          );
     }
 
     // 3. Traiter #CompSwitch_X_Y# (cross-gamme ou famille)
     const crossGammeCounters = new Map<string, number>();
-    
+
     for (const match of crossMatches) {
       const alias = parseInt(match[1]);
       const targetPgId = parseInt(match[2]);
@@ -874,7 +936,14 @@ export class SeoSwitchesService {
 
       // Alias 11-16: switches famille
       if (alias >= 11 && alias <= 16 && context.mfId) {
-        result = await this.processFamilySwitch(supabase, result, alias, targetPgId, context, prefetched);
+        result = await this.processFamilySwitch(
+          supabase,
+          result,
+          alias,
+          targetPgId,
+          context,
+          prefetched,
+        );
       } else {
         // Cross-gamme: utiliser le cache batch
         const key = `${alias}_${targetPgId}`;
@@ -882,10 +951,15 @@ export class SeoSwitchesService {
         crossGammeCounters.set(key, counter + 1);
 
         let switches = switchesByPgAndAlias.get(`${targetPgId}_${alias}`) || [];
-        
+
         // Fallback pour alias 3: utiliser switches globaux
         if (switches.length === 0 && alias === 3) {
-          const itemSwitches = await this.getItemSwitches(supabase, 0, 3, prefetched);
+          const itemSwitches = await this.getItemSwitches(
+            supabase,
+            0,
+            3,
+            prefetched,
+          );
           switches = itemSwitches.map((s) => ({
             sgcs_id: s.sis_id,
             sgcs_pg_id: s.sis_pg_id,
@@ -895,10 +969,20 @@ export class SeoSwitchesService {
         }
 
         const offset = targetPgId + counter + alias;
-        const selected = this.selectSwitchByRotation(switches, context.typeId, offset);
+        const selected = this.selectSwitchByRotation(
+          switches,
+          context.typeId,
+          offset,
+        );
         result = selected
-          ? result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), selected.sgcs_content)
-          : result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+          ? result.replace(
+              new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+              selected.sgcs_content,
+            )
+          : result.replace(
+              new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+              '',
+            );
       }
     }
 
@@ -910,7 +994,10 @@ export class SeoSwitchesService {
 
       const targetGamme = gammesMap.get(targetPgId);
       if (!targetGamme) {
-        result = result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+        result = result.replace(
+          new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+          '',
+        );
         continue;
       }
 
@@ -918,18 +1005,33 @@ export class SeoSwitchesService {
       const switches1 = switchesByPgAndAlias.get(`${targetPgId}_1`) || [];
       const switches2 = switchesByPgAndAlias.get(`${targetPgId}_2`) || [];
 
-      const selected1 = this.selectSwitchByRotation(switches1, context.typeId, targetPgId + 2);
-      const selected2 = this.selectSwitchByRotation(switches2, context.typeId, targetPgId + 3);
+      const selected1 = this.selectSwitchByRotation(
+        switches1,
+        context.typeId,
+        targetPgId + 2,
+      );
+      const selected2 = this.selectSwitchByRotation(
+        switches2,
+        context.typeId,
+        targetPgId + 3,
+      );
 
       if (!selected1 || !selected2) {
-        result = result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+        result = result.replace(
+          new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+          '',
+        );
         continue;
       }
 
       const anchorText = `${selected1.sgcs_content} les ${targetGamme.pg_name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicle.nbCh} ch et ${selected2.sgcs_content}`;
 
       let linkUrl: string;
-      if (vehicleInfo?.marqueId && vehicleInfo?.modeleId && vehicleInfo?.typeId) {
+      if (
+        vehicleInfo?.marqueId &&
+        vehicleInfo?.modeleId &&
+        vehicleInfo?.typeId
+      ) {
         const gammeSlug = `${targetGamme.pg_alias}-${targetPgId}`;
         const marqueSlug = `${vehicleInfo.marqueAlias || vehicle.marque.toLowerCase()}-${vehicleInfo.marqueId}`;
         const modeleSlug = `${vehicleInfo.modeleAlias || vehicle.modele.toLowerCase()}-${vehicleInfo.modeleId}`;
@@ -944,7 +1046,10 @@ export class SeoSwitchesService {
       const formula = `${verbId}:${nounId}`;
       const linkHtml = `<a href="${linkUrl}" class="seo-internal-link" data-link-type="LinkGammeCar" data-formula="${formula}" data-target-gamme="${targetPgId}">${anchorText}</a>`;
 
-      result = result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), linkHtml);
+      result = result.replace(
+        new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        linkHtml,
+      );
     }
 
     // 5. Traiter #LinkGamme_Y# - utiliser les données batch
@@ -955,12 +1060,18 @@ export class SeoSwitchesService {
 
       const targetGamme = gammesMap.get(targetPgId);
       if (!targetGamme) {
-        result = result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+        result = result.replace(
+          new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+          '',
+        );
         continue;
       }
 
       const linkHtml = `<a href="/pieces/${targetGamme.pg_alias}-${targetPgId}.html" class="seo-internal-link" data-link-type="LinkGamme" data-target-gamme="${targetPgId}"><b>${targetGamme.pg_name}</b></a>`;
-      result = result.replace(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), linkHtml);
+      result = result.replace(
+        new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        linkHtml,
+      );
     }
 
     // 6. Traiter #PrixPasCher# (variations marketing) - local, pas de DB
