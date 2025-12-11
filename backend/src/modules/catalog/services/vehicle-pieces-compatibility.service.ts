@@ -158,7 +158,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
    * 🚀 Récupère les refs OEM de manière légère (sans RPC lente)
    * Utilise les piece_ids déjà récupérés par getPiecesViaRPC
-   * 
+   *
    * V2: Dédoublonnage avec normalisation via OemPlatformMappingService
    *     Suppression des limites arbitraires (slice/limit)
    *
@@ -225,7 +225,8 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
 
       // 3. Dédoublonner avec normalisation ("77 01 206 343" = "7701206343")
       const rawRefs = (refData || []).map((r) => r.prs_ref);
-      const uniqueRefs = this.oemPlatformMappingService.deduplicateOemRefs(rawRefs);
+      const uniqueRefs =
+        this.oemPlatformMappingService.deduplicateOemRefs(rawRefs);
       const duration = Date.now() - startTime;
 
       this.logger.log(
