@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour corriger automatiquement les 290 erreurs de linting restantes
 # Types d'erreurs: variables/imports non utilisÃ©s

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Test du nettoyage des balises <p> dans le contenu SEO
 # VÃ©rifie que les <p> orphelines ont bien Ã©tÃ© supprimÃ©es

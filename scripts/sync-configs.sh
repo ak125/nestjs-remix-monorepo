@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # sync-configs.sh - Synchroniser config/ vers racine (rollback d'urgence)
 # Usage: ./scripts/sync-configs.sh [--reverse]
 

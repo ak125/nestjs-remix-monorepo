@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 ###############################################################################
 # ðŸ›¡ï¸ MONITORING SEO - DÃ©tection Pages Sans Articles

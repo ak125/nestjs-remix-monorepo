@@ -1,4 +1,4 @@
-﻿#cloud-config
+#cloud-config
 # ══════════════════════════════════════════════════════════════════════════════
 # Cloud-Init - Serveur DEV Automecanik (Hetzner CPX32)
 # Ubuntu 22.04 LTS - Docker + Caddy + Redis + Meilisearch

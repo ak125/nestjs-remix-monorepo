@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 echo "ðŸ” Test direct Supabase - VÃ©rification nettoyage <p>"
 echo "======================================================"

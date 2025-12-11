@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de correction automatique des variables non utilisÃ©es
 # Utilise sed pour les remplacements simples et sÃ»rs

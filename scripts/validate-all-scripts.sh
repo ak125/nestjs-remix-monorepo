@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # validate-all-scripts.sh - Valider tous les scripts du projet
 
 set -e

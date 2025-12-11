@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de vÃ©rification de l'Ã©tat des services
 

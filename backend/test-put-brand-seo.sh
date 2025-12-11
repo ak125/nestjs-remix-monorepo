@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Test endpoint PUT /api/brands/:id/seo
 # Usage: ./test-put-brand-seo.sh [marqueId]

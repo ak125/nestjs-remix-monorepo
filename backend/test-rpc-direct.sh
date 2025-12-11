@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 
 echo "ðŸ” TEST DIRECT DE LA FONCTION RPC DANS SUPABASE"

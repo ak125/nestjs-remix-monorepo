@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour gÃ©nÃ©rer des logs Caddy test pour Vector
 # ==================================================

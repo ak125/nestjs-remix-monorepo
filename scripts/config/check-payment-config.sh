@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # ðŸ” Script de validation de la configuration de paiement
 # Usage: ./check-payment-config.sh
 

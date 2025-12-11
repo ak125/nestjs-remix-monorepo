@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Init script pour Vector log pipeline
 
 set -e

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ” Script d'analyse des requÃªtes lentes
 # Usage: ./scripts/analyze-slow-requests.sh

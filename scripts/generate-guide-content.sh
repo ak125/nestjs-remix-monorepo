@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour gÃ©nÃ©rer tous les mini-contenus du guide d'achat
 # Pour chaque Ã©tape et chaque gamme

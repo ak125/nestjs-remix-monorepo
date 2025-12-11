@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Test curl breadcrumb dynamique
 # Utilise les vraies URLs de votre application

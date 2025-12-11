@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 ################################################################################
 # ðŸ” Script de VÃ©rification URLs - Version SimplifiÃ©e

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de test pour les problÃ¨mes de panier et URLs legacy
 

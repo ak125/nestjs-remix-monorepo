@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ” Script de diagnostic Supabase
 # Teste la connectivitÃ© et la latence vers Supabase

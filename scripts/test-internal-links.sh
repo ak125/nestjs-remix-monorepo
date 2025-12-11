@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # =====================================================
 # Test Script - SEO Internal Links
 # scripts/test-internal-links.sh

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # .spec/scripts/check-coverage.sh
 # VÃ©rification de la couverture des spÃ©cifications
 

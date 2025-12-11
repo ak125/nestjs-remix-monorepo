@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ“Š Script de Monitoring SEO - Breadcrumbs & Rich Snippets
 # VÃ©rification automatique des performances SEO

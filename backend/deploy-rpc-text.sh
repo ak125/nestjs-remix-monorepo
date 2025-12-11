@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 
 echo "ðŸš€ DÃ‰PLOIEMENT VIA API REST SUPABASE"

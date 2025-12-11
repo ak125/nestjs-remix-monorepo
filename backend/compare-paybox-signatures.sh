@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================================================
 # SCRIPT DE COMPARAISON DES SIGNATURES PAYBOX

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 echo "ðŸ§ª TEST INTÃ‰GRATION PAYBOX"
 echo "=========================="

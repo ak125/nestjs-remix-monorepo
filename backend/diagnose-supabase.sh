@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 echo "=== Diagnostic de connexion Supabase ==="
 echo ""

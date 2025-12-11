@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ”§ Script de correction automatique des variables inutilisÃ©es
 # Usage: bash fix-unused-vars.sh

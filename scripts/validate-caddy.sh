@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # ðŸ” Script de validation de la configuration Caddy
 # Date: 21 octobre 2025
 

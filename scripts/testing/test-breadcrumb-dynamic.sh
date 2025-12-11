@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ§ª Tests cURL - Breadcrumb Dynamique avec VÃ©hicule
 # Ce script teste le breadcrumb avec et sans cookie vÃ©hicule

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸ”„ SCRIPT DE MIGRATION FRONTEND - Routes API Admin
 # Mise Ã  jour des appels fetch vers les nouvelles routes /api/admin/*

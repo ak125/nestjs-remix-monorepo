@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ðŸš€ Script d'intÃ©gration rapide du Breadcrumb dans toutes les pages admin
 # Utilise le composant AdminBreadcrumb pour une intÃ©gration cohÃ©rente et rapide

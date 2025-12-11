@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script de vÃ©rification de configuration de paiement
 # VÃ©rifie SystemPay et Paybox

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script pour tester et valider les clÃ©s HMAC Paybox
 
