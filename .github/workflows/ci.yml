@@ -120,15 +120,32 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
-          cd ~/production
+          
+          # Dossier de production sur le serveur
+          PROD_DIR="/home/deploy/app"
+          
+          # Synchroniser les fichiers docker-compose depuis Git
+          cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
+          cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
+          
+          cd $PROD_DIR
+          
           # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
+          
           # Arrêter et supprimer les anciens conteneurs s'ils existent
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
-          # Démarrer avec la nouvelle config
+          
+          # Démarrer avec la nouvelle config (avec USE_UNIFIED_RPC=true)
           docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+          
           # Attendre le démarrage
-          sleep 10
+          sleep 15
+          
+          # Vérifier que USE_UNIFIED_RPC est bien passé
+          echo "🔍 Vérification des variables d'environnement:"
+          docker exec nestjs-remix-monorepo-prod env | grep -E "UNIFIED|RPC" || echo "⚠️ Variables RPC non trouvées"
+          
           # Nettoyer les images (sans --volumes pour préserver les données)
           docker image prune -f
