@@ -6,8 +6,8 @@
 } from '../interfaces/sitemap-config.interface';
 
 /**
- * Configuration centralisÃ©e de tous les sitemaps
- * Architecture hiÃ©rarchique: Index MaÃ®tre â†’ Sous-Indexes â†’ Sitemaps Finaux
+ * Configuration centralisée de tous les sitemaps
+ * Architecture hiérarchique: Index Maître ←’ Sous-Indexes ←’ Sitemaps Finaux
  */
 export const SITEMAP_CONFIGS: SitemapConfig[] = [
   // ============================================================================
@@ -84,7 +84,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // ModÃ¨les (sharding alphabÃ©tique A-M)
+  // Modèles (sharding alphabétique A-M)
   {
     name: 'modeles-a-m',
     type: SitemapType.FINAL,
@@ -107,7 +107,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // ModÃ¨les (sharding alphabÃ©tique N-Z)
+  // Modèles (sharding alphabétique N-Z)
   {
     name: 'modeles-n-z',
     type: SitemapType.FINAL,
@@ -130,8 +130,8 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     cacheTTL: 7200, // 2h
   },
 
-  // Types/Motorisations depuis __sitemap_motorisation (~12,756 URLs prÃ©-calculÃ©es)
-  // Source: table PHP d'origine avec URLs validÃ©es
+  // Types/Motorisations depuis __sitemap_motorisation (~12,756 URLs pré-calculées)
+  // Source: table PHP d'origine avec URLs validées
   {
     name: 'types-all',
     type: SitemapType.FINAL,
@@ -179,7 +179,7 @@ export const SITEMAP_CONFIGS: SitemapConfig[] = [
     ],
     changefreq: 'weekly',
     priority: 0.9,
-    cacheTTL: 1800, // 30min (contenu rÃ©cent)
+    cacheTTL: 1800, // 30min (contenu récent)
   },
 
   {

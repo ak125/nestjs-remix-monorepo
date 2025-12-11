@@ -8,7 +8,7 @@ export class SitemapScalableController {
   constructor(private readonly sitemapService: SitemapScalableService) {}
 
   /**
-   * Index maÃ®tre - Point d'entrÃ©e principal
+   * Index maître - Point d'entrée principal
    * GET /sitemap-v2/sitemap-index.xml
    */
   @Get('sitemap-index.xml')
@@ -78,7 +78,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap modÃ¨les A-M
+   * Sitemap modèles A-M
    * GET /sitemap-v2/sitemap-modeles-a-m.xml
    */
   @Get('sitemap-modeles-a-m.xml')
@@ -89,7 +89,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap modÃ¨les N-Z
+   * Sitemap modèles N-Z
    * GET /sitemap-v2/sitemap-modeles-n-z.xml
    */
   @Get('sitemap-modeles-n-z.xml')
@@ -100,7 +100,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap types (sharding numÃ©rique)
+   * Sitemap types (sharding numérique)
    * GET /sitemap-v2/sitemap-types-0-10000.xml
    * GET /sitemap-v2/sitemap-types-10001-20000.xml
    * etc.
@@ -129,7 +129,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap blog par annÃ©e
+   * Sitemap blog par année
    * GET /sitemap-v2/sitemap-blog-2025.xml
    * GET /sitemap-v2/sitemap-blog-2024.xml
    * etc.
@@ -180,11 +180,11 @@ export class SitemapScalableController {
   }
 
   // ============================================================================
-  // PIÃˆCES PRÃ‰-CALCULÃ‰ES (714k+ URLs depuis __sitemap_p_link)
+  // PIÈCES PRÉ-CALCULÉES (714k+ URLs depuis __sitemap_p_link)
   // ============================================================================
 
   /**
-   * Sous-index piÃ¨ces
+   * Sous-index pièces
    * GET /sitemap-v2/sitemap-pieces-index.xml
    */
   @Get('sitemap-pieces-index.xml')
@@ -195,7 +195,7 @@ export class SitemapScalableController {
   }
 
   /**
-   * Sitemap piÃ¨ces (sharding par 50k URLs)
+   * Sitemap pièces (sharding par 50k URLs)
    * GET /sitemap-v2/sitemap-pieces-0-50000.xml
    * GET /sitemap-v2/sitemap-pieces-50001-100000.xml
    * etc.
@@ -209,20 +209,20 @@ export class SitemapScalableController {
   }
 
   // ============================================================================
-  // ENDPOINT GÃ‰NÃ‰RIQUE (DOIT ÃŠTRE EN DERNIER)
+  // ENDPOINT GÉNÉRIQUE (DOIT ÃŠTRE EN DERNIER)
   // ============================================================================
 
   /**
-   * Endpoint gÃ©nÃ©rique pour tester n'importe quel sitemap
+   * Endpoint générique pour tester n'importe quel sitemap
    * GET /sitemap-v2/:name
-   * âš ï¸ DOIT ÃŠTRE EN DERNIER car il capture tout
+   * ⚠️ DOIT ÃŠTRE EN DERNIER car il capture tout
    */
   @Get(':name')
   @Header('Content-Type', 'application/xml')
   async getGeneric(@Param('name') name: string) {
-    // Retirer .xml si prÃ©sent
+    // Retirer .xml si présent
     const configName = name.replace('.xml', '');
-    this.logger.log(`GET /sitemap-v2/${name} â†’ config: ${configName}`);
+    this.logger.log(`GET /sitemap-v2/${name} ←’ config: ${configName}`);
     return this.sitemapService.generateSitemap(configName);
   }
 }
