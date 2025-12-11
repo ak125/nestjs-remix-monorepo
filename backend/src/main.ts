@@ -114,22 +114,36 @@ async function bootstrap() {
       const helmet = (await import('helmet')).default;
       const compression = (await import('compression')).default;
 
-      // Configuration Helmet avec CSP personnalisée pour autoriser Supabase
+      // Configuration Helmet avec CSP personnalisée pour autoriser Supabase + Google Analytics
       app.use(
         helmet({
           contentSecurityPolicy: {
             directives: {
               defaultSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"], // Pour Tailwind CSS
-              scriptSrc: ["'self'", "'unsafe-inline'"], // Pour les scripts Remix
+              scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                'https://www.googletagmanager.com', // Google Tag Manager
+                'https://www.google-analytics.com', // Google Analytics
+              ],
               imgSrc: [
                 "'self'",
                 'data:',
                 'blob:',
                 'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
+                'https://www.google-analytics.com', // Pixel GA
+                'https://www.googletagmanager.com', // Pixel GTM
               ],
-              connectSrc: ["'self'", 'ws:', 'wss:'], // Pour les WebSockets de dev
-              fontSrc: ["'self'", 'data:'],
+              connectSrc: [
+                "'self'",
+                'ws:',
+                'wss:',
+                'https://www.google-analytics.com', // Envoi données GA
+                'https://analytics.google.com', // GA4 endpoint
+                'https://region1.google-analytics.com', // GA4 régional
+              ],
+              fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'], // Google Fonts
               objectSrc: ["'none'"],
               mediaSrc: ["'self'"],
               frameSrc: ["'none'"],

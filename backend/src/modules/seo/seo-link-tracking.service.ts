@@ -113,7 +113,7 @@ export class SeoLinkTrackingService {
 
     // Validation: linkType est obligatoire
     if (!event.linkType) {
-      this.logger.warn('⚠️ linkType manquant dans l\'événement de clic');
+      this.logger.warn("⚠️ linkType manquant dans l'événement de clic");
       return false;
     }
 
