@@ -1,0 +1,103 @@
+#cloud-config
+# ══════════════════════════════════════════════════════════════════════════════
+# Cloud-Init - Serveur DEV Automecanik (Hetzner CPX32)
+# Ubuntu 22.04 LTS - Docker + Caddy + Redis + Meilisearch
+# ══════════════════════════════════════════════════════════════════════════════
+# Architecture: NestJS + Remix SSR | Supabase Cloud (DB externe)
+# Reverse Proxy: Caddy 2 (SSL auto Let's Encrypt)
+# Cache: Redis 7 | Search: Meilisearch v1.8 | Queue: BullMQ
+# ══════════════════════════════════════════════════════════════════════════════
+
+hostname: dev-automecanik
+manage_etc_hosts: true
+timezone: Europe/Paris
+locale: fr_FR.UTF-8
+
+users:
+  - name: deploy
+    groups: [sudo, docker]
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiUMHgUaFeNywaMUaZXVDnWz1LMlpSWUQcqws18wVfArmyFj7wGKmkiOm920ga/d1CiVinj2iwOE3clfQScpXltVRC+QtGc5+07ufMtgURNi8EyQoDPyl2pDYFQJ57DtoulVdZqGRp/ehyNGYBIejrnNmQNlFzbYKsdm07N3N0P79Q34ULeREvtnqHk7QotLY4nupaxBJnPqc1cnPv7YStPwudgUeNO+P2AV3wvQ0fJzrq0OZ/cRBqk4nAeVwEgB1qA9KSayxQp8yinKCHEmcw2PMLb3DtTMhkswxVf/CcKRdZOGaNfVfB98U9qiw51bn26UZyjEWU7Urzvknz6puMnZbplCKevSxaq+ASXLJINGT8hMdlzT661BvedoGMDh4GKnX8SrLzzNEFBdH3mncwmhk4IOAjlLivq9aLIspmGcJpegUVKRiVkKmH6ZxCOQ6mWttF3L97rgSKteiNl/9ID6hH6QAIifC4XO5hJOm7u3LQqOI3Q5ZXLi4i3W/DGbvVJdKQahf34BSFyJ/eX4F7FmSKj/YfjLpRaUr/+5p7G+odJMBrP3CSnWnTNyInZZRaDI3GsfgQs0KReldi7vi8lybdxwB2BXXT dev-automecanik-20251211
+
+package_update: true
+package_upgrade: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+  - htop
+  - ncdu
+  - tree
+  - jq
+  - unzip
+  - fail2ban
+  - ufw
+  - make
+
+runcmd:
+  # Docker
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu jammy stable" | tee /etc/apt/sources.list.d/docker.list
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  - systemctl enable docker
+  - systemctl start docker
+  
+  # Node.js 20 LTS
+  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  - apt-get install -y nodejs
+  
+  # Structure projet
+  - mkdir -p /opt/automecanik/{app,data,logs,backups,caddy_data,caddy_config}
+  - mkdir -p /opt/automecanik/data/{redis,meilisearch,grafana,loki,prometheus}
+  - chown -R deploy:deploy /opt/automecanik
+  
+  # Prompt DEV vert
+  - echo 'export PS1="\[\e[1;32m\][DEV]\[\e[0m\] \u@\h:\w\$ "' >> /home/deploy/.bashrc
+  - echo 'export PS1="\[\e[1;32m\][DEV]\[\e[0m\] \u@\h:\w\$ "' >> /root/.bashrc
+  
+  # MOTD
+  - echo "=== DEV AUTOMECANIK ===" > /etc/motd
+  - echo "Stack: NestJS + Remix + Caddy + Redis + Meilisearch" >> /etc/motd
+  - echo "DB: Supabase Cloud" >> /etc/motd
+  - echo "App: /opt/automecanik/app" >> /etc/motd
+  - echo "Ports: 3000 (App) | 6379 (Redis) | 7700 (Meilisearch)" >> /etc/motd
+  
+  # Firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 443/udp
+  - ufw allow 3000/tcp
+  - ufw allow 3001/tcp
+  - ufw allow 3002/tcp
+  - ufw allow 6379/tcp
+  - ufw allow 7700/tcp
+  - ufw --force enable
+  
+  # Security
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+  - sed -i 's/#PermitRootLogin yes/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+  - sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - systemctl restart sshd
+  
+  # Git config
+  - sudo -u deploy git config --global user.name "Deploy Bot"
+  - sudo -u deploy git config --global user.email "deploy@automecanik.com"
+  - sudo -u deploy git config --global pull.rebase false
+  
+  # Alias Docker
+  - echo "alias dc='docker compose'" >> /home/deploy/.bashrc
+  - echo "alias dps='docker ps --format \"table {{.Names}}\t{{.Status}}\t{{.Ports}}\"'" >> /home/deploy/.bashrc
+  - echo "alias dlogs='docker compose logs -f'" >> /home/deploy/.bashrc
+  - echo "alias dcdev='docker compose -f docker-compose.dev.yml'" >> /home/deploy/.bashrc
+
+final_message: "Cloud-init OK - Serveur DEV Automecanik pret! ssh deploy@IP"
