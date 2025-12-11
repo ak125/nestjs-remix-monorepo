@@ -123,8 +123,11 @@ jobs:
           cd ~/production
           # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
-          # Redémarrer sans down pour éviter la coupure réseau
-          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --force-recreate
+          # Arrêter et supprimer les anciens conteneurs s'ils existent
+          docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
+          docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
+          # Démarrer avec la nouvelle config
+          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
           # Attendre le démarrage
           sleep 10
           # Nettoyer les images (sans --volumes pour préserver les données)
