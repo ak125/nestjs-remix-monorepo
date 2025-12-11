@@ -25,7 +25,7 @@ services:
       - CADDY_ADMIN=off
     
     networks:
-      - default
+      - automecanik-prod
     
     depends_on:
       - monorepo_prod
@@ -51,9 +51,13 @@ services:
     volumes:
       - ./:/output
     networks:
-      - default
+      - automecanik-prod
     depends_on:
       - monorepo_prod
+
+networks:
+  automecanik-prod:
+    external: true
 
 volumes:
   caddy_data:

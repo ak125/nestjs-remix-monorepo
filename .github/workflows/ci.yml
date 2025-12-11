@@ -121,7 +121,11 @@ jobs:
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
           cd ~/production
-          docker stop nestjs-remix-monorepo-prod || true
-          docker rm nestjs-remix-monorepo-prod || true
-          docker compose -f docker-compose.prod.yml up -d --force-recreate
-          docker system prune --all --volumes --force
+          # Créer le réseau externe s'il n'existe pas
+          docker network create automecanik-prod 2>/dev/null || true
+          # Redémarrer sans down pour éviter la coupure réseau
+          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --force-recreate
+          # Attendre le démarrage
+          sleep 10
+          # Nettoyer les images (sans --volumes pour préserver les données)
+          docker image prune -f

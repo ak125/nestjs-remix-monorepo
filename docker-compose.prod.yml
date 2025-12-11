@@ -20,6 +20,9 @@ services:
     restart: always
     ports:
       - 3000:3000
+    networks:
+      - automecanik-prod
+
   redis_prod:
     image: redis:latest
     restart: always
@@ -29,3 +32,9 @@ services:
     # --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
       - /dev/volumes/nestjs-remix/production/sessions/:/data
+    networks:
+      - automecanik-prod
+
+networks:
+  automecanik-prod:
+    external: true
