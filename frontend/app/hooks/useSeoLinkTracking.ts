@@ -226,11 +226,12 @@ export function useSeoLinkTracking(): UseSeoLinkTrackingReturn {
       
       try {
         // Use sendBeacon for reliability (doesn't block navigation)
+        // Use Blob with proper Content-Type for JSON parsing on backend
         if (navigator.sendBeacon) {
-          navigator.sendBeacon(
-            '/api/seo/track-click',
-            JSON.stringify(payload)
-          );
+          const blob = new Blob([JSON.stringify(payload)], {
+            type: 'application/json',
+          });
+          navigator.sendBeacon('/api/seo/track-click', blob);
         } else {
           // Fallback to fetch with keepalive
           fetch('/api/seo/track-click', {

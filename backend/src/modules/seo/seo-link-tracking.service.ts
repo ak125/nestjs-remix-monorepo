@@ -111,6 +111,12 @@ export class SeoLinkTrackingService {
       return false;
     }
 
+    // Validation: linkType est obligatoire
+    if (!event.linkType) {
+      this.logger.warn('⚠️ linkType manquant dans l\'événement de clic');
+      return false;
+    }
+
     try {
       const { error } = await this.supabase.from('seo_link_clicks').insert({
         link_type: event.linkType,
