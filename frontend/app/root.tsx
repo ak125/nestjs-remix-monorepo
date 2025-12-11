@@ -8,7 +8,8 @@ import {
   useRouteLoaderData,
   useRouteError,
   isRouteErrorResponse,
-  useRevalidator
+  useRevalidator,
+  useLocation
 } from "@remix-run/react";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
@@ -110,6 +111,14 @@ export const useRootCart = () => {
   return data?.cart || null;
 }
 
+// Déclaration TypeScript pour Google Analytics gtag
+declare global {
+  interface Window {
+    gtag: (command: string, targetId: string, config?: Record<string, unknown>) => void;
+    dataLayer: unknown[];
+  }
+}
+
 declare module "@remix-run/node" {
   interface AppLoadContext {
     remixService: any;
@@ -124,6 +133,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const _user = data?.user;
   const cart = data?.cart;
   const revalidator = useRevalidator();
+  const location = useLocation();
+  
+  // 📊 Google Analytics - Tracking des navigations SPA
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('config', 'G-ZVG6K5R740', {
+        page_path: location.pathname + location.search,
+        page_title: document.title,
+        page_location: window.location.href
+      });
+    }
+  }, [location.pathname, location.search]);
   
   // 🔄 Synchronisation panier globale via événement
   useEffect(() => {
