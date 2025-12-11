@@ -111,14 +111,6 @@ export const useRootCart = () => {
   return data?.cart || null;
 }
 
-// Déclaration TypeScript pour Google Analytics gtag
-declare global {
-  interface Window {
-    gtag: (command: string, targetId: string, config?: Record<string, unknown>) => void;
-    dataLayer: unknown[];
-  }
-}
-
 declare module "@remix-run/node" {
   interface AppLoadContext {
     remixService: any;
