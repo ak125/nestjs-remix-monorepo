@@ -1,4 +1,5 @@
 import { Controller, Get, Injectable, Logger } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SystemService } from './services/system.service';
 
 @Injectable()
@@ -31,6 +32,7 @@ export class SystemHealthService {
   }
 }
 
+@SkipThrottle() // 🛡️ Health checks exemptés du rate limiting
 @Controller('api/system')
 export class SystemHealthController {
   private readonly logger = new Logger(SystemHealthController.name);
