@@ -17,10 +17,7 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
-      logger:
-        process.env.NODE_ENV === 'production'
-          ? ['error', 'warn']
-          : ['error', 'warn', 'log'], // Réduire les logs DEBUG
+      logger: ['error', 'warn', 'log'], // Logs activés pour monitoring RPC V3/V2
     });
 
     // Les contrôleurs définissent déjà leurs préfixes individuellement
