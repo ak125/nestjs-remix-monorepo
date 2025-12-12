@@ -1,9 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { SearchSimpleService } from '../services/search-simple.service';
 import { SearchMonitoringService } from '../services/search-monitoring.service';
 
 @ApiTags('search')
+@Throttle({ medium: { ttl: 60000, limit: 30 } }) // 🛡️ Anti-bot: 30 req/min max par IP
 @Controller('api/search')
 export class SearchController {
   constructor(

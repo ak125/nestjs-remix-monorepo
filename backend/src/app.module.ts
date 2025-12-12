@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-// import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'; // TEMPORAIREMENT DÉSACTIVÉ
-// import { APP_GUARD } from '@nestjs/core'; // TEMPORAIREMENT DÉSACTIVÉ
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -57,12 +57,24 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
       envFilePath: '.env',
       expandVariables: true,
     }),
-    // ThrottlerModule.forRoot([
-    //   {
-    //     ttl: 60,
-    //     limit: 100,
-    //   },
-    // ]), // TEMPORAIREMENT DÉSACTIVÉ
+    // 🛡️ RATE LIMITING - Protection anti-spam/DDoS
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,      // 1 seconde
+        limit: 15,      // 15 req/sec max par IP
+      },
+      {
+        name: 'medium',
+        ttl: 60000,     // 1 minute
+        limit: 100,     // 100 req/min par IP
+      },
+      {
+        name: 'long',
+        ttl: 3600000,   // 1 heure
+        limit: 2000,    // 2000 req/heure par IP
+      },
+    ]),
 
     // Event Emitter global
     EventEmitterModule.forRoot(),
@@ -126,10 +138,11 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
     AnalyticsController, // 📊 Analytics avancées
   ], // Plus besoin du controller temporaire
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // }, // TEMPORAIREMENT DÉSACTIVÉ
+    // 🛡️ Rate Limiting global - Protège toutes les routes
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
