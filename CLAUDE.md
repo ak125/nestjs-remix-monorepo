@@ -440,3 +440,112 @@ docker-compose -f docker-compose.prod.yml up -d
 - Logs: `docker-compose logs -f app`
 - Health check: `http://localhost:3000/health`
 - Admin stats: `http://localhost:3000/admin/stats`
+
+## CI/CD Automatique (GitHub Actions)
+
+**⚠️ IMPORTANT : Déploiement automatique activé !**
+
+Le projet utilise **GitHub Actions avec self-hosted runner** pour déployer automatiquement sur le serveur de production.
+
+### Workflow de déploiement
+
+**Fichier:** `.github/workflows/ci.yml`
+
+**Déclenchement:**
+```bash
+git push origin main  # Déclenche automatiquement le déploiement
+```
+
+**Pipeline (5-10 minutes):**
+1. **Lint** - Vérification ESLint (`npm run lint`)
+2. **TypeCheck** - Vérification TypeScript (`npm run typecheck`)
+3. **Build** - Construction image Docker (`massdoc/nestjs-remix-monorepo:production`)
+4. **Deploy** - Déploiement sur serveur self-hosted
+
+**Condition de déploiement:**
+- Branche: `main` uniquement
+- Event: `push` (pas sur PR)
+- Runner: `self-hosted, Linux, X64`
+
+### Commandes de déploiement automatique
+
+Le runner exécute automatiquement :
+```bash
+# Pull de l'image Docker buildée
+docker pull massdoc/nestjs-remix-monorepo:production
+
+# Synchronisation docker-compose depuis Git
+cp docker-compose.prod.yml /home/deploy/app/
+cp docker-compose.caddy.yml /home/deploy/app/
+
+# Création réseau externe
+docker network create automecanik-prod
+
+# Arrêt des anciens conteneurs
+docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod
+docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod
+
+# Démarrage avec nouvelle config
+docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+
+# Vérification variables d'environnement
+docker exec nestjs-remix-monorepo-prod env | grep -E "UNIFIED|RPC"
+```
+
+### Workflow manuel (si besoin)
+
+Si le déploiement automatique échoue ou pour tests locaux :
+```bash
+# Build et push manuel de l'image
+docker build -t massdoc/nestjs-remix-monorepo:production .
+docker push massdoc/nestjs-remix-monorepo:production
+
+# Déploiement sur serveur (SSH)
+ssh deploy@server
+cd /home/deploy/app
+docker pull massdoc/nestjs-remix-monorepo:production
+docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+```
+
+### Monitoring du déploiement
+
+**Via GitHub Actions:**
+- Aller sur `https://github.com/ak125/nestjs-remix-monorepo/actions`
+- Voir le workflow "🚀 Deploy" en cours
+- Statut: ✅ Réussi / ❌ Échoué
+
+**Sur le serveur:**
+```bash
+# Logs en temps réel
+docker compose -f docker-compose.prod.yml logs -f
+
+# Vérifier que les conteneurs tournent
+docker ps | grep nestjs-remix
+
+# Tester le health check
+curl http://localhost:3000/health
+```
+
+### Secrets GitHub (déjà configurés)
+
+**Secrets nécessaires:**
+- `DOCKERHUB_USERNAME` - Login Docker Hub
+- `DOCKERHUB_TOKEN` - Token Docker Hub
+- `DATABASE_URL` - URL Supabase production
+- `TURBO_TOKEN` - Cache Turbo (optionnel)
+- `TURBO_TEAM` - Team Turbo (optionnel)
+
+### Rollback en cas de problème
+
+Si le déploiement échoue :
+```bash
+# Revenir à la version précédente
+git revert HEAD
+git push origin main  # Redéclenche le déploiement avec l'ancien code
+
+# OU restaurer manuellement une image précédente
+docker pull massdoc/nestjs-remix-monorepo:production@sha256:xxxxx
+docker compose up -d
+```
+
+**Note:** Le workflow conserve les anciennes images Docker. Vérifier avec `docker images` sur le serveur.
