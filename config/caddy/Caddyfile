@@ -48,6 +48,20 @@ automecanik.com, www.automecanik.com {
     @upload_images path_regexp upload_path ^/upload/(.+)$
     redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
     
+    # ===== SITEMAPS STATIQUES (714k URLs) =====
+    @sitemaps path /sitemap*.xml
+    handle @sitemaps {
+        header Content-Type "application/xml; charset=utf-8"
+        header Cache-Control "public, max-age=86400"
+        header X-Robots-Tag "noindex"
+        reverse_proxy monorepo_prod:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
     # ===== ASSETS STATIQUES AVEC CACHE =====
     @hashed path /build/*
     handle @hashed {
