@@ -164,6 +164,34 @@ async function generateSitemaps(): Promise<void> {
   fs.writeFileSync(indexPath, indexXml);
   console.log(`\nIndex généré: sitemap.xml (${sitemapFiles.length} sitemaps)`);
 
+  // Créer les symlinks dans frontend/public pour servir les sitemaps
+  const frontendPublicDir = path.join(__dirname, '../../frontend/public');
+  console.log('\n=== Création des symlinks ===');
+
+  // Symlink pour le dossier sitemaps
+  const sitemapsFolderLink = path.join(frontendPublicDir, 'sitemaps');
+  try {
+    if (fs.existsSync(sitemapsFolderLink)) fs.unlinkSync(sitemapsFolderLink);
+    fs.symlinkSync('../../public/sitemaps', sitemapsFolderLink);
+    console.log('Symlink créé: frontend/public/sitemaps');
+  } catch (e) {
+    console.log('Symlink sitemaps ignoré (peut-être déjà existant)');
+  }
+
+  // Symlinks individuels pour chaque sitemap
+  const allSitemaps = ['sitemap.xml', ...sitemapFiles];
+  for (const filename of allSitemaps) {
+    const linkPath = path.join(frontendPublicDir, filename);
+    const targetPath = `../../public/sitemaps/${filename}`;
+    try {
+      if (fs.existsSync(linkPath)) fs.unlinkSync(linkPath);
+      fs.symlinkSync(targetPath, linkPath);
+    } catch (e) {
+      // Ignorer les erreurs
+    }
+  }
+  console.log(`${allSitemaps.length} symlinks créés dans frontend/public/`);
+
   // Résumé
   console.log('\n=== Résumé ===');
   console.log(`Répertoire: ${OUTPUT_DIR}`);
