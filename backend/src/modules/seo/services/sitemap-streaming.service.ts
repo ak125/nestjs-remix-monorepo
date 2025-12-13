@@ -61,10 +61,14 @@ export class SitemapStreamingService {
 
     // Initialiser le client Supabase
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn('⚠️ Supabase credentials not configured - static sitemap generation disabled');
+      this.logger.warn(
+        '⚠️ Supabase credentials not configured - static sitemap generation disabled',
+      );
     }
 
     this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
@@ -529,7 +533,9 @@ ${shards
    *
    * @param outputDir Répertoire de sortie (par défaut: /srv/sitemaps ou OUTPUT_DIR)
    */
-  async generateStaticSitemaps(outputDir?: string): Promise<StaticSitemapResult> {
+  async generateStaticSitemaps(
+    outputDir?: string,
+  ): Promise<StaticSitemapResult> {
     const startTime = Date.now();
     const dir = outputDir || process.env.OUTPUT_DIR || '/srv/sitemaps';
     const files: StaticSitemapResult['files'] = [];
@@ -573,7 +579,9 @@ ${shards
       const duration = Date.now() - startTime;
       const totalUrls = files.reduce((sum, f) => sum + f.urlCount, 0);
 
-      this.logger.log(`✅ Static sitemaps generated: ${files.length} files, ${totalUrls} URLs in ${duration}ms`);
+      this.logger.log(
+        `✅ Static sitemaps generated: ${files.length} files, ${totalUrls} URLs in ${duration}ms`,
+      );
 
       return {
         success: errors.length === 0,
@@ -583,7 +591,9 @@ ${shards
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error: any) {
-      this.logger.error(`❌ Static sitemap generation failed: ${error.message}`);
+      this.logger.error(
+        `❌ Static sitemap generation failed: ${error.message}`,
+      );
       return {
         success: false,
         files,
@@ -632,7 +642,9 @@ ${shards
 
       const stats = fs.statSync(filepath);
 
-      this.logger.log(`✅ sitemap-constructeurs.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+      this.logger.log(
+        `✅ sitemap-constructeurs.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`,
+      );
 
       return {
         success: true,
@@ -644,7 +656,9 @@ ${shards
         },
       };
     } catch (error: any) {
-      this.logger.error(`❌ Failed to generate constructeurs sitemap: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to generate constructeurs sitemap: ${error.message}`,
+      );
       return { success: false, error: error.message };
     }
   }
@@ -702,7 +716,9 @@ ${shards
 
       const stats = fs.statSync(filepath);
 
-      this.logger.log(`✅ sitemap-types.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+      this.logger.log(
+        `✅ sitemap-types.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`,
+      );
 
       return {
         success: true,
@@ -714,7 +730,9 @@ ${shards
         },
       };
     } catch (error: any) {
-      this.logger.error(`❌ Failed to generate types sitemap: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to generate types sitemap: ${error.message}`,
+      );
       return { success: false, error: error.message };
     }
   }
@@ -765,7 +783,9 @@ ${shards
 
       const stats = fs.statSync(filepath);
 
-      this.logger.log(`✅ sitemap-blog.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+      this.logger.log(
+        `✅ sitemap-blog.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`,
+      );
 
       return {
         success: true,
@@ -777,7 +797,9 @@ ${shards
         },
       };
     } catch (error: any) {
-      this.logger.error(`❌ Failed to generate blog sitemap: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to generate blog sitemap: ${error.message}`,
+      );
       return { success: false, error: error.message };
     }
   }

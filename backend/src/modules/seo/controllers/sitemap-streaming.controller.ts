@@ -4,7 +4,10 @@
  */
 
 import { Controller, Get, Post, Query, Logger } from '@nestjs/common';
-import { SitemapStreamingService, StaticSitemapResult } from '../services/sitemap-streaming.service';
+import {
+  SitemapStreamingService,
+  StaticSitemapResult,
+} from '../services/sitemap-streaming.service';
 import {
   StreamingGenerationResult,
   GenerationOptions,
@@ -166,7 +169,8 @@ export class SitemapStreamingController {
     try {
       this.logger.log('🏭 Starting static sitemap generation...');
 
-      const result = await this.streamingService.generateStaticSitemaps(outputDir);
+      const result =
+        await this.streamingService.generateStaticSitemaps(outputDir);
 
       return {
         success: result.success,
@@ -176,7 +180,9 @@ export class SitemapStreamingController {
         data: result,
       };
     } catch (error: any) {
-      this.logger.error(`❌ Static sitemap generation failed: ${error.message}`);
+      this.logger.error(
+        `❌ Static sitemap generation failed: ${error.message}`,
+      );
       return {
         success: false,
         message: `Static sitemap generation failed: ${error.message}`,
