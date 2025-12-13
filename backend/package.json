@@ -21,7 +21,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "sitemap:generate": "ts-node scripts/generate-sitemaps.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
