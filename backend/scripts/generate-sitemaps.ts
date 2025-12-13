@@ -25,7 +25,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   process.exit(1);
 }
 
-const OUTPUT_DIR = path.join(__dirname, '../../public/sitemaps');
+const OUTPUT_DIR = process.env.OUTPUT_DIR || path.join(__dirname, '../../public/sitemaps');
 const BASE_URL = 'https://www.automecanik.com';
 const URLS_PER_FILE = 50000;
 
@@ -164,33 +164,38 @@ async function generateSitemaps(): Promise<void> {
   fs.writeFileSync(indexPath, indexXml);
   console.log(`\nIndex généré: sitemap.xml (${sitemapFiles.length} sitemaps)`);
 
-  // Créer les symlinks dans frontend/public pour servir les sitemaps
-  const frontendPublicDir = path.join(__dirname, '../../frontend/public');
-  console.log('\n=== Création des symlinks ===');
+  // Créer les symlinks dans frontend/public (uniquement en développement local)
+  // En production (OUTPUT_DIR défini), Caddy sert directement depuis /srv/sitemaps
+  if (!process.env.OUTPUT_DIR) {
+    const frontendPublicDir = path.join(__dirname, '../../frontend/public');
+    console.log('\n=== Création des symlinks (développement local) ===');
 
-  // Symlink pour le dossier sitemaps
-  const sitemapsFolderLink = path.join(frontendPublicDir, 'sitemaps');
-  try {
-    if (fs.existsSync(sitemapsFolderLink)) fs.unlinkSync(sitemapsFolderLink);
-    fs.symlinkSync('../../public/sitemaps', sitemapsFolderLink);
-    console.log('Symlink créé: frontend/public/sitemaps');
-  } catch (e) {
-    console.log('Symlink sitemaps ignoré (peut-être déjà existant)');
-  }
-
-  // Symlinks individuels pour chaque sitemap
-  const allSitemaps = ['sitemap.xml', ...sitemapFiles];
-  for (const filename of allSitemaps) {
-    const linkPath = path.join(frontendPublicDir, filename);
-    const targetPath = `../../public/sitemaps/${filename}`;
+    // Symlink pour le dossier sitemaps
+    const sitemapsFolderLink = path.join(frontendPublicDir, 'sitemaps');
     try {
-      if (fs.existsSync(linkPath)) fs.unlinkSync(linkPath);
-      fs.symlinkSync(targetPath, linkPath);
+      if (fs.existsSync(sitemapsFolderLink)) fs.unlinkSync(sitemapsFolderLink);
+      fs.symlinkSync('../../public/sitemaps', sitemapsFolderLink);
+      console.log('Symlink créé: frontend/public/sitemaps');
     } catch (e) {
-      // Ignorer les erreurs
+      console.log('Symlink sitemaps ignoré (peut-être déjà existant)');
     }
+
+    // Symlinks individuels pour chaque sitemap
+    const allSitemaps = ['sitemap.xml', ...sitemapFiles];
+    for (const filename of allSitemaps) {
+      const linkPath = path.join(frontendPublicDir, filename);
+      const targetPath = `../../public/sitemaps/${filename}`;
+      try {
+        if (fs.existsSync(linkPath)) fs.unlinkSync(linkPath);
+        fs.symlinkSync(targetPath, linkPath);
+      } catch (e) {
+        // Ignorer les erreurs
+      }
+    }
+    console.log(`${allSitemaps.length} symlinks créés dans frontend/public/`);
+  } else {
+    console.log('\n=== Mode production: symlinks ignorés (Caddy sert directement) ===');
   }
-  console.log(`${allSitemaps.length} symlinks créés dans frontend/public/`);
 
   // Résumé
   console.log('\n=== Résumé ===');
