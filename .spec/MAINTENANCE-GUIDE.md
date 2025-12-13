@@ -1,3 +1,9 @@
+---
+title: "Guide de Maintenance SpecKit"
+status: stable
+version: 1.0.0
+---
+
 # Guide de Maintenance SpecKit
 
 ## Vue d'Ensemble

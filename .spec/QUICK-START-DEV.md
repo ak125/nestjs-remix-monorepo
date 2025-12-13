@@ -1,9 +1,15 @@
+---
+title: "Quick Start Guide - Développeurs"
+status: stable
+version: 1.0.0
+---
+
 # 🚀 Quick Start Guide - Développeurs
 
 > **Guide d'onboarding rapide** - De zéro à productif en 30 minutes
 
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2025-11-18  
+**Version:** 1.0.0
+**Dernière mise à jour:** 2025-11-18
 **Prérequis:** Node.js 20+, Docker, Git
 
 ---
