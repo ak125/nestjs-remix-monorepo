@@ -92,6 +92,27 @@ docker-compose -f docker-compose.prod.yml up -d
 docker-compose -f docker-compose.prod.yml logs -f app
 ```
 
+### GitHub CLI (gh)
+```bash
+# Créer une PR
+gh pr create --title "feat: description" --body "Description détaillée"
+
+# Lister les PRs
+gh pr list
+
+# Voir une PR
+gh pr view 18
+
+# Merger une PR
+gh pr merge 18 --merge
+
+# Créer une issue
+gh issue create --title "Bug: description" --body "Détails"
+
+# Voir le status des checks
+gh pr checks
+```
+
 ## Architecture Overview
 
 ### Monorepo Structure
