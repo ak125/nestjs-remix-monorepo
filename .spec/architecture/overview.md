@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Architecture Overview
 status: stable
 version: 1.0.0
+authors: [Backend Team]
+created: 2025-11-18
 ---
 
 # 🏗️ Architecture Overview
