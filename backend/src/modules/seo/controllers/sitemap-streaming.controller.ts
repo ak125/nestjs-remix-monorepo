@@ -4,7 +4,7 @@
  */
 
 import { Controller, Get, Post, Query, Logger } from '@nestjs/common';
-import { SitemapStreamingService } from '../services/sitemap-streaming.service';
+import { SitemapStreamingService, StaticSitemapResult } from '../services/sitemap-streaming.service';
 import {
   StreamingGenerationResult,
   GenerationOptions,
@@ -139,6 +139,47 @@ export class SitemapStreamingController {
         success: false,
         message: `Cleanup failed: ${error.message}`,
         deletedCount: 0,
+      };
+    }
+  }
+
+  /**
+   * POST /sitemap-v2/streaming/generate-static
+   * Générer les sitemaps statiques (constructeurs, types, blog)
+   * depuis les tables Supabase __sitemap_*
+   *
+   * Query params:
+   * - outputDir: Répertoire de sortie (par défaut: /srv/sitemaps)
+   *
+   * @example
+   * curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static"
+   * curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static?outputDir=/srv/sitemaps"
+   */
+  @Post('generate-static')
+  async generateStaticSitemaps(
+    @Query('outputDir') outputDir?: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data?: StaticSitemapResult;
+  }> {
+    try {
+      this.logger.log('🏭 Starting static sitemap generation...');
+
+      const result = await this.streamingService.generateStaticSitemaps(outputDir);
+
+      return {
+        success: result.success,
+        message: result.success
+          ? `Successfully generated ${result.files.length} static sitemaps with ${result.totalUrls} URLs in ${result.duration}ms`
+          : `Generation completed with errors: ${result.errors?.join(', ')}`,
+        data: result,
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Static sitemap generation failed: ${error.message}`);
+      return {
+        success: false,
+        message: `Static sitemap generation failed: ${error.message}`,
       };
     }
   }

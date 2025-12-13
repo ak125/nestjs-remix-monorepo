@@ -124,16 +124,31 @@ jobs:
           TYPE="${{ github.event.inputs.type || 'all' }}"
           HREFLANG="${{ github.event.inputs.includeHreflang || 'true' }}"
           IMAGES="${{ github.event.inputs.includeImages || 'true' }}"
-          
+
           curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=$TYPE&includeHreflang=$HREFLANG&includeImages=$IMAGES" \
             -H "Content-Type: application/json" \
             -o streaming-response.json
           cat streaming-response.json
-          
+
           if ! jq -e '.success' streaming-response.json > /dev/null; then
             echo "❌ Streaming sitemap generation failed"
             exit 1
           fi
+
+      - name: 🏭 Generate Static Sitemaps (Constructeurs, Types, Blog)
+        run: |
+          curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static?outputDir=/srv/sitemaps" \
+            -H "Content-Type: application/json" \
+            -o static-response.json
+          cat static-response.json
+
+          if ! jq -e '.success' static-response.json > /dev/null; then
+            echo "❌ Static sitemap generation failed"
+            exit 1
+          fi
+
+          echo "✅ Generated static sitemaps:"
+          jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' static-response.json
       
       - name: 📊 Fetch Generation Stats
         run: |
@@ -249,4 +264,5 @@ jobs:
             logs/cron/**
             delta-response.json
             streaming-response.json
+            static-response.json
           retention-days: 7

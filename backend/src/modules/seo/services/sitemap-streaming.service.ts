@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as zlib from 'zlib';
 import { createHash } from 'crypto';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   StreamingConfig,
   ShardGenerationResult,
@@ -24,10 +25,28 @@ import {
 } from '../interfaces/sitemap-streaming.interface';
 import { SitemapEntry } from '../interfaces/sitemap-config.interface';
 
+/**
+ * Résultat de génération de sitemaps statiques
+ */
+export interface StaticSitemapResult {
+  success: boolean;
+  files: {
+    name: string;
+    path: string;
+    urlCount: number;
+    size: number;
+  }[];
+  totalUrls: number;
+  duration: number;
+  errors?: string[];
+}
+
 @Injectable()
 export class SitemapStreamingService {
   private readonly logger = new Logger(SitemapStreamingService.name);
   private readonly config: StreamingConfig;
+  private readonly supabase: SupabaseClient;
+  private readonly BASE_URL = 'https://www.automecanik.com';
 
   constructor(private configService: ConfigService) {
     this.config = {
@@ -39,6 +58,16 @@ export class SitemapStreamingService {
       publicBaseUrl: 'https://www.automecanik.com/public/sitemaps',
       cleanupBeforeGeneration: false,
     };
+
+    // Initialiser le client Supabase
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
+    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      this.logger.warn('⚠️ Supabase credentials not configured - static sitemap generation disabled');
+    }
+
+    this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
     this.ensureOutputDirectory();
     this.logger.log('🗜️ SitemapStreamingService initialized');
@@ -487,5 +516,320 @@ ${shards
    */
   getConfig(): StreamingConfig {
     return { ...this.config };
+  }
+
+  // ============================================
+  // 🆕 GÉNÉRATION SITEMAPS STATIQUES
+  // Constructeurs, Types, Blog depuis tables Supabase
+  // ============================================
+
+  /**
+   * Générer les sitemaps statiques (constructeurs, types, blog)
+   * Écrit directement les fichiers XML dans le répertoire de sortie
+   *
+   * @param outputDir Répertoire de sortie (par défaut: /srv/sitemaps ou OUTPUT_DIR)
+   */
+  async generateStaticSitemaps(outputDir?: string): Promise<StaticSitemapResult> {
+    const startTime = Date.now();
+    const dir = outputDir || process.env.OUTPUT_DIR || '/srv/sitemaps';
+    const files: StaticSitemapResult['files'] = [];
+    const errors: string[] = [];
+
+    this.logger.log(`🏭 Generating static sitemaps to: ${dir}`);
+
+    // S'assurer que le répertoire existe
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    try {
+      // 1. Sitemap Constructeurs (35 marques)
+      const constructeursResult = await this.generateConstructeursSitemap(dir);
+      if (constructeursResult.success) {
+        files.push(constructeursResult.file);
+      } else if (constructeursResult.error) {
+        errors.push(constructeursResult.error);
+      }
+
+      // 2. Sitemap Types/Motorisations (12.7k)
+      const typesResult = await this.generateTypesSitemap(dir);
+      if (typesResult.success) {
+        files.push(typesResult.file);
+      } else if (typesResult.error) {
+        errors.push(typesResult.error);
+      }
+
+      // 3. Sitemap Blog (109 articles)
+      const blogResult = await this.generateBlogSitemap(dir);
+      if (blogResult.success) {
+        files.push(blogResult.file);
+      } else if (blogResult.error) {
+        errors.push(blogResult.error);
+      }
+
+      // 4. Mettre à jour l'index sitemap.xml
+      await this.updateMainSitemapIndex(dir, files);
+
+      const duration = Date.now() - startTime;
+      const totalUrls = files.reduce((sum, f) => sum + f.urlCount, 0);
+
+      this.logger.log(`✅ Static sitemaps generated: ${files.length} files, ${totalUrls} URLs in ${duration}ms`);
+
+      return {
+        success: errors.length === 0,
+        files,
+        totalUrls,
+        duration,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Static sitemap generation failed: ${error.message}`);
+      return {
+        success: false,
+        files,
+        totalUrls: 0,
+        duration: Date.now() - startTime,
+        errors: [error.message],
+      };
+    }
+  }
+
+  /**
+   * Générer sitemap-constructeurs.xml depuis __sitemap_marque
+   */
+  private async generateConstructeursSitemap(dir: string): Promise<{
+    success: boolean;
+    file?: StaticSitemapResult['files'][0];
+    error?: string;
+  }> {
+    try {
+      this.logger.log('📦 Generating sitemap-constructeurs.xml...');
+
+      const { data: marques, error } = await this.supabase
+        .from('__sitemap_marque')
+        .select('map_id, map_marque_alias, map_marque_id')
+        .order('map_marque_alias');
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      if (!marques || marques.length === 0) {
+        throw new Error('No marques found in __sitemap_marque');
+      }
+
+      const urls = marques
+        .filter((m: any) => m.map_marque_alias && m.map_marque_id)
+        .map((m: any) => ({
+          loc: `${this.BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}.html`,
+          priority: '0.8',
+          changefreq: 'monthly',
+        }));
+
+      const xml = this.buildSimpleSitemapXml(urls);
+      const filepath = path.join(dir, 'sitemap-constructeurs.xml');
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+
+      this.logger.log(`✅ sitemap-constructeurs.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+
+      return {
+        success: true,
+        file: {
+          name: 'sitemap-constructeurs.xml',
+          path: filepath,
+          urlCount: urls.length,
+          size: stats.size,
+        },
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Failed to generate constructeurs sitemap: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Générer sitemap-types.xml depuis __sitemap_motorisation
+   */
+  private async generateTypesSitemap(dir: string): Promise<{
+    success: boolean;
+    file?: StaticSitemapResult['files'][0];
+    error?: string;
+  }> {
+    try {
+      this.logger.log('📦 Generating sitemap-types.xml...');
+
+      // Charger avec pagination (12.7k entrées)
+      const allMotorisations: any[] = [];
+      const batchSize = 1000;
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await this.supabase
+          .from('__sitemap_motorisation')
+          .select('map_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id')
+          .range(offset, offset + batchSize - 1)
+          .order('map_id');
+
+        if (error) {
+          throw new Error(`Supabase error: ${error.message}`);
+        }
+
+        if (data && data.length > 0) {
+          allMotorisations.push(...data);
+          offset += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      this.logger.log(`📊 Loaded ${allMotorisations.length} motorisations from __sitemap_motorisation`);
+
+      const urls = allMotorisations
+        .filter((m: any) => m.map_marque_alias && m.map_modele_alias && m.map_type_alias)
+        .map((m: any) => ({
+          loc: `${this.BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        }));
+
+      const xml = this.buildSimpleSitemapXml(urls);
+      const filepath = path.join(dir, 'sitemap-types.xml');
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+
+      this.logger.log(`✅ sitemap-types.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+
+      return {
+        success: true,
+        file: {
+          name: 'sitemap-types.xml',
+          path: filepath,
+          urlCount: urls.length,
+          size: stats.size,
+        },
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Failed to generate types sitemap: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Générer sitemap-blog.xml depuis __sitemap_blog
+   */
+  private async generateBlogSitemap(dir: string): Promise<{
+    success: boolean;
+    file?: StaticSitemapResult['files'][0];
+    error?: string;
+  }> {
+    try {
+      this.logger.log('📦 Generating sitemap-blog.xml...');
+
+      const { data: articles, error } = await this.supabase
+        .from('__sitemap_blog')
+        .select('map_id, map_alias, map_date')
+        .order('map_date', { ascending: false });
+
+      if (error) {
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      if (!articles || articles.length === 0) {
+        this.logger.warn('⚠️ No articles found in __sitemap_blog');
+        // Créer un sitemap vide mais valide
+        const emptyXml = this.buildSimpleSitemapXml([]);
+        const filepath = path.join(dir, 'sitemap-blog.xml');
+        fs.writeFileSync(filepath, emptyXml, 'utf8');
+        return {
+          success: true,
+          file: { name: 'sitemap-blog.xml', path: filepath, urlCount: 0, size: 0 },
+        };
+      }
+
+      const urls = articles
+        .filter((a: any) => a.map_alias)
+        .map((a: any) => ({
+          loc: `${this.BASE_URL}/blog-pieces-auto/${a.map_alias}`,
+          priority: '0.6',
+          changefreq: 'monthly',
+        }));
+
+      const xml = this.buildSimpleSitemapXml(urls);
+      const filepath = path.join(dir, 'sitemap-blog.xml');
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+
+      this.logger.log(`✅ sitemap-blog.xml: ${urls.length} URLs, ${this.formatBytes(stats.size)}`);
+
+      return {
+        success: true,
+        file: {
+          name: 'sitemap-blog.xml',
+          path: filepath,
+          urlCount: urls.length,
+          size: stats.size,
+        },
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Failed to generate blog sitemap: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Mettre à jour l'index sitemap.xml principal
+   */
+  private async updateMainSitemapIndex(
+    dir: string,
+    newFiles: StaticSitemapResult['files'],
+  ): Promise<void> {
+    this.logger.log('📝 Updating main sitemap.xml index...');
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Lister tous les sitemaps existants dans le répertoire
+    const existingFiles = fs.readdirSync(dir)
+      .filter(f => f.startsWith('sitemap-') && f.endsWith('.xml') && f !== 'sitemap.xml')
+      .sort();
+
+    // Construire l'index
+    const entries = existingFiles.map(filename => `  <sitemap>
+    <loc>${this.BASE_URL}/${filename}</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`);
+
+    const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries.join('\n')}
+</sitemapindex>`;
+
+    const indexPath = path.join(dir, 'sitemap.xml');
+    fs.writeFileSync(indexPath, indexXml, 'utf8');
+
+    this.logger.log(`✅ sitemap.xml updated with ${existingFiles.length} sitemaps`);
+  }
+
+  /**
+   * Construire un XML sitemap simple (sans hreflang/images)
+   */
+  private buildSimpleSitemapXml(
+    urls: { loc: string; priority: string; changefreq: string }[],
+  ): string {
+    const urlEntries = urls.map(u => `  <url>
+    <loc>${this.escapeXml(u.loc)}</loc>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlEntries}
+</urlset>`;
   }
 }
