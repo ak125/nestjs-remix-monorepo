@@ -1,8 +1,14 @@
+---
+title: "Architecture Backend - NestJS E-commerce"
+status: stable
+version: 1.0.0
+---
+
 # 🏗️ Architecture Backend - NestJS E-commerce
 
 > **Vue d'ensemble de l'architecture backend** - Diagrammes détaillés, flux de données, intégrations externes
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Dernière mise à jour:** 2025-11-18
 
 ---

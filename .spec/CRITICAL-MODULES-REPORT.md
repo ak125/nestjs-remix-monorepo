@@ -1,7 +1,13 @@
+---
+title: "Rapport de Documentation - Backend NestJS Complet"
+status: stable
+version: 1.0.0
+---
+
 # 📊 Rapport de Documentation - Backend NestJS Complet
 
-**Date:** 2025-11-18  
-**Auteur:** Backend Team  
+**Date:** 2025-11-18
+**Auteur:** Backend Team
 **Objectif:** Documentation complète des 37 modules backend
 
 ---

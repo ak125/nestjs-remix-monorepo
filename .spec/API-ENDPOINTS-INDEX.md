@@ -1,9 +1,15 @@
+---
+title: "Index Complet des API Endpoints"
+status: stable
+version: 1.0.0
+---
+
 # 🔌 Index Complet des API Endpoints
 
 > **Référence exhaustive des 187+ endpoints** - Tous les modules backend documentés
 
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2025-11-18  
+**Version:** 1.0.0
+**Dernière mise à jour:** 2025-11-18
 **Modules couverts:** 37/37 (100%)
 
 ---
