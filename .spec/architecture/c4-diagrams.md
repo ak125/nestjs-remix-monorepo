@@ -1,6 +1,8 @@
 ---
 sidebar_position: 2
 title: Diagrammes C4
+status: stable
+version: 1.0.0
 ---
 
 # 🏗️ Diagrammes C4 Architecture

@@ -1,6 +1,8 @@
 ---
 sidebar_position: 2
 title: Getting Started
+status: stable
+version: 1.0.0
 ---
 
 # 🚀 Getting Started
