@@ -1,3 +1,9 @@
+---
+title: "PROJECT STATS"
+status: draft
+version: 1.0.0
+---
+
 # Project Statistics - Documentation NestJS Remix Monorepo
 
 **Generated**: 15 novembre 2025  

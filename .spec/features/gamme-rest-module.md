@@ -1,3 +1,9 @@
+---
+title: "gamme rest module"
+status: draft
+version: 1.0.0
+---
+
 # Gamme REST Module - Technical Specification
 
 **Module**: `gamme-rest`  

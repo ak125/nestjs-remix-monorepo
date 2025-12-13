@@ -1,3 +1,9 @@
+---
+title: "development workflow"
+status: draft
+version: 1.0.0
+---
+
 # Guide de développement: Workflow recommandé
 
 ## Principe fondamental: Vérifier l'existant avant d'implémenter

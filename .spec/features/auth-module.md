@@ -1,3 +1,9 @@
+---
+title: "auth module"
+status: draft
+version: 1.0.0
+---
+
 # Module Auth - Spécification Technique
 
 ## 1. Vue d'ensemble

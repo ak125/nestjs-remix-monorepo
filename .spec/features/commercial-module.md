@@ -1,3 +1,9 @@
+---
+title: "commercial module"
+status: draft
+version: 1.0.0
+---
+
 # 💼 Commercial Module - Archives & Dashboard
 
 **Module**: `backend/src/modules/commercial` (Archives CRON)  

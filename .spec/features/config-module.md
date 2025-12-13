@@ -1,3 +1,9 @@
+---
+title: "config module"
+status: draft
+version: 1.0.0
+---
+
 # Feature Spec: Config Module
 
 **Phase**: 3 Extended (Feature 15/18)  

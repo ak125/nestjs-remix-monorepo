@@ -1,3 +1,9 @@
+---
+title: "001 supabase direct"
+status: draft
+version: 1.0.0
+---
+
 # ADR-001: Supabase Direct SDK Access (Sans Prisma)
 
 ## Status

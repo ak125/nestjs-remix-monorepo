@@ -1,3 +1,9 @@
+---
+title: "catalog module"
+status: draft
+version: 1.0.0
+---
+
 # Catalog Module - Technical Specification
 
 **Module**: `catalog`  

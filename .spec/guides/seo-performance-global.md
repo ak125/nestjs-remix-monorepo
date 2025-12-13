@@ -1,3 +1,9 @@
+---
+title: "seo performance global"
+status: draft
+version: 1.0.0
+---
+
 # Guide SEO & Performance: Stratégie Globale
 
 ## 🎯 Vue d'ensemble

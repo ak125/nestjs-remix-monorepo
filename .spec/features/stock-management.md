@@ -1,3 +1,9 @@
+---
+title: "stock management"
+status: draft
+version: 1.0.0
+---
+
 # 📦 Stock Management - Gestion complète des stocks
 
 **Module**: `backend/src/modules/admin` (StockController, StockManagementService, WorkingStockService)  

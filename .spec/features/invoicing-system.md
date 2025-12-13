@@ -1,3 +1,9 @@
+---
+title: "invoicing system"
+status: draft
+version: 1.0.0
+---
+
 # 🧾 Invoicing System - Spécification Complète
 
 **Date**: 15 novembre 2025  

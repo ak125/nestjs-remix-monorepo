@@ -1,3 +1,9 @@
+---
+title: "cache strategy"
+status: draft
+version: 1.0.0
+---
+
 # Stratégie Cache Redis
 
 Documentation des stratégies de mise en cache pour optimiser performance et scalabilité.
