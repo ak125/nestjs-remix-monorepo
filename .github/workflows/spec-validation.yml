@@ -8,13 +8,17 @@ on:
       - 'backend/src/**/*.ts'
       - 'frontend/app/**/*.{ts,tsx}'
       - 'scripts/validate-specs.sh'
-  
+
   push:
     branches: [main]
     paths:
       - '.spec/**'
-  
+
   workflow_dispatch:  # Permet déclenchement manuel
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   validate-specs:
