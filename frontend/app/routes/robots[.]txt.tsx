@@ -52,9 +52,8 @@ Crawl-delay: 1
 
 # 📍 Sitemaps
 Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap.xml
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-racine.xml
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-gamme-produits.xml
 Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-constructeurs.xml
+Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-types.xml
 Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-blog.xml`;
 }
 
@@ -62,9 +61,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
   
   try {
-    // ✅ V2 avec cache Redis
+    // ✅ Robots.txt depuis backend
     const response = await fetchWithRetry(
-      `${SITEMAP_CONFIG.BACKEND_URL}/sitemap-v2/robots.txt`
+      `${SITEMAP_CONFIG.BACKEND_URL}/robots.txt`
     );
     
     const robotsTxt = await response.text();

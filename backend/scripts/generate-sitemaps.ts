@@ -3,8 +3,11 @@
  *
  * Usage: npm run sitemap:generate
  *
- * Génère des fichiers XML statiques pour les 714k URLs pièces
- * depuis la table __sitemap_p_link
+ * Génère des fichiers XML statiques depuis les tables Supabase:
+ * - __sitemap_p_link (714k URLs pièces)
+ * - __sitemap_marque (35 constructeurs)
+ * - __sitemap_motorisation (12k types/motorisations)
+ * - __sitemap_blog (109 articles)
  */
 
 import * as dotenv from 'dotenv';
@@ -47,7 +50,30 @@ interface PieceLink {
   map_has_item: number;
 }
 
+interface MarqueLink {
+  map_id: string;
+  map_marque_alias: string;
+  map_marque_id: string;
+}
+
+interface MotorisationLink {
+  map_id: string;
+  map_marque_alias: string;
+  map_marque_id: string;
+  map_modele_alias: string;
+  map_modele_id: string;
+  map_type_alias: string;
+  map_type_id: string;
+}
+
+interface BlogLink {
+  map_id: string;
+  map_alias: string;
+  map_date: string;
+}
+
 function generateUrl(piece: PieceLink): string {
+  // Format: /{type_alias}-{type_id}.html (alias + ID, format PHP original)
   return `${BASE_URL}/pieces/${piece.map_pg_alias}-${piece.map_pg_id}/${piece.map_marque_alias}-${piece.map_marque_id}/${piece.map_modele_alias}-${piece.map_modele_id}/${piece.map_type_alias}-${piece.map_type_id}.html`;
 }
 
@@ -75,6 +101,71 @@ function generateSitemapIndex(sitemaps: string[]): string {
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries}
 </sitemapindex>`;
+}
+
+// ============================================
+// FONCTIONS DE FETCH
+// ============================================
+
+async function fetchMarques(): Promise<MarqueLink[]> {
+  console.log('Chargement des marques depuis __sitemap_marque...');
+  const { data, error } = await supabase
+    .from('__sitemap_marque')
+    .select('map_id, map_marque_alias, map_marque_id')
+    .order('map_marque_alias');
+
+  if (error) {
+    console.error('Erreur Supabase (marques):', error.message);
+    return [];
+  }
+  console.log(`  ${data?.length || 0} marques chargées`);
+  return data || [];
+}
+
+async function fetchMotorisations(): Promise<MotorisationLink[]> {
+  console.log('Chargement des types depuis __sitemap_motorisation...');
+  const allData: MotorisationLink[] = [];
+  const batchSize = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('__sitemap_motorisation')
+      .select('map_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id')
+      .range(offset, offset + batchSize - 1)
+      .order('map_id');
+
+    if (error) {
+      console.error('Erreur Supabase (motorisations):', error.message);
+      break;
+    }
+
+    if (data && data.length > 0) {
+      allData.push(...data);
+      offset += batchSize;
+      hasMore = data.length === batchSize;
+    } else {
+      hasMore = false;
+    }
+  }
+  console.log(`  ${allData.length.toLocaleString()} types chargés`);
+  return allData;
+}
+
+async function fetchBlogArticles(): Promise<BlogLink[]> {
+  console.log('Chargement des articles depuis __sitemap_blog...');
+  const { data, error } = await supabase
+    .from('__sitemap_blog')
+    .select('map_id, map_alias, map_date')
+    .order('map_date', { ascending: false });
+
+  if (error) {
+    console.error('Erreur Supabase (blog):', error.message);
+    return [];
+  }
+  console.log(`  ${data?.length || 0} articles chargés`);
+  return data || [];
 }
 
 async function fetchAllPieces(): Promise<PieceLink[]> {
@@ -122,49 +213,115 @@ async function generateSitemaps(): Promise<void> {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  // Charger toutes les pièces
+  const allSitemapFiles: string[] = [];
+
+  // ============================================
+  // 1. SITEMAP CONSTRUCTEURS (35 marques)
+  // ============================================
+  console.log('\n--- Constructeurs ---');
+  const marques = await fetchMarques();
+  if (marques.length > 0) {
+    const marquesUrls = marques
+      .filter(m => m.map_marque_alias && m.map_marque_id)
+      .map(m => ({
+        loc: `${BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}.html`,
+        priority: '0.8',
+        changefreq: 'monthly',
+      }));
+
+    const constructeursXml = generateSitemapXml(marquesUrls);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap-constructeurs.xml'), constructeursXml);
+    allSitemapFiles.push('sitemap-constructeurs.xml');
+    console.log(`Généré: sitemap-constructeurs.xml (${marquesUrls.length} URLs)`);
+  }
+
+  // ============================================
+  // 2. SITEMAP TYPES/MOTORISATIONS (12k types)
+  // ============================================
+  console.log('\n--- Types/Motorisations ---');
+  const motorisations = await fetchMotorisations();
+  if (motorisations.length > 0) {
+    const typesUrls = motorisations
+      .filter(m => m.map_marque_alias && m.map_modele_alias && m.map_type_alias)
+      .map(m => ({
+        loc: `${BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
+        priority: '0.7',
+        changefreq: 'monthly',
+      }));
+
+    const typesXml = generateSitemapXml(typesUrls);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap-types.xml'), typesXml);
+    allSitemapFiles.push('sitemap-types.xml');
+    console.log(`Généré: sitemap-types.xml (${typesUrls.length.toLocaleString()} URLs)`);
+  }
+
+  // ============================================
+  // 3. SITEMAP BLOG (109 articles)
+  // ============================================
+  console.log('\n--- Blog ---');
+  const articles = await fetchBlogArticles();
+  if (articles.length > 0) {
+    const blogUrls = articles
+      .filter(a => a.map_alias) // Filtrer les alias vides
+      .map(a => ({
+        loc: `${BASE_URL}/blog-pieces-auto/${a.map_alias}`,
+        priority: '0.6',
+        changefreq: 'monthly',
+      }));
+
+    const blogXml = generateSitemapXml(blogUrls);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap-blog.xml'), blogXml);
+    allSitemapFiles.push('sitemap-blog.xml');
+    console.log(`Généré: sitemap-blog.xml (${blogUrls.length} URLs)`);
+  }
+
+  // ============================================
+  // 4. SITEMAPS PIÈCES (714k URLs en shards)
+  // ============================================
+  console.log('\n--- Pièces ---');
   const pieces = await fetchAllPieces();
 
   if (pieces.length === 0) {
-    console.error('Aucune URL trouvée!');
-    process.exit(1);
+    console.error('Aucune URL pièces trouvée!');
+  } else {
+    // Filtrer les entrées valides
+    const validPieces = pieces.filter(p =>
+      p.map_pg_alias && p.map_marque_alias && p.map_modele_alias && p.map_type_alias
+    );
+    console.log(`URLs pièces valides: ${validPieces.length.toLocaleString()}`);
+
+    // Générer les sitemaps par batch de 50k
+    const numFiles = Math.ceil(validPieces.length / URLS_PER_FILE);
+
+    for (let i = 0; i < numFiles; i++) {
+      const start = i * URLS_PER_FILE;
+      const end = Math.min(start + URLS_PER_FILE, validPieces.length);
+      const batch = validPieces.slice(start, end);
+
+      const urls = batch.map(piece => ({
+        loc: generateUrl(piece),
+        priority: piece.map_has_item > 0 ? '0.7' : '0.5',
+        changefreq: piece.map_has_item > 0 ? 'weekly' : 'monthly',
+      }));
+
+      const filename = `sitemap-pieces-${i + 1}.xml`;
+      const filepath = path.join(OUTPUT_DIR, filename);
+      const xml = generateSitemapXml(urls);
+
+      fs.writeFileSync(filepath, xml);
+      allSitemapFiles.push(filename);
+      console.log(`Généré: ${filename} (${urls.length.toLocaleString()} URLs)`);
+    }
   }
 
-  // Filtrer les entrées valides
-  const validPieces = pieces.filter(p =>
-    p.map_pg_alias && p.map_marque_alias && p.map_modele_alias && p.map_type_alias
-  );
-  console.log(`URLs valides: ${validPieces.length.toLocaleString()}`);
-
-  // Générer les sitemaps par batch de 50k
-  const sitemapFiles: string[] = [];
-  const numFiles = Math.ceil(validPieces.length / URLS_PER_FILE);
-
-  for (let i = 0; i < numFiles; i++) {
-    const start = i * URLS_PER_FILE;
-    const end = Math.min(start + URLS_PER_FILE, validPieces.length);
-    const batch = validPieces.slice(start, end);
-
-    const urls = batch.map(piece => ({
-      loc: generateUrl(piece),
-      priority: piece.map_has_item > 0 ? '0.7' : '0.5',
-      changefreq: piece.map_has_item > 0 ? 'weekly' : 'monthly',
-    }));
-
-    const filename = `sitemap-pieces-${i + 1}.xml`;
-    const filepath = path.join(OUTPUT_DIR, filename);
-    const xml = generateSitemapXml(urls);
-
-    fs.writeFileSync(filepath, xml);
-    sitemapFiles.push(filename);
-    console.log(`Généré: ${filename} (${urls.length.toLocaleString()} URLs)`);
-  }
-
-  // Générer l'index principal
-  const indexXml = generateSitemapIndex(sitemapFiles);
+  // ============================================
+  // 5. INDEX PRINCIPAL
+  // ============================================
+  console.log('\n--- Index ---');
+  const indexXml = generateSitemapIndex(allSitemapFiles);
   const indexPath = path.join(OUTPUT_DIR, 'sitemap.xml');
   fs.writeFileSync(indexPath, indexXml);
-  console.log(`\nIndex généré: sitemap.xml (${sitemapFiles.length} sitemaps)`);
+  console.log(`Index généré: sitemap.xml (${allSitemapFiles.length} sitemaps)`);
 
   // Créer les symlinks dans frontend/public (uniquement en développement local)
   // En production (OUTPUT_DIR défini), Caddy sert directement depuis /srv/sitemaps
@@ -183,7 +340,7 @@ async function generateSitemaps(): Promise<void> {
     }
 
     // Symlinks individuels pour chaque sitemap
-    const allSitemaps = ['sitemap.xml', ...sitemapFiles];
+    const allSitemaps = ['sitemap.xml', ...allSitemapFiles];
     for (const filename of allSitemaps) {
       const linkPath = path.join(frontendPublicDir, filename);
       const targetPath = `../../public/sitemaps/${filename}`;
@@ -202,8 +359,7 @@ async function generateSitemaps(): Promise<void> {
   // Résumé
   console.log('\n=== Résumé ===');
   console.log(`Répertoire: ${OUTPUT_DIR}`);
-  console.log(`Fichiers générés: ${sitemapFiles.length + 1}`);
-  console.log(`URLs totales: ${validPieces.length.toLocaleString()}`);
+  console.log(`Fichiers générés: ${allSitemapFiles.length + 1}`);
 }
 
 // Exécution
