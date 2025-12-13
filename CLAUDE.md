@@ -298,6 +298,22 @@ app/routes/
    - Attendre validation de l'utilisateur
    - Merger vers `main` uniquement après approbation
 
+### Séparation Documentation / Production
+
+**Règle : Documentation sur `develop` uniquement**
+
+| Branche | Contenu |
+|---------|---------|
+| `main` (prod) | Code uniquement - pas de `.spec/`, docs minimales |
+| `develop` | Code + documentation complète (`.spec/`, guides, README détaillés) |
+
+**Fichiers à garder sur develop seulement :**
+- `.spec/` - Spécifications et documentation technique
+- Guides détaillés et tutoriels
+- Rapports et analyses
+
+**Objectif :** Garder `main` léger et propre pour la production
+
 ### Environment Variables
 
 **Backend (.env):**
