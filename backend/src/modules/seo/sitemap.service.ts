@@ -199,13 +199,14 @@ export class SitemapService extends SupabaseBaseService {
         marques.map((m) => [m.marque_id, m.marque_alias]),
       );
 
-      // ✅ Charger TOUS les modèles par lots de 1000 avec filtres SEO
+      // ✅ Charger les modèles par lots de 1000 avec filtres SEO + limite MAX
       let offset = 0;
       const batchSize = 1000;
+      const MAX_MODELES = 10000; // ⭐ Limite pour éviter timeout
       let hasMore = true;
       let totalFiltered = 0;
 
-      while (hasMore) {
+      while (hasMore && entries.length < MAX_MODELES) {
         // ⭐ Filtres alignés PHP: MODELE_DISPLAY = 1
         const { data: modelesBatch } = await this.client
           .from(TABLES.auto_modele)
@@ -255,6 +256,14 @@ export class SitemapService extends SupabaseBaseService {
           hasMore = false;
         } else {
           offset += batchSize;
+        }
+
+        // ⭐ Vérifier si limite atteinte
+        if (entries.length >= MAX_MODELES) {
+          this.logger.warn(
+            `⚠️ Limite MAX_MODELES (${MAX_MODELES}) atteinte - arrêt de la génération`,
+          );
+          hasMore = false;
         }
       }
 
@@ -329,13 +338,14 @@ export class SitemapService extends SupabaseBaseService {
         marques.map((m) => [m.marque_id, m.marque_alias]),
       );
 
-      // ✅ Charger tous les modèles actifs par lots
+      // ✅ Charger les modèles actifs par lots avec limite
       const allModeles = [];
       let modeleOffset = 0;
       const modeleBatchSize = 1000;
+      const MAX_MODELES_LOADED = 20000; // ⭐ Limite pour éviter timeout
       let hasMoreModeles = true;
 
-      while (hasMoreModeles) {
+      while (hasMoreModeles && allModeles.length < MAX_MODELES_LOADED) {
         const { data: modelesBatch, error: modeleError } = await this.client
           .from(TABLES.auto_modele)
           .select('modele_id, modele_alias, modele_name_url, modele_marque_id')
@@ -353,6 +363,14 @@ export class SitemapService extends SupabaseBaseService {
           allModeles.push(...modelesBatch);
           modeleOffset += modeleBatchSize;
           hasMoreModeles = modelesBatch.length === modeleBatchSize;
+
+          // ⭐ Vérifier limite
+          if (allModeles.length >= MAX_MODELES_LOADED) {
+            this.logger.warn(
+              `⚠️ Limite MAX_MODELES_LOADED (${MAX_MODELES_LOADED}) atteinte`,
+            );
+            hasMoreModeles = false;
+          }
         } else {
           hasMoreModeles = false;
         }
@@ -375,15 +393,18 @@ export class SitemapService extends SupabaseBaseService {
         ]),
       );
 
-      // ✅ Charger les types par lots de 1000 avec filtres SEO
+      // ✅ Charger les types par lots de 1000 avec filtres SEO + limite itérations
       let offset = startOffset;
       const batchSize = 1000;
+      const MAX_ITERATIONS = 50; // ⭐ 50 * 1000 = 50k types max pour éviter timeout
       let hasMore = true;
+      let iteration = 0;
       let totalTypes = 0;
       let matchedTypes = 0;
       let filteredByRelfollow = 0;
 
-      while (hasMore && entries.length < maxEntries) {
+      while (hasMore && entries.length < maxEntries && iteration < MAX_ITERATIONS) {
+        iteration++;
         // ⭐ Filtres PHP: TYPE_DISPLAY = 1 AND TYPE_RELFOLLOW = 1
         const { data: typesBatch, error: typeError } = await this.client
           .from(TABLES.auto_type)
@@ -454,10 +475,18 @@ export class SitemapService extends SupabaseBaseService {
         } else {
           offset += batchSize;
         }
+
+        // ⭐ Vérifier limite d'itérations
+        if (iteration >= MAX_ITERATIONS) {
+          this.logger.warn(
+            `⚠️ Limite MAX_ITERATIONS (${MAX_ITERATIONS}) atteinte - arrêt de la génération`,
+          );
+          hasMore = false;
+        }
       }
 
       this.logger.log(
-        `✅ Sitemap types partie ${part}: ${totalTypes} types traités, ${matchedTypes} matchés, ${filteredByRelfollow} exclus par type_relfollow, ${entries.length} URLs générées`,
+        `✅ Sitemap types partie ${part}: ${totalTypes} types traités, ${matchedTypes} matchés, ${filteredByRelfollow} exclus par type_relfollow, ${entries.length} URLs générées (${iteration} itérations)`,
       );
       return this.buildSitemapXml(entries);
     } catch (error) {
@@ -475,6 +504,7 @@ export class SitemapService extends SupabaseBaseService {
     try {
       const allGammes = [];
       const batchSize = 1000;
+      const MAX_GAMMES = 2000; // ⭐ Limite raisonnable pour éviter timeout
       let offset = 0;
       let hasMore = true;
       let filteredByRelfollow = 0;
@@ -482,7 +512,7 @@ export class SitemapService extends SupabaseBaseService {
       this.logger.log('🔧 Chargement des gammes de pièces avec pagination...');
 
       // Pagination récursive pour contourner la limite PostgREST
-      while (hasMore) {
+      while (hasMore && allGammes.length < MAX_GAMMES) {
         // ⭐ Filtres PHP: pg_display = 1, pg_level IN [1, 2]
         const { data, error } = await this.client
           .from(TABLES.pieces_gamme)
@@ -514,6 +544,14 @@ export class SitemapService extends SupabaseBaseService {
           );
           offset += batchSize;
           hasMore = data.length === batchSize;
+
+          // ⭐ Vérifier limite
+          if (allGammes.length >= MAX_GAMMES) {
+            this.logger.warn(
+              `⚠️ Limite MAX_GAMMES (${MAX_GAMMES}) atteinte - arrêt du chargement`,
+            );
+            hasMore = false;
+          }
         } else {
           hasMore = false;
         }
@@ -678,14 +716,9 @@ export class SitemapService extends SupabaseBaseService {
         comment: 'Modèles automobiles',
       },
       {
-        loc: '/sitemap-types-1.xml', // Types 1-35000
+        loc: '/sitemap-types-1.xml', // Types (tous ~16k avec TYPE_RELFOLLOW=1)
         lastmod: today,
-        comment: 'Motorisations partie 1',
-      },
-      {
-        loc: '/sitemap-types-2.xml', // Types 35001+
-        lastmod: today,
-        comment: 'Motorisations partie 2',
+        comment: 'Motorisations (toutes)',
       },
       {
         loc: '/sitemap-blog.xml', // Blog
