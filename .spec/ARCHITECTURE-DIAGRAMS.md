@@ -1,9 +1,15 @@
+---
+title: "Diagrammes d'Architecture"
+status: stable
+version: 1.0.0
+---
+
 # 🏗️ Diagrammes d'Architecture
 
 > **Visualisation complète de l'architecture backend** - Modules, flux de données, intégrations
 
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2025-11-18  
+**Version:** 1.0.0
+**Dernière mise à jour:** 2025-11-18
 **Modules:** 37/37 (100% coverage)
 
 ---

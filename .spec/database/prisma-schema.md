@@ -1,3 +1,9 @@
+---
+title: "prisma schema"
+status: draft
+version: 1.0.0
+---
+
 # Schéma Prisma - Auth + Analytics
 
 Documentation du schéma Prisma PostgreSQL dédié aux fonctionnalités modernes (authentification JWT, expériences SEO).

@@ -1,7 +1,13 @@
+---
+title: "Documentation Index - NestJS Remix Monorepo"
+status: stable
+version: 1.1.0
+---
+
 # Documentation Index - NestJS Remix Monorepo
 
-**Version**: 1.1.0  
-**Date**: 2 décembre 2025  
+**Version**: 1.1.0
+**Date**: 2 décembre 2025
 **Coverage**: 79% (29/37 modules)
 
 ## Quick Navigation

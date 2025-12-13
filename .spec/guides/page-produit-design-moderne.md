@@ -1,3 +1,9 @@
+---
+title: "page produit design moderne"
+status: draft
+version: 1.0.0
+---
+
 # Design Moderne - Page Produit/Gamme
 
 ## 🎯 Objectif

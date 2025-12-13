@@ -1,3 +1,9 @@
+---
+title: "authentication"
+status: draft
+version: 1.0.0
+---
+
 # 🔐 Guide d'Authentification
 
 ## Vue d'Ensemble

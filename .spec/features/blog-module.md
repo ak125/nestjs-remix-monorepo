@@ -1,3 +1,9 @@
+---
+title: "blog module"
+status: draft
+version: 1.0.0
+---
+
 # Module Blog - Spécification Technique
 
 ## 1. Vue d'ensemble

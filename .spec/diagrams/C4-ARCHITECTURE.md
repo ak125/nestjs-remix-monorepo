@@ -1,3 +1,9 @@
+---
+title: "C4 ARCHITECTURE"
+status: draft
+version: 1.0.0
+---
+
 # C4 Architecture Diagrams - NestJS Remix Monorepo
 
 Cette documentation présente l'architecture du système en utilisant le **modèle C4** (Context, Container, Component, Code) pour fournir différents niveaux de détail adaptés à chaque audience.

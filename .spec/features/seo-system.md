@@ -1,3 +1,9 @@
+---
+title: "seo system"
+status: draft
+version: 1.0.0
+---
+
 # Feature Specification: SEO System
 
 ---

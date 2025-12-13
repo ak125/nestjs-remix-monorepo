@@ -1,6 +1,10 @@
 ---
 sidebar_position: 2
 title: Diagrammes C4
+status: stable
+version: 1.0.0
+authors: [Backend Team]
+created: 2025-11-18
 ---
 
 # 🏗️ Diagrammes C4 Architecture

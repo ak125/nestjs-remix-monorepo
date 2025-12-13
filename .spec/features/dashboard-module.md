@@ -1,3 +1,9 @@
+---
+title: "dashboard module"
+status: draft
+version: 1.0.0
+---
+
 # Dashboard Module - Technical Specification
 
 **Module**: `dashboard`  

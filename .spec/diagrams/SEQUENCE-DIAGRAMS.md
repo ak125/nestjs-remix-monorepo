@@ -1,3 +1,9 @@
+---
+title: "SEQUENCE DIAGRAMS"
+status: draft
+version: 1.0.0
+---
+
 # Sequence Diagrams - Critical Business Flows
 
 Cette documentation présente les **flux critiques métier** de la plateforme sous forme de diagrammes de séquence. Chaque flow documente les interactions entre composants, les timings, et la gestion d'erreurs.
