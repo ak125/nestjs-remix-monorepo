@@ -11,8 +11,10 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 
-// Charger les variables d'environnement
-dotenv.config({ path: path.join(__dirname, '../.env') });
+// Charger les variables d'environnement uniquement si non définies (CI utilise les secrets GitHub)
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  dotenv.config({ path: path.join(__dirname, '../.env') });
+}
 
 import { createClient } from '@supabase/supabase-js';
 
