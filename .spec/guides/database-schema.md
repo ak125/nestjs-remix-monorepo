@@ -1,3 +1,9 @@
+---
+title: "database schema"
+status: draft
+version: 1.0.0
+---
+
 # Database Schema Guide
 
 Cette documentation complète décrit l'architecture de la base de données Supabase, les entités métier, les relations entre tables, et les patterns d'accès aux données.

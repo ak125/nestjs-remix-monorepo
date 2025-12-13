@@ -1,3 +1,9 @@
+---
+title: "ai content module"
+status: draft
+version: 1.0.0
+---
+
 # AI Content Generation Module - Technical Specification
 
 **Module**: `ai-content`  

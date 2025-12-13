@@ -1,3 +1,9 @@
+---
+title: "README"
+status: draft
+version: 1.0.0
+---
+
 # 📖 Autoparts API Documentation Portal
 
 **Portail développeur** pour la plateforme e-commerce Autoparts - Documentation complète de l'API REST.

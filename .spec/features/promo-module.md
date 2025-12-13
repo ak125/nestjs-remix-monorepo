@@ -1,3 +1,9 @@
+---
+title: "promo module"
+status: draft
+version: 1.0.0
+---
+
 # 🎫 Promo Module - Codes promotionnels
 
 **Module**: `backend/src/modules/promo`  

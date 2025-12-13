@@ -1,3 +1,9 @@
+---
+title: "analytics dashboard"
+status: draft
+version: 1.0.0
+---
+
 # 📊 Analytics Dashboard - Spécification Complète
 
 **Date**: 15 novembre 2025  

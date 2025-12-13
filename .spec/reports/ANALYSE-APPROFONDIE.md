@@ -1,3 +1,9 @@
+---
+title: "ANALYSE APPROFONDIE"
+status: draft
+version: 1.0.0
+---
+
 # 🔍 Analyse Approfondie du Monorepo
 
 **Date**: 2025-11-14  

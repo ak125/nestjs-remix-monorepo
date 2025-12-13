@@ -1,3 +1,9 @@
+---
+title: "supabase schema"
+status: draft
+version: 1.0.0
+---
+
 # Schéma Supabase - 97 tables
 
 Documentation complète des 97 tables héritées du système PHP legacy.

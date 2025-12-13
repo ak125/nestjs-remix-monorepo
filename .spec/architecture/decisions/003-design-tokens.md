@@ -1,3 +1,9 @@
+---
+title: "003 design tokens"
+status: draft
+version: 1.0.0
+---
+
 # ADR-003: Design Tokens Strategy
 
 ## Status

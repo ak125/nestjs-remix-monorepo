@@ -1,3 +1,9 @@
+---
+title: "suppliers management"
+status: draft
+version: 1.0.0
+---
+
 # Feature: Suppliers Management
 
 **Version:** 1.0.0  

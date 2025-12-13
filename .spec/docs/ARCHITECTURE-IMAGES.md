@@ -1,3 +1,9 @@
+---
+title: "ARCHITECTURE IMAGES"
+status: draft
+version: 1.0.0
+---
+
 # 🖼️ Architecture des Images - Supabase Storage
 
 ## Vue d'ensemble

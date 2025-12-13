@@ -1,3 +1,9 @@
+---
+title: "002 monorepo structure"
+status: draft
+version: 1.0.0
+---
+
 # ADR-002: Monorepo Architecture (NestJS + Remix + Packages)
 
 ## Status

@@ -1,3 +1,9 @@
+---
+title: "equipementiers module"
+status: draft
+version: 1.0.0
+---
+
 # Feature Spec: Équipementiers Module (Parts Brands)
 
 **Phase**: 3 Extended (Feature 12/18)  

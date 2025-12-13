@@ -1,3 +1,9 @@
+---
+title: "vehicles module"
+status: draft
+version: 1.0.0
+---
+
 # Feature Spec: Vehicles Module
 
 **Phase**: 3 Extended (Feature 11/18)  
