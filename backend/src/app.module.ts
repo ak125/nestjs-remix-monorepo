@@ -62,18 +62,18 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
       throttlers: [
         {
           name: 'short',
-          ttl: 1000,      // 1 seconde
-          limit: 15,      // 15 req/sec max par IP
+          ttl: 1000, // 1 seconde
+          limit: 15, // 15 req/sec max par IP
         },
         {
           name: 'medium',
-          ttl: 60000,     // 1 minute
-          limit: 100,     // 100 req/min par IP
+          ttl: 60000, // 1 minute
+          limit: 100, // 100 req/min par IP
         },
         {
           name: 'long',
-          ttl: 3600000,   // 1 heure
-          limit: 2000,    // 2000 req/heure par IP
+          ttl: 3600000, // 1 heure
+          limit: 2000, // 2000 req/heure par IP
         },
       ],
       // 🛡️ Skip SSR internal calls from localhost (Remix SSR)
