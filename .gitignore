@@ -111,3 +111,7 @@ scripts/testing/test-cart-and-urls.sh
 CLEANUP-REPORT.md
 CLEANUP-SUMMARY.md
 INDEX.md
+
+# Sitemaps générés (714k URLs - ~141MB)
+public/sitemaps/
+*.xml.gz
