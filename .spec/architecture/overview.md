@@ -1,6 +1,8 @@
 ---
 sidebar_position: 1
 title: Architecture Overview
+status: stable
+version: 1.0.0
 ---
 
 # 🏗️ Architecture Overview

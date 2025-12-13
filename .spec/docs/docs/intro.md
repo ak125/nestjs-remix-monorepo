@@ -1,6 +1,8 @@
 ---
 sidebar_position: 1
 title: Introduction
+status: stable
+version: 1.0.0
 ---
 
 # 🚀 Bienvenue sur la documentation Autoparts API
