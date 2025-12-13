@@ -127,16 +127,8 @@ export const PayboxCallbackSchema = z.object({
   // Code réponse Paybox (00000 = succès)
   error: z.string().regex(/^\d{5}$/, 'Code erreur Paybox invalide'),
   
-  // Statut déduit
-  status: z
-    .string()
-    .optional()
-    .transform((_, ctx) => {
-      const error = (ctx.parent as any).error;
-      if (error === '00000') return PaymentStatus.PAID;
-      if (error.startsWith('001')) return PaymentStatus.CANCELLED;
-      return PaymentStatus.FAILED;
-    }),
+  // Statut déduit (calculé côté application basé sur error code)
+  status: z.nativeEnum(PaymentStatus).optional(),
   
   // Signature HMAC (sécurité)
   signature: z.string().min(64, 'Signature HMAC invalide'),
