@@ -120,7 +120,7 @@ Disallow: /admin/
 Disallow: /fiche/
 Crawl-delay: 1
 
-# 🚫 Bad bots (bloquer complètement)
+# 🚫 Bad bots SEO (bloquer complètement)
 User-agent: AhrefsBot
 Disallow: /
 
@@ -136,13 +136,140 @@ Disallow: /
 User-agent: BLEXBot
 Disallow: /
 
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: serpstatbot
+Disallow: /
+
+User-agent: SEOkicks
+Disallow: /
+
+# 🇨🇳 Bots chinois agressifs
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Baiduspider-image
+Disallow: /
+
+User-agent: Baiduspider-video
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Sogou
+Disallow: /
+
+User-agent: sogou spider
+Disallow: /
+
+User-agent: YisouSpider
+Disallow: /
+
 User-agent: PetalBot
 Disallow: /
 
+User-agent: EtaoSpider
+Disallow: /
+
+# 🇷🇺 Bots russes
+User-agent: YandexBot
+Disallow: /
+
+User-agent: YandexImages
+Disallow: /
+
+User-agent: YandexMedia
+Disallow: /
+
+User-agent: Mail.RU_Bot
+Disallow: /
+
+# 🤖 Bots IA / LLM (scraping pour entraînement)
 User-agent: GPTBot
 Disallow: /
 
+User-agent: ChatGPT-User
+Disallow: /
+
 User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: Bytedance
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: Cohere-ai
+Disallow: /
+
+# 🕷️ Scrapers et bots malveillants
+User-agent: Scrapy
+Disallow: /
+
+User-agent: python-requests
+Disallow: /
+
+User-agent: Go-http-client
+Disallow: /
+
+User-agent: Java
+Disallow: /
+
+User-agent: libwww-perl
+Disallow: /
+
+User-agent: Wget
+Disallow: /
+
+User-agent: curl
+Disallow: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: TurnitinBot
+Disallow: /
+
+User-agent: Nutch
+Disallow: /
+
+User-agent: ZoominfoBot
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+User-agent: ia_archiver
 Disallow: /
 
 # ===========================================

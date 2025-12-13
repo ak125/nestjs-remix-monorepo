@@ -1,6 +1,8 @@
 ---
 sidebar_position: 1
 title: Webhooks Overview
+status: stable
+version: 1.0.0
 ---
 
 # 🪝 Webhooks Overview

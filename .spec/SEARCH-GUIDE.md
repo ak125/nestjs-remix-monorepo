@@ -1,9 +1,15 @@
+---
+title: "Guide de Recherche Rapide"
+status: stable
+version: 1.0.0
+---
+
 # 🔍 Guide de Recherche Rapide
 
 > **Trouver rapidement n'importe quelle information dans la documentation backend**
 
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2025-11-18  
+**Version:** 1.0.0
+**Dernière mise à jour:** 2025-11-18
 **Modules documentés:** 37/37 (100%)
 
 ---

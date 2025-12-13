@@ -1,3 +1,9 @@
+---
+title: "API Reference"
+status: stable
+version: 1.0.0
+---
+
 # 🔌 API Reference
 
 ## Documentation Interactive Swagger UI

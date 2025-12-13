@@ -1,3 +1,9 @@
+---
+title: "admin module"
+status: draft
+version: 1.0.0
+---
+
 # Module Admin - Spécification Technique
 
 ## 1. Vue d'ensemble

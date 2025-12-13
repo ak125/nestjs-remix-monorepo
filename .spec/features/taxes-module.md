@@ -1,3 +1,9 @@
+---
+title: "taxes module"
+status: draft
+version: 1.0.0
+---
+
 # 💶 Taxes Module - Spécification Complète
 
 ## 📋 Vue d'ensemble

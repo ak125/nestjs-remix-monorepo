@@ -1,8 +1,14 @@
+---
+title: "Quick Start - API Backend E-commerce"
+status: stable
+version: 1.0.0
+---
+
 # 🚀 Quick Start - API Backend E-commerce
 
 > **Guide de démarrage rapide** - Cas d'usage courants, exemples de code, tests API
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Dernière mise à jour:** 2025-11-18
 
 ---

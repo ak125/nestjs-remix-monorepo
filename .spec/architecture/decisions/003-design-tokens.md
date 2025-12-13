@@ -1,3 +1,11 @@
+---
+title: "003 design tokens"
+status: draft
+version: 1.0.0
+authors: [Frontend Team]
+created: 2025-11-18
+---
+
 # ADR-003: Design Tokens Strategy
 
 ## Status

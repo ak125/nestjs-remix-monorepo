@@ -1,8 +1,14 @@
+---
+title: "API Endpoints Index - Backend NestJS E-commerce"
+status: stable
+version: 1.0.0
+---
+
 # 🔌 API Endpoints Index - Backend NestJS E-commerce
 
 > **Index complet des 187+ endpoints** - Recherche rapide par module, méthode, fonctionnalité
 
-**Dernière mise à jour:** 2025-11-18  
+**Dernière mise à jour:** 2025-11-18
 **Version:** 1.0.0
 
 ---

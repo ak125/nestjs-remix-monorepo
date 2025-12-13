@@ -1,3 +1,9 @@
+---
+title: "payment schema"
+status: draft
+version: 1.0.0
+---
+
 # Type Schema: Payment Types
 
 ---

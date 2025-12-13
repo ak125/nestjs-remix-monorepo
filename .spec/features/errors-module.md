@@ -1,3 +1,9 @@
+---
+title: "errors module"
+status: draft
+version: 1.0.0
+---
+
 # Feature 17/18: Errors Module
 
 ## 1. Objectif Métier

@@ -1,3 +1,9 @@
+---
+title: "blog metadata module"
+status: draft
+version: 1.0.0
+---
+
 # Module Blog Metadata - Spécification Technique
 
 ## 1. Vue d'ensemble

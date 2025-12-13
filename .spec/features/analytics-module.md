@@ -1,3 +1,9 @@
+---
+title: "analytics module"
+status: draft
+version: 1.0.0
+---
+
 # Module Analytics - Spécification Technique
 
 ## 1. Vue d'ensemble
