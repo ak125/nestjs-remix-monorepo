@@ -403,7 +403,11 @@ export class SitemapService extends SupabaseBaseService {
       let matchedTypes = 0;
       let filteredByRelfollow = 0;
 
-      while (hasMore && entries.length < maxEntries && iteration < MAX_ITERATIONS) {
+      while (
+        hasMore &&
+        entries.length < maxEntries &&
+        iteration < MAX_ITERATIONS
+      ) {
         iteration++;
         // ⭐ Filtres PHP: TYPE_DISPLAY = 1 AND TYPE_RELFOLLOW = 1
         const { data: typesBatch, error: typeError } = await this.client
