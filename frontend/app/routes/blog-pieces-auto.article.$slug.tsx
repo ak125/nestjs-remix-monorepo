@@ -70,7 +70,7 @@ interface LoaderData {
 }
 
 // Meta SEO
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },
@@ -81,14 +81,64 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const article = data.article;
   const title = article.seo_data?.meta_title || article.h1 || article.title;
   const description = article.seo_data?.meta_description || article.excerpt;
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
+
+  // 📰 Schema TechArticle - Rich snippets pour articles techniques auto
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": article.type === "guide" ? "TechArticle" : "Article",
+    "@id": canonicalUrl,
+    headline: title,
+    description: description,
+    url: canonicalUrl,
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAt || article.publishedAt,
+    // Auteur et éditeur
+    author: {
+      "@type": "Organization",
+      name: "Automecanik",
+      url: "https://www.automecanik.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Automecanik",
+      url: "https://www.automecanik.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.automecanik.com/logo-navbar.webp",
+      },
+    },
+    // Catégorie et mots-clés
+    articleSection: article.type === "advice" ? "Conseils Auto" :
+                    article.type === "guide" ? "Guides Techniques" :
+                    article.type === "constructeur" ? "Constructeurs" : "Glossaire",
+    keywords: article.keywords.join(", "),
+    // Temps de lecture estimé
+    ...(article.readingTime && { timeRequired: `PT${article.readingTime}M` }),
+    // Page principale
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+    // Compteur de vues (social proof)
+    ...(article.viewsCount > 0 && {
+      interactionStatistic: {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/ReadAction",
+        userInteractionCount: article.viewsCount,
+      },
+    }),
+  };
 
   return [
     { title: `${title} - Blog Automecanik` },
     { name: "description", content: description },
     { name: "keywords", content: article.keywords.join(", ") },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "article" },
+    { property: "og:url", content: canonicalUrl },
     { property: "article:published_time", content: article.publishedAt },
     {
       property: "article:modified_time",
@@ -99,6 +149,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "author", content: "Automecanik - Experts Automobile" },
+    // 📰 JSON-LD Schema Article
+    { "script:ld+json": articleSchema },
   ];
 };
 

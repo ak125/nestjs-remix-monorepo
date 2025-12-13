@@ -415,40 +415,82 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       url: `https://www.automecanik.com/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}.html`,
     })) || [];
 
+  // 🔧 Références OEM pour JSON-LD (mpn = Manufacturer Part Number)
+  const oemRefsArray = data.oemRefs?.oemRefs || data.oemRefsSeo || [];
+
+  // 📊 Schema @graph - Meilleure approche SEO
+  // Structure: Car (véhicule) ← Product (avec refs OEM) + ItemList (tous les produits)
   const productSchema = firstPiece
     ? {
         "@context": "https://schema.org",
-        "@type": "Product",
-        name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
-        description: data.seo.description,
-        url: canonicalUrl,
-        mainEntityOfPage: {
-          "@type": "WebPage",
-          "@id": canonicalUrl,
-        },
-        brand: {
-          "@type": "Brand",
-          name: firstPiece.brand,
-        },
-        offers: {
-          "@type": "AggregateOffer",
-          priceCurrency: "EUR",
-          lowPrice: data.minPrice,
-          highPrice: data.maxPrice,
-          offerCount: data.count,
-          availability: "https://schema.org/InStock",
-          url: canonicalUrl,
-        },
-        aggregateRating:
-          data.count > 0
-            ? {
-                "@type": "AggregateRating",
-                ratingValue: "4.5",
-                reviewCount: data.count,
-              }
-            : undefined,
-        // 🔗 SEO: Produits liés pour maillage interne
-        ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
+        "@graph": [
+          // 1️⃣ Car - Véhicule cible (permet les recherches "pièces Megane 3 1.5 dCi")
+          {
+            "@type": "Car",
+            "@id": `${canonicalUrl}#vehicle`,
+            name: `${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.typeName || data.vehicle.type}`,
+            brand: { "@type": "Brand", name: data.vehicle.marque },
+            model: data.vehicle.modele,
+            vehicleConfiguration: data.vehicle.typeName || data.vehicle.type,
+          },
+          // 2️⃣ Product principal avec refs OEM (permet les recherches "7701206343")
+          {
+            "@type": "Product",
+            "@id": `${canonicalUrl}#product`,
+            name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`,
+            description: data.seo.description,
+            url: canonicalUrl,
+            // 🔧 MPN = Référence OEM principale - CLÉ SEO
+            ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
+            ...(firstPiece.reference && { sku: firstPiece.reference }),
+            brand: { "@type": "Brand", name: firstPiece.brand },
+            // 🚗 Lien vers le véhicule compatible
+            isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
+            offers: {
+              "@type": "AggregateOffer",
+              priceCurrency: "EUR",
+              lowPrice: data.minPrice,
+              highPrice: data.maxPrice,
+              offerCount: data.count,
+              availability: "https://schema.org/InStock",
+              seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
+            },
+            // Note: aggregateRating retiré - nécessite de vrais avis clients pour éviter pénalité Google
+            // 🔧 Toutes les refs OEM en additionalProperty (jusqu'à 20)
+            ...(oemRefsArray.length > 0 && {
+              additionalProperty: oemRefsArray.slice(0, 20).map((ref, i) => ({
+                "@type": "PropertyValue",
+                name: i === 0 ? "Référence OEM" : "Référence compatible",
+                value: ref,
+              })),
+            }),
+            ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
+          },
+          // 3️⃣ ItemList - Liste des produits disponibles (rich snippets catalogue)
+          {
+            "@type": "ItemList",
+            "@id": `${canonicalUrl}#list`,
+            name: `${data.gamme.name} pour ${data.vehicle.marque} ${data.vehicle.modele}`,
+            numberOfItems: data.count,
+            itemListElement: data.pieces.slice(0, 8).map((piece, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              item: {
+                "@type": "Product",
+                name: `${piece.name} ${piece.brand}`,
+                ...(piece.reference && { sku: piece.reference }),
+                brand: { "@type": "Brand", name: piece.brand },
+                offers: {
+                  "@type": "Offer",
+                  price: piece.price,
+                  priceCurrency: "EUR",
+                  availability: piece.stock === "En stock" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+                },
+                isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
+              },
+            })),
+          },
+        ],
       }
     : null;
 

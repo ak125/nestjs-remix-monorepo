@@ -18,7 +18,7 @@ import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { buildCanonicalUrl } from "../utils/seo/canonical";
+import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical";
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
 
@@ -231,34 +231,85 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ];
   }
 
-  // Construire l'URL canonique avec les utilitaires SEO
-  // Note: L'URL canonique sera gérée via <link rel="canonical"> dans le component
+  // Construire l'URL canonique
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
   const searchParams = new URL(location.pathname + location.search, 'https://www.automecanik.com').searchParams;
   const paramsObj: Record<string, string> = {};
   searchParams.forEach((value, key) => {
     paramsObj[key] = value;
   });
 
-  const _canonicalUrl = buildCanonicalUrl({
-    baseUrl: location.pathname,
-    params: paramsObj,
-    includeHost: true,
-  });
-  
-  // TODO: Ajouter l'URL canonique via <Links> dans le component ou SEOHelmet
-
   // Générer les meta tags optimisés pour CTR
   const metaTags = generateGammeMeta({
     name: data.content?.pg_name || data.meta?.title || "Pièces Auto",
     count: data.motorisations?.items.length || 0,
-    minPrice: undefined, // Calculer depuis les données si disponible
+    minPrice: undefined,
     vehicleBrand: paramsObj.marque,
     vehicleModel: paramsObj.modele,
-    onSale: false, // Déterminer depuis les données
+    onSale: false,
   });
 
+  // 📊 Schema @graph pour page catégorie - CollectionPage + ItemList
+  const gammeSchema = data.content?.pg_name ? {
+    "@context": "https://schema.org",
+    "@graph": [
+      // 1️⃣ CollectionPage - La page catalogue de cette gamme
+      {
+        "@type": "CollectionPage",
+        "@id": canonicalUrl,
+        name: data.content.pg_name,
+        description: metaTags.description,
+        url: canonicalUrl,
+        mainEntity: { "@id": `${canonicalUrl}#list` },
+        ...(data.content.pg_pic && { image: data.content.pg_pic }),
+      },
+      // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles
+      {
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#list`,
+        name: `${data.content.pg_name} - Véhicules compatibles`,
+        numberOfItems: data.motorisations?.items?.length || 0,
+        itemListElement: (data.motorisations?.items || []).slice(0, 15).map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Product",
+            name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name}`,
+            url: item.link ? `https://www.automecanik.com${item.link}` : canonicalUrl,
+            description: item.description,
+            // Compatibilité véhicule
+            isAccessoryOrSparePartFor: {
+              "@type": "Car",
+              name: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
+              brand: { "@type": "Brand", name: item.marque_name },
+              model: item.modele_name,
+              ...(item.puissance && { vehicleEngine: { "@type": "EngineSpecification", name: item.puissance } }),
+            },
+          },
+        })),
+      },
+      // 3️⃣ Product représentant la gamme (pour rich snippets)
+      {
+        "@type": "Product",
+        "@id": `${canonicalUrl}#product`,
+        name: data.content.pg_name,
+        description: metaTags.description,
+        url: canonicalUrl,
+        category: data.famille?.mf_name || "Pièces Auto",
+        ...(data.content.pg_pic && { image: data.content.pg_pic }),
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "EUR",
+          offerCount: data.motorisations?.items?.length || 0,
+          availability: "https://schema.org/InStock",
+          seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
+        },
+      },
+    ],
+  } : null;
+
   // Construire le tableau de meta tags Remix
-  const result: Array<{ title?: string; name?: string; content?: string }> = [];
+  const result: Array<{ title?: string; name?: string; content?: string; "script:ld+json"?: any; tagName?: string; rel?: string; href?: string }> = [];
 
   // Title
   result.push({ title: metaTags.title });
@@ -271,14 +322,19 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     result.push({ name: "keywords", content: metaTags.keywords.join(", ") });
   }
 
-  // Canonical (géré via <link> dans le head via SEOHelmet ou autre méthode)
-  // Pour Remix, on peut aussi ajouter via le component <Links />
-  
+  // Canonical
+  result.push({ tagName: "link", rel: "canonical", href: canonicalUrl });
+
   // Robots
   if (data.meta?.robots) {
     result.push({ name: "robots", content: data.meta.robots });
   } else {
     result.push({ name: "robots", content: "index, follow" });
+  }
+
+  // 📊 JSON-LD Schema
+  if (gammeSchema) {
+    result.push({ "script:ld+json": gammeSchema });
   }
 
   return result;

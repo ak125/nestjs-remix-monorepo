@@ -182,13 +182,7 @@ export default function TestHomepageModern() {
               "@type": "PostalAddress",
               addressCountry: "FR",
             },
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: "4.8",
-              reviewCount: "2500",
-              bestRating: "5",
-              worstRating: "1",
-            },
+            // Note: aggregateRating retiré - nécessite de vrais avis clients pour éviter pénalité Google
             offers: {
               "@type": "AggregateOffer",
               priceCurrency: "EUR",

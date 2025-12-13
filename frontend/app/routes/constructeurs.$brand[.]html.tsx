@@ -58,17 +58,93 @@ interface BrandDescription {
 // 🔄 META
 // ==========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data || !data.seo) {
     return [{ title: "Pièces Auto" }];
   }
+
+  const canonicalUrl = data.seo.canonical || `https://www.automecanik.com${location.pathname}`;
+  const brand = data.brand;
+
+  // 🏭 Schema @graph pour page constructeur - Organization + ItemList véhicules
+  const brandSchema = brand ? {
+    "@context": "https://schema.org",
+    "@graph": [
+      // 1️⃣ Organization - Le constructeur automobile
+      {
+        "@type": "Organization",
+        "@id": `${canonicalUrl}#organization`,
+        name: brand.marque_name,
+        url: canonicalUrl,
+        // Logo constructeur
+        ...(brand.marque_logo && {
+          logo: {
+            "@type": "ImageObject",
+            url: brand.marque_logo,
+          },
+        }),
+        // Type d'organisation
+        additionalType: "https://schema.org/AutomotiveBusiness",
+      },
+      // 2️⃣ CollectionPage - La page catalogue
+      {
+        "@type": "CollectionPage",
+        "@id": canonicalUrl,
+        name: data.seo.title,
+        description: data.seo.description,
+        url: canonicalUrl,
+        about: { "@id": `${canonicalUrl}#organization` },
+        mainEntity: { "@id": `${canonicalUrl}#vehicles` },
+      },
+      // 3️⃣ ItemList - Véhicules populaires de cette marque
+      ...(data.popular_vehicles && data.popular_vehicles.length > 0 ? [{
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#vehicles`,
+        name: `Véhicules ${brand.marque_name}`,
+        numberOfItems: data.popular_vehicles.length,
+        itemListElement: data.popular_vehicles.slice(0, 10).map((vehicle: PopularVehicle, index: number) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Car",
+            name: `${brand.marque_name} ${vehicle.modele_name}`,
+            brand: { "@type": "Brand", name: brand.marque_name },
+            model: vehicle.modele_name,
+            ...(vehicle.vehicle_url && { url: `https://www.automecanik.com${vehicle.vehicle_url}` }),
+            ...(vehicle.image_url && { image: vehicle.image_url }),
+          },
+        })),
+      }] : []),
+      // 4️⃣ ItemList - Pièces populaires pour cette marque
+      ...(data.popular_parts && data.popular_parts.length > 0 ? [{
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#parts`,
+        name: `Pièces détachées ${brand.marque_name}`,
+        numberOfItems: data.popular_parts.length,
+        itemListElement: data.popular_parts.slice(0, 8).map((part: ApiPopularPart, index: number) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Product",
+            name: `${part.pg_name} ${brand.marque_name}`,
+            ...(part.part_url && { url: `https://www.automecanik.com${part.part_url}` }),
+            ...(part.image_url && { image: part.image_url }),
+            isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#organization` },
+          },
+        })),
+      }] : []),
+    ],
+  } : null;
+
   return [
     { title: data.seo.title },
     { name: "description", content: data.seo.description },
     { name: "robots", content: data.seo.robots },
     { property: "og:title", content: data.seo.og_title },
     { property: "og:description", content: data.seo.og_description },
-    { tagName: "link", rel: "canonical", href: data.seo.canonical },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
+    // 🏭 JSON-LD Schema Organization
+    ...(brandSchema ? [{ "script:ld+json": brandSchema }] : []),
   ];
 };
 
