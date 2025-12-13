@@ -2,6 +2,8 @@
 title: "001 supabase direct"
 status: draft
 version: 1.0.0
+authors: [Backend Team]
+created: 2025-11-18
 ---
 
 # ADR-001: Supabase Direct SDK Access (Sans Prisma)
