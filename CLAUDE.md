@@ -282,6 +282,22 @@ app/routes/
 - Used by both backend and frontend
 - Rebuild: `cd packages/shared-types && npm run build`
 
+### Git Workflow & Déploiement
+
+**IMPORTANT : `main` = production automatique**
+
+1. **Ne JAMAIS merger directement sur `main`** sans approbation explicite
+2. Workflow recommandé :
+   ```
+   feature/xxx → develop (test) → main (prod)
+   ```
+3. Étapes :
+   - Créer branche feature depuis `main`
+   - Faire les changements et tester localement
+   - Créer PR vers `develop` ou branche de test
+   - Attendre validation de l'utilisateur
+   - Merger vers `main` uniquement après approbation
+
 ### Environment Variables
 
 **Backend (.env):**
