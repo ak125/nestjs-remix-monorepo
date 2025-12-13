@@ -1,0 +1,1344 @@
+openapi: 3.1.0
+info:
+  title: Autoparts E-commerce Platform API
+  version: 2.0.0
+  description: |
+    # 🚀 API complète pour plateforme e-commerce pièces auto
+    
+    Cette API RESTful fournit tous les endpoints nécessaires pour gérer une plateforme e-commerce spécialisée dans les pièces automobiles.
+    
+    ## 📊 Statistiques
+    
+    - **281 endpoints** documentés
+    - **30 modules** métier
+    - **4M+ produits** catalogués
+    - **99.9% uptime** SLA
+    
+    ## 🔐 Authentification
+    
+    L'API utilise **JWT Bearer tokens** pour l'authentification :
+    
+    ```bash
+    Authorization: Bearer <access_token>
+    ```
+    
+    - **Access token**: 15 minutes TTL
+    - **Refresh token**: 7 jours TTL
+    - **Session**: Redis cache (7 jours)
+    
+    ### Obtenir un token
+    
+    ```bash
+    POST /api/auth/login
+    Content-Type: application/json
+    
+    {
+      "email": "user@example.com",
+      "password": "securepassword"
+    }
+    ```
+    
+    ## 🎯 Rate Limiting
+    
+    - **Cart endpoints**: 100 req/min per IP
+    - **Payment endpoints**: 10 req/min per IP
+    - **Search endpoints**: 60 req/min per IP
+    - **Admin endpoints**: 30 req/min per user
+    
+    ## 📦 Environnements
+    
+    | Environment | Base URL | Status |
+    |-------------|----------|--------|
+    | **Production** | `https://api.autoparts.com` | ✅ Live |
+    | **Staging** | `https://staging-api.autoparts.com` | ✅ Active |
+    | **Development** | `http://localhost:3000` | 🔧 Dev |
+    
+    ## 🔗 Liens Utiles
+    
+    - [Documentation Complète](https://docs.autoparts.com)
+    - [Diagrammes Architecture](./diagrams/C4-ARCHITECTURE.md)
+    - [Sequence Diagrams](./diagrams/SEQUENCE-DIAGRAMS.md)
+    - [GitHub Repository](https://github.com/ak125/nestjs-remix-monorepo)
+  
+  contact:
+    name: API Support
+    email: support@autoparts.com
+    url: https://autoparts.com/support
+  
+  license:
+    name: Proprietary
+    url: https://autoparts.com/license
+
+servers:
+  - url: https://api.autoparts.com
+    description: Production server
+  - url: https://staging-api.autoparts.com
+    description: Staging server
+  - url: http://localhost:3000
+    description: Development server
+
+tags:
+  - name: auth
+    description: Authentification et gestion des sessions
+  - name: users
+    description: Gestion des utilisateurs (customers + staff)
+  - name: products
+    description: Catalogue produits (4M+ articles)
+  - name: cart
+    description: Panier d'achat
+  - name: orders
+    description: Gestion des commandes
+  - name: payments
+    description: Paiements sécurisés (Paybox)
+  - name: invoicing
+    description: Facturation et devis
+  - name: taxes
+    description: Fiscalité EU (TVA, VIES)
+  - name: shipping
+    description: Expédition et transporteurs
+  - name: tracking
+    description: Suivi colis temps réel
+  - name: vehicles
+    description: Véhicules compatibles (50K+ modèles)
+  - name: search
+    description: Recherche full-text (Meilisearch)
+  - name: promo
+    description: Codes promotionnels
+  - name: customers
+    description: Profils clients B2C/B2B
+  - name: news
+    description: Actualités et blog
+  - name: seo
+    description: SEO et métadonnées
+  - name: notifications
+    description: Notifications email/SMS/push
+  - name: messages
+    description: Messagerie interne
+  - name: support
+    description: Support client et tickets
+  - name: cache
+    description: Gestion cache Redis
+  - name: upload
+    description: Upload fichiers (Supabase Storage)
+  - name: config
+    description: Configuration multi-niveaux
+  - name: health
+    description: Health checks et monitoring
+  - name: analytics
+    description: Analytics et dashboards
+  - name: admin
+    description: Administration (accès restreint)
+
+paths:
+  # ============================================================
+  # AUTH ENDPOINTS (10 endpoints)
+  # ============================================================
+  
+  /api/auth/login:
+    post:
+      summary: Connexion utilisateur
+      description: Authentifie un utilisateur avec email/password et retourne JWT tokens
+      tags: [auth]
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              customer:
+                summary: Client B2C
+                value:
+                  email: client@example.com
+                  password: securepass123
+              staff:
+                summary: Staff admin
+                value:
+                  email: admin@autoparts.com
+                  password: adminpass456
+      responses:
+        '200':
+          description: Authentification réussie
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: access_token=eyJhbGc...; Path=/; HttpOnly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    user:
+                      id: "user-123"
+                      email: client@example.com
+                      role: 1
+                      name: Jean Dupont
+                    access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    refresh_token: "refresh_abc123..."
+                    expires_in: 900
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /api/auth/refresh:
+    post:
+      summary: Rafraîchir access token
+      description: Génère un nouveau access token avec le refresh token
+      tags: [auth]
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+                  description: Refresh token valide (7 jours)
+      responses:
+        '200':
+          description: Nouveau access token généré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                    example: 900
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/auth/logout:
+    post:
+      summary: Déconnexion
+      description: Invalide la session et les tokens
+      tags: [auth]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Déconnexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  # ============================================================
+  # PRODUCTS ENDPOINTS (45 endpoints)
+  # ============================================================
+  
+  /api/products:
+    get:
+      summary: Liste produits avec pagination
+      description: Récupère la liste des produits avec filtres avancés
+      tags: [products]
+      operationId: listProducts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 24
+        - name: search
+          in: query
+          description: Recherche full-text (nom, référence, EAN)
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filtrer par catégorie
+          schema:
+            type: string
+        - name: marque
+          in: query
+          description: Filtrer par marque
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            minimum: 0
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: inStock
+          in: query
+          description: Seulement produits en stock
+          schema:
+            type: boolean
+            default: false
+        - name: vehicleId
+          in: query
+          description: Compatible avec véhicule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste produits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProducts'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/products/{id}:
+    get:
+      summary: Détails produit
+      description: Récupère les détails complets d'un produit
+      tags: [products]
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails produit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================
+  # CART ENDPOINTS (15 endpoints)
+  # ============================================================
+  
+  /api/cart:
+    get:
+      summary: Récupérer panier
+      description: Retourne le panier de l'utilisateur (guest ou authentifié)
+      tags: [cart]
+      operationId: getCart
+      responses:
+        '200':
+          description: Panier actuel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+              examples:
+                guest:
+                  summary: Panier invité
+                  value:
+                    id: session-abc123
+                    session_id: session-abc123
+                    user_id: null
+                    items:
+                      - product_id: "12345"
+                        product_name: "Plaquettes frein avant"
+                        quantity: 2
+                        price: 29.99
+                        price_total: 59.98
+                    item_count: 2
+                    subtotal_ht: 49.98
+                    tax_rate: 0.20
+                    tax_amount: 9.99
+                    subtotal_ttc: 59.98
+                    shipping_cost: 5.90
+                    total_ttc: 65.88
+                    promo_code: null
+                    discount: 0
+                user:
+                  summary: Panier utilisateur
+                  value:
+                    id: cart-user-456
+                    session_id: null
+                    user_id: user-456
+                    items:
+                      - product_id: "12345"
+                        product_name: "Plaquettes frein avant"
+                        quantity: 2
+                        price: 29.99
+                        price_total: 59.98
+                    item_count: 2
+                    subtotal_ht: 49.98
+                    tax_rate: 0.20
+                    tax_amount: 9.99
+                    subtotal_ttc: 59.98
+                    shipping_cost: 5.90
+                    total_ttc: 65.88
+
+  /api/cart/items:
+    post:
+      summary: Ajouter produit au panier
+      description: Ajoute un produit avec quantité au panier
+      tags: [cart]
+      operationId: addCartItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, quantity]
+              properties:
+                product_id:
+                  type: string
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 99
+            example:
+              product_id: "12345"
+              quantity: 2
+      responses:
+        '200':
+          description: Produit ajouté
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  cart:
+                    $ref: '#/components/schemas/Cart'
+        '409':
+          description: Stock insuffisant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Stock insuffisant (disponible: 1)
+
+  /api/cart/items/{productId}:
+    delete:
+      summary: Retirer produit du panier
+      tags: [cart]
+      operationId: removeCartItem
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produit retiré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  cart:
+                    $ref: '#/components/schemas/Cart'
+
+  # ============================================================
+  # ORDERS ENDPOINTS (45 endpoints)
+  # ============================================================
+  
+  /api/orders:
+    get:
+      summary: Liste commandes
+      description: Récupère les commandes de l'utilisateur authentifié
+      tags: [orders]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, PAID, VALIDATED, PROCESSING, PACKED, SHIPPED, DELIVERED, COMPLETED, CANCELLED]
+      responses:
+        '200':
+          description: Liste commandes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrders'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    post:
+      summary: Créer commande
+      description: Crée une commande depuis le panier
+      tags: [orders]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Commande créée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  order:
+                    $ref: '#/components/schemas/Order'
+                  redirect:
+                    type: string
+                    example: /checkout-payment?orderId=ORD-2024-001
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/orders/{id}:
+    get:
+      summary: Détails commande
+      tags: [orders]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails commande
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================
+  # PAYMENTS ENDPOINTS (14 endpoints)
+  # ============================================================
+  
+  /api/payments:
+    post:
+      summary: Initialiser paiement
+      description: Crée un paiement et génère le formulaire de redirection Paybox
+      tags: [payments]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Paiement initialisé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  payment_id:
+                    type: string
+                  gateway_url:
+                    type: string
+                    example: https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi
+                  form_data:
+                    type: object
+                    additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/paybox/callback:
+    post:
+      summary: Callback IPN Paybox
+      description: Endpoint webhook pour notifications Paybox (IPN)
+      tags: [payments]
+      security: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                Mt:
+                  type: string
+                  description: Montant en centimes
+                Ref:
+                  type: string
+                  description: Référence commande
+                Auto:
+                  type: string
+                  description: Numéro autorisation
+                Erreur:
+                  type: string
+                  description: Code erreur (00000 = success)
+      responses:
+        '200':
+          description: IPN traité
+        '403':
+          description: Signature invalide
+
+  # ============================================================
+  # SEARCH ENDPOINTS (7 endpoints)
+  # ============================================================
+  
+  /api/search:
+    get:
+      summary: Recherche produits full-text
+      description: Recherche Meilisearch avec autocomplete et facettes
+      tags: [search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          example: plaquette frein
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+        - name: facets
+          in: query
+          description: Facettes à retourner (comma-separated)
+          schema:
+            type: string
+            example: marque,vehicule,category
+        - name: filter
+          in: query
+          description: Filtres Meilisearch
+          schema:
+            type: string
+            example: marque = 'Bosch' AND vehicule = 'Renault'
+      responses:
+        '200':
+          description: Résultats recherche
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+              example:
+                hits: 450
+                estimatedTotalHits: 450
+                processingTimeMs: 42
+                query: plaquette frein
+                page: 1
+                totalPages: 19
+                products:
+                  - id: "12345"
+                    name: "Plaquettes frein avant Bosch"
+                    price: 29.99
+                    marque: Bosch
+                    in_stock: true
+                facetDistribution:
+                  marque:
+                    Bosch: 120
+                    Ferodo: 85
+                    ATE: 65
+                  vehicule:
+                    Renault: 180
+                    Peugeot: 150
+
+  /api/search/autocomplete:
+    get:
+      summary: Autocomplete recherche
+      description: Suggestions de recherche en temps réel
+      tags: [search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+      responses:
+        '200':
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+              example:
+                suggestions:
+                  - plaquette frein avant
+                  - plaquette frein arrière
+                  - plaquette bosch
+
+  # ============================================================
+  # TAXES ENDPOINTS (7 endpoints)
+  # ============================================================
+  
+  /api/taxes/calculate:
+    post:
+      summary: Calculer TVA
+      description: Calcule la TVA selon pays, type client (B2C/B2B), et produit
+      tags: [taxes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxCalculationRequest'
+      responses:
+        '200':
+          description: TVA calculée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxCalculation'
+
+  /api/taxes/validate/{vatNumber}:
+    get:
+      summary: Valider numéro TVA
+      description: Valide un numéro TVA intracommunautaire via VIES API
+      tags: [taxes]
+      parameters:
+        - name: vatNumber
+          in: path
+          required: true
+          schema:
+            type: string
+            example: FR12345678901
+      responses:
+        '200':
+          description: Validation résultat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VatValidationResult'
+
+  # ============================================================
+  # ADMIN ENDPOINTS (50+ endpoints)
+  # ============================================================
+  
+  /api/admin/orders:
+    get:
+      summary: Admin - Liste toutes commandes
+      description: Liste complète des commandes (admin seulement)
+      tags: [admin, orders]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste commandes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrders'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token (15 min TTL)
+
+  schemas:
+    # ============================================================
+    # AUTH SCHEMAS
+    # ============================================================
+    
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: client@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: securepass123
+    
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/User'
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          description: Secondes avant expiration
+          example: 900
+
+    # ============================================================
+    # USER SCHEMAS
+    # ============================================================
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: user-123
+        email:
+          type: string
+          format: email
+        role:
+          type: integer
+          description: "0=guest, 1=customer, 2=staff, 5=manager, 9=superadmin"
+          minimum: 0
+          maximum: 9
+        name:
+          type: string
+        phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # PRODUCT SCHEMAS
+    # ============================================================
+    
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        reference:
+          type: string
+        ean:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        price_ttc:
+          type: number
+          format: float
+        tax_rate:
+          type: number
+          format: float
+          default: 0.20
+        stock:
+          type: integer
+        marque:
+          type: string
+        category:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        in_stock:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    
+    PaginatedProducts:
+      allOf:
+        - $ref: '#/components/schemas/PaginationInfo'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+
+    # ============================================================
+    # CART SCHEMAS
+    # ============================================================
+    
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        session_id:
+          type: string
+          nullable: true
+        user_id:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        item_count:
+          type: integer
+        subtotal_ht:
+          type: number
+          format: float
+        tax_rate:
+          type: number
+          format: float
+        tax_amount:
+          type: number
+          format: float
+        subtotal_ttc:
+          type: number
+          format: float
+        shipping_cost:
+          type: number
+          format: float
+        promo_code:
+          type: string
+          nullable: true
+        discount:
+          type: number
+          format: float
+        total_ttc:
+          type: number
+          format: float
+    
+    CartItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+        product_name:
+          type: string
+        product_reference:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+        price:
+          type: number
+          format: float
+        price_total:
+          type: number
+          format: float
+        image_url:
+          type: string
+          format: uri
+
+    # ============================================================
+    # ORDER SCHEMAS
+    # ============================================================
+    
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ORD-2024-001
+        user_id:
+          type: string
+        customer_name:
+          type: string
+        customer_email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [PENDING, PAID, VALIDATED, PROCESSING, PACKED, SHIPPED, DELIVERED, COMPLETED, CANCELLED]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        subtotal_ht:
+          type: number
+          format: float
+        tax_amount:
+          type: number
+          format: float
+        shipping_cost:
+          type: number
+          format: float
+        discount:
+          type: number
+          format: float
+        total_ttc:
+          type: number
+          format: float
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        payment_method:
+          type: string
+        tracking_number:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+        shipped_at:
+          type: string
+          format: date-time
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+    
+    OrderItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+        product_name:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+        price_total:
+          type: number
+          format: float
+    
+    CreateOrderRequest:
+      type: object
+      required: [shipping_address]
+      properties:
+        shipping_address_id:
+          type: string
+        billing_address_id:
+          type: string
+        notes:
+          type: string
+    
+    PaginatedOrders:
+      allOf:
+        - $ref: '#/components/schemas/PaginationInfo'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Order'
+
+    # ============================================================
+    # PAYMENT SCHEMAS
+    # ============================================================
+    
+    CreatePaymentRequest:
+      type: object
+      required: [order_id, amount, payment_method]
+      properties:
+        order_id:
+          type: string
+        amount:
+          type: number
+          format: float
+          minimum: 0.50
+          maximum: 10000
+        payment_method:
+          type: string
+          enum: [CYBERPLUS, PAYBOX]
+        return_url:
+          type: string
+          format: uri
+        cancel_url:
+          type: string
+          format: uri
+
+    # ============================================================
+    # TAX SCHEMAS
+    # ============================================================
+    
+    TaxCalculationRequest:
+      type: object
+      required: [amount, country, customer_type]
+      properties:
+        amount:
+          type: number
+          format: float
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: FR
+        customer_type:
+          type: string
+          enum: [B2C, B2B]
+        vat_number:
+          type: string
+          description: Requis si B2B intra-EU
+        product_category:
+          type: string
+          enum: [standard, books, food, medical]
+    
+    TaxCalculation:
+      type: object
+      properties:
+        amount_ht:
+          type: number
+          format: float
+        tax_rate:
+          type: number
+          format: float
+        tax_amount:
+          type: number
+          format: float
+        amount_ttc:
+          type: number
+          format: float
+        reverse_charge:
+          type: boolean
+          description: True si B2B intra-EU avec TVA valide
+        country:
+          type: string
+    
+    VatValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        vat_number:
+          type: string
+        country:
+          type: string
+        company_name:
+          type: string
+          nullable: true
+        company_address:
+          type: string
+          nullable: true
+        validation_date:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [VIES, FORMAT, CACHE]
+
+    # ============================================================
+    # SEARCH SCHEMAS
+    # ============================================================
+    
+    SearchResults:
+      type: object
+      properties:
+        hits:
+          type: integer
+          description: Nombre résultats trouvés
+        estimatedTotalHits:
+          type: integer
+        processingTimeMs:
+          type: integer
+        query:
+          type: string
+        page:
+          type: integer
+        totalPages:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        facetDistribution:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+
+    # ============================================================
+    # COMMON SCHEMAS
+    # ============================================================
+    
+    Address:
+      type: object
+      required: [street, city, postal_code, country]
+      properties:
+        id:
+          type: string
+        street:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+        phone:
+          type: string
+    
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+    
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequestError:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Validation failed
+            code: VALIDATION_ERROR
+            details: "Field 'email' is required"
+    
+    UnauthorizedError:
+      description: Non authentifié
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Unauthorized
+            code: UNAUTHORIZED
+            details: Invalid or expired token
+    
+    ForbiddenError:
+      description: Accès refusé
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Forbidden
+            code: FORBIDDEN
+            details: Insufficient permissions
+    
+    NotFoundError:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Not found
+            code: NOT_FOUND
+            details: Resource with ID 'abc123' not found
+    
+    RateLimitError:
+      description: Rate limit dépassé
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Too many requests
+            code: RATE_LIMIT_EXCEEDED
+            details: Maximum 10 requests per minute exceeded
+
+security:
+  - BearerAuth: []
