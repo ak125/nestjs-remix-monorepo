@@ -165,10 +165,6 @@ jobs:
 
       - name: 🗺️ Generate static sitemaps (si nécessaire)
         if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          NODE_ENV: production
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           PROD_DIR="/home/deploy/app"
           SITEMAP_FILE="$PROD_DIR/public/sitemaps/sitemap.xml"
@@ -185,6 +181,14 @@ jobs:
             echo "⚠️ Sitemaps anciens ($FILE_AGE jours) - régénération nécessaire..."
           else
             echo "📝 Sitemaps absents - génération initiale..."
+          fi
+
+          # Charger les variables d'environnement depuis le .env de production
+          if [ -f "$PROD_DIR/.env" ]; then
+            echo "📂 Chargement des variables depuis $PROD_DIR/.env"
+            set -a
+            source $PROD_DIR/.env
+            set +a
           fi
 
           echo "📦 Installation des dépendances backend..."
