@@ -58,23 +58,32 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
       expandVariables: true,
     }),
     // 🛡️ RATE LIMITING - Protection anti-spam/DDoS
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 1000,      // 1 seconde
-        limit: 15,      // 15 req/sec max par IP
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'short',
+          ttl: 1000,      // 1 seconde
+          limit: 15,      // 15 req/sec max par IP
+        },
+        {
+          name: 'medium',
+          ttl: 60000,     // 1 minute
+          limit: 100,     // 100 req/min par IP
+        },
+        {
+          name: 'long',
+          ttl: 3600000,   // 1 heure
+          limit: 2000,    // 2000 req/heure par IP
+        },
+      ],
+      // 🛡️ Skip SSR internal calls from localhost (Remix SSR)
+      skipIf: (context) => {
+        const request = context.switchToHttp().getRequest();
+        const ip = request.ip || request.connection?.remoteAddress;
+        // Skip localhost/127.0.0.1/::1 (internal SSR calls)
+        return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
       },
-      {
-        name: 'medium',
-        ttl: 60000,     // 1 minute
-        limit: 100,     // 100 req/min par IP
-      },
-      {
-        name: 'long',
-        ttl: 3600000,   // 1 heure
-        limit: 2000,    // 2000 req/heure par IP
-      },
-    ]),
+    }),
 
     // Event Emitter global
     EventEmitterModule.forRoot(),
