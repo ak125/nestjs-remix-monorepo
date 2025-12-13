@@ -273,25 +273,20 @@ User-agent: ia_archiver
 Disallow: /
 
 # ===========================================
-# 📍 SITEMAPS - Structure PHP migrée
+# 📍 SITEMAPS
 # ===========================================
-# Index principal (contient tous les sitemaps)
+# Index principal (tous les sitemaps)
 Sitemap: ${this.baseUrl}/sitemap.xml
 
-# Sitemaps individuels (alignés sur PHP)
-Sitemap: ${this.baseUrl}/sitemap-racine.xml
-Sitemap: ${this.baseUrl}/sitemap-gamme-produits.xml
+# Sitemaps individuels
 Sitemap: ${this.baseUrl}/sitemap-constructeurs.xml
-Sitemap: ${this.baseUrl}/sitemap-modeles.xml
-Sitemap: ${this.baseUrl}/sitemap-types-1.xml
-Sitemap: ${this.baseUrl}/sitemap-types-2.xml
+Sitemap: ${this.baseUrl}/sitemap-types.xml
 Sitemap: ${this.baseUrl}/sitemap-blog.xml
 
 # ===========================================
 # ℹ️ INFORMATIONS
 # ===========================================
 # Contact SEO: seo@automecanik.com
-# Documentation: /docs/seo/sitemap-strategy.md
 # Dernière mise à jour: ${new Date().toISOString().split('T')[0]}
 # ===========================================
 `;
