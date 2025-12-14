@@ -4,10 +4,7 @@
  */
 
 import { Controller, Get, Post, Query, Logger } from '@nestjs/common';
-import {
-  SitemapStreamingService,
-  StaticSitemapResult,
-} from '../services/sitemap-streaming.service';
+import { SitemapStreamingService } from '../services/sitemap-streaming.service';
 import {
   StreamingGenerationResult,
   GenerationOptions,
@@ -148,45 +145,23 @@ export class SitemapStreamingController {
 
   /**
    * POST /sitemap-v2/streaming/generate-static
-   * Générer les sitemaps statiques (constructeurs, types, blog)
-   * depuis les tables Supabase __sitemap_*
+   * @deprecated Utiliser POST /api/sitemap/generate-all à la place
    *
-   * Query params:
-   * - outputDir: Répertoire de sortie (par défaut: /srv/sitemaps)
-   *
-   * @example
-   * curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static"
-   * curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static?outputDir=/srv/sitemaps"
+   * Cette route est dépréciée et redirige vers le nouveau service unifié.
    */
   @Post('generate-static')
-  async generateStaticSitemaps(
-    @Query('outputDir') outputDir?: string,
-  ): Promise<{
+  async generateStaticSitemaps(): Promise<{
     success: boolean;
     message: string;
-    data?: StaticSitemapResult;
   }> {
-    try {
-      this.logger.log('🏭 Starting static sitemap generation...');
+    this.logger.warn(
+      '⚠️ DEPRECATED: /sitemap-v2/streaming/generate-static is deprecated. Use POST /api/sitemap/generate-all instead.',
+    );
 
-      const result =
-        await this.streamingService.generateStaticSitemaps(outputDir);
-
-      return {
-        success: result.success,
-        message: result.success
-          ? `Successfully generated ${result.files.length} static sitemaps with ${result.totalUrls} URLs in ${result.duration}ms`
-          : `Generation completed with errors: ${result.errors?.join(', ')}`,
-        data: result,
-      };
-    } catch (error: any) {
-      this.logger.error(
-        `❌ Static sitemap generation failed: ${error.message}`,
-      );
-      return {
-        success: false,
-        message: `Static sitemap generation failed: ${error.message}`,
-      };
-    }
+    return {
+      success: false,
+      message:
+        'DEPRECATED: Cette route est obsolète. Utilisez POST /api/sitemap/generate-all à la place pour générer tous les sitemaps (categories, vehicules, produits, blog, pages).',
+    };
   }
 }
