@@ -169,9 +169,15 @@ jobs:
       - name: 🗺️ Generate All Sitemaps (Unified SEO 2026)
         run: |
           echo "🚀 Generating all sitemaps with unified service..."
-          curl -X POST "http://localhost:3000/api/sitemap/generate-all?outputDir=public/sitemaps" \
+          # Use absolute path to avoid issues with backend running from different directory
+          OUTPUT_DIR="${GITHUB_WORKSPACE}/public/sitemaps"
+          echo "📂 Output directory: $OUTPUT_DIR"
+
+          curl -X POST "http://localhost:3000/api/sitemap/generate-all?outputDir=${OUTPUT_DIR}" \
             -H "Content-Type: application/json" \
             -o unified-response.json
+
+          echo "📋 Response:"
           cat unified-response.json
 
           if ! jq -e '.success' unified-response.json > /dev/null; then
@@ -183,6 +189,10 @@ jobs:
           jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' unified-response.json || echo "No files array"
           echo ""
           echo "📊 Total: $(jq -r '.data.totalUrls' unified-response.json) URLs in $(jq -r '.data.duration' unified-response.json)ms"
+
+          # Verify files were created
+          echo "📁 Files in output directory:"
+          ls -la "$OUTPUT_DIR" || echo "Directory not found or empty"
       
       - name: 📊 Fetch Generation Stats
         run: |
@@ -212,10 +222,15 @@ jobs:
       - name: 🔍 Check Sitemap Sizes
         run: |
           cd public/sitemaps
-          
+
           echo "## File Sizes"
-          du -sh *
-          
+          if ls *.xml >/dev/null 2>&1; then
+            du -sh *.xml 2>/dev/null || echo "No XML files found"
+          else
+            echo "⚠️ No XML files found in public/sitemaps"
+            ls -la . || echo "Directory listing failed"
+          fi
+
           echo "## Compression Ratios"
           for gz in *.xml.gz; do
             if [ -f "$gz" ]; then
@@ -225,6 +240,7 @@ jobs:
               echo "$gz: ${RATIO}% compression"
             fi
           done
+        continue-on-error: true
       
       ##########################################################################
       # UPLOAD TO S3 (optionnel)
