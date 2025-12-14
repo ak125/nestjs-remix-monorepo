@@ -85,6 +85,9 @@ import { DynamicSeoController } from './dynamic-seo.controller';
 // 🚀 Contrôleur Sitemap Scalable
 import { SitemapScalableController } from './controllers/sitemap-scalable.controller';
 
+// 🌐 Contrôleur Sitemap Racine (routes sans préfixe)
+import { SitemapRootController } from './controllers/sitemap-root.controller';
+
 // 🔄 Contrôleur Delta Sitemap
 import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
 
@@ -131,6 +134,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapController,
     DynamicSeoController, // 🎯 Contrôleur V4 Ultimate
     SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
+    SitemapRootController, // 🌐 Contrôleur Sitemap Racine (routes /sitemap*.xml)
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
     SitemapUnifiedController, // 🗺️ Contrôleur Unifié SEO 2026

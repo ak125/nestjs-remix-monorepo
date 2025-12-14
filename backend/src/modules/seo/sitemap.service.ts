@@ -278,14 +278,6 @@ export class SitemapService extends SupabaseBaseService {
   }
 
   /**
-   * Génère le sitemap modèles partie 2 - DEPRECATED (tout dans modeles.xml maintenant)
-   */
-  async generateModeles2Sitemap(): Promise<string> {
-    this.logger.warn('modeles-2.xml est déprécié, redirigé vers modeles.xml');
-    return this.generateModelesSitemap();
-  }
-
-  /**
    * Génère le sitemap types partie 1 - Premiers 35 000 types
    */
   async generateTypes1Sitemap(): Promise<string> {

@@ -177,24 +177,6 @@ export class SitemapController {
   }
 
   /**
-   * GET /sitemap/modeles-2.xml - Sitemap des modèles de véhicules partie 2
-   */
-  @Get('modeles-2.xml')
-  @Header('Content-Type', 'application/xml')
-  async getModeles2Sitemap(@Res() res: Response) {
-    try {
-      const xmlContent = await this.sitemapService.generateModeles2Sitemap();
-      res.send(xmlContent);
-    } catch (error) {
-      this.logger.error('Erreur génération sitemap modèles-2:', error);
-      throw new HttpException(
-        'Erreur lors de la génération du sitemap modèles partie 2',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
    * GET /sitemap/types-1.xml - Sitemap des types partie 1
    */
   @Get('types-1.xml')
