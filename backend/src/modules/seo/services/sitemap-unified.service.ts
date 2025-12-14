@@ -1,17 +1,19 @@
 /**
  * 🗺️ SERVICE UNIFIÉ DE GÉNÉRATION SITEMAPS SEO 2026
  *
- * Architecture thématique (5 sitemaps):
- * 1. sitemap-categories.xml  - Gammes/catégories (~9k URLs)
- * 2. sitemap-vehicules.xml   - Marques/Modèles/Types (~13k URLs)
- * 3. sitemap-produits-*.xml  - Fiches pièces shardées (~714k URLs)
- * 4. sitemap-blog.xml        - Articles blog (~109 URLs)
- * 5. sitemap-pages.xml       - Pages institutionnelles (~20 URLs)
+ * Architecture thématique (compatible avec noms existants):
+ * 1. sitemap-constructeurs.xml - Marques (~35 URLs)
+ * 2. sitemap-modeles.xml       - Modèles véhicules (~1k URLs)
+ * 3. sitemap-types.xml         - Motorisations (~12.7k URLs)
+ * 4. sitemap-pieces-*.xml      - Fiches pièces shardées (~714k URLs)
+ * 5. sitemap-blog.xml          - Articles blog (~109 URLs)
+ * 6. sitemap-pages.xml         - Pages institutionnelles (~9 URLs)
  *
  * Avantages SEO:
  * - Google traite chaque sitemap par importance thématique
  * - Crawl budget optimisé (+30% efficacité)
  * - Diagnostic facile dans Search Console
+ * - Compatible avec les noms existants (pas de perte d'indexation)
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -109,33 +111,38 @@ export class SitemapUnifiedService {
     this.ensureDirectory(outputDir);
 
     try {
-      // 1. Categories (~9k URLs)
-      this.logger.log('📂 [1/5] Generating sitemap-categories.xml...');
-      const categories = await this.generateCategoriesSitemap(outputDir);
-      if (categories) result.files.push(categories);
+      // 1. Constructeurs/Marques (~35 URLs)
+      this.logger.log('🏭 [1/7] Generating sitemap-constructeurs.xml...');
+      const constructeurs = await this.generateConstructeursSitemap(outputDir);
+      if (constructeurs) result.files.push(constructeurs);
 
-      // 2. Véhicules (~13k URLs)
-      this.logger.log('🚗 [2/5] Generating sitemap-vehicules.xml...');
-      const vehicules = await this.generateVehiculesSitemap(outputDir);
-      if (vehicules) result.files.push(vehicules);
+      // 2. Modèles (~1k URLs)
+      this.logger.log('🚗 [2/7] Generating sitemap-modeles.xml...');
+      const modeles = await this.generateModelesSitemap(outputDir);
+      if (modeles) result.files.push(modeles);
 
-      // 3. Produits (~714k URLs, shardé)
-      this.logger.log('📦 [3/5] Generating sitemap-produits-*.xml...');
-      const produits = await this.generateProduitsSitemaps(outputDir);
-      result.files.push(...produits);
+      // 3. Types/Motorisations (~12.7k URLs)
+      this.logger.log('⚙️ [3/7] Generating sitemap-types.xml...');
+      const types = await this.generateTypesSitemap(outputDir);
+      if (types) result.files.push(types);
 
-      // 4. Blog (~109 URLs)
-      this.logger.log('📝 [4/5] Generating sitemap-blog.xml...');
+      // 4. Pièces (~714k URLs, shardé)
+      this.logger.log('📦 [4/7] Generating sitemap-pieces-*.xml...');
+      const pieces = await this.generatePiecesSitemaps(outputDir);
+      result.files.push(...pieces);
+
+      // 5. Blog (~109 URLs)
+      this.logger.log('📝 [5/7] Generating sitemap-blog.xml...');
       const blog = await this.generateBlogSitemap(outputDir);
       if (blog) result.files.push(blog);
 
-      // 5. Pages (~20 URLs)
-      this.logger.log('📄 [5/5] Generating sitemap-pages.xml...');
+      // 6. Pages (~9 URLs)
+      this.logger.log('📄 [6/7] Generating sitemap-pages.xml...');
       const pages = await this.generatePagesSitemap(outputDir);
       if (pages) result.files.push(pages);
 
-      // 6. Index principal
-      this.logger.log('📋 Generating sitemap.xml index...');
+      // 7. Index principal
+      this.logger.log('📋 [7/7] Generating sitemap.xml index...');
       await this.generateSitemapIndex(outputDir, result.files);
 
       result.totalUrls = result.files.reduce((sum, f) => sum + f.urlCount, 0);
@@ -154,44 +161,41 @@ export class SitemapUnifiedService {
   }
 
   /**
-   * 📂 Génère sitemap-categories.xml (gammes/catégories)
+   * 🏭 Génère sitemap-constructeurs.xml (marques uniquement)
    */
-  private async generateCategoriesSitemap(
+  private async generateConstructeursSitemap(
     dir: string,
   ): Promise<SitemapFileResult | null> {
     try {
-      // Récupérer les gammes niveau 1 et 2
-      const { data: gammes, error } = await this.supabase
-        .from('pieces_gamme')
-        .select('pg_id, pg_alias, pg_name')
-        .eq('pg_display', '1')
-        .in('pg_level', ['1', '2'])
-        .order('pg_name');
+      const { data: marques, error } = await this.supabase
+        .from('__sitemap_marque')
+        .select('map_marque_alias, map_marque_id')
+        .order('map_marque_alias');
 
       if (error) {
-        this.logger.error(`❌ Error fetching categories: ${error.message}`);
+        this.logger.error(`❌ Error fetching marques: ${error.message}`);
         return null;
       }
 
-      if (!gammes || gammes.length === 0) {
-        this.logger.warn('⚠️ No categories found');
+      if (!marques || marques.length === 0) {
+        this.logger.warn('⚠️ No marques found');
         return null;
       }
 
-      const urls: SitemapUrl[] = gammes.map((g) => ({
-        loc: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+      const urls: SitemapUrl[] = marques.map((m) => ({
+        loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}.html`,
         priority: '0.8',
-        changefreq: 'weekly',
+        changefreq: 'monthly',
       }));
 
-      const filename = 'sitemap-categories.xml';
+      const filename = 'sitemap-constructeurs.xml';
       const filepath = path.join(dir, filename);
       const xml = this.buildSitemapXml(urls);
       fs.writeFileSync(filepath, xml, 'utf8');
 
       const stats = fs.statSync(filepath);
       this.logger.log(
-        `✅ sitemap-categories.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
+        `✅ sitemap-constructeurs.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
       );
 
       return {
@@ -202,91 +206,118 @@ export class SitemapUnifiedService {
       };
     } catch (error: any) {
       this.logger.error(
-        `❌ Failed to generate categories sitemap: ${error.message}`,
+        `❌ Failed to generate constructeurs sitemap: ${error.message}`,
       );
       return null;
     }
   }
 
   /**
-   * 🚗 Génère sitemap-vehicules.xml (marques + modèles + types)
+   * 🚗 Génère sitemap-modeles.xml (modèles véhicules uniquement)
    */
-  private async generateVehiculesSitemap(
+  private async generateModelesSitemap(
     dir: string,
   ): Promise<SitemapFileResult | null> {
     try {
-      const urls: SitemapUrl[] = [];
-
-      // 1. Marques depuis __sitemap_marque
-      const { data: marques, error: marqueError } = await this.supabase
-        .from('__sitemap_marque')
-        .select('map_marque_alias, map_marque_id')
+      const { data: motorisations, error } = await this.supabase
+        .from('__sitemap_motorisation')
+        .select(
+          'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id',
+        )
         .order('map_marque_alias');
 
-      if (marqueError) {
-        this.logger.error(`❌ Error fetching marques: ${marqueError.message}`);
-      } else if (marques) {
-        marques.forEach((m) => {
-          urls.push({
-            loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}.html`,
-            priority: '0.8',
-            changefreq: 'monthly',
-          });
-        });
-        this.logger.log(`  → ${marques.length} marques`);
+      if (error) {
+        this.logger.error(`❌ Error fetching motorisations: ${error.message}`);
+        return null;
       }
 
-      // 2. Motorisations depuis __sitemap_motorisation (inclut modèles et types)
-      const { data: motorisations, error: motoError } = await this.supabase
+      if (!motorisations || motorisations.length === 0) {
+        this.logger.warn('⚠️ No motorisations found');
+        return null;
+      }
+
+      // Extraire modèles uniques
+      const modelesSet = new Set<string>();
+      const urls: SitemapUrl[] = [];
+
+      motorisations.forEach((m) => {
+        const modeleKey = `${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}`;
+        if (!modelesSet.has(modeleKey)) {
+          modelesSet.add(modeleKey);
+          urls.push({
+            loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}.html`,
+            priority: '0.7',
+            changefreq: 'monthly',
+          });
+        }
+      });
+
+      this.logger.log(`  → ${urls.length} modèles uniques`);
+
+      const filename = 'sitemap-modeles.xml';
+      const filepath = path.join(dir, filename);
+      const xml = this.buildSitemapXml(urls);
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+      this.logger.log(
+        `✅ sitemap-modeles.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
+      );
+
+      return {
+        name: filename,
+        path: filepath,
+        urlCount: urls.length,
+        size: stats.size,
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `❌ Failed to generate modeles sitemap: ${error.message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * ⚙️ Génère sitemap-types.xml (motorisations/types uniquement)
+   */
+  private async generateTypesSitemap(
+    dir: string,
+  ): Promise<SitemapFileResult | null> {
+    try {
+      const { data: motorisations, error } = await this.supabase
         .from('__sitemap_motorisation')
         .select(
           'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
         )
         .order('map_marque_alias');
 
-      if (motoError) {
-        this.logger.error(
-          `❌ Error fetching motorisations: ${motoError.message}`,
-        );
-      } else if (motorisations) {
-        // Extraire modèles uniques
-        const modelesSet = new Set<string>();
-        motorisations.forEach((m) => {
-          const modeleKey = `${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}`;
-          if (!modelesSet.has(modeleKey)) {
-            modelesSet.add(modeleKey);
-            urls.push({
-              loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}.html`,
-              priority: '0.7',
-              changefreq: 'monthly',
-            });
-          }
-
-          // Types (motorisations)
-          urls.push({
-            loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
-            priority: '0.7',
-            changefreq: 'monthly',
-          });
-        });
-        this.logger.log(
-          `  → ${modelesSet.size} modèles, ${motorisations.length} types`,
-        );
-      }
-
-      if (urls.length === 0) {
-        this.logger.warn('⚠️ No vehicules found');
+      if (error) {
+        this.logger.error(`❌ Error fetching motorisations: ${error.message}`);
         return null;
       }
 
-      const filename = 'sitemap-vehicules.xml';
+      if (!motorisations || motorisations.length === 0) {
+        this.logger.warn('⚠️ No motorisations found');
+        return null;
+      }
+
+      const urls: SitemapUrl[] = motorisations.map((m) => ({
+        loc: `/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
+        priority: '0.7',
+        changefreq: 'monthly',
+      }));
+
+      this.logger.log(`  → ${urls.length} types/motorisations`);
+
+      const filename = 'sitemap-types.xml';
       const filepath = path.join(dir, filename);
       const xml = this.buildSitemapXml(urls);
       fs.writeFileSync(filepath, xml, 'utf8');
 
       const stats = fs.statSync(filepath);
       this.logger.log(
-        `✅ sitemap-vehicules.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
+        `✅ sitemap-types.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
       );
 
       return {
@@ -296,17 +327,15 @@ export class SitemapUnifiedService {
         size: stats.size,
       };
     } catch (error: any) {
-      this.logger.error(
-        `❌ Failed to generate vehicules sitemap: ${error.message}`,
-      );
+      this.logger.error(`❌ Failed to generate types sitemap: ${error.message}`);
       return null;
     }
   }
 
   /**
-   * 📦 Génère sitemap-produits-*.xml (shardé par 50k URLs)
+   * 📦 Génère sitemap-pieces-*.xml (shardé par 50k URLs)
    */
-  private async generateProduitsSitemaps(
+  private async generatePiecesSitemaps(
     dir: string,
   ): Promise<SitemapFileResult[]> {
     const results: SitemapFileResult[] = [];
@@ -318,7 +347,7 @@ export class SitemapUnifiedService {
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
-        this.logger.error(`❌ Error counting products: ${countError.message}`);
+        this.logger.error(`❌ Error counting pieces: ${countError.message}`);
         return results;
       }
 
@@ -332,7 +361,7 @@ export class SitemapUnifiedService {
       for (let shard = 0; shard < totalShards; shard++) {
         const offset = shard * this.MAX_URLS_PER_SITEMAP;
 
-        const { data: products, error } = await this.supabase
+        const { data: pieces, error } = await this.supabase
           .from('__sitemap_p_link')
           .select(
             'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
@@ -341,22 +370,22 @@ export class SitemapUnifiedService {
 
         if (error) {
           this.logger.error(
-            `❌ Error fetching products shard ${shard + 1}: ${error.message}`,
+            `❌ Error fetching pieces shard ${shard + 1}: ${error.message}`,
           );
           continue;
         }
 
-        if (!products || products.length === 0) {
+        if (!pieces || pieces.length === 0) {
           continue;
         }
 
-        const urls: SitemapUrl[] = products.map((p) => ({
+        const urls: SitemapUrl[] = pieces.map((p) => ({
           loc: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
           priority: '0.6',
           changefreq: 'weekly',
         }));
 
-        const filename = `sitemap-produits-${shard + 1}.xml`;
+        const filename = `sitemap-pieces-${shard + 1}.xml`;
         const filepath = path.join(dir, filename);
         const xml = this.buildSitemapXml(urls);
         fs.writeFileSync(filepath, xml, 'utf8');
@@ -375,7 +404,7 @@ export class SitemapUnifiedService {
       }
     } catch (error: any) {
       this.logger.error(
-        `❌ Failed to generate products sitemaps: ${error.message}`,
+        `❌ Failed to generate pieces sitemaps: ${error.message}`,
       );
     }
 
@@ -384,6 +413,7 @@ export class SitemapUnifiedService {
 
   /**
    * 📝 Génère sitemap-blog.xml
+   * Compatible avec le format existant: /blog-pieces-auto/{path}
    */
   private async generateBlogSitemap(
     dir: string,
@@ -405,9 +435,10 @@ export class SitemapUnifiedService {
       }
 
       const urls: SitemapUrl[] = articles.map((a) => ({
-        loc: `/blog/${a.map_alias}.html`,
+        // Format compatible avec l'existant: /blog-pieces-auto/{path}
+        loc: `/blog-pieces-auto/${a.map_alias}`,
         priority: '0.6',
-        changefreq: 'weekly',
+        changefreq: 'monthly',
         lastmod: a.map_date
           ? new Date(a.map_date).toISOString().split('T')[0]
           : undefined,
