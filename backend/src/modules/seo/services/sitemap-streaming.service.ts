@@ -574,7 +574,7 @@ ${shards
       }
 
       // 4. Mettre à jour l'index sitemap.xml
-      await this.updateMainSitemapIndex(dir, files);
+      await this.updateMainSitemapIndex(dir);
 
       const duration = Date.now() - startTime;
       const totalUrls = files.reduce((sum, f) => sum + f.urlCount, 0);
@@ -683,7 +683,9 @@ ${shards
       while (hasMore) {
         const { data, error } = await this.supabase
           .from('__sitemap_motorisation')
-          .select('map_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id')
+          .select(
+            'map_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
+          )
           .range(offset, offset + batchSize - 1)
           .order('map_id');
 
@@ -700,10 +702,15 @@ ${shards
         }
       }
 
-      this.logger.log(`📊 Loaded ${allMotorisations.length} motorisations from __sitemap_motorisation`);
+      this.logger.log(
+        `📊 Loaded ${allMotorisations.length} motorisations from __sitemap_motorisation`,
+      );
 
       const urls = allMotorisations
-        .filter((m: any) => m.map_marque_alias && m.map_modele_alias && m.map_type_alias)
+        .filter(
+          (m: any) =>
+            m.map_marque_alias && m.map_modele_alias && m.map_type_alias,
+        )
         .map((m: any) => ({
           loc: `${this.BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
           priority: '0.7',
@@ -765,7 +772,12 @@ ${shards
         fs.writeFileSync(filepath, emptyXml, 'utf8');
         return {
           success: true,
-          file: { name: 'sitemap-blog.xml', path: filepath, urlCount: 0, size: 0 },
+          file: {
+            name: 'sitemap-blog.xml',
+            path: filepath,
+            urlCount: 0,
+            size: 0,
+          },
         };
       }
 
@@ -797,9 +809,7 @@ ${shards
         },
       };
     } catch (error: any) {
-      this.logger.error(
-        `❌ Failed to generate blog sitemap: ${error.message}`,
-      );
+      this.logger.error(`❌ Failed to generate blog sitemap: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
@@ -807,24 +817,27 @@ ${shards
   /**
    * Mettre à jour l'index sitemap.xml principal
    */
-  private async updateMainSitemapIndex(
-    dir: string,
-    newFiles: StaticSitemapResult['files'],
-  ): Promise<void> {
+  private async updateMainSitemapIndex(dir: string): Promise<void> {
     this.logger.log('📝 Updating main sitemap.xml index...');
 
     const today = new Date().toISOString().split('T')[0];
 
     // Lister tous les sitemaps existants dans le répertoire
-    const existingFiles = fs.readdirSync(dir)
-      .filter(f => f.startsWith('sitemap-') && f.endsWith('.xml') && f !== 'sitemap.xml')
+    const existingFiles = fs
+      .readdirSync(dir)
+      .filter(
+        (f) =>
+          f.startsWith('sitemap-') && f.endsWith('.xml') && f !== 'sitemap.xml',
+      )
       .sort();
 
     // Construire l'index
-    const entries = existingFiles.map(filename => `  <sitemap>
+    const entries = existingFiles.map(
+      (filename) => `  <sitemap>
     <loc>${this.BASE_URL}/${filename}</loc>
     <lastmod>${today}</lastmod>
-  </sitemap>`);
+  </sitemap>`,
+    );
 
     const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -834,7 +847,9 @@ ${entries.join('\n')}
     const indexPath = path.join(dir, 'sitemap.xml');
     fs.writeFileSync(indexPath, indexXml, 'utf8');
 
-    this.logger.log(`✅ sitemap.xml updated with ${existingFiles.length} sitemaps`);
+    this.logger.log(
+      `✅ sitemap.xml updated with ${existingFiles.length} sitemaps`,
+    );
   }
 
   /**
@@ -843,11 +858,15 @@ ${entries.join('\n')}
   private buildSimpleSitemapXml(
     urls: { loc: string; priority: string; changefreq: string }[],
   ): string {
-    const urlEntries = urls.map(u => `  <url>
+    const urlEntries = urls
+      .map(
+        (u) => `  <url>
     <loc>${this.escapeXml(u.loc)}</loc>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
-  </url>`).join('\n');
+  </url>`,
+      )
+      .join('\n');
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
