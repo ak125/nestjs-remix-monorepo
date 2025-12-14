@@ -205,19 +205,15 @@ jobs:
       ##########################################################################
       # VALIDATE
       ##########################################################################
-      
+
+      - name: 📦 Install XML tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+
       - name: ✅ Validate Sitemaps XML
-        continue-on-error: true
         run: |
           cd public/sitemaps
-
-          # Vérifier si xmllint est disponible
-          if ! command -v xmllint &> /dev/null; then
-            echo "⚠️ xmllint not installed, skipping XML validation"
-            echo "📋 Listing generated files instead:"
-            ls -la *.xml 2>/dev/null || echo "No XML files found"
-            exit 0
-          fi
 
           for file in *.xml; do
             if [ -f "$file" ]; then
