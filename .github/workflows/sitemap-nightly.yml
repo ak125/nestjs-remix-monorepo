@@ -135,20 +135,23 @@ jobs:
             exit 1
           fi
 
-      - name: 🏭 Generate Static Sitemaps (Constructeurs, Types, Blog)
+      - name: 🗺️ Generate All Sitemaps (Unified SEO 2026)
         run: |
-          curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate-static?outputDir=/srv/sitemaps" \
+          echo "🚀 Generating all sitemaps with unified service..."
+          curl -X POST "http://localhost:3000/api/sitemap/generate-all?outputDir=/srv/sitemaps" \
             -H "Content-Type: application/json" \
-            -o static-response.json
-          cat static-response.json
+            -o unified-response.json
+          cat unified-response.json
 
-          if ! jq -e '.success' static-response.json > /dev/null; then
-            echo "❌ Static sitemap generation failed"
+          if ! jq -e '.success' unified-response.json > /dev/null; then
+            echo "❌ Unified sitemap generation failed"
             exit 1
           fi
 
-          echo "✅ Generated static sitemaps:"
-          jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' static-response.json
+          echo "✅ Generated sitemaps:"
+          jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' unified-response.json
+          echo ""
+          echo "📊 Total: $(jq -r '.data.totalUrls' unified-response.json) URLs in $(jq -r '.data.duration' unified-response.json)ms"
       
       - name: 📊 Fetch Generation Stats
         run: |

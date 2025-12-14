@@ -38,6 +38,9 @@ import { SitemapDeltaService } from './services/sitemap-delta.service';
 // 🗜️ Service Streaming Sitemap
 import { SitemapStreamingService } from './services/sitemap-streaming.service';
 
+// 🗺️ Service Unifié Sitemap SEO 2026
+import { SitemapUnifiedService } from './services/sitemap-unified.service';
+
 // 🤖 Service Robots.txt
 import { RobotsTxtService } from './services/robots-txt.service';
 
@@ -88,6 +91,9 @@ import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
 // 🗜️ Contrôleur Streaming Sitemap
 import { SitemapStreamingController } from './controllers/sitemap-streaming.controller';
 
+// 🗺️ Contrôleur Unifié Sitemap SEO 2026
+import { SitemapUnifiedController } from './controllers/sitemap-unified.controller';
+
 // 🤖 Contrôleur Robots.txt
 import { RobotsTxtController } from './controllers/robots-txt.controller';
 
@@ -127,6 +133,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
+    SitemapUnifiedController, // 🗺️ Contrôleur Unifié SEO 2026
     RobotsTxtController, // 🤖 Contrôleur Robots.txt
     SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
     SeoMonitorController, // 🛡️ Contrôleur SEO Monitor (BullMQ)
@@ -146,6 +153,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ProductImageService, // 🖼️ Service Images Produits
     SitemapDeltaService, // 🔄 Service Delta Sitemap
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap
+    SitemapUnifiedService, // 🗺️ Service Unifié SEO 2026
     RobotsTxtService, // 🤖 Service Robots.txt
     SeoHeadersService, // 📄 Service Headers SEO
     SeoMonitoringService, // 📊 Service Monitoring SEO
@@ -180,6 +188,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ProductImageService, // 🖼️ Service Images Produits exporté
     SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
+    SitemapUnifiedService, // 🗺️ Service Unifié SEO 2026 exporté
     RobotsTxtService, // 🤖 Service Robots.txt exporté
     SeoHeadersService, // 📄 Service Headers SEO exporté
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
