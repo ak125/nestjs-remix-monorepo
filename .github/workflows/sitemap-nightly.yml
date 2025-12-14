@@ -39,7 +39,6 @@ on:
 
 env:
   NODE_VERSION: '20.x'
-  PNPM_VERSION: '8.10.0'
 
 jobs:
   generate-sitemaps:
@@ -61,22 +60,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      
+          cache: 'npm'
+
       - name: 📚 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       
       ##########################################################################
       # BUILD
       ##########################################################################
       
       - name: 🏗️ Build backend
-        run: pnpm turbo run build --filter=backend
+        run: npm run build --workspace=backend
         env:
           NODE_ENV: production
       
@@ -93,7 +87,7 @@ jobs:
       - name: 🚀 Start NestJS backend
         run: |
           cd backend
-          pnpm start:prod &
+          npm run start:prod &
           sleep 30  # Wait for backend to be ready
           curl --retry 10 --retry-delay 5 http://localhost:3000/health
         env:
