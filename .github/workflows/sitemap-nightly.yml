@@ -77,13 +77,18 @@ jobs:
       ##########################################################################
       # START SERVICES
       ##########################################################################
-      
-      - name: 🐳 Start Docker services
+
+      - name: 🐳 Start Redis
         run: |
-          docker compose -f docker-compose.prod.yml up -d redis
-          docker compose -f docker-compose.prod.yml up -d meilisearch
-          sleep 10  # Wait for services
-      
+          docker run -d --name redis-ci -p 6379:6379 redis:7-alpine
+          sleep 5
+          docker exec redis-ci redis-cli ping
+
+      - name: 📂 Create output directories
+        run: |
+          mkdir -p public/sitemaps
+          mkdir -p logs/cron
+
       - name: 🚀 Start NestJS backend
         run: |
           cd backend
@@ -132,7 +137,7 @@ jobs:
       - name: 🗺️ Generate All Sitemaps (Unified SEO 2026)
         run: |
           echo "🚀 Generating all sitemaps with unified service..."
-          curl -X POST "http://localhost:3000/api/sitemap/generate-all?outputDir=/srv/sitemaps" \
+          curl -X POST "http://localhost:3000/api/sitemap/generate-all?outputDir=public/sitemaps" \
             -H "Content-Type: application/json" \
             -o unified-response.json
           cat unified-response.json
@@ -143,7 +148,7 @@ jobs:
           fi
 
           echo "✅ Generated sitemaps:"
-          jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' unified-response.json
+          jq -r '.data.files[] | "  - \(.name): \(.urlCount) URLs"' unified-response.json || echo "No files array"
           echo ""
           echo "📊 Total: $(jq -r '.data.totalUrls' unified-response.json) URLs in $(jq -r '.data.duration' unified-response.json)ms"
       
@@ -246,7 +251,7 @@ jobs:
       
       - name: 🐳 Stop Docker services
         if: always()
-        run: docker compose -f docker-compose.prod.yml down
+        run: docker stop redis-ci || true
       
       ##########################################################################
       # ARTIFACTS
