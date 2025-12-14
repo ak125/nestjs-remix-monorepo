@@ -2188,4 +2188,371 @@ export interface VehicleBrandAPI extends VehicleBrand {
     isFavorite: boolean;
     displayOrder: number;
 }
+/**
+ * Schema pour les codes moteur (ex: K9K 752, M9R, CAGA)
+ * Table: auto_type_motor_code
+ */
+export declare const VehicleMotorCodeSchema: z.ZodObject<{
+    tmc_type_id: z.ZodNumber;
+    tmc_code: z.ZodString;
+    tmc_display: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+}, "strip", z.ZodTypeAny, {
+    tmc_type_id: number;
+    tmc_code: string;
+    tmc_display: number;
+}, {
+    tmc_type_id: number;
+    tmc_code: string;
+    tmc_display?: number | undefined;
+}>;
+export type VehicleMotorCode = z.infer<typeof VehicleMotorCodeSchema>;
+/**
+ * Schema pour les types mines / CNIT (carte grise)
+ * Table: auto_type_number_code
+ */
+export declare const VehicleMineCodeSchema: z.ZodObject<{
+    tnc_type_id: z.ZodNumber;
+    tnc_code: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    tnc_cnit: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    tnc_type_id: number;
+    tnc_code?: string | null | undefined;
+    tnc_cnit?: string | null | undefined;
+}, {
+    tnc_type_id: number;
+    tnc_code?: string | null | undefined;
+    tnc_cnit?: string | null | undefined;
+}>;
+export type VehicleMineCode = z.infer<typeof VehicleMineCodeSchema>;
+/**
+ * Schema pour le carburant moteur
+ * Table: auto_type_motor_fuel
+ */
+export declare const VehicleMotorFuelSchema: z.ZodObject<{
+    tmf_id: z.ZodNumber;
+    tmf_motor: z.ZodOptional<z.ZodString>;
+    tmf_engine: z.ZodOptional<z.ZodString>;
+    tmf_fuel: z.ZodOptional<z.ZodString>;
+    tmf_display: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    tmf_sort: z.ZodOptional<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    tmf_id: number;
+    tmf_display: number;
+    tmf_motor?: string | undefined;
+    tmf_engine?: string | undefined;
+    tmf_fuel?: string | undefined;
+    tmf_sort?: number | undefined;
+}, {
+    tmf_id: number;
+    tmf_motor?: string | undefined;
+    tmf_engine?: string | undefined;
+    tmf_fuel?: string | undefined;
+    tmf_display?: number | undefined;
+    tmf_sort?: number | undefined;
+}>;
+export type VehicleMotorFuel = z.infer<typeof VehicleMotorFuelSchema>;
+/**
+ * Schema pour un véhicule avec TOUTES ses données
+ * Équivalent du PHP avec marque + modèle + type + codes moteur + types mines
+ */
+export declare const VehicleFullDetailsSchema: z.ZodObject<{
+    marque_id: z.ZodNumber;
+    marque_name: z.ZodString;
+    marque_name_meta: z.ZodOptional<z.ZodString>;
+    marque_name_meta_title: z.ZodOptional<z.ZodString>;
+    marque_alias: z.ZodString;
+    marque_logo: z.ZodOptional<z.ZodString>;
+    marque_relfollow: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    marque_top: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    modele_id: z.ZodNumber;
+    modele_name: z.ZodString;
+    modele_name_meta: z.ZodOptional<z.ZodString>;
+    modele_alias: z.ZodString;
+    modele_pic: z.ZodOptional<z.ZodString>;
+    modele_ful_name: z.ZodOptional<z.ZodString>;
+    modele_body: z.ZodOptional<z.ZodString>;
+    modele_relfollow: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    modele_year_from: z.ZodOptional<z.ZodString>;
+    modele_year_to: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    type_id: z.ZodNumber;
+    type_name: z.ZodString;
+    type_name_meta: z.ZodOptional<z.ZodString>;
+    type_alias: z.ZodString;
+    type_power_ps: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    type_power_kw: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    type_fuel: z.ZodOptional<z.ZodString>;
+    type_body: z.ZodOptional<z.ZodString>;
+    type_engine: z.ZodOptional<z.ZodString>;
+    type_liter: z.ZodOptional<z.ZodString>;
+    type_month_from: z.ZodOptional<z.ZodString>;
+    type_year_from: z.ZodOptional<z.ZodString>;
+    type_month_to: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    type_year_to: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    type_relfollow: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    type_display: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+    motor_codes: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    motor_codes_formatted: z.ZodOptional<z.ZodString>;
+    mine_codes: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    mine_codes_formatted: z.ZodOptional<z.ZodString>;
+    cnit_codes: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    cnit_codes_formatted: z.ZodOptional<z.ZodString>;
+    production_date_formatted: z.ZodOptional<z.ZodString>;
+    power_formatted: z.ZodOptional<z.ZodString>;
+    cylinder_cm3: z.ZodOptional<z.ZodNumber>;
+    vehicle_url: z.ZodOptional<z.ZodString>;
+    image_url: z.ZodOptional<z.ZodString>;
+    logo_url: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    marque_id: number;
+    marque_name: string;
+    marque_alias: string;
+    modele_id: number;
+    modele_name: string;
+    modele_alias: string;
+    type_id: number;
+    type_name: string;
+    type_alias: string;
+    marque_name_meta?: string | undefined;
+    marque_name_meta_title?: string | undefined;
+    marque_logo?: string | undefined;
+    marque_top?: string | number | undefined;
+    marque_relfollow?: string | number | undefined;
+    modele_name_meta?: string | undefined;
+    modele_ful_name?: string | undefined;
+    modele_pic?: string | undefined;
+    modele_year_from?: string | undefined;
+    modele_year_to?: string | null | undefined;
+    type_name_meta?: string | undefined;
+    type_fuel?: string | undefined;
+    type_power_ps?: string | number | undefined;
+    type_power_kw?: string | number | undefined;
+    type_liter?: string | undefined;
+    type_year_from?: string | undefined;
+    type_year_to?: string | null | undefined;
+    type_month_from?: string | undefined;
+    type_month_to?: string | null | undefined;
+    type_engine?: string | undefined;
+    type_display?: string | number | undefined;
+    modele_body?: string | undefined;
+    modele_relfollow?: string | number | undefined;
+    type_body?: string | undefined;
+    type_relfollow?: string | number | undefined;
+    motor_codes?: string[] | undefined;
+    motor_codes_formatted?: string | undefined;
+    mine_codes?: string[] | undefined;
+    mine_codes_formatted?: string | undefined;
+    cnit_codes?: string[] | undefined;
+    cnit_codes_formatted?: string | undefined;
+    production_date_formatted?: string | undefined;
+    power_formatted?: string | undefined;
+    cylinder_cm3?: number | undefined;
+    vehicle_url?: string | undefined;
+    image_url?: string | undefined;
+    logo_url?: string | undefined;
+}, {
+    marque_id: number;
+    marque_name: string;
+    marque_alias: string;
+    modele_id: number;
+    modele_name: string;
+    modele_alias: string;
+    type_id: number;
+    type_name: string;
+    type_alias: string;
+    marque_name_meta?: string | undefined;
+    marque_name_meta_title?: string | undefined;
+    marque_logo?: string | undefined;
+    marque_top?: string | number | undefined;
+    marque_relfollow?: string | number | undefined;
+    modele_name_meta?: string | undefined;
+    modele_ful_name?: string | undefined;
+    modele_pic?: string | undefined;
+    modele_year_from?: string | undefined;
+    modele_year_to?: string | null | undefined;
+    type_name_meta?: string | undefined;
+    type_fuel?: string | undefined;
+    type_power_ps?: string | number | undefined;
+    type_power_kw?: string | number | undefined;
+    type_liter?: string | undefined;
+    type_year_from?: string | undefined;
+    type_year_to?: string | null | undefined;
+    type_month_from?: string | undefined;
+    type_month_to?: string | null | undefined;
+    type_engine?: string | undefined;
+    type_display?: string | number | undefined;
+    modele_body?: string | undefined;
+    modele_relfollow?: string | number | undefined;
+    type_body?: string | undefined;
+    type_relfollow?: string | number | undefined;
+    motor_codes?: string[] | undefined;
+    motor_codes_formatted?: string | undefined;
+    mine_codes?: string[] | undefined;
+    mine_codes_formatted?: string | undefined;
+    cnit_codes?: string[] | undefined;
+    cnit_codes_formatted?: string | undefined;
+    production_date_formatted?: string | undefined;
+    power_formatted?: string | undefined;
+    cylinder_cm3?: number | undefined;
+    vehicle_url?: string | undefined;
+    image_url?: string | undefined;
+    logo_url?: string | undefined;
+}>;
+export type VehicleFullDetails = z.infer<typeof VehicleFullDetailsSchema>;
+/**
+ * Formate les dates de production comme dans le PHP
+ * @example
+ * formatProductionDate("06", "2005", "12", "2012") => "de 2005 à 2012"
+ * formatProductionDate("06", "2020", null, null) => "depuis 06/2020"
+ */
+export declare function formatProductionDate(monthFrom?: string | null, yearFrom?: string | null, monthTo?: string | null, yearTo?: string | null): string;
+/**
+ * Formate les dates de production en version détaillée avec mois
+ * @example
+ * formatProductionDateDetailed("06", "2005", "12", "2012") => "06/2005 → 12/2012"
+ */
+export declare function formatProductionDateDetailed(monthFrom?: string | null, yearFrom?: string | null, monthTo?: string | null, yearTo?: string | null): string;
+/**
+ * Formate la puissance en ch et kW
+ * @example
+ * formatPower(75, 55) => "75 ch / 55 kW"
+ * formatPower(75) => "75 ch / 55 kW" (calcule kW)
+ */
+export declare function formatPower(powerPs?: number | string | null, powerKw?: number | string | null): string;
+/**
+ * Convertit la cylindrée de litres en cm³
+ * @example
+ * literToCm3("1.5") => 1500
+ * literToCm3("2.0") => 2000
+ */
+export declare function literToCm3(liter?: string | null): number | undefined;
+/**
+ * Formate la cylindrée avec les deux unités
+ * @example
+ * formatCylinder("1.5") => "1500 cm³ (1.5 L)"
+ */
+export declare function formatCylinder(liter?: string | null): string;
+/**
+ * Formate un tableau de codes en chaîne séparée par virgules
+ * @example
+ * formatCodes(["K9K 752", "K9K 764"]) => "K9K 752, K9K 764"
+ */
+export declare function formatCodes(codes?: string[] | null): string;
+/**
+ * Génère l'URL du véhicule au format Automecanik
+ * @example
+ * generateVehicleUrl({marque_alias: "renault", marque_id: 5, ...})
+ * => "/constructeurs/renault-5/clio-iii-5010/1-5-dci-16789.html"
+ */
+export declare function generateVehicleUrl(vehicle: {
+    marque_alias: string;
+    marque_id: number;
+    modele_alias: string;
+    modele_id: number;
+    type_alias: string;
+    type_id: number;
+}): string;
+/**
+ * Génère l'URL d'une page produit pour un véhicule
+ */
+export declare function generateProductVehicleUrl(params: {
+    gamme_alias: string;
+    gamme_id: number;
+    marque_alias: string;
+    marque_id: number;
+    modele_alias: string;
+    modele_id: number;
+    type_alias: string;
+    type_id: number;
+}): string;
+/**
+ * Schema pour la recherche par code moteur
+ */
+export declare const MotorCodeSearchSchema: z.ZodObject<{
+    code: z.ZodString;
+    exact: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    code: string;
+    exact: boolean;
+}, {
+    code: string;
+    exact?: boolean | undefined;
+}>;
+export type MotorCodeSearch = z.infer<typeof MotorCodeSearchSchema>;
+/**
+ * Schema pour la recherche par type mine
+ */
+export declare const MineCodeSearchSchema: z.ZodObject<{
+    code: z.ZodString;
+    includeCnit: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    code: string;
+    includeCnit: boolean;
+}, {
+    code: string;
+    includeCnit?: boolean | undefined;
+}>;
+export type MineCodeSearch = z.infer<typeof MineCodeSearchSchema>;
+/**
+ * Schema pour les marques populaires (homepage)
+ */
+export declare const TopBrandSchema: z.ZodObject<{
+    marque_id: z.ZodNumber;
+    marque_name: z.ZodString;
+    marque_alias: z.ZodOptional<z.ZodString>;
+    marque_name_meta: z.ZodOptional<z.ZodString>;
+    marque_name_meta_title: z.ZodOptional<z.ZodString>;
+    marque_logo: z.ZodOptional<z.ZodString>;
+    marque_wall: z.ZodOptional<z.ZodString>;
+    marque_country: z.ZodOptional<z.ZodString>;
+    marque_display: z.ZodDefault<z.ZodNumber>;
+    marque_sort: z.ZodOptional<z.ZodNumber>;
+    marque_top: z.ZodOptional<z.ZodNumber>;
+    marque_relfollow: z.ZodDefault<z.ZodNumber>;
+    marque_sitemap: z.ZodDefault<z.ZodNumber>;
+    products_count: z.ZodOptional<z.ZodNumber>;
+    is_featured: z.ZodOptional<z.ZodBoolean>;
+} & {
+    models_count: z.ZodOptional<z.ZodNumber>;
+    types_count: z.ZodOptional<z.ZodNumber>;
+    image_url: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    marque_id: number;
+    marque_name: string;
+    marque_display: number;
+    marque_relfollow: number;
+    marque_sitemap: number;
+    marque_alias?: string | undefined;
+    marque_name_meta?: string | undefined;
+    marque_name_meta_title?: string | undefined;
+    marque_logo?: string | undefined;
+    marque_wall?: string | undefined;
+    marque_country?: string | undefined;
+    marque_sort?: number | undefined;
+    marque_top?: number | undefined;
+    products_count?: number | undefined;
+    is_featured?: boolean | undefined;
+    image_url?: string | undefined;
+    models_count?: number | undefined;
+    types_count?: number | undefined;
+}, {
+    marque_id: number;
+    marque_name: string;
+    marque_alias?: string | undefined;
+    marque_name_meta?: string | undefined;
+    marque_name_meta_title?: string | undefined;
+    marque_logo?: string | undefined;
+    marque_wall?: string | undefined;
+    marque_country?: string | undefined;
+    marque_display?: number | undefined;
+    marque_sort?: number | undefined;
+    marque_top?: number | undefined;
+    marque_relfollow?: number | undefined;
+    marque_sitemap?: number | undefined;
+    products_count?: number | undefined;
+    is_featured?: boolean | undefined;
+    image_url?: string | undefined;
+    models_count?: number | undefined;
+    types_count?: number | undefined;
+}>;
+export type TopBrand = z.infer<typeof TopBrandSchema>;
 //# sourceMappingURL=vehicle.types.d.ts.map

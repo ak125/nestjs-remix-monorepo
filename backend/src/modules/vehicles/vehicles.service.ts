@@ -1608,4 +1608,504 @@ export class VehiclesService extends SupabaseBaseService {
       };
     }
   }
+
+  // ====================================
+  // 🔧 NOUVELLES MÉTHODES - Codes Moteur & Types Mines
+  // ====================================
+
+  /**
+   * 🔧 Récupère tous les codes moteur pour un type de véhicule
+   * Équivalent PHP: SELECT TMC_CODE FROM AUTO_TYPE_MOTOR_CODE WHERE TMC_TYPE_ID = $type_id
+   */
+  async getMotorCodesByTypeId(typeId: number): Promise<{
+    data: string[];
+    formatted: string;
+    count: number;
+  }> {
+    const cacheKey = `motor_codes_${typeId}`;
+    const cached = this.getCached<{ data: string[]; formatted: string; count: number }>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const { data, error } = await this.client
+        .from(TABLES.auto_type_motor_code)
+        .select('tmc_code')
+        .eq('tmc_type_id', typeId);
+
+      if (error) {
+        this.logger.error(`❌ Erreur getMotorCodesByTypeId(${typeId}):`, error);
+        return { data: [], formatted: '', count: 0 };
+      }
+
+      const codes = (data || [])
+        .map((item) => item.tmc_code)
+        .filter(Boolean) as string[];
+
+      const result = {
+        data: codes,
+        formatted: codes.join(', '),
+        count: codes.length,
+      };
+
+      this.setCache(cacheKey, result);
+      this.logger.debug(`✅ ${codes.length} codes moteur trouvés pour type ${typeId}`);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`💥 Exception getMotorCodesByTypeId(${typeId}):`, error);
+      return { data: [], formatted: '', count: 0 };
+    }
+  }
+
+  /**
+   * 🔧 Récupère tous les types mines et CNIT pour un type de véhicule
+   * Équivalent PHP: SELECT TM_MINE FROM AUTO_TYPE_MINE WHERE TM_TYPE_ID = $type_id
+   */
+  async getMineCodesByTypeId(typeId: number): Promise<{
+    mines: string[];
+    mines_formatted: string;
+    cnits: string[];
+    cnits_formatted: string;
+    count: number;
+  }> {
+    const cacheKey = `mine_codes_${typeId}`;
+    const cached = this.getCached<{
+      mines: string[];
+      mines_formatted: string;
+      cnits: string[];
+      cnits_formatted: string;
+      count: number;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const { data, error } = await this.client
+        .from(TABLES.auto_type_number_code)
+        .select('tnc_code, tnc_cnit')
+        .eq('tnc_type_id', typeId);
+
+      if (error) {
+        this.logger.error(`❌ Erreur getMineCodesByTypeId(${typeId}):`, error);
+        return { mines: [], mines_formatted: '', cnits: [], cnits_formatted: '', count: 0 };
+      }
+
+      const mines = (data || [])
+        .map((item) => item.tnc_code)
+        .filter(Boolean) as string[];
+
+      const cnits = (data || [])
+        .map((item) => item.tnc_cnit)
+        .filter(Boolean) as string[];
+
+      const result = {
+        mines,
+        mines_formatted: mines.join(', '),
+        cnits,
+        cnits_formatted: cnits.join(', '),
+        count: data?.length || 0,
+      };
+
+      this.setCache(cacheKey, result);
+      this.logger.debug(`✅ ${mines.length} types mines, ${cnits.length} CNIT pour type ${typeId}`);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`💥 Exception getMineCodesByTypeId(${typeId}):`, error);
+      return { mines: [], mines_formatted: '', cnits: [], cnits_formatted: '', count: 0 };
+    }
+  }
+
+  /**
+   * 🔍 Recherche de véhicules par code moteur
+   * Équivalent PHP: Recherche par TMC_CODE
+   */
+  async searchByMotorCode(
+    motorCode: string,
+    exact: boolean = false,
+  ): Promise<VehicleResponseDto> {
+    try {
+      this.logger.debug(`🔍 Recherche par code moteur: ${motorCode} (exact: ${exact})`);
+
+      // 1. Trouver les type_ids correspondants au code moteur
+      let query = this.client
+        .from(TABLES.auto_type_motor_code)
+        .select('tmc_type_id, tmc_code');
+
+      if (exact) {
+        query = query.eq('tmc_code', motorCode);
+      } else {
+        query = query.ilike('tmc_code', `%${motorCode}%`);
+      }
+
+      const { data: codeData, error: codeError } = await query.limit(50);
+
+      if (codeError) {
+        this.logger.error('❌ Erreur searchByMotorCode (codes):', codeError);
+        throw codeError;
+      }
+
+      if (!codeData || codeData.length === 0) {
+        return {
+          data: [],
+          total: 0,
+          page: 0,
+          limit: 50,
+          meta: { motorCode, message: 'Code moteur non trouvé' },
+        };
+      }
+
+      // 2. Récupérer les type_ids uniques
+      const typeIds = [...new Set(codeData.map((item) => item.tmc_type_id))].filter(Boolean);
+
+      if (typeIds.length === 0) {
+        return {
+          data: [],
+          total: 0,
+          page: 0,
+          limit: 50,
+          meta: { motorCode, message: 'Aucun véhicule associé' },
+        };
+      }
+
+      // 3. Récupérer les détails des types avec marque et modèle
+      const { data: typeData, error: typeError } = await this.client
+        .from(TABLES.auto_type)
+        .select(`
+          type_id,
+          type_name,
+          type_alias,
+          type_power_ps,
+          type_power_kw,
+          type_fuel,
+          type_body,
+          type_year_from,
+          type_year_to,
+          type_modele_id,
+          type_marque_id
+        `)
+        .in('type_id', typeIds)
+        .eq('type_display', 1)
+        .limit(50);
+
+      if (typeError) {
+        this.logger.error('❌ Erreur searchByMotorCode (types):', typeError);
+        throw typeError;
+      }
+
+      // 4. Enrichir avec modèle et marque
+      const modeleIds = [...new Set((typeData || []).map((t) => t.type_modele_id))].filter(Boolean);
+      const marqueIds = [...new Set((typeData || []).map((t) => t.type_marque_id))].filter(Boolean);
+
+      const [modelesResult, marquesResult] = await Promise.all([
+        this.client
+          .from(TABLES.auto_modele)
+          .select('modele_id, modele_name, modele_alias')
+          .in('modele_id', modeleIds),
+        this.client
+          .from(TABLES.auto_marque)
+          .select('marque_id, marque_name, marque_alias, marque_logo')
+          .in('marque_id', marqueIds),
+      ]);
+
+      const modelesMap = new Map(
+        (modelesResult.data || []).map((m) => [m.modele_id, m]),
+      );
+      const marquesMap = new Map(
+        (marquesResult.data || []).map((m) => [m.marque_id, m]),
+      );
+
+      // 5. Combiner les données
+      const enrichedData = (typeData || []).map((type) => {
+        const modele = modelesMap.get(type.type_modele_id);
+        const marque = marquesMap.get(type.type_marque_id);
+        const matchingCodes = codeData.filter((c) => c.tmc_type_id === type.type_id);
+
+        return {
+          ...type,
+          motor_codes: matchingCodes.map((c) => c.tmc_code),
+          auto_modele: modele || null,
+          auto_marque: marque || null,
+        };
+      });
+
+      this.logger.debug(`✅ ${enrichedData.length} véhicules trouvés pour code moteur ${motorCode}`);
+
+      return {
+        data: enrichedData,
+        total: enrichedData.length,
+        page: 0,
+        limit: 50,
+        meta: { motorCode, exact },
+      };
+    } catch (error) {
+      this.logger.error('💥 Exception searchByMotorCode:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🏠 Récupère les marques populaires pour la homepage (marque_top = 1)
+   * Équivalent PHP: SELECT * FROM AUTO_MARQUE WHERE MARQUE_TOP = 1
+   */
+  async getTopBrands(limit: number = 20): Promise<VehicleResponseDto> {
+    const cacheKey = `top_brands_${limit}`;
+    const cached = this.getCached<VehicleResponseDto>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const { data, error } = await this.client
+        .from(TABLES.auto_marque)
+        .select(`
+          marque_id,
+          marque_name,
+          marque_name_meta,
+          marque_alias,
+          marque_logo,
+          marque_top,
+          marque_sort
+        `)
+        .eq('marque_display', 1)
+        .eq('marque_top', 1)
+        .order('marque_sort', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('❌ Erreur getTopBrands:', error);
+        throw error;
+      }
+
+      // Enrichir avec URLs images
+      const SUPABASE_STORAGE_URL =
+        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
+      const enrichedData = (data || []).map((brand: any) => ({
+        ...brand,
+        logo_url: brand.marque_logo
+          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${brand.marque_logo}`
+          : null,
+      }));
+
+      const result = {
+        data: enrichedData,
+        total: enrichedData.length,
+        page: 0,
+        limit,
+        meta: { source: 'marque_top' },
+      };
+
+      this.setCache(cacheKey, result);
+      this.logger.debug(`✅ ${enrichedData.length} marques TOP récupérées`);
+
+      return result;
+    } catch (error) {
+      this.logger.error('💥 Exception getTopBrands:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🚗 Récupère TOUTES les données d'un véhicule (marque + modèle + type + codes moteur + types mines)
+   * Version complète équivalente au PHP avec formatage
+   */
+  async getVehicleFullDetails(typeId: number): Promise<{
+    success: boolean;
+    data: any;
+    error?: string;
+  }> {
+    const cacheKey = `vehicle_full_${typeId}`;
+    const cached = this.getCached<{ success: boolean; data: any }>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      this.logger.debug(`🔍 Récupération détails complets véhicule type_id: ${typeId}`);
+
+      // 1. Récupérer le type avec modèle et marque
+      const { data: typeData, error: typeError } = await this.client
+        .from(TABLES.auto_type)
+        .select(`
+          type_id,
+          type_name,
+          type_name_meta,
+          type_alias,
+          type_power_ps,
+          type_power_kw,
+          type_fuel,
+          type_body,
+          type_engine,
+          type_liter,
+          type_month_from,
+          type_year_from,
+          type_month_to,
+          type_year_to,
+          type_relfollow,
+          type_display,
+          type_modele_id,
+          type_marque_id
+        `)
+        .eq('type_id', typeId)
+        .eq('type_display', 1)
+        .single();
+
+      if (typeError || !typeData) {
+        return {
+          success: false,
+          data: null,
+          error: `Véhicule non trouvé: type_id=${typeId}`,
+        };
+      }
+
+      // 2. Récupérer modèle et marque en parallèle
+      const [modeleResult, marqueResult, motorCodesResult, mineCodesResult] =
+        await Promise.all([
+          this.client
+            .from(TABLES.auto_modele)
+            .select(`
+              modele_id,
+              modele_name,
+              modele_name_meta,
+              modele_alias,
+              modele_pic,
+              modele_ful_name,
+              modele_body,
+              modele_relfollow,
+              modele_year_from,
+              modele_year_to
+            `)
+            .eq('modele_id', typeData.type_modele_id)
+            .single(),
+          this.client
+            .from(TABLES.auto_marque)
+            .select(`
+              marque_id,
+              marque_name,
+              marque_name_meta,
+              marque_name_meta_title,
+              marque_alias,
+              marque_logo,
+              marque_relfollow,
+              marque_top
+            `)
+            .eq('marque_id', typeData.type_marque_id)
+            .single(),
+          this.getMotorCodesByTypeId(typeId),
+          this.getMineCodesByTypeId(typeId),
+        ]);
+
+      const modele = modeleResult.data;
+      const marque = marqueResult.data;
+
+      if (!modele || !marque) {
+        return {
+          success: false,
+          data: null,
+          error: 'Modèle ou marque non trouvé',
+        };
+      }
+
+      // 3. Construire l'objet complet avec formatage
+      const SUPABASE_STORAGE_URL =
+        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
+      // Formatage des dates de production
+      let productionDateFormatted = '';
+      if (typeData.type_year_from) {
+        if (!typeData.type_year_to) {
+          productionDateFormatted = typeData.type_month_from
+            ? `depuis ${typeData.type_month_from}/${typeData.type_year_from}`
+            : `depuis ${typeData.type_year_from}`;
+        } else {
+          productionDateFormatted = `de ${typeData.type_year_from} à ${typeData.type_year_to}`;
+        }
+      }
+
+      // Formatage puissance
+      const powerPs = parseInt(typeData.type_power_ps) || 0;
+      const powerKw = parseInt(typeData.type_power_kw) || Math.round(powerPs * 0.7355);
+      const powerFormatted = powerPs ? `${powerPs} ch / ${powerKw} kW` : '';
+
+      // Cylindrée en cm³
+      const cylinderCm3 = typeData.type_liter
+        ? Math.round(parseFloat(typeData.type_liter) * 1000)
+        : null;
+
+      const fullData = {
+        // Marque
+        marque_id: marque.marque_id,
+        marque_name: marque.marque_name,
+        marque_name_meta: marque.marque_name_meta,
+        marque_name_meta_title: marque.marque_name_meta_title,
+        marque_alias: marque.marque_alias,
+        marque_logo: marque.marque_logo,
+        marque_relfollow: marque.marque_relfollow,
+        marque_top: marque.marque_top,
+
+        // Modèle
+        modele_id: modele.modele_id,
+        modele_name: modele.modele_name,
+        modele_name_meta: modele.modele_name_meta,
+        modele_alias: modele.modele_alias,
+        modele_pic: modele.modele_pic,
+        modele_ful_name: modele.modele_ful_name,
+        modele_body: modele.modele_body,
+        modele_relfollow: modele.modele_relfollow,
+
+        // Type
+        type_id: typeData.type_id,
+        type_name: typeData.type_name,
+        type_name_meta: typeData.type_name_meta,
+        type_alias: typeData.type_alias,
+        type_power_ps: typeData.type_power_ps,
+        type_power_kw: typeData.type_power_kw,
+        type_fuel: typeData.type_fuel,
+        type_body: typeData.type_body,
+        type_engine: typeData.type_engine,
+        type_liter: typeData.type_liter,
+        type_month_from: typeData.type_month_from,
+        type_year_from: typeData.type_year_from,
+        type_month_to: typeData.type_month_to,
+        type_year_to: typeData.type_year_to,
+        type_relfollow: typeData.type_relfollow,
+
+        // Codes moteur
+        motor_codes: motorCodesResult.data,
+        motor_codes_formatted: motorCodesResult.formatted,
+
+        // Types mines
+        mine_codes: mineCodesResult.mines,
+        mine_codes_formatted: mineCodesResult.mines_formatted,
+        cnit_codes: mineCodesResult.cnits,
+        cnit_codes_formatted: mineCodesResult.cnits_formatted,
+
+        // Données formatées
+        production_date_formatted: productionDateFormatted,
+        power_formatted: powerFormatted,
+        cylinder_cm3: cylinderCm3,
+
+        // URLs
+        vehicle_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${typeData.type_alias}-${typeData.type_id}.html`,
+        image_url: modele.modele_pic
+          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marque.marque_alias}/${modele.modele_pic}`
+          : null,
+        logo_url: marque.marque_logo
+          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${marque.marque_logo}`
+          : null,
+      };
+
+      const result = { success: true, data: fullData };
+      this.setCache(cacheKey, result);
+
+      this.logger.debug(
+        `✅ Détails complets: ${marque.marque_name} ${modele.modele_name} ${typeData.type_name}`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('💥 Exception getVehicleFullDetails:', error);
+      return {
+        success: false,
+        data: null,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
 }

@@ -374,3 +374,312 @@ export interface VehicleBrandAPI extends VehicleBrand {
   isFavorite: boolean;
   displayOrder: number;
 }
+
+// ====================================
+// 🔧 TYPES CODES MOTEUR & TYPES MINES
+// ====================================
+
+/**
+ * Schema pour les codes moteur (ex: K9K 752, M9R, CAGA)
+ * Table: auto_type_motor_code
+ */
+export const VehicleMotorCodeSchema = z.object({
+  tmc_type_id: z.number().int().positive(),
+  tmc_code: z.string().min(1),
+  tmc_display: z.number().int().min(0).max(1).optional().default(1),
+});
+
+export type VehicleMotorCode = z.infer<typeof VehicleMotorCodeSchema>;
+
+/**
+ * Schema pour les types mines / CNIT (carte grise)
+ * Table: auto_type_number_code
+ */
+export const VehicleMineCodeSchema = z.object({
+  tnc_type_id: z.number().int().positive(),
+  tnc_code: z.string().nullable().optional(), // Type mine (ex: 335AHR)
+  tnc_cnit: z.string().nullable().optional(), // Code CNIT
+});
+
+export type VehicleMineCode = z.infer<typeof VehicleMineCodeSchema>;
+
+/**
+ * Schema pour le carburant moteur
+ * Table: auto_type_motor_fuel
+ */
+export const VehicleMotorFuelSchema = z.object({
+  tmf_id: z.number().int().positive(),
+  tmf_motor: z.string().optional(),
+  tmf_engine: z.string().optional(),
+  tmf_fuel: z.string().optional(),
+  tmf_display: z.number().int().min(0).max(1).optional().default(1),
+  tmf_sort: z.number().int().optional(),
+});
+
+export type VehicleMotorFuel = z.infer<typeof VehicleMotorFuelSchema>;
+
+// ====================================
+// 🚗 TYPES VÉHICULE COMPLET (FULL DETAILS)
+// ====================================
+
+/**
+ * Schema pour un véhicule avec TOUTES ses données
+ * Équivalent du PHP avec marque + modèle + type + codes moteur + types mines
+ */
+export const VehicleFullDetailsSchema = z.object({
+  // === MARQUE (Constructeur) ===
+  marque_id: z.number().int().positive(),
+  marque_name: z.string(),
+  marque_name_meta: z.string().optional(),
+  marque_name_meta_title: z.string().optional(),
+  marque_alias: z.string(),
+  marque_logo: z.string().optional(),
+  marque_relfollow: z.union([z.number(), z.string()]).optional(),
+  marque_top: z.union([z.number(), z.string()]).optional(),
+
+  // === MODELE ===
+  modele_id: z.number().int().positive(),
+  modele_name: z.string(),
+  modele_name_meta: z.string().optional(),
+  modele_alias: z.string(),
+  modele_pic: z.string().optional(),
+  modele_ful_name: z.string().optional(),
+  modele_body: z.string().optional(),
+  modele_relfollow: z.union([z.number(), z.string()]).optional(),
+  modele_year_from: z.string().optional(),
+  modele_year_to: z.string().nullable().optional(),
+
+  // === TYPE (Motorisation) ===
+  type_id: z.number().int().positive(),
+  type_name: z.string(),
+  type_name_meta: z.string().optional(),
+  type_alias: z.string(),
+
+  // Puissance
+  type_power_ps: z.union([z.number(), z.string()]).optional(), // Chevaux
+  type_power_kw: z.union([z.number(), z.string()]).optional(), // Kilowatts
+
+  // Caractéristiques techniques
+  type_fuel: z.string().optional(),         // Diesel, Essence, Hybride...
+  type_body: z.string().optional(),         // Berline, Break, SUV...
+  type_engine: z.string().optional(),       // Code moteur principal
+  type_liter: z.string().optional(),        // Cylindrée en litres (ex: "1.5")
+
+  // Dates de production
+  type_month_from: z.string().optional(),
+  type_year_from: z.string().optional(),
+  type_month_to: z.string().nullable().optional(),
+  type_year_to: z.string().nullable().optional(),
+
+  // SEO
+  type_relfollow: z.union([z.number(), z.string()]).optional(),
+  type_display: z.union([z.number(), z.string()]).optional(),
+
+  // === CODES MOTEUR (multiples) ===
+  motor_codes: z.array(z.string()).optional(),
+  motor_codes_formatted: z.string().optional(), // "K9K 752, K9K 764"
+
+  // === TYPES MINES (multiples) ===
+  mine_codes: z.array(z.string()).optional(),
+  mine_codes_formatted: z.string().optional(), // "335AHR, 335AHS"
+  cnit_codes: z.array(z.string()).optional(),
+  cnit_codes_formatted: z.string().optional(),
+
+  // === DONNÉES FORMATÉES ===
+  production_date_formatted: z.string().optional(), // "de 2005 à 2012" ou "depuis 2020"
+  power_formatted: z.string().optional(),           // "75 ch / 55 kW"
+  cylinder_cm3: z.number().optional(),              // Cylindrée en cm³ (calculée)
+
+  // === URLS ===
+  vehicle_url: z.string().optional(),
+  image_url: z.string().optional(),
+  logo_url: z.string().optional(),
+});
+
+export type VehicleFullDetails = z.infer<typeof VehicleFullDetailsSchema>;
+
+// ====================================
+// 🛠️ HELPERS DE FORMATAGE
+// ====================================
+
+/**
+ * Formate les dates de production comme dans le PHP
+ * @example
+ * formatProductionDate("06", "2005", "12", "2012") => "de 2005 à 2012"
+ * formatProductionDate("06", "2020", null, null) => "depuis 06/2020"
+ */
+export function formatProductionDate(
+  monthFrom?: string | null,
+  yearFrom?: string | null,
+  monthTo?: string | null,
+  yearTo?: string | null,
+): string {
+  if (!yearFrom) return '';
+
+  if (!yearTo) {
+    // Véhicule encore en production
+    if (monthFrom) {
+      return `depuis ${monthFrom}/${yearFrom}`;
+    }
+    return `depuis ${yearFrom}`;
+  }
+
+  // Véhicule arrêté
+  return `de ${yearFrom} à ${yearTo}`;
+}
+
+/**
+ * Formate les dates de production en version détaillée avec mois
+ * @example
+ * formatProductionDateDetailed("06", "2005", "12", "2012") => "06/2005 → 12/2012"
+ */
+export function formatProductionDateDetailed(
+  monthFrom?: string | null,
+  yearFrom?: string | null,
+  monthTo?: string | null,
+  yearTo?: string | null,
+): string {
+  if (!yearFrom) return '';
+
+  const dateDebut = monthFrom ? `${monthFrom}/${yearFrom}` : yearFrom;
+
+  if (!yearTo) {
+    return `depuis ${dateDebut}`;
+  }
+
+  const dateFin = monthTo ? `${monthTo}/${yearTo}` : yearTo;
+  return `${dateDebut} → ${dateFin}`;
+}
+
+/**
+ * Formate la puissance en ch et kW
+ * @example
+ * formatPower(75, 55) => "75 ch / 55 kW"
+ * formatPower(75) => "75 ch / 55 kW" (calcule kW)
+ */
+export function formatPower(
+  powerPs?: number | string | null,
+  powerKw?: number | string | null,
+): string {
+  const ps = typeof powerPs === 'string' ? parseInt(powerPs, 10) : powerPs;
+  let kw = typeof powerKw === 'string' ? parseInt(powerKw, 10) : powerKw;
+
+  if (!ps && !kw) return '';
+
+  // Conversion si kW manquant (1 ch = 0.7355 kW)
+  if (ps && !kw) {
+    kw = Math.round(ps * 0.7355);
+  }
+
+  if (ps && kw) {
+    return `${ps} ch / ${kw} kW`;
+  }
+
+  if (ps) return `${ps} ch`;
+  if (kw) return `${kw} kW`;
+
+  return '';
+}
+
+/**
+ * Convertit la cylindrée de litres en cm³
+ * @example
+ * literToCm3("1.5") => 1500
+ * literToCm3("2.0") => 2000
+ */
+export function literToCm3(liter?: string | null): number | undefined {
+  if (!liter) return undefined;
+  const liters = parseFloat(liter);
+  if (isNaN(liters)) return undefined;
+  return Math.round(liters * 1000);
+}
+
+/**
+ * Formate la cylindrée avec les deux unités
+ * @example
+ * formatCylinder("1.5") => "1500 cm³ (1.5 L)"
+ */
+export function formatCylinder(liter?: string | null): string {
+  if (!liter) return '';
+  const cm3 = literToCm3(liter);
+  if (!cm3) return '';
+  return `${cm3} cm³ (${liter} L)`;
+}
+
+/**
+ * Formate un tableau de codes en chaîne séparée par virgules
+ * @example
+ * formatCodes(["K9K 752", "K9K 764"]) => "K9K 752, K9K 764"
+ */
+export function formatCodes(codes?: string[] | null): string {
+  if (!codes || codes.length === 0) return '';
+  return codes.filter(Boolean).join(', ');
+}
+
+/**
+ * Génère l'URL du véhicule au format Automecanik
+ * @example
+ * generateVehicleUrl({marque_alias: "renault", marque_id: 5, ...})
+ * => "/constructeurs/renault-5/clio-iii-5010/1-5-dci-16789.html"
+ */
+export function generateVehicleUrl(vehicle: {
+  marque_alias: string;
+  marque_id: number;
+  modele_alias: string;
+  modele_id: number;
+  type_alias: string;
+  type_id: number;
+}): string {
+  return `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
+}
+
+/**
+ * Génère l'URL d'une page produit pour un véhicule
+ */
+export function generateProductVehicleUrl(params: {
+  gamme_alias: string;
+  gamme_id: number;
+  marque_alias: string;
+  marque_id: number;
+  modele_alias: string;
+  modele_id: number;
+  type_alias: string;
+  type_id: number;
+}): string {
+  return `/pieces/${params.gamme_alias}-${params.gamme_id}/${params.marque_alias}-${params.marque_id}/${params.modele_alias}-${params.modele_id}/${params.type_alias}-${params.type_id}.html`;
+}
+
+// ====================================
+// 🔍 TYPES RECHERCHE AVANCÉE
+// ====================================
+
+/**
+ * Schema pour la recherche par code moteur
+ */
+export const MotorCodeSearchSchema = z.object({
+  code: z.string().min(2),
+  exact: z.boolean().default(false),
+});
+
+export type MotorCodeSearch = z.infer<typeof MotorCodeSearchSchema>;
+
+/**
+ * Schema pour la recherche par type mine
+ */
+export const MineCodeSearchSchema = z.object({
+  code: z.string().min(3),
+  includeCnit: z.boolean().default(true),
+});
+
+export type MineCodeSearch = z.infer<typeof MineCodeSearchSchema>;
+
+/**
+ * Schema pour les marques populaires (homepage)
+ */
+export const TopBrandSchema = VehicleBrandSchema.extend({
+  models_count: z.number().int().optional(),
+  types_count: z.number().int().optional(),
+  image_url: z.string().optional(),
+});
+
+export type TopBrand = z.infer<typeof TopBrandSchema>;
