@@ -80,8 +80,8 @@ jobs:
       
       - name: 🐳 Start Docker services
         run: |
-          docker-compose -f docker-compose.prod.yml up -d redis
-          docker-compose -f docker-compose.prod.yml up -d meilisearch
+          docker compose -f docker-compose.prod.yml up -d redis
+          docker compose -f docker-compose.prod.yml up -d meilisearch
           sleep 10  # Wait for services
       
       - name: 🚀 Start NestJS backend
@@ -216,10 +216,11 @@ jobs:
       ##########################################################################
       
       - name: 💬 Notify Slack
-        if: always()
-        uses: slackapi/slack-github-action@v1
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v2
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": "${{ job.status == 'success' && '✅' || '❌' }} Sitemap Generation: ${{ job.status }}",
@@ -245,7 +246,7 @@ jobs:
       
       - name: 🐳 Stop Docker services
         if: always()
-        run: docker-compose -f docker-compose.prod.yml down
+        run: docker compose -f docker-compose.prod.yml down
       
       ##########################################################################
       # ARTIFACTS
