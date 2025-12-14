@@ -248,53 +248,6 @@ jobs:
         continue-on-error: true
       
       ##########################################################################
-      # UPLOAD TO S3 (optionnel)
-      ##########################################################################
-      
-      - name: ☁️ Upload to S3
-        if: github.ref == 'refs/heads/main'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-      
-      - name: 📤 Sync sitemaps to S3
-        if: github.ref == 'refs/heads/main'
-        run: |
-          aws s3 sync public/sitemaps/ s3://automecanik-sitemaps/ \
-            --delete \
-            --cache-control "public, max-age=86400" \
-            --metadata-directive REPLACE
-          
-          echo "✅ Sitemaps uploaded to S3"
-      
-      ##########################################################################
-      # NOTIFY
-      ##########################################################################
-      
-      - name: 💬 Notify Slack
-        if: always()
-        continue-on-error: true
-        uses: slackapi/slack-github-action@v2
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": "${{ job.status == 'success' && '✅' || '❌' }} Sitemap Generation: ${{ job.status }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Sitemap Generation*\nStatus: ${{ job.status }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}"
-                  }
-                }
-              ]
-            }
-      
-      ##########################################################################
       # CLEANUP
       ##########################################################################
       
