@@ -1623,7 +1623,11 @@ export class VehiclesService extends SupabaseBaseService {
     count: number;
   }> {
     const cacheKey = `motor_codes_${typeId}`;
-    const cached = this.getCached<{ data: string[]; formatted: string; count: number }>(cacheKey);
+    const cached = this.getCached<{
+      data: string[];
+      formatted: string;
+      count: number;
+    }>(cacheKey);
     if (cached) return cached;
 
     try {
@@ -1648,11 +1652,16 @@ export class VehiclesService extends SupabaseBaseService {
       };
 
       this.setCache(cacheKey, result);
-      this.logger.debug(`✅ ${codes.length} codes moteur trouvés pour type ${typeId}`);
+      this.logger.debug(
+        `✅ ${codes.length} codes moteur trouvés pour type ${typeId}`,
+      );
 
       return result;
     } catch (error) {
-      this.logger.error(`💥 Exception getMotorCodesByTypeId(${typeId}):`, error);
+      this.logger.error(
+        `💥 Exception getMotorCodesByTypeId(${typeId}):`,
+        error,
+      );
       return { data: [], formatted: '', count: 0 };
     }
   }
@@ -1686,7 +1695,13 @@ export class VehiclesService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`❌ Erreur getMineCodesByTypeId(${typeId}):`, error);
-        return { mines: [], mines_formatted: '', cnits: [], cnits_formatted: '', count: 0 };
+        return {
+          mines: [],
+          mines_formatted: '',
+          cnits: [],
+          cnits_formatted: '',
+          count: 0,
+        };
       }
 
       const mines = (data || [])
@@ -1706,12 +1721,20 @@ export class VehiclesService extends SupabaseBaseService {
       };
 
       this.setCache(cacheKey, result);
-      this.logger.debug(`✅ ${mines.length} types mines, ${cnits.length} CNIT pour type ${typeId}`);
+      this.logger.debug(
+        `✅ ${mines.length} types mines, ${cnits.length} CNIT pour type ${typeId}`,
+      );
 
       return result;
     } catch (error) {
       this.logger.error(`💥 Exception getMineCodesByTypeId(${typeId}):`, error);
-      return { mines: [], mines_formatted: '', cnits: [], cnits_formatted: '', count: 0 };
+      return {
+        mines: [],
+        mines_formatted: '',
+        cnits: [],
+        cnits_formatted: '',
+        count: 0,
+      };
     }
   }
 
@@ -1724,7 +1747,9 @@ export class VehiclesService extends SupabaseBaseService {
     exact: boolean = false,
   ): Promise<VehicleResponseDto> {
     try {
-      this.logger.debug(`🔍 Recherche par code moteur: ${motorCode} (exact: ${exact})`);
+      this.logger.debug(
+        `🔍 Recherche par code moteur: ${motorCode} (exact: ${exact})`,
+      );
 
       // 1. Trouver les type_ids correspondants au code moteur
       let query = this.client
@@ -1755,7 +1780,9 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // 2. Récupérer les type_ids uniques
-      const typeIds = [...new Set(codeData.map((item) => item.tmc_type_id))].filter(Boolean);
+      const typeIds = [
+        ...new Set(codeData.map((item) => item.tmc_type_id)),
+      ].filter(Boolean);
 
       if (typeIds.length === 0) {
         return {
@@ -1770,7 +1797,8 @@ export class VehiclesService extends SupabaseBaseService {
       // 3. Récupérer les détails des types avec marque et modèle
       const { data: typeData, error: typeError } = await this.client
         .from(TABLES.auto_type)
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_alias,
@@ -1782,7 +1810,8 @@ export class VehiclesService extends SupabaseBaseService {
           type_year_to,
           type_modele_id,
           type_marque_id
-        `)
+        `,
+        )
         .in('type_id', typeIds)
         .eq('type_display', 1)
         .limit(50);
@@ -1793,8 +1822,12 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // 4. Enrichir avec modèle et marque
-      const modeleIds = [...new Set((typeData || []).map((t) => t.type_modele_id))].filter(Boolean);
-      const marqueIds = [...new Set((typeData || []).map((t) => t.type_marque_id))].filter(Boolean);
+      const modeleIds = [
+        ...new Set((typeData || []).map((t) => t.type_modele_id)),
+      ].filter(Boolean);
+      const marqueIds = [
+        ...new Set((typeData || []).map((t) => t.type_marque_id)),
+      ].filter(Boolean);
 
       const [modelesResult, marquesResult] = await Promise.all([
         this.client
@@ -1818,7 +1851,9 @@ export class VehiclesService extends SupabaseBaseService {
       const enrichedData = (typeData || []).map((type) => {
         const modele = modelesMap.get(type.type_modele_id);
         const marque = marquesMap.get(type.type_marque_id);
-        const matchingCodes = codeData.filter((c) => c.tmc_type_id === type.type_id);
+        const matchingCodes = codeData.filter(
+          (c) => c.tmc_type_id === type.type_id,
+        );
 
         return {
           ...type,
@@ -1828,7 +1863,9 @@ export class VehiclesService extends SupabaseBaseService {
         };
       });
 
-      this.logger.debug(`✅ ${enrichedData.length} véhicules trouvés pour code moteur ${motorCode}`);
+      this.logger.debug(
+        `✅ ${enrichedData.length} véhicules trouvés pour code moteur ${motorCode}`,
+      );
 
       return {
         data: enrichedData,
@@ -1855,7 +1892,8 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       const { data, error } = await this.client
         .from(TABLES.auto_marque)
-        .select(`
+        .select(
+          `
           marque_id,
           marque_name,
           marque_name_meta,
@@ -1863,7 +1901,8 @@ export class VehiclesService extends SupabaseBaseService {
           marque_logo,
           marque_top,
           marque_sort
-        `)
+        `,
+        )
         .eq('marque_display', 1)
         .eq('marque_top', 1)
         .order('marque_sort', { ascending: true })
@@ -1917,12 +1956,15 @@ export class VehiclesService extends SupabaseBaseService {
     if (cached) return cached;
 
     try {
-      this.logger.debug(`🔍 Récupération détails complets véhicule type_id: ${typeId}`);
+      this.logger.debug(
+        `🔍 Récupération détails complets véhicule type_id: ${typeId}`,
+      );
 
       // 1. Récupérer le type avec modèle et marque
       const { data: typeData, error: typeError } = await this.client
         .from(TABLES.auto_type)
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_name_meta,
@@ -1941,7 +1983,8 @@ export class VehiclesService extends SupabaseBaseService {
           type_display,
           type_modele_id,
           type_marque_id
-        `)
+        `,
+        )
         .eq('type_id', typeId)
         .eq('type_display', 1)
         .single();
@@ -1959,7 +2002,8 @@ export class VehiclesService extends SupabaseBaseService {
         await Promise.all([
           this.client
             .from(TABLES.auto_modele)
-            .select(`
+            .select(
+              `
               modele_id,
               modele_name,
               modele_name_meta,
@@ -1970,12 +2014,14 @@ export class VehiclesService extends SupabaseBaseService {
               modele_relfollow,
               modele_year_from,
               modele_year_to
-            `)
+            `,
+            )
             .eq('modele_id', typeData.type_modele_id)
             .single(),
           this.client
             .from(TABLES.auto_marque)
-            .select(`
+            .select(
+              `
               marque_id,
               marque_name,
               marque_name_meta,
@@ -1984,7 +2030,8 @@ export class VehiclesService extends SupabaseBaseService {
               marque_logo,
               marque_relfollow,
               marque_top
-            `)
+            `,
+            )
             .eq('marque_id', typeData.type_marque_id)
             .single(),
           this.getMotorCodesByTypeId(typeId),
@@ -2020,7 +2067,8 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Formatage puissance
       const powerPs = parseInt(typeData.type_power_ps) || 0;
-      const powerKw = parseInt(typeData.type_power_kw) || Math.round(powerPs * 0.7355);
+      const powerKw =
+        parseInt(typeData.type_power_kw) || Math.round(powerPs * 0.7355);
       const powerFormatted = powerPs ? `${powerPs} ch / ${powerKw} kW` : '';
 
       // Cylindrée en cm³
