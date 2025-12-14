@@ -1,19 +1,23 @@
 /**
- * 🗺️ SERVICE UNIFIÉ DE GÉNÉRATION SITEMAPS SEO 2026
+ * 🗺️ SERVICE UNIFIÉ DE GÉNÉRATION SITEMAPS SEO V5 2026
  *
- * Architecture thématique (compatible avec noms existants):
- * 1. sitemap-constructeurs.xml - Marques (~35 URLs)
- * 2. sitemap-modeles.xml       - Modèles véhicules (~1k URLs)
- * 3. sitemap-types.xml         - Motorisations (~12.7k URLs)
- * 4. sitemap-pieces-*.xml      - Fiches pièces shardées (~714k URLs)
- * 5. sitemap-blog.xml          - Articles blog (~109 URLs)
- * 6. sitemap-pages.xml         - Pages institutionnelles (~9 URLs)
+ * Architecture thématique (9 types de sitemaps):
+ * 1. sitemap-racine.xml        - Homepage uniquement (1 URL)
+ * 2. sitemap-categories.xml    - Catégories/Gammes pièces (~105 URLs)
+ * 3. sitemap-constructeurs.xml - Marques (~35 URLs)
+ * 4. sitemap-modeles.xml       - Modèles véhicules (~1k URLs)
+ * 5. sitemap-types.xml         - Motorisations (~12.7k URLs)
+ * 6. sitemap-pieces-*.xml      - Fiches pièces shardées (~714k URLs)
+ * 7. sitemap-blog.xml          - Articles blog (~109 URLs)
+ * 8. sitemap-pages.xml         - Pages institutionnelles (~9 URLs)
+ * 9. sitemap.xml               - Index principal
  *
  * Avantages SEO:
  * - Google traite chaque sitemap par importance thématique
  * - Crawl budget optimisé (+30% efficacité)
  * - Diagnostic facile dans Search Console
- * - Compatible avec les noms existants (pas de perte d'indexation)
+ * - Pagination pour contourner limite Supabase 1000 lignes
+ * - Support 700k+ URLs
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -93,7 +97,7 @@ export class SitemapUnifiedService {
   }
 
   /**
-   * 🚀 MÉTHODE PRINCIPALE - Génère TOUS les sitemaps
+   * 🚀 MÉTHODE PRINCIPALE - Génère TOUS les sitemaps (9 types)
    */
   async generateAllSitemaps(outputDir: string): Promise<AllSitemapsResult> {
     const startTime = Date.now();
@@ -105,44 +109,54 @@ export class SitemapUnifiedService {
       errors: [],
     };
 
-    this.logger.log(`🚀 Starting unified sitemap generation to ${outputDir}`);
+    this.logger.log(`🚀 Starting unified sitemap V5 generation to ${outputDir}`);
 
     // Créer le répertoire si nécessaire
     this.ensureDirectory(outputDir);
 
     try {
-      // 1. Constructeurs/Marques (~35 URLs)
-      this.logger.log('🏭 [1/7] Generating sitemap-constructeurs.xml...');
+      // 1. Racine/Homepage (1 URL)
+      this.logger.log('🏠 [1/9] Generating sitemap-racine.xml...');
+      const racine = await this.generateRacineSitemap(outputDir);
+      if (racine) result.files.push(racine);
+
+      // 2. Catégories/Gammes (~105 URLs)
+      this.logger.log('📂 [2/9] Generating sitemap-categories.xml...');
+      const categories = await this.generateCategoriesSitemap(outputDir);
+      if (categories) result.files.push(categories);
+
+      // 3. Constructeurs/Marques (~35 URLs)
+      this.logger.log('🏭 [3/9] Generating sitemap-constructeurs.xml...');
       const constructeurs = await this.generateConstructeursSitemap(outputDir);
       if (constructeurs) result.files.push(constructeurs);
 
-      // 2. Modèles (~1k URLs)
-      this.logger.log('🚗 [2/7] Generating sitemap-modeles.xml...');
+      // 4. Modèles (~1k URLs)
+      this.logger.log('🚗 [4/9] Generating sitemap-modeles.xml...');
       const modeles = await this.generateModelesSitemap(outputDir);
       if (modeles) result.files.push(modeles);
 
-      // 3. Types/Motorisations (~12.7k URLs)
-      this.logger.log('⚙️ [3/7] Generating sitemap-types.xml...');
+      // 5. Types/Motorisations (~12.7k URLs)
+      this.logger.log('⚙️ [5/9] Generating sitemap-types.xml...');
       const types = await this.generateTypesSitemap(outputDir);
       if (types) result.files.push(types);
 
-      // 4. Pièces (~714k URLs, shardé)
-      this.logger.log('📦 [4/7] Generating sitemap-pieces-*.xml...');
+      // 6. Pièces (~714k URLs, shardé avec pagination)
+      this.logger.log('📦 [6/9] Generating sitemap-pieces-*.xml...');
       const pieces = await this.generatePiecesSitemaps(outputDir);
       result.files.push(...pieces);
 
-      // 5. Blog (~109 URLs)
-      this.logger.log('📝 [5/7] Generating sitemap-blog.xml...');
+      // 7. Blog (~109 URLs)
+      this.logger.log('📝 [7/9] Generating sitemap-blog.xml...');
       const blog = await this.generateBlogSitemap(outputDir);
       if (blog) result.files.push(blog);
 
-      // 6. Pages (~9 URLs)
-      this.logger.log('📄 [6/7] Generating sitemap-pages.xml...');
+      // 8. Pages (~9 URLs)
+      this.logger.log('📄 [8/9] Generating sitemap-pages.xml...');
       const pages = await this.generatePagesSitemap(outputDir);
       if (pages) result.files.push(pages);
 
-      // 7. Index principal
-      this.logger.log('📋 [7/7] Generating sitemap.xml index...');
+      // 9. Index principal
+      this.logger.log('📋 [9/9] Generating sitemap.xml index...');
       await this.generateSitemapIndex(outputDir, result.files);
 
       result.totalUrls = result.files.reduce((sum, f) => sum + f.urlCount, 0);
@@ -158,6 +172,103 @@ export class SitemapUnifiedService {
     }
 
     return result;
+  }
+
+  /**
+   * 🏠 Génère sitemap-racine.xml (Homepage uniquement)
+   */
+  private async generateRacineSitemap(
+    dir: string,
+  ): Promise<SitemapFileResult | null> {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      const urls: SitemapUrl[] = [
+        {
+          loc: '/',
+          priority: '1.0',
+          changefreq: 'daily',
+          lastmod: today,
+        },
+      ];
+
+      const filename = 'sitemap-racine.xml';
+      const filepath = path.join(dir, filename);
+      const xml = this.buildSitemapXml(urls);
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+      this.logger.log(
+        `✅ sitemap-racine.xml: ${urls.length} URL (${this.formatSize(stats.size)})`,
+      );
+
+      return {
+        name: filename,
+        path: filepath,
+        urlCount: urls.length,
+        size: stats.size,
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `❌ Failed to generate racine sitemap: ${error.message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * 📂 Génère sitemap-categories.xml (Gammes/Catégories de pièces)
+   */
+  private async generateCategoriesSitemap(
+    dir: string,
+  ): Promise<SitemapFileResult | null> {
+    try {
+      const { data: gammes, error } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_alias, pg_id')
+        .eq('pg_display', '1')
+        .order('pg_alias');
+
+      if (error) {
+        this.logger.error(`❌ Error fetching categories: ${error.message}`);
+        return null;
+      }
+
+      if (!gammes || gammes.length === 0) {
+        this.logger.warn('⚠️ No categories found');
+        return null;
+      }
+
+      const urls: SitemapUrl[] = gammes.map((g) => ({
+        loc: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+        priority: '0.8',
+        changefreq: 'weekly',
+      }));
+
+      this.logger.log(`  → ${urls.length} catégories`);
+
+      const filename = 'sitemap-categories.xml';
+      const filepath = path.join(dir, filename);
+      const xml = this.buildSitemapXml(urls);
+      fs.writeFileSync(filepath, xml, 'utf8');
+
+      const stats = fs.statSync(filepath);
+      this.logger.log(
+        `✅ sitemap-categories.xml: ${urls.length} URLs (${this.formatSize(stats.size)})`,
+      );
+
+      return {
+        name: filename,
+        path: filepath,
+        urlCount: urls.length,
+        size: stats.size,
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `❌ Failed to generate categories sitemap: ${error.message}`,
+      );
+      return null;
+    }
   }
 
   /**
@@ -280,22 +391,43 @@ export class SitemapUnifiedService {
 
   /**
    * ⚙️ Génère sitemap-types.xml (motorisations/types uniquement)
+   * Utilise pagination pour récupérer les ~12.7k motorisations
    */
   private async generateTypesSitemap(
     dir: string,
   ): Promise<SitemapFileResult | null> {
     try {
-      const { data: motorisations, error } = await this.supabase
+      // Compter le total d'abord
+      const { count, error: countError } = await this.supabase
         .from('__sitemap_motorisation')
-        .select(
-          'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
-        )
-        .order('map_marque_alias');
+        .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        this.logger.error(`❌ Error fetching motorisations: ${error.message}`);
+      if (countError) {
+        this.logger.error(
+          `❌ Error counting motorisations: ${countError.message}`,
+        );
         return null;
       }
+
+      const totalCount = count || 0;
+      this.logger.log(`  → ${totalCount} motorisations à récupérer`);
+
+      // Type pour les motorisations
+      interface MotorisationType {
+        map_marque_alias: string;
+        map_marque_id: string;
+        map_modele_alias: string;
+        map_modele_id: string;
+        map_type_alias: string;
+        map_type_id: string;
+      }
+
+      // Récupérer avec pagination
+      const motorisations = await this.fetchWithPagination<MotorisationType>(
+        '__sitemap_motorisation',
+        'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
+        totalCount,
+      );
 
       if (!motorisations || motorisations.length === 0) {
         this.logger.warn('⚠️ No motorisations found');
@@ -308,7 +440,7 @@ export class SitemapUnifiedService {
         changefreq: 'monthly',
       }));
 
-      this.logger.log(`  → ${urls.length} types/motorisations`);
+      this.logger.log(`  → ${urls.length} types/motorisations récupérés`);
 
       const filename = 'sitemap-types.xml';
       const filepath = path.join(dir, filename);
@@ -334,6 +466,7 @@ export class SitemapUnifiedService {
 
   /**
    * 📦 Génère sitemap-pieces-*.xml (shardé par 50k URLs)
+   * Utilise pagination pour contourner la limite Supabase 1000 lignes
    */
   private async generatePiecesSitemaps(
     dir: string,
@@ -354,28 +487,43 @@ export class SitemapUnifiedService {
       const totalCount = count || 0;
       const totalShards = Math.ceil(totalCount / this.MAX_URLS_PER_SITEMAP);
       this.logger.log(
-        `  → ${totalCount} URLs total, ${totalShards} shards needed`,
+        `  → ${totalCount} URLs total, ${totalShards} shards à générer`,
       );
 
-      // Générer chaque shard
+      // Type pour les pièces
+      interface PieceType {
+        map_pg_alias: string;
+        map_pg_id: string;
+        map_marque_alias: string;
+        map_marque_id: string;
+        map_modele_alias: string;
+        map_modele_id: string;
+        map_type_alias: string;
+        map_type_id: string;
+      }
+
+      // Générer chaque shard avec pagination interne
       for (let shard = 0; shard < totalShards; shard++) {
-        const offset = shard * this.MAX_URLS_PER_SITEMAP;
+        const shardOffset = shard * this.MAX_URLS_PER_SITEMAP;
+        const shardLimit = Math.min(
+          this.MAX_URLS_PER_SITEMAP,
+          totalCount - shardOffset,
+        );
 
-        const { data: pieces, error } = await this.supabase
-          .from('__sitemap_p_link')
-          .select(
-            'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
-          )
-          .range(offset, offset + this.MAX_URLS_PER_SITEMAP - 1);
+        this.logger.log(
+          `  📥 Shard ${shard + 1}/${totalShards}: fetching ${shardLimit} URLs from offset ${shardOffset}...`,
+        );
 
-        if (error) {
-          this.logger.error(
-            `❌ Error fetching pieces shard ${shard + 1}: ${error.message}`,
-          );
-          continue;
-        }
+        // Utiliser pagination pour récupérer les données du shard
+        const pieces = await this.fetchWithPagination<PieceType>(
+          '__sitemap_p_link',
+          'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
+          shardLimit,
+          shardOffset,
+        );
 
         if (!pieces || pieces.length === 0) {
+          this.logger.warn(`  ⚠️ No pieces found for shard ${shard + 1}`);
           continue;
         }
 
@@ -593,5 +741,52 @@ ${urlEntries}
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  /**
+   * 📄 Récupère des données avec pagination pour contourner limite Supabase 1000
+   */
+  private async fetchWithPagination<T>(
+    table: string,
+    columns: string,
+    totalLimit: number,
+    startOffset = 0,
+  ): Promise<T[]> {
+    const PAGE_SIZE = 1000;
+    const allData: T[] = [];
+    let currentOffset = startOffset;
+    let fetchedCount = 0;
+
+    while (fetchedCount < totalLimit) {
+      const remaining = totalLimit - fetchedCount;
+      const batchSize = Math.min(PAGE_SIZE, remaining);
+
+      const { data, error } = await this.supabase
+        .from(table)
+        .select(columns)
+        .range(currentOffset, currentOffset + batchSize - 1);
+
+      if (error) {
+        this.logger.error(
+          `❌ Pagination error on ${table} at offset ${currentOffset}: ${error.message}`,
+        );
+        break;
+      }
+
+      if (!data || data.length === 0) {
+        break;
+      }
+
+      allData.push(...(data as T[]));
+      fetchedCount += data.length;
+      currentOffset += data.length;
+
+      // Si on a reçu moins que demandé, c'est la fin
+      if (data.length < batchSize) {
+        break;
+      }
+    }
+
+    return allData;
   }
 }

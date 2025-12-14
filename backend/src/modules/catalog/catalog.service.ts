@@ -228,15 +228,14 @@ export class CatalogService
           pg_id,
           pg_name,
           pg_alias,
-          pg_description,
-          pg_image,
-          pg_featured,
+          pg_pic,
+          pg_top,
           pg_display,
-          pg_sort
+          pg_level
         `,
         )
-        .eq('pg_display', 1)
-        .order('pg_sort', { ascending: true });
+        .eq('pg_display', '1')
+        .order('pg_level', { ascending: true });
 
       if (error) {
         throw error;
@@ -247,9 +246,9 @@ export class CatalogService
         id: item.pg_id,
         code: item.pg_alias || `gamme-${item.pg_id}`,
         name: item.pg_name,
-        description: item.pg_description,
-        image_url: item.pg_image,
-        is_featured: item.pg_featured || false,
+        description: '', // pg_description n'existe pas dans pieces_gamme
+        image_url: item.pg_pic || '',
+        is_featured: item.pg_top === 1 || item.pg_top === '1',
         piece_count: 0, // Sera enrichi par RPC si disponible
       }));
 
@@ -296,16 +295,16 @@ export class CatalogService
   private async getFallbackQuickAccess(): Promise<CatalogItem[]> {
     const { data } = await this.supabase
       .from(TABLES.pieces_gamme)
-      .select('pg_id, pg_name, pg_alias, pg_image')
-      .eq('pg_featured', 1)
-      .eq('pg_display', 1)
+      .select('pg_id, pg_name, pg_alias, pg_pic')
+      .eq('pg_top', '1')
+      .eq('pg_display', '1')
       .limit(8);
 
     return (data || []).map((item) => ({
       id: item.pg_id,
       code: item.pg_alias,
       name: item.pg_name,
-      image_url: item.pg_image,
+      image_url: item.pg_pic || '',
       is_featured: true,
       piece_count: 0,
     }));
@@ -371,8 +370,7 @@ export class CatalogService
           pg_id,
           pg_name,
           pg_alias,
-          pg_description,
-          pg_image,
+          pg_pic,
           products_pieces!inner(
             piece_id,
             piece_name,

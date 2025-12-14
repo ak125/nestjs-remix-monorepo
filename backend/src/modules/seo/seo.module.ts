@@ -15,13 +15,9 @@ import { CacheModule } from '../../cache/cache.module';
 // Services SEO existants
 import { SeoService } from './seo.service';
 import { SeoEnhancedService } from './seo-enhanced.service';
-import { SitemapService } from './sitemap.service';
 
 // 🎯 Service V4 Ultimate
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
-
-// 🚀 Service Sitemap Scalable
-import { SitemapScalableService } from './services/sitemap-scalable.service';
 
 // 🧹 Service Hygiène Sitemap
 import { SitemapHygieneService } from './services/sitemap-hygiene.service';
@@ -77,13 +73,9 @@ import { SeoLinkTrackingController } from './seo-link-tracking.controller';
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
-import { SitemapController } from './sitemap.controller';
 
 // 🎯 Contrôleur V4 Ultimate
 import { DynamicSeoController } from './dynamic-seo.controller';
-
-// 🚀 Contrôleur Sitemap Scalable
-import { SitemapScalableController } from './controllers/sitemap-scalable.controller';
 
 // 🔄 Contrôleur Delta Sitemap
 import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
@@ -128,12 +120,10 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
   controllers: [
     SeoController,
     SeoEnhancedController, // 🎯 Contrôleur pour templates dynamiques
-    SitemapController,
     DynamicSeoController, // 🎯 Contrôleur V4 Ultimate
-    SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
-    SitemapUnifiedController, // 🗺️ Contrôleur Unifié SEO 2026
+    SitemapUnifiedController, // 🗺️ Contrôleur Unifié SEO V5
     RobotsTxtController, // 🤖 Contrôleur Robots.txt
     SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
     SeoMonitorController, // 🛡️ Contrôleur SEO Monitor (BullMQ)
@@ -145,15 +135,13 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
   providers: [
     SeoService,
     SeoEnhancedService, // 🎯 Service enrichi avec templates dynamiques
-    SitemapService,
     DynamicSeoV4UltimateService, // 🎯 Service V4 Ultimate
-    SitemapScalableService, // 🚀 Service Sitemap V2 Scalable
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap
     HreflangService, // 🌍 Service Hreflang
     ProductImageService, // 🖼️ Service Images Produits
     SitemapDeltaService, // 🔄 Service Delta Sitemap
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap
-    SitemapUnifiedService, // 🗺️ Service Unifié SEO 2026
+    SitemapUnifiedService, // 🗺️ Service Unifié SEO V5
     RobotsTxtService, // 🤖 Service Robots.txt
     SeoHeadersService, // 📄 Service Headers SEO
     SeoMonitoringService, // 📊 Service Monitoring SEO
@@ -180,102 +168,45 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
   exports: [
     SeoService,
     SeoEnhancedService, // 🎯 Exporté pour utilisation dans autres modules
-    SitemapService,
     DynamicSeoV4UltimateService, // 🎯 Service V4 Ultimate exporté
-    SitemapScalableService, // 🚀 Service Sitemap V2 Scalable exporté
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap exporté
     HreflangService, // 🌍 Service Hreflang exporté
     ProductImageService, // 🖼️ Service Images Produits exporté
     SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
-    SitemapUnifiedService, // 🗺️ Service Unifié SEO 2026 exporté
+    SitemapUnifiedService, // 🗺️ Service Unifié SEO V5 exporté
     RobotsTxtService, // 🤖 Service Robots.txt exporté
     SeoHeadersService, // 📄 Service Headers SEO exporté
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap exporté
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
-    // Note: SeoHeadersInterceptor est activé globalement via APP_INTERCEPTOR, pas besoin de l'exporter
   ],
 })
 export class SeoModule {
   private readonly logger = new Logger(SeoModule.name);
 
   constructor() {
-    this.logger.log('🎯 SEO Module V4 Ultimate activé');
-    this.logger.log('✅ Services disponibles:');
-    this.logger.log('   • SeoService (service de base)');
-    this.logger.log('   • SeoEnhancedService (service enrichi existant)');
-    this.logger.log('   • SitemapService (génération sitemap)');
-    this.logger.log('   • DynamicSeoV4UltimateService (🎯 V4 Ultimate)');
-    this.logger.log('   • SitemapScalableService (🚀 V2 Scalable)');
-    this.logger.log('   • SitemapHygieneService (🧹 V3 Hygiene)');
-    this.logger.log('   • HreflangService (🌍 Multilingual)');
-    this.logger.log('   • ProductImageService (🖼️ Images Produits)');
-    this.logger.log('   • SitemapDeltaService (🔄 Delta Journalier)');
-    this.logger.log('   • SitemapStreamingService (🗜️ Streaming GZIP)');
-    this.logger.log('   • RobotsTxtService (🤖 Robots.txt Dynamique)');
-    this.logger.log('   • SeoHeadersService (📄 Headers SEO)');
-    this.logger.log('   • SeoMonitoringService (📊 Monitoring & Alertes)');
-    this.logger.log('   • LogIngestionService (📊 Loki + Meilisearch)');
-    this.logger.log('✅ Interceptors activés:');
-    this.logger.log('   • SeoHeadersInterceptor (🛡️ Headers SEO globaux)');
-    this.logger.log('✅ Contrôleurs disponibles:');
-    this.logger.log('   • SeoController');
-    this.logger.log('   • SeoEnhancedController');
-    this.logger.log('   • SitemapController');
-    this.logger.log('   • DynamicSeoController (🎯 V4 Ultimate)');
-    this.logger.log('   • SitemapScalableController (🚀 V2 Scalable)');
-    this.logger.log('   • SitemapDeltaController (🔄 Delta Sitemap)');
-    this.logger.log('   • SitemapStreamingController (🗜️ Streaming GZIP)');
-    this.logger.log('   • RobotsTxtController (🤖 Robots.txt /robots.txt)');
-    this.logger.log(
-      '   • SeoMonitoringController (📊 Monitoring /seo-monitoring)',
-    );
-    this.logger.log('   • SeoLogsController (📊 SEO Logs /seo-logs)');
-    this.logger.log('🚀 Améliorations V4 Ultimate:');
-    this.logger.log('   • +400% fonctionnalités vs service original');
-    this.logger.log('   • +250% performance avec cache intelligent');
-    this.logger.log('   • +180% variables SEO enrichies');
-    this.logger.log('   • Processing parallèle et validation Zod');
-    this.logger.log('🚀 Architecture Sitemap V2 Scalable:');
-    this.logger.log(
-      '   • Structure hiérarchique 3 niveaux (Index → Sub-Index → Final)',
-    );
-    this.logger.log(
-      '   • Sharding intelligent (Alphabétique, Numérique, Temporel)',
-    );
-    this.logger.log('   • Support 1M+ URLs avec cache différencié');
-    this.logger.log('   • Routes: /sitemap-v2/* (nouvelle architecture)');
-    this.logger.log('🧹 Hygiène SEO V3:');
-    this.logger.log(
-      '   • Validation stricte (200, indexable, canonical, contenu)',
-    );
-    this.logger.log('   • Exclusion intelligente (UTM, sessions, filtres)');
-    this.logger.log('   • Gestion stock avancée (4 états disponibilité)');
-    this.logger.log('   • Déduplication stricte (normalisation URLs)');
-    this.logger.log('   • Dates réelles (tracking modifications multisources)');
-    this.logger.log('🌍 Hreflang Multilingue:');
-    this.logger.log('   • Support 6 langues (FR, BE, UK, DE, ES, IT)');
-    this.logger.log('   • Symétrie parfaite entre variantes');
-    this.logger.log('   • x-default automatique');
-    this.logger.log('   • Validation intégrité hreflang');
-    this.logger.log('🖼️ Sitemaps Images (Boost E-commerce):');
-    this.logger.log('   • 1 image principale + 2-4 vues utiles');
-    this.logger.log('   • URLs publiques stables (CDN Supabase)');
-    this.logger.log('   • Balises image:image conformes Google');
-    this.logger.log('   • Titres et captions auto-générés');
-    this.logger.log('🔄 Delta Sitemap (Diff Journalier):');
-    this.logger.log('   • Hash SHA1 par URL (prix + stock + metadata)');
-    this.logger.log('   • Détection changements automatique');
-    this.logger.log('   • sitemap-latest.xml quotidien');
-    this.logger.log('   • Rétention 30 jours dans Redis');
-    this.logger.log('🗜️ Streaming GZIP (Gros Volumes):');
-    this.logger.log('   • Écriture shards .xml.gz sur disque');
-    this.logger.log('   • Compression GZIP niveau 9 (70-90% réduction)');
-    this.logger.log('   • 50k URLs par shard (limite Google)');
-    this.logger.log('   • Index auto-généré après shards');
-    this.logger.log('   • SHA256 pour intégrité fichiers');
+    this.logger.log('🗺️ SEO Module V5 Unified activé');
+    this.logger.log('📊 Architecture Sitemap Consolidée:');
+    this.logger.log('   • 9 types de sitemaps thématiques');
+    this.logger.log('   • Support 700k+ URLs avec pagination');
+    this.logger.log('   • Sharding 50k URLs par fichier');
+    this.logger.log('✅ Services principaux:');
+    this.logger.log('   • SitemapUnifiedService (🗺️ V5 - Service principal)');
+    this.logger.log('   • DynamicSeoV4UltimateService (🎯 SEO dynamique)');
+    this.logger.log('   • SeoService / SeoEnhancedService');
+    this.logger.log('📋 Sitemaps générés:');
+    this.logger.log('   1. sitemap-racine.xml (Homepage)');
+    this.logger.log('   2. sitemap-categories.xml (~105 catégories)');
+    this.logger.log('   3. sitemap-constructeurs.xml (~35 marques)');
+    this.logger.log('   4. sitemap-modeles.xml (~1k modèles)');
+    this.logger.log('   5. sitemap-types.xml (~12.7k motorisations)');
+    this.logger.log('   6. sitemap-pieces-*.xml (~714k pièces shardées)');
+    this.logger.log('   7. sitemap-blog.xml (~109 articles)');
+    this.logger.log('   8. sitemap-pages.xml (~9 pages)');
+    this.logger.log('   9. sitemap.xml (Index principal)');
+    this.logger.log('🔧 Endpoint: POST /api/sitemap/generate-all');
   }
 }
 
