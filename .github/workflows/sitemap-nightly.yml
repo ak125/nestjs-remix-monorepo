@@ -100,7 +100,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
       
       ##########################################################################
       # GENERATE SITEMAPS
