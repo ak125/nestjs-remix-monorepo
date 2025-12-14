@@ -92,9 +92,32 @@ jobs:
       - name: 🚀 Start NestJS backend
         run: |
           cd backend
-          npm run start:prod &
-          sleep 30  # Wait for backend to be ready
-          curl --retry 10 --retry-delay 5 http://localhost:3000/health
+          # Start backend with output logging
+          npm run start:prod > /tmp/backend.log 2>&1 &
+          BACKEND_PID=$!
+          echo "Backend PID: $BACKEND_PID"
+
+          # Wait and check if process is still running
+          sleep 10
+          if ! kill -0 $BACKEND_PID 2>/dev/null; then
+            echo "❌ Backend crashed! Showing logs:"
+            cat /tmp/backend.log
+            exit 1
+          fi
+
+          # Wait more for full startup
+          sleep 20
+
+          # Show startup logs
+          echo "📋 Backend startup logs:"
+          cat /tmp/backend.log
+
+          # Check health
+          curl --retry 10 --retry-delay 5 http://localhost:3000/health || {
+            echo "❌ Health check failed! Full logs:"
+            cat /tmp/backend.log
+            exit 1
+          }
         env:
           NODE_ENV: production
           REDIS_URL: redis://localhost:6379
