@@ -109,7 +109,9 @@ export class SitemapUnifiedService {
       errors: [],
     };
 
-    this.logger.log(`🚀 Starting unified sitemap V5 generation to ${outputDir}`);
+    this.logger.log(
+      `🚀 Starting unified sitemap V5 generation to ${outputDir}`,
+    );
 
     // Créer le répertoire si nécessaire
     this.ensureDirectory(outputDir);
@@ -459,7 +461,9 @@ export class SitemapUnifiedService {
         size: stats.size,
       };
     } catch (error: any) {
-      this.logger.error(`❌ Failed to generate types sitemap: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to generate types sitemap: ${error.message}`,
+      );
       return null;
     }
   }
