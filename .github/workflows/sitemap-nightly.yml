@@ -126,6 +126,11 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'ci-temp-session-secret-32chars!' }}
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-temp-jwt-secret-32characters!' }}
+          # Payment config (dummy values - not needed for sitemap generation)
+          SYSTEMPAY_SITE_ID: 'ci-dummy-site-id'
+          SYSTEMPAY_CERTIFICATE_PROD: 'ci-dummy-cert-prod'
+          SYSTEMPAY_CERTIFICATE_TEST: 'ci-dummy-cert-test'
+          APP_URL: 'http://localhost:3000'
       
       ##########################################################################
       # GENERATE SITEMAPS
