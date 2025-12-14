@@ -231,4 +231,69 @@ export class VehiclesController {
       };
     }
   }
+
+  // ====================================
+  // 🔧 NOUVELLES ROUTES - Codes Moteur & Types Mines
+  // ====================================
+
+  /**
+   * GET /api/vehicles/top-brands
+   * 🏠 Récupère les marques populaires pour la homepage (marque_top = 1)
+   */
+  @Get('top-brands')
+  async getTopBrands(@Query('limit') limit?: string) {
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    this.logger.log(`🏠 GET /api/vehicles/top-brands?limit=${limitNum}`);
+    return this.vehiclesService.getTopBrands(limitNum);
+  }
+
+  /**
+   * GET /api/vehicles/search/motor-code/:code
+   * 🔍 Recherche de véhicules par code moteur (ex: K9K, M9R, CAGA)
+   */
+  @Get('search/motor-code/:code')
+  async searchByMotorCode(
+    @Param('code') motorCode: string,
+    @Query('exact') exact?: string,
+  ) {
+    const isExact = exact === 'true' || exact === '1';
+    this.logger.log(
+      `🔍 GET /api/vehicles/search/motor-code/${motorCode}?exact=${isExact}`,
+    );
+    return this.vehiclesService.searchByMotorCode(motorCode, isExact);
+  }
+
+  /**
+   * GET /api/vehicles/types/:typeId/motor-codes
+   * 🔧 Récupère tous les codes moteur d'un type de véhicule
+   */
+  @Get('types/:typeId/motor-codes')
+  async getMotorCodesByTypeId(@Param('typeId') typeId: string) {
+    const typeIdNum = parseInt(typeId, 10);
+    this.logger.log(`🔧 GET /api/vehicles/types/${typeIdNum}/motor-codes`);
+    return this.vehiclesService.getMotorCodesByTypeId(typeIdNum);
+  }
+
+  /**
+   * GET /api/vehicles/types/:typeId/mine-codes
+   * 🔧 Récupère tous les types mines et CNIT d'un type de véhicule
+   */
+  @Get('types/:typeId/mine-codes')
+  async getMineCodesByTypeId(@Param('typeId') typeId: string) {
+    const typeIdNum = parseInt(typeId, 10);
+    this.logger.log(`🔧 GET /api/vehicles/types/${typeIdNum}/mine-codes`);
+    return this.vehiclesService.getMineCodesByTypeId(typeIdNum);
+  }
+
+  /**
+   * GET /api/vehicles/types/:typeId/full
+   * 🚗 Récupère TOUTES les données d'un véhicule
+   * (marque + modèle + type + codes moteur + types mines + formatage)
+   */
+  @Get('types/:typeId/full')
+  async getVehicleFullDetails(@Param('typeId') typeId: string) {
+    const typeIdNum = parseInt(typeId, 10);
+    this.logger.log(`🚗 GET /api/vehicles/types/${typeIdNum}/full`);
+    return this.vehiclesService.getVehicleFullDetails(typeIdNum);
+  }
 }
