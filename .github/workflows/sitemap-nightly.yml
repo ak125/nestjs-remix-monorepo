@@ -101,6 +101,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'ci-temp-session-secret-not-for-prod' }}
       
       ##########################################################################
       # GENERATE SITEMAPS
