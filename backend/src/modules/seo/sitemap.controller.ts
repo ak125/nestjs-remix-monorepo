@@ -231,38 +231,6 @@ export class SitemapController {
   }
 
   /**
-   * GET /sitemap/constructeur/:marque.xml - Sitemap par constructeur
-   */
-  @Get('constructeur/:marque.xml')
-  @Header('Content-Type', 'application/xml')
-  async getConstructeurSitemap(
-    @Param('marque') marque: string,
-    @Res() res: Response,
-  ) {
-    try {
-      const marqueId = parseInt(marque, 10);
-      if (isNaN(marqueId)) {
-        throw new HttpException(
-          `ID de marque invalide: ${marque}`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      const xmlContent =
-        await this.sitemapService.generateConstructeurSitemap(marqueId);
-      res.send(xmlContent);
-    } catch (error) {
-      this.logger.error(
-        `Erreur génération sitemap constructeur ${marque}:`,
-        error,
-      );
-      throw new HttpException(
-        `Erreur lors de la génération du sitemap pour ${marque}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
    * GET /robots.txt - Fichier robots.txt
    */
   @Get('/robots.txt')
@@ -281,20 +249,8 @@ export class SitemapController {
   }
 
   /**
-   * GET /sitemap/stats - Statistiques des sitemaps (pour debug)
+   * GET /sitemap/stats - Statistiques des sitemaps
    */
-  @Get('debug/types')
-  @Header('Content-Type', 'application/json')
-  async debugTypes() {
-    return this.sitemapService.debugTypesMatching();
-  }
-
-  @Get('debug/gammes')
-  @Header('Content-Type', 'application/json')
-  async debugGammes() {
-    return this.sitemapService.debugGammes();
-  }
-
   @Get('stats')
   async getSitemapStats() {
     return this.sitemapService.getSitemapStats();
@@ -448,42 +404,6 @@ export class SitemapController {
       this.logger.error('Erreur génération sitemap véhicule-pièces:', error);
       throw new HttpException(
         'Erreur lors de la génération du sitemap véhicule-pièces',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
-   * 📊 GET /sitemap/vehicle-pieces-quality-report
-   * Rapport de qualité des URLs véhicule-pièces
-   *
-   * Analyse un échantillon pour identifier les raisons d'exclusion
-   */
-  @Get('vehicle-pieces-quality-report')
-  async getVehiclePiecesQualityReport() {
-    try {
-      const sampleSize = 1000;
-      this.logger.log(
-        `📊 Génération rapport qualité (échantillon=${sampleSize})...`,
-      );
-
-      const report =
-        await this.sitemapService.generateVehiclePiecesQualityReport(
-          sampleSize,
-        );
-
-      this.logger.log(
-        `✅ Rapport généré: ${report.valid}/${report.total} URLs valides (${((report.valid / report.total) * 100).toFixed(1)}%)`,
-      );
-
-      return {
-        success: true,
-        data: report,
-      };
-    } catch (error) {
-      this.logger.error('Erreur génération rapport qualité:', error);
-      throw new HttpException(
-        'Erreur lors de la génération du rapport',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

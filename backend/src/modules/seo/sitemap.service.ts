@@ -793,95 +793,6 @@ Crawl-delay: 1`;
   }
 
   /**
-   * Debug pour comprendre pourquoi les types ne matchent pas
-   */
-  async debugTypesMatching() {
-    try {
-      // Charger quelques types
-      const { data: types } = await this.client
-        .from(TABLES.auto_type)
-        .select('type_id, type_name, type_modele_id')
-        .limit(10);
-
-      // Charger quelques modèles
-      const { data: modeles } = await this.client
-        .from(TABLES.auto_modele)
-        .select('modele_id, modele_name, modele_marque_id')
-        .limit(10);
-
-      // Vérifier les IDs qui matchent
-      const typeModeleIds = types?.map((t) => t.type_modele_id) || [];
-      const modeleIds = modeles?.map((m) => m.modele_id) || [];
-
-      const matchingIds = typeModeleIds.filter((id) => modeleIds.includes(id));
-
-      return {
-        typesCount: types?.length || 0,
-        modelesCount: modeles?.length || 0,
-        sampleTypes: types?.slice(0, 5),
-        sampleModeles: modeles?.slice(0, 5),
-        typeModeleIds: typeModeleIds.slice(0, 10),
-        modeleIds: modeleIds.slice(0, 10),
-        matchingIdsCount: matchingIds.length,
-        matchingIds,
-      };
-    } catch (error) {
-      this.logger.error('Erreur debug types:', error);
-      return { error: error.message };
-    }
-  }
-
-  /**
-   * Debug pour comprendre les filtres des gammes
-   */
-  async debugGammes() {
-    try {
-      // Total sans filtre
-      const { count: totalCount } = await this.client
-        .from(TABLES.pieces_gamme)
-        .select('*', { count: 'exact', head: true });
-
-      // Avec pg_display = 1
-      const { count: displayCount } = await this.client
-        .from(TABLES.pieces_gamme)
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_display', '1');
-
-      // Avec pg_level IN [1, 2]
-      const { count: levelCount } = await this.client
-        .from(TABLES.pieces_gamme)
-        .select('*', { count: 'exact', head: true })
-        .in('pg_level', ['1', '2']);
-
-      // Avec les deux filtres
-      const { count: bothCount } = await this.client
-        .from(TABLES.pieces_gamme)
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_display', '1')
-        .in('pg_level', ['1', '2']);
-
-      // Échantillon avec les filtres
-      const { data: samples } = await this.client
-        .from(TABLES.pieces_gamme)
-        .select('pg_id, pg_alias, pg_name, pg_display, pg_level')
-        .eq('pg_display', '1')
-        .in('pg_level', ['1', '2'])
-        .limit(10);
-
-      return {
-        totalGammes: totalCount,
-        withDisplay1: displayCount,
-        withLevel12: levelCount,
-        withBothFilters: bothCount,
-        samples,
-      };
-    } catch (error) {
-      this.logger.error('Erreur debug gammes:', error);
-      return { error: error.message };
-    }
-  }
-
-  /**
    * Construit le XML du sitemap
    */
   private buildSitemapXml(entries: SitemapEntry[]): string {
@@ -984,54 +895,6 @@ ${entries
         gammes: 0,
         lastUpdate: new Date().toISOString(),
       };
-    }
-  }
-
-  /**
-   * Génère le sitemap d'un constructeur spécifique
-   * ✅ Colonnes réelles de auto_modele: modele_id, modele_parent, modele_marque_id,
-   * modele_alias, modele_name, modele_name_url, etc. (21 colonnes)
-   */
-  async generateConstructeurSitemap(marqueId: number): Promise<string> {
-    try {
-      const { data: modeles } = await this.client
-        .from(TABLES.auto_modele)
-        .select('modele_id, modele_alias, modele_name, modele_name_url')
-        .eq('modele_marque_id', marqueId)
-        .eq('modele_display', '1')
-        .order('modele_name');
-
-      const entries: SitemapEntry[] = [];
-
-      if (modeles) {
-        modeles.forEach((modele) => {
-          // Format nginx: /constructeurs/{marque}/{modele}-{id}.html
-          const alias =
-            modele.modele_alias ||
-            modele.modele_name_url ||
-            modele.modele_name.toLowerCase();
-          entries.push({
-            loc: `/constructeurs/marque-${marqueId}/${alias}-${modele.modele_id}.html`,
-            lastmod: new Date().toISOString(), // Pas de colonne date fiable
-            changefreq: 'weekly',
-            priority: 0.8,
-          });
-        });
-      }
-
-      const xml = this.buildSitemapXml(entries);
-
-      this.logger.log(
-        `Sitemap constructeur ${marqueId} généré avec ${entries.length} entrées`,
-      );
-
-      return xml;
-    } catch (error) {
-      this.logger.error(
-        `Erreur génération sitemap constructeur ${marqueId}:`,
-        error,
-      );
-      return this.buildSitemapXml([]);
     }
   }
 
@@ -1147,50 +1010,6 @@ ${entries
       this.logger.error('Erreur génération sitemap véhicule-pièces:', error);
       return this.buildSitemapXml([]);
     }
-  }
-
-  /**
-   * 📊 Génère un rapport de qualité du sitemap véhicule-pièces
-   * Utile pour analyser les raisons d'exclusion
-   */
-  async generateVehiclePiecesQualityReport(sampleSize = 1000): Promise<{
-    total: number;
-    valid: number;
-    invalid: number;
-    invalidReasons: Array<{
-      reason: string;
-      count: number;
-      examples: string[];
-    }>;
-  }> {
-    if (!this.vehiclePiecesValidator) {
-      throw new Error('SitemapVehiclePiecesValidator non injecté');
-    }
-
-    // Récupérer un échantillon
-    const { data: combinations } = await this.client
-      .from(TABLES.pieces_relation_type)
-      .select(
-        `
-        rtp_type_id,
-        rtp_pg_id,
-        auto_type!inner (type_id, type_alias),
-        pieces_gamme!inner (pg_id, pg_alias)
-      `,
-      )
-      .limit(sampleSize);
-
-    if (!combinations || combinations.length === 0) {
-      return { total: 0, valid: 0, invalid: 0, invalidReasons: [] };
-    }
-
-    const urls = combinations.map((combo: any) => ({
-      typeId: Number(combo.rtp_type_id),
-      gammeId: Number(combo.rtp_pg_id),
-      url: `/pieces/${combo.pieces_gamme.pg_alias}/.../type-${combo.rtp_type_id}.html`,
-    }));
-
-    return this.vehiclePiecesValidator.generateQualityReport(urls);
   }
 
   /**
