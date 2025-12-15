@@ -473,6 +473,10 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`,
             description: data.seo.description,
             url: canonicalUrl,
+            // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
+            image: firstPiece.image
+              ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${firstPiece.image}`
+              : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
             // 🔧 MPN = Référence OEM principale - CLÉ SEO
             ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
             ...(firstPiece.reference && { sku: firstPiece.reference }),
@@ -525,6 +529,12 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
               item: {
                 "@type": "Product",
                 name: `${piece.name} ${piece.brand}`,
+                // 🔗 URL produit (recommandé pour rich snippets)
+                url: `${canonicalUrl}#product-${piece.id}`,
+                // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
+                image: piece.image
+                  ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${piece.image}`
+                  : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
                 ...(piece.reference && { sku: piece.reference }),
                 brand: { "@type": "Brand", name: piece.brand },
                 offers: {
