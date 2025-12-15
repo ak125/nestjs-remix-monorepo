@@ -163,35 +163,56 @@ export default function TestHomepageModern() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Schema.org JSON-LD pour SEO */}
+      {/* Schema.org JSON-LD pour SEO - @graph avec WebSite + SearchAction + AutoPartsStore */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "AutoPartsStore",
-            name: "Automecanik",
-            description:
-              "Catalogue de pièces détachées auto pour toutes marques et modèles",
-            url: "https://www.automecanik.com",
-            logo: "https://www.automecanik.com/logo-navbar.webp",
-            image: "https://www.automecanik.com/logo-og.webp",
-            telephone: "+33-1-23-45-67-89",
-            priceRange: "€€",
-            address: {
-              "@type": "PostalAddress",
-              addressCountry: "FR",
-            },
-            // Note: aggregateRating retiré - nécessite de vrais avis clients pour éviter pénalité Google
-            offers: {
-              "@type": "AggregateOffer",
-              priceCurrency: "EUR",
-              availability: "https://schema.org/InStock",
-              itemOffered: {
-                "@type": "Product",
-                name: "Pièces détachées automobiles",
+            "@graph": [
+              // 1️⃣ WebSite - Active les sitelinks searchbox Google
+              {
+                "@type": "WebSite",
+                "@id": "https://www.automecanik.com/#website",
+                url: "https://www.automecanik.com",
+                name: "Automecanik",
+                description: "Pièces détachées auto pour toutes marques et modèles",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://www.automecanik.com/recherche?q={search_term_string}",
+                  },
+                  "query-input": "required name=search_term_string",
+                },
               },
-            },
+              // 2️⃣ AutoPartsStore - Magasin de pièces auto
+              {
+                "@type": "AutoPartsStore",
+                "@id": "https://www.automecanik.com/#store",
+                name: "Automecanik",
+                description: "Catalogue de pièces détachées auto pour toutes marques et modèles",
+                url: "https://www.automecanik.com",
+                logo: "https://www.automecanik.com/logo-navbar.webp",
+                image: "https://www.automecanik.com/logo-og.webp",
+                telephone: "+33-1-23-45-67-89",
+                priceRange: "€€",
+                address: {
+                  "@type": "PostalAddress",
+                  addressCountry: "FR",
+                },
+                // Note: aggregateRating retiré - nécessite de vrais avis clients
+                offers: {
+                  "@type": "AggregateOffer",
+                  priceCurrency: "EUR",
+                  availability: "https://schema.org/InStock",
+                  itemOffered: {
+                    "@type": "Product",
+                    name: "Pièces détachées automobiles",
+                  },
+                },
+              },
+            ],
           }),
         }}
       />

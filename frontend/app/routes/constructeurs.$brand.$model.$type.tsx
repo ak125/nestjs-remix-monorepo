@@ -697,39 +697,63 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 // � Générer le breadcrumb structuré Schema.org
-function generateBreadcrumbSchema(vehicle: any, breadcrumb: any) {
-  const baseUrl =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : "https://votre-site.com";
+// 🚗 Génère le schema @graph complet: Car + BreadcrumbList
+function generateVehicleSchema(vehicle: any, breadcrumb: any) {
+  const baseUrl = "https://www.automecanik.com";
+  const canonicalUrl = `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
 
   return {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
+    "@graph": [
+      // 1️⃣ Car - Véhicule complet avec toutes les specs
       {
-        "@type": "ListItem",
-        position: 1,
-        name: "Accueil",
-        item: `${baseUrl}/`,
+        "@type": "Car",
+        "@id": `${canonicalUrl}#vehicle`,
+        name: `${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`,
+        brand: { "@type": "Brand", name: vehicle.marque_name },
+        manufacturer: { "@type": "Organization", name: vehicle.marque_name },
+        model: vehicle.modele_name,
+        vehicleConfiguration: vehicle.type_name,
+        // 📅 Année modèle
+        ...(vehicle.type_year_from && { vehicleModelDate: vehicle.type_year_from }),
+        // 🔧 Moteur
+        vehicleEngine: {
+          "@type": "EngineSpecification",
+          name: vehicle.type_name,
+          ...(vehicle.type_power_ps && {
+            enginePower: {
+              "@type": "QuantitativeValue",
+              value: parseInt(vehicle.type_power_ps),
+              unitCode: "HP",
+            },
+          }),
+        },
+        // ⛽ Carburant
+        ...(vehicle.type_fuel && { fuelType: vehicle.type_fuel }),
+        // 🚗 Carrosserie
+        ...(vehicle.type_body && { bodyType: vehicle.type_body }),
+        // 📅 Période de production
+        ...(vehicle.type_year_from && {
+          additionalProperty: [{
+            "@type": "PropertyValue",
+            name: "Période de production",
+            value: vehicle.type_year_to
+              ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
+              : `depuis ${vehicle.type_year_from}`,
+          }],
+        }),
+        url: canonicalUrl,
       },
+      // 2️⃣ BreadcrumbList - Fil d'ariane
       {
-        "@type": "ListItem",
-        position: 2,
-        name: "Constructeurs",
-        item: `${baseUrl}/constructeurs`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: breadcrumb.brand,
-        item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: `${breadcrumb.model} ${breadcrumb.type}`,
-        item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`,
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: `${baseUrl}/` },
+          { "@type": "ListItem", position: 2, name: "Constructeurs", item: `${baseUrl}/constructeurs` },
+          { "@type": "ListItem", position: 3, name: breadcrumb.brand, item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html` },
+          { "@type": "ListItem", position: 4, name: `${breadcrumb.model} ${breadcrumb.type}`, item: canonicalUrl },
+        ],
       },
     ],
   };
@@ -753,9 +777,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
     { property: "og:type", content: "website" },
-    // 🍞 Breadcrumb Schema.org pour les rich snippets Google
+    // 🚗 JSON-LD @graph: Car + BreadcrumbList pour rich snippets Google
     {
-      "script:ld+json": generateBreadcrumbSchema(data.vehicle, data.breadcrumb),
+      "script:ld+json": generateVehicleSchema(data.vehicle, data.breadcrumb),
     },
   ];
 };
@@ -1410,7 +1434,7 @@ export default function VehicleDetailPage() {
                     </div>
                   </div>
                 </div>
-                {/* 🔧 Code(s) moteur - affiché uniquement si disponible */}
+                {/* 🔧 Code(s) moteur - COMMENTÉ: En attente import table link_typ_eng (liaison type_id ↔ eng_id)
                 {vehicle.motor_codes_formatted && (
                   <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                     <div
@@ -1429,6 +1453,7 @@ export default function VehicleDetailPage() {
                     </div>
                   </div>
                 )}
+                */}
                 {/* 🔧 Type Mine / CNIT - affiché uniquement si disponible */}
                 {(vehicle.mine_codes_formatted ||
                   vehicle.cnit_codes_formatted) && (

@@ -212,6 +212,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     typePowerPs: vehicleInfo?.typePowerPs,
     typeFuel: vehicleInfo?.typeEngine, // typeEngine contient le type de carburant
     typeBody: vehicleInfo?.typeBody,
+    // 📅 Dates de production (pour JSON-LD vehicleModelDate)
+    typeDateStart: vehicleInfo?.typeDateStart,
+    typeDateEnd: vehicleInfo?.typeDateEnd,
   };
 
   const gamme: GammeData = {
@@ -440,6 +443,28 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             brand: { "@type": "Brand", name: data.vehicle.marque },
             model: data.vehicle.modele,
             vehicleConfiguration: data.vehicle.typeName || data.vehicle.type,
+            // 📅 Année modèle (Schema.org officiel)
+            ...(data.vehicle.typeDateStart && {
+              vehicleModelDate: data.vehicle.typeDateStart,
+            }),
+            // 📅 Période de production complète
+            ...(data.vehicle.typeDateStart && {
+              additionalProperty: [{
+                "@type": "PropertyValue",
+                name: "Période de production",
+                value: data.vehicle.typeDateEnd
+                  ? `${data.vehicle.typeDateStart}-${data.vehicle.typeDateEnd}`
+                  : `depuis ${data.vehicle.typeDateStart}`,
+              }],
+            }),
+            // TODO: Activer codes moteur quand données disponibles en base
+            // 🔧 Codes moteur (K9K 752, etc.) - CLÉ SEO pour recherches techniques
+            // ...(data.vehicle.motorCodesFormatted && {
+            //   vehicleEngine: {
+            //     "@type": "EngineSpecification",
+            //     engineType: data.vehicle.motorCodesFormatted,
+            //   },
+            // }),
           },
           // 2️⃣ Product principal avec refs OEM (permet les recherches "7701206343")
           {
@@ -464,14 +489,28 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
               seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
             },
             // Note: aggregateRating retiré - nécessite de vrais avis clients pour éviter pénalité Google
-            // 🔧 Toutes les refs OEM en additionalProperty (jusqu'à 20)
-            ...(oemRefsArray.length > 0 && {
-              additionalProperty: oemRefsArray.slice(0, 20).map((ref, i) => ({
+            // 🔧 Propriétés additionnelles: refs OEM + codes moteur + codes mine
+            additionalProperty: [
+              // Refs OEM (jusqu'à 15)
+              ...oemRefsArray.slice(0, 15).map((ref, i) => ({
                 "@type": "PropertyValue",
                 name: i === 0 ? "Référence OEM" : "Référence compatible",
                 value: ref,
               })),
-            }),
+              // TODO: Activer codes moteur/mine quand données disponibles en base
+              // 🔧 Code Moteur (K9K 752, etc.) - recherches techniques
+              // ...(data.vehicle.motorCodesFormatted ? [{
+              //   "@type": "PropertyValue",
+              //   name: "Code Moteur",
+              //   value: data.vehicle.motorCodesFormatted,
+              // }] : []),
+              // 🔧 Type Mine (335AHR, etc.) - recherches par immatriculation
+              // ...(data.vehicle.mineCodesFormatted ? [{
+              //   "@type": "PropertyValue",
+              //   name: "Type Mine",
+              //   value: data.vehicle.mineCodesFormatted,
+              // }] : []),
+            ].filter(p => p.value),
             ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
           },
           // 3️⃣ ItemList - Liste des produits disponibles (rich snippets catalogue)

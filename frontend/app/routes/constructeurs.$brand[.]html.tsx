@@ -66,24 +66,27 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const canonicalUrl = data.seo.canonical || `https://www.automecanik.com${location.pathname}`;
   const brand = data.brand;
 
-  // 🏭 Schema @graph pour page constructeur - Organization + ItemList véhicules
+  // 🏭 Schema @graph UNIFIÉ pour page constructeur - BreadcrumbList + Organization + ItemLists
   const brandSchema = brand ? {
     "@context": "https://schema.org",
     "@graph": [
+      // 0️⃣ BreadcrumbList - Fil d'ariane
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.automecanik.com/" },
+          { "@type": "ListItem", position: 2, name: "Constructeurs", item: "https://www.automecanik.com/constructeurs/" },
+          { "@type": "ListItem", position: 3, name: `Pièces ${brand.marque_name}`, item: canonicalUrl },
+        ],
+      },
       // 1️⃣ Organization - Le constructeur automobile
       {
         "@type": "Organization",
         "@id": `${canonicalUrl}#organization`,
         name: brand.marque_name,
         url: canonicalUrl,
-        // Logo constructeur
-        ...(brand.marque_logo && {
-          logo: {
-            "@type": "ImageObject",
-            url: brand.marque_logo,
-          },
-        }),
-        // Type d'organisation
+        logo: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
         additionalType: "https://schema.org/AutomotiveBusiness",
       },
       // 2️⃣ CollectionPage - La page catalogue
@@ -95,21 +98,28 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         url: canonicalUrl,
         about: { "@id": `${canonicalUrl}#organization` },
         mainEntity: { "@id": `${canonicalUrl}#vehicles` },
+        breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
       },
       // 3️⃣ ItemList - Véhicules populaires de cette marque
       ...(data.popular_vehicles && data.popular_vehicles.length > 0 ? [{
         "@type": "ItemList",
         "@id": `${canonicalUrl}#vehicles`,
-        name: `Véhicules ${brand.marque_name}`,
+        name: `Véhicules ${brand.marque_name} les plus recherchés`,
         numberOfItems: data.popular_vehicles.length,
         itemListElement: data.popular_vehicles.slice(0, 10).map((vehicle: PopularVehicle, index: number) => ({
           "@type": "ListItem",
           position: index + 1,
           item: {
             "@type": "Car",
-            name: `${brand.marque_name} ${vehicle.modele_name}`,
+            name: `${brand.marque_name} ${vehicle.modele_name} ${vehicle.type_name || ''}`.trim(),
             brand: { "@type": "Brand", name: brand.marque_name },
             model: vehicle.modele_name,
+            ...(vehicle.type_power_ps && {
+              vehicleEngine: {
+                "@type": "EngineSpecification",
+                enginePower: { "@type": "QuantitativeValue", value: vehicle.type_power_ps, unitCode: "HP" },
+              },
+            }),
             ...(vehicle.vehicle_url && { url: `https://www.automecanik.com${vehicle.vehicle_url}` }),
             ...(vehicle.image_url && { image: vehicle.image_url }),
           },
@@ -119,7 +129,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       ...(data.popular_parts && data.popular_parts.length > 0 ? [{
         "@type": "ItemList",
         "@id": `${canonicalUrl}#parts`,
-        name: `Pièces détachées ${brand.marque_name}`,
+        name: `Pièces ${brand.marque_name} populaires`,
         numberOfItems: data.popular_parts.length,
         itemListElement: data.popular_parts.slice(0, 8).map((part: ApiPopularPart, index: number) => ({
           "@type": "ListItem",
@@ -127,6 +137,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
           item: {
             "@type": "Product",
             name: `${part.pg_name} ${brand.marque_name}`,
+            category: part.pg_name,
             ...(part.part_url && { url: `https://www.automecanik.com${part.part_url}` }),
             ...(part.image_url && { image: part.image_url }),
             isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#organization` },
@@ -594,92 +605,7 @@ export default function BrandCatalogPage() {
         </div>
       </div>
 
-      {/* 🔗 Schema.org - Données structurées SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@graph": [
-              // BreadcrumbList
-              {
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  {
-                    "@type": "ListItem",
-                    position: 1,
-                    name: "Accueil",
-                    item: "https://www.automecanik.com/",
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 2,
-                    name: "Constructeurs",
-                    item: "https://www.automecanik.com/constructeurs/",
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 3,
-                    name: `Pièces ${manufacturer.marque_name}`,
-                    item: `https://www.automecanik.com/constructeurs/${manufacturer.marque_alias}-${manufacturer.marque_id}.html`,
-                  },
-                ],
-              },
-              // Organization (Marque)
-              {
-                "@type": "Organization",
-                name: manufacturer.marque_name,
-                url: `https://www.automecanik.com/constructeurs/${manufacturer.marque_alias}-${manufacturer.marque_id}.html`,
-                logo:
-                  manufacturer.marque_logo ||
-                  `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${manufacturer.marque_alias}.webp`,
-              },
-              // ItemList - Véhicules populaires
-              {
-                "@type": "ItemList",
-                name: `Véhicules ${manufacturer.marque_name} les plus recherchés`,
-                numberOfItems: apiVehicles.length,
-                itemListElement: apiVehicles.slice(0, 10).map((v, idx) => ({
-                  "@type": "ListItem",
-                  position: idx + 1,
-                  item: {
-                    "@type": "Car",
-                    name: `${v.marque_name} ${v.modele_name} ${v.type_name}`,
-                    brand: { "@type": "Brand", name: v.marque_name },
-                    model: v.modele_name,
-                    vehicleEngine: {
-                      "@type": "EngineSpecification",
-                      enginePower: {
-                        "@type": "QuantitativeValue",
-                        value: v.type_power_ps,
-                        unitCode: "HP",
-                      },
-                    },
-                    url: `https://www.automecanik.com${v.vehicle_url || "#"}`,
-                  },
-                })),
-              },
-              // ItemList - Pièces populaires
-              {
-                "@type": "ItemList",
-                name: `Pièces ${manufacturer.marque_name} populaires`,
-                numberOfItems: apiParts.length,
-                itemListElement: apiParts.slice(0, 10).map((p, idx) => ({
-                  "@type": "ListItem",
-                  position: idx + 1,
-                  item: {
-                    "@type": "Product",
-                    name: `${p.pg_name} ${manufacturer.marque_name}`,
-                    category: p.pg_name,
-                    url: `https://www.automecanik.com${p.part_url || "#"}`,
-                    image: p.image_url,
-                  },
-                })),
-              },
-            ],
-          }),
-        }}
-      />
+      {/* JSON-LD unifié dans meta function - voir brandSchema */}
     </div>
   );
 }
