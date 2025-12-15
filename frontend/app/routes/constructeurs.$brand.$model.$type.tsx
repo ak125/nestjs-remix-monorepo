@@ -22,7 +22,6 @@ import {
   Star,
   Award,
   RotateCcw,
-  Cog,
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
