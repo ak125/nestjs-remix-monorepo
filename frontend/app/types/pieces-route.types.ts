@@ -42,6 +42,9 @@ export interface VehicleData {
   typeFuel?: string;
   typeBody?: string;
   typeCylinderCm3?: number;
+  // 📅 Dates de production (pour JSON-LD vehicleModelDate)
+  typeDateStart?: string;
+  typeDateEnd?: string;
 }
 
 export interface GammeData {
