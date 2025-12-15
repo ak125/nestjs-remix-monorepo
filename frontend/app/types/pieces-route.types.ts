@@ -29,6 +29,19 @@ export interface VehicleData {
   modeleAlias?: string; // Alias du modèle pour l'URL
   typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
+  // 🔧 Codes moteur et types mines (depuis batch-loader vehicleInfo)
+  motorCodes?: string[];
+  motorCodesFormatted?: string;
+  mineCodes?: string[];
+  mineCodesFormatted?: string;
+  cnitCodes?: string[];
+  cnitCodesFormatted?: string;
+  // 📊 Specs techniques supplementaires
+  typePowerPs?: number;
+  typePowerKw?: number;
+  typeFuel?: string;
+  typeBody?: string;
+  typeCylinderCm3?: number;
 }
 
 export interface GammeData {
