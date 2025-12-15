@@ -44,6 +44,10 @@ interface VehicleInfo {
   marqueId: number;
   marqueName: string;
   marqueAlias?: string;
+  // 🔧 Codes moteur et types mines (V7)
+  motorCodesFormatted?: string;
+  mineCodesFormatted?: string;
+  cnitCodesFormatted?: string;
 }
 
 interface BatchLoaderResponse {
@@ -155,12 +159,25 @@ export class BatchLoaderController {
           `⚡ [BATCH-LOADER] Vehicle Cache HIT: type=${request.typeId}`,
         );
       } else {
-        const vehicleResult = await this.vehiclesService
-          .getTypeById(request.typeId)
-          .catch((error) => {
-            this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
-            return { data: null, error };
-          });
+        // 🔧 V7: Récupérer véhicule + codes moteur + codes mines en parallèle
+        const [vehicleResult, motorCodesResult, mineCodesResult] =
+          await Promise.all([
+            this.vehiclesService.getTypeById(request.typeId).catch((error) => {
+              this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
+              return { data: null, error };
+            }),
+            this.vehiclesService
+              .getMotorCodesByTypeId(request.typeId)
+              .catch(() => ({ data: [], formatted: '' })),
+            this.vehiclesService
+              .getMineCodesByTypeId(request.typeId)
+              .catch(() => ({
+                mines: [],
+                mines_formatted: '',
+                cnits: [],
+                cnits_formatted: '',
+              })),
+          ]);
 
         if (vehicleResult?.data?.[0]) {
           const typeData = vehicleResult.data[0];
@@ -183,12 +200,16 @@ export class BatchLoaderController {
             marqueId: marqueData?.marque_id || request.marqueId,
             marqueName: marqueName || '',
             marqueAlias: marqueData?.marque_alias || undefined,
+            // 🔧 V7: Codes moteur et types mines
+            motorCodesFormatted: motorCodesResult?.formatted || undefined,
+            mineCodesFormatted: mineCodesResult?.mines_formatted || undefined,
+            cnitCodesFormatted: mineCodesResult?.cnits_formatted || undefined,
           };
 
           // Cache 24h (86400000ms) car les infos véhicule sont statiques
           await this.cacheManager.set(vehicleCacheKey, vehicleInfo, 86400000);
           this.logger.log(
-            `💾 [BATCH-LOADER] Vehicle mis en cache 24h: type=${request.typeId}`,
+            `💾 [BATCH-LOADER] Vehicle mis en cache 24h: type=${request.typeId}, motor=${!!motorCodesResult?.formatted}, mine=${!!mineCodesResult?.mines_formatted}`,
           );
         }
       }
@@ -483,6 +504,8 @@ export class BatchLoaderController {
             marqueId: pageData.vehicle.marque.id,
             marqueName: pageData.vehicle.marque.name,
             marqueAlias: pageData.vehicle.marque.alias || undefined,
+            // 🔧 V7: Codes moteur (depuis RPC motorCodes ou vehicle.type)
+            motorCodesFormatted: pageData.vehicle.motorCodes || undefined,
           }
         : undefined;
 

@@ -204,6 +204,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     modeleAlias: vehicleInfo?.modeleAlias || modeleData.alias,
     typeAlias: vehicleInfo?.typeAlias || typeData.alias,
     modelePic,
+    // 🔧 V7: Codes moteur et types mines (depuis batch-loader vehicleInfo)
+    motorCodesFormatted: vehicleInfo?.motorCodesFormatted,
+    mineCodesFormatted: vehicleInfo?.mineCodesFormatted,
+    cnitCodesFormatted: vehicleInfo?.cnitCodesFormatted,
+    // 📊 Specs techniques supplementaires
+    typePowerPs: vehicleInfo?.typePowerPs,
+    typeFuel: vehicleInfo?.typeEngine, // typeEngine contient le type de carburant
+    typeBody: vehicleInfo?.typeBody,
   };
 
   const gamme: GammeData = {
@@ -1737,6 +1745,8 @@ export default function PiecesVehicleRoute() {
                 <PiecesCompatibilityInfo
                   compatibility={data.compatibilityInfo}
                   vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                  motorCodesFormatted={data.vehicle.motorCodesFormatted}
+                  mineCodesFormatted={data.vehicle.mineCodesFormatted}
                 />
 
                 <PiecesStatistics

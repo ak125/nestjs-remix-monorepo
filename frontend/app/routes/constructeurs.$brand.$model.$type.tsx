@@ -22,6 +22,8 @@ import {
   Star,
   Award,
   RotateCcw,
+  Cog,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -36,7 +38,7 @@ import { brandColorsService } from "../services/brand-colors.service";
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 60000; // 1 minute
 
-// 📝 Types de données (structure PHP)
+// 📝 Types de données (structure PHP + API /full)
 interface VehicleData {
   marque_id: number;
   marque_alias: string;
@@ -65,6 +67,18 @@ interface VehicleData {
   type_relfollow: number;
   power: string;
   date: string;
+  // 🔧 Codes moteur (depuis API /full)
+  motor_codes?: string[];
+  motor_codes_formatted?: string;
+  // 🔧 Types mines / CNIT (depuis API /full)
+  mine_codes?: string[];
+  mine_codes_formatted?: string;
+  cnit_codes?: string[];
+  cnit_codes_formatted?: string;
+  // 📊 Données techniques formatées
+  power_formatted?: string;
+  cylinder_cm3?: number;
+  production_date_formatted?: string;
 }
 
 interface CatalogFamily {
@@ -191,8 +205,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 🔥 FIX: type_alias doit être SANS l'ID final
   const type_alias = typeParts.slice(0, -1).join("-") || typeWithoutHtml;
 
-  // === APPEL API POUR RÉCUPÉRER LES VRAIES DONNÉES ===
-  console.log(`🔍 Appel API pour type_id=${type_id}`);
+  // === APPEL API /full POUR RÉCUPÉRER TOUTES LES DONNÉES (codes moteur, mines, etc.) ===
+  console.log(`🔍 Appel API /full pour type_id=${type_id}`);
   const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
   // 🛡️ ROBUSTESSE: Fetch avec retry pour éviter erreurs temporaires
@@ -203,7 +217,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   while (retryCount <= maxRetries && !vehicleResponse?.ok) {
     try {
       vehicleResponse = await fetch(
-        `${baseUrl}/api/vehicles/types/${type_id}`,
+        `${baseUrl}/api/vehicles/types/${type_id}/full`,
         {
           headers: { "internal-call": "true" },
           signal: AbortSignal.timeout(10000),
@@ -236,7 +250,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const apiData = await vehicleResponse.json();
-  console.log("✅ Données API reçues:", JSON.stringify(apiData, null, 2));
+  console.log("✅ Données API /full reçues:", JSON.stringify(apiData, null, 2));
 
   // === APPEL API POUR RÉCUPÉRER LES META TAGS ARIANE ===
   let metaTagsData: MetaTagsAriane | null = null;
@@ -257,20 +271,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     console.log("⚠️ Erreur récupération meta tags:", error);
   }
 
-  // L'API retourne un tableau - prendre le premier élément
-  const vehicleRecord = apiData.data?.[0];
+  // L'API /full retourne un objet plat (pas un tableau)
+  const vehicleRecord = apiData.data;
 
-  if (!vehicleRecord) {
-    console.error("❌ Aucun véhicule trouvé dans la réponse API");
+  if (!vehicleRecord || !apiData.success) {
+    console.error("❌ Aucun véhicule trouvé dans la réponse API /full:", apiData);
     throw new Response("Véhicule non trouvé", { status: 404 });
   }
 
-  // === EXTRACTION DES VRAIES DONNÉES (comme le PHP) ===
-  const marque_name = vehicleRecord.auto_modele?.auto_marque?.marque_name;
-  const marque_alias_api = vehicleRecord.auto_modele?.auto_marque?.marque_alias;
-  const modele_name = vehicleRecord.auto_modele?.modele_name;
-  const modele_pic = vehicleRecord.auto_modele?.modele_pic;
-  const modele_alias_api = vehicleRecord.auto_modele?.modele_alias;
+  // === EXTRACTION DES DONNÉES (structure plate de l'API /full) ===
+  const marque_name = vehicleRecord.marque_name;
+  const marque_alias_api = vehicleRecord.marque_alias;
+  const modele_name = vehicleRecord.modele_name;
+  const modele_pic = vehicleRecord.modele_pic;
+  const modele_alias_api = vehicleRecord.modele_alias;
   const type_name = vehicleRecord.type_name;
   const type_power_ps = vehicleRecord.type_power_ps;
   const type_fuel = vehicleRecord.type_fuel;
@@ -280,9 +294,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const type_month_to = vehicleRecord.type_month_to;
   const type_year_to = vehicleRecord.type_year_to;
 
+  // 🔧 Codes moteur et types mines (nouveaux champs API /full)
+  const motor_codes = vehicleRecord.motor_codes || [];
+  const motor_codes_formatted = vehicleRecord.motor_codes_formatted || "";
+  const mine_codes = vehicleRecord.mine_codes || [];
+  const mine_codes_formatted = vehicleRecord.mine_codes_formatted || "";
+  const cnit_codes = vehicleRecord.cnit_codes || [];
+  const cnit_codes_formatted = vehicleRecord.cnit_codes_formatted || "";
+  const power_formatted = vehicleRecord.power_formatted || "";
+  const cylinder_cm3 = vehicleRecord.cylinder_cm3 || null;
+  const production_date_formatted = vehicleRecord.production_date_formatted || "";
+
   // Vérification des données critiques
   if (!marque_name || !modele_name || !type_name || !type_power_ps) {
-    console.error("❌ Données API incomplètes:", {
+    console.error("❌ Données API /full incomplètes:", {
       marque_name,
       modele_name,
       type_name,
@@ -329,6 +354,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     type_relfollow: 1,
     power: type_power_ps,
     date: type_date,
+    // 🔧 Codes moteur et types mines (depuis API /full)
+    motor_codes,
+    motor_codes_formatted,
+    mine_codes,
+    mine_codes_formatted,
+    cnit_codes,
+    cnit_codes_formatted,
+    power_formatted,
+    cylinder_cm3,
+    production_date_formatted,
   };
 
   // === SYSTÈME SEO AVEC SWITCH DYNAMIQUE (logique PHP adaptée) ===
@@ -1375,6 +1410,49 @@ export default function VehicleDetailPage() {
                     </div>
                   </div>
                 </div>
+                {/* 🔧 Code(s) moteur - affiché uniquement si disponible */}
+                {vehicle.motor_codes_formatted && (
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <div
+                      className="p-2 rounded-lg"
+                      style={{ backgroundColor: `${brandPrimary}20` }}
+                    >
+                      <Cog size={20} style={{ color: brandPrimary }} />
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase">
+                        Code(s) Moteur
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {vehicle.motor_codes_formatted}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* 🔧 Type Mine / CNIT - affiché uniquement si disponible */}
+                {(vehicle.mine_codes_formatted ||
+                  vehicle.cnit_codes_formatted) && (
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <div
+                      className="p-2 rounded-lg"
+                      style={{ backgroundColor: `${brandPrimary}20` }}
+                    >
+                      <FileText size={20} style={{ color: brandPrimary }} />
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase">
+                        Type Mine / CNIT
+                      </div>
+                      <div className="font-semibold text-gray-900 text-sm">
+                        {vehicle.mine_codes_formatted}
+                        {vehicle.mine_codes_formatted &&
+                          vehicle.cnit_codes_formatted &&
+                          " / "}
+                        {vehicle.cnit_codes_formatted}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

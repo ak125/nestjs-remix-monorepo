@@ -758,7 +758,21 @@ BEGIN
         WHEN COALESCE(NULLIF(pm.pm_nb_stars, '')::INTEGER, 0) >= 3 THEN 'Qualité'
         ELSE 'Économique'
       END as qualite,
-      COALESCE(rcp.detected_position, cp.detected_position, sp.psf_side, ap.piece_name_side) as filtre_side
+      -- Position: 4 fallbacks + detection depuis piece_name
+      COALESCE(
+        rcp.detected_position,  -- 1. pieces_relation_criteria
+        cp.detected_position,   -- 2. pieces_criteria
+        sp.psf_side,            -- 3. pieces_side_filtre via rtp_psf_id
+        ap.piece_name_side,     -- 4. pieces.piece_name_side
+        -- 5. Detection depuis piece_name (dernier recours)
+        CASE
+          WHEN LOWER(ap.piece_name) ~ '(avant|front)' THEN 'Avant'
+          WHEN LOWER(ap.piece_name) ~ '(arrière|arriere|rear)' THEN 'Arrière'
+          WHEN LOWER(ap.piece_name) ~ '(gauche|left)' THEN 'Gauche'
+          WHEN LOWER(ap.piece_name) ~ '(droit|right)' THEN 'Droite'
+          ELSE NULL
+        END
+      ) as filtre_side
     FROM active_pieces ap
     LEFT JOIN best_prices bp ON bp.pri_piece_id = ap.piece_id::TEXT
     LEFT JOIN first_images fi ON fi.piece_id_text = ap.piece_id::TEXT
@@ -1065,7 +1079,7 @@ BEGIN
     'minPrice', (SELECT MIN(prix_unitaire) FROM sorted_pieces WHERE prix_unitaire > 0),
     'relations_found', (SELECT COUNT(*)::INTEGER FROM relations),
     'success', true,
-    'version', 'RPC_V3_SEO_INTEGRATED'
+    'version', 'RPC_V3_SEO_POSITION_FIX'
   ) INTO v_result;
 
   -- Ajouter la durée d'exécution
