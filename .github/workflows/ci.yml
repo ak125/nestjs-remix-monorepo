@@ -129,22 +129,8 @@ jobs:
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
-          # Dossier de production sur le serveur
-          PROD_DIR="/home/deploy/app"
-
-          # Créer le dossier de production s'il n'existe pas
-          mkdir -p $PROD_DIR
-
-          # Synchroniser les fichiers docker-compose depuis Git
-          cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
-          cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
-          mkdir -p $PROD_DIR/config
-          cp -r $GITHUB_WORKSPACE/config/caddy $PROD_DIR/config/
-
-          # Créer le dossier pour les sitemaps
-          mkdir -p $PROD_DIR/public/sitemaps
-
-          cd $PROD_DIR
+          # Utiliser le dossier production dans le home du runner
+          cd ~/production
 
           # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
@@ -153,23 +139,22 @@ jobs:
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
 
-          # Démarrer avec la nouvelle config (avec USE_UNIFIED_RPC=true)
+          # Démarrer avec la nouvelle config
           docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
 
           # Attendre le démarrage
           sleep 15
 
-          # Vérifier que USE_UNIFIED_RPC est bien passé
-          echo "🔍 Vérification des variables d'environnement:"
-          docker exec nestjs-remix-monorepo-prod env | grep -E "UNIFIED|RPC" || echo "⚠️ Variables RPC non trouvées"
+          # Vérifier que les conteneurs tournent
+          docker ps | grep nestjs-remix || echo "⚠️ Conteneurs non trouvés"
 
-          # Nettoyer les images (sans --volumes pour préserver les données)
+          # Nettoyer les images
           docker image prune -f
 
       - name: 🗺️ Generate static sitemaps (si nécessaire)
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          PROD_DIR="/home/deploy/app"
+          PROD_DIR=~/production
           SITEMAP_FILE="$PROD_DIR/public/sitemaps/sitemap.xml"
           MAX_AGE_DAYS=7
 
