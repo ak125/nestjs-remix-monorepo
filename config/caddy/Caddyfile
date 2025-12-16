@@ -122,7 +122,7 @@ automecanik.com, www.automecanik.com {
     
     # ===== API CACHEABLE (LCP Optimization) =====
     @api_cacheable {
-        path_regexp ^/api/catalog/batch-loader/\d+/\d+
+        path /api/catalog/batch-loader/*
         method GET
     }
     handle @api_cacheable {
