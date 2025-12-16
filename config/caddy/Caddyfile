@@ -139,6 +139,7 @@ automecanik.com, www.automecanik.com {
     # ===== ROUTES PRIVEES =====
     @private {
         path /api/* /admin/* /auth/* /cart/* /checkout/* /account/*
+        not path /api/catalog/batch-loader/*
     }
     handle @private {
         header Cache-Control "private, no-cache, no-store, must-revalidate"
