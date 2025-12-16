@@ -80,7 +80,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: '3',
       title: 'Amortisseur arrière - Référence: SHOCK789',
-      description: 'Amortisseur hydraulique haute résistance, garantie 2 ans.',
+      description: 'Amortisseur hydraulique haute résistance, garantie 1 an.',
       category: 'Suspension',
       price: 89.99,
       relevanceScore: 82,

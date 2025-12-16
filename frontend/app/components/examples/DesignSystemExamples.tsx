@@ -494,7 +494,7 @@ export function TypographyExamples() {
           {/* font-sans + text-base → Texte standard */}
           <p className="font-sans text-base text-neutral-700">
             Texte normal : Compatible avec Renault Clio 4 (2012-2019). 
-            Plaquettes de frein certifiées ECE R90 avec garantie constructeur 2 ans.
+            Plaquettes de frein certifiées ECE R90 avec garantie constructeur 1 an.
           </p>
           
           {/* font-sans + text-sm → Petit texte */}

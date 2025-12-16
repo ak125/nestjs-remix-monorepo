@@ -87,14 +87,14 @@ export function generateGammeMeta(options: GammeMetaOptions): MetaTagsResult {
       : null,
     // Avec marque
     brand
-      ? `${name} ${brand} au meilleur prix. ${count ? `${count} produits` : 'Grand choix'} en stock. Qualité OEM, garantie 2 ans. Livraison 24-48h.`
+      ? `${name} ${brand} au meilleur prix. ${count ? `${count} produits` : 'Grand choix'} en stock. Qualité OEM, garantie 1 an. Livraison 24-48h.`
       : null,
     // Avec prix
     minPrice && maxPrice
       ? `${name} de ${minPrice.toFixed(2)}€ à ${maxPrice.toFixed(2)}€. ${count ? `${count}+ références` : 'Large sélection'} en stock. Paiement sécurisé, livraison express.`
       : null,
     // Générique
-    `${name} de qualité professionnelle au meilleur prix. ${count ? `${count}+ produits` : 'Large choix'} en stock. Garantie 2 ans, livraison 24-48h partout en France.`,
+    `${name} de qualité professionnelle au meilleur prix. ${count ? `${count}+ produits` : 'Large choix'} en stock. Garantie 1 an, livraison 24-48h partout en France.`,
   ].filter(Boolean);
 
   const description = descTemplates[0] || `${name} - Automecanik`;
@@ -167,7 +167,7 @@ export function generatePieceMeta(options: PieceMetaOptions): MetaTagsResult {
     vehicleModel,
     vehicleMotor,
     inStock = true,
-    warranty = 2,
+    warranty = 1,
   } = options;
 
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
@@ -362,7 +362,7 @@ export function generateDefaultMeta(): MetaTagsResult {
   return {
     title: 'Pièces Auto Pas Cher | Automecanik - Qualité OEM Garantie',
     description:
-      'Pièces détachées auto de qualité OEM au meilleur prix. Large catalogue en stock, livraison 24-48h, garantie 2 ans. Paiement sécurisé.',
+      'Pièces détachées auto de qualité OEM au meilleur prix. Large catalogue en stock, livraison 24-48h, garantie 1 an. Paiement sécurisé.',
     keywords: [
       'pièces auto',
       'pièces détachées',
