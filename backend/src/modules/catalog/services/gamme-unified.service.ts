@@ -254,6 +254,27 @@ export class GammeUnifiedService extends SupabaseBaseService {
   }
 
   /**
+   * 🔒 Vérifie si une gamme existe par son ID (pg_id)
+   * Utilisé pour la validation SEO des URLs
+   */
+  async gammeExists(pgId: number): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.pieces_gamme)
+        .select('pg_id')
+        .eq('pg_id', pgId)
+        .single();
+
+      if (error || !data) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * 📄 Récupère le contenu SEO pour une gamme depuis les tables SEO
    * ⚡ Cache Redis: TTL 15min avec clé composite type_id:pg_id:marque_id (évite requêtes lentes 5-13s)
    */

@@ -263,22 +263,14 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
           throw new Error(`Type de véhicule invalide (ID: ${type.id})`);
         }
       } else {
-        // Validation endpoint non accessible (404/500), utiliser les IDs quand même
-        console.warn(`⚠️ [VALIDATE-TYPE] Validation endpoint retourné ${validationResponse.status}, utilisation des IDs parsés`);
-        return {
-          marqueId: marque.id,
-          modeleId: modele.id,
-          typeId: type.id
-        };
+        // 🔒 SEO FIX: Ne plus accepter les IDs non validés
+        console.error(`❌ [VALIDATE-TYPE] Validation endpoint retourné ${validationResponse.status} - rejet de l'URL`);
+        throw new Error(`Type de véhicule non validable (status: ${validationResponse.status})`);
       }
     } catch (error) {
-      console.warn(`⚠️ [VALIDATE-TYPE] Erreur validation type ${type.id}:`, error);
-      // Continuer avec l'ID si la validation échoue (éviter de bloquer)
-      return {
-        marqueId: marque.id,
-        modeleId: modele.id,
-        typeId: type.id
-      };
+      // 🔒 SEO FIX: Ne plus bypasser la validation en cas d'erreur
+      console.error(`❌ [VALIDATE-TYPE] Erreur validation type ${type.id}:`, error);
+      throw error; // Propager l'erreur au lieu de continuer avec des IDs potentiellement invalides
     }
   }
   
@@ -301,10 +293,15 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
           );
           
           if (modelData) {
+            // 🔒 SEO FIX: Rejeter si typeId invalide au lieu de fallback hardcodé
+            if (type.id <= 0) {
+              console.error(`❌ [RESOLVE-VEHICLE] Type ID invalide: ${type.id}`);
+              throw new Error(`Type de véhicule invalide dans l'URL`);
+            }
             return {
               marqueId: brand.marque_id,
               modeleId: modelData.modele_id,
-              typeId: type.id > 0 ? type.id : 55593
+              typeId: type.id
             };
           }
         }
