@@ -219,7 +219,7 @@ export const TrustPageReviewsOnly: React.FC = () => {
       customerName: 'Isabelle G.',
       rating: 4,
       comment:
-        'Batterie Bosch pour ma Clio. Très bon rapport qualité/prix. Garantie 2 ans rassurante. Délai de livraison respecté.',
+        'Batterie Bosch pour ma Clio. Très bon rapport qualité/prix. Garantie 1 an rassurante. Délai de livraison respecté.',
       date: '2025-10-01',
       vehicle: {
         brand: 'Renault',
@@ -389,7 +389,7 @@ export const TrustPageFooter: React.FC = () => {
     {
       id: 'warranty',
       type: 'warranty',
-      title: 'Garantie 2 ans',
+      title: 'Garantie 1 an',
       description: 'Sur toutes nos pièces',
       icon: '✓',
       variant: 'success',

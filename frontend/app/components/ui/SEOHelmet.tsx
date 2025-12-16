@@ -181,6 +181,8 @@ export function useVehicleSEO(vehicle: {
       "offers": {
         "@type": "AggregateOffer",
         "priceCurrency": "EUR",
+        "lowPrice": "4.50",
+        "highPrice": "500.00",
         "availability": "https://schema.org/InStock",
         "offerCount": vehicle.partsCount || 0
       }

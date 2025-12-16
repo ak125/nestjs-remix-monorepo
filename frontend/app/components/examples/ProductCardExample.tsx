@@ -235,7 +235,7 @@ export function ProductGridExample() {
       sku: 'CLU-11223-FR',
       price: 189.99,
       stock: 0,
-      description: 'Kit complet. Compatible Renault Laguna 2 (2001-2007). Garantie 2 ans.',
+      description: 'Kit complet. Compatible Renault Laguna 2 (2001-2007). Garantie 1 an.',
       imageUrl: 'https://via.placeholder.com/400',
       isCompatible: false,
       hasDelayedDelivery: false,

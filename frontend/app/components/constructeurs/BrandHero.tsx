@@ -108,7 +108,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
                 <div className="text-sm text-gray-600">Livraison express</div>
               </div>
               <div className="text-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <div className="text-2xl font-bold text-purple-600 mb-1">2 ans</div>
+                <div className="text-2xl font-bold text-purple-600 mb-1">1 an</div>
                 <div className="text-sm text-gray-600">Garantie</div>
               </div>
             </div>
