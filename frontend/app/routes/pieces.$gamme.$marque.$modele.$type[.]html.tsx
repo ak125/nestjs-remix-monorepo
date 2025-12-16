@@ -573,6 +573,18 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       href: "https://cxpojprgwgubzjyqzmoq.supabase.co",
     },
 
+    // 🚀 LCP Optimization: Preload hero vehicle image
+    ...(data.vehicle.modelePic && data.vehicle.modelePic !== "no.webp"
+      ? [
+          {
+            tagName: "link",
+            rel: "preload",
+            as: "image",
+            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}`,
+          },
+        ]
+      : []),
+
     // âœ¨ NOUVEAU: Schema.org Product (rich snippets)
     ...(productSchema
       ? [

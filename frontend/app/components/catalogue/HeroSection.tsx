@@ -63,6 +63,7 @@ export function HeroSection({
             alt={title}
             className="w-full h-full object-cover opacity-25"
             loading="eager"
+            fetchPriority="high"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
@@ -164,6 +165,7 @@ export function HeroSection({
                           alt={productImage.alt}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
+                          fetchPriority="high"
                         />
                       </div>
                     </div>

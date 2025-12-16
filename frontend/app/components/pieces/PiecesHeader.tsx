@@ -72,8 +72,9 @@ export function PiecesHeader({
           }}
           aria-hidden="true"
         />
+        {/* Animation infinie retirée pour LCP */}
         <div
-          className="absolute top-0 right-0 w-[700px] h-[700px] bg-white/[0.025] rounded-full blur-3xl animate-[pulse_15s_ease-in-out_infinite]"
+          className="absolute top-0 right-0 w-[700px] h-[700px] bg-white/[0.025] rounded-full blur-3xl"
           aria-hidden="true"
         ></div>
 
@@ -82,10 +83,10 @@ export function PiecesHeader({
           <div className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-6 lg:gap-8 items-start">
             {/* Zone de contenu principale */}
             <div className="space-y-5">
-              {/* Header typographique optimisé */}
-              <header className="animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out delay-100">
+              {/* Header typographique optimisé - animations retirées pour LCP */}
+              <header>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
-                  <span className="bg-gradient-to-br from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)] animate-in fade-in duration-1000">
+                  <span className="bg-gradient-to-br from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     {gamme.name} {vehicle.marque.toUpperCase()}{" "}
                     {vehicle.modele.toUpperCase()}{" "}
                     {vehicle.typeName || vehicle.type} {finalText}
@@ -93,11 +94,11 @@ export function PiecesHeader({
                 </h1>
               </header>
 
-              {/* Specs Grid - Badges horizontaux premium avec micro-interactions */}
-              <div className="flex flex-wrap gap-2.5 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 ease-out">
+              {/* Specs Grid - Badges horizontaux premium */}
+              <div className="flex flex-wrap gap-2.5">
                 {/* Badge Prix premium avec pulse */}
                 {minPrice && minPrice > 0 && (
-                  <div className="group bg-gradient-to-br from-white/[0.24] via-white/[0.18] to-white/[0.10] backdrop-blur-2xl rounded-xl px-4 py-2.5 border border-white/35 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-default">
+                  <div className="group bg-gradient-to-br from-white/[0.24] via-white/[0.18] to-white/[0.10] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-4 py-2.5 border border-white/35 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-default">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300">
                         <span className="text-lg">💰</span>
@@ -114,8 +115,8 @@ export function PiecesHeader({
                   </div>
                 )}
 
-                {/* Badge Nombre de pièces avec counter animation */}
-                <div className="group bg-white/[0.14] backdrop-blur-2xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
+                {/* Badge Nombre de pièces */}
+                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform duration-300">
                       <Package
@@ -134,8 +135,8 @@ export function PiecesHeader({
                   </div>
                 </div>
 
-                {/* Badge Qualité avec shimmer */}
-                <div className="group bg-white/[0.14] backdrop-blur-2xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default relative overflow-hidden">
+                {/* Badge Qualité */}
+                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shimmer"></div>
                   <div className="flex items-center gap-2.5 relative z-10">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-md group-hover:-rotate-6 transition-transform duration-300">
@@ -150,8 +151,8 @@ export function PiecesHeader({
                   </div>
                 </div>
 
-                {/* Badge Livraison avec truck animation */}
-                <div className="group bg-white/[0.14] backdrop-blur-2xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
+                {/* Badge Livraison */}
+                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-md group-hover:translate-x-1 transition-transform duration-300">
                       <Truck className="w-4 h-4 text-white" strokeWidth={2.5} />
@@ -187,7 +188,7 @@ export function PiecesHeader({
             </div>
 
             {/* Image Premium - Sidebar optimisée */}
-            <div className="lg:sticky lg:top-8 animate-in fade-in slide-in-from-right-8 duration-700 delay-150 ease-out">
+            <div className="lg:sticky lg:top-8">
               <div className="relative group">
                 {/* Effet halo lumineux */}
                 <div className="absolute -inset-3 bg-gradient-to-br from-white/[0.22] via-white/[0.12] to-transparent rounded-2xl blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
@@ -205,6 +206,7 @@ export function PiecesHeader({
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
                             loading="eager"
+                            fetchPriority="high"
                             onError={() => setImageError(true)}
                           />
                           {/* Gradient overlay */}

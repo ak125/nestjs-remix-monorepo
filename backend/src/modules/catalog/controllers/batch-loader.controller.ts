@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Header,
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -103,6 +104,7 @@ export class BatchLoaderController {
   ) {}
 
   @Post()
+  @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
   async batchLoad(
     @Body() request: BatchLoaderRequest,
   ): Promise<BatchLoaderResponse> {
@@ -374,9 +376,9 @@ export class BatchLoaderController {
         loadTime,
       };
 
-      // ✅ METTRE EN CACHE (5 minutes = 300 secondes) si succès avec pièces
+      // ✅ METTRE EN CACHE (30 minutes = 1800 secondes) si succès avec pièces - optimisé pour LCP
       if (count > 0) {
-        await this.cacheManager.set(cacheKey, response, 300000); // 5 min en ms
+        await this.cacheManager.set(cacheKey, response, 1800000); // 30 min en ms
         this.logger.log(`💾 [BATCH-LOADER] Mis en cache: ${cacheKey}`);
       }
 
