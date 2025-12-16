@@ -133,8 +133,9 @@ export class BatchLoaderController {
 
     // 🔒 Validation SEO: Vérifier que le type existe en base
     try {
-      const typeExists = await this.vehiclesService.getTypeById(parsedTypeId);
-      if (!typeExists) {
+      const typeResult = await this.vehiclesService.getTypeById(parsedTypeId);
+      // getTypeById retourne { data: [...], error: null } ou { data: null, error: ... }
+      if (!typeResult?.data || typeResult.data.length === 0) {
         this.logger.warn(
           `🔒 SEO: Type inexistant typeId=${parsedTypeId} → 404`,
         );
