@@ -132,6 +132,9 @@ jobs:
           # Dossier de production sur le serveur
           PROD_DIR="/home/deploy/app"
 
+          # Créer le dossier de production s'il n'existe pas
+          mkdir -p $PROD_DIR
+
           # Synchroniser les fichiers docker-compose depuis Git
           cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
           cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
