@@ -124,17 +124,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   while (retryCount <= maxRetries && !batchResponse) {
     try {
+      // 🚀 LCP Optimization: GET au lieu de POST pour activer le cache navigateur
       const response = await fetch(
-        `http://localhost:3000/api/catalog/batch-loader`,
+        `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            typeId: vehicleIds.typeId,
-            gammeId,
-            marqueId: vehicleIds.marqueId,
-            modeleId: vehicleIds.modeleId,
-          }),
+          method: "GET",
           signal: AbortSignal.timeout(15000), // Timeout 15s
         },
       );

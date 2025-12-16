@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Param,
   Logger,
   HttpException,
   HttpStatus,
@@ -102,6 +104,25 @@ export class BatchLoaderController {
     private readonly unifiedPageDataService: UnifiedPageDataService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  /**
+   * 🚀 GET endpoint pour cache navigateur (LCP optimization)
+   * Les navigateurs cachent uniquement les GET, pas les POST
+   */
+  @Get(':typeId/:gammeId')
+  @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
+  async batchLoadGet(
+    @Param('typeId') typeId: string,
+    @Param('gammeId') gammeId: string,
+  ): Promise<BatchLoaderResponse> {
+    // Réutiliser la logique existante
+    return this.batchLoad({
+      typeId: parseInt(typeId, 10),
+      gammeId: parseInt(gammeId, 10),
+      marqueId: 0,
+      modeleId: 0,
+    });
+  }
 
   @Post()
   @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
