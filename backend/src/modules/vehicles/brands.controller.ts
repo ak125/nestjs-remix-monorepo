@@ -17,6 +17,7 @@ import {
   Query,
   Logger,
   ParseIntPipe,
+  Header,
 } from '@nestjs/common';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
@@ -47,6 +48,7 @@ export class BrandsController {
    * Retourne toutes les marques avec recherche optionnelle
    */
   @Get()
+  @Header('Cache-Control', 'public, max-age=1800, stale-while-revalidate=7200')
   async getAllBrands(@Query('search') search?: string) {
     return this.brandsService.getBrands({ search, limit: 200 });
   }

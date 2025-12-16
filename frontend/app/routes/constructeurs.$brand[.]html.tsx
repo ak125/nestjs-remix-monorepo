@@ -154,6 +154,15 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:title", content: data.seo.og_title },
     { property: "og:description", content: data.seo.og_description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
+
+    // 🚀 LCP Optimization: Preload brand logo image
+    {
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
+    },
+
     // 🏭 JSON-LD Schema Organization
     ...(brandSchema ? [{ "script:ld+json": brandSchema }] : []),
   ];
@@ -296,19 +305,19 @@ export default function BrandCatalogPage() {
           aria-hidden="true"
         />
 
-        {/* Formes décoratives organiques */}
+        {/* Formes décoratives organiques - animations infinies retirées pour LCP */}
         <div
-          className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite] z-[1]"
+          className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl z-[1]"
           aria-hidden="true"
         ></div>
         <div
-          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite] z-[1]"
+          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
           aria-hidden="true"
         ></div>
 
         <div className="relative z-10 container mx-auto px-4 max-w-7xl">
-          {/* Titre H1 dynamique optimisé SEO */}
-          <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
+          {/* Titre H1 dynamique optimisé SEO - animation retirée pour LCP */}
+          <div className="text-center mb-6 md:mb-8">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
                 Catalogue pièces auto {manufacturer.marque_name}
@@ -321,8 +330,8 @@ export default function BrandCatalogPage() {
           </div>
 
           {/* Cadre glassmorphism contenant Logo + VehicleSelector */}
-          <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
-            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
+          <div className="max-w-5xl mx-auto mb-8 md:mb-10">
+            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-none md:backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
@@ -352,6 +361,7 @@ export default function BrandCatalogPage() {
                           alt={`Logo ${manufacturer.marque_name}`}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
+                          fetchPriority="high"
                           onError={(e) => {
                             e.currentTarget.src = "/images/default-brand.png";
                             e.currentTarget.onerror = null;
@@ -360,16 +370,16 @@ export default function BrandCatalogPage() {
                       </div>
                     </div>
 
-                    {/* Particule décorative */}
+                    {/* Particule décorative - animation retirée pour LCP */}
                     <div
-                      className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl animate-[float_8s_ease-in-out_infinite]"
+                      className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl"
                       aria-hidden="true"
                     ></div>
                   </div>
                 </div>
 
-                {/* VehicleSelector à droite */}
-                <div className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
+                {/* VehicleSelector à droite - animation retirée pour LCP */}
+                <div className="flex-1 w-full">
                   <VehicleSelectorV2
                     mode="full"
                     variant="card"

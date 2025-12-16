@@ -41,13 +41,20 @@ export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
   { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
   
-  // Font Preload (Performance SEO Phase 1)
-  { 
-    rel: "preload", 
-    as: "font", 
-    type: "font/woff2", 
+  // Font Preload (Performance SEO Phase 1) - Inter + Montserrat
+  {
+    rel: "preload",
+    as: "font",
+    type: "font/woff2",
     href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
-    crossOrigin: "anonymous" 
+    crossOrigin: "anonymous"
+  },
+  {
+    rel: "preload",
+    as: "font",
+    type: "font/woff2",
+    href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
+    crossOrigin: "anonymous"
   },
   
   // Image Preload critiques (Logos constructeurs top 10)
@@ -161,8 +168,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        {/* Google Analytics 4 */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740" />
+        {/* Google Analytics 4 - defer pour ne pas bloquer le LCP */}
+        <script defer src="https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

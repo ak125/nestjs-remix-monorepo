@@ -149,7 +149,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/80 via-white/85 to-white/80 backdrop-blur-2xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
+        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/80 via-white/85 to-white/80 backdrop-blur-sm md:backdrop-blur-xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
           isCompact ? "py-2.5" : "py-4"
         } ${
           isScrolled
@@ -185,6 +185,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                   isCompact ? "h-8" : "h-12"
                 } w-auto`}
                 loading="eager"
+                fetchPriority="high"
               />
             </div>
           </Link>
@@ -359,9 +360,9 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 {summary.total_items}
               </Badge>
             )}
-            {/* Pulse effect sur le badge */}
+            {/* Pulse effect sur le badge - optimisé pour LCP (pas d'animate-ping) */}
             {summary.total_items > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-semantic-info rounded-full animate-ping opacity-30" />
+              <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-semantic-info rounded-full opacity-20" />
             )}
           </button>
 
@@ -373,9 +374,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-neutral-700 group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
-              {/* Dot indicator animé pour nouvelles notifs */}
+              {/* Dot indicator pour nouvelles notifs - optimisé pour LCP (pas d'animate-ping) */}
               <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-white"></span>
               </span>
             </Link>
