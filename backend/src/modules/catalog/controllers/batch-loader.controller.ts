@@ -7,22 +7,12 @@ import {
   Logger,
   HttpException,
   HttpStatus,
-  Inject,
   Header,
 } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import {
-  VehiclePiecesCompatibilityService,
-  OemRefsResult,
-} from '../services/vehicle-pieces-compatibility.service';
+import { OemRefsResult } from '../services/vehicle-pieces-compatibility.service';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { VehiclesService } from '../../vehicles/vehicles.service';
-import { OemPlatformMappingService } from '../services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from '../services/unified-page-data.service';
-
-// ⚡ Feature flag pour activer le mode RPC V2 unifié (1 requête au lieu de ~33)
-const USE_UNIFIED_RPC = process.env.USE_UNIFIED_RPC === 'true';
 
 interface BatchLoaderRequest {
   typeId: number;
@@ -97,12 +87,9 @@ export class BatchLoaderController {
   private readonly logger = new Logger(BatchLoaderController.name);
 
   constructor(
-    private readonly piecesService: VehiclePiecesCompatibilityService,
     private readonly gammeService: GammeUnifiedService,
     private readonly vehiclesService: VehiclesService,
-    private readonly oemPlatformMappingService: OemPlatformMappingService,
     private readonly unifiedPageDataService: UnifiedPageDataService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   /**
@@ -196,266 +183,8 @@ export class BatchLoaderController {
         );
       }
 
-      // ⚡ MODE RPC V2 UNIFIÉ: 1 requête Supabase au lieu de ~33
-      if (USE_UNIFIED_RPC) {
-        return this.batchLoadUnified(request, startTime);
-      }
-
-      // 🐌 MODE LEGACY: ~33 requêtes Supabase (à deprecate)
-
-      // ✅ CACHE REDIS: Vérifier le cache (5 minutes TTL)
-      const cacheKey = `batch-loader:${request.typeId}:${request.gammeId}:${request.marqueId || 0}:${request.modeleId || 0}`;
-      const cached = await this.cacheManager.get<BatchLoaderResponse>(cacheKey);
-
-      if (cached) {
-        const loadTime = Date.now() - startTime;
-        this.logger.log(
-          `⚡ [BATCH-LOADER] Cache HIT: type=${request.typeId}, gamme=${request.gammeId} (${loadTime}ms)`,
-        );
-        return {
-          ...cached,
-          loadTime,
-          timestamp: new Date().toISOString(),
-        };
-      }
-
-      // 🚗 OPTIMISATION V6: Récupérer vehicleInfo EN PREMIER avec cache long
-      // Les infos véhicule sont statiques → cache 24h
-      const vehicleCacheKey = `vehicle-info:${request.typeId}`;
-      let vehicleInfo: VehicleInfo | undefined;
-      let marqueName: string | undefined;
-
-      const cachedVehicle =
-        await this.cacheManager.get<VehicleInfo>(vehicleCacheKey);
-      if (cachedVehicle) {
-        vehicleInfo = cachedVehicle;
-        marqueName = cachedVehicle.marqueName;
-        this.logger.log(
-          `⚡ [BATCH-LOADER] Vehicle Cache HIT: type=${request.typeId}`,
-        );
-      } else {
-        // 🔧 V7: Récupérer véhicule + codes moteur + codes mines en parallèle
-        const [vehicleResult, motorCodesResult, mineCodesResult] =
-          await Promise.all([
-            this.vehiclesService.getTypeById(request.typeId).catch((error) => {
-              this.logger.warn(`⚠️ Erreur récupération véhicule:`, error);
-              return { data: null, error };
-            }),
-            this.vehiclesService
-              .getMotorCodesByTypeId(request.typeId)
-              .catch(() => ({ data: [], formatted: '' })),
-            this.vehiclesService
-              .getMineCodesByTypeId(request.typeId)
-              .catch(() => ({
-                mines: [],
-                mines_formatted: '',
-                cnits: [],
-                cnits_formatted: '',
-              })),
-          ]);
-
-        if (vehicleResult?.data?.[0]) {
-          const typeData = vehicleResult.data[0];
-          const modeleData = typeData.auto_modele;
-          const marqueData = modeleData?.auto_marque;
-          marqueName = marqueData?.marque_name;
-
-          vehicleInfo = {
-            typeId: typeData.type_id,
-            typeName: typeData.type_name || '',
-            typeBody: typeData.type_body || undefined,
-            typeEngine: typeData.type_engine || undefined,
-            typePowerPs: typeData.type_power_ps || undefined,
-            typeDateStart: typeData.type_date_start || undefined,
-            typeDateEnd: typeData.type_date_end || undefined,
-            modeleId: modeleData?.modele_id || request.modeleId,
-            modeleName: modeleData?.modele_name || '',
-            modelePic: modeleData?.modele_pic || undefined,
-            modeleAlias: modeleData?.modele_alias || undefined,
-            marqueId: marqueData?.marque_id || request.marqueId,
-            marqueName: marqueName || '',
-            marqueAlias: marqueData?.marque_alias || undefined,
-            // 🔧 V7: Codes moteur et types mines
-            motorCodesFormatted: motorCodesResult?.formatted || undefined,
-            mineCodesFormatted: mineCodesResult?.mines_formatted || undefined,
-            cnitCodesFormatted: mineCodesResult?.cnits_formatted || undefined,
-          };
-
-          // Cache 24h (86400000ms) car les infos véhicule sont statiques
-          await this.cacheManager.set(vehicleCacheKey, vehicleInfo, 86400000);
-          this.logger.log(
-            `💾 [BATCH-LOADER] Vehicle mis en cache 24h: type=${request.typeId}, motor=${!!motorCodesResult?.formatted}, mine=${!!mineCodesResult?.mines_formatted}`,
-          );
-        }
-      }
-
-      // 🔥 PARALLÉLISATION: 3 appels en parallèle (vehicleInfo déjà récupéré)
-      const [piecesResult, seoResult, crossSellingResult] = await Promise.all([
-        // 1. Pièces via RPC optimisée (1 requête au lieu de 9)
-        this.piecesService
-          .getPiecesViaRPC(request.typeId, request.gammeId)
-          .catch((error) => {
-            this.logger.error(`❌ Erreur récupération pièces:`, error);
-            return {
-              pieces: [],
-              count: 0,
-              minPrice: null,
-              success: false,
-              error: error.message,
-            };
-          }),
-
-        // 2. SEO content
-        this.gammeService
-          .getGammeSeoContent(
-            request.gammeId,
-            request.typeId,
-            request.marqueId,
-            request.modeleId,
-          )
-          .catch((error) => {
-            this.logger.warn(`⚠️ Erreur récupération SEO (fallback):`, error);
-            return {
-              h1: null,
-              content: null,
-              title: null,
-              description: null,
-            };
-          }),
-
-        // 3. Cross-selling - Pour l'instant retourner vide car pas implémenté dans gammeService
-        Promise.resolve([]),
-      ]);
-
-      // Extraction des données
-      const pieces = Array.isArray(piecesResult.pieces)
-        ? piecesResult.pieces
-        : [];
-      const grouped_pieces =
-        (piecesResult as any).grouped_pieces ||
-        (piecesResult as any).blocs ||
-        [];
-      const filters = (piecesResult as any).filters || null; // ✨ V2: Filtres intégrés depuis RPC
-      const count = pieces.length;
-      const minPrice = piecesResult.minPrice || null;
-
-      // 🎯 V7: Enrichir les pièces avec filtre_side depuis leurs groupes
-      // Créer une map pieceId -> filtre_side pour un lookup rapide
-      const pieceToSideMap = new Map<number, string>();
-      for (const group of grouped_pieces) {
-        if (group.pieces && group.filtre_side) {
-          for (const piece of group.pieces) {
-            if (piece.id && !pieceToSideMap.has(piece.id)) {
-              pieceToSideMap.set(piece.id, group.filtre_side);
-            }
-          }
-        }
-      }
-      // Appliquer filtre_side à chaque pièce
-      for (const piece of pieces) {
-        if (piece.id && pieceToSideMap.has(piece.id)) {
-          piece.filtre_side = pieceToSideMap.get(piece.id);
-        }
-      }
-
-      // 🔧 V7: OEM refs maintenant inclus directement dans la RPC V3
-      // Les grouped_pieces contiennent déjà oemRefs et oemRefsCount
-      // On garde juste le filtrage SEO pour la liste globale si nécessaire
-      let oemRefsData: OemRefsResult | undefined;
-      let oemRefsSeo: string[] | undefined;
-
-      if (marqueName && pieces.length > 0) {
-        try {
-          // Extraire les piece_ids des pièces retournées
-          const pieceIds = pieces.map((p: any) => p.id).filter(Boolean);
-
-          // Récupérer les refs OEM de manière légère (sans RPC lente)
-          oemRefsData = await this.piecesService.getOemRefsLightweight(
-            pieceIds,
-            marqueName,
-          );
-
-          // Filtrer les refs OEM par préfixes dominants pour SEO (liste globale)
-          if (oemRefsData.oemRefs.length > 0) {
-            const seoResult =
-              this.oemPlatformMappingService.filterOemRefsForSeo(
-                oemRefsData.oemRefs,
-                request.typeId,
-                request.gammeId,
-                marqueName,
-              );
-            oemRefsSeo = seoResult.filteredRefs;
-
-            this.logger.log(
-              `🎯 [BATCH-LOADER] OEM SEO: ${oemRefsSeo.length}/${oemRefsData.oemRefs.length} refs ` +
-                `(préfixes: ${seoResult.prefixes.join(', ')})`,
-            );
-          }
-
-          // 🎯 V7: Les OEM refs par groupe sont maintenant fournis par la RPC V3
-          // Plus besoin de boucle séparée - grouped_pieces contient déjà oemRefs
-          if (grouped_pieces && grouped_pieces.length > 0) {
-            for (const group of grouped_pieces) {
-              // Log pour debug - les oemRefs viennent de la RPC
-              if (group.oemRefs && group.oemRefs.length > 0) {
-                this.logger.debug(
-                  `🎯 [OEM-GROUPE-RPC] "${group.title_h2 || group.filtre_side}": ${group.oemRefsCount || group.oemRefs.length} refs`,
-                );
-              }
-            }
-          }
-        } catch (oemError: any) {
-          this.logger.warn(
-            `⚠️ [BATCH-LOADER] Erreur OEM (non bloquante): ${oemError.message}`,
-          );
-        }
-      }
-
-      // Validation basée sur les pièces retournées
-      const validation = {
-        valid: count > 0,
-        relationsCount: count,
-        dataQuality: this.analyzeDataQuality(pieces),
-      };
-
-      const loadTime = Date.now() - startTime;
-
-      this.logger.log(
-        `✅ [BATCH-LOADER] SUCCESS: ${count} pièces, min=${minPrice}€, SEO=${!!seoResult.content}, cross=${Array.isArray(crossSellingResult) ? crossSellingResult.length : 0}, vehicle=${!!vehicleInfo}, OEM=${oemRefsData?.count || 0}, OEMSEO=${oemRefsSeo?.length || 0}, ${loadTime}ms`,
-      );
-
-      const response: BatchLoaderResponse = {
-        pieces,
-        grouped_pieces, // ✨ Groupes avec title_h2
-        blocs: grouped_pieces, // ✨ Alias pour compatibilité
-        filters, // ✨ V2: Filtres intégrés (plus d'appel séparé)
-        count,
-        minPrice,
-        seo: {
-          h1: seoResult.h1 || undefined,
-          content: seoResult.content || undefined,
-          title: seoResult.title || undefined,
-          description: seoResult.description || undefined,
-        },
-        crossSelling: Array.isArray(crossSellingResult)
-          ? crossSellingResult
-          : [],
-        vehicleInfo, // 🚗 V3: Infos véhicule intégrées
-        oemRefs: oemRefsData, // 🔧 V4: Refs OEM constructeur filtrées
-        oemRefsSeo, // 🎯 V5: Refs OEM filtrées par préfixes dominants (SEO)
-        validation,
-        success: true,
-        timestamp: new Date().toISOString(),
-        loadTime,
-      };
-
-      // ✅ METTRE EN CACHE (30 minutes = 1800 secondes) si succès avec pièces - optimisé pour LCP
-      if (count > 0) {
-        await this.cacheManager.set(cacheKey, response, 1800000); // 30 min en ms
-        this.logger.log(`💾 [BATCH-LOADER] Mis en cache: ${cacheKey}`);
-      }
-
-      return response;
+      // ⚡ MODE RPC V3 UNIFIÉ: 1 requête PostgreSQL au lieu de ~33
+      return this.batchLoadUnified(request, startTime);
     } catch (error: any) {
       const loadTime = Date.now() - startTime;
 
@@ -534,22 +263,20 @@ export class BatchLoaderController {
   }
 
   /**
-   * ⚡ MODE RPC V2 UNIFIÉ - 1 requête Supabase au lieu de ~33
+   * ⚡ RPC V3 UNIFIÉ - 1 requête PostgreSQL optimisée
    *
-   * Utilise get_pieces_for_type_gamme_v2 qui retourne TOUT en 1 appel:
+   * Utilise get_pieces_for_type_gamme_v3 qui retourne TOUT en 1 appel:
    * - vehicle_info (type, modele, marque)
    * - gamme_info (pg_name, pg_alias, mf_id)
-   * - seo_templates (h1, content, title, description bruts)
+   * - seo_templates (h1, content, title, description)
    * - oem_refs (filtrées par marque véhicule)
    * - pieces, grouped_pieces, filters
-   *
-   * Le traitement des SEO switches reste côté JS pour flexibilité
    */
   private async batchLoadUnified(
     request: BatchLoaderRequest,
     startTime: number,
   ): Promise<BatchLoaderResponse> {
-    this.logger.log(`⚡ [BATCH-LOADER] Mode RPC V2 unifié activé`);
+    this.logger.log(`⚡ [BATCH-LOADER] RPC V3 unifié`);
 
     try {
       // Appel unique au service unifié
@@ -631,11 +358,8 @@ export class BatchLoaderController {
       const loadTime = Date.now() - startTime;
 
       this.logger.error(
-        `❌ [BATCH-LOADER-V2] ERROR: ${error.message}, ${loadTime}ms - Fallback vers mode legacy`,
+        `❌ [BATCH-LOADER] ERROR: ${error.message}, ${loadTime}ms`,
       );
-
-      // En cas d'erreur, on pourrait fallback vers le mode legacy
-      // Pour l'instant, on renvoie l'erreur
       throw new HttpException(
         {
           success: false,
