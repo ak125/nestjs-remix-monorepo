@@ -161,7 +161,10 @@ export class BatchLoaderController {
       this.logger.warn(
         `🔒 SEO: Gamme inexistante gammeId=${parsedGammeId} → 404`,
       );
-      throw new HttpException('Gamme de pièces inexistante', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Gamme de pièces inexistante',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     // Réutiliser la logique existante

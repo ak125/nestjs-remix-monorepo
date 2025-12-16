@@ -36,7 +36,8 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     if (path.startsWith('/api/')) {
       // 🚀 LCP Optimization: batch-loader GET doit être cacheable par le navigateur
       // Pattern: /api/catalog/batch-loader/{typeId}/{gammeId}
-      const isCacheableBatchLoader = /^\/api\/catalog\/batch-loader\/\d+\/\d+/.test(path);
+      const isCacheableBatchLoader =
+        /^\/api\/catalog\/batch-loader\/\d+\/\d+/.test(path);
 
       if (isCacheableBatchLoader) {
         // Laisser le contrôleur définir ses propres headers Cache-Control
