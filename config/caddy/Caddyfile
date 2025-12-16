@@ -120,6 +120,22 @@ automecanik.com, www.automecanik.com {
         }
     }
     
+    # ===== API CACHEABLE (LCP Optimization) =====
+    @api_cacheable {
+        path_regexp ^/api/catalog/batch-loader/\d+/\d+
+        method GET
+    }
+    handle @api_cacheable {
+        # Laisser le backend définir Cache-Control (public, max-age=900)
+        reverse_proxy monorepo_prod:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
     # ===== ROUTES PRIVEES =====
     @private {
         path /api/* /admin/* /auth/* /cart/* /checkout/* /account/*
@@ -128,7 +144,7 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "private, no-cache, no-store, must-revalidate"
         header Pragma "no-cache"
         header Expires "0"
-        
+
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
