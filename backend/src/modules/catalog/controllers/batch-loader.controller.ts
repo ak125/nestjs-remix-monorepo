@@ -108,6 +108,7 @@ export class BatchLoaderController {
   /**
    * 🚀 GET endpoint pour cache navigateur (LCP optimization)
    * Les navigateurs cachent uniquement les GET, pas les POST
+   * 🔒 Validation SEO: Retourne 404 si typeId ou gammeId inexistant
    */
   @Get(':typeId/:gammeId')
   @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
@@ -115,10 +116,57 @@ export class BatchLoaderController {
     @Param('typeId') typeId: string,
     @Param('gammeId') gammeId: string,
   ): Promise<BatchLoaderResponse> {
+    const parsedTypeId = parseInt(typeId, 10);
+    const parsedGammeId = parseInt(gammeId, 10);
+
+    // 🔒 Validation SEO: Vérifier que les IDs sont valides
+    if (isNaN(parsedTypeId) || parsedTypeId <= 0) {
+      throw new HttpException(
+        'Type de véhicule invalide',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (isNaN(parsedGammeId) || parsedGammeId <= 0) {
+      throw new HttpException('Gamme de pièces invalide', HttpStatus.NOT_FOUND);
+    }
+
+    // 🔒 Validation SEO: Vérifier que le type existe en base
+    try {
+      const typeExists = await this.vehiclesService.getTypeById(parsedTypeId);
+      if (!typeExists) {
+        this.logger.warn(
+          `🔒 SEO: Type inexistant typeId=${parsedTypeId} → 404`,
+        );
+        throw new HttpException(
+          'Type de véhicule inexistant',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.warn(
+        `🔒 SEO: Erreur validation type typeId=${parsedTypeId} → 404`,
+      );
+      throw new HttpException(
+        'Type de véhicule inexistant',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // 🔒 Validation SEO: Vérifier que la gamme existe en base
+    const gammeExists = await this.gammeService.gammeExists(parsedGammeId);
+    if (!gammeExists) {
+      this.logger.warn(
+        `🔒 SEO: Gamme inexistante gammeId=${parsedGammeId} → 404`,
+      );
+      throw new HttpException('Gamme de pièces inexistante', HttpStatus.NOT_FOUND);
+    }
+
     // Réutiliser la logique existante
     return this.batchLoad({
-      typeId: parseInt(typeId, 10),
-      gammeId: parseInt(gammeId, 10),
+      typeId: parsedTypeId,
+      gammeId: parsedGammeId,
       marqueId: 0,
       modeleId: 0,
     });
