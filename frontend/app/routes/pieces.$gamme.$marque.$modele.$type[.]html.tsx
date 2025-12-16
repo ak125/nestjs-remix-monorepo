@@ -101,9 +101,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const modeleData = parseUrlParam(rawModele);
   const typeData = parseUrlParam(rawType);
 
-  // 3. Résolution des IDs via API
-  const vehicleIds = await resolveVehicleIds(rawMarque, rawModele, rawType);
-  const gammeId = await resolveGammeId(rawGamme);
+  // 3. Résolution des IDs via API (🚀 PARALLÉLISÉ pour performance)
+  const [vehicleIds, gammeId] = await Promise.all([
+    resolveVehicleIds(rawMarque, rawModele, rawType),
+    resolveGammeId(rawGamme),
+  ]);
 
   // Validation des IDs
   validateVehicleIds({
@@ -115,62 +117,64 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   // 4. Batch Loader & Parallel Fetches
-  // 🚀 OPTIMISÉ V3: batch-loader inclut maintenant vehicleInfo et filters
-  // 🛡️ ROBUSTESSE: Gestion des erreurs réseau avec retry pour éviter faux 410
+  // 🚀 OPTIMISÉ V4: batch-loader + pageData + hierarchy EN PARALLÈLE
+  // 🛡️ ROBUSTESSE: Gestion des erreurs réseau avec retry pour éviter faux 410
 
-  let batchResponse: any = null;
-  let retryCount = 0;
-  const maxRetries = 2;
+  // Helper function pour batch-loader avec retry
+  const fetchBatchLoaderWithRetry = async (): Promise<any> => {
+    let batchResult: any = null;
+    let retryCount = 0;
+    const maxRetries = 2;
 
-  while (retryCount <= maxRetries && !batchResponse) {
-    try {
-      // 🚀 LCP Optimization: GET au lieu de POST pour activer le cache navigateur
-      const response = await fetch(
-        `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
-        {
-          method: "GET",
-          signal: AbortSignal.timeout(15000), // Timeout 15s
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      batchResponse = await response.json();
-    } catch (error) {
-      retryCount++;
-      console.warn(
-        `⚠️ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} échouée:`,
-        error,
-      );
-
-      if (retryCount > maxRetries) {
-        // 🚨 Erreur réseau confirmée après retries ←’ 503 (pas 410!)
-        // Cela évite la désindexation SEO pour une erreur temporaire
-        console.error(
-          `âŒ [BATCH-LOADER] Échec après ${maxRetries + 1} tentatives - Backend inaccessible`,
-        );
-        throw new Response(
-          `Service temporairement indisponible. Veuillez réessayer dans quelques instants.`,
+    while (retryCount <= maxRetries && !batchResult) {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
           {
-            status: 503,
-            statusText: "Service Unavailable",
-            headers: {
-              "Retry-After": "30",
-              "Cache-Control": "no-cache, no-store",
-            },
+            method: "GET",
+            signal: AbortSignal.timeout(15000),
           },
         );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        batchResult = await response.json();
+      } catch (error) {
+        retryCount++;
+        console.warn(
+          `⚠️ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} échouée:`,
+          error,
+        );
+
+        if (retryCount > maxRetries) {
+          console.error(
+            `❌ [BATCH-LOADER] Échec après ${maxRetries + 1} tentatives`,
+          );
+          throw new Response(
+            `Service temporairement indisponible. Veuillez réessayer dans quelques instants.`,
+            {
+              status: 503,
+              statusText: "Service Unavailable",
+              headers: {
+                "Retry-After": "30",
+                "Cache-Control": "no-cache, no-store",
+              },
+            },
+          );
+        }
+
+        const currentRetry = retryCount;
+        await new Promise((resolve) => setTimeout(resolve, 500 * currentRetry));
       }
-
-      // Attendre avant retry (backoff exponentiel) - capture la valeur actuelle pour éviter no-loop-func
-      const currentRetry = retryCount;
-      await new Promise((resolve) => setTimeout(resolve, 500 * currentRetry));
     }
-  }
+    return batchResult;
+  };
 
-  const [pageData, hierarchyData] = await Promise.all([
+  // 🚀 PARALLÉLISATION: batch-loader + pageData + hierarchy en même temps
+  const [batchResponse, pageData, hierarchyData] = await Promise.all([
+    fetchBatchLoaderWithRetry(),
     fetchGammePageData(gammeId).catch(() => null),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { Accept: "application/json" },
@@ -219,8 +223,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     image: undefined,
   };
 
-  // Fetch Blog Article (needs constructed objects)
-  const blogArticle = await fetchBlogArticle(gamme, vehicle);
+  // 🚀 V4: blogArticle et relatedArticles seront récupérés en parallèle plus bas
 
   // 6. Traitement de la réponse Batch
 
@@ -306,9 +309,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Generated Content
   const faqItems = generateFAQ(vehicle, gamme);
   
-  // 📚 Fetch real blog articles for this gamme (replaces fake static articles)
-  // Fallback to static generation if API fails
-  const relatedArticles = await fetchRelatedArticlesForGamme(gamme, vehicle);
+  // 🚀 PARALLÉLISATION V4: blogArticle + relatedArticles en même temps
+  const [blogArticle, relatedArticles] = await Promise.all([
+    fetchBlogArticle(gamme, vehicle).catch(() => null),
+    fetchRelatedArticlesForGamme(gamme, vehicle),
+  ]);
   
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
   const compatibilityInfo = {
