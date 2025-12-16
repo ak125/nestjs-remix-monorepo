@@ -159,8 +159,8 @@ const DEFAULT_SECURITY_BADGES: SecurityBadge[] = [
   {
     id: 'warranty',
     type: 'warranty',
-    title: 'Garantie 2 ans',
-    description: 'Toutes nos pièces sont garanties constructeur 2 ans minimum.',
+    title: 'Garantie 1 an',
+    description: 'Toutes nos pièces sont garanties constructeur 1 an.',
     icon: '✓',
     variant: 'success',
   },

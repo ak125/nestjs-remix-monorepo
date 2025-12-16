@@ -3,7 +3,7 @@
  * 
  * Types:
  * - oem: Pièce d'origine équipementier
- * - warranty: Garantie 2 ans
+ * - warranty: Garantie 1 an
  * - stock: Stock temps réel
  * - fast-delivery: Livraison rapide
  * - certified: Certifié qualité
@@ -30,7 +30,7 @@ const BADGE_CONFIG = {
   },
   warranty: {
     icon: Shield,
-    label: "Garantie 2 ans",
+    label: "Garantie 1 an",
     description: "Garantie constructeur incluse",
     color: "green",
   },

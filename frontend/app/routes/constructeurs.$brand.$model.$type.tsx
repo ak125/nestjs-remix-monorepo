@@ -32,6 +32,7 @@ import {
 } from "../services/api/catalog-families.api";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
+import { ModelContentV1Display, type ModelContentV1Data } from "../components/model";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -138,6 +139,8 @@ interface LoaderData {
     model: string;
     type: string;
   };
+  // V1 Content - Encyclopedic content for model pages (optional)
+  modelContentV1?: ModelContentV1Data | null;
 }
 
 // ⚡ Contrôle de revalidation pour éviter les rechargements inutiles
@@ -268,6 +271,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
   } catch (error) {
     console.log("⚠️ Erreur récupération meta tags:", error);
+  }
+
+  // === APPEL API POUR RÉCUPÉRER LE CONTENU V1 (encyclopédique) ===
+  let modelContentV1: ModelContentV1Data | null = null;
+  try {
+    const v1Response = await fetch(
+      `${baseUrl}/api/blog/model-content-v1/${marque_alias}/${modele_alias}`,
+      { headers: { "internal-call": "true" } },
+    );
+
+    if (v1Response.ok) {
+      const v1Json = await v1Response.json();
+      if (v1Json.success && v1Json.data) {
+        modelContentV1 = v1Json.data;
+        console.log("✅ Contenu V1 trouvé pour:", marque_alias, modele_alias);
+      }
+    } else {
+      console.log("ℹ️ Pas de contenu V1 pour ce modèle");
+    }
+  } catch (error) {
+    console.log("⚠️ Erreur récupération contenu V1:", error);
   }
 
   // L'API /full retourne un objet plat (pas un tableau)
@@ -670,6 +694,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       model: vehicleData.modele_name,
       type: vehicleData.type_name,
     },
+    // V1 Content - Encyclopedic content (optional, placed after catalog)
+    modelContentV1,
   };
 
   console.log("✅ Données générées avec succès:", {
@@ -754,6 +780,28 @@ function generateVehicleSchema(vehicle: any, breadcrumb: any) {
           { "@type": "ListItem", position: 4, name: `${breadcrumb.model} ${breadcrumb.type}`, item: canonicalUrl },
         ],
       },
+      // 3️⃣ Product avec AggregateOffer - Prix min/max des pièces pour SEO
+      {
+        "@type": "Product",
+        "@id": `${canonicalUrl}#product`,
+        name: `Pièces détachées ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`,
+        description: `Catalogue de pièces auto pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}. Livraison rapide et garantie 1 an.`,
+        brand: { "@type": "Brand", name: vehicle.marque_name },
+        category: "Pièces automobiles",
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "EUR",
+          lowPrice: "4.50",
+          highPrice: "500.00",
+          offerCount: 100,
+          availability: "https://schema.org/InStock",
+          seller: {
+            "@type": "Organization",
+            name: "Automecanik",
+            url: "https://www.automecanik.com",
+          },
+        },
+      },
     ],
   };
 }
@@ -786,7 +834,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
-  const { vehicle, catalogFamilies, popularParts, seo, breadcrumb } = data;
+  const { vehicle, catalogFamilies, popularParts, seo, breadcrumb, modelContentV1 } = data;
 
   // État pour gérer l'expansion des familles (comme page index)
   const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
@@ -830,7 +878,7 @@ export default function VehicleDetailPage() {
     },
     {
       question: `Les pièces sont-elles garanties ?`,
-      answer: `Oui, toutes nos pièces bénéficient d'une garantie de 2 ans minimum. Les pièces d'origine constructeur ${vehicle.marque_name} et les équipementiers premium (Bosch, Valeo, TRW...) sont garanties selon les conditions du fabricant.`,
+      answer: `Oui, toutes nos pièces bénéficient d'une garantie de 1 an. Les pièces d'origine constructeur ${vehicle.marque_name} et les équipementiers premium (Bosch, Valeo, TRW...) sont garanties selon les conditions du fabricant.`,
     },
     {
       question: `Puis-je retourner une pièce si elle ne convient pas ?`,
@@ -1241,7 +1289,7 @@ export default function VehicleDetailPage() {
                   </div>
                   <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
-                      2 ans
+                      1 an
                     </div>
                     <div className="text-xs text-gray-500">Garantie</div>
                   </div>
@@ -1565,6 +1613,16 @@ export default function VehicleDetailPage() {
           </div>
         </div>
 
+        {/* 📚 Contenu V1 - Guide encyclopédique du modèle (APRÈS catalogue et FAQ) */}
+        {modelContentV1 && (
+          <div className="mb-12">
+            <ModelContentV1Display
+              content={modelContentV1}
+              collapsedByDefault={false}
+            />
+          </div>
+        )}
+
         {/* 🛡️ Badges de confiance */}
         <div className="mb-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1572,7 +1630,7 @@ export default function VehicleDetailPage() {
               <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
                 <Shield size={28} className="text-green-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Garantie 2 ans</h3>
+              <h3 className="font-bold text-gray-900">Garantie 1 an</h3>
               <p className="text-sm text-gray-500 mt-1">
                 Sur toutes nos pièces
               </p>

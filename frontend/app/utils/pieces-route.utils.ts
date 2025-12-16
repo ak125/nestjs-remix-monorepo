@@ -131,7 +131,7 @@ export function generateSEOContent(vehicle: VehicleData, gamme: GammeData): SEOE
     technicalSpecs: [
       `Compatibilité vérifiée avec ${brandModel}`,
       'Pièces certifiées aux normes européennes CE',
-      'Garantie constructeur 2 ans minimum',
+      'Garantie constructeur 1 an',
       'Livraison express 24-48h partout en France',
       'Support technique spécialisé 6j/7'
     ],
@@ -166,7 +166,7 @@ export function generateFAQ(vehicle: VehicleData, gamme: GammeData): FAQItem[] {
     {
       id: 'quality',
       question: `Quelle garantie sur la qualité de vos ${gamme.name} ?`,
-      answer: `Nos ${gamme.name} proviennent exclusivement de fabricants OEM et aftermarket premium (BOSCH, MANN-FILTER, FEBI). Garantie constructeur 2 ans minimum + garantie satisfait ou remboursé 30 jours.`,
+      answer: `Nos ${gamme.name} proviennent exclusivement de fabricants OEM et aftermarket premium (BOSCH, MANN-FILTER, FEBI). Garantie constructeur 1 an + garantie satisfait ou remboursé 30 jours.`,
       schema: true
     },
     {
