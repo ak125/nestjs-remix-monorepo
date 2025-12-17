@@ -59,16 +59,18 @@ Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-blog.xml`;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
-  
+
   try {
-    // ✅ Robots.txt depuis backend
+    // ✅ Robots.txt depuis backend via API (évite boucle récursive /robots.txt)
+    // IMPORTANT: On utilise /api/seo/robots.txt au lieu de /robots.txt
+    // car /robots.txt serait intercepté par Remix lui-même (boucle infinie)
     const response = await fetchWithRetry(
-      `${SITEMAP_CONFIG.BACKEND_URL}/robots.txt`
+      `${SITEMAP_CONFIG.BACKEND_URL}/api/seo/robots.txt`
     );
-    
+
     const robotsTxt = await response.text();
     const duration = Date.now() - startTime;
-    
+
     return new Response(robotsTxt, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
@@ -80,7 +82,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     const duration = Date.now() - startTime;
     logSitemapError('Robots.txt', error, duration);
-    
+
     return new Response(generateFallbackRobots(), {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
