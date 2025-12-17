@@ -275,13 +275,9 @@ Disallow: /
 # ===========================================
 # 📍 SITEMAPS
 # ===========================================
-# Index principal (tous les sitemaps)
+# Index principal unique (contient tous les sitemaps thématiques)
+# V6: sitemap-vehicules.xml inclut marques + modèles + types
 Sitemap: ${this.baseUrl}/sitemap.xml
-
-# Sitemaps individuels
-Sitemap: ${this.baseUrl}/sitemap-constructeurs.xml
-Sitemap: ${this.baseUrl}/sitemap-types.xml
-Sitemap: ${this.baseUrl}/sitemap-blog.xml
 
 # ===========================================
 # ℹ️ INFORMATIONS
