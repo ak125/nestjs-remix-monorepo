@@ -161,11 +161,20 @@ async function bootstrap() {
       console.warn('Helmet/compression non chargés:', e);
     }
 
-    // CORS basique (à restreindre si cross-origin)
+    // CORS sécurisé - restreint en production
     const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());
+    const defaultProdOrigins = [
+      'https://www.automecanik.com',
+      'https://automecanik.com',
+    ];
     app.use(
       cors({
-        origin: corsOrigin && corsOrigin.length > 0 ? corsOrigin : true,
+        origin:
+          corsOrigin && corsOrigin.length > 0
+            ? corsOrigin
+            : isProd
+              ? defaultProdOrigins
+              : true, // Dev: toutes origines permises
         credentials: true,
       }),
     );
