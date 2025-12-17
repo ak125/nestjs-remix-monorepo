@@ -108,7 +108,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = url.searchParams.get("status") || "";
   const actionRecommended = url.searchParams.get("actionRecommended") || "";
   const sortBy = url.searchParams.get("sortBy") || "family_name";
-  const sortOrder = url.searchParams.get("sortOrder") || "desc"; // desc = familles importantes d'abord
+  const sortOrder = url.searchParams.get("sortOrder") || "asc"; // asc = ordre officiel du catalogue
 
   try {
     // Build query string
@@ -159,7 +159,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       totalPages: 1,
       stats: null,
       families: [],
-      filters: { search: "", familyId: "", gLevel: "", status: "", actionRecommended: "", sortBy: "family_name", sortOrder: "desc" },
+      filters: { search: "", familyId: "", gLevel: "", status: "", actionRecommended: "", sortBy: "family_name", sortOrder: "asc" },
       error: "Erreur chargement données",
     });
   }
@@ -1037,18 +1037,21 @@ export default function AdminGammesSeo() {
               </div>
             </div>
             <div>
-              <strong className="text-gray-700">Tri par famille:</strong>
+              <strong className="text-gray-700">Ordre catalogue:</strong>
               <div className="text-xs text-gray-600 mt-1">
-                Familles triées par hiérarchie:
+                Tri officiel Automecanik:
               </div>
               <div className="text-[10px] text-gray-500 mt-1">
-                1. Nombre de G1
+                1. Système de filtration
               </div>
               <div className="text-[10px] text-gray-500">
-                2. Total Trends
+                2. Système de freinage
               </div>
               <div className="text-[10px] text-gray-500">
-                3. Gammes par trends
+                3. Courroie, galet...
+              </div>
+              <div className="text-[10px] text-gray-500">
+                ... 19 familles
               </div>
             </div>
           </div>

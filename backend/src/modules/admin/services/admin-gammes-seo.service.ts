@@ -11,6 +11,30 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
 
+// ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
+// Ordre du catalogue Automecanik par familles techniques
+const FAMILY_HIERARCHY_ORDER: string[] = [
+  'Système de filtration',
+  'Système de freinage',
+  'Courroie, galet, poulie et chaîne',
+  'Préchauffage et allumage',
+  'Direction et liaison au sol',
+  'Amortisseur et suspension',
+  'Support moteur',
+  'Embrayage',
+  'Transmission',
+  'Système électrique',
+  'Capteurs',
+  "Système d'alimentation",
+  'Moteur',
+  'Refroidissement',
+  'Climatisation',
+  'Echappement',
+  'Eclairage',
+  'Accessoires',
+  'Turbo',
+];
+
 // ============== INTERFACES ==============
 
 export interface GammeSeoFilters {
@@ -247,36 +271,30 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const sortBy = pagination.sortBy || 'trends_index';
       const sortOrder = pagination.sortOrder || 'desc';
 
-      // Special case: family_name with hierarchy (sorted by total trends per family)
+      // Special case: family_name with official catalog hierarchy
       if (sortBy === 'family_name') {
-        // Calculate total trends per family for hierarchy sorting
-        const familyTrendsMap = new Map<string, number>();
-        const familyG1Count = new Map<string, number>();
+        // Helper function to get family hierarchy index
+        const getFamilyHierarchyIndex = (familyName: string | null): number => {
+          if (!familyName) return FAMILY_HIERARCHY_ORDER.length; // Sans famille at the end
+          const index = FAMILY_HIERARCHY_ORDER.findIndex(
+            f => f.toLowerCase() === familyName.toLowerCase()
+          );
+          return index === -1 ? FAMILY_HIERARCHY_ORDER.length : index;
+        };
 
-        result.forEach(g => {
-          const familyKey = g.family_name || 'Sans famille';
-          const currentTrends = familyTrendsMap.get(familyKey) || 0;
-          familyTrendsMap.set(familyKey, currentTrends + g.trends_index);
-
-          if (g.pg_top === '1') {
-            const currentG1 = familyG1Count.get(familyKey) || 0;
-            familyG1Count.set(familyKey, currentG1 + 1);
-          }
-        });
-
-        // Sort by: 1) Family hierarchy (G1 count + total trends), 2) Within family by trends
+        // Sort by: 1) Official catalog hierarchy, 2) Within family by trends desc
         result.sort((a, b) => {
-          const familyA = a.family_name || 'Sans famille';
-          const familyB = b.family_name || 'Sans famille';
+          const familyA = a.family_name;
+          const familyB = b.family_name;
 
-          // Different families: sort by hierarchy (G1 count * 100 + total trends)
+          // Different families: sort by official hierarchy order
           if (familyA !== familyB) {
-            const scoreA = (familyG1Count.get(familyA) || 0) * 100 + (familyTrendsMap.get(familyA) || 0);
-            const scoreB = (familyG1Count.get(familyB) || 0) * 100 + (familyTrendsMap.get(familyB) || 0);
-            return sortOrder === 'asc' ? scoreA - scoreB : scoreB - scoreA;
+            const indexA = getFamilyHierarchyIndex(familyA);
+            const indexB = getFamilyHierarchyIndex(familyB);
+            return sortOrder === 'asc' ? indexA - indexB : indexA - indexB; // Always asc for hierarchy
           }
 
-          // Same family: sort by trends within the family
+          // Same family: sort by trends within the family (always desc)
           return b.trends_index - a.trends_index;
         });
       } else {
