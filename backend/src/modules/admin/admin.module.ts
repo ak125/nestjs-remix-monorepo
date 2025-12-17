@@ -28,6 +28,7 @@ import { UserManagementController } from './controllers/user-management.controll
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
 import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO
+import { AdminGammesSeoController } from './controllers/admin-gammes-seo.controller'; // 🎯 Gammes SEO G-Level
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -35,6 +36,7 @@ import { StockManagementService } from './services/stock-management.service';
 import { WorkingStockService } from './services/working-stock.service'; // ✅ Ajouté pour stock.controller.ts
 import { ReportingService } from './services/reporting.service';
 import { UserManagementService } from './services/user-management.service';
+import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Gammes SEO
 // import { AdminProductsService } from './services/admin-products.service';
 import { StaffService } from '../staff/staff.service';
 
@@ -69,6 +71,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     AdminStaffController,
     AdminProductsController,
     AdminSeoController, // 📊 Dashboard monitoring SEO
+    AdminGammesSeoController, // 🎯 Gammes SEO G-Level
   ],
   providers: [
     ConfigurationService,
@@ -77,6 +80,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     // ❌ RealStockService - SUPPRIMÉ (fonctionnalité minimaliste)
     ReportingService,
     UserManagementService,
+    AdminGammesSeoService, // 🎯 Gammes SEO
     // AdminProductsService,
     StaffService,
   ],

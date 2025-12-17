@@ -230,6 +230,12 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
           href: "/admin/seo?tab=batch-update",
           icon: Tag,
           description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`
+        },
+        {
+          name: "Gammes SEO",
+          href: "/admin/gammes-seo",
+          icon: TrendingUp,
+          description: "Classification G-Level (230)"
         }
       ]
     },
