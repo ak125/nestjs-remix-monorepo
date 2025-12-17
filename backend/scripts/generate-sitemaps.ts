@@ -50,21 +50,7 @@ interface PieceLink {
   map_has_item: number;
 }
 
-interface MarqueLink {
-  map_id: string;
-  map_marque_alias: string;
-  map_marque_id: string;
-}
-
-interface MotorisationLink {
-  map_id: string;
-  map_marque_alias: string;
-  map_marque_id: string;
-  map_modele_alias: string;
-  map_modele_id: string;
-  map_type_alias: string;
-  map_type_id: string;
-}
+// NOTE: MarqueLink et MotorisationLink supprimés - remplacés par sitemap-vehicules.xml (V6)
 
 interface BlogLink {
   map_id: string;
@@ -106,52 +92,9 @@ ${entries}
 // ============================================
 // FONCTIONS DE FETCH
 // ============================================
-
-async function fetchMarques(): Promise<MarqueLink[]> {
-  console.log('Chargement des marques depuis __sitemap_marque...');
-  const { data, error } = await supabase
-    .from('__sitemap_marque')
-    .select('map_id, map_marque_alias, map_marque_id')
-    .order('map_marque_alias');
-
-  if (error) {
-    console.error('Erreur Supabase (marques):', error.message);
-    return [];
-  }
-  console.log(`  ${data?.length || 0} marques chargées`);
-  return data || [];
-}
-
-async function fetchMotorisations(): Promise<MotorisationLink[]> {
-  console.log('Chargement des types depuis __sitemap_motorisation...');
-  const allData: MotorisationLink[] = [];
-  const batchSize = 1000;
-  let offset = 0;
-  let hasMore = true;
-
-  while (hasMore) {
-    const { data, error } = await supabase
-      .from('__sitemap_motorisation')
-      .select('map_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id')
-      .range(offset, offset + batchSize - 1)
-      .order('map_id');
-
-    if (error) {
-      console.error('Erreur Supabase (motorisations):', error.message);
-      break;
-    }
-
-    if (data && data.length > 0) {
-      allData.push(...data);
-      offset += batchSize;
-      hasMore = data.length === batchSize;
-    } else {
-      hasMore = false;
-    }
-  }
-  console.log(`  ${allData.length.toLocaleString()} types chargés`);
-  return allData;
-}
+// NOTE: fetchMarques() et fetchMotorisations() supprimées
+// Les marques, modèles et types sont maintenant générés par
+// SitemapUnifiedService V6 dans sitemap-vehicules.xml
 
 async function fetchBlogArticles(): Promise<BlogLink[]> {
   console.log('Chargement des articles depuis __sitemap_blog...');
@@ -216,47 +159,13 @@ async function generateSitemaps(): Promise<void> {
   const allSitemapFiles: string[] = [];
 
   // ============================================
-  // 1. SITEMAP CONSTRUCTEURS (35 marques)
+  // NOTE: sitemap-constructeurs.xml et sitemap-types.xml sont OBSOLÈTES
+  // Ils sont remplacés par sitemap-vehicules.xml généré par SitemapUnifiedService V6
+  // qui inclut: marques (35) + modèles (973) + types (12756) = 13764 URLs
   // ============================================
-  console.log('\n--- Constructeurs ---');
-  const marques = await fetchMarques();
-  if (marques.length > 0) {
-    const marquesUrls = marques
-      .filter(m => m.map_marque_alias && m.map_marque_id)
-      .map(m => ({
-        loc: `${BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}.html`,
-        priority: '0.8',
-        changefreq: 'monthly',
-      }));
-
-    const constructeursXml = generateSitemapXml(marquesUrls);
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap-constructeurs.xml'), constructeursXml);
-    allSitemapFiles.push('sitemap-constructeurs.xml');
-    console.log(`Généré: sitemap-constructeurs.xml (${marquesUrls.length} URLs)`);
-  }
 
   // ============================================
-  // 2. SITEMAP TYPES/MOTORISATIONS (12k types)
-  // ============================================
-  console.log('\n--- Types/Motorisations ---');
-  const motorisations = await fetchMotorisations();
-  if (motorisations.length > 0) {
-    const typesUrls = motorisations
-      .filter(m => m.map_marque_alias && m.map_modele_alias && m.map_type_alias)
-      .map(m => ({
-        loc: `${BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}/${m.map_type_alias}-${m.map_type_id}.html`,
-        priority: '0.7',
-        changefreq: 'monthly',
-      }));
-
-    const typesXml = generateSitemapXml(typesUrls);
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap-types.xml'), typesXml);
-    allSitemapFiles.push('sitemap-types.xml');
-    console.log(`Généré: sitemap-types.xml (${typesUrls.length.toLocaleString()} URLs)`);
-  }
-
-  // ============================================
-  // 3. SITEMAP BLOG (109 articles)
+  // 1. SITEMAP BLOG (109 articles)
   // ============================================
   console.log('\n--- Blog ---');
   const articles = await fetchBlogArticles();
@@ -276,7 +185,7 @@ async function generateSitemaps(): Promise<void> {
   }
 
   // ============================================
-  // 4. SITEMAPS PIÈCES (714k URLs en shards)
+  // 2. SITEMAPS PIÈCES (714k URLs en shards)
   // ============================================
   console.log('\n--- Pièces ---');
   const pieces = await fetchAllPieces();
@@ -315,7 +224,7 @@ async function generateSitemaps(): Promise<void> {
   }
 
   // ============================================
-  // 5. INDEX PRINCIPAL
+  // 3. INDEX PRINCIPAL
   // ============================================
   console.log('\n--- Index ---');
   const indexXml = generateSitemapIndex(allSitemapFiles);
