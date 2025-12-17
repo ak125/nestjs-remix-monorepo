@@ -289,7 +289,21 @@ export default function AdminGammesSeo() {
   }, []);
 
   const handleBatchAction = useCallback((actionId: string) => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0) {
+      toast.warning("Sélectionnez au moins une gamme");
+      return;
+    }
+
+    // Confirmation pour les actions importantes
+    const actionLabels: Record<string, string> = {
+      PROMOTE_INDEX: `Promouvoir ${selectedIds.length} gamme(s) en INDEX`,
+      DEMOTE_NOINDEX: `Passer ${selectedIds.length} gamme(s) en NOINDEX`,
+      MARK_G1: `Marquer ${selectedIds.length} gamme(s) comme G1`,
+      UNMARK_G1: `Retirer G1 de ${selectedIds.length} gamme(s)`,
+    };
+
+    const confirmed = window.confirm(`${actionLabels[actionId] || actionId}\n\nConfirmer cette action ?`);
+    if (!confirmed) return;
 
     const formData = new FormData();
     formData.set("_action", "batch-action");
@@ -519,14 +533,14 @@ export default function AdminGammesSeo() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <AdminBreadcrumb currentPage="Gammes SEO" />
-          <h1 className="text-3xl font-bold mt-2">Gammes SEO (G-Level)</h1>
+          <h1 className="text-3xl font-bold mt-2">Classification G-Level des Gammes</h1>
           <p className="text-gray-600">
-            Classification des 230 gammes avec données Google Trends
+            Gestion SEO des {stats?.total || 230} gammes avec indicateurs Google Trends
           </p>
         </div>
         <a
@@ -540,6 +554,97 @@ export default function AdminGammesSeo() {
           </Button>
         </a>
       </div>
+
+      {/* Instructions / Légende - EN HAUT */}
+      <Card className="bg-slate-50 border-slate-200">
+        <CardHeader className="py-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            Guide de classification G-Level
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+            {/* Classification G-Level */}
+            <div>
+              <strong className="text-gray-700 block mb-2">Classification:</strong>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-600 text-white"><Star className="h-3 w-3 mr-1" />G1</Badge>
+                  <span className="text-xs text-gray-600">Prioritaire (pg_top=1)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-sky-600 text-white">G2</Badge>
+                  <span className="text-xs text-gray-600">INDEX standard</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-slate-400 text-white">G3</Badge>
+                  <span className="text-xs text-gray-600">NOINDEX</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Trends */}
+            <div>
+              <strong className="text-gray-700 block mb-2">Trends Google:</strong>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-600 text-white text-xs">70+</Badge>
+                  <span className="text-xs">Excellent</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-500 text-white text-xs">50-69</Badge>
+                  <span className="text-xs">Très bon</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-amber-500 text-white text-xs">20-49</Badge>
+                  <span className="text-xs">Moyen</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-red-400 text-white text-xs">&lt;20</Badge>
+                  <span className="text-xs">Faible</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recommandations */}
+            <div>
+              <strong className="text-gray-700 block mb-2">Recommandations:</strong>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1">
+                  <Badge className="bg-orange-100 border border-orange-400 text-orange-700 text-[10px]">
+                    <TrendingUp className="h-2 w-2 mr-1" />PROMOUVOIR
+                  </Badge>
+                  <span className="text-[10px] text-gray-500">trends≥30</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Badge className="bg-blue-100 border border-blue-400 text-blue-700 text-[10px]">
+                    <Star className="h-2 w-2 mr-1" />→G1
+                  </Badge>
+                  <span className="text-[10px] text-gray-500">trends≥50</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Badge className="bg-yellow-100 border border-yellow-400 text-yellow-700 text-[10px]">
+                    <AlertTriangle className="h-2 w-2 mr-1" />VÉRIFIER
+                  </Badge>
+                  <span className="text-[10px] text-gray-500">G1 faible</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions disponibles */}
+            <div>
+              <strong className="text-gray-700 block mb-2">Actions en masse:</strong>
+              <div className="space-y-1 text-xs text-gray-600">
+                <div>• <strong>Promouvoir INDEX</strong>: pg_level=1, sitemap=1</div>
+                <div>• <strong>Passer NOINDEX</strong>: pg_level=2, sitemap=0</div>
+                <div>• <strong>Marquer G1</strong>: pg_top=1 (prioritaire)</div>
+                <div>• <strong>Retirer G1</strong>: pg_top=0</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* KPIs */}
       {stats && (
@@ -938,125 +1043,6 @@ export default function AdminGammesSeo() {
         </CardContent>
       </Card>
 
-      {/* Legend */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Légende des indicateurs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-            <div>
-              <strong className="text-emerald-700">G-Level:</strong>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-emerald-600"><Star className="h-3 w-3 mr-1" />G1</Badge>
-                <span className="text-xs">Prioritaire</span>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-sky-600">G2</Badge>
-                <span className="text-xs">Important</span>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-slate-400">G3</Badge>
-                <span className="text-xs">Secondaire</span>
-              </div>
-            </div>
-            <div>
-              <strong className="text-green-700">Trends Google:</strong>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-emerald-600 text-xs">70+</Badge>
-                <span className="text-[10px]">EXCELLENT</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-green-500 text-xs">50-69</Badge>
-                <span className="text-[10px]">Très bon</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-lime-500 text-xs">30-49</Badge>
-                <span className="text-[10px]">Bon</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-amber-500 text-xs">20-29</Badge>
-                <span className="text-[10px]">Moyen</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-orange-500 text-xs">10-19</Badge>
-                <span className="text-[10px]">Faible</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-red-400 text-xs">1-9</Badge>
-                <span className="text-[10px]">Très faible</span>
-              </div>
-            </div>
-            <div>
-              <strong className="text-blue-700">Score Global:</strong>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="w-12 h-2 bg-emerald-500 rounded-full" />
-                <span className="text-xs font-bold text-emerald-600">A+</span>
-                <span className="text-[10px]">(80+)</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="w-10 h-2 bg-green-500 rounded-full" />
-                <span className="text-xs text-green-600">A</span>
-                <span className="text-[10px]">(60-79)</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="w-8 h-2 bg-lime-500 rounded-full" />
-                <span className="text-xs text-lime-600">B</span>
-                <span className="text-[10px]">(40-59)</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="w-6 h-2 bg-amber-500 rounded-full" />
-                <span className="text-xs text-amber-600">C</span>
-                <span className="text-[10px]">(25-39)</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="w-4 h-2 bg-red-400 rounded-full" />
-                <span className="text-xs text-red-500">D</span>
-                <span className="text-[10px]">(&lt;25)</span>
-              </div>
-            </div>
-            <div>
-              <strong className="text-orange-700">Recommandations:</strong>
-              <div className="mt-1 text-xs">
-                <Badge className="bg-orange-100 border-2 border-orange-500 text-orange-700 text-[10px] mb-1">
-                  <TrendingUp className="h-2 w-2 mr-1" />PROMOUVOIR INDEX
-                </Badge>
-                <div className="text-[10px] text-gray-500">NOINDEX avec trends &gt;= 30</div>
-              </div>
-              <div className="mt-2 text-xs">
-                <Badge className="bg-blue-100 border-2 border-blue-500 text-blue-700 text-[10px] mb-1">
-                  <Star className="h-2 w-2 mr-1" />PROMOUVOIR G1
-                </Badge>
-                <div className="text-[10px] text-gray-500">INDEX avec trends &gt;= 50</div>
-              </div>
-              <div className="mt-2 text-xs">
-                <Badge className="bg-yellow-100 border-2 border-yellow-500 text-yellow-700 text-[10px] mb-1">
-                  <AlertTriangle className="h-2 w-2 mr-1" />VÉRIFIER G1
-                </Badge>
-                <div className="text-[10px] text-gray-500">G1 avec trends &lt; 5</div>
-              </div>
-            </div>
-            <div>
-              <strong className="text-gray-700">Ordre catalogue:</strong>
-              <div className="text-xs text-gray-600 mt-1">
-                Tri officiel Automecanik:
-              </div>
-              <div className="text-[10px] text-gray-500 mt-1">
-                1. Système de filtration
-              </div>
-              <div className="text-[10px] text-gray-500">
-                2. Système de freinage
-              </div>
-              <div className="text-[10px] text-gray-500">
-                3. Courroie, galet...
-              </div>
-              <div className="text-[10px] text-gray-500">
-                ... 19 familles
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

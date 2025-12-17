@@ -276,25 +276,40 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         // Helper function to get family hierarchy index
         const getFamilyHierarchyIndex = (familyName: string | null): number => {
           if (!familyName) return FAMILY_HIERARCHY_ORDER.length; // Sans famille at the end
+
+          // Normalize: remove accents and lowercase for comparison
+          const normalize = (s: string) => s.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+          const normalizedInput = normalize(familyName);
           const index = FAMILY_HIERARCHY_ORDER.findIndex(
-            f => f.toLowerCase() === familyName.toLowerCase()
+            f => normalize(f) === normalizedInput
           );
           return index === -1 ? FAMILY_HIERARCHY_ORDER.length : index;
         };
 
-        // Sort by: 1) Official catalog hierarchy, 2) Within family by trends desc
+        // Debug: log unique families and their positions
+        const uniqueFamilies = [...new Set(result.map(r => r.family_name))];
+        this.logger.log('📊 Familles trouvées et leurs positions:');
+        uniqueFamilies.forEach(f => {
+          const pos = getFamilyHierarchyIndex(f);
+          this.logger.log(`   ${pos}. ${f || 'Sans famille'}`);
+        });
+
+        // Sort by: 1) Official catalog hierarchy (always in catalog order), 2) Within family by trends desc
         result.sort((a, b) => {
           const familyA = a.family_name;
           const familyB = b.family_name;
 
-          // Different families: sort by official hierarchy order
+          // Different families: always sort by official catalog hierarchy (ascending = 1, 2, 3...)
           if (familyA !== familyB) {
             const indexA = getFamilyHierarchyIndex(familyA);
             const indexB = getFamilyHierarchyIndex(familyB);
-            return sortOrder === 'asc' ? indexA - indexB : indexA - indexB; // Always asc for hierarchy
+            // Toujours tri par ordre du catalogue (1=Filtration, 2=Freinage, etc.)
+            return indexA - indexB;
           }
 
-          // Same family: sort by trends within the family (always desc)
+          // Same family: sort by trends within the family (always desc - highest trends first)
           return b.trends_index - a.trends_index;
         });
       } else {
