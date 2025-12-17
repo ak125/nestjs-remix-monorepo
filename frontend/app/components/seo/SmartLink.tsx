@@ -7,7 +7,7 @@
  * Paths transactionnels (nofollow automatique):
  * - /login, /connexion
  * - /register, /inscription  
- * - /cart, /panier
+ * - /cart
  * - /account, /compte
  * - /checkout, /commande
  * - /payment, /paiement
@@ -33,7 +33,6 @@ const NOFOLLOW_PATHS = [
   '/register', 
   '/inscription',
   '/cart',
-  '/panier',
   '/account',
   '/compte',
   '/checkout',
