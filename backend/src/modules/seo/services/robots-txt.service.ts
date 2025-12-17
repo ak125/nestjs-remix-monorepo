@@ -74,7 +74,7 @@ Disallow: /account/            # Espace client privé
 Disallow: /api/                # Endpoints API REST
 Disallow: /admin/              # Backoffice administration
 Disallow: /checkout/           # Processus de commande
-Disallow: /panier/             # Panier d'achat
+Disallow: /cart/               # Panier d'achat
 Disallow: /private/            # Ressources privées
 
 # ❌ Paramètres de tracking (éviter duplicate content)
@@ -343,7 +343,7 @@ Disallow: /
       /^\/api\//,
       /^\/admin\//,
       /^\/checkout\//,
-      /^\/panier\//,
+      /^\/cart\//,
       /^\/compte\//,
       /\?utm_/,
       /\?fbclid=/,

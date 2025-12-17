@@ -45,7 +45,7 @@ Disallow: /account/
 Disallow: /admin/
 Disallow: /api/
 Disallow: /checkout/
-Disallow: /panier/
+Disallow: /cart/
 
 # ⏱️ Crawl-delay
 Crawl-delay: 1
