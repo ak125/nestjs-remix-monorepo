@@ -385,7 +385,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       seo: {
         title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
         h1: seoContent.h1,
-        description: seoContent.longDescription.substring(0, 160),
+        // Strip HTML tags from description for clean meta tags
+        description: seoContent.longDescription
+          .replace(/<[^>]*>/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .substring(0, 160),
       },
       performance: {
         loadTime,
