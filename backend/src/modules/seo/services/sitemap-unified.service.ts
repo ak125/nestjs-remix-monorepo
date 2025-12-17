@@ -119,6 +119,9 @@ export class SitemapUnifiedService {
     // Créer le répertoire si nécessaire
     this.ensureDirectory(outputDir);
 
+    // 🧹 Nettoyer les fichiers obsolètes (anciens sitemaps remplacés par V6)
+    this.cleanupObsoleteFiles(outputDir);
+
     try {
       // 1. Racine/Homepage (1 URL)
       this.logger.log('🏠 [1/7] Generating sitemap-racine.xml...');
@@ -627,6 +630,31 @@ ${urlEntries}
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  /**
+   * 🧹 Supprime les fichiers sitemap obsolètes
+   * Ces fichiers ont été remplacés par sitemap-vehicules.xml qui contient tout
+   */
+  private cleanupObsoleteFiles(dir: string): void {
+    const obsoleteFiles = [
+      'sitemap-constructeurs.xml', // Remplacé par sitemap-vehicules.xml
+      'sitemap-types.xml', // Remplacé par sitemap-vehicules.xml
+    ];
+
+    for (const filename of obsoleteFiles) {
+      const filepath = path.join(dir, filename);
+      if (fs.existsSync(filepath)) {
+        try {
+          fs.unlinkSync(filepath);
+          this.logger.log(`🗑️ Deleted obsolete file: ${filename}`);
+        } catch (error: any) {
+          this.logger.warn(
+            `⚠️ Could not delete ${filename}: ${error.message}`,
+          );
+        }
+      }
+    }
   }
 
   /**
