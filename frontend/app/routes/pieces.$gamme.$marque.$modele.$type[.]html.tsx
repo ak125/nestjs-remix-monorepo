@@ -473,9 +473,12 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             description: data.seo.description,
             url: canonicalUrl,
             // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
+            // Fallback: image produit → logo marque équipementier → image gamme
             image: firstPiece.image
               ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${firstPiece.image}`
-              : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
+              : firstPiece.marque_logo
+                ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${firstPiece.marque_logo}`
+                : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
             // 🔧 MPN = Référence OEM principale - CLÉ SEO
             ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
             ...(firstPiece.reference && { sku: firstPiece.reference }),
@@ -531,9 +534,12 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                 // 🔗 URL produit (recommandé pour rich snippets)
                 url: `${canonicalUrl}#product-${piece.id}`,
                 // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
+                // Fallback: image produit → logo marque équipementier → image gamme
                 image: piece.image
                   ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${piece.image}`
-                  : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
+                  : piece.marque_logo
+                    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`
+                    : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
                 ...(piece.reference && { sku: piece.reference }),
                 brand: { "@type": "Brand", name: piece.brand },
                 offers: {
