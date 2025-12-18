@@ -249,7 +249,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     onSale: false,
   });
 
-  // 📊 Schema @graph pour page catégorie - CollectionPage + ItemList
+  // 📊 Schema @graph pour page catégorie/recherche - CollectionPage + ItemList
+  // Note: Pas de schéma Product car c'est une page de recherche sans prix affichés
+  // Les pages avec prix (véhicule+gamme) utilisent pieces.$gamme.$marque.$modele.$type[.]html.tsx
   const gammeSchema = data.content?.pg_name ? {
     "@context": "https://schema.org",
     "@graph": [
@@ -262,8 +264,17 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         url: canonicalUrl,
         mainEntity: { "@id": `${canonicalUrl}#list` },
         ...(data.content.pg_pic && { image: data.content.pg_pic }),
+        // Breadcrumb pour navigation
+        breadcrumb: {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.automecanik.com" },
+            { "@type": "ListItem", position: 2, name: "Pièces Auto", item: "https://www.automecanik.com/pieces" },
+            { "@type": "ListItem", position: 3, name: data.content.pg_name },
+          ],
+        },
       },
-      // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles
+      // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles (liens vers pages produits)
       {
         "@type": "ItemList",
         "@id": `${canonicalUrl}#list`,
@@ -272,38 +283,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         itemListElement: (data.motorisations?.items || []).slice(0, 15).map((item, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          item: {
-            "@type": "Product",
-            name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name}`,
-            url: item.link ? `https://www.automecanik.com${item.link}` : canonicalUrl,
-            description: item.description,
-            // Compatibilité véhicule
-            isAccessoryOrSparePartFor: {
-              "@type": "Car",
-              name: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
-              brand: { "@type": "Brand", name: item.marque_name },
-              model: item.modele_name,
-              ...(item.puissance && { vehicleEngine: { "@type": "EngineSpecification", name: item.puissance } }),
-            },
-          },
+          name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
+          url: item.link ? `https://www.automecanik.com${item.link}` : canonicalUrl,
         })),
-      },
-      // 3️⃣ Product représentant la gamme (pour rich snippets)
-      {
-        "@type": "Product",
-        "@id": `${canonicalUrl}#product`,
-        name: data.content.pg_name,
-        description: metaTags.description,
-        url: canonicalUrl,
-        category: data.famille?.mf_name || "Pièces Auto",
-        ...(data.content.pg_pic && { image: data.content.pg_pic }),
-        offers: {
-          "@type": "AggregateOffer",
-          priceCurrency: "EUR",
-          offerCount: data.motorisations?.items?.length || 0,
-          availability: "https://schema.org/InStock",
-          seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
-        },
       },
     ],
   } : null;
