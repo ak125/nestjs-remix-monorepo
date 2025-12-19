@@ -924,7 +924,96 @@ Le remboursement sera effectué sous 14 jours après réception du retour.
 *Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
   }
 
-  // ==================== MÉTHODES LEGACY (COMPATIBILITÉ) ====================
+  // ==================== MÉTHODES PAGES LÉGALES (___legal_pages) ====================
+
+  /**
+   * 📄 Récupère une page légale depuis ___legal_pages
+   * Table dédiée aux contenus légaux (CGV, mentions légales, etc.)
+   */
+  async getLegalPageFromAriane(alias: string): Promise<{
+    alias: string;
+    title: string;
+    description: string;
+    keywords: string;
+    h1: string;
+    content: string;
+    breadcrumb: string;
+    indexable: boolean;
+  } | null> {
+    try {
+      this.logger.log(`📄 Fetching legal page: ${alias}`);
+
+      const { data, error } = await this.supabase
+        .from('___legal_pages')
+        .select(
+          'alias, title, description, keywords, h1, content, breadcrumb, indexable',
+        )
+        .eq('alias', alias)
+        .single();
+
+      if (error) {
+        this.logger.error(`Error fetching legal page ${alias}:`, error.message);
+        return null;
+      }
+
+      if (!data) {
+        this.logger.warn(`Legal page not found: ${alias}`);
+        return null;
+      }
+
+      return {
+        alias: data.alias,
+        title: data.title || '',
+        description: data.description || '',
+        keywords: data.keywords || '',
+        h1: data.h1 || '',
+        content: data.content || '',
+        breadcrumb: data.breadcrumb || '',
+        indexable: data.indexable ?? true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Exception fetching legal page ${alias}:`,
+        (error as Error).message,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * 📄 Liste toutes les pages légales disponibles dans ___legal_pages
+   */
+  async getAllLegalPagesFromAriane(): Promise<
+    Array<{
+      alias: string;
+      title: string;
+      breadcrumb: string;
+    }>
+  > {
+    try {
+      const { data, error } = await this.supabase
+        .from('___legal_pages')
+        .select('alias, title, breadcrumb')
+        .order('id', { ascending: true });
+
+      if (error) {
+        this.logger.error('Error fetching all legal pages:', error.message);
+        return [];
+      }
+
+      return (data || []).map((row) => ({
+        alias: row.alias,
+        title: row.title || '',
+        breadcrumb: row.breadcrumb || '',
+      }));
+    } catch (error) {
+      this.logger.error(
+        'Exception fetching all legal pages:',
+        (error as Error).message,
+      );
+      return [];
+    }
+  }
 
   /**
    * Méthode legacy pour récupérer une page légale (compatibilité)
