@@ -292,14 +292,6 @@ export const Footer = () => {
                     Contact
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/aide"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
-                  >
-                    Aide & FAQ
-                  </Link>
-                </li>
               </ul>
             </div>
 
@@ -311,15 +303,15 @@ export const Footer = () => {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    to="/terms"
+                    to="/legal/cgv"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
-                    Conditions d'utilisation
+                    CGV
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/privacy"
+                    to="/legal/privacy"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Politique de confidentialité
@@ -327,7 +319,7 @@ export const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    to="/cookies"
+                    to="/legal/cookies"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Gestion des cookies
@@ -335,18 +327,10 @@ export const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    to="/legal-notices"
+                    to="/legal/legal-notice"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Mentions légales
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/cgv"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
-                  >
-                    CGV
                   </Link>
                 </li>
               </ul>
@@ -361,12 +345,12 @@ export const Footer = () => {
                 <li className="flex items-start gap-3">
                   <MapPin
                     size={20}
-                    className="text-semantic-info mt-1 flex-shrink-0"
+                    className="text-semantic-info flex-shrink-0 mt-0.5"
                   />
-                  <span className="text-neutral-400">
-                    123 Avenue des Pièces Auto
+                  <span className="text-neutral-400 text-sm">
+                    184 avenue Aristide Briand
                     <br />
-                    75001 Paris, France
+                    93320 Les Pavillons-sous-Bois
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
@@ -375,10 +359,10 @@ export const Footer = () => {
                     className="text-semantic-info flex-shrink-0"
                   />
                   <a
-                    href="tel:+33123456789"
+                    href="tel:+33177695892"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
-                    +33 1 23 45 67 89
+                    01 77 69 58 92
                   </a>
                 </li>
                 <li className="flex items-center gap-3">
@@ -387,20 +371,18 @@ export const Footer = () => {
                     className="text-semantic-info flex-shrink-0"
                   />
                   <a
-                    href="mailto:contact@piecesauto.fr"
+                    href="mailto:contact@automecanik.com"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
-                    contact@piecesauto.fr
+                    contact@automecanik.com
                   </a>
                 </li>
               </ul>
               <div className="mt-4">
                 <p className="text-sm text-neutral-400">
-                  Horaires d'ouverture
+                  Service client disponible
                   <br />
-                  <span className="text-white">Lun - Ven: 9h - 18h</span>
-                  <br />
-                  <span className="text-white">Sam: 9h - 12h</span>
+                  <span className="text-white">Lun - Ven: 8h - 18h</span>
                 </p>
               </div>
             </div>
@@ -410,22 +392,22 @@ export const Footer = () => {
           <div className="border-t border-neutral-700 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-neutral-400 text-sm">
-                © {new Date().getFullYear()} Pièces Auto B2B. Tous droits
+                © {new Date().getFullYear()} Automecanik. Tous droits
                 réservés.
               </p>
               <div className="flex gap-4 text-sm">
                 <Link
-                  to="/sitemap"
+                  to="/legal/cgv"
                   className="text-neutral-400 hover:text-semantic-info transition-colors"
                 >
-                  Plan du site
+                  CGV
                 </Link>
                 <span className="text-neutral-600">•</span>
                 <Link
-                  to="/accessibility"
+                  to="/legal/privacy"
                   className="text-neutral-400 hover:text-semantic-info transition-colors"
                 >
-                  Accessibilité
+                  Confidentialité
                 </Link>
               </div>
             </div>

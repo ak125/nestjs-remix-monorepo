@@ -148,4 +148,33 @@ export class LegalController {
   async getUserAcceptances(@Param('userId') userId: string) {
     return this.legalService.getUserAcceptances(userId);
   }
+
+  // ==================== ENDPOINTS ARIANE (___META_TAGS_ARIANE) ====================
+
+  /**
+   * 📄 Liste toutes les pages légales disponibles dans ___META_TAGS_ARIANE
+   * GET /api/support/legal/ariane
+   */
+  @Get('ariane')
+  async getAllArianePages() {
+    this.logger.log('📄 Fetching all ARIANE legal pages');
+    return this.legalService.getAllLegalPagesFromAriane();
+  }
+
+  /**
+   * 📄 Récupère une page légale depuis ___META_TAGS_ARIANE par alias
+   * GET /api/support/legal/ariane/:alias
+   * Alias disponibles: cgv, cdu, cpuc, liv, gcrg, faq, contact, concept, us
+   */
+  @Get('ariane/:alias')
+  async getArianePage(@Param('alias') alias: string) {
+    this.logger.log(`📄 Fetching ARIANE page: ${alias}`);
+    const page = await this.legalService.getLegalPageFromAriane(alias);
+
+    if (!page) {
+      throw new Error(`Page légale "${alias}" non trouvée dans ARIANE`);
+    }
+
+    return page;
+  }
 }
