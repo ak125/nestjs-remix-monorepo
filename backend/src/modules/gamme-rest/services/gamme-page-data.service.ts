@@ -3,132 +3,77 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
-import { VehiclePiecesCompatibilityService } from '../../catalog/services/vehicle-pieces-compatibility.service';
-import { GammeUnifiedService } from '../../catalog/services/gamme-unified.service';
+import { UnifiedPageDataService } from '../../catalog/services/unified-page-data.service';
 
 /**
  * 🚀 Service optimisé pour récupérer les données de page gamme
  *
- * OPTIMISATIONS:
- * 1. Cache Redis avec TTL intelligent
- * 2. Appels parallèles (Promise.all) pour SEO + Pièces
- * 3. Pattern stale-while-revalidate sur les données
+ * OPTIMISATIONS V2:
+ * 1. Utilise UnifiedPageDataService (RPC V3 avec SEO intégré PostgreSQL)
+ * 2. 1 seul appel RPC au lieu de 2 (SEO + Pièces)
+ * 3. Cache Redis 1h TTL
  */
 @Injectable()
 export class GammePageDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(GammePageDataService.name);
 
-  // TTL Cache: 30 min pour données page complètes
-  private readonly CACHE_TTL_SECONDS = 1800;
-
   constructor(
     private readonly cacheService: CacheService,
     private readonly transformer: GammeDataTransformerService,
-    private readonly vehiclePiecesCompatibilityService: VehiclePiecesCompatibilityService,
-    private readonly gammeUnifiedService: GammeUnifiedService,
+    private readonly unifiedPageDataService: UnifiedPageDataService,
   ) {
     super();
   }
 
   /**
-   * 🔑 Génère la clé de cache pour page complète
-   */
-  private getCacheKey(
-    pgId: number,
-    typeId: number | null,
-    marqueId: number | null,
-    modeleId: number | null,
-  ): string {
-    return `gamme:page:${pgId}:${typeId || 0}:${marqueId || 0}:${modeleId || 0}`;
-  }
-
-  /**
-   * ⚡ Récupère les données complètes de page avec cache Redis et appels parallèles
+   * ⚡ Récupère les données complètes de page via RPC V3 (UnifiedPageDataService)
+   *
+   * Utilise 1 seul appel RPC V3 au lieu de 2 appels parallèles (SEO + Pièces).
+   * Le cache est géré par UnifiedPageDataService (1h TTL).
    */
   async getCompletePageData(pgId: string, query: any = {}) {
     const startTime = performance.now();
     const pgIdNum = parseInt(pgId, 10);
-    const typeId = query.typeId ? parseInt(query.typeId, 10) : null;
-    const marqueId = query.marqueId ? parseInt(query.marqueId, 10) : null;
-    const modeleId = query.modeleId ? parseInt(query.modeleId, 10) : null;
-
-    const cacheKey = this.getCacheKey(pgIdNum, typeId, marqueId, modeleId);
-
-    // 1. Vérifier le cache Redis d'abord
-    const cached = await this.cacheService.get<any>(cacheKey);
-    if (cached) {
-      const cacheTime = performance.now() - startTime;
-      this.logger.debug(
-        `🎯 CACHE HIT page gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`,
-      );
-      return {
-        ...cached,
-        _cacheHit: true,
-        _responseTime: cacheTime,
-      };
-    }
+    const typeId = query.typeId ? parseInt(query.typeId, 10) : 0;
 
     this.logger.log(
-      `🚀 OPTIMISÉ PARALLÈLE - PG_ID=${pgIdNum} typeId=${typeId || 'none'}`,
+      `🚀 RPC V3 UNIFIED - PG_ID=${pgIdNum} typeId=${typeId || 'none'}`,
     );
 
-    // 2. ⚡ APPELS PARALLÈLES - SEO + Pièces en même temps
-    const [seoContent, piecesData] = await Promise.all([
-      // Appel SEO
-      this.gammeUnifiedService.getGammeSeoContent(
-        pgIdNum,
-        typeId || 0,
-        marqueId,
-        modeleId,
-      ),
-      // Appel Pièces (seulement si véhicule spécifié)
-      typeId
-        ? this.vehiclePiecesCompatibilityService.getPiecesViaRPC(
-            typeId,
-            pgIdNum,
-          )
-        : Promise.resolve({
-            pieces: [],
-            count: 0,
-            minPrice: null,
-            grouped_pieces: [],
-          }),
-    ]);
+    // 1. Appel unique via UnifiedPageDataService (RPC V3 + cache intégré)
+    const pageData = await this.unifiedPageDataService.getPageData(
+      typeId,
+      pgIdNum,
+    );
 
-    const parallelTime = performance.now() - startTime;
+    const responseTime = performance.now() - startTime;
     this.logger.log(
-      `⚡ Appels parallèles terminés en ${parallelTime.toFixed(1)}ms`,
+      `⚡ RPC V3 terminé en ${responseTime.toFixed(1)}ms - ${pageData.count} pièces`,
     );
 
-    // 3. Construire la réponse
+    // 2. Adapter la réponse au format attendu par le frontend
     const response = {
       status: 200,
-      pieces: piecesData.pieces || [],
-      count: piecesData.count || 0,
-      minPrice: piecesData.minPrice || null,
+      pieces: pageData.pieces || [],
+      count: pageData.count || 0,
+      minPrice: pageData.minPrice || null,
       seo: {
-        h1: seoContent.h1 || undefined,
-        content: seoContent.content || undefined,
-        title: seoContent.title || undefined,
-        description: seoContent.description || undefined,
+        h1: pageData.seo?.h1 || undefined,
+        content: pageData.seo?.content || undefined,
+        title: pageData.seo?.title || undefined,
+        description: pageData.seo?.description || undefined,
       },
       crossSelling: [], // TODO: Implémenter cross-selling
       validation: {
-        valid: (piecesData.count || 0) > 0,
-        relationsCount: piecesData.count || 0,
+        valid: (pageData.count || 0) > 0,
+        relationsCount: pageData.count || 0,
       },
-      success: true,
+      success: pageData.success,
       timestamp: new Date().toISOString(),
-      source: 'optimized_parallel',
-      _responseTime: performance.now() - startTime,
+      source: 'rpc_v3_unified',
+      _responseTime: responseTime,
+      _cacheHit: pageData.cacheHit,
     };
-
-    // 4. Stocker en cache (async, non-bloquant)
-    this.cacheService
-      .set(cacheKey, response, this.CACHE_TTL_SECONDS)
-      .catch((err) =>
-        this.logger.error(`Erreur cache page gamme ${pgIdNum}:`, err),
-      );
 
     return response;
   }
