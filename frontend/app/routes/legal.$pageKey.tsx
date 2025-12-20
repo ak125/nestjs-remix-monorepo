@@ -148,7 +148,7 @@ const infoPages = [
   { key: "contact", title: "Contact", icon: "📞" },
 ];
 
-const availablePages = [...legalPages, ...helpPages, ...infoPages];
+const _availablePages = [...legalPages, ...helpPages, ...infoPages];
 
 // Pages qui ne doivent PAS être indexées (contenu juridique standard)
 const noIndexPages = ["cgv", "privacy", "terms", "cookies", "legal-notice"];
@@ -312,7 +312,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function LegalPage() {
-  const { page, fromDB } = useLoaderData<typeof loader>();
+  const { page, fromDB: _fromDB } = useLoaderData<typeof loader>();
   const params = useParams();
 
   return (

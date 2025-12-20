@@ -10,7 +10,11 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
-import { GammeSeoThresholdsService, SmartActionThresholds, DEFAULT_THRESHOLDS } from './gamme-seo-thresholds.service';
+import {
+  GammeSeoThresholdsService,
+  SmartActionThresholds,
+  DEFAULT_THRESHOLDS,
+} from './gamme-seo-thresholds.service';
 import { GammeSeoAuditService } from './gamme-seo-audit.service';
 
 // ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
@@ -51,13 +55,13 @@ export interface GammeSeoFilters {
 
 // 🎯 Smart Action types based on Trends × SEO Score matrix
 export type SmartActionType =
-  | 'INDEX_G1'      // Trends≥50 & SEO≥75 → Page dédiée prioritaire
-  | 'INDEX'         // Trends≥50 & SEO≥45 → Page dédiée standard
-  | 'INVESTIGUER'   // Trends≥50 & SEO<45 → Fort volume mais faible valeur
-  | 'OBSERVER'      // Trends 20-49 & SEO≥75 → Potentiel, surveiller
-  | 'PARENT'        // Trends<20 & SEO≥75 → Intégrer dans page parente
-  | 'EVALUER'       // Trends 20-49 & SEO 45-74 → Décision manuelle
-  | 'NOINDEX';      // Faible potentiel
+  | 'INDEX_G1' // Trends≥50 & SEO≥75 → Page dédiée prioritaire
+  | 'INDEX' // Trends≥50 & SEO≥45 → Page dédiée standard
+  | 'INVESTIGUER' // Trends≥50 & SEO<45 → Fort volume mais faible valeur
+  | 'OBSERVER' // Trends 20-49 & SEO≥75 → Potentiel, surveiller
+  | 'PARENT' // Trends<20 & SEO≥75 → Intégrer dans page parente
+  | 'EVALUER' // Trends 20-49 & SEO 45-74 → Décision manuelle
+  | 'NOINDEX'; // Faible potentiel
 
 export interface GammeSeoItem {
   pg_id: number;

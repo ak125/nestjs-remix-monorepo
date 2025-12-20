@@ -373,7 +373,7 @@ export class AdminGammesSeoController {
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de l\'application de l\'action',
+          message: "Erreur lors de l'application de l'action",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -421,7 +421,13 @@ export class AdminGammesSeoController {
   @Put('thresholds')
   async updateThresholds(
     @Req() req: Request,
-    @Body() body: { trends_high?: number; trends_medium?: number; seo_excellent?: number; seo_good?: number },
+    @Body()
+    body: {
+      trends_high?: number;
+      trends_medium?: number;
+      seo_excellent?: number;
+      seo_good?: number;
+    },
   ) {
     try {
       this.logger.log('🔧 PUT /api/admin/gammes-seo/thresholds');
@@ -458,7 +464,10 @@ export class AdminGammesSeoController {
       throw new HttpException(
         {
           success: false,
-          message: error instanceof Error ? error.message : 'Erreur lors de la mise à jour des seuils',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Erreur lors de la mise à jour des seuils',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -552,7 +561,7 @@ export class AdminGammesSeoController {
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la récupération de l\'historique',
+          message: "Erreur lors de la récupération de l'historique",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

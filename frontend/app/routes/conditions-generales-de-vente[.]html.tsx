@@ -1,6 +1,6 @@
 // Route: /conditions-generales-de-vente.html -> CGV
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import LegalPageComponent from "./legal.$pageKey";
+import _LegalPageComponent from "./legal.$pageKey";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 

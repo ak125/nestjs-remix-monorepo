@@ -394,19 +394,29 @@ export default function AdminGammesSeo() {
   const smartActionFilter = searchParams.get("smartAction");
   const filteredGammes = React.useMemo(() => {
     if (!smartActionFilter || smartActionFilter === "all") return gammes;
-    return gammes.filter((g: GammeSeoItem) => getSmartActionType(g) === smartActionFilter);
+    return gammes.filter(
+      (g: GammeSeoItem) => getSmartActionType(g) === smartActionFilter,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gammes, smartActionFilter]);
 
   // Stats des Smart Actions (calculées côté client) - sur gammes non filtrées
   const smartActionStats = React.useMemo(() => {
     const counts = {
-      INDEX_G1: 0, INDEX: 0, INVESTIGUER: 0, OBSERVER: 0, PARENT: 0, EVALUER: 0, NOINDEX: 0
+      INDEX_G1: 0,
+      INDEX: 0,
+      INVESTIGUER: 0,
+      OBSERVER: 0,
+      PARENT: 0,
+      EVALUER: 0,
+      NOINDEX: 0,
     };
     gammes.forEach((g: GammeSeoItem) => {
       const action = getSmartActionType(g);
       counts[action as keyof typeof counts]++;
     });
     return counts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gammes]);
 
   // Handlers
