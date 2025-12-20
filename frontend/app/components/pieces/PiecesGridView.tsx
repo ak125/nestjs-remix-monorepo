@@ -362,6 +362,7 @@ export function PiecesGridView({
                 {onSelectPiece && (
                   <button
                     type="button"
+                    aria-label={isSelected ? `Désélectionner ${piece.name}` : `Sélectionner ${piece.name}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onSelectPiece(piece.id);
@@ -421,6 +422,7 @@ export function PiecesGridView({
                   {/* Bouton Ajouter - INDIGO, toujours actif */}
                   <button
                     type="button"
+                    aria-label={hasStock ? `Ajouter ${piece.name} au panier` : `${piece.name} indisponible`}
                     className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
                       !loadingItems.has(piece.id)
                         ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/30"
