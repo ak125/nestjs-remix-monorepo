@@ -46,6 +46,8 @@ export const meta: MetaFunction = () => {
       content:
         "catalogue pièces auto, catalogue de pièces détachées auto, pièces auto en ligne, catalogue pièces détachées, pièces auto toutes marques, catalogue professionnel pièces auto",
     },
+    // Canonical
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/" },
     // Open Graph / Facebook
     { property: "og:type", content: "website" },
     {

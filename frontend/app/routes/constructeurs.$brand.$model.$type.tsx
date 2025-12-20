@@ -464,7 +464,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   // === GÉNÉRATION CANONIQUE (logique PHP) ===
-  const canonicalLink = `https://domain.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
+  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
 
   // === GÉNÉRATION DES CATALOGUES V3 HYBRIDE (approche optimisée 3-étapes) ===
   let catalogFamilies: CatalogFamily[] = [];
@@ -820,7 +820,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { name: "description", content: data.seo.description },
     { name: "keywords", content: data.seo.keywords },
     { name: "robots", content: data.seo.robots },
-    { name: "canonical", href: data.seo.canonical },
+    { tagName: "link", rel: "canonical", href: data.seo.canonical },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
     { property: "og:type", content: "website" },

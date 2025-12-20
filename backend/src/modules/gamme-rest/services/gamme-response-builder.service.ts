@@ -26,6 +26,7 @@ export class GammeResponseBuilderService {
     const pgNameMeta = pageData.pg_name_meta;
     const pgAlias = pageData.pg_alias;
     const pgRelfollow = pageData.pg_relfollow;
+    const pgLevel = pageData.pg_level;
     const pgPic = pageData.pg_img;
     const pgWall = pageData.pg_wall;
 
@@ -71,17 +72,16 @@ export class GammeResponseBuilderService {
       pageContent = defaultSeo.content;
     }
 
-    // Logique SEO pour pages GAMME: seul pg_relfollow compte
-    // NOTE: La logique family_count >= 3 ET gamme_count >= 5 est pour les pages VÉHICULES, pas les gammes
+    // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
+    // pg_level='1' = gammes prioritaires (G1) ou importantes (G2)
+    // pg_level≠'1' = gammes secondaires (G3)
     const seoValidation = aggregatedData?.seo_validation || {
       family_count: 0,
       gamme_count: 0,
     };
-    // pg_relfollow est TEXT en BDD ('1' ou '0'), conversion pour comparaison
-    const relfollow = String(pgRelfollow) === '1' ? 1 : 0;
-    // Pour une page gamme: index si pg_relfollow='1', noindex sinon
-    const isIndexable = relfollow === 1;
-    const pageRobots = isIndexable ? 'index, follow' : 'noindex, nofollow';
+    // pg_level est TEXT en BDD ('1' ou '2'), '1' = INDEX
+    const isG1orG2 = String(pgLevel) === '1';
+    const pageRobots = isG1orG2 ? 'index, follow' : 'noindex, nofollow';
     const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
 
     // Traitement données
@@ -497,8 +497,8 @@ export class GammeResponseBuilderService {
       seoValidation: {
         familyCount: seoValidation.family_count,
         gammeCount: seoValidation.gamme_count,
-        relfollow: relfollow,
-        isIndexable: isIndexable,
+        relfollow: String(pgRelfollow) === '1' ? 1 : 0,
+        isIndexable: isG1orG2,
         robots: pageRobots,
         pgLevel: pageData.pg_level,
         pgRelfollow: pageData.pg_relfollow,

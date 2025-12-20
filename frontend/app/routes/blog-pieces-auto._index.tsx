@@ -118,6 +118,7 @@ export const meta: MetaFunction<typeof loader> = ({ data: _data }) => {
     { title },
     { name: "description", content: description },
     { name: "keywords", content: "blog automobile, conseils auto, guides réparation, entretien voiture, pièces auto, mécanique, diagnostic, tutoriel" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },

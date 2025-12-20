@@ -231,6 +231,12 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       ? [{ name: "keywords", content: data.page.keywords }]
       : []),
     { name: "robots", content: robotsContent },
+    // Canonical
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: `https://www.automecanik.com/legal/${data.page.key}`,
+    },
     // Schema.org JSON-LD
     {
       "script:ld+json": JSON.stringify(schemaWebPage),
