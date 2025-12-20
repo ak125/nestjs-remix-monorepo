@@ -37,7 +37,6 @@ import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
-import { SeoSwitchesService } from './services/seo-switches.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
 
@@ -101,11 +100,9 @@ import { UnifiedPageDataService } from './services/unified-page-data.service';
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
-    // 🔄 SEO SWITCHES SERVICE - Gestion des switches SEO (3 sources)
-    SeoSwitchesService,
     // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)
     OemPlatformMappingService,
-    // ⚡ UNIFIED PAGE DATA - RPC V2 (1 requête au lieu de ~33)
+    // ⚡ UNIFIED PAGE DATA - RPC V3 (1 requête avec SEO intégré PostgreSQL)
     UnifiedPageDataService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
@@ -121,6 +118,7 @@ import { UnifiedPageDataService } from './services/unified-page-data.service';
     GammeUnifiedService, // ✅ Exporté pour GammeRestModule
     VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
     OemPlatformMappingService, // 🔧 Exporté pour filtrage OEM SEO
+    UnifiedPageDataService, // ✅ Exporté pour GammeRestModule (RPC V3)
   ],
 })
 export class CatalogModule {
