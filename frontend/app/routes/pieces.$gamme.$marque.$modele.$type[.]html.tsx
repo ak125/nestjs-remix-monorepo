@@ -14,7 +14,7 @@ import {
   Link,
 } from "@remix-run/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchGammePageData } from "~/services/api/gamme-api.service";
+// 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (RPC V2 redondant avec batch-loader RPC V3)
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
@@ -172,10 +172,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return batchResult;
   };
 
-  // 🚀 PARALLÉLISATION: batch-loader + pageData + hierarchy en même temps
-  const [batchResponse, pageData, hierarchyData] = await Promise.all([
+  // 🚀 LCP OPTIMIZATION: batch-loader + hierarchy seulement (RPC V2 supprimé - redondant)
+  // Le batch-loader utilise RPC V3 qui fournit toutes les données nécessaires
+  const [batchResponse, hierarchyData] = await Promise.all([
     fetchBatchLoaderWithRetry(),
-    fetchGammePageData(gammeId).catch(() => null),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { Accept: "application/json" },
     })
@@ -325,21 +325,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     ],
   };
 
-  // Catalogue Famille Logic
-  let catalogueMameFamille = pageData?.catalogueMameFamille;
-  let famille = pageData?.famille;
+  // 🚀 LCP OPTIMIZATION: Catalogue Famille Logic (sans appel RPC V2)
+  // Trouver la famille en cherchant quelle famille contient la gamme actuelle
+  let catalogueMameFamille: any = null;
 
-  if (hierarchyData && famille?.mf_id) {
-    const family = hierarchyData.families?.find(
-      (f: any) => f.id === famille.mf_id,
+  if (hierarchyData?.families) {
+    // Chercher la famille qui contient cette gamme
+    const family = hierarchyData.families.find((f: any) =>
+      f.gammes?.some((g: any) =>
+        (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId
+      )
     );
+
     if (family && family.gammes) {
       const otherGammes = family.gammes.filter(
         (g: any) =>
           (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
       );
       catalogueMameFamille = {
-        title: `Catalogue ${famille.mf_name}`,
+        title: `Catalogue ${family.name}`,
+        // Store family info for component styling
+        family: {
+          mf_id: family.id || 0,
+          mf_name: family.name || "",
+          mf_pic: family.image || null,
+        },
         items: otherGammes.map((g: any) => ({
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
@@ -378,7 +388,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       crossSellingGammes,
       blogArticle: blogArticle || undefined,
       catalogueMameFamille,
-      famille,
       // 🔧 Références OEM constructeur
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
@@ -394,7 +403,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       },
     },
     {
-      headers: { "Cache-Control": "public, max-age=300, s-maxage=600" },
+      headers: { "Cache-Control": "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600" },
     },
   );
 }
@@ -937,12 +946,12 @@ export default function PiecesVehicleRoute() {
             {data.catalogueMameFamille &&
               data.catalogueMameFamille.items.length > 0 &&
               (() => {
-                // Calculer la couleur de la famille
-                const familleColor = data.famille
+                // Calculer la couleur de la famille depuis catalogueMameFamille
+                const familleColor = data.catalogueMameFamille.family
                   ? hierarchyApi.getFamilyColor({
-                      mf_id: data.famille.mf_id,
-                      mf_name: data.famille.mf_name,
-                      mf_pic: data.famille.mf_pic,
+                      mf_id: data.catalogueMameFamille.family.mf_id,
+                      mf_name: data.catalogueMameFamille.family.mf_name,
+                      mf_pic: data.catalogueMameFamille.family.mf_pic,
                     } as any)
                   : "from-blue-950 via-indigo-900 to-purple-900";
 
@@ -971,7 +980,7 @@ export default function PiecesVehicleRoute() {
                             />
                           </svg>
                           Catalogue{" "}
-                          {data.famille?.mf_name || "Système de freinage"}
+                          {data.catalogueMameFamille?.family?.mf_name || "Système de freinage"}
                           <span className="text-xs font-normal opacity-75">
                             ({data.catalogueMameFamille.items.length})
                           </span>

@@ -9,14 +9,19 @@ import {
   Body,
   Query,
   Logger,
+  Header,
 } from '@nestjs/common';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
+import { UnifiedPageDataService } from '../services/unified-page-data.service';
 
 @Controller('api/catalog/gammes')
 export class GammeUnifiedController {
   private readonly logger = new Logger(GammeUnifiedController.name);
 
-  constructor(private readonly gammeService: GammeUnifiedService) {}
+  constructor(
+    private readonly gammeService: GammeUnifiedService,
+    private readonly unifiedPageDataService: UnifiedPageDataService,
+  ) {}
 
   /**
    * 🎯 GET /api/catalog/gammes - Toutes les gammes
@@ -29,8 +34,10 @@ export class GammeUnifiedController {
 
   /**
    * 🏗️ GET /api/catalog/gammes/hierarchy - Hiérarchie familles → gammes
+   * 🚀 Cache: 1h (données quasi-statiques)
    */
   @Get('hierarchy')
+  @Header('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600')
   async getHierarchy() {
     this.logger.log('🏗️ [GET] /api/catalog/gammes/hierarchy');
     return this.gammeService.getHierarchy();
@@ -87,18 +94,28 @@ export class GammeUnifiedController {
 
   /**
    * 📄 POST /api/catalog/gammes/:id/seo - Contenu SEO pour une gamme
+   * Utilise RPC V3 avec SEO intégré côté PostgreSQL
    */
   @Post(':id/seo')
   async getGammeSeo(
     @Param('id') gammeId: string,
     @Body() body: { type_id: number; marque_id?: number; modele_id?: number },
   ) {
-    this.logger.log(`📄 [POST] /api/catalog/gammes/${gammeId}/seo`);
-    return this.gammeService.getGammeSeoContent(
+    this.logger.log(`📄 [POST] /api/catalog/gammes/${gammeId}/seo (RPC V3)`);
+
+    const pageData = await this.unifiedPageDataService.getPageData(
+      body.type_id || 0,
       parseInt(gammeId),
-      body.type_id,
-      body.marque_id,
-      body.modele_id,
     );
+
+    // Retourner uniquement le SEO pour compatibilité
+    return {
+      success: pageData.seo?.success ?? false,
+      h1: pageData.seo?.h1 || null,
+      content: pageData.seo?.content || null,
+      title: pageData.seo?.title || null,
+      description: pageData.seo?.description || null,
+      keywords: pageData.seo?.keywords || null,
+    };
   }
 }
