@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { normalizeImageUrl } from '../../utils/image.utils';
+import { normalizeImageUrl, optimizeImageUrl } from '../../utils/image.utils';
 
 interface ProductGalleryProps {
   images?: { id: string; url: string; sort: number; alt: string }[];
@@ -50,8 +50,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
   if (allImages.length === 1) {
      return (
         <img
-          src={normalizeImageUrl(currentImage)}
+          src={optimizeImageUrl(currentImage, 400)}
           alt={alt}
+          width={400}
+          height={400}
           className="w-full h-full object-contain"
           loading="lazy"
           onError={(e) => {
@@ -66,8 +68,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
   return (
     <div className="relative w-full h-full group/gallery">
       <img
-        src={normalizeImageUrl(currentImage)}
+        src={optimizeImageUrl(currentImage, 400)}
         alt={alt}
+        width={400}
+        height={400}
         className="w-full h-full object-contain"
         loading="lazy"
       />
@@ -85,7 +89,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
                 onMouseEnter={() => setCurrentImage(img.url)}
                 className={`w-12 h-12 flex-shrink-0 rounded border-2 ${currentImage === img.url ? 'border-blue-400 ring-2 ring-blue-400 scale-110' : 'border-white/50 hover:border-white'} overflow-hidden transition-all bg-white shadow-lg`}
             >
-                <img src={normalizeImageUrl(img.url)} alt={img.alt || alt} className="w-full h-full object-cover" />
+                <img src={optimizeImageUrl(img.url, 48)} alt={img.alt || alt} className="w-full h-full object-cover" />
             </button>
         ))}
         {allImages.length > 5 && (

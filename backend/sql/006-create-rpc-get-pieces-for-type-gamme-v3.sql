@@ -390,6 +390,28 @@ BEGIN
   v_result := regexp_replace(v_result, '#LinkGammeCar_\d+#', '', 'g');
   v_result := regexp_replace(v_result, '#LinkGamme_\d+#', '', 'g');
   v_result := regexp_replace(v_result, '#PrixPasCher#', '', 'g');
+  v_result := regexp_replace(v_result, '#FamilySwitch_\d+#', '', 'g');
+  v_result := regexp_replace(v_result, '#[A-Za-z]+#', '', 'g');
+
+  -- ═══════════════════════════════════════════════════════════════════════════
+  -- ÉTAPE 8: Nettoyer les phrases orphelines (après suppression des switches)
+  -- ═══════════════════════════════════════════════════════════════════════════
+  -- Supprimer "de ," ou "de  ," → "de"
+  v_result := regexp_replace(v_result, '\bde\s*,\s*', 'de ', 'gi');
+  -- Supprimer ", ," → ","
+  v_result := regexp_replace(v_result, ',\s*,', ',', 'g');
+  -- Supprimer ". ." → "."
+  v_result := regexp_replace(v_result, '\.\s*\.', '.', 'g');
+  -- Supprimer "et ." ou "et ," → "."
+  v_result := regexp_replace(v_result, '\bet\s*[,.]', '.', 'gi');
+  -- Supprimer espaces avant ponctuation
+  v_result := regexp_replace(v_result, '\s+([.,!?;:])', '\1', 'g');
+  -- Supprimer espaces multiples
+  v_result := regexp_replace(v_result, '\s{2,}', ' ', 'g');
+  -- Supprimer phrases vides type "De , neuve" → "neuve"
+  v_result := regexp_replace(v_result, '\bDe\s*,\s*', '', 'gi');
+  -- Trim
+  v_result := TRIM(v_result);
 
   RETURN v_result;
 END;

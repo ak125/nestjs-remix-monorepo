@@ -78,17 +78,17 @@ export function normalizeImageUrl(url: string | undefined | null): string {
 }
 
 /**
- * Optimise une URL d'image Supabase avec transformation WebP
- * ⚠️ Change l'URL → À utiliser avec précaution pour le SEO
- * 
+ * Optimise une URL d'image Supabase avec transformation (resize + qualité)
+ * ⚠️ Note: WebP format non disponible sur ce projet Supabase, utilise resize uniquement
+ *
  * @param imageUrl - URL de l'image (normalisée ou non)
- * @param width - Largeur cible en pixels
+ * @param width - Largeur cible en pixels (optionnel)
  * @param quality - Qualité 1-100 (défaut: 85)
- * @returns URL avec transformation Supabase
- * 
+ * @returns URL avec transformation Supabase (resize)
+ *
  * @example
  * optimizeImageUrl('https://.../rack-images/30/image.JPG', 400)
- * // → 'https://.../render/image/public/rack-images/30/image.JPG?format=webp&width=400&quality=85'
+ * // → 'https://.../render/image/public/rack-images/30/image.JPG?width=400&quality=85'
  */
 export function optimizeImageUrl(
   imageUrl: string | undefined | null,
@@ -98,29 +98,31 @@ export function optimizeImageUrl(
   // Normaliser d'abord l'URL
   const normalized = normalizeImageUrl(imageUrl);
   if (!normalized) return '';
-  
+
   // Ne transformer que les URLs Supabase
   if (!normalized.includes('supabase.co/storage')) {
     return normalized;
   }
-  
+
+  // Si pas de width, retourner l'URL normalisée sans transformation
+  if (!width) {
+    return normalized;
+  }
+
   // Extraire le chemin après /public/
   const match = normalized.match(/\/storage\/v1\/object\/public\/(.+?)(?:\?|$)/);
   if (!match) return normalized;
-  
+
   const path = match[1];
-  
-  // Construire l'URL de transformation
-  let transformUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${path}`;
-  
-  // Ajouter paramètres
+
+  // Construire l'URL de transformation (resize uniquement, pas de format=webp)
+  const transformUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${path}`;
+
+  // Ajouter paramètres (width + quality uniquement)
   const params = new URLSearchParams();
-  params.set('format', 'webp');
+  params.set('width', width.toString());
   params.set('quality', quality.toString());
-  if (width) {
-    params.set('width', width.toString());
-  }
-  
+
   return `${transformUrl}?${params.toString()}`;
 }
 

@@ -9,6 +9,7 @@ import { Car, Package, Shield, Truck } from "lucide-react";
 import React, { useState } from "react";
 
 import { brandColorsService } from "../../services/brand-colors.service";
+import { optimizeImageUrl } from "../../utils/image.utils";
 import {
   type GammeData,
   type PerformanceInfo,
@@ -202,7 +203,10 @@ export function PiecesHeader({
                       vehicle.modelePic !== "no.webp" ? (
                         <>
                           <img
-                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`}
+                            src={optimizeImageUrl(
+                              `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
+                              380
+                            )}
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
                             height={192}
