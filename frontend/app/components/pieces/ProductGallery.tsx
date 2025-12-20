@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { normalizeImageUrl, optimizeImageUrl } from '../../utils/image.utils';
+import { optimizeImageUrl } from '../../utils/image.utils';
 
 interface ProductGalleryProps {
   images?: { id: string; url: string; sort: number; alt: string }[];

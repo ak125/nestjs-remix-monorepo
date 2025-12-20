@@ -9,12 +9,12 @@ import { Car, Package, Shield, Truck } from "lucide-react";
 import React, { useState } from "react";
 
 import { brandColorsService } from "../../services/brand-colors.service";
-import { optimizeImageUrl } from "../../utils/image.utils";
 import {
   type GammeData,
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
+import { optimizeImageUrl } from "../../utils/image.utils";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;

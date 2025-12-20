@@ -10,7 +10,7 @@ import React, { useState } from "react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
-import { normalizeImageUrl, optimizeImageUrl } from "../../utils/image.utils";
+import { optimizeImageUrl } from "../../utils/image.utils";
 import { hasStockAvailable } from "../../utils/stock.utils";
 
 interface PiecesListViewProps {
