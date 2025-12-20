@@ -241,37 +241,15 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
   const modele = parseUrlParam(modeleParam);
   const type = parseUrlParam(typeParam);
   
-  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les valider
+  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les retourner directement
+  // 🚀 LCP OPTIMIZATION: Le batch-loader fait déjà la validation en interne
+  // Supprimer l'appel redondant à validate-type (économise ~80ms)
   if (marque.id > 0 && modele.id > 0 && type.id > 0) {
-    // Validation préventive de l'existence du type
-    try {
-      const validationResponse = await fetch(
-        `http://localhost:3000/api/catalog/integrity/validate-type/${type.id}`,
-        { method: 'GET' }
-      );
-      
-      if (validationResponse.ok) {
-        const validationData = await validationResponse.json();
-        if (validationData.exists) {
-          return {
-            marqueId: marque.id,
-            modeleId: modele.id,
-            typeId: type.id
-          };
-        } else {
-          console.error(`❌ [VALIDATE-TYPE] Type ID ${type.id} invalide ou n'existe pas`);
-          throw new Error(`Type de véhicule invalide (ID: ${type.id})`);
-        }
-      } else {
-        // 🔒 SEO FIX: Ne plus accepter les IDs non validés
-        console.error(`❌ [VALIDATE-TYPE] Validation endpoint retourné ${validationResponse.status} - rejet de l'URL`);
-        throw new Error(`Type de véhicule non validable (status: ${validationResponse.status})`);
-      }
-    } catch (error) {
-      // 🔒 SEO FIX: Ne plus bypasser la validation en cas d'erreur
-      console.error(`❌ [VALIDATE-TYPE] Erreur validation type ${type.id}:`, error);
-      throw error; // Propager l'erreur au lieu de continuer avec des IDs potentiellement invalides
-    }
+    return {
+      marqueId: marque.id,
+      modeleId: modele.id,
+      typeId: type.id
+    };
   }
   
   console.warn(`⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`);
@@ -342,65 +320,12 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     "amortisseur": 854     // ✅ CORRIGÉ: ID réel de la gamme Amortisseur
   };
   
-  // Si on a un ID dans l'URL, le valider avant de l'utiliser
+  // 🚀 LCP OPTIMIZATION: Si on a un ID dans l'URL, le retourner directement
+  // Le batch-loader fait déjà la validation de l'existence de la gamme en interne
+  // Supprimer l'appel redondant à /api/catalog/gammes (économise ~50-100ms)
   if (gamme.id > 0) {
-    console.log(`✅ [GAMME-ID] ID trouvé dans l'URL pour ${gamme.alias}: ${gamme.id}`);
-    
-    // 🛡️ VALIDATION: Vérifier que cet ID existe dans la base
-    try {
-      // ✅ TIMEOUT 5 secondes pour éviter blocage
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch('http://localhost:3000/api/catalog/gammes', {
-        signal: controller.signal,
-        headers: { 
-          'Accept': 'application/json',
-          'Cache-Control': 'max-age=3600' // Cache 1h
-        }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      // ✅ Vérifier le status HTTP
-      if (!response.ok) {
-        console.warn(`⚠️ [GAMME-ID] API returned ${response.status}, using ID directly: ${gamme.id}`);
-        return gamme.id;
-      }
-      
-      const data = await response.json();
-      
-      // ✅ Vérifier que c'est un array (évite crash si erreur Supabase)
-      if (!Array.isArray(data)) {
-        console.error(`❌ [GAMME-ID] Invalid response format (expected array):`, data);
-        return gamme.id;
-      }
-      
-      const gammes = data;
-      const gammeExists = gammes.some((g: any) => g.id === gamme.id);
-      
-      if (!gammeExists) {
-        console.error(`❌ [GAMME-ID] ID ${gamme.id} n'existe pas dans la base, utilisation du mapping`);
-        // Fallback sur le mapping par alias
-        const fallbackId = knownGammeMap[gamme.alias];
-        if (fallbackId) {
-          console.log(`✅ [GAMME-ID] Fallback mapping trouvé pour ${gamme.alias}: ${fallbackId}`);
-          return fallbackId;
-        }
-      } else {
-        return gamme.id;
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          console.error(`⏱️ [GAMME-ID] Timeout after 5s, using ID directly: ${gamme.id}`);
-        } else {
-          console.error(`❌ [GAMME-ID] Erreur validation ID ${gamme.id}:`, error.message);
-        }
-      }
-      // En cas d'erreur, utiliser l'ID tel quel (évite de casser le site)
-      return gamme.id;
-    }
+    console.log(`✅ [GAMME-ID] ID trouvé dans l'URL: ${gamme.id} (validation déléguée au batch-loader)`);
+    return gamme.id;
   }
   
   const gammeId = knownGammeMap[gamme.alias];
