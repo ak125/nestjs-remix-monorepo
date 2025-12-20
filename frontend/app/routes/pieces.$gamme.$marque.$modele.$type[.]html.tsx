@@ -403,7 +403,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       },
     },
     {
-      headers: { "Cache-Control": "public, max-age=300, s-maxage=600" },
+      headers: { "Cache-Control": "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600" },
     },
   );
 }

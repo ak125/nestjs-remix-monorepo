@@ -9,6 +9,7 @@ import {
   Body,
   Query,
   Logger,
+  Header,
 } from '@nestjs/common';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { UnifiedPageDataService } from '../services/unified-page-data.service';
@@ -33,8 +34,10 @@ export class GammeUnifiedController {
 
   /**
    * 🏗️ GET /api/catalog/gammes/hierarchy - Hiérarchie familles → gammes
+   * 🚀 Cache: 1h (données quasi-statiques)
    */
   @Get('hierarchy')
+  @Header('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600')
   async getHierarchy() {
     this.logger.log('🏗️ [GET] /api/catalog/gammes/hierarchy');
     return this.gammeService.getHierarchy();
