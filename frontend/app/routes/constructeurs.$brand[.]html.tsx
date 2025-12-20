@@ -125,7 +125,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
           },
         })),
       }] : []),
-      // 4️⃣ ItemList - Pièces populaires pour cette marque
+      // 4️⃣ ItemList - Pièces populaires pour cette marque (sans @type:Product pour éviter erreur offers manquant)
       ...(data.popular_parts && data.popular_parts.length > 0 ? [{
         "@type": "ItemList",
         "@id": `${canonicalUrl}#parts`,
@@ -134,14 +134,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         itemListElement: data.popular_parts.slice(0, 8).map((part: ApiPopularPart, index: number) => ({
           "@type": "ListItem",
           position: index + 1,
-          item: {
-            "@type": "Product",
-            name: `${part.pg_name} ${brand.marque_name}`,
-            category: part.pg_name,
-            ...(part.part_url && { url: `https://www.automecanik.com${part.part_url}` }),
-            ...(part.image_url && { image: part.image_url }),
-            isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#organization` },
-          },
+          name: `${part.pg_name} ${brand.marque_name}`,
+          ...(part.part_url && { url: `https://www.automecanik.com${part.part_url}` }),
         })),
       }] : []),
     ],
