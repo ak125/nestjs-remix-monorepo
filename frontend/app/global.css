@@ -1,5 +1,5 @@
 /* === GOOGLE FONTS === */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+/* Note: Les fonts sont chargées de manière non-bloquante via root.tsx (preload + stylesheet) */
 
 /* === DESIGN SYSTEM === */
 @import '@fafa/design-tokens/css';         /* CSS Variables */

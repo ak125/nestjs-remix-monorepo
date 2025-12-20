@@ -164,6 +164,7 @@ export const PiecesListView = React.memo(
                   {onSelectPiece && (
                     <button
                       onClick={() => onSelectPiece(piece.id)}
+                      aria-label={isSelected ? `Désélectionner ${piece.name}` : `Sélectionner ${piece.name}`}
                       className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all mt-1 ${
                         isSelected
                           ? "bg-blue-600 border-blue-600 shadow-sm"
@@ -193,6 +194,8 @@ export const PiecesListView = React.memo(
                       <img
                         src={normalizeImageUrl(piece.image)}
                         alt={piece.name}
+                        width={128}
+                        height={128}
                         className="w-full h-full object-contain p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300"
                         loading="lazy"
                       />
@@ -225,6 +228,9 @@ export const PiecesListView = React.memo(
                           <img
                             src={logoUrl}
                             alt={piece.brand}
+                            width={40}
+                            height={40}
+                            loading="lazy"
                             className="max-w-full max-h-full object-contain"
                             onError={(e) => {
                               const target =
@@ -310,6 +316,7 @@ export const PiecesListView = React.memo(
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={() => hasStock && handleAddToCart(piece.id)}
                     title={hasStock ? "Ajouter au panier" : "Indisponible"}
+                    aria-label={hasStock ? `Ajouter ${piece.name} au panier` : `${piece.name} indisponible`}
                   >
                     {loadingItems.has(piece.id) ? (
                       <svg

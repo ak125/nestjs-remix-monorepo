@@ -29,19 +29,28 @@ import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
 // @ts-ignore
 
+// URL Google Fonts (non-bloquant via preload)
+const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap";
+
 export const links: LinksFunction = () => [
   // Stylesheets
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: animationsStylesheet },
-  
+
   // DNS Prefetch & Preconnect (Performance SEO Phase 1)
   { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
+  { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
   { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
   { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
   { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
   { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
-  
-  // Font Preload (Performance SEO Phase 1) - Inter + Montserrat
+  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+
+  // Google Fonts - Chargement non-bloquant (preload + stylesheet)
+  { rel: "preload", href: GOOGLE_FONTS_URL, as: "style" },
+  { rel: "stylesheet", href: GOOGLE_FONTS_URL },
+
+  // Font Preload (Performance SEO Phase 1) - Inter + Montserrat fichiers woff2
   {
     rel: "preload",
     as: "font",
@@ -56,12 +65,12 @@ export const links: LinksFunction = () => [
     href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
     crossOrigin: "anonymous"
   },
-  
+
   // Image Preload critiques (Logos constructeurs top 10)
   { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
   { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
   { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
-  
+
   // Manifest & Icons
   { rel: "manifest", href: "/manifest.json" },
   { rel: "icon", type: "image/webp", sizes: "192x192", href: "/icon-192.webp" },
