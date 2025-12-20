@@ -54,3 +54,26 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Temporary scripts and data files (dev/migration)
+agents/
+scripts/
+*.csv
+*.txt
+gammes_*.json
+seo_action_plan.json
+backup_*.json
+check_*.js
+find_*.js
+get_*.js
+get_*.py
+list_*.js
+import_*.js
+populate_*.js
+sync_*.js
+test_*.js
+fetch_*.js
+compare_*.js
+audit_*.js
+analyze_*.js
+generate_*.js
