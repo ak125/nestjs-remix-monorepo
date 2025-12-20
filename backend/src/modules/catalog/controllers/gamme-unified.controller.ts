@@ -37,7 +37,10 @@ export class GammeUnifiedController {
    * 🚀 Cache: 1h (données quasi-statiques)
    */
   @Get('hierarchy')
-  @Header('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600')
+  @Header(
+    'Cache-Control',
+    'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
+  )
   async getHierarchy() {
     this.logger.log('🏗️ [GET] /api/catalog/gammes/hierarchy');
     return this.gammeService.getHierarchy();

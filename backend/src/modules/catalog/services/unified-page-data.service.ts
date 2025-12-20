@@ -236,7 +236,9 @@ export class UnifiedPageDataService extends SupabaseBaseService {
     }
 
     if (!data) {
-      this.logger.error(`❌ RPC V3 retourne null pour type=${typeId} pg=${pgId}`);
+      this.logger.error(
+        `❌ RPC V3 retourne null pour type=${typeId} pg=${pgId}`,
+      );
       throw new Error(`RPC V3 returned no data for type=${typeId} pg=${pgId}`);
     }
 
