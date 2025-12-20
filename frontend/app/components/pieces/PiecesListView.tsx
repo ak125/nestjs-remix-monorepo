@@ -10,7 +10,7 @@ import React, { useState } from "react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
-import { normalizeImageUrl } from "../../utils/image.utils";
+import { normalizeImageUrl, optimizeImageUrl } from "../../utils/image.utils";
 import { hasStockAvailable } from "../../utils/stock.utils";
 
 interface PiecesListViewProps {
@@ -192,7 +192,7 @@ export const PiecesListView = React.memo(
                     {piece.image &&
                     piece.image !== "/images/pieces/default.png" ? (
                       <img
-                        src={normalizeImageUrl(piece.image)}
+                        src={optimizeImageUrl(piece.image, 128)}
                         alt={piece.name}
                         width={128}
                         height={128}
@@ -226,7 +226,7 @@ export const PiecesListView = React.memo(
                       {logoUrl ? (
                         <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white rounded-lg border border-slate-100 p-0.5 flex-shrink-0">
                           <img
-                            src={logoUrl}
+                            src={optimizeImageUrl(logoUrl, 40)}
                             alt={piece.brand}
                             width={40}
                             height={40}

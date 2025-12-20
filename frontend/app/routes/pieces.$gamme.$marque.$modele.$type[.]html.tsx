@@ -60,6 +60,7 @@ import {
 } from "../types/pieces-route.types";
 
 // Utilitaires
+import { normalizeImageUrl } from "../utils/image.utils";
 import {
   generateBuyingGuide,
   generateFAQ,
@@ -483,10 +484,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             url: canonicalUrl,
             // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
             // Fallback: image produit → logo marque équipementier → image gamme
+            // ⚠️ Utilise normalizeImageUrl pour éviter les URLs dupliquées
             image: firstPiece.image
-              ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${firstPiece.image}`
+              ? normalizeImageUrl(firstPiece.image.startsWith('http') ? firstPiece.image : `/rack/${firstPiece.image}`)
               : firstPiece.marque_logo
-                ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${firstPiece.marque_logo}`
+                ? normalizeImageUrl(`/upload/equipementiers-automobiles/${firstPiece.marque_logo}`)
                 : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
             // 🔧 MPN = Référence OEM principale - CLÉ SEO
             ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
@@ -544,10 +546,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                 url: `${canonicalUrl}#product-${piece.id}`,
                 // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
                 // Fallback: image produit → logo marque équipementier → image gamme
+                // ⚠️ Utilise normalizeImageUrl pour éviter les URLs dupliquées
                 image: piece.image
-                  ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${piece.image}`
+                  ? normalizeImageUrl(piece.image.startsWith('http') ? piece.image : `/rack/${piece.image}`)
                   : piece.marque_logo
-                    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`
+                    ? normalizeImageUrl(`/upload/equipementiers-automobiles/${piece.marque_logo}`)
                     : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
                 ...(piece.reference && { sku: piece.reference }),
                 brand: { "@type": "Brand", name: piece.brand },
