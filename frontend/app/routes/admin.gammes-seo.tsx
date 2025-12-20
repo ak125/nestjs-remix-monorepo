@@ -12,29 +12,31 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from "@remix-run/node";
-import { useLoaderData, Form, useNavigation, useSearchParams } from "@remix-run/react";
-import React, { useState, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { useLoaderData, useNavigation, useSearchParams } from "@remix-run/react";
 import {
-  TrendingUp,
-  Search,
-  Download,
-  RefreshCw,
+  AlertTriangle,
+  ArrowUpDown,
   CheckCircle,
-  XCircle,
-  Star,
+  ChevronLeft,
+  ChevronRight,
+  Download,
   Eye,
   EyeOff,
   Filter,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  Settings,
   History,
+  RefreshCw,
   RotateCcw,
-  Save
+  Save,
+  Search,
+  Settings,
+  Star,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
+import React, { useState, useCallback, useEffect } from "react";
+import { toast } from "sonner";
+
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -45,6 +47,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -54,9 +57,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Checkbox } from "~/components/ui/checkbox";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
-import { requireUser } from "~/auth/unified.server";
 
 // Smart Action types
 type SmartActionType =
@@ -100,7 +100,7 @@ interface GammeSeoItem {
   smart_action_description?: string;
 }
 
-interface GammeSeoStats {
+interface _GammeSeoStats {
   total: number;
   indexed: number;
   noindexed: number;
@@ -614,7 +614,7 @@ export default function AdminGammesSeo() {
   };
 
   // Appréciation globale (combinaison G-Level + Trends + Status)
-  const getAppreciation = (gamme: GammeSeoItem) => {
+  const _getAppreciation = (gamme: GammeSeoItem) => {
     const isG1 = gamme.pg_top === "1";
     const isIndex = gamme.pg_level === "1";
     const trends = gamme.trends_index;

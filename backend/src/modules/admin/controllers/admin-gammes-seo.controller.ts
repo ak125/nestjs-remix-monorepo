@@ -90,7 +90,10 @@ export class AdminGammesSeoController {
         sortOrder: sortOrder || 'desc',
       };
 
-      const result = await this.gammesSeoService.getGammesList(filters, pagination);
+      const result = await this.gammesSeoService.getGammesList(
+        filters,
+        pagination,
+      );
 
       return {
         success: true,
@@ -215,14 +218,17 @@ export class AdminGammesSeoController {
       const filename = `gammes-seo-${new Date().toISOString().split('T')[0]}.csv`;
 
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`,
+      );
       res.send('\uFEFF' + csv); // BOM for Excel UTF-8 compatibility
     } catch (error) {
       this.logger.error('❌ Error in exportCsv:', error);
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de l\'export CSV',
+          message: "Erreur lors de l'export CSV",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -271,16 +277,25 @@ export class AdminGammesSeoController {
     @Body() body: { pgIds: number[]; updateData: GammeSeoUpdateData },
   ) {
     try {
-      this.logger.log(`🔧 PATCH /api/admin/gammes-seo/batch (${body.pgIds?.length} gammes)`);
+      this.logger.log(
+        `🔧 PATCH /api/admin/gammes-seo/batch (${body.pgIds?.length} gammes)`,
+      );
 
-      if (!body.pgIds || !Array.isArray(body.pgIds) || body.pgIds.length === 0) {
+      if (
+        !body.pgIds ||
+        !Array.isArray(body.pgIds) ||
+        body.pgIds.length === 0
+      ) {
         throw new HttpException(
           { success: false, message: 'pgIds requis (tableau non vide)' },
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      const result = await this.gammesSeoService.batchUpdate(body.pgIds, body.updateData);
+      const result = await this.gammesSeoService.batchUpdate(
+        body.pgIds,
+        body.updateData,
+      );
 
       return {
         success: result.success,
@@ -312,9 +327,15 @@ export class AdminGammesSeoController {
     @Body() body: { pgIds: number[]; actionId: string },
   ) {
     try {
-      this.logger.log(`🚀 POST /api/admin/gammes-seo/action (${body.actionId})`);
+      this.logger.log(
+        `🚀 POST /api/admin/gammes-seo/action (${body.actionId})`,
+      );
 
-      if (!body.pgIds || !Array.isArray(body.pgIds) || body.pgIds.length === 0) {
+      if (
+        !body.pgIds ||
+        !Array.isArray(body.pgIds) ||
+        body.pgIds.length === 0
+      ) {
         throw new HttpException(
           { success: false, message: 'pgIds requis (tableau non vide)' },
           HttpStatus.BAD_REQUEST,
@@ -330,9 +351,15 @@ export class AdminGammesSeoController {
 
       // Extract admin info from session for audit logging
       const user = (req as any).user;
-      const adminInfo = user ? { id: user.cst_id || user.id, email: user.cst_email || user.email } : undefined;
+      const adminInfo = user
+        ? { id: user.cst_id || user.id, email: user.cst_email || user.email }
+        : undefined;
 
-      const result = await this.gammesSeoService.applyPredefinedAction(body.pgIds, body.actionId, adminInfo);
+      const result = await this.gammesSeoService.applyPredefinedAction(
+        body.pgIds,
+        body.actionId,
+        adminInfo,
+      );
 
       return {
         success: result.success,
