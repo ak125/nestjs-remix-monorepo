@@ -56,25 +56,27 @@ interface LoaderData {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const search = data?.search || '';
   const total = data?.total || 0;
-  
-  const title = search 
+
+  const title = search
     ? `Conseils Automobiles - Recherche "${search}" (${total} résultats)`
     : "Conseils Automobiles Expert - Guides d'Entretien et Réparation Auto";
-    
+
   const description = search
     ? `Découvrez ${total} conseils d'experts pour "${search}". Guides complets d'entretien et réparation automobile.`
     : "Plus de 85 conseils d'experts automobiles. Guides détaillés pour l'entretien, la réparation et le diagnostic de votre véhicule.";
-    
+
   return [
     { title },
     { name: "description", content: description },
     { name: "keywords", content: "conseils automobile, entretien voiture, réparation auto, diagnostic panne, guide mécanique" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/advice" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
+    { name: "robots", content: "index, follow" },
   ];
 };
 

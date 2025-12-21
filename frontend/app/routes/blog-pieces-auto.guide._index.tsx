@@ -227,6 +227,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       content: `Découvrez nos ${count} guides d'achat pour choisir les meilleures pièces auto. Comparatifs, conseils d'experts et recommandations pour faire le bon choix au meilleur prix.`,
     },
     { name: "keywords", content: "guide achat pièces auto, comparatif pièces, conseils achat, choisir pièces voiture, meilleures marques auto" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/guide" },
+    { name: "robots", content: "index, follow" },
   ];
 };
 

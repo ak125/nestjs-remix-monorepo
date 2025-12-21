@@ -137,6 +137,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title },
     { name: "description", content: description },
     { name: "keywords", content: keywords },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/auto" },
     { name: "robots", content: robots },
   ];
 };

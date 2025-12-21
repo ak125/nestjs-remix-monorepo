@@ -413,12 +413,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const title = data?.search 
+  const title = data?.search
     ? `Constructeurs Automobiles - Recherche: ${data.search}`
-    : data?.letter 
+    : data?.letter
     ? `Constructeurs Automobiles - Lettre ${data.letter}`
     : "Constructeurs Automobiles - Marques et Histoire Auto";
-    
+
   const description = data?.search
     ? `Découvrez les constructeurs automobiles correspondant à "${data.search}". Histoire, innovations et modèles emblématiques.`
     : data?.letter
@@ -429,6 +429,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title },
     { name: "description", content: description },
     { name: "keywords", content: "constructeurs automobiles, marques auto, histoire automobile, modèles voiture, innovation auto" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/constructeurs" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },

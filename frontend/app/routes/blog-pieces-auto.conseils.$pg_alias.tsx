@@ -236,22 +236,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 // Meta tags
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
       { title: "Article non trouvé" },
+      { name: "robots", content: "noindex" },
     ];
   }
 
   const { article } = data;
-  
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
+
   return [
     { title: article.seo_data.meta_title },
     { name: "description", content: article.seo_data.meta_description },
     { name: "keywords", content: article.keywords.join(", ") },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
+    { name: "robots", content: "index, follow" },
     { property: "og:title", content: article.title },
     { property: "og:description", content: article.excerpt },
     { property: "og:type", content: "article" },
+    { property: "og:url", content: canonicalUrl },
   ];
 };
 

@@ -59,7 +59,7 @@ interface LoaderData {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data?.guide) {
     return [
       { title: "Guide non trouvé - Pièces Auto" },
@@ -72,13 +72,17 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     /^Guide achat de pièce auto:?\s*/i,
     "",
   );
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
   return [
     { title: `${cleanTitle} - Guide d'Achat Pièces Auto` },
     { name: "description", content: guide.excerpt },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
+    { name: "robots", content: "index, follow" },
     { property: "og:title", content: cleanTitle },
     { property: "og:description", content: guide.excerpt },
     { property: "og:type", content: "article" },
+    { property: "og:url", content: canonicalUrl },
     { property: "article:published_time", content: guide.publishedAt },
   ];
 };

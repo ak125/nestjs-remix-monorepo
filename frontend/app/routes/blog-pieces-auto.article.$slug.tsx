@@ -149,6 +149,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "author", content: "Automecanik - Experts Automobile" },
+    { name: "robots", content: "index, follow" },
     // 📰 JSON-LD Schema Article
     { "script:ld+json": articleSchema },
   ];

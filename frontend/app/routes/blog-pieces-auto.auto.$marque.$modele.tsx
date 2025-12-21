@@ -124,10 +124,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelGroup = data?.modelGroup;
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
   const title =
     metadata?.title ||
@@ -141,6 +142,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title },
     { name: "description", content: description },
     { name: "keywords", content: keywords },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: "robots", content: "index, follow" },
   ];
 };

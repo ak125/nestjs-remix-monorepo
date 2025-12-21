@@ -151,6 +151,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       content: `Découvrez nos ${count} conseils d'experts pour l'entretien et la réparation de votre véhicule. Guides pratiques sur tous les systèmes automobiles.`,
     },
     { name: "keywords", content: "montage, entretien, conseil auto, réparation, mécanique, tutoriel" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/conseils" },
+    { name: "robots", content: "index, follow" },
   ];
 };
 
