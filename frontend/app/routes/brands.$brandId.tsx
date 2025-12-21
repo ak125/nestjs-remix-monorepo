@@ -17,15 +17,17 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 /**
  * 🔍 SEO Meta Tags
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const brandName = data?.brand?.marque_name || 'Marque';
   const modelsCount = data?.models?.length || 0;
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
   const title = `Pièces Détachées ${brandName} | ${modelsCount} Modèles Disponibles`;
   const description = `Trouvez toutes les pièces détachées pour votre ${brandName}. ${modelsCount} modèles disponibles avec livraison rapide. Pièces auto ${brandName} de qualité.`;
-  
+
   return [
     { title },
     { name: 'description', content: description },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: 'robots', content: 'index, follow' },
     // Open Graph
     { property: 'og:title', content: title },

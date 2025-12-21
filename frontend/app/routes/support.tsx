@@ -11,6 +11,8 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Dashboard Support - Gestion Client" },
     { name: "description", content: "Dashboard principal pour la gestion du support client" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/support" },
+    { name: "robots", content: "noindex, follow" },
   ];
 };
 

@@ -70,10 +70,11 @@ async function createContact(contactData: ContactRequest): Promise<{ ticketNumbe
 export const meta: MetaFunction = () => {
   return [
     { title: "Contactez-nous | Support Client" },
-    { 
-      name: "description", 
-      content: "Contactez notre équipe support pour toute question sur vos commandes, produits ou services. Réponse rapide garantie." 
+    {
+      name: "description",
+      content: "Contactez notre équipe support pour toute question sur vos commandes, produits ou services. Réponse rapide garantie."
     },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/contact" },
     { name: "robots", content: "index, follow" }
   ];
 };
