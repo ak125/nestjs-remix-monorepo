@@ -163,7 +163,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     try {
       this.cachedThresholds = await this.thresholdsService.getThresholds();
       // Clear cache after 10 seconds (pour éviter les problèmes de mémoire)
-      setTimeout(() => { this.cachedThresholds = null; }, 10000);
+      setTimeout(() => {
+        this.cachedThresholds = null;
+      }, 10000);
       return this.cachedThresholds;
     } catch {
       return DEFAULT_THRESHOLDS;
@@ -187,7 +189,8 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     if (trendsIndex >= trends_high && seoScore >= seo_excellent) {
       return {
         action: 'INDEX_G1',
-        description: 'Page dédiée prioritaire - Fort volume + forte valeur commerciale',
+        description:
+          'Page dédiée prioritaire - Fort volume + forte valeur commerciale',
       };
     }
     if (trendsIndex >= trends_high && seoScore >= seo_good) {
@@ -205,13 +208,14 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     if (trendsIndex >= trends_medium && seoScore >= seo_excellent) {
       return {
         action: 'OBSERVER',
-        description: 'Potentiel élevé - Surveiller l\'évolution des tendances',
+        description: "Potentiel élevé - Surveiller l'évolution des tendances",
       };
     }
     if (trendsIndex < trends_medium && seoScore >= seo_excellent) {
       return {
         action: 'PARENT',
-        description: 'Forte valeur mais faible volume - Intégrer dans page parente',
+        description:
+          'Forte valeur mais faible volume - Intégrer dans page parente',
       };
     }
     if (trendsIndex >= trends_medium && seoScore >= seo_good) {
@@ -233,7 +237,12 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   async getGammesList(
     filters: GammeSeoFilters = {},
     pagination: GammeSeoPagination = { page: 1, limit: 50 },
-  ): Promise<{ data: GammeSeoItem[]; total: number; page: number; totalPages: number }> {
+  ): Promise<{
+    data: GammeSeoItem[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
     try {
       this.logger.log('📋 Fetching gammes SEO list...');
 
@@ -256,7 +265,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 2. Get gammes from pieces_gamme
       const { data: gammes, error: gammesError } = await this.supabase
         .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display')
+        .select(
+          'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display',
+        )
         .in('pg_id', pgIds);
 
       if (gammesError) {
@@ -267,7 +278,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 3. Get SEO metrics from gamme_seo_metrics (incluant données Agent 2)
       const { data: seoMetrics, error: seoError } = await this.supabase
         .from('gamme_seo_metrics')
-        .select('pg_id, trends_index, g_level_recommended, action_recommended, user_notes, user_action, trends_updated_at, search_volume, competition, competition_index')
+        .select(
+          'pg_id, trends_index, g_level_recommended, action_recommended, user_notes, user_action, trends_updated_at, search_volume, competition, competition_index',
+        )
         .in('pg_id', pgIds);
 
       if (seoError) {
@@ -288,9 +301,15 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       }
 
       // Build lookup maps
-      const seoMetricsMap = new Map(seoMetrics?.map((m: any) => [m.pg_id, m]) || []);
-      const familiesMap = new Map(families?.map((f: any) => [f.mf_id, f.mf_name]) || []);
-      const pgToFamilyMap = new Map(liaisons.map((l: any) => [Number(l.mc_pg_id), l.mc_mf_id]));
+      const seoMetricsMap = new Map(
+        seoMetrics?.map((m: any) => [m.pg_id, m]) || [],
+      );
+      const familiesMap = new Map(
+        families?.map((f: any) => [f.mf_id, f.mf_name]) || [],
+      );
+      const pgToFamilyMap = new Map(
+        liaisons.map((l: any) => [Number(l.mc_pg_id), l.mc_mf_id]),
+      );
 
       // 5. Merge data (incluant Agent 2)
       let result: GammeSeoItem[] = (gammes || []).map((g: any) => {
@@ -304,23 +323,15 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           if (seo.user_notes) {
             agent2Data = JSON.parse(seo.user_notes);
           }
-        } catch (e) {
+        } catch {
           // Si user_notes n'est pas du JSON, ignorer
-        }
-
-        // Calculate ACTUAL G-Level based on database values
-        let actualGLevel: string;
-        if (g.pg_top === '1') {
-          actualGLevel = 'G1';  // Prioritaire
-        } else if (g.pg_level === '1') {
-          actualGLevel = 'G2';  // INDEX mais non G1
-        } else {
-          actualGLevel = 'G3';  // NOINDEX
         }
 
         // Use Agent 2 recommended G-Level if available, else calculate from trends
         const trendsIndex = seo.trends_index || 0;
-        const recommendedGLevel = seo.g_level_recommended || (trendsIndex >= 50 ? 'G1' : trendsIndex >= 20 ? 'G2' : 'G3');
+        const recommendedGLevel =
+          seo.g_level_recommended ||
+          (trendsIndex >= 50 ? 'G1' : trendsIndex >= 20 ? 'G2' : 'G3');
 
         // Use Agent 2 action if available, but filter out obsolete recommendations
         let actionRecommended = seo.action_recommended || null;
@@ -338,7 +349,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         const serpScore = agent2Data.serp_score || 0;
 
         // 🎯 Calculate Smart Action (with configurable thresholds)
-        const smartActionResult = this.calculateSmartAction(trendsIndex, seoScore, thresholds);
+        const smartActionResult = this.calculateSmartAction(
+          trendsIndex,
+          seoScore,
+          thresholds,
+        );
 
         return {
           pg_id: g.pg_id,
@@ -359,9 +374,12 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           // Agent 2 data
           seo_score: seoScore,
           serp_score: serpScore,
-          search_intent: agent2Data.search_intent || seo.competition || 'UNKNOWN',
-          competition_level: seo.competition || agent2Data.competition_level || 'UNKNOWN',
-          competition_difficulty: seo.competition_index || agent2Data.competition_difficulty || 0,
+          search_intent:
+            agent2Data.search_intent || seo.competition || 'UNKNOWN',
+          competition_level:
+            seo.competition || agent2Data.competition_level || 'UNKNOWN',
+          competition_difficulty:
+            seo.competition_index || agent2Data.competition_difficulty || 0,
           shopping_likely: agent2Data.shopping_likely || false,
           paa_count: agent2Data.paa_count || 0,
           commercial_value: agent2Data.commercial_value || 0,
@@ -377,38 +395,41 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 6. Apply filters
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        result = result.filter(g =>
-          g.pg_name.toLowerCase().includes(searchLower) ||
-          (g.pg_alias && g.pg_alias.toLowerCase().includes(searchLower))
+        result = result.filter(
+          (g) =>
+            g.pg_name.toLowerCase().includes(searchLower) ||
+            (g.pg_alias && g.pg_alias.toLowerCase().includes(searchLower)),
         );
       }
 
       if (filters.familyId) {
-        result = result.filter(g => g.family_id === filters.familyId);
+        result = result.filter((g) => g.family_id === filters.familyId);
       }
 
       if (filters.gLevel) {
-        result = result.filter(g => g.g_level_recommended === filters.gLevel);
+        result = result.filter((g) => g.g_level_recommended === filters.gLevel);
       }
 
       if (filters.status) {
         if (filters.status === 'INDEX') {
-          result = result.filter(g => g.pg_level === '1');
+          result = result.filter((g) => g.pg_level === '1');
         } else {
-          result = result.filter(g => g.pg_level !== '1');
+          result = result.filter((g) => g.pg_level !== '1');
         }
       }
 
       if (filters.actionRecommended) {
-        result = result.filter(g => g.action_recommended === filters.actionRecommended);
+        result = result.filter(
+          (g) => g.action_recommended === filters.actionRecommended,
+        );
       }
 
       if (filters.minTrends !== undefined) {
-        result = result.filter(g => g.trends_index >= filters.minTrends!);
+        result = result.filter((g) => g.trends_index >= filters.minTrends!);
       }
 
       if (filters.maxTrends !== undefined) {
-        result = result.filter(g => g.trends_index <= filters.maxTrends!);
+        result = result.filter((g) => g.trends_index <= filters.maxTrends!);
       }
 
       // 7. Apply sorting
@@ -422,20 +443,23 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           if (!familyName) return FAMILY_HIERARCHY_ORDER.length; // Sans famille at the end
 
           // Normalize: remove accents and lowercase for comparison
-          const normalize = (s: string) => s.toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const normalize = (s: string) =>
+            s
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '');
 
           const normalizedInput = normalize(familyName);
           const index = FAMILY_HIERARCHY_ORDER.findIndex(
-            f => normalize(f) === normalizedInput
+            (f) => normalize(f) === normalizedInput,
           );
           return index === -1 ? FAMILY_HIERARCHY_ORDER.length : index;
         };
 
         // Debug: log unique families and their positions
-        const uniqueFamilies = [...new Set(result.map(r => r.family_name))];
+        const uniqueFamilies = [...new Set(result.map((r) => r.family_name))];
         this.logger.log('📊 Familles trouvées et leurs positions:');
-        uniqueFamilies.forEach(f => {
+        uniqueFamilies.forEach((f) => {
           const pos = getFamilyHierarchyIndex(f);
           this.logger.log(`   ${pos}. ${f || 'Sans famille'}`);
         });
@@ -484,7 +508,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const offset = (pagination.page - 1) * pagination.limit;
       const paginatedData = result.slice(offset, offset + pagination.limit);
 
-      this.logger.log(`✅ Returning ${paginatedData.length} gammes (page ${pagination.page}/${totalPages})`);
+      this.logger.log(
+        `✅ Returning ${paginatedData.length} gammes (page ${pagination.page}/${totalPages})`,
+      );
 
       return {
         data: paginatedData,
@@ -525,7 +551,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         EVALUER: 0,
         NOINDEX: 0,
       };
-      data.forEach(g => {
+      data.forEach((g) => {
         if (g.smart_action && smartActionCounts[g.smart_action] !== undefined) {
           smartActionCounts[g.smart_action]++;
         }
@@ -533,18 +559,27 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
       const stats: GammeSeoStats = {
         total: data.length,
-        indexed: data.filter(g => g.pg_level === '1').length,
-        noindexed: data.filter(g => g.pg_level !== '1').length,
-        g1Count: data.filter(g => g.pg_top === '1').length,
-        g2Count: data.filter(g => g.pg_level === '1' && g.pg_top !== '1').length,
-        g3Count: data.filter(g => g.pg_level !== '1').length,
-        toPromoteIndex: data.filter(g => g.action_recommended === 'PROMOUVOIR_INDEX').length,
-        toPromoteG1: data.filter(g => g.action_recommended === 'PROMOUVOIR_G1').length,
-        toVerifyG1: data.filter(g => g.action_recommended === 'VERIFIER_G1').length,
-        inSitemap: data.filter(g => g.pg_sitemap === '1').length,
-        avgTrends: data.length > 0
-          ? Math.round(data.reduce((sum, g) => sum + g.trends_index, 0) / data.length)
-          : 0,
+        indexed: data.filter((g) => g.pg_level === '1').length,
+        noindexed: data.filter((g) => g.pg_level !== '1').length,
+        g1Count: data.filter((g) => g.pg_top === '1').length,
+        g2Count: data.filter((g) => g.pg_level === '1' && g.pg_top !== '1')
+          .length,
+        g3Count: data.filter((g) => g.pg_level !== '1').length,
+        toPromoteIndex: data.filter(
+          (g) => g.action_recommended === 'PROMOUVOIR_INDEX',
+        ).length,
+        toPromoteG1: data.filter(
+          (g) => g.action_recommended === 'PROMOUVOIR_G1',
+        ).length,
+        toVerifyG1: data.filter((g) => g.action_recommended === 'VERIFIER_G1')
+          .length,
+        inSitemap: data.filter((g) => g.pg_sitemap === '1').length,
+        avgTrends:
+          data.length > 0
+            ? Math.round(
+                data.reduce((sum, g) => sum + g.trends_index, 0) / data.length,
+              )
+            : 0,
         smartActions: smartActionCounts,
       };
 
@@ -562,7 +597,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   /**
    * 🔧 Mise à jour d'une gamme
    */
-  async updateGamme(pgId: number, updateData: GammeSeoUpdateData): Promise<{ success: boolean; message: string }> {
+  async updateGamme(
+    pgId: number,
+    updateData: GammeSeoUpdateData,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`🔧 Updating gamme pg_id=${pgId}...`);
 
@@ -590,25 +628,37 @@ export class AdminGammesSeoService extends SupabaseBaseService {
             .gt('stock', 0);
 
           if (productCount && productCount > 0) {
-            this.logger.warn(`⛔ BLOCAGE: Tentative de NOINDEX sur G1 "${currentGamme.pg_name}" avec ${productCount} produits en stock`);
+            this.logger.warn(
+              `⛔ BLOCAGE: Tentative de NOINDEX sur G1 "${currentGamme.pg_name}" avec ${productCount} produits en stock`,
+            );
             throw new Error(
               `❌ Impossible de passer "${currentGamme.pg_name}" en NOINDEX.\n` +
-              `Raison: C'est une gamme G1 (prioritaire) avec ${productCount} produits en stock.\n` +
-              `Pour NOINDEX un G1, le stock doit être à 0.`
+                `Raison: C'est une gamme G1 (prioritaire) avec ${productCount} produits en stock.\n` +
+                `Pour NOINDEX un G1, le stock doit être à 0.`,
             );
           }
 
-          this.logger.log(`✅ G1 "${currentGamme.pg_name}" peut être NOINDEX (stock = 0)`);
+          this.logger.log(
+            `✅ G1 "${currentGamme.pg_name}" peut être NOINDEX (stock = 0)`,
+          );
         }
       }
 
       // Split updates: pieces_gamme vs gamme_seo_metrics
-      const piecesGammeFields: (keyof GammeSeoUpdateData)[] = ['pg_level', 'pg_top', 'pg_relfollow', 'pg_sitemap'];
-      const seoMetricsFields: (keyof GammeSeoUpdateData)[] = ['user_notes', 'user_action'];
+      const piecesGammeFields: (keyof GammeSeoUpdateData)[] = [
+        'pg_level',
+        'pg_top',
+        'pg_relfollow',
+        'pg_sitemap',
+      ];
+      const seoMetricsFields: (keyof GammeSeoUpdateData)[] = [
+        'user_notes',
+        'user_action',
+      ];
 
       // Update pieces_gamme if needed
       const piecesUpdate: Record<string, any> = {};
-      piecesGammeFields.forEach(field => {
+      piecesGammeFields.forEach((field) => {
         if (updateData[field] !== undefined) {
           piecesUpdate[field] = updateData[field];
         }
@@ -627,15 +677,20 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       }
 
       // Update gamme_seo_metrics if needed
-      const seoUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
-      seoMetricsFields.forEach(field => {
+      const seoUpdate: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
+      seoMetricsFields.forEach((field) => {
         if (updateData[field] !== undefined) {
           seoUpdate[field] = updateData[field];
         }
       });
 
       // Recalculate g_level_recommended based on new pg_level and pg_top
-      if (updateData.pg_level !== undefined || updateData.pg_top !== undefined) {
+      if (
+        updateData.pg_level !== undefined ||
+        updateData.pg_top !== undefined
+      ) {
         // Fetch current values to combine with updates
         const { data: current } = await this.supabase
           .from('pieces_gamme')
@@ -683,7 +738,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   /**
    * 🔧 Mise à jour en masse
    */
-  async batchUpdate(pgIds: number[], updateData: GammeSeoUpdateData): Promise<{ success: boolean; message: string; updated: number }> {
+  async batchUpdate(
+    pgIds: number[],
+    updateData: GammeSeoUpdateData,
+  ): Promise<{ success: boolean; message: string; updated: number }> {
     try {
       this.logger.log(`🔧 Batch updating ${pgIds.length} gammes...`);
 
@@ -701,7 +759,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // Clear cache
       await this.cacheService.del('admin:gammes-seo-stats');
 
-      this.logger.log(`✅ Batch update completed: ${updated}/${pgIds.length} gammes`);
+      this.logger.log(
+        `✅ Batch update completed: ${updated}/${pgIds.length} gammes`,
+      );
       return {
         success: true,
         message: `${updated}/${pgIds.length} gammes mises à jour`,
@@ -720,7 +780,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     try {
       this.logger.log('📤 Exporting gammes to CSV...');
 
-      const { data } = await this.getGammesList({}, { page: 1, limit: 1000, sortBy: 'trends_index', sortOrder: 'desc' });
+      const { data } = await this.getGammesList(
+        {},
+        { page: 1, limit: 1000, sortBy: 'trends_index', sortOrder: 'desc' },
+      );
 
       // CSV header with Smart Action columns
       const headers = [
@@ -745,7 +808,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       ];
 
       // CSV rows with Smart Action data
-      const rows = data.map(g => [
+      const rows = data.map((g) => [
         g.pg_id,
         `"${g.pg_name.replace(/"/g, '""')}"`,
         g.family_name ? `"${g.family_name.replace(/"/g, '""')}"` : '',
@@ -766,7 +829,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         g.user_action || '',
       ]);
 
-      const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+      const csv = [headers.join(';'), ...rows.map((r) => r.join(';'))].join(
+        '\n',
+      );
 
       this.logger.log(`✅ CSV exported: ${data.length} rows`);
       return csv;
@@ -786,7 +851,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .from('catalog_gamme')
         .select('mc_mf_id');
 
-      const familyIds = [...new Set(liaisons?.map((l: any) => l.mc_mf_id) || [])];
+      const familyIds = [
+        ...new Set(liaisons?.map((l: any) => l.mc_mf_id) || []),
+      ];
 
       const { data: families, error } = await this.supabase
         .from('catalog_family')
@@ -843,7 +910,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     adminInfo?: { id: number; email: string },
   ): Promise<{ success: boolean; message: string; updated: number }> {
     let updateData: GammeSeoUpdateData;
-    let auditActionType: 'BATCH_PROMOTE_INDEX' | 'BATCH_DEMOTE_NOINDEX' | 'BATCH_MARK_G1' | 'BATCH_UNMARK_G1';
+    let auditActionType:
+      | 'BATCH_PROMOTE_INDEX'
+      | 'BATCH_DEMOTE_NOINDEX'
+      | 'BATCH_MARK_G1'
+      | 'BATCH_UNMARK_G1';
 
     switch (actionId) {
       case 'PROMOTE_INDEX':
@@ -890,7 +961,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         entityIds: pgIds,
         oldValues: null, // Could fetch old values if needed
         newValues: updateData,
-        impactSummary: GammeSeoAuditService.formatImpactSummary(auditActionType, result.updated),
+        impactSummary: GammeSeoAuditService.formatImpactSummary(
+          auditActionType,
+          result.updated,
+        ),
       });
     }
 
