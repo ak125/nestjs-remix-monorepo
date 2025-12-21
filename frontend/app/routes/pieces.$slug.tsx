@@ -295,7 +295,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.automecanik.com" },
             { "@type": "ListItem", position: 2, name: "Pièces Auto", item: "https://www.automecanik.com/pieces" },
-            { "@type": "ListItem", position: 3, name: data.content.pg_name },
+            { "@type": "ListItem", position: 3, name: data.content.pg_name, item: canonicalUrl },
           ],
         },
       },
