@@ -12,6 +12,7 @@ export const meta: MetaFunction = () => {
       content:
         "Générez du contenu intelligent avec IA pour vos produits et pages",
     },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

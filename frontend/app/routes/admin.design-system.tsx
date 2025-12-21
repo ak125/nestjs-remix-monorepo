@@ -23,6 +23,7 @@ export const meta: MetaFunction = () => {
       name: "description",
       content: "Guide de référence rapide du Design System",
     },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

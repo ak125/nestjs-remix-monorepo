@@ -23,6 +23,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Rapports & Analyses - Admin" },
     { name: "description", content: "Rapports détaillés et analyses de performance" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

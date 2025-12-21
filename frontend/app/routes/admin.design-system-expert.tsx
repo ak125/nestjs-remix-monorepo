@@ -161,6 +161,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Design System Expert | Dashboard Admin" },
     { name: "description", content: "Système de design avancé avec 180+ tokens, dark mode, animations et validation WCAG" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

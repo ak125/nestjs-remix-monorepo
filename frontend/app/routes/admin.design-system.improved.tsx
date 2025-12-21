@@ -14,6 +14,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Design System - Guide Complet" },
     { name: "description", content: "Guide complet des design tokens - 140+ tokens pour un design cohérent" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

@@ -18,6 +18,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Gestion des Fournisseurs - Admin" },
     { name: "description", content: "Interface d'administration pour la gestion des fournisseurs" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

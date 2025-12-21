@@ -46,6 +46,7 @@ export const meta = () => {
   return [
     { title: "Gestion des Commandes" },
     { name: "description", content: "Interface unifiée de gestion des commandes" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

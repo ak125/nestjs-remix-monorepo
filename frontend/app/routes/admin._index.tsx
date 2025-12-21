@@ -43,6 +43,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Dashboard - Administration" },
     { name: "description", content: "Tableau de bord d'administration avec statistiques en temps réel" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 
