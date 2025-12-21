@@ -11,6 +11,7 @@ import { getOptionalUser } from "../../auth/unified.server";
 export const meta: MetaFunction = () => [
   { title: "Connexion | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/login" },
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

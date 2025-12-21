@@ -18,11 +18,11 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate, useFetcher } from "@remix-run/react";
-import { 
-  Search as SearchIcon, 
-  Grid3X3, 
-  List, 
-  Scale, 
+import {
+  Search as SearchIcon,
+  Grid3X3,
+  List,
+  Scale,
   RotateCcw,
   ArrowUpDown,
   TrendingUp,
@@ -47,16 +47,23 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 // Hook et types
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
-import  { type PieceData } from "../types/pieces-route.types";
+import { type PieceData } from "../types/pieces-route.types";
 
 // Mappers
-import { 
-  mapSearchResultsToPieces, 
+import {
+  mapSearchResultsToPieces,
   groupSearchResultsByGamme,
   type SearchResultItem,
   type SearchFacet,
   type GroupedSearchResults
 } from "../utils/search-mappers";
+
+// 🤖 SEO: Pages de recherche non indexables
+export const meta: MetaFunction = () => [
+  { title: 'Recherche | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search" },
+];
 
 // ===============================
 // TYPES

@@ -2,13 +2,13 @@ import { Alert } from '@fafa/ui';
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { Outlet, useLoaderData, NavLink } from '@remix-run/react';
-import { 
-  CreditCard, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  CreditCard,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle,
   Clock,
   DollarSign,
   Users,
@@ -16,6 +16,12 @@ import {
 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
+
+export const meta: MetaFunction = () => [
+  { title: 'Paiements | Admin AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/payments" },
+];
 
 // Interface pour les données de paiements
 interface PaymentStats {

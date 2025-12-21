@@ -21,6 +21,7 @@ export const meta: MetaFunction = () => [
   { title: 'Recherche par code mine | Identifier votre véhicule' },
   { name: 'description', content: 'Recherchez votre véhicule par code mine pour trouver les pièces compatibles.' },
   { name: 'robots', content: 'noindex, nofollow' }, // Recherche non indexée
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search/mine" },
 ];
 
 interface LoaderData {

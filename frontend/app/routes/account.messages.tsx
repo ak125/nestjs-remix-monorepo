@@ -1,6 +1,6 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { 
+import {
   Mail, Clock, AlertCircle, MessageCircle, Bell, Archive, Search, Send
 } from "lucide-react";
 import { requireUserWithRedirect } from "../auth/unified.server";
@@ -10,6 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { formatRelativeTime } from "../utils/date";
+
+export const meta: MetaFunction = () => [
+  { title: 'Ma messagerie | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/messages" },
+];
 
 // Interface pour les messages (basée sur l'API backend)
 interface Message {

@@ -12,6 +12,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title: `${data.page.title} - Automecanik` },
     { name: "description", content: data.page.description || "Conditions Générales de Vente Automecanik" },
     { name: "robots", content: "noindex, follow" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/legal/cgv" },
   ];
 };
 

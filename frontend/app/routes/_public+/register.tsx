@@ -17,6 +17,7 @@ import { getOptionalUser } from "../../auth/unified.server";
 export const meta: MetaFunction = () => [
   { title: "Inscription | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/register" },
 ];
 
 const _RegisterSchema = z.object({

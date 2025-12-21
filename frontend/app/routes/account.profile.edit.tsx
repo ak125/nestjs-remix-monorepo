@@ -1,11 +1,17 @@
 import { Alert } from '@fafa/ui';
-import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
+import { json, redirect, type ActionFunction, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Form, useActionData, useNavigation } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+
+export const meta: MetaFunction = () => [
+  { title: 'Modifier mon profil | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/profile/edit" },
+];
 
 type User = {
   id: string;

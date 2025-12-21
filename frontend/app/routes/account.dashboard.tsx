@@ -22,6 +22,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 export const meta: MetaFunction = () => [
   { title: 'Mon compte | Tableau de bord' },
   { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/dashboard" },
 ];
 
 type User = {

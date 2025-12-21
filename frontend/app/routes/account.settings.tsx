@@ -1,4 +1,4 @@
-import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
+import { json, redirect, type ActionFunction, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
 
@@ -16,6 +16,12 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+
+export const meta: MetaFunction = () => [
+  { title: 'Paramètres du compte | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/settings" },
+];
 
 export const loader: LoaderFunction = async ({ context }) => {
   const user = await requireUser({ context });
