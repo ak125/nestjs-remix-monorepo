@@ -6,6 +6,7 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 const MODE = process.env.NODE_ENV;
+const isProduction = MODE === 'production';
 installGlobals();
 
 export default defineConfig({
@@ -43,6 +44,8 @@ export default defineConfig({
 						"**/*.css",
 						"**/*.test.{js,jsx,ts,tsx}",
 						"**/__*.*",
+						// Exclure admin en production automatiquement
+						...(isProduction ? ["**/admin.*", "**/admin/**"] : []),
 						// This is for server-side utilities you want to colocate next to
 						// your routes without making an additional directory.
 						// If you need a route that includes "server" or "client" in the
