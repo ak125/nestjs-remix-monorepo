@@ -203,18 +203,8 @@ export default function TestHomepageModern() {
                   "@type": "PostalAddress",
                   addressCountry: "FR",
                 },
-                // Note: aggregateRating retiré - nécessite de vrais avis clients
-                offers: {
-                  "@type": "AggregateOffer",
-                  priceCurrency: "EUR",
-                  lowPrice: "4.50",
-                  highPrice: "500.00",
-                  availability: "https://schema.org/InStock",
-                  itemOffered: {
-                    "@type": "Product",
-                    name: "Pièces détachées automobiles",
-                  },
-                },
+                // Note: offers retiré - AutoPartsStore n'exige pas d'offers selon Schema.org
+                // Les pages produit (pieces) ont les vrais prix dynamiques
               },
             ],
           }),
