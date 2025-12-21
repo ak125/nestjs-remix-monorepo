@@ -12,13 +12,13 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 // Types d'actions trackées
 export type GammeSeoActionType =
-  | 'THRESHOLD_UPDATE'       // Modification des seuils
-  | 'THRESHOLD_RESET'        // Reset aux valeurs par défaut
-  | 'BATCH_PROMOTE_INDEX'    // Promotion en masse vers INDEX
-  | 'BATCH_DEMOTE_NOINDEX'   // Rétrogradation en masse vers NOINDEX
-  | 'BATCH_MARK_G1'          // Marquage en masse G1
-  | 'BATCH_UNMARK_G1'        // Retrait en masse G1
-  | 'SINGLE_UPDATE';         // Mise à jour individuelle
+  | 'THRESHOLD_UPDATE' // Modification des seuils
+  | 'THRESHOLD_RESET' // Reset aux valeurs par défaut
+  | 'BATCH_PROMOTE_INDEX' // Promotion en masse vers INDEX
+  | 'BATCH_DEMOTE_NOINDEX' // Rétrogradation en masse vers NOINDEX
+  | 'BATCH_MARK_G1' // Marquage en masse G1
+  | 'BATCH_UNMARK_G1' // Retrait en masse G1
+  | 'SINGLE_UPDATE'; // Mise à jour individuelle
 
 // Interface d'une entrée d'audit
 export interface GammeSeoAuditEntry {
@@ -27,7 +27,7 @@ export interface GammeSeoAuditEntry {
   admin_email: string;
   action_type: GammeSeoActionType;
   entity_type: 'threshold' | 'gamme' | 'batch';
-  entity_ids: number[] | null;       // pg_ids affectés
+  entity_ids: number[] | null; // pg_ids affectés
   old_values: any | null;
   new_values: any | null;
   impact_summary: string;
@@ -66,7 +66,9 @@ export class GammeSeoAuditService extends SupabaseBaseService {
     impactSummary: string;
   }): Promise<{ success: boolean; auditId?: number }> {
     try {
-      this.logger.log(`📝 Logging action: ${params.actionType} by ${params.adminEmail}`);
+      this.logger.log(
+        `📝 Logging action: ${params.actionType} by ${params.adminEmail}`,
+      );
 
       // Utilise la table ___xtr_msg avec un format structuré
       const { data, error } = await this.supabase
@@ -119,13 +121,18 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       // Build query
       let query = this.supabase
         .from('___xtr_msg')
-        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content', { count: 'exact' })
+        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content', {
+          count: 'exact',
+        })
         .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`)
         .order('msg_date', { ascending: false });
 
       // Apply filters
       if (filters.actionType) {
-        query = query.eq('msg_subject', `${AUDIT_MSG_PREFIX}:${filters.actionType}`);
+        query = query.eq(
+          'msg_subject',
+          `${AUDIT_MSG_PREFIX}:${filters.actionType}`,
+        );
       }
       if (filters.adminId) {
         query = query.eq('msg_cst_id', filters.adminId);
@@ -148,32 +155,39 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       }
 
       // Parse results
-      const entries: GammeSeoAuditEntry[] = (data || []).map((row: any) => {
-        let content: any = {};
-        try {
-          content = JSON.parse(row.msg_content || '{}');
-        } catch {
-          content = {};
-        }
+      const entries: GammeSeoAuditEntry[] = (data || [])
+        .map((row: any) => {
+          let content: any = {};
+          try {
+            content = JSON.parse(row.msg_content || '{}');
+          } catch {
+            content = {};
+          }
 
-        // Filter by entityType if specified
-        if (filters.entityType && content.entity_type !== filters.entityType) {
-          return null;
-        }
+          // Filter by entityType if specified
+          if (
+            filters.entityType &&
+            content.entity_type !== filters.entityType
+          ) {
+            return null;
+          }
 
-        return {
-          id: row.msg_id,
-          admin_id: row.msg_cst_id,
-          admin_email: content.admin_email || 'unknown',
-          action_type: content.action_type || row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, ''),
-          entity_type: content.entity_type || 'unknown',
-          entity_ids: content.entity_ids || null,
-          old_values: content.old_values || null,
-          new_values: content.new_values || null,
-          impact_summary: content.impact_summary || '',
-          created_at: row.msg_date,
-        };
-      }).filter(Boolean);
+          return {
+            id: row.msg_id,
+            admin_id: row.msg_cst_id,
+            admin_email: content.admin_email || 'unknown',
+            action_type:
+              content.action_type ||
+              row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, ''),
+            entity_type: content.entity_type || 'unknown',
+            entity_ids: content.entity_ids || null,
+            old_values: content.old_values || null,
+            new_values: content.new_values || null,
+            impact_summary: content.impact_summary || '',
+            created_at: row.msg_date,
+          };
+        })
+        .filter(Boolean);
 
       this.logger.log(`✅ Found ${entries.length} audit entries`);
       return {
@@ -213,13 +227,16 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       const entries = data || [];
 
       // Calculate stats
-      const actionsLast24h = entries.filter((e: any) => new Date(e.msg_date) >= yesterday).length;
+      const actionsLast24h = entries.filter(
+        (e: any) => new Date(e.msg_date) >= yesterday,
+      ).length;
       const actionsByType: Record<string, number> = {};
       const adminCounts: Record<string, number> = {};
 
       entries.forEach((row: any) => {
         // Count by action type
-        const actionType = row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, '') || 'UNKNOWN';
+        const actionType =
+          row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, '') || 'UNKNOWN';
         actionsByType[actionType] = (actionsByType[actionType] || 0) + 1;
 
         // Count by admin
@@ -266,7 +283,11 @@ export class GammeSeoAuditService extends SupabaseBaseService {
   /**
    * 🔄 Helpers pour les messages d'impact
    */
-  static formatImpactSummary(actionType: GammeSeoActionType, count?: number, details?: string): string {
+  static formatImpactSummary(
+    actionType: GammeSeoActionType,
+    count?: number,
+    details?: string,
+  ): string {
     const summaries: Record<GammeSeoActionType, string> = {
       THRESHOLD_UPDATE: `Seuils Smart Action modifiés${details ? ': ' + details : ''}`,
       THRESHOLD_RESET: 'Seuils réinitialisés aux valeurs par défaut',
