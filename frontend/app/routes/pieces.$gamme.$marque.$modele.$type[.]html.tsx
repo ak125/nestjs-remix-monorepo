@@ -552,33 +552,34 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             "@id": `${canonicalUrl}#list`,
             name: `${data.gamme.name} pour ${data.vehicle.marque} ${data.vehicle.modele}`,
             numberOfItems: data.count,
-            itemListElement: data.pieces.slice(0, 8).map((piece, index) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              item: {
-                "@type": "Product",
-                name: `${piece.name} ${piece.brand}`,
-                // 🔗 URL produit (recommandé pour rich snippets)
-                url: `${canonicalUrl}#product-${piece.id}`,
-                // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
-                // Fallback: image produit → logo marque équipementier → image gamme
-                // ⚠️ Utilise normalizeImageUrl pour éviter les URLs dupliquées
-                image: piece.image
-                  ? normalizeImageUrl(piece.image.startsWith('http') ? piece.image : `/rack/${piece.image}`)
-                  : piece.marque_logo
-                    ? normalizeImageUrl(`/upload/equipementiers-automobiles/${piece.marque_logo}`)
-                    : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
-                ...(piece.reference && { sku: piece.reference }),
-                brand: { "@type": "Brand", name: piece.brand },
-                offers: {
-                  "@type": "Offer",
-                  price: piece.price,
-                  priceCurrency: "EUR",
-                  availability: piece.stock === "En stock" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+            // 🔧 Filtrer les pièces sans image pour éviter erreur GSC "Champ image manquant"
+            itemListElement: data.pieces
+              .filter((piece) => piece.image || piece.marque_logo)
+              .slice(0, 8)
+              .map((piece, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                item: {
+                  "@type": "Product",
+                  name: `${piece.name} ${piece.brand}`,
+                  // 🔗 URL produit (recommandé pour rich snippets)
+                  url: `${canonicalUrl}#product-${piece.id}`,
+                  // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
+                  // Fallback: image produit → logo marque équipementier
+                  image: piece.image
+                    ? normalizeImageUrl(piece.image.startsWith('http') ? piece.image : `/rack/${piece.image}`)
+                    : normalizeImageUrl(`/upload/equipementiers-automobiles/${piece.marque_logo}`),
+                  ...(piece.reference && { sku: piece.reference }),
+                  brand: { "@type": "Brand", name: piece.brand },
+                  offers: {
+                    "@type": "Offer",
+                    price: piece.price,
+                    priceCurrency: "EUR",
+                    availability: piece.stock === "En stock" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+                  },
+                  isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
                 },
-                isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
-              },
-            })),
+              })),
           },
         ],
       }
