@@ -9,6 +9,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Monitoring Système - Admin FAFA AUTO" },
     { name: "description", content: "Dashboard de monitoring système en temps réel" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 

@@ -12,6 +12,7 @@ export const meta: MetaFunction = () => {
   return [
     { title: "Administration - AutoParts Legacy System" },
     { name: "description", content: "Interface d'administration complète basée sur le système PHP legacy migré" },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 
