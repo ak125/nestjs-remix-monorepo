@@ -231,7 +231,7 @@ export function PopularGammesSection({
           })}
         </div>
 
-        {/* Données structurées Schema.org */}
+        {/* Données structurées Schema.org - ItemList simple (pas Product car ce sont des catégories) */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -243,15 +243,8 @@ export function PopularGammesSection({
               itemListElement: gammes.map((gamme, index) => ({
                 "@type": "ListItem",
                 position: index + 1,
-                item: {
-                  "@type": "Product",
-                  name: `${gamme.pg_name} ${brandName}`,
-                  category: gamme.pg_name,
-                  url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`}`,
-                  ...(gamme.pg_img && {
-                    image: getGammeImageUrl(gamme.pg_img),
-                  }),
-                },
+                name: `${gamme.pg_name} ${brandName}`,
+                url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`}`,
               })),
             }),
           }}
