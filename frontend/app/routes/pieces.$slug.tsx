@@ -168,10 +168,34 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
     
-    const apiData = await fetchGammePageData(gammeId, {
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
-    
+    // 🚀 Fetch en parallèle : données gamme + switches SEO
+    const API_URL = process.env.API_URL || 'http://localhost:3000';
+
+    const [apiData, switchesResponse] = await Promise.all([
+      fetchGammePageData(gammeId, { signal: controller.signal }),
+      fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, { signal: controller.signal })
+        .then(res => res.ok ? res.json() : { data: [] })
+        .catch(() => ({ data: [] }))
+    ]).finally(() => clearTimeout(timeoutId));
+
+    // 🔗 Mapper les switches SEO pour ancres variées
+    const rawSwitches = switchesResponse?.data || [];
+    const verbSwitches = rawSwitches
+      .filter((s: any) => s.sis_alias?.startsWith('verb_') || s.sis_alias?.includes('action'))
+      .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
+    const nounSwitches = rawSwitches
+      .filter((s: any) => s.sis_alias?.startsWith('noun_') || !s.sis_alias?.startsWith('verb_'))
+      .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
+
+    const seoSwitches = rawSwitches.length > 0 ? {
+      verbs: verbSwitches.length > 0 ? verbSwitches : rawSwitches.map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+      nouns: nounSwitches,
+      verbCount: verbSwitches.length || rawSwitches.length,
+      nounCount: nounSwitches.length,
+    } : undefined;
+
+    console.log(`🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`);
+
     // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
     const heroData = apiData.hero as { h1: string; content: string; image: string; wall: string; famille_info?: any; pg_name?: string; pg_alias?: string } | undefined;
     // Note: API returns different shapes than LoaderData, using type assertion for compatibility
@@ -207,11 +231,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     console.log('🍞 Breadcrumb généré:', breadcrumbItems.map(i => i.label).join(' → '));
 
-    // Retourner data avec breadcrumb mis à jour et véhicule
+    // Retourner data avec breadcrumb mis à jour, véhicule et switches SEO
     return json({
       ...data,
       breadcrumbs: { items: breadcrumbItems },
-      selectedVehicle
+      selectedVehicle,
+      seoSwitches
     }, {
       headers: {
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
