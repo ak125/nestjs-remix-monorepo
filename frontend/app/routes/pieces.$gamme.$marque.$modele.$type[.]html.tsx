@@ -173,16 +173,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return batchResult;
   };
 
-  // 🚀 LCP OPTIMIZATION: batch-loader + hierarchy seulement (RPC V2 supprimé - redondant)
+  // 🚀 LCP OPTIMIZATION: batch-loader + hierarchy + SEO switches EN PARALLÈLE
   // Le batch-loader utilise RPC V3 qui fournit toutes les données nécessaires
-  const [batchResponse, hierarchyData] = await Promise.all([
+  const [batchResponse, hierarchyData, switchesResponse] = await Promise.all([
     fetchBatchLoaderWithRetry(),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { Accept: "application/json" },
     })
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
+    // 🔗 SEO Switches pour ancres variées dans le catalogue
+    fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
+      headers: { Accept: "application/json" },
+    })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .catch(() => ({ data: [] })),
   ]);
+
+  // 🔗 Mapper les switches SEO pour ancres variées
+  const rawSwitches = switchesResponse?.data || [];
+  const seoSwitches = rawSwitches.length > 0 ? {
+    verbs: rawSwitches.map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+    verbCount: rawSwitches.length,
+  } : undefined;
+  console.log(`🔗 SEO Switches chargés: ${rawSwitches.length}`);
 
   // 5. Construction des objets Vehicle & Gamme
 
@@ -389,6 +403,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       crossSellingGammes,
       blogArticle: blogArticle || undefined,
       catalogueMameFamille,
+      // 🔗 SEO Switches pour ancres variées
+      seoSwitches,
       // 🔧 Références OEM constructeur
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
@@ -688,7 +704,7 @@ export default function PiecesVehicleRoute() {
   // âœ¨ Label du filtre position adapté selon la gamme
   const positionLabel = useMemo(() => {
     const gammeAlias = data.gamme?.alias?.toLowerCase() || "";
-    // Rétroviseurs, essuie-glaces, clignotants ←’ Côté (Gauche/Droite)
+    // Rétroviseurs, essuie-glaces, clignotants ←' Côté (Gauche/Droite)
     if (
       ["retroviseur", "essuie-glace", "clignotant", "feu", "phare"].some((k) =>
         gammeAlias.includes(k),
@@ -696,9 +712,25 @@ export default function PiecesVehicleRoute() {
     ) {
       return "Côté";
     }
-    // Plaquettes, disques, amortisseurs ←’ Position (Avant/Arrière)
+    // Plaquettes, disques, amortisseurs ←' Position (Avant/Arrière)
     return "Position";
   }, [data.gamme]);
+
+  // 🔗 Fonction pour générer des ancres SEO variées depuis les switches
+  const getAnchorText = useCallback((index: number): string => {
+    const switches = data.seoSwitches?.verbs || [];
+    if (switches.length > 0) {
+      const switchItem = switches[index % switches.length];
+      const verb = switchItem?.content || '';
+      if (verb) {
+        // Capitaliser la première lettre
+        return verb.charAt(0).toUpperCase() + verb.slice(1);
+      }
+    }
+    // Ancres par défaut avec rotation
+    const defaultAnchors = ['Voir', 'Découvrir', 'Explorer', 'Détails'];
+    return defaultAnchors[index % defaultAnchors.length];
+  }, [data.seoSwitches]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
@@ -1059,7 +1091,7 @@ export default function PiecesVehicleRoute() {
                                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                         />
                                       </svg>
-                                      <span>Voir</span>
+                                      <span>{getAnchorText(index)}</span>
                                     </div>
                                   </div>
 
