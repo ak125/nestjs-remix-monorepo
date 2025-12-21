@@ -207,6 +207,8 @@ export default function TestHomepageModern() {
                 offers: {
                   "@type": "AggregateOffer",
                   priceCurrency: "EUR",
+                  lowPrice: "4.50",
+                  highPrice: "500.00",
                   availability: "https://schema.org/InStock",
                   itemOffered: {
                     "@type": "Product",
