@@ -58,13 +58,6 @@ import {
   type GroupedSearchResults
 } from "../utils/search-mappers";
 
-// 🤖 SEO: Pages de recherche non indexables
-export const meta: MetaFunction = () => [
-  { title: 'Recherche | AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search" },
-];
-
 // ===============================
 // TYPES
 // ===============================
