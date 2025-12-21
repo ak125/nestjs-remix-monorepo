@@ -792,6 +792,7 @@ export default function PiecesVehicleRoute() {
                     "@type": "ListItem",
                     position: 5,
                     name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
+                    item: canonicalUrl,
                   },
                 ],
               }),

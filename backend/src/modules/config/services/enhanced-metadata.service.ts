@@ -390,7 +390,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
       url: `${baseUrl}${path}`,
       breadcrumb: {
         '@type': 'BreadcrumbList',
-        itemListElement: this.parseBreadcrumb(data.mta_ariane || ''),
+        itemListElement: this.parseBreadcrumb(data.mta_ariane || '', path),
       },
     };
   }
@@ -411,15 +411,38 @@ export class EnhancedMetadataService extends SupabaseBaseService {
     return [];
   }
 
-  private parseBreadcrumb(breadcrumb: string): any[] {
+  private parseBreadcrumb(breadcrumb: string, path: string): any[] {
     if (!breadcrumb) return [];
 
+    const baseUrl = process.env.SITE_BASE_URL || 'https://www.automecanik.com';
     const items = breadcrumb.split(' > ').filter((item) => item.trim());
-    return items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.trim(),
-    }));
+
+    // Extract path segments (excluding file extension)
+    const cleanPath = path.replace(/\.html$/, '');
+    const pathSegments = cleanPath.split('/').filter((seg) => seg);
+
+    return items.map((item, index) => {
+      const listItem: any = {
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.trim(),
+      };
+
+      // Build URL from path segments
+      // index 0 (Accueil) → home "/"
+      // index 1..n-2 → progressive path segments
+      // last item → current page (no 'item' needed per Schema.org spec)
+      if (index === 0) {
+        listItem.item = baseUrl + '/';
+      } else if (index < items.length - 1) {
+        // Map breadcrumb index to path: index 1 → slice(0,1), index 2 → slice(0,2), etc.
+        const urlPath = '/' + pathSegments.slice(0, index).join('/');
+        listItem.item = baseUrl + urlPath;
+      }
+      // Last item: no 'item' property (it's the current page URL)
+
+      return listItem;
+    });
   }
 
   private escapeHtml(text: string): string {
