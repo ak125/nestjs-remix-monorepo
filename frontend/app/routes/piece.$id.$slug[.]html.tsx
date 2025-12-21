@@ -83,7 +83,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 /**
  * 🎯 Meta - SEO dynamique
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
       { title: "Pièce introuvable" },
@@ -92,6 +92,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   }
 
   const { piece } = data;
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
   const title = `${piece.nom} ${piece.marque} ${piece.reference} - Pièce Auto`;
   const description =
     piece.description ||
@@ -100,6 +101,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title },
     { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "product" },

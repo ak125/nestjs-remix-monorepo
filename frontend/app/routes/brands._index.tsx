@@ -31,12 +31,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title },
     { name: 'description', content: description },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/brands" },
     { name: 'robots', content: 'index, follow' },
     // Open Graph
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:type', content: 'website' },
-    { property: 'og:url', content: '/brands' },
+    { property: 'og:url', content: 'https://www.automecanik.com/brands' },
     // Twitter
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
