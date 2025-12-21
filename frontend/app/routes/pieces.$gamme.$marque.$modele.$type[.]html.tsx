@@ -792,7 +792,7 @@ export default function PiecesVehicleRoute() {
                     "@type": "ListItem",
                     position: 5,
                     name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
-                    item: canonicalUrl,
+                    item: `https://www.automecanik.com/pieces/${data.gamme.alias}/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`,
                   },
                 ],
               }),
