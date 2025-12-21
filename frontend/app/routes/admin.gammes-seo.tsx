@@ -11,8 +11,9 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, useNavigation, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useNavigation, useSearchParams, Link } from "@remix-run/react";
 import {
   AlertTriangle,
   ArrowUpDown,
@@ -57,6 +58,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+
+export const meta: MetaFunction = () => [
+  { title: 'Gammes SEO | Admin AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/gammes-seo" },
+];
 
 // Smart Action types
 type SmartActionType =
@@ -1748,8 +1755,15 @@ export default function AdminGammesSeo() {
                           />
                         </td>
                         <td className="px-3 py-3">
-                          <div className="font-medium">{gamme.pg_name}</div>
-                          <div className="text-xs text-gray-500">ID: {gamme.pg_id}</div>
+                          <Link
+                            to={`/admin/gammes-seo/${gamme.pg_id}`}
+                            className="group block"
+                          >
+                            <div className="font-medium text-blue-600 group-hover:text-blue-800 group-hover:underline">
+                              {gamme.pg_name}
+                            </div>
+                            <div className="text-xs text-gray-500">ID: {gamme.pg_id}</div>
+                          </Link>
                         </td>
                         <td className="px-3 py-3 text-gray-600">
                           {gamme.family_name || "-"}

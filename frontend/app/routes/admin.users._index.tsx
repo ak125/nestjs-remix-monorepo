@@ -3,10 +3,10 @@
  * Gestion avancée de 59,137 utilisateurs avec fonctionnalités étendues
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher } from '@remix-run/react';
-import { 
-  Users, UserPlus, Search, ChevronLeft, ChevronRight, Eye, Edit, Trash2, 
+import {
+  Users, UserPlus, Search, ChevronLeft, ChevronRight, Eye, Edit, Trash2,
   Mail, MapPin, Building, Award, Filter, Download, RefreshCw,
   UserCheck, UserX, Star
 } from 'lucide-react';
@@ -18,6 +18,12 @@ import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
+
+export const meta: MetaFunction = () => [
+  { title: 'Utilisateurs | Admin AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/users" },
+];
 
 interface User {
   id: string;

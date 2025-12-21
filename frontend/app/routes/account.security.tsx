@@ -1,4 +1,4 @@
-import { json, type LoaderFunction } from "@remix-run/node";
+import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from "lucide-react";
 
@@ -8,6 +8,12 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+
+export const meta: MetaFunction = () => [
+  { title: 'Sécurité du compte | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/security" },
+];
 
 type SecurityData = {
   password: {

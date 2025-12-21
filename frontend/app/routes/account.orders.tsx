@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import { Package, Clock, CheckCircle, XCircle, Truck, ShoppingBag } from "lucide-react";
 
@@ -11,6 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
+
+export const meta: MetaFunction = () => [
+  { title: 'Mes commandes | AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/orders" },
+];
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {

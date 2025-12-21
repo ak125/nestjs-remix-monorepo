@@ -43,6 +43,7 @@ import { getCart } from "../services/cart.server";
 export const meta: MetaFunction = () => [
   { title: "Mon panier | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/cart" },
 ];
 
 // Seuil pour la livraison gratuite

@@ -15,6 +15,7 @@ import { getCart } from "../services/cart.server";
 export const meta: MetaFunction = () => [
   { title: "Finalisation de commande | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/checkout" },
 ];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {

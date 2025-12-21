@@ -3,14 +3,14 @@
  * Utilise la table ___xtr_msg avec Context7
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { 
-  MessageSquare, 
-  Users, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  MessageSquare,
+  Users,
+  Clock,
+  CheckCircle,
+  XCircle,
   Send,
   Search,
   Filter,
@@ -25,6 +25,12 @@ import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
+
+export const meta: MetaFunction = () => [
+  { title: 'Messages | Admin AutoMecanik' },
+  { name: 'robots', content: 'noindex, nofollow' },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/messages" },
+];
 
 // Interfaces pour les messages
 interface Message {

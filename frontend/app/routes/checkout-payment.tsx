@@ -10,6 +10,7 @@ import { type PaymentMethod, type OrderSummary } from "../types/payment";
 export const meta: MetaFunction = () => [
   { title: "Paiement | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/checkout-payment" },
 ];
 
 interface LoaderData {

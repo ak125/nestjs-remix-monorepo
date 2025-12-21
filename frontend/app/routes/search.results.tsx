@@ -15,11 +15,12 @@ import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const query = data?.query || '';
   const total = data?.totalCount || 0;
-  
+
   return [
     { title: query ? `Recherche: ${query} | ${total} résultats` : 'Résultats de recherche' },
     { name: 'description', content: `Résultats de recherche pour "${query}"` },
     { name: 'robots', content: 'noindex, nofollow' }, // Pages recherche non indexées
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search/results" },
   ];
 };
 

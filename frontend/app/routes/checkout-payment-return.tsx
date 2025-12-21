@@ -9,6 +9,7 @@ import { formatPrice } from "../utils/orders";
 export const meta: MetaFunction = () => [
   { title: "Confirmation de paiement | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/checkout-payment-return" },
 ];
 
 interface PaymentResult {

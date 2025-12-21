@@ -11,6 +11,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title: `${data.page.title} - Automecanik` },
     { name: "description", content: data.page.description || "Mentions légales Automecanik" },
     { name: "robots", content: "noindex, follow" },
+    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/mentions-legales" },
   ];
 };
 
