@@ -13,10 +13,10 @@ import { CacheService } from '../../../cache/cache.service';
 
 // Interface des seuils Smart Action
 export interface SmartActionThresholds {
-  trends_high: number;       // Default: 50 - Seuil "fort volume" (INDEX_G1, INDEX, INVESTIGUER)
-  trends_medium: number;     // Default: 20 - Seuil "volume moyen" (OBSERVER, EVALUER)
-  seo_excellent: number;     // Default: 75 - Seuil "excellente valeur" (INDEX_G1, OBSERVER, PARENT)
-  seo_good: number;          // Default: 45 - Seuil "bonne valeur" (INDEX, EVALUER)
+  trends_high: number; // Default: 50 - Seuil "fort volume" (INDEX_G1, INDEX, INVESTIGUER)
+  trends_medium: number; // Default: 20 - Seuil "volume moyen" (OBSERVER, EVALUER)
+  seo_excellent: number; // Default: 75 - Seuil "excellente valeur" (INDEX_G1, OBSERVER, PARENT)
+  seo_good: number; // Default: 45 - Seuil "bonne valeur" (INDEX, EVALUER)
 }
 
 // Seuils par défaut (basés sur l'analyse experte)
@@ -46,7 +46,8 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
   async getThresholds(): Promise<SmartActionThresholds> {
     try {
       // 1. Check cache
-      const cached = await this.cacheService.get<SmartActionThresholds>(CACHE_KEY);
+      const cached =
+        await this.cacheService.get<SmartActionThresholds>(CACHE_KEY);
       if (cached) {
         this.logger.log('📦 Thresholds from cache');
         return cached;
@@ -72,8 +73,10 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
         // Validate all fields exist
         thresholds = {
           trends_high: thresholds.trends_high ?? DEFAULT_THRESHOLDS.trends_high,
-          trends_medium: thresholds.trends_medium ?? DEFAULT_THRESHOLDS.trends_medium,
-          seo_excellent: thresholds.seo_excellent ?? DEFAULT_THRESHOLDS.seo_excellent,
+          trends_medium:
+            thresholds.trends_medium ?? DEFAULT_THRESHOLDS.trends_medium,
+          seo_excellent:
+            thresholds.seo_excellent ?? DEFAULT_THRESHOLDS.seo_excellent,
           seo_good: thresholds.seo_good ?? DEFAULT_THRESHOLDS.seo_good,
         };
       } catch {
@@ -95,7 +98,9 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
    * 💾 Met à jour les seuils
    * @returns Les anciens seuils (pour l'audit)
    */
-  async updateThresholds(newThresholds: Partial<SmartActionThresholds>): Promise<{
+  async updateThresholds(
+    newThresholds: Partial<SmartActionThresholds>,
+  ): Promise<{
     success: boolean;
     message: string;
     oldThresholds: SmartActionThresholds;
@@ -110,8 +115,10 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
       // Merge with new values
       const merged: SmartActionThresholds = {
         trends_high: newThresholds.trends_high ?? oldThresholds.trends_high,
-        trends_medium: newThresholds.trends_medium ?? oldThresholds.trends_medium,
-        seo_excellent: newThresholds.seo_excellent ?? oldThresholds.seo_excellent,
+        trends_medium:
+          newThresholds.trends_medium ?? oldThresholds.trends_medium,
+        seo_excellent:
+          newThresholds.seo_excellent ?? oldThresholds.seo_excellent,
         seo_good: newThresholds.seo_good ?? oldThresholds.seo_good,
       };
 
@@ -136,16 +143,18 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
       }
 
       // Upsert in database
-      const { error } = await this.supabase
-        .from('___config')
-        .upsert({
+      const { error } = await this.supabase.from('___config').upsert(
+        {
           config_key: CONFIG_KEY,
           config_value: JSON.stringify(merged),
-          description: 'Seuils Smart Actions pour classification SEO des gammes',
+          description:
+            'Seuils Smart Actions pour classification SEO des gammes',
           updated_at: new Date().toISOString(),
-        }, {
+        },
+        {
           onConflict: 'config_key',
-        });
+        },
+      );
 
       if (error) {
         this.logger.error('❌ Error saving thresholds:', error);
@@ -228,7 +237,8 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
           action: 'INDEX_G1',
           emoji: '🚀',
           condition: `Trends ≥ ${thresholds.trends_high} ET SEO ≥ ${thresholds.seo_excellent}`,
-          description: 'Page dédiée prioritaire - Fort volume + forte valeur commerciale',
+          description:
+            'Page dédiée prioritaire - Fort volume + forte valeur commerciale',
         },
         {
           action: 'INDEX',
@@ -240,19 +250,21 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
           action: 'INVESTIGUER',
           emoji: '🔍',
           condition: `Trends ≥ ${thresholds.trends_high} ET SEO < ${thresholds.seo_good}`,
-          description: 'Fort volume mais faible valeur commerciale - À vérifier',
+          description:
+            'Fort volume mais faible valeur commerciale - À vérifier',
         },
         {
           action: 'OBSERVER',
           emoji: '⭐',
           condition: `Trends ${thresholds.trends_medium}-${thresholds.trends_high - 1} ET SEO ≥ ${thresholds.seo_excellent}`,
-          description: 'Potentiel élevé - Surveiller l\'évolution des tendances',
+          description: "Potentiel élevé - Surveiller l'évolution des tendances",
         },
         {
           action: 'PARENT',
           emoji: '🔗',
           condition: `Trends < ${thresholds.trends_medium} ET SEO ≥ ${thresholds.seo_excellent}`,
-          description: 'Forte valeur mais faible volume - Intégrer dans page parente',
+          description:
+            'Forte valeur mais faible volume - Intégrer dans page parente',
         },
         {
           action: 'EVALUER',
