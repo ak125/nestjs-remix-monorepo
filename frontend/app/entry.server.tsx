@@ -109,6 +109,21 @@ function handleBrowserRequest(
 
           responseHeaders.set("Content-Type", "text/html; charset=utf-8");
 
+          // 🚀 TTFB Optimization: Early Hints pour preload ressources critiques
+          // Permet au navigateur de commencer à télécharger pendant le streaming
+          const url = new URL(request.url);
+          if (url.pathname.startsWith("/pieces/") && url.pathname.endsWith(".html")) {
+            // Pages produit: preconnect aux domaines externes
+            responseHeaders.set(
+              "Link",
+              [
+                "<https://fonts.googleapis.com>; rel=preconnect",
+                "<https://fonts.gstatic.com>; rel=preconnect; crossorigin",
+                "<https://cxpojprgwgubzjyqzmoq.supabase.co>; rel=preconnect",
+              ].join(", ")
+            );
+          }
+
           resolve(
             new Response(stream, {
               headers: responseHeaders,

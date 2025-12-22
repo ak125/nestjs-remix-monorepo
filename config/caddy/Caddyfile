@@ -99,8 +99,9 @@ automecanik.com, www.automecanik.com {
         @homepage path /
         header @homepage Cache-Control "public, max-age=60, stale-while-revalidate=120"
         
+        # 🚀 TTFB Optimization: CDN cache 24h pour pages produit
         @products path_regexp ^/(products|pieces|catalog|vehicule)/
-        header @products Cache-Control "public, max-age=300, stale-while-revalidate=600"
+        header @products Cache-Control "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600"
         
         @content path_regexp ^/(blog-pieces-auto|blog|guides|articles|conseils)/
         header @content Cache-Control "public, max-age=1800, stale-while-revalidate=3600"
