@@ -41,12 +41,14 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
     );
   }
 
-  // Essayer d'afficher le logo Supabase
+  // Essayer d'afficher le logo Supabase avec cache 1 an
   return (
     <div className="w-16 h-16 rounded-lg bg-white border border-gray-300 overflow-hidden shadow-sm">
-      <img 
-        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${logoPath}`}
+      <img
+        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${logoPath}?width=64&quality=90&t=31536000`}
         alt={brandName}
+        width={64}
+        height={64}
         className="w-full h-full object-contain p-2"
         onLoad={() => {
           setImageLoaded(true);

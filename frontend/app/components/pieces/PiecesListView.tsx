@@ -135,9 +135,9 @@ export const PiecesListView = React.memo(
           const isSelected = selectedPieces.includes(piece.id);
           const hasStock = hasStockAvailable(piece.stock);
 
-          // Construction URL logo marque équipementier
+          // Construction URL logo marque équipementier avec cache 1 an
           const logoUrl = piece.marque_logo
-            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${piece.marque_logo}?width=48&quality=90&t=31536000`
             : null;
 
           // Calcul fiabilité synchronisé avec GridView

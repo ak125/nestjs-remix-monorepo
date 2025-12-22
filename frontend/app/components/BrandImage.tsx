@@ -32,9 +32,9 @@ export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
     </svg>`
   )}`;
   
-  // URL Supabase
+  // URL Supabase avec cache 1 an
   const supabaseUrl = brandLogo && availableLogos.includes(brandLogo)
-    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brandLogo}`
+    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brandLogo}?width=64&quality=90&t=31536000`
     : null;
   
   // Si on n'est pas encore côté client, afficher le fallback
@@ -61,9 +61,11 @@ export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
   
   // Essayer l'image Supabase avec gestion d'erreur
   return (
-    <img 
+    <img
       src={supabaseUrl}
       alt={brandName}
+      width={64}
+      height={64}
       className="w-full h-full object-contain"
       onError={() => setImageError(true)}
       onLoad={() => setImageError(false)}

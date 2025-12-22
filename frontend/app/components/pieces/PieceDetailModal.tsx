@@ -231,8 +231,10 @@ export function PieceDetailModal({
                 {piece.marque_logo && (
                   <div className="w-16 h-16 flex-shrink-0">
                     <img
-                      src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`}
+                      src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${piece.marque_logo}?width=64&quality=90&t=31536000`}
                       alt={`Logo ${piece.marque}`}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-contain"
                       onError={(e) => (e.currentTarget.style.display = "none")}
                     />
