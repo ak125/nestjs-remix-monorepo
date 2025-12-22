@@ -30,7 +30,8 @@ export class SupabaseStorageService extends SupabaseBaseService {
         .from(this.bucketName)
         .upload(filePath, file.buffer, {
           contentType: file.mimetype,
-          cacheControl: '3600',
+          // 🚀 LCP Optimization: 1 an de cache pour assets statiques (PageSpeed audit)
+          cacheControl: '31536000',
         });
 
       if (error) {
