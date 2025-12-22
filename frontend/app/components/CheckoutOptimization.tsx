@@ -2,7 +2,6 @@ import { Badge } from '@fafa/ui';
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Button } from '~/components/ui/button';
 import { useAdvancedAnalyticsComplete } from '../hooks/useAdvancedAnalyticsComplete'
-import { useAIAssistant } from '../hooks/useAIAssistantSimple'
 
 interface CheckoutOptimizationProps {
   orderId?: string
@@ -18,13 +17,11 @@ export function CheckoutOptimization({
   onConversionComplete 
 }: CheckoutOptimizationProps) {
   
-  const { 
-    startABTest, 
-    getABTestVariant, 
-    trackEvent 
+  const {
+    startABTest,
+    getABTestVariant,
+    trackEvent
   } = useAdvancedAnalyticsComplete()
-  
-  const { learnFromAction } = useAIAssistant()
   
   const [variant, setVariant] = useState<string>('control')
   const [testActive, setTestActive] = useState(false)
@@ -66,13 +63,6 @@ export function CheckoutOptimization({
           order_value: totalAmount,
           test_goal: 'convert_987_pending'
         })
-        
-        // IA apprend du contexte
-        learnFromAction('checkout_optimization_init', {
-          variant: assignedVariant,
-          pending_orders_opportunity: pendingOrdersCount,
-          potential_revenue: potentialRevenue
-        })
       } catch (error) {
         console.warn('Erreur initialisation test A/B:', error)
         setVariant('control')
@@ -112,14 +102,7 @@ export function CheckoutOptimization({
           from_pending: true,
           test_name: 'checkout_conversion_987'
         })
-        
-        learnFromAction('successful_checkout_conversion', {
-          variant,
-          success: true,
-          conversion_value: totalAmount,
-          contributes_to_987_goal: true
-        })
-        
+
         alert(`✅ Commande convertie avec succès ! (Variante: ${variant})`)
       } else {
         // Échec de conversion
@@ -129,20 +112,14 @@ export function CheckoutOptimization({
           amount: totalAmount,
           failure_reason: 'user_abandoned'
         })
-        
-        learnFromAction('failed_checkout_conversion', {
-          variant,
-          success: false,
-          needs_optimization: true
-        })
-        
-        alert(`❌ Conversion échouée - IA suggérera des optimisations`)
+
+        alert(`❌ Conversion échouée`)
       }
       
       setConversionInProgress(false)
       onConversionComplete?.(variant, success)
     }, 2000)
-  }, [variant, orderId, totalAmount, conversionInProgress, trackEvent, learnFromAction, onConversionComplete])
+  }, [variant, orderId, totalAmount, conversionInProgress, trackEvent, onConversionComplete])
 
   // Render selon la variante A/B
   const renderCheckoutInterface = () => {
