@@ -60,8 +60,8 @@ export function EquipementiersCarousel({
                   .replace(/[^a-z0-9]+/g, "-")
                   .replace(/^-|-$/g, "") + ".webp";
 
-              // URL du logo depuis Supabase Storage
-              const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
+              // URL du logo depuis Supabase Storage avec cache 1 an
+              const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${logoFileName}?width=100&quality=90&t=31536000`;
 
               return (
                 <div
@@ -74,6 +74,8 @@ export function EquipementiersCarousel({
                       <img
                         src={logoUrl}
                         alt={`Logo ${equipementier.pm_name}`}
+                        width={100}
+                        height={100}
                         className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => {

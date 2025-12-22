@@ -57,9 +57,9 @@ export function TopGammes({
             // URL vers la page gamme
             const gammeUrl = `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
 
-            // Image de gamme depuis Supabase Storage
+            // Image de gamme depuis Supabase Storage avec cache 1 an
             const imageFileName = gamme.pg_img || "default.webp";
-            const gammeImageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/upload/upload/articles/gammes-produits/catalogue/${imageFileName}`;
+            const gammeImageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${imageFileName}?width=200&quality=85&t=31536000`;
 
             return (
               <Link
@@ -80,6 +80,8 @@ export function TopGammes({
                   <img
                     src={gammeImageUrl}
                     alt={gamme.pg_name}
+                    width={200}
+                    height={200}
                     className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
                     onError={(e) => {

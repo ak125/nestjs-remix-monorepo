@@ -37,8 +37,8 @@ const getFamilyImage = (family: FamilyWithGammes): string => {
   if (!family.mf_pic) {
     return '/images/categories/default.svg';
   }
-  const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/';
-  return `${supabaseStorageUrl}${family.mf_pic}`;
+  // 🚀 Utiliser render/image avec cache 1 an
+  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/familles-produits/${family.mf_pic}?width=400&quality=85&t=31536000`;
 };
 
 interface FamilyGammeHierarchyProps {
@@ -217,6 +217,8 @@ export default function FamilyGammeHierarchy({
                     <img
                       src={familyImage}
                       alt={family.mf_name_system}
+                      width={400}
+                      height={225}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                       loading="lazy"
                       onError={(e) => {

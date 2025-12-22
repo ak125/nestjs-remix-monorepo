@@ -38,10 +38,10 @@ function getOptimizedUrl(url: string, width: number, quality: number = 80): stri
   
   // URLs Supabase Storage - utiliser le transform API
   if (url.includes('supabase.co/storage')) {
-    // Format: /storage/v1/render/image/public/bucket/path?width=X&quality=Y
+    // Format: /storage/v1/render/image/public/bucket/path?width=X&quality=Y&t=31536000
     const transformUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
     const separator = transformUrl.includes('?') ? '&' : '?';
-    return `${transformUrl}${separator}width=${width}&quality=${quality}`;
+    return `${transformUrl}${separator}width=${width}&quality=${quality}&t=31536000`;
   }
   
   // Cloudinary
