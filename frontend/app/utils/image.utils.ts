@@ -118,10 +118,11 @@ export function optimizeImageUrl(
   // Construire l'URL de transformation (resize uniquement, pas de format=webp)
   const transformUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${path}`;
 
-  // Ajouter paramètres (width + quality uniquement)
+  // Ajouter paramètres (width + quality + cache 1 an)
   const params = new URLSearchParams();
   params.set('width', width.toString());
   params.set('quality', quality.toString());
+  params.set('t', '31536000'); // 🚀 Cache 1 an pour PageSpeed
 
   return `${transformUrl}?${params.toString()}`;
 }
