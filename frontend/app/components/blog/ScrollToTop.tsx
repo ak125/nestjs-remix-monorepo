@@ -4,20 +4,26 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 /**
  * 🔝 ScrollToTop - Bouton flottant pour retourner en haut de page
  * Apparaît après 300px de scroll avec animation smooth
- * 🚀 LCP Fix: Throttled scroll listener pour éviter layout thrashing
+ * 🚀 LCP Fix Phase 9: Évite les setState inutiles pour prévenir layout thrashing
  */
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
   const ticking = useRef(false);
+  const lastVisible = useRef(false); // 🚀 Track last value to avoid unnecessary re-renders
 
-  // 🚀 Throttled scroll handler avec requestAnimationFrame
+  // 🚀 Throttled scroll handler - only updates state when value actually changes
   const toggleVisibility = useCallback(() => {
     if (!ticking.current) {
+      ticking.current = true;
       requestAnimationFrame(() => {
-        setIsVisible(window.pageYOffset > 300);
+        const shouldBeVisible = window.scrollY > 300;
+        // 🚀 Only call setState if value changed - prevents React re-renders
+        if (lastVisible.current !== shouldBeVisible) {
+          lastVisible.current = shouldBeVisible;
+          setIsVisible(shouldBeVisible);
+        }
         ticking.current = false;
       });
-      ticking.current = true;
     }
   }, []);
 
@@ -44,8 +50,9 @@ export function ScrollToTop() {
         bg-primary hover:bg-primary/90 text-primary-foreground
         p-4 rounded-full shadow-2xl
         transition-all duration-300 transform
-        ${isVisible 
-          ? 'translate-y-0 opacity-100 scale-100' 
+        will-change-transform
+        ${isVisible
+          ? 'translate-y-0 opacity-100 scale-100'
           : 'translate-y-16 opacity-0 scale-50 pointer-events-none'
         }
         hover:scale-110 active:scale-95
