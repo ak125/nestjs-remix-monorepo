@@ -33,9 +33,9 @@ SUCCESS=0
 FAILED=0
 
 # Method 1: Use sitemap if available
-SITEMAP_URL="$BASE_URL/sitemap-pieces.xml"
+SITEMAP_URL="$BASE_URL/sitemap-pieces-1.xml"
 
-if curl -s --head "$SITEMAP_URL" | grep -q "200 OK"; then
+if curl -s --head "$SITEMAP_URL" | grep -qE "HTTP/[0-9.]+ 200"; then
     log "${GREEN}📄 Using sitemap: $SITEMAP_URL${NC}"
 
     # Extract URLs from sitemap
@@ -80,10 +80,10 @@ while IFS= read -r path; do
         "$URL" 2>/dev/null || echo "000")
 
     if [ "$HTTP_CODE" = "200" ]; then
-        ((SUCCESS++))
+        SUCCESS=$((SUCCESS + 1))
         echo -ne "\r${GREEN}✓${NC} $SUCCESS pages warmed..."
     else
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
         log "${RED}✗ Failed ($HTTP_CODE): $URL${NC}"
     fi
 
@@ -98,8 +98,8 @@ log "   Success: $SUCCESS"
 log "   Failed: $FAILED"
 log "   Total: $((SUCCESS + FAILED))"
 
-# Exit with error if more than 10% failed
-if [ $FAILED -gt $((SUCCESS / 10)) ] && [ $SUCCESS -gt 0 ]; then
+# Exit with error if more than 20% failed (410s for removed pages are expected)
+if [ $FAILED -gt $((SUCCESS / 5)) ] && [ $SUCCESS -gt 0 ]; then
     log "${YELLOW}⚠️ Warning: High failure rate${NC}"
     exit 1
 fi
