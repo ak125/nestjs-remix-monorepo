@@ -352,7 +352,7 @@ export function SearchFilters({
                     : currentValue === option.value;
                   
                   const logoFileName = `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
-                  const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
+                  const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${logoFileName}?width=48&quality=90&t=31536000`;
                   
                   // Note moyenne simulée (7 par défaut)
                   const noteAvg = 7;
