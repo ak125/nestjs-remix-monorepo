@@ -7,7 +7,6 @@
  * @author Automecanik SEO Team
  */
 import { Link } from "@remix-run/react";
-import { motion } from "framer-motion";
 
 import { type PopularGamme } from "~/types/brand.types";
 
@@ -144,13 +143,10 @@ export function PopularGammesSection({
               `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`;
 
             return (
-              <motion.article
+              <article
                 key={gamme.pg_id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="group"
+                className="group animate-in fade-in zoom-in-95 duration-300 fill-mode-both"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Link
                   to={gammeUrl}
@@ -226,7 +222,7 @@ export function PopularGammesSection({
                     </span>
                   </div>
                 </Link>
-              </motion.article>
+              </article>
             );
           })}
         </div>
