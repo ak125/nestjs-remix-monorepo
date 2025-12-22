@@ -33,16 +33,6 @@ import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemRefsDisplay as _PiecesOemRefsDisplay } from "../components/pieces/PiecesOemRefsDisplay";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 
-// 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
-// Ces sections ne sont pas visibles au premier paint - différer leur chargement
-const PiecesBuyingGuide = lazy(() => import("../components/pieces/PiecesBuyingGuide").then(m => ({ default: m.PiecesBuyingGuide })));
-const PiecesCompatibilityInfo = lazy(() => import("../components/pieces/PiecesCompatibilityInfo").then(m => ({ default: m.PiecesCompatibilityInfo })));
-const PiecesCrossSelling = lazy(() => import("../components/pieces/PiecesCrossSelling").then(m => ({ default: m.PiecesCrossSelling })));
-const PiecesFAQSection = lazy(() => import("../components/pieces/PiecesFAQSection").then(m => ({ default: m.PiecesFAQSection })));
-const PiecesRelatedArticles = lazy(() => import("../components/pieces/PiecesRelatedArticles").then(m => ({ default: m.PiecesRelatedArticles })));
-const PiecesSEOSection = lazy(() => import("../components/pieces/PiecesSEOSection").then(m => ({ default: m.PiecesSEOSection })));
-const PiecesStatistics = lazy(() => import("../components/pieces/PiecesStatistics").then(m => ({ default: m.PiecesStatistics })));
-
 // Hook custom
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
 import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
@@ -76,6 +66,16 @@ import {
   toTitleCaseFromSlug,
   validateVehicleIds,
 } from "../utils/pieces-route.utils";
+
+// 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
+// Ces sections ne sont pas visibles au premier paint - différer leur chargement
+const PiecesBuyingGuide = lazy(() => import("../components/pieces/PiecesBuyingGuide").then(m => ({ default: m.PiecesBuyingGuide })));
+const PiecesCompatibilityInfo = lazy(() => import("../components/pieces/PiecesCompatibilityInfo").then(m => ({ default: m.PiecesCompatibilityInfo })));
+const PiecesCrossSelling = lazy(() => import("../components/pieces/PiecesCrossSelling").then(m => ({ default: m.PiecesCrossSelling })));
+const PiecesFAQSection = lazy(() => import("../components/pieces/PiecesFAQSection").then(m => ({ default: m.PiecesFAQSection })));
+const PiecesRelatedArticles = lazy(() => import("../components/pieces/PiecesRelatedArticles").then(m => ({ default: m.PiecesRelatedArticles })));
+const PiecesSEOSection = lazy(() => import("../components/pieces/PiecesSEOSection").then(m => ({ default: m.PiecesSEOSection })));
+const PiecesStatistics = lazy(() => import("../components/pieces/PiecesStatistics").then(m => ({ default: m.PiecesStatistics })));
 
 // ========================================
 // 🔄 LOADER - Récupération des données

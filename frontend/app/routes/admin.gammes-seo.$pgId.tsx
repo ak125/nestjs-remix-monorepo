@@ -22,7 +22,6 @@ import {
 } from "@remix-run/react";
 import {
   ArrowLeft,
-  CheckCircle,
   Eye,
   FileText,
   Car,
@@ -37,7 +36,6 @@ import {
   Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
-import { toast } from "sonner";
 
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -51,13 +49,13 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "~/components/ui/tabs";
+import { Textarea } from "~/components/ui/textarea";
 
 // Types
 interface GammeDetail {
@@ -233,7 +231,7 @@ export default function AdminGammeSeoDetail() {
   const navigation = useNavigation();
   const fetcher = useFetcher();
 
-  const isSubmitting = navigation.state === "submitting";
+  const _isSubmitting = navigation.state === "submitting";
 
   // Local state for SEO form
   const [seoForm, setSeoForm] = useState({
