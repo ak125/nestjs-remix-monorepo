@@ -194,25 +194,33 @@ export function PiecesHeader({
                 {/* Effet halo lumineux */}
                 <div className="absolute -inset-3 bg-gradient-to-br from-white/[0.22] via-white/[0.12] to-transparent rounded-2xl blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
 
-                {/* Container carte */}
+                {/* Container carte - backdrop-blur désactivé sur mobile pour LCP */}
                 <div className="relative">
-                  <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
+                  <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-none md:backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
                       {!imageError &&
                       vehicle.modelePic &&
                       vehicle.modelePic !== "no.webp" ? (
                         <>
+                          {/* 🚀 LCP Optimization V5: srcset responsive + decoding async */}
                           <img
                             src={optimizeImageUrl(
                               `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
                               380
                             )}
+                            srcSet={`
+                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=200&quality=80 200w,
+                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=300&quality=85 300w,
+                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=380&quality=85 380w
+                            `.trim()}
+                            sizes="(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px"
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
                             height={192}
                             className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
                             loading="eager"
                             fetchPriority="high"
+                            decoding="async"
                             onError={() => setImageError(true)}
                           />
                           {/* Gradient overlay */}

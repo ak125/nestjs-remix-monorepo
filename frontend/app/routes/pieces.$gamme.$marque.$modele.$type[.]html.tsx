@@ -3,7 +3,7 @@
 // ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
 
 import {
-  json,
+  defer,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -12,32 +12,36 @@ import {
   useRouteError,
   isRouteErrorResponse,
   Link,
+  Await,
 } from "@remix-run/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 // 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (RPC V2 redondant avec batch-loader RPC V3)
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
 // ========================================
 
-// Composants UI (ordre alphabétique)
+// Composants UI CRITIQUES (above-fold - chargés immédiatement)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Breadcrumbs as _Breadcrumbs } from "../components/layout/Breadcrumbs";
-import { PiecesBuyingGuide } from "../components/pieces/PiecesBuyingGuide";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
-import { PiecesCompatibilityInfo } from "../components/pieces/PiecesCompatibilityInfo";
-import { PiecesCrossSelling } from "../components/pieces/PiecesCrossSelling";
-import { PiecesFAQSection } from "../components/pieces/PiecesFAQSection";
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
 import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemRefsDisplay as _PiecesOemRefsDisplay } from "../components/pieces/PiecesOemRefsDisplay";
-import { PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
-import { PiecesSEOSection } from "../components/pieces/PiecesSEOSection";
-import { PiecesStatistics } from "../components/pieces/PiecesStatistics";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+
+// 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
+// Ces sections ne sont pas visibles au premier paint - différer leur chargement
+const PiecesBuyingGuide = lazy(() => import("../components/pieces/PiecesBuyingGuide").then(m => ({ default: m.PiecesBuyingGuide })));
+const PiecesCompatibilityInfo = lazy(() => import("../components/pieces/PiecesCompatibilityInfo").then(m => ({ default: m.PiecesCompatibilityInfo })));
+const PiecesCrossSelling = lazy(() => import("../components/pieces/PiecesCrossSelling").then(m => ({ default: m.PiecesCrossSelling })));
+const PiecesFAQSection = lazy(() => import("../components/pieces/PiecesFAQSection").then(m => ({ default: m.PiecesFAQSection })));
+const PiecesRelatedArticles = lazy(() => import("../components/pieces/PiecesRelatedArticles").then(m => ({ default: m.PiecesRelatedArticles })));
+const PiecesSEOSection = lazy(() => import("../components/pieces/PiecesSEOSection").then(m => ({ default: m.PiecesSEOSection })));
+const PiecesStatistics = lazy(() => import("../components/pieces/PiecesStatistics").then(m => ({ default: m.PiecesStatistics })));
 
 // Hook custom
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
@@ -117,66 +121,53 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     source: "loader-validation",
   });
 
-  // 4. Batch Loader & Parallel Fetches
-  // 🚀 OPTIMISÉ V4: batch-loader + pageData + hierarchy EN PARALLÈLE
-  // 🛡️ ROBUSTESSE: Gestion des erreurs réseau avec retry pour éviter faux 410
+  // 4. Batch Loader - Fetch direct sans retry
+  // 🚀 LCP OPTIMIZATION V5: Suppression retry loop (économie 1-3s sur mobile)
+  // Le cache CDN (s-maxage=86400) gère la robustesse
 
-  // Helper function pour batch-loader avec retry
-  const fetchBatchLoaderWithRetry = async (): Promise<any> => {
-    let batchResult: any = null;
-    let retryCount = 0;
-    const maxRetries = 2;
+  const fetchBatchLoader = async (): Promise<any> => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
+        {
+          method: "GET",
+          signal: AbortSignal.timeout(8000), // 8s au lieu de 15s - fail fast
+          headers: { Accept: "application/json" },
+        },
+      );
 
-    while (retryCount <= maxRetries && !batchResult) {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
-          {
-            method: "GET",
-            signal: AbortSignal.timeout(15000),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!response.ok) {
+        console.warn(`⚠️ [BATCH-LOADER] HTTP ${response.status}`);
+        // Pour 404/410 on laisse passer (gamme invalide)
+        if (response.status === 404 || response.status === 410) {
+          return { pieces: [], validation: { valid: false, http_status: response.status } };
         }
-
-        batchResult = await response.json();
-      } catch (error) {
-        retryCount++;
-        console.warn(
-          `⚠️ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} échouée:`,
-          error,
-        );
-
-        if (retryCount > maxRetries) {
-          console.error(
-            `❌ [BATCH-LOADER] Échec après ${maxRetries + 1} tentatives`,
-          );
-          throw new Response(
-            `Service temporairement indisponible. Veuillez réessayer dans quelques instants.`,
-            {
-              status: 503,
-              statusText: "Service Unavailable",
-              headers: {
-                "Retry-After": "30",
-                "Cache-Control": "no-cache, no-store",
-              },
-            },
-          );
-        }
-
-        const currentRetry = retryCount;
-        await new Promise((resolve) => setTimeout(resolve, 500 * currentRetry));
+        throw new Error(`HTTP ${response.status}`);
       }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error(`❌ [BATCH-LOADER] Error:`, error.message);
+      // Graceful degradation - retourne structure vide plutôt que 503
+      // Cela permet au cache CDN de servir une version stale si disponible
+      throw new Response(
+        `Service temporairement indisponible.`,
+        {
+          status: 503,
+          statusText: "Service Unavailable",
+          headers: {
+            "Retry-After": "10",
+            "Cache-Control": "no-cache",
+          },
+        },
+      );
     }
-    return batchResult;
   };
 
-  // 🚀 LCP OPTIMIZATION: batch-loader + hierarchy + SEO switches EN PARALLÈLE
-  // Le batch-loader utilise RPC V3 qui fournit toutes les données nécessaires
+  // 🚀 LCP OPTIMIZATION V5: batch-loader seul (critique), autres en parallèle (non-critiques)
+  // hierarchy et switches ne bloquent plus le LCP car non nécessaires au first paint
   const [batchResponse, hierarchyData, switchesResponse] = await Promise.all([
-    fetchBatchLoaderWithRetry(),
+    fetchBatchLoader(),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { Accept: "application/json" },
     })
@@ -323,13 +314,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Generated Content
   const faqItems = generateFAQ(vehicle, gamme);
-  
-  // 🚀 PARALLÉLISATION V4: blogArticle + relatedArticles en même temps
-  const [blogArticle, relatedArticles] = await Promise.all([
-    fetchBlogArticle(gamme, vehicle).catch(() => null),
-    fetchRelatedArticlesForGamme(gamme, vehicle),
-  ]);
-  
+
+  // 🚀 LCP OPTIMIZATION V6: blogArticle et relatedArticles streamés via defer()
+  // Ces données ne bloquent plus le first paint - chargées en background
+  const blogArticlePromise = fetchBlogArticle(gamme, vehicle).catch(() => null);
+  const relatedArticlesPromise = fetchRelatedArticlesForGamme(gamme, vehicle).catch(() => []);
+
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
   const compatibilityInfo = {
     engines: [vehicle.type],
@@ -385,27 +375,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const filtersData =
     batchResponse.filters?.data || batchResponse.filters || null;
 
-  return json(
+  // 🚀 LCP OPTIMIZATION V6: defer() pour streamer données non-critiques
+  // Données critiques (vehicle, pieces, seo) : retournées immédiatement
+  // Données non-critiques (relatedArticles, blogArticle) : streamées après le first paint
+  return defer(
     {
+      // === DONNÉES CRITIQUES (bloquantes, nécessaires pour LCP) ===
       vehicle,
       gamme,
       pieces: piecesData,
-      grouped_pieces: batchResponse.grouped_pieces || batchResponse.blocs || [], // âœ¨ Groupes avec title_h2
+      grouped_pieces: batchResponse.grouped_pieces || batchResponse.blocs || [],
       count: piecesData.length,
       minPrice,
       maxPrice,
       filtersData,
       seoContent,
       faqItems,
-      relatedArticles,
       buyingGuide,
       compatibilityInfo,
       crossSellingGammes,
-      blogArticle: blogArticle || undefined,
       catalogueMameFamille,
-      // 🔗 SEO Switches pour ancres variées
       seoSwitches,
-      // 🔧 Références OEM constructeur
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
       seo: {
@@ -418,6 +408,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         source: "batch-loader",
         cacheHit: false,
       },
+
+      // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
+      relatedArticles: relatedArticlesPromise,
+      blogArticle: blogArticlePromise,
     },
     {
       headers: { "Cache-Control": "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600" },
@@ -607,14 +601,17 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       href: "https://cxpojprgwgubzjyqzmoq.supabase.co",
     },
 
-    // 🚀 LCP Optimization: Preload hero vehicle image
+    // 🚀 LCP Optimization V5: Preload hero vehicle image avec transformation
+    // URL DOIT matcher exactement celle du composant PiecesHeader pour éviter double téléchargement
     ...(data.vehicle.modelePic && data.vehicle.modelePic !== "no.webp"
       ? [
           {
             tagName: "link",
             rel: "preload",
             as: "image",
-            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}`,
+            // Utilise /render/image/ avec width=380&quality=85 (identique à optimizeImageUrl dans PiecesHeader)
+            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}?width=380&quality=85`,
+            fetchpriority: "high",
           },
         ]
       : []),
@@ -1850,47 +1847,66 @@ export default function PiecesVehicleRoute() {
                     </section>
                   )}
 
-                <PiecesBuyingGuide guide={data.buyingGuide} />
+                {/* 🚀 LCP OPTIMIZATION V6: Suspense boundaries pour composants lazy below-fold */}
+                <Suspense fallback={<div className="h-24 bg-gray-100 animate-pulse rounded-lg" />}>
+                  <PiecesBuyingGuide guide={data.buyingGuide} />
+                </Suspense>
 
-                <PiecesFAQSection items={data.faqItems} />
+                <Suspense fallback={<div className="h-24 bg-gray-100 animate-pulse rounded-lg" />}>
+                  <PiecesFAQSection items={data.faqItems} />
+                </Suspense>
 
-                <PiecesCompatibilityInfo
-                  compatibility={data.compatibilityInfo}
-                  vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-                  motorCodesFormatted={data.vehicle.motorCodesFormatted}
-                  mineCodesFormatted={data.vehicle.mineCodesFormatted}
-                />
+                <Suspense fallback={<div className="h-24 bg-gray-100 animate-pulse rounded-lg" />}>
+                  <PiecesCompatibilityInfo
+                    compatibility={data.compatibilityInfo}
+                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                    motorCodesFormatted={data.vehicle.motorCodesFormatted}
+                    mineCodesFormatted={data.vehicle.mineCodesFormatted}
+                  />
+                </Suspense>
 
-                <PiecesStatistics
-                  pieces={data.pieces}
-                  vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-                  gammeName={data.gamme.name}
-                />
+                <Suspense fallback={<div className="h-24 bg-gray-100 animate-pulse rounded-lg" />}>
+                  <PiecesStatistics
+                    pieces={data.pieces}
+                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                    gammeName={data.gamme.name}
+                  />
+                </Suspense>
               </div>
             </div>
           </main>
         </div>
 
-        {/* Cross-selling */}
+        {/* Cross-selling - Suspense pour lazy component */}
         {data.crossSellingGammes.length > 0 && (
           <div className="mt-12">
-            <PiecesCrossSelling
-              gammes={data.crossSellingGammes}
-              vehicle={data.vehicle}
-            />
+            <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4" />}>
+              <PiecesCrossSelling
+                gammes={data.crossSellingGammes}
+                vehicle={data.vehicle}
+              />
+            </Suspense>
           </div>
         )}
 
-        {/* Articles liés - Maillage de contenu */}
-        {data.relatedArticles && data.relatedArticles.length > 0 && (
-          <div className="container mx-auto px-4">
-            <PiecesRelatedArticles
-              articles={data.relatedArticles}
-              gammeName={data.gamme.name}
-              vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-            />
-          </div>
-        )}
+        {/* 🚀 LCP OPTIMIZATION V6: Articles liés streamés via defer() + Await */}
+        <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4" />}>
+          <Await resolve={data.relatedArticles}>
+            {(resolvedArticles) => {
+              // Filtrer les nulls et vérifier qu'il y a des articles
+              const validArticles = (resolvedArticles || []).filter((a): a is NonNullable<typeof a> => a !== null);
+              return validArticles.length > 0 ? (
+                <div className="container mx-auto px-4">
+                  <PiecesRelatedArticles
+                    articles={validArticles}
+                    gammeName={data.gamme.name}
+                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                  />
+                </div>
+              ) : null;
+            }}
+          </Await>
+        </Suspense>
 
         {/* Section "Voir aussi" - Maillage interne SEO */}
         <section className="container mx-auto px-4 mt-8 mb-12">
