@@ -201,18 +201,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        {/* Google Analytics 4 - defer pour ne pas bloquer le LCP */}
-        <script defer src="https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740" />
+        {/* Google Analytics 4 - Chargement différé sur interaction/idle pour optimiser LCP */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-ZVG6K5R740', {
-                page_title: document.title,
-                page_location: window.location.href
+
+              // Fonction pour charger GTM une seule fois
+              window.__loadGTM = function() {
+                if (window.__gtmLoaded) return;
+                window.__gtmLoaded = true;
+
+                var script = document.createElement('script');
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740';
+                script.async = true;
+                script.onload = function() {
+                  gtag('js', new Date());
+                  gtag('config', 'G-ZVG6K5R740', {
+                    page_title: document.title,
+                    page_location: window.location.href
+                  });
+                };
+                document.head.appendChild(script);
+              };
+
+              // Charger sur première interaction (scroll, click, keypress, touch)
+              var events = ['scroll', 'click', 'keypress', 'touchstart'];
+              var loadOnInteraction = function() {
+                window.__loadGTM();
+                events.forEach(function(e) {
+                  window.removeEventListener(e, loadOnInteraction, { passive: true });
+                });
+              };
+              events.forEach(function(e) {
+                window.addEventListener(e, loadOnInteraction, { passive: true });
               });
+
+              // Fallback: charger après 4s si pas d'interaction (pour le SEO/analytics)
+              setTimeout(window.__loadGTM, 4000);
             `,
           }}
         />
