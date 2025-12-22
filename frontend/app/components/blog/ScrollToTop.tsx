@@ -1,39 +1,44 @@
 import { ArrowUp } from 'lucide-react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * 🔝 ScrollToTop - Bouton flottant pour retourner en haut de page
  * Apparaît après 300px de scroll avec animation smooth
- * 🚀 LCP Fix Phase 9: Évite les setState inutiles pour prévenir layout thrashing
+ * 🚀 LCP Fix: Utilise IntersectionObserver au lieu de scroll listener
+ *    pour éviter le layout thrashing (lecture de window.scrollY)
  */
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
-  const ticking = useRef(false);
-  const lastVisible = useRef(false); // 🚀 Track last value to avoid unnecessary re-renders
+  const lastVisible = useRef(false);
 
-  // 🚀 Throttled scroll handler - only updates state when value actually changes
-  const toggleVisibility = useCallback(() => {
-    if (!ticking.current) {
-      ticking.current = true;
-      requestAnimationFrame(() => {
-        const shouldBeVisible = window.scrollY > 300;
-        // 🚀 Only call setState if value changed - prevents React re-renders
+  useEffect(() => {
+    // 🚀 Créer un sentinel invisible au début du document
+    // Quand il sort du viewport (scroll > 300px), le bouton devient visible
+    const sentinel = document.createElement('div');
+    sentinel.style.cssText = 'position: absolute; top: 300px; left: 0; width: 1px; height: 1px; pointer-events: none;';
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.setAttribute('data-scroll-sentinel', 'true');
+    document.body.prepend(sentinel);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const shouldBeVisible = !entry.isIntersecting;
+        // 🚀 Only update state if value changed
         if (lastVisible.current !== shouldBeVisible) {
           lastVisible.current = shouldBeVisible;
           setIsVisible(shouldBeVisible);
         }
-        ticking.current = false;
-      });
-    }
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+      sentinel.remove();
+    };
   }, []);
-
-  useEffect(() => {
-    // Passive listener pour meilleures performances
-    window.addEventListener('scroll', toggleVisibility, { passive: true });
-    toggleVisibility(); // Check initial position
-
-    return () => window.removeEventListener('scroll', toggleVisibility);
-  }, [toggleVisibility]);
 
   const scrollToTop = () => {
     window.scrollTo({
