@@ -63,8 +63,10 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
               <div className="w-20 h-20 lg:w-24 lg:h-24 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center p-3">
                 {brand.marque_logo ? (
                   <img
-                    src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_logo}`}
+                    src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_logo}?width=96&quality=90&t=31536000`}
                     alt={`Logo ${brand.marque_name}`}
+                    width={96}
+                    height={96}
                     className="w-full h-full object-contain"
                     loading="eager"
                   />
