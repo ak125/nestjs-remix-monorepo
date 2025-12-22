@@ -64,7 +64,10 @@ export class ImageOptimizer {
     if (width) params.set('width', width.toString());
     if (height) params.set('height', height.toString());
     if (quality && quality !== this.DEFAULT_QUALITY) params.set('quality', quality.toString());
-    
+
+    // 🚀 Cache control 1 an (31536000 secondes) pour optimisation PageSpeed
+    params.set('t', '31536000');
+
     const queryString = params.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }
