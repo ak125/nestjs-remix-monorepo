@@ -33,9 +33,15 @@ import { type CartData } from "./types/cart";
 const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap";
 
 export const links: LinksFunction = () => [
-  // Stylesheets
+  // 🚀 LCP Optimization: Preload CSS critique
+  { rel: "preload", href: stylesheet, as: "style" },
+
+  // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
-  { rel: "stylesheet", href: animationsStylesheet },
+
+  // 🚀 CSS animations - Prefetch (non-bloquant, chargé en arrière-plan)
+  // Sera appliqué après le CSS critique via le composant DeferredStyles
+  { rel: "prefetch", href: animationsStylesheet, as: "style" },
 
   // DNS Prefetch & Preconnect (Performance SEO Phase 1)
   { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
@@ -160,11 +166,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
       console.log('🔄 [root] cart:updated → revalidate');
       revalidator.revalidate();
     };
-    
+
     window.addEventListener('cart:updated', handleCartUpdated);
     return () => window.removeEventListener('cart:updated', handleCartUpdated);
   }, [revalidator]);
-  
+
+  // 🚀 LCP Optimization: Charger animations.css après le rendu initial (non-bloquant)
+  useEffect(() => {
+    // Attendre que le LCP soit rendu avant de charger les animations
+    const loadDeferredStyles = () => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = animationsStylesheet;
+      document.head.appendChild(link);
+    };
+
+    // Utiliser requestIdleCallback si disponible, sinon setTimeout
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(loadDeferredStyles, { timeout: 2000 });
+    } else {
+      setTimeout(loadDeferredStyles, 100);
+    }
+  }, []);
+
   // DEBUG: Log pour voir si les données arrivent
   if (typeof window !== 'undefined') {
     console.log('🏠 [root.Layout] cart data:', cart ? `${cart.items?.length || 0} items` : 'null');
