@@ -163,7 +163,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = url.searchParams.get("status") || "";
   const actionRecommended = url.searchParams.get("actionRecommended") || "";
   const sortBy = url.searchParams.get("sortBy") || "family_name";
-  const sortOrder = url.searchParams.get("sortOrder") || "asc"; // asc = ordre officiel du catalogue
+  const sortOrder = url.searchParams.get("sortOrder") || "desc"; // desc = ordre par défaut backend
 
   try {
     // Build query string
@@ -226,7 +226,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       families: [],
       thresholds: { trends_high: 50, trends_medium: 20, seo_excellent: 75, seo_good: 45 },
       auditHistory: [],
-      filters: { search: "", familyId: "", gLevel: "", status: "", actionRecommended: "", sortBy: "family_name", sortOrder: "asc" },
+      filters: { search: "", familyId: "", gLevel: "", status: "", actionRecommended: "", sortBy: "family_name", sortOrder: "desc" },
       error: "Erreur chargement données",
     });
   }

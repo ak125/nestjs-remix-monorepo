@@ -220,6 +220,12 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
           description: "Tracking liens internes"
         },
         {
+          name: "Gammes SEO",
+          href: "/admin/gammes-seo",
+          icon: Tag,
+          description: "230 gammes G-Level"
+        },
+        {
           name: "Sitemaps",
           href: "/admin/seo?tab=tools", 
           icon: FileText,
@@ -262,7 +268,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
   const navigationItems = getNavigationItems();
   const [isOpen, setIsOpen] = React.useState(false)
   const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({
-    "SEO Enterprise": location.pathname.startsWith("/admin/seo"),
+    "SEO Enterprise": location.pathname.startsWith("/admin/seo") || location.pathname.startsWith("/admin/gammes-seo"),
     "Blog": location.pathname.startsWith("/admin/blog") || location.pathname.startsWith("/admin/articles") || location.pathname.startsWith("/admin/performances")
   })
 

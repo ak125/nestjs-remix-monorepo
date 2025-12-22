@@ -307,9 +307,9 @@ class HierarchyApiService {
       return '/images/categories/default.svg';
     }
     
-    // ✅ URL DIRECTE comme dans FamilyGammeHierarchy (fonctionne en prod)
-    const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/';
-    return `${supabaseStorageUrl}${family.mf_pic}`;
+    // ✅ URL DIRECTE avec transformation Supabase et cache 1 an
+    const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/familles-produits/';
+    return `${supabaseStorageUrl}${family.mf_pic}?width=400&quality=85&t=31536000`;
   }
 
   /**
