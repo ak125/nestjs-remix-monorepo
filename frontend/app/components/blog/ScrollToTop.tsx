@@ -1,23 +1,33 @@
 import { ArrowUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * 🔝 ScrollToTop - Bouton flottant pour retourner en haut de page
  * Apparaît après 300px de scroll avec animation smooth
+ * 🚀 LCP Fix: Throttled scroll listener pour éviter layout thrashing
  */
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
+  const ticking = useRef(false);
+
+  // 🚀 Throttled scroll handler avec requestAnimationFrame
+  const toggleVisibility = useCallback(() => {
+    if (!ticking.current) {
+      requestAnimationFrame(() => {
+        setIsVisible(window.pageYOffset > 300);
+        ticking.current = false;
+      });
+      ticking.current = true;
+    }
+  }, []);
 
   useEffect(() => {
-    const toggleVisibility = () => {
-      setIsVisible(window.pageYOffset > 300);
-    };
-
-    window.addEventListener('scroll', toggleVisibility);
+    // Passive listener pour meilleures performances
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
     toggleVisibility(); // Check initial position
 
     return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
+  }, [toggleVisibility]);
 
   const scrollToTop = () => {
     window.scrollTo({

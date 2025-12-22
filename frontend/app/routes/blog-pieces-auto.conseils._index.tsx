@@ -252,11 +252,11 @@ export default function BlogConseilsIndex() {
                   <button
                     key={group.categorySlug}
                     onClick={() => {
-                      const el = document.getElementById(group.categorySlug);
-                      if (!el) return;
-                      const offset = 120;
-                      const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-                      window.scrollTo({ top: y, behavior: "smooth" });
+                      // 🚀 LCP Fix: scrollIntoView + CSS scroll-margin (évite getBoundingClientRect)
+                      document.getElementById(group.categorySlug)?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                      });
                     }}
                     style={{ animationDelay: `${index * 50}ms` }}
                     className={`group relative p-2.5 rounded-lg ${colors.bg} border-2 ${colors.border} transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer text-center`}
