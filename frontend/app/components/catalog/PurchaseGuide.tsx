@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Shield, AlertTriangle, Info, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import guideContent from '~/data/guide-content.json';
@@ -181,21 +180,17 @@ export function PurchaseGuide({
                   </div>
                   
                   {/* Indicateur de sélection */}
-                  <AnimatePresence>
-                    {selectedRange === 'economique' && (
-                      <motion.div 
-                        className="absolute top-3 right-3"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      >
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                          <CheckCircle2 className="w-5 h-5 text-white" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div
+                    className={`absolute top-3 right-3 transition-all duration-300 ${
+                      selectedRange === 'economique'
+                        ? 'scale-100 rotate-0 opacity-100'
+                        : 'scale-0 -rotate-180 opacity-0'
+                    }`}
+                  >
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
                 </button>
 
                 {/* Qualité+ */}
@@ -235,21 +230,17 @@ export function PurchaseGuide({
                     )}
                   </div>
                   
-                  <AnimatePresence>
-                    {selectedRange === 'qualite_plus' && (
-                      <motion.div 
-                        className="absolute top-3 right-3"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      >
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                          <CheckCircle2 className="w-5 h-5 text-white" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div
+                    className={`absolute top-3 right-3 transition-all duration-300 ${
+                      selectedRange === 'qualite_plus'
+                        ? 'scale-100 rotate-0 opacity-100'
+                        : 'scale-0 -rotate-180 opacity-0'
+                    }`}
+                  >
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
                 </button>
 
                 {/* Premium */}
@@ -280,135 +271,112 @@ export function PurchaseGuide({
                     )}
                   </div>
                   
-                  <AnimatePresence>
-                    {selectedRange === 'premium' && (
-                      <motion.div 
-                        className="absolute top-3 right-3"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      >
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                          <CheckCircle2 className="w-5 h-5 text-white" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div
+                    className={`absolute top-3 right-3 transition-all duration-300 ${
+                      selectedRange === 'premium'
+                        ? 'scale-100 rotate-0 opacity-100'
+                        : 'scale-0 -rotate-180 opacity-0'
+                    }`}
+                  >
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
                 </button>
               </div>
 
               {/* Détails de la gamme sélectionnée - Card animée */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedRange}
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ 
-                    duration: 0.3,
-                    ease: [0.4, 0, 0.2, 1]
-                  }}
-                  className="relative rounded-xl overflow-hidden"
-                >
-                  {/* Bordure colorée avec gradient de la famille */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${familleColor} rounded-xl`}></div>
-                  
-                  {/* Contenu avec fond blanc et padding pour créer l'effet de bordure */}
-                  <div className="relative bg-white rounded-lg m-1 p-4 sm:p-6 md:p-8 shadow-xl">
-                    {/* Décoration coin supérieur avec couleur famille */}
-                    <div 
-                      className={`absolute top-0 right-0 w-32 h-32 rounded-bl-[100px] -z-10 bg-gradient-to-br ${familleColor} opacity-10`}
-                    ></div>
-                  
-                    <motion.div 
-                      className="flex items-start gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6"
-                      initial={{ x: -20 }}
-                      animate={{ x: 0 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      <div className={`w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        selectedRange === 'economique' 
-                          ? 'bg-gradient-to-br from-gray-100 to-gray-200' 
-                          : selectedRange === 'qualite_plus' 
-                          ? 'bg-gradient-to-br from-blue-100 to-blue-200' 
-                          : 'bg-gradient-to-br from-amber-100 to-amber-200'
+              <div
+                key={selectedRange}
+                className="relative rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-300 fill-mode-both"
+              >
+                {/* Bordure colorée avec gradient de la famille */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${familleColor} rounded-xl`}></div>
+
+                {/* Contenu avec fond blanc et padding pour créer l'effet de bordure */}
+                <div className="relative bg-white rounded-lg m-1 p-4 sm:p-6 md:p-8 shadow-xl">
+                  {/* Décoration coin supérieur avec couleur famille */}
+                  <div
+                    className={`absolute top-0 right-0 w-32 h-32 rounded-bl-[100px] -z-10 bg-gradient-to-br ${familleColor} opacity-10`}
+                  ></div>
+
+                  <div
+                    className="flex items-start gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 animate-in slide-in-from-left-4 duration-300 fill-mode-both"
+                    style={{ animationDelay: '100ms' }}
+                  >
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg flex-shrink-0 ${
+                      selectedRange === 'economique'
+                        ? 'bg-gradient-to-br from-gray-100 to-gray-200'
+                        : selectedRange === 'qualite_plus'
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200'
+                        : 'bg-gradient-to-br from-amber-100 to-amber-200'
+                    }`}>
+                      <span className={`font-bold ${
+                        selectedRange === 'economique'
+                          ? 'text-xl sm:text-2xl text-gray-600'
+                          : selectedRange === 'qualite_plus'
+                          ? 'text-lg sm:text-xl text-blue-600'
+                          : 'text-base sm:text-lg text-amber-600'
                       }`}>
-                        <span className={`font-bold ${
-                          selectedRange === 'economique' 
-                            ? 'text-xl sm:text-2xl text-gray-600' 
-                            : selectedRange === 'qualite_plus' 
-                            ? 'text-lg sm:text-xl text-blue-600' 
-                            : 'text-base sm:text-lg text-amber-600'
-                        }`}>
-                          {selectedRange === 'economique' ? '€' : selectedRange === 'qualite_plus' ? '€€' : '€€€'}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-                          Gamme {selectedRange === 'economique' ? 'Économique' : selectedRange === 'qualite_plus' ? 'Qualité+' : 'Premium'}
-                        </h4>
-                        <p className="text-gray-600 text-sm sm:text-base md:text-lg">
-                          {categoryData.step2_ranges[selectedRange].subtitle}
-                        </p>
-                      </div>
-                    </motion.div>
-
-                    <motion.p 
-                      className="text-gray-700 text-base md:text-lg leading-relaxed mb-6"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      {categoryData.step2_ranges[selectedRange].description}
-                    </motion.p>
-
-                    {/* Specs techniques - Grid avec icônes */}
-                    <motion.div 
-                      className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 mb-6 border border-gray-200"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <Info className="w-4 h-4 text-white" />
-                        </div>
-                        Caractéristiques techniques
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                        {categoryData.step2_ranges[selectedRange].specs.map((spec, idx) => (
-                          <motion.div 
-                            key={idx}
-                            className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.35 + (idx * 0.05) }}
-                          >
-                            <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                            <span className="text-sm text-gray-700 leading-relaxed">{spec}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-
-                    {/* Prix mis en valeur */}
-                    <motion.div 
-                      className="flex items-center justify-between pt-4 border-t border-gray-200"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <span className="text-gray-600 font-medium text-sm sm:text-base">À partir de</span>
-                      <div className="text-right">
-                        <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600 leading-tight">
-                          {categoryData.step2_ranges[selectedRange].price_range}
-                        </p>
-                      </div>
-                    </motion.div>
+                        {selectedRange === 'economique' ? '€' : selectedRange === 'qualite_plus' ? '€€' : '€€€'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+                        Gamme {selectedRange === 'economique' ? 'Économique' : selectedRange === 'qualite_plus' ? 'Qualité+' : 'Premium'}
+                      </h4>
+                      <p className="text-gray-600 text-sm sm:text-base md:text-lg">
+                        {categoryData.step2_ranges[selectedRange].subtitle}
+                      </p>
+                    </div>
                   </div>
-                </motion.div>
-              </AnimatePresence>
+
+                  <p
+                    className="text-gray-700 text-base md:text-lg leading-relaxed mb-6 animate-in fade-in duration-300 fill-mode-both"
+                    style={{ animationDelay: '200ms' }}
+                  >
+                    {categoryData.step2_ranges[selectedRange].description}
+                  </p>
+
+                  {/* Specs techniques - Grid avec icônes */}
+                  <div
+                    className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 mb-6 border border-gray-200 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+                    style={{ animationDelay: '300ms' }}
+                  >
+                    <h5 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <Info className="w-4 h-4 text-white" />
+                      </div>
+                      Caractéristiques techniques
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                      {categoryData.step2_ranges[selectedRange].specs.map((spec, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all animate-in fade-in slide-in-from-left-2 duration-300 fill-mode-both"
+                          style={{ animationDelay: `${350 + (idx * 50)}ms` }}
+                        >
+                          <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                          <span className="text-sm text-gray-700 leading-relaxed">{spec}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Prix mis en valeur */}
+                  <div
+                    className="flex items-center justify-between pt-4 border-t border-gray-200 animate-in fade-in duration-300 fill-mode-both"
+                    style={{ animationDelay: '500ms' }}
+                  >
+                    <span className="text-gray-600 font-medium text-sm sm:text-base">À partir de</span>
+                    <div className="text-right">
+                      <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600 leading-tight">
+                        {categoryData.step2_ranges[selectedRange].price_range}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
