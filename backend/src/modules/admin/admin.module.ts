@@ -28,6 +28,10 @@ import { UserManagementController } from './controllers/user-management.controll
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
 import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO
+import { AdminGammesSeoController } from './controllers/admin-gammes-seo.controller'; // 🎯 Gammes SEO G-Level
+import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
+import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
+import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -69,6 +73,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     AdminStaffController,
     AdminProductsController,
     AdminSeoController, // 📊 Dashboard monitoring SEO
+    AdminGammesSeoController, // 🎯 Gammes SEO G-Level classification
   ],
   providers: [
     ConfigurationService,
@@ -79,6 +84,9 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     UserManagementService,
     // AdminProductsService,
     StaffService,
+    AdminGammesSeoService, // 🎯 Service Gammes SEO
+    GammeSeoThresholdsService, // 🎯 Seuils Gammes SEO
+    GammeSeoAuditService, // 🎯 Audit Gammes SEO
   ],
   exports: [
     ConfigurationService,

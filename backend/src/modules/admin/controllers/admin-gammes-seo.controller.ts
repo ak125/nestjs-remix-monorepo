@@ -237,6 +237,35 @@ export class AdminGammesSeoController {
   }
 
   /**
+   * 📋 GET /api/admin/gammes-seo/:id/detail
+   * Détail complet d'une gamme avec SEO, switches, articles, véhicules
+   */
+  @Get(':id/detail')
+  async getGammeDetail(@Param('id', ParseIntPipe) id: number) {
+    try {
+      this.logger.log(`📋 GET /api/admin/gammes-seo/${id}/detail`);
+
+      const detail = await this.gammesSeoService.getGammeDetail(id);
+
+      return {
+        success: true,
+        data: detail,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error getting gamme detail ${id}:`, error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération du détail gamme',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * 🔧 PATCH /api/admin/gammes-seo/:id
    * Mise à jour d'une gamme
    */

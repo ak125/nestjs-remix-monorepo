@@ -984,4 +984,182 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   getAuditService(): GammeSeoAuditService {
     return this.auditService;
   }
+
+  /**
+   * 📋 GET Gamme Detail - Détail complet d'une gamme pour l'admin
+   */
+  async getGammeDetail(pgId: number): Promise<{
+    gamme: any;
+    seo: any;
+    conseils: any[];
+    switchGroups: Array<{
+      alias: string;
+      count: number;
+      sample: string;
+      variations: Array<{ sis_id: number; content: string }>;
+    }>;
+    familySwitchGroups: Array<{
+      alias: string;
+      count: number;
+      sample: string;
+      variations: Array<{ id: number; content: string }>;
+    }>;
+    articles: any[];
+    vehicles: { level1: any[]; level2: any[]; level5: any[] };
+    vLevel: any[];
+    stats: any;
+  }> {
+    try {
+      this.logger.log(`📋 getGammeDetail(${pgId})`);
+
+      // 1. Gamme de base (pieces_gamme)
+      const { data: gamme, error: gammeError } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img')
+        .eq('pg_id', pgId)
+        .single();
+
+      if (gammeError || !gamme) {
+        throw new Error(`Gamme ${pgId} non trouvée`);
+      }
+
+      // 2. SEO (seo_gamme)
+      const { data: seo } = await this.supabase
+        .from('seo_gamme')
+        .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
+        .eq('sg_pg_id', pgId)
+        .single();
+
+      // 3. Conseils (seo_gamme_conseil)
+      const { data: conseils } = await this.supabase
+        .from('seo_gamme_conseil')
+        .select('sgc_id, sgc_title, sgc_content')
+        .eq('sgc_pg_id', pgId)
+        .order('sgc_id', { ascending: true });
+
+      // 4. Item Switches (__seo_item_switch) - GROUPÉS par alias
+      const { data: rawSwitches } = await this.supabase
+        .from('__seo_item_switch')
+        .select('sis_id, sis_alias, sis_content')
+        .eq('sis_pg_id', pgId.toString())
+        .order('sis_alias', { ascending: true });
+
+      // Grouper Item Switches par alias - TOUTES les variations
+      const switchGroups = Object.entries(
+        (rawSwitches || []).reduce(
+          (acc, sw: any) => {
+            const alias = String(sw.sis_alias);
+            if (!acc[alias]) {
+              acc[alias] = [];
+            }
+            acc[alias].push({
+              sis_id: sw.sis_id,
+              content: sw.sis_content || '',
+            });
+            return acc;
+          },
+          {} as Record<string, Array<{ sis_id: number; content: string }>>,
+        ),
+      ).map(([alias, variations]) => ({
+        alias,
+        count: variations.length,
+        variations, // TOUTES les variations (pas de slice)
+        sample:
+          variations[0]?.content.substring(0, 50) +
+          (variations[0]?.content.length > 50 ? '...' : ''),
+      }));
+
+      // 5. Family Switches (__seo_family_gamme_car_switch) - alias 1-16
+      // Note: Colonnes avec suffixe 's' (sfgcs_*) selon le type SeoFamilyGammeCarSwitch
+      const { data: rawFamilySwitches } = await this.supabase
+        .from('__seo_family_gamme_car_switch')
+        .select('sfgcs_id, sfgcs_alias, sfgcs_content')
+        .eq('sfgcs_pg_id', pgId.toString())
+        .order('sfgcs_alias', { ascending: true });
+
+      // Grouper Family Switches par alias - TOUTES les variations
+      const familySwitchGroups = Object.entries(
+        (rawFamilySwitches || []).reduce(
+          (acc, sw: any) => {
+            const alias = String(sw.sfgcs_alias);
+            if (!acc[alias]) {
+              acc[alias] = [];
+            }
+            acc[alias].push({
+              id: sw.sfgcs_id,
+              content: sw.sfgcs_content || '',
+            });
+            return acc;
+          },
+          {} as Record<string, Array<{ id: number; content: string }>>,
+        ),
+      ).map(([alias, variations]) => ({
+        alias,
+        count: variations.length,
+        variations, // TOUTES les variations
+        sample:
+          variations[0]?.content.substring(0, 50) +
+          (variations[0]?.content.length > 50 ? '...' : ''),
+      }));
+
+      // 6. Articles blog liés
+      const { data: articles } = await this.supabase
+        .from('__blog_article')
+        .select('ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update')
+        .eq('ba_pg_id', pgId)
+        .order('ba_create', { ascending: false })
+        .limit(20);
+
+      // 7. Véhicules compatibles - Level 1 (catalog_gamme_car)
+      const { data: vehiclesLevel1 } = await this.supabase
+        .from('catalog_gamme_car')
+        .select('cgc_id, cgc_type_id')
+        .eq('cgc_pg_id', pgId)
+        .limit(100);
+
+      // 8. V-Level (gamme_seo_metrics pour v_level)
+      const { data: vLevel } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score')
+        .eq('gamme_id', pgId)
+        .order('rank', { ascending: true })
+        .limit(50);
+
+      // 9. Stats
+      const { count: productsCount } = await this.supabase
+        .from('__products')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_id', pgId);
+
+      return {
+        gamme,
+        seo: seo || {
+          sg_id: null,
+          sg_title: '',
+          sg_descrip: '',
+          sg_keywords: '',
+          sg_h1: '',
+          sg_content: '',
+        },
+        conseils: conseils || [],
+        switchGroups,
+        familySwitchGroups,
+        articles: articles || [],
+        vehicles: {
+          level1: vehiclesLevel1 || [],
+          level2: [],
+          level5: [],
+        },
+        vLevel: vLevel || [],
+        stats: {
+          products_count: productsCount || 0,
+          articles_count: (articles || []).length,
+          vehicles_level1_count: (vehiclesLevel1 || []).length,
+        },
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error in getGammeDetail(${pgId}):`, error);
+      throw error;
+    }
+  }
 }
