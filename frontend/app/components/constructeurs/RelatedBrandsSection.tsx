@@ -7,7 +7,6 @@
  * @author Automecanik SEO Team
  */
 import { Link } from "@remix-run/react";
-import { motion } from "framer-motion";
 
 import { type RelatedBrand } from "~/types/brand.types";
 
@@ -110,13 +109,10 @@ export function RelatedBrandsSection({
             const logoUrl = getLogoUrl(brand.marque_logo);
 
             return (
-              <motion.article
+              <article
                 key={brand.marque_id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="group"
+                className="group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Link
                   to={brand.link}
@@ -162,7 +158,7 @@ export function RelatedBrandsSection({
                     </span>
                   )}
                 </Link>
-              </motion.article>
+              </article>
             );
           })}
         </div>
