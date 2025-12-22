@@ -62,11 +62,11 @@ function getSectionTitle(currentBrandName: string, country?: string): string {
 }
 
 /**
- * Génère l'URL du logo depuis le nom de fichier
+ * Génère l'URL du logo depuis le nom de fichier avec cache 1 an
  */
 function getLogoUrl(logoFilename: string | null): string | undefined {
   if (!logoFilename) return undefined;
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${logoFilename}`;
+  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${logoFilename}?width=64&quality=90&t=31536000`;
 }
 
 export function RelatedBrandsSection({

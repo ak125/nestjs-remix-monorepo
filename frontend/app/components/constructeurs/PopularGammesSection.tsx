@@ -90,11 +90,11 @@ function getDescription(gamme: PopularGamme, brandName: string): string {
 }
 
 /**
- * Génère l'URL de l'image de gamme
+ * Génère l'URL de l'image de gamme avec cache 1 an
  */
 function getGammeImageUrl(imgFilename: string | null): string | undefined {
   if (!imgFilename) return undefined;
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${imgFilename}`;
+  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${imgFilename}?width=200&quality=85&t=31536000`;
 }
 
 export function PopularGammesSection({

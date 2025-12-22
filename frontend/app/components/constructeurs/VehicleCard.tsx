@@ -57,9 +57,9 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
     vehicle.type_year_to
   );
 
-  // 🖼️ URL de l'image avec fallback
-  const vehicleImageUrl = vehicle.modele_pic 
-    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
+  // 🖼️ URL de l'image avec fallback et cache 1 an
+  const vehicleImageUrl = vehicle.modele_pic
+    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}?width=400&quality=85&t=31536000`
     : '/images/placeholder-vehicle.png';
 
   return (
