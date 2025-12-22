@@ -132,31 +132,33 @@ export function AddToCartButton({
 
   /**
    * 🎬 Crée une animation de "flying" vers l'icône panier
+   * 🚀 Optimisé pour éviter le layout thrashing (lecture avant écriture)
    */
   const createFlyingAnimation = (button: HTMLElement) => {
-    // Créer un clone de l'icône produit
-    const clone = document.createElement('div');
-    clone.innerHTML = '🛒';
-    clone.style.cssText = `
-      position: fixed;
-      font-size: 24px;
-      pointer-events: none;
-      z-index: 9999;
-      animation: flyToCart 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    `;
-
-    // Position de départ (bouton)
+    // 📖 LECTURE D'ABORD - obtenir la position AVANT toute modification DOM
     const rect = button.getBoundingClientRect();
-    clone.style.left = `${rect.left + rect.width / 2}px`;
-    clone.style.top = `${rect.top + rect.height / 2}px`;
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
 
-    // Ajouter au DOM
-    document.body.appendChild(clone);
+    // ✏️ ÉCRITURE ENSUITE - dans un requestAnimationFrame pour batch
+    requestAnimationFrame(() => {
+      const clone = document.createElement('div');
+      clone.innerHTML = '🛒';
+      clone.style.cssText = `
+        position: fixed;
+        left: ${startX}px;
+        top: ${startY}px;
+        font-size: 24px;
+        pointer-events: none;
+        z-index: 9999;
+        animation: flyToCart 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      `;
 
-    // Supprimer après l'animation
-    setTimeout(() => {
-      clone.remove();
-    }, 600);
+      document.body.appendChild(clone);
+
+      // Supprimer après l'animation
+      setTimeout(() => clone.remove(), 600);
+    });
   };
 
   /**
