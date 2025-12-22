@@ -2,7 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../../common/cache.service';
+import { CacheService } from '../../modules/cache/cache.service';
 // Services de délégation (optionnels pour compatibilité)
 // import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
 // import { OrderStatusService } from '../../modules/orders/services/order-status.service';
@@ -64,10 +64,9 @@ export interface LegacyOrderLine {
 
 @Injectable()
 export class OrdersService extends SupabaseBaseService {
-  private cacheService = new CacheService();
-
   constructor(
     configService?: ConfigService,
+    private readonly cacheService?: CacheService,
     // Services de délégation optionnels (pour future intégration)
     // @Optional() private readonly calculationService?: OrderCalculationService,
     // @Optional() private readonly statusService?: OrderStatusService,
@@ -270,7 +269,7 @@ export class OrdersService extends SupabaseBaseService {
       }
 
       // 7. Invalider le cache
-      this.cacheService.delete('total_orders_count');
+      await this.cacheService?.del('total_orders_count');
 
       // 8. Créer le statut initial
       await this.createOrderStatus(orderNumber, 'created', 'Commande créée');
@@ -369,7 +368,7 @@ export class OrdersService extends SupabaseBaseService {
       await this.createOrderStatus(orderId, status, comment);
 
       // 4. Invalider le cache
-      this.cacheService.delete('total_orders_count');
+      await this.cacheService?.del('total_orders_count');
 
       this.logger.log(`Order ${orderId} status updated to: ${status}`);
     } catch (error) {
@@ -856,8 +855,8 @@ export class OrdersService extends SupabaseBaseService {
     const cacheKey = `total_orders_count_${status || 'all'}_${userId || 'all'}_${excludePending}`;
 
     // Essayer d'abord le cache (TTL: 2 minutes)
-    const cached = this.cacheService.get<number>(cacheKey);
-    if (cached !== null) {
+    const cached = await this.cacheService?.get<number>(cacheKey);
+    if (cached !== null && cached !== undefined) {
       this.logger.debug('📊 Using cached total orders count:', cached);
       return cached;
     }
@@ -898,7 +897,7 @@ export class OrdersService extends SupabaseBaseService {
       const totalCount = count || 0;
 
       // Cache pour 2 minutes (les stats changent moins souvent)
-      this.cacheService.set(cacheKey, totalCount, 2 * 60 * 1000);
+      await this.cacheService?.set(cacheKey, totalCount, 120);
 
       return totalCount;
     } catch (error) {

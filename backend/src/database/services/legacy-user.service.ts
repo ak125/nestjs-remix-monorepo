@@ -2,7 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../../common/cache.service';
+import { CacheService } from '../../modules/cache/cache.service';
 
 export interface LegacyUser {
   id: string;
@@ -26,9 +26,10 @@ export interface LegacyUser {
 
 @Injectable()
 export class LegacyUserService extends SupabaseBaseService {
-  private cacheService = new CacheService();
-
-  constructor(configService?: ConfigService) {
+  constructor(
+    configService?: ConfigService,
+    private readonly cacheService?: CacheService,
+  ) {
     super(configService);
     this.logger.log('LegacyUserService initialized');
   }
@@ -325,8 +326,8 @@ export class LegacyUserService extends SupabaseBaseService {
     const cacheKey = 'total_active_users_count';
 
     // Essayer d'abord le cache (TTL: 2 minutes pour les stats)
-    const cached = this.cacheService.get<number>(cacheKey);
-    if (cached !== null) {
+    const cached = await this.cacheService?.get<number>(cacheKey);
+    if (cached !== null && cached !== undefined) {
       this.logger.debug('📊 Using cached total active users count:', cached);
       return cached;
     }
@@ -344,7 +345,7 @@ export class LegacyUserService extends SupabaseBaseService {
       const totalCount = count || 0;
 
       // Cache pour 2 minutes (les stats changent pas souvent)
-      this.cacheService.set(cacheKey, totalCount, 2 * 60 * 1000);
+      await this.cacheService?.set(cacheKey, totalCount, 120);
 
       return totalCount;
     } catch (error) {

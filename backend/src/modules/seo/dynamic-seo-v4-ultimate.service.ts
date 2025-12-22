@@ -929,11 +929,12 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     pgId: number,
   ): Promise<any[]> {
     if (!mfId) return [];
+    // Note: Colonnes avec suffixe 's' (sfgcs_*) selon le type SeoFamilyGammeCarSwitch
     const { data } = await this.supabase
       .from(TABLES.seo_family_gamme_car_switch)
       .select('*')
-      .eq('sfs_mf_id', mfId)
-      .eq('sfs_pg_id', pgId);
+      .eq('sfgcs_mf_id', mfId)
+      .eq('sfgcs_pg_id', pgId);
     return data || [];
   }
 
