@@ -86,7 +86,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         "@id": `${canonicalUrl}#organization`,
         name: brand.marque_name,
         url: canonicalUrl,
-        logo: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
+        logo: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
         additionalType: "https://schema.org/AutomotiveBusiness",
       },
       // 2️⃣ CollectionPage - La page catalogue
@@ -154,7 +154,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
+      href: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
     },
 
     // 🏭 JSON-LD Schema Organization
@@ -350,7 +350,7 @@ export default function BrandCatalogPage() {
                         <img
                           src={
                             manufacturer.marque_logo ||
-                            `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${getLogoAlias(manufacturer.marque_alias)}.webp`
+                            `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${getLogoAlias(manufacturer.marque_alias)}.webp?width=200&quality=90&t=31536000`
                           }
                           alt={`Logo ${manufacturer.marque_name}`}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"

@@ -105,7 +105,7 @@ export default function MotorisationsSection({
                         onError={(e) => {
                           // Fallback vers une image placeholder
                           e.currentTarget.src =
-                            "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/default.webp";
+                            "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-modeles/default.webp?width=100&quality=85&t=31536000";
                           e.currentTarget.onerror = null; // Éviter les boucles infinies
                         }}
                       />

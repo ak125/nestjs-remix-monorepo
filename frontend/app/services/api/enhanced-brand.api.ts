@@ -141,18 +141,21 @@ export class EnhancedBrandApiService {
 
   /**
    * 🖼️ Optimiseur d'images (gestion WebP/fallback basée sur PHP)
+   * 🚀 Utilise l'API de transformation Supabase avec cache 1 an
    */
   private getOptimizedImageUrl(basePath: string, filename: string): string {
     if (!filename) return `${basePath}/no.png`;
-    
+
     // Détection WebP support (simulé - en réalité on utiliserait une détection navigateur)
     const supportsWebP = this.config.supportWebP;
-    
+
     if (!supportsWebP && filename.includes('.webp')) {
       filename = filename.replace('.webp', '.jpg');
     }
-    
-    return `${basePath}/${filename}`;
+
+    // 🚀 Transformation Supabase avec cache 1 an
+    const renderBasePath = basePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    return `${renderBasePath}/${filename}?width=200&quality=85&t=31536000`;
   }
 
   /**

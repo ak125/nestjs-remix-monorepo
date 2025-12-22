@@ -359,8 +359,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
           image: g.image
-            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.image}`
-            : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp`,
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.image}?width=200&quality=85&t=31536000`
+            : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp?width=200&quality=85&t=31536000`,
           description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule`,
           meta_description: `${g.name} pas cher Ã  contrôler régulièrement`,
           sort: g.sort_order,
@@ -610,7 +610,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             rel: "preload",
             as: "image",
             // Utilise /render/image/ avec width=380&quality=85 (identique à optimizeImageUrl dans PiecesHeader)
-            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}?width=380&quality=85`,
+            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}?width=380&quality=85&t=31536000`,
             fetchpriority: "high",
           },
         ]
