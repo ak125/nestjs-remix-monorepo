@@ -29,8 +29,8 @@ export function CheckoutOptimization({
   const [initialized, setInitialized] = useState(false)
 
   // Mémoriser les valeurs calculées pour éviter les re-calculs
-  const potentialRevenue = useMemo(() => 
-    Math.round(pendingOrdersCount * 35.76), 
+  const _potentialRevenue = useMemo(() =>
+    Math.round(pendingOrdersCount * 35.76),
     [pendingOrdersCount]
   )
 
