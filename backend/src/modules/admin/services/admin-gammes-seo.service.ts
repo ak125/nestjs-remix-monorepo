@@ -1015,7 +1015,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 1. Gamme de base (pieces_gamme)
       const { data: gamme, error: gammeError } = await this.supabase
         .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img')
+        .select(
+          'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img',
+        )
         .eq('pg_id', pgId)
         .single();
 
@@ -1105,7 +1107,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 6. Articles blog liés
       const { data: articles } = await this.supabase
         .from('__blog_article')
-        .select('ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update')
+        .select(
+          'ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update',
+        )
         .eq('ba_pg_id', pgId)
         .order('ba_create', { ascending: false })
         .limit(20);
@@ -1120,7 +1124,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 8. V-Level (gamme_seo_metrics pour v_level)
       const { data: vLevel } = await this.supabase
         .from('gamme_seo_metrics')
-        .select('id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score')
+        .select(
+          'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score',
+        )
         .eq('gamme_id', pgId)
         .order('rank', { ascending: true })
         .limit(50);

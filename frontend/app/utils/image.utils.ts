@@ -13,7 +13,7 @@
 const PROXY_BASE_URL = typeof window !== 'undefined' ? '' : 'https://www.automecanik.com';
 
 // Fallback direct Supabase (pour legacy URLs déjà en Supabase format)
-const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+const _SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 const UPLOADS_BUCKET = 'uploads';
 const RACK_IMAGES_BUCKET = 'rack-images';
 
