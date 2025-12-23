@@ -46,7 +46,25 @@ automecanik.com, www.automecanik.com {
     
     @upload_images path_regexp upload_path ^/upload/(.+)$
     redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
-    
+
+    # ===== PROXY IMAGES OPTIMISÉES (cache 1 an) =====
+    # Route: /img/{bucket}/{path}?query → Supabase /storage/v1/render/image/public/{bucket}/{path}?query
+    # Caddy ajoute Cache-Control: 1 an, Cloudflare cache au edge
+    @img_proxy path_regexp img_path ^/img/(.+)$
+    handle @img_proxy {
+        # Headers de cache (écrase le Cache-Control 1h de Supabase)
+        header Cache-Control "public, max-age=31536000, immutable"
+        header Vary "Accept"
+
+        reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
+            header_up Host cxpojprgwgubzjyqzmoq.supabase.co
+            header_down -Cache-Control
+
+            # CRITIQUE: {query} forward les ?width=400&quality=85 à Supabase
+            rewrite * /storage/v1/render/image/public/{re.img_path.1}{query}
+        }
+    }
+
     # ===== SITEMAPS STATIQUES (714k URLs) =====
     # Servis directement depuis le filesystem (générés automatiquement au déploiement)
     @sitemaps path /sitemap*.xml

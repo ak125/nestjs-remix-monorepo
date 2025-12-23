@@ -1,17 +1,23 @@
 /**
  * 🖼️ OPTIMISEUR D'IMAGES WEBP AVEC SUPABASE IMAGE TRANSFORMATION
- * 
+ *
  * ✅ Conversion automatique vers WebP
  * ✅ Redimensionnement intelligent
  * ✅ Support responsive (srcset)
  * ✅ Fallback pour compatibilité
  * ✅ Aucun re-upload nécessaire !
- * 
+ * ✅ Proxy via automecanik.com pour cache Cloudflare 1 an
+ *
  * @see https://supabase.com/docs/guides/storage/serving/image-transformations
  */
 
+// 🚀 Proxy via automecanik.com pour contrôle cache (Cloudflare edge + navigateur)
+// En SSR: URL absolue. En client: URL relative pour éviter CORS.
+const PROXY_BASE_URL = typeof window !== 'undefined' ? '' : 'https://www.automecanik.com';
+
+// Fallback direct vers Supabase (pour getOriginalUrl et debug)
 const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-const STORAGE_BUCKET = 'uploads';
+const DEFAULT_BUCKET = 'uploads';
 
 export interface ImageOptimizationOptions {
   width?: number;
@@ -36,11 +42,18 @@ export class ImageOptimizer {
   private static readonly DEFAULT_QUALITY = 85;
 
   /**
-   * 🚀 Génère une URL optimisée WebP
-   * 
+   * 🚀 Génère une URL optimisée via proxy automecanik.com
+   *
+   * Le proxy Caddy forward vers Supabase et ajoute Cache-Control: 1 an
+   * Cloudflare cache au edge pour réduire 95%+ des requêtes à Supabase
+   *
    * @example
    * const url = ImageOptimizer.getOptimizedUrl('constructeurs-automobiles/marques-logos/bmw.jpg', { width: 800 });
-   * // => https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/bmw.jpg?format=webp&width=800
+   * // => /img/uploads/constructeurs-automobiles/marques-logos/bmw.jpg?width=800
+   *
+   * @example
+   * const url = ImageOptimizer.getOptimizedUrl('rack-images/101/image.jpg', { width: 600 });
+   * // => /img/rack-images/101/image.jpg?width=600
    */
   static getOptimizedUrl(
     imagePath: string,
@@ -55,18 +68,25 @@ export class ImageOptimizer {
 
     // Nettoyer le chemin de l'image
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-    
-    // 🚀 CDN Supabase avec redimensionnement (format=webp non supporté sur ce bucket)
-    const baseUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${cleanPath}`;
-    
-    // Construire les paramètres de transformation (sans format car non supporté)
+
+    // 🚀 Détecter dynamiquement le bucket (fix bug rack-images)
+    let bucket = DEFAULT_BUCKET;
+    let actualPath = cleanPath;
+
+    if (cleanPath.startsWith('rack-images/')) {
+      bucket = 'rack-images';
+      actualPath = cleanPath.replace('rack-images/', '');
+    }
+
+    // 🚀 Utiliser le proxy automecanik.com pour cache Cloudflare
+    // Format: /img/{bucket}/{path}?width=...&quality=...
+    const baseUrl = `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+
+    // Construire les paramètres de transformation
     const params = new URLSearchParams();
     if (width) params.set('width', width.toString());
     if (height) params.set('height', height.toString());
     if (quality && quality !== this.DEFAULT_QUALITY) params.set('quality', quality.toString());
-
-    // 🚀 Cache control 1 an (31536000 secondes) pour optimisation PageSpeed
-    params.set('t', '31536000');
 
     const queryString = params.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
@@ -115,11 +135,30 @@ export class ImageOptimizer {
   }
 
   /**
-   * 🔙 Obtient l'URL originale (sans transformation)
+   * 🔙 Obtient l'URL originale (sans transformation, mais via proxy pour cache)
    */
   static getOriginalUrl(imagePath: string): string {
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
+
+    // Détecter le bucket
+    let bucket = DEFAULT_BUCKET;
+    let actualPath = cleanPath;
+
+    if (cleanPath.startsWith('rack-images/')) {
+      bucket = 'rack-images';
+      actualPath = cleanPath.replace('rack-images/', '');
+    }
+
+    // Utiliser le proxy pour bénéficier du cache Cloudflare
+    return `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+  }
+
+  /**
+   * 🔙 Obtient l'URL directe Supabase (pour debug uniquement)
+   */
+  static getDirectSupabaseUrl(imagePath: string): string {
+    const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+    return `${SUPABASE_URL}/storage/v1/object/public/${DEFAULT_BUCKET}/${cleanPath}`;
   }
 
   /**
@@ -246,10 +285,11 @@ export function compareImageSizes(imagePath: string): {
  */
 export function debugImageUrls(imagePath: string): void {
   console.group('🖼️ Image URLs Debug');
-  console.log('Original:', ImageOptimizer.getOriginalUrl(imagePath));
-  console.log('WebP 400px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 400 }));
-  console.log('WebP 800px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 800 }));
-  console.log('WebP 1200px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 1200 }));
+  console.log('Proxy 400px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 400 }));
+  console.log('Proxy 800px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 800 }));
+  console.log('Proxy 1200px:', ImageOptimizer.getOptimizedUrl(imagePath, { width: 1200 }));
+  console.log('Proxy Original:', ImageOptimizer.getOriginalUrl(imagePath));
+  console.log('Direct Supabase:', ImageOptimizer.getDirectSupabaseUrl(imagePath));
   console.log('SrcSet:', ImageOptimizer.getResponsiveSrcSet(imagePath));
   console.groupEnd();
 }
