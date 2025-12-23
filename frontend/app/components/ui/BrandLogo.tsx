@@ -27,6 +27,11 @@ const textSizeClasses = {
   xl: 'text-sm',
 };
 
+// Configuration selon environnement
+const IS_PRODUCTION = typeof window !== 'undefined'
+  ? window.location.hostname === 'www.automecanik.com' || window.location.hostname === 'automecanik.com'
+  : process.env.NODE_ENV === 'production';
+
 const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 
 /**
@@ -45,16 +50,25 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     ? 'equipementiers-automobiles'
     : 'constructeurs-automobiles/marques-logos';
 
-  // Générer le nom de fichier si non fourni
-  const filename = logoPath || `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+  // Extraire le nom de fichier si logoPath contient un chemin complet
+  const extractFilename = (path: string | null): string => {
+    if (!path) return `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+    // Si c'est déjà une URL complète, extraire juste le basename
+    const parts = path.split('/');
+    return parts[parts.length - 1] || `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+  };
+
+  const filename = extractFilename(logoPath);
 
   // Calculer la taille en pixels pour l'URL
   const pixelSize = typeof size === 'number' ? size : {
     xs: 20, sm: 24, md: 32, lg: 40, xl: 48
   }[size];
 
-  // URL Supabase render API avec transformation
-  const logoUrl = `${SUPABASE_URL}/storage/v1/render/image/public/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`;
+  // URL selon environnement: proxy /img/ en prod, Supabase direct en dev
+  const logoUrl = IS_PRODUCTION
+    ? `/img/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`
+    : `${SUPABASE_URL}/storage/v1/render/image/public/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`;
 
   // Initiales pour le fallback (2 premières lettres)
   const initials = brandName.substring(0, 2).toUpperCase();
