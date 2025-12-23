@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import { useCart } from "../../hooks/useCart";
 import { normalizeImageUrl } from "../../utils/image.utils";
 import { StarRating } from "../common/StarRating";
+import { BrandLogo } from "../ui/BrandLogo";
 
 interface PieceDetailModalProps {
   pieceId: number | null;
@@ -228,18 +229,13 @@ export function PieceDetailModal({
             <div className="p-8">
               {/* Header avec logo, marque et titre - Pleine largeur */}
               <div className="flex items-start gap-4 mb-6">
-                {piece.marque_logo && (
-                  <div className="w-16 h-16 flex-shrink-0">
-                    <img
-                      src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${piece.marque_logo}?width=64&quality=90&t=31536000`}
-                      alt={`Logo ${piece.marque}`}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-contain"
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
-                  </div>
-                )}
+                {/* Logo équipementier avec Avatar Shadcn */}
+                <BrandLogo
+                  logoPath={piece.marque_logo || null}
+                  brandName={piece.marque}
+                  type="equipementier"
+                  size={64}
+                />
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
                     {piece.nom}

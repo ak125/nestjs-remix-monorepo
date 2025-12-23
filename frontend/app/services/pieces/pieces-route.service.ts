@@ -12,6 +12,7 @@
 
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
 import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
+import { normalizeImageUrl } from '../../utils/image.utils';
 
 /**
  * 🔄 Récupération des gammes cross-selling depuis l'API réelle
@@ -95,7 +96,7 @@ export async function fetchBlogArticle(
           title: article.h1 || article.title,
           excerpt: article.excerpt || article.description || '',
           slug: article.slug || '',
-          image: article.featuredImage || article.image || undefined,
+          image: normalizeImageUrl(article.featuredImage || article.image) || undefined,
           date: article.updatedAt || article.publishedAt || article.created_at || new Date().toISOString(),
           readTime: article.readingTime || article.reading_time || 5
         };
@@ -119,7 +120,7 @@ export async function fetchBlogArticle(
               title: article.title,
               excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
               slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
+              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
               date: article.created_at || article.date || article.published_at || new Date().toISOString(),
               readTime: article.reading_time || article.read_time || 5
             };
@@ -144,7 +145,7 @@ export async function fetchBlogArticle(
               title: article.title,
               excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
               slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
+              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
               date: article.created_at || article.date || article.published_at || new Date().toISOString(),
               readTime: article.reading_time || article.read_time || 5
             };
@@ -152,7 +153,7 @@ export async function fetchBlogArticle(
         }
       }
     }
-    
+
     // ⚠️ Essai 3: Endpoint blog homepage - URL EXACTE
     response = await fetch(`http://localhost:3000/api/blog/homepage`);
     if (response.ok) {
@@ -169,7 +170,7 @@ export async function fetchBlogArticle(
               title: article.title,
               excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
               slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
+              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
               date: article.created_at || article.date || article.published_at || new Date().toISOString(),
               readTime: article.reading_time || article.read_time || 5
             };
@@ -246,7 +247,7 @@ export async function fetchRelatedArticlesForGamme(
       title: articleData.h1 || articleData.title || `Guide ${gamme.name}`,
       excerpt: articleData.excerpt || `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`,
       slug: articleData.slug,
-      image: articleData.featuredImage || undefined,
+      image: normalizeImageUrl(articleData.featuredImage) || undefined,
       date: articleData.updatedAt || articleData.publishedAt || new Date().toISOString(),
       readTime: articleData.readingTime || 8
     });
@@ -261,7 +262,7 @@ export async function fetchRelatedArticlesForGamme(
             title: related.h1 || related.title,
             excerpt: related.excerpt || '',
             slug: related.slug,
-            image: related.featuredImage || undefined,
+            image: normalizeImageUrl(related.featuredImage) || undefined,
             date: related.updatedAt || related.publishedAt || new Date().toISOString(),
             readTime: related.readingTime || 5
           });

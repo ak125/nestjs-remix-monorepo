@@ -9,11 +9,11 @@
  * @see /.spec/docs/ARCHITECTURE-IMAGES.md - Documentation complète
  */
 
-// 🚀 Proxy via automecanik.com pour contrôle cache (Cloudflare edge + navigateur)
-const PROXY_BASE_URL = typeof window !== 'undefined' ? '' : 'https://www.automecanik.com';
-
-// Fallback direct Supabase (pour legacy URLs déjà en Supabase format)
-const _SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+// 🚀 URLs Supabase directes avec transformation API (render)
+// En prod, Caddy intercepte /img/* et ajoute cache 1 an
+// En dev, on utilise Supabase directement (render API)
+const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+const SUPABASE_RENDER_URL = `${SUPABASE_URL}/storage/v1/render/image/public`;
 const UPLOADS_BUCKET = 'uploads';
 const RACK_IMAGES_BUCKET = 'rack-images';
 
@@ -48,38 +48,33 @@ export function normalizeImageUrl(url: string | undefined | null): string {
   // Vérification stricte : doit être une chaîne non vide
   if (!url || typeof url !== 'string') return '';
 
-  // Si déjà une URL proxy automecanik.com, retourner telle quelle
-  if (url.startsWith('/img/') || url.includes('automecanik.com/img/')) {
-    return url;
-  }
-
-  // Si déjà une URL Supabase complète, convertir vers proxy
+  // Si déjà une URL Supabase complète, retourner telle quelle
   if (url.includes('supabase.co/storage')) {
-    // Extraire le bucket et le path
-    const match = url.match(/\/(?:object|render\/image)\/public\/([^/]+)\/(.+?)(?:\?|$)/);
-    if (match) {
-      const [, bucket, path] = match;
-      return `${PROXY_BASE_URL}/img/${bucket}/${path}`;
-    }
     return url;
   }
 
-  // CAS 1: Images produits /rack/ → /img/rack-images/
+  // Si déjà une URL proxy /img/, convertir vers Supabase direct
+  if (url.startsWith('/img/')) {
+    const path = url.replace('/img/', '');
+    return `${SUPABASE_RENDER_URL}/${path}`;
+  }
+
+  // CAS 1: Images produits /rack/ → Supabase render
   if (url.startsWith('/rack/')) {
     const path = url.replace('/rack/', '');
-    return `${PROXY_BASE_URL}/img/${RACK_IMAGES_BUCKET}/${path}`;
+    return `${SUPABASE_RENDER_URL}/${RACK_IMAGES_BUCKET}/${path}`;
   }
 
-  // CAS 2 & 3: Images gammes/familles /upload/ → /img/uploads/
+  // CAS 2 & 3: Images gammes/familles /upload/ → Supabase render
   if (url.startsWith('/upload/')) {
     const path = url.replace('/upload/', '');
-    return `${PROXY_BASE_URL}/img/${UPLOADS_BUCKET}/${path}`;
+    return `${SUPABASE_RENDER_URL}/${UPLOADS_BUCKET}/${path}`;
   }
 
   // Si URL relative sans préfixe connu, supposer uploads bucket
   if (url.startsWith('/')) {
     const path = url.substring(1);
-    return `${PROXY_BASE_URL}/img/${UPLOADS_BUCKET}/${path}`;
+    return `${SUPABASE_RENDER_URL}/${UPLOADS_BUCKET}/${path}`;
   }
 
   // Si URL externe complète, retourner telle quelle
@@ -119,8 +114,8 @@ export function optimizeImageUrl(
     return normalized;
   }
 
-  // Si c'est une URL externe non-proxy, retourner telle quelle
-  if (!normalized.startsWith('/img/') && !normalized.includes('automecanik.com/img/')) {
+  // Si c'est une URL externe non-Supabase, retourner telle quelle
+  if (!normalized.includes('supabase.co/storage')) {
     return normalized;
   }
 

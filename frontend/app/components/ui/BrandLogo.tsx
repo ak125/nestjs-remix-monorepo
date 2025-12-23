@@ -1,53 +1,84 @@
-import React, { useState } from 'react';
-import { getBrandLogoUrl } from '../../utils/storage';
+import { Avatar, AvatarImage, AvatarFallback } from './avatar';
+import { cn } from '~/lib/utils';
+
+type BrandType = 'constructeur' | 'equipementier';
 
 interface BrandLogoProps {
   logoPath: string | null;
   brandName: string;
+  type?: BrandType;
   className?: string;
-  size?: number;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
 }
 
-export const BrandLogo: React.FC<BrandLogoProps> = ({ 
-  logoPath, 
-  brandName, 
-  className = "",
-  size = 96 
+const sizeClasses = {
+  xs: 'h-5 w-5',
+  sm: 'h-6 w-6',
+  md: 'h-8 w-8',
+  lg: 'h-10 w-10',
+  xl: 'h-12 w-12',
+};
+
+const textSizeClasses = {
+  xs: 'text-[8px]',
+  sm: 'text-[9px]',
+  md: 'text-[10px]',
+  lg: 'text-xs',
+  xl: 'text-sm',
+};
+
+const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+
+/**
+ * Logo de marque avec Avatar Shadcn UI
+ * Supporte constructeurs automobiles et équipementiers
+ */
+export const BrandLogo: React.FC<BrandLogoProps> = ({
+  logoPath,
+  brandName,
+  type = 'constructeur',
+  className = '',
+  size = 'md',
 }) => {
-  const [imageError, setImageError] = useState(false);
-  
-  // Générer le fallback avec initiales
-  const initials = brandName
-    .split(' ')
-    .slice(0, 2)
-    .map(word => word.charAt(0).toUpperCase())
-    .join('');
-    
-  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=${size}&background=f3f4f6&color=374151&font-size=0.33`;
-  
-  // Si pas de logo path ou erreur de chargement, utiliser le fallback
-  if (!logoPath || imageError) {
-    return (
-      <img
-        src={fallbackUrl}
-        alt={`${brandName} logo`}
-        className={className}
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-  
-  // Essayer d'abord l'image Supabase
-  const supabaseUrl = getBrandLogoUrl(logoPath);
-  
+  // Déterminer le dossier selon le type
+  const folder = type === 'equipementier'
+    ? 'equipementiers-automobiles'
+    : 'constructeurs-automobiles/marques-logos';
+
+  // Générer le nom de fichier si non fourni
+  const filename = logoPath || `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+
+  // Calculer la taille en pixels pour l'URL
+  const pixelSize = typeof size === 'number' ? size : {
+    xs: 20, sm: 24, md: 32, lg: 40, xl: 48
+  }[size];
+
+  // URL Supabase render API avec transformation
+  const logoUrl = `${SUPABASE_URL}/storage/v1/render/image/public/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`;
+
+  // Initiales pour le fallback (2 premières lettres)
+  const initials = brandName.substring(0, 2).toUpperCase();
+
+  // Classes de taille
+  const sizeClass = typeof size === 'number' ? '' : sizeClasses[size];
+  const textClass = typeof size === 'number' ? 'text-xs' : textSizeClasses[size];
+
   return (
-    <img
-      src={supabaseUrl}
-      alt={`${brandName} logo`}
-      className={className}
-      style={{ width: size, height: size }}
-      onError={() => setImageError(true)}
-      onLoad={() => setImageError(false)}
-    />
+    <Avatar
+      className={cn(sizeClass, 'flex-shrink-0', className)}
+      style={typeof size === 'number' ? { width: size, height: size } : undefined}
+    >
+      <AvatarImage
+        src={logoUrl}
+        alt={`Logo ${brandName}`}
+        className="object-contain p-0.5"
+      />
+      <AvatarFallback
+        className={cn('bg-slate-100 text-slate-600 font-bold', textClass)}
+        delayMs={100}
+      >
+        {initials}
+      </AvatarFallback>
+    </Avatar>
   );
 };
