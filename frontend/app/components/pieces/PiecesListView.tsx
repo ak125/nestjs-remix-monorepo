@@ -12,6 +12,7 @@ import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { optimizeImageUrl } from "../../utils/image.utils";
 import { hasStockAvailable } from "../../utils/stock.utils";
+import { BrandLogo } from "../ui/BrandLogo";
 
 interface PiecesListViewProps {
   pieces: PieceData[];
@@ -135,10 +136,6 @@ export const PiecesListView = React.memo(
           const isSelected = selectedPieces.includes(piece.id);
           const hasStock = hasStockAvailable(piece.stock);
 
-          // Construction URL logo marque équipementier avec cache 1 an
-          const logoUrl = piece.marque_logo
-            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${piece.marque_logo}?width=48&quality=90&t=31536000`
-            : null;
 
           // Calcul fiabilité synchronisé avec GridView
           const stars = piece.stars || 3;
@@ -222,36 +219,14 @@ export const PiecesListView = React.memo(
                   <div className="flex-1 min-w-0 space-y-2">
                     {/* Logo + Badge OES + Marque */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      {/* Logo équipementier - compact sur mobile */}
-                      {logoUrl ? (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white rounded-lg border border-slate-100 p-0.5 flex-shrink-0">
-                          <img
-                            src={optimizeImageUrl(logoUrl, 40)}
-                            alt={piece.brand}
-                            width={40}
-                            height={40}
-                            loading="lazy"
-                            className="max-w-full max-h-full object-contain"
-                            onError={(e) => {
-                              const target =
-                                e.currentTarget as HTMLImageElement;
-                              target.style.display = "none";
-                              const parent = target.parentElement;
-                              if (parent) {
-                                parent.className =
-                                  "w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg";
-                                parent.innerHTML = `<span class="text-xs font-black text-white">${piece.brand.substring(0, 2).toUpperCase()}</span>`;
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex-shrink-0">
-                          <span className="text-xs font-black text-white">
-                            {piece.brand.substring(0, 2).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
+                      {/* Logo équipementier avec Avatar Shadcn */}
+                      <BrandLogo
+                        logoPath={piece.marque_logo || null}
+                        brandName={piece.brand}
+                        type="equipementier"
+                        size="lg"
+                        className="border border-slate-100"
+                      />
 
                       {/* Badge OES */}
                       {piece.quality === "OES" && (

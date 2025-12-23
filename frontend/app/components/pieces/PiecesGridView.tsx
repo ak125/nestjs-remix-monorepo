@@ -12,6 +12,7 @@ import { type PieceData } from "../../types/pieces-route.types";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
+import { BrandLogo } from "../ui/BrandLogo";
 
 interface PiecesGridViewProps {
   pieces: PieceData[];
@@ -210,11 +211,6 @@ export function PiecesGridView({
           const isSelected = selectedPieces.includes(piece.id);
           const hasStock = hasStockAvailable(piece.stock);
 
-          // Construction URL logo marque équipementier avec cache 1 an
-          const logoUrl = piece.marque_logo
-            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${piece.marque_logo}?width=48&quality=90&t=31536000`
-            : null;
-
           // Prix formaté
           const priceWhole =
             typeof piece.price === "number"
@@ -241,30 +237,14 @@ export function PiecesGridView({
                 🏷️ ZONE HEADER - Logo + Barre Fiabilité (HAUT)
             ═══════════════════════════════════════════════════════════ */}
               <div className="flex items-center justify-between gap-2 p-2.5 pb-1">
-                {/* Logo équipementier */}
-                {logoUrl ? (
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center flex-shrink-0">
-                    <img
-                      src={logoUrl}
-                      alt={piece.brand}
-                      className="w-full h-full object-contain drop-shadow-md"
-                      onError={(e) => {
-                        const target = e.currentTarget as HTMLImageElement;
-                        target.style.display = "none";
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `<span class="text-lg font-black bg-gradient-to-br from-indigo-600 to-purple-600 bg-clip-text text-transparent">${piece.brand.substring(0, 2).toUpperCase()}</span>`;
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md flex items-center justify-center flex-shrink-0">
-                    <span className="text-base font-black text-white">
-                      {piece.brand.substring(0, 2).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                {/* Logo équipementier avec Avatar Shadcn */}
+                <BrandLogo
+                  logoPath={piece.marque_logo || null}
+                  brandName={piece.brand}
+                  type="equipementier"
+                  size="xl"
+                  className="drop-shadow-md"
+                />
 
                 {/* Barre de fiabilité colorée + score */}
                 {(() => {

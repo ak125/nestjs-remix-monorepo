@@ -11,6 +11,7 @@ import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import React from "react";
 
 import { type PiecesFilters } from "../../types/pieces-route.types";
+import { BrandLogo } from "../ui/BrandLogo";
 
 interface FilterOptionData {
   id: number | string;
@@ -274,9 +275,6 @@ export function PiecesFilterSidebar({
                     const brandName = brandOption.label;
                     const isSelected = activeFilters.brands.includes(brandName);
 
-                    const logoFileName = `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`;
-                    const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/equipementiers-automobiles/${logoFileName}?width=32&quality=90&t=31536000`;
-
                     // Note moyenne réelle depuis les pièces
                     const noteAvg = brandAverageNotes?.get(brandName) ?? 7;
 
@@ -329,21 +327,13 @@ export function PiecesFilterSidebar({
                             : "bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md"
                         }`}
                       >
-                        {/* Logo centré - agrandi */}
+                        {/* Logo centré avec Avatar Shadcn */}
                         <div className="w-full h-10 flex items-center justify-center mb-1 px-1">
-                          <img
-                            src={logoUrl}
-                            alt={`Logo ${brandName}`}
-                            className="max-w-full max-h-full object-contain"
-                            onError={(e) => {
-                              const target =
-                                e.currentTarget as HTMLImageElement;
-                              target.style.display = "none";
-                              const parent = target.parentElement;
-                              if (parent) {
-                                parent.innerHTML = `<span class="text-[10px] font-bold text-slate-500">${brandName.substring(0, 6)}</span>`;
-                              }
-                            }}
+                          <BrandLogo
+                            logoPath={null}
+                            brandName={brandName}
+                            type="equipementier"
+                            size="lg"
                           />
                         </div>
 
