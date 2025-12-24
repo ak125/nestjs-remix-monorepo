@@ -10,9 +10,10 @@
 
 import { Link } from "@remix-run/react";
 import { Link2 } from "lucide-react";
+
+import { type GammeData, type VehicleData } from "../../types/pieces-route.types";
+import { type VoirAussiLinks } from "../../utils/url-builder.utils";
 import { Badge } from "../ui/badge";
-import type { GammeData, VehicleData } from "../../types/pieces-route.types";
-import type { VoirAussiLinks } from "../../utils/url-builder.utils";
 
 interface PiecesVoirAussiProps {
   links: VoirAussiLinks;

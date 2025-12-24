@@ -8,25 +8,26 @@
  * - Lazy loading des images
  */
 
-import { useState, Suspense } from "react";
 import { Await } from "@remix-run/react";
-import { Package, ChevronDown, Eye } from "lucide-react";
+import { ChevronDown, Eye, Package } from "lucide-react";
+import { Suspense, useState } from "react";
+
 import { hierarchyApi } from "../../services/api/hierarchy.api";
 
-interface CatalogueMameFamilleItem {
+export interface CatalogueMameFamilleItem {
   name: string;
   link: string;
   image: string;
   description: string;
 }
 
-interface CatalogueMameFamilleFamily {
+export interface CatalogueMameFamilleFamily {
   mf_id: number;
   mf_name: string;
   mf_pic: string | null;
 }
 
-interface CatalogueMameFamille {
+export interface CatalogueMameFamille {
   title: string;
   family: CatalogueMameFamilleFamily;
   items: CatalogueMameFamilleItem[];

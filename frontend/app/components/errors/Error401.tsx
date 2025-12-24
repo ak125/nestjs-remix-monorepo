@@ -5,8 +5,9 @@
  * après le délai spécifié (par défaut 5s)
  */
 
-import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
 interface Error401Props {

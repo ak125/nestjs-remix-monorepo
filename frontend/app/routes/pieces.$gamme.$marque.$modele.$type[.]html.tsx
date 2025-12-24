@@ -8,13 +8,12 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Await,
+  isRouteErrorResponse,
   useLoaderData,
   useRouteError,
-  isRouteErrorResponse,
-  Link,
-  Await,
 } from "@remix-run/react";
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (RPC V2 redondant avec batch-loader RPC V3)
 
 // ========================================
@@ -25,6 +24,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
+import { PiecesCatalogueFamille, type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
@@ -33,7 +33,6 @@ import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
-import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 
 // Hook custom
@@ -41,7 +40,6 @@ import { usePiecesFilters } from "../hooks/use-pieces-filters";
 import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 
 // Services API
-import { hierarchyApi } from "../services/api/hierarchy.api";
 import {
   fetchBlogArticle,
   fetchCrossSellingGammes as _fetchCrossSellingGammes,
@@ -365,7 +363,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 🚀 LCP OPTIMIZATION: Catalogue Famille Logic (sans appel RPC V2)
   // Trouver la famille en cherchant quelle famille contient la gamme actuelle
   // 🚀 LCP OPTIMIZATION V7: Catalogue Famille streamé via defer() (below-fold)
-  const catalogueMameFamillePromise = hierarchyPromise.then((hierarchyData) => {
+  const catalogueMameFamillePromise: Promise<CatalogueMameFamille | null> = hierarchyPromise.then((hierarchyData) => {
     if (!hierarchyData?.families) return null;
 
     const family = hierarchyData.families.find((f: any) =>
@@ -390,8 +388,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.image}?width=200&quality=85&t=31536000`
           : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp?width=200&quality=85&t=31536000`,
         description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
-        meta_description: `${g.name} pas cher à contrôler régulièrement`,
-        sort: g.sort_order,
       })),
     };
   }).catch(() => null); // 🛡️ Fallback si hierarchy timeout ou erreur
