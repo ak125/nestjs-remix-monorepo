@@ -23,11 +23,13 @@ import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
+import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { PiecesCatalogueFamille, type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
+import { PiecesGroupedDisplay } from "../components/pieces/PiecesGroupedDisplay";
 import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
@@ -55,13 +57,12 @@ import {
 } from "../types/pieces-route.types";
 
 // Utilitaires
-import { normalizeImageUrl } from "../utils/image.utils";
+import { buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
 import {
   generateBuyingGuide,
   generateFAQ,
   generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
   generateSEOContent,
-  mapApiPieceToData,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
@@ -461,150 +462,20 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   // Construire URL canonique complète
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
-  // Générer Schema.org Product pour rich snippets (première pièce comme exemple)
-  const firstPiece = data.pieces[0];
-
-  // 🔗 Préparer les produits liés pour isRelatedTo (cross-selling)
-  const relatedProducts =
-    data.crossSellingGammes?.slice(0, 3).map((gamme: any) => ({
-      "@type": "Product",
-      name: gamme.PG_NAME,
-      url: `https://www.automecanik.com/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}.html`,
-    })) || [];
-
-  // 🔧 Références OEM pour JSON-LD (mpn = Manufacturer Part Number)
-  const oemRefsArray = data.oemRefs?.oemRefs || data.oemRefsSeo || [];
-
-  // 📊 Schema @graph - Meilleure approche SEO
-  // Structure: Car (véhicule) ← Product (avec refs OEM) + ItemList (tous les produits)
-  const productSchema = firstPiece
-    ? {
-        "@context": "https://schema.org",
-        "@graph": [
-          // 1️⃣ Car - Véhicule cible (permet les recherches "pièces Megane 3 1.5 dCi")
-          {
-            "@type": "Car",
-            "@id": `${canonicalUrl}#vehicle`,
-            name: `${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.typeName || data.vehicle.type}`,
-            brand: { "@type": "Brand", name: data.vehicle.marque },
-            model: data.vehicle.modele,
-            vehicleConfiguration: data.vehicle.typeName || data.vehicle.type,
-            // 📅 Année modèle (Schema.org officiel)
-            ...(data.vehicle.typeDateStart && {
-              vehicleModelDate: data.vehicle.typeDateStart,
-            }),
-            // 📅 Période de production complète
-            ...(data.vehicle.typeDateStart && {
-              additionalProperty: [{
-                "@type": "PropertyValue",
-                name: "Période de production",
-                value: data.vehicle.typeDateEnd
-                  ? `${data.vehicle.typeDateStart}-${data.vehicle.typeDateEnd}`
-                  : `depuis ${data.vehicle.typeDateStart}`,
-              }],
-            }),
-            // TODO: Activer codes moteur quand données disponibles en base
-            // 🔧 Codes moteur (K9K 752, etc.) - CLÉ SEO pour recherches techniques
-            // ...(data.vehicle.motorCodesFormatted && {
-            //   vehicleEngine: {
-            //     "@type": "EngineSpecification",
-            //     engineType: data.vehicle.motorCodesFormatted,
-            //   },
-            // }),
-          },
-          // 2️⃣ Product principal avec refs OEM (permet les recherches "7701206343")
-          {
-            "@type": "Product",
-            "@id": `${canonicalUrl}#product`,
-            name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`,
-            description: data.seo.description,
-            url: canonicalUrl,
-            // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
-            // Fallback: image produit → logo marque équipementier → image gamme
-            // ⚠️ Utilise normalizeImageUrl pour éviter les URLs dupliquées
-            image: firstPiece.image
-              ? normalizeImageUrl(firstPiece.image.startsWith('http') ? firstPiece.image : `/rack/${firstPiece.image}`)
-              : firstPiece.marque_logo
-                ? normalizeImageUrl(`/upload/equipementiers-automobiles/${firstPiece.marque_logo}`)
-                : `https://www.automecanik.com/images/gammes/${data.gamme.alias || 'default'}.webp`,
-            // 🔧 MPN = Référence OEM principale - CLÉ SEO
-            ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
-            ...(firstPiece.reference && { sku: firstPiece.reference }),
-            brand: { "@type": "Brand", name: firstPiece.brand },
-            // 🚗 Lien vers le véhicule compatible
-            isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
-            offers: {
-              "@type": "AggregateOffer",
-              priceCurrency: "EUR",
-              lowPrice: data.minPrice,
-              highPrice: data.maxPrice,
-              offerCount: data.count,
-              availability: "https://schema.org/InStock",
-              seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
-            },
-            // Note: aggregateRating retiré - nécessite de vrais avis clients pour éviter pénalité Google
-            // 🔧 Propriétés additionnelles: refs OEM + codes moteur + codes mine
-            additionalProperty: [
-              // Refs OEM (jusqu'à 15)
-              ...oemRefsArray.slice(0, 15).map((ref, i) => ({
-                "@type": "PropertyValue",
-                name: i === 0 ? "Référence OEM" : "Référence compatible",
-                value: ref,
-              })),
-              // TODO: Activer codes moteur/mine quand données disponibles en base
-              // 🔧 Code Moteur (K9K 752, etc.) - recherches techniques
-              // ...(data.vehicle.motorCodesFormatted ? [{
-              //   "@type": "PropertyValue",
-              //   name: "Code Moteur",
-              //   value: data.vehicle.motorCodesFormatted,
-              // }] : []),
-              // 🔧 Type Mine (335AHR, etc.) - recherches par immatriculation
-              // ...(data.vehicle.mineCodesFormatted ? [{
-              //   "@type": "PropertyValue",
-              //   name: "Type Mine",
-              //   value: data.vehicle.mineCodesFormatted,
-              // }] : []),
-            ].filter(p => p.value),
-            ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
-          },
-          // 3️⃣ ItemList - Liste des produits disponibles (rich snippets catalogue)
-          {
-            "@type": "ItemList",
-            "@id": `${canonicalUrl}#list`,
-            name: `${data.gamme.name} pour ${data.vehicle.marque} ${data.vehicle.modele}`,
-            numberOfItems: data.count,
-            // 🔧 Filtrer les pièces sans image pour éviter erreur GSC "Champ image manquant"
-            itemListElement: data.pieces
-              .filter((piece) => piece.image || piece.marque_logo)
-              .slice(0, 8)
-              .map((piece, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                item: {
-                  "@type": "Product",
-                  name: `${piece.name} ${piece.brand}`,
-                  // 🔗 URL produit (recommandé pour rich snippets)
-                  url: `${canonicalUrl}#product-${piece.id}`,
-                  // 🖼️ Image OBLIGATOIRE pour Google Merchant Listings
-                  // Fallback: image produit → logo marque équipementier
-                  image: piece.image
-                    ? normalizeImageUrl(piece.image.startsWith('http') ? piece.image : `/rack/${piece.image}`)
-                    : normalizeImageUrl(`/upload/equipementiers-automobiles/${piece.marque_logo}`),
-                  ...(piece.reference && { sku: piece.reference }),
-                  brand: { "@type": "Brand", name: piece.brand },
-                  offers: {
-                    "@type": "Offer",
-                    price: piece.price,
-                    priceCurrency: "EUR",
-                    availability: piece.stock === "En stock" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
-                  },
-                  isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
-                },
-              })),
-          },
-        ],
-      }
-    : null;
+  // 📊 Schema.org @graph - Extrait dans pieces-schema.utils.ts
+  const productSchema = buildPiecesProductSchema({
+    vehicle: data.vehicle,
+    gamme: data.gamme,
+    pieces: data.pieces,
+    seo: { description: data.seo.description },
+    minPrice: data.minPrice,
+    maxPrice: data.maxPrice,
+    count: data.count,
+    oemRefs: data.oemRefs,
+    oemRefsSeo: data.oemRefsSeo,
+    crossSellingGammes: data.crossSellingGammes,
+    canonicalUrl,
+  });
 
   return [
     { title: data.seo.title },
@@ -882,128 +753,16 @@ export default function PiecesVehicleRoute() {
 
               {/* Affichage des pièces selon le mode */}
               {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
-                // âœ¨ AFFICHAGE GROUPÉ avec titres H2
-                <div className="space-y-8">
-                  {data.grouped_pieces
-                    // 🎯 Filtrer les groupes par position (Avant/Arrière ou Gauche/Droite)
-                    .filter((group: any) => {
-                      if (
-                        !activeFilters.position ||
-                        activeFilters.position === "all"
-                      ) {
-                        return true;
-                      }
-                      return group.filtre_side === activeFilters.position;
-                    })
-                    .map((group: any, idx: number) => {
-                      // Filtrer les pièces du groupe selon les filtres actifs
-                      // âœ… Protection: group.pieces peut être undefined
-                      const groupPieces = (group.pieces || []).filter(
-                        (p: any) => {
-                          // Utiliser la fonction utilitaire centralisée
-                          const pieceData = mapApiPieceToData(p);
-
-                          // Appliquer les filtres
-                          if (
-                            activeFilters.brands.length > 0 &&
-                            !activeFilters.brands.includes(pieceData.brand)
-                          ) {
-                            return false;
-                          }
-                          if (
-                            activeFilters.searchText &&
-                            !pieceData.name
-                              .toLowerCase()
-                              .includes(activeFilters.searchText.toLowerCase())
-                          ) {
-                            return false;
-                          }
-                          // 🎯 Filtre par qualité
-                          if (
-                            activeFilters.quality !== "all" &&
-                            pieceData.quality !== activeFilters.quality
-                          ) {
-                            return false;
-                          }
-                          // 🎯 Filtre par prix
-                          if (activeFilters.priceRange !== "all") {
-                            const price = pieceData.price;
-                            if (
-                              activeFilters.priceRange === "low" &&
-                              price >= 50
-                            )
-                              return false;
-                            if (
-                              activeFilters.priceRange === "medium" &&
-                              (price < 50 || price >= 150)
-                            )
-                              return false;
-                            if (
-                              activeFilters.priceRange === "high" &&
-                              price < 150
-                            )
-                              return false;
-                          }
-                          // 🎯 Filtre par disponibilité
-                          if (
-                            activeFilters.availability === "stock" &&
-                            pieceData.stock !== "En stock"
-                          ) {
-                            return false;
-                          }
-                          // 🎯 Filtre par note minimale (sur 10)
-                          if (
-                            activeFilters.minNote &&
-                            activeFilters.minNote > 0
-                          ) {
-                            const stars = pieceData.stars || 3;
-                            const note = Math.round((stars / 6) * 10);
-                            if (note < activeFilters.minNote) return false;
-                          }
-                          return true;
-                        },
-                      );
-
-                      if (groupPieces.length === 0) return null;
-
-                      return (
-                        <div
-                          key={`${group.filtre_gamme}-${group.filtre_side}-${idx}`}
-                          className="animate-in fade-in slide-in-from-top duration-500"
-                        >
-                          {/* Titre H2 dynamique avec modèle véhicule */}
-                          <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
-                            <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
-                            {group.title_h2 ||
-                              `${group.filtre_gamme} ${group.filtre_side}`}{" "}
-                            {data.vehicle.modele}
-                            <span className="text-sm font-normal text-gray-500 ml-auto">
-                              ({groupPieces.length} article
-                              {groupPieces.length > 1 ? "s" : ""})
-                            </span>
-                          </h2>
-
-                          {/* Grille de pièces du groupe */}
-                          {viewMode === "grid" && (
-                            <PiecesGridView
-                              pieces={groupPieces.map(mapApiPieceToData)}
-                              onSelectPiece={handleSelectPiece}
-                              selectedPieces={selectedPieces}
-                              vehicleMarque={data.vehicle.marque}
-                            />
-                          )}
-
-                          {viewMode === "list" && (
-                            <PiecesListView
-                              pieces={groupPieces.map(mapApiPieceToData)}
-                              onSelectPiece={handleSelectPiece}
-                              selectedPieces={selectedPieces}
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
+                // Affichage groupé - Composant extrait
+                <PiecesGroupedDisplay
+                  groupedPieces={data.grouped_pieces}
+                  activeFilters={activeFilters}
+                  viewMode={viewMode}
+                  vehicleModele={data.vehicle.modele}
+                  vehicleMarque={data.vehicle.marque}
+                  selectedPieces={selectedPieces}
+                  onSelectPiece={handleSelectPiece}
+                />
               ) : (
                 // âœ¨ FALLBACK: Affichage simple si pas de groupes
                 <>
@@ -1186,64 +945,14 @@ export function ErrorBoundary() {
   // 🛡️ Gestion spécifique du 503 Service Unavailable (erreur réseau temporaire)
   if (isRouteErrorResponse(error) && error.status === 503) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
-          <div className="mb-6">
-            <div className="inline-flex p-4 bg-blue-100 rounded-full mb-4">
-              <svg
-                className="w-12 h-12 text-blue-600 animate-pulse"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Chargement en cours...
-            </h1>
-            <p className="text-gray-600 mb-4">
-              Notre service est temporairement surchargé. La page va se
-              recharger automatiquement.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              🔄 Réessayer maintenant
-            </button>
-            <a
-              href="/"
-              className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              ← Retour Ã  l'accueil
-            </a>
-          </div>
-
-          {/* Auto-reload après 5s */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-            setTimeout(() => window.location.reload(), 5000);
-          `,
-            }}
-          />
-
-          <p className="text-xs text-gray-400 mt-4">
-            Rechargement automatique dans 5 secondes...
-          </p>
-        </div>
-      </div>
+      <Error503
+        retryAfter={10}
+        message="Notre service est temporairement surchargé."
+        url={typeof window !== "undefined" ? window.location.pathname : undefined}
+      />
     );
   }
+
 
   // Gestion spécifique du 410 Gone (page sans résultats)
   if (isRouteErrorResponse(error) && error.status === 410) {
