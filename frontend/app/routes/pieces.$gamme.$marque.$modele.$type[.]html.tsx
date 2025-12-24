@@ -112,14 +112,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     resolveGammeId(rawGamme),
   ]);
 
-  // Validation des IDs
-  validateVehicleIds({
-    marqueId: vehicleIds.marqueId,
-    modeleId: vehicleIds.modeleId,
-    typeId: vehicleIds.typeId,
-    gammeId: gammeId,
-    source: "loader-validation",
-  });
+  // Validation des IDs véhicule - Si invalides, on laisse batch-loader retourner 404
+  // 🛡️ gammeId n'est PAS validé ici - délégué au batch-loader pour permettre gammeId=0 → 404 SEO
+  try {
+    validateVehicleIds({
+      marqueId: vehicleIds.marqueId,
+      modeleId: vehicleIds.modeleId,
+      typeId: vehicleIds.typeId,
+      // gammeId: gammeId, // Retiré - validation par batch-loader (ligne 117-119 backend)
+      source: "loader-validation",
+    });
+  } catch (validationError) {
+    // 🛡️ IDs invalides → 404 SEO au lieu de 500
+    console.warn(`⚠️ [LOADER] Validation IDs échouée, retour 404:`, validationError);
+    throw new Response("Véhicule non trouvé", {
+      status: 404,
+      statusText: "Not Found",
+      headers: {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+      },
+    });
+  }
 
   // 4. Batch Loader - Fetch direct sans retry
   // 🚀 LCP OPTIMIZATION V5: Suppression retry loop (économie 1-3s sur mobile)
@@ -164,30 +178,37 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
   };
 
-  // 🚀 LCP OPTIMIZATION V5: batch-loader seul (critique), autres en parallèle (non-critiques)
-  // hierarchy et switches ne bloquent plus le LCP car non nécessaires au first paint
-  const [batchResponse, hierarchyData, switchesResponse] = await Promise.all([
-    fetchBatchLoader(),
-    fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
-      headers: { Accept: "application/json" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
-    // 🔗 SEO Switches pour ancres variées dans le catalogue
-    fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
-      headers: { Accept: "application/json" },
-    })
-      .then((res) => (res.ok ? res.json() : { data: [] }))
-      .catch(() => ({ data: [] })),
-  ]);
+  // 🚀 LCP OPTIMIZATION V7: Seul batch-loader bloque le LCP
+  // hierarchy et switches sont streamés via defer() car below-fold
 
-  // 🔗 Mapper les switches SEO pour ancres variées
+  // 1. Lancer les fetches non-critiques IMMÉDIATEMENT (sans await)
+  const hierarchyPromise = fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(3000), // Timeout 3s pour éviter blocage
+  })
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+
+  const switchesPromise = fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(3000), // Timeout 3s
+  })
+    .then((res) => (res.ok ? res.json() : { data: [] }))
+    .catch(() => ({ data: [] }));
+
+  // 2. Seul le batch-loader bloque le LCP (données critiques)
+  const batchResponse = await fetchBatchLoader();
+
+  // 3. Attendre seoSwitches APRÈS batch-loader (ne bloque pas le LCP, mais résolu avant render)
+  // seoSwitches est utilisé dans un callback JS donc doit être résolu, pas streamé
+  const switchesResponse = await switchesPromise;
   const rawSwitches = switchesResponse?.data || [];
   const seoSwitches = rawSwitches.length > 0 ? {
     verbs: rawSwitches.map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
     verbCount: rawSwitches.length,
   } : undefined;
-  console.log(`🔗 SEO Switches chargés: ${rawSwitches.length}`);
+
+  console.log(`🚀 [LOADER] batch-loader terminé, hierarchy/switches en streaming`);
 
   // 5. Construction des objets Vehicle & Gamme
 
@@ -282,7 +303,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       {
         status: 410,
         statusText: "Gone",
-        headers: { "X-Robots-Tag": "noindex, nofollow" },
+        headers: {
+          "X-Robots-Tag": "noindex, nofollow",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
       },
     );
   }
@@ -332,42 +356,37 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 🚀 LCP OPTIMIZATION: Catalogue Famille Logic (sans appel RPC V2)
   // Trouver la famille en cherchant quelle famille contient la gamme actuelle
-  let catalogueMameFamille: any = null;
+  // 🚀 LCP OPTIMIZATION V7: Catalogue Famille streamé via defer() (below-fold)
+  const catalogueMameFamillePromise = hierarchyPromise.then((hierarchyData) => {
+    if (!hierarchyData?.families) return null;
 
-  if (hierarchyData?.families) {
-    // Chercher la famille qui contient cette gamme
     const family = hierarchyData.families.find((f: any) =>
       f.gammes?.some((g: any) =>
         (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId
       )
     );
 
-    if (family && family.gammes) {
-      const otherGammes = family.gammes.filter(
-        (g: any) =>
-          (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
-      );
-      catalogueMameFamille = {
-        title: `Catalogue ${family.name}`,
-        // Store family info for component styling
-        family: {
-          mf_id: family.id || 0,
-          mf_name: family.name || "",
-          mf_pic: family.image || null,
-        },
-        items: otherGammes.map((g: any) => ({
-          name: g.name,
-          link: `/pieces/${g.alias}-${g.id}.html`,
-          image: g.image
-            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.image}?width=200&quality=85&t=31536000`
-            : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp?width=200&quality=85&t=31536000`,
-          description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule`,
-          meta_description: `${g.name} pas cher Ã  contrôler régulièrement`,
-          sort: g.sort_order,
-        })),
-      };
-    }
-  }
+    if (!family || !family.gammes) return null;
+
+    const otherGammes = family.gammes.filter(
+      (g: any) => (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
+    );
+
+    return {
+      title: `Catalogue ${family.name}`,
+      family: { mf_id: family.id || 0, mf_name: family.name || "", mf_pic: family.image || null },
+      items: otherGammes.map((g: any) => ({
+        name: g.name,
+        link: `/pieces/${g.alias}-${g.id}.html`,
+        image: g.image
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.image}?width=200&quality=85&t=31536000`
+          : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp?width=200&quality=85&t=31536000`,
+        description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
+        meta_description: `${g.name} pas cher à contrôler régulièrement`,
+        sort: g.sort_order,
+      })),
+    };
+  }).catch(() => null); // 🛡️ Fallback si hierarchy timeout ou erreur
 
   const loadTime = Date.now() - startTime;
 
@@ -394,8 +413,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       buyingGuide,
       compatibilityInfo,
       crossSellingGammes,
-      catalogueMameFamille,
-      seoSwitches,
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
       seo: {
@@ -409,7 +426,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         cacheHit: false,
       },
 
+      // === DONNÉES CRITIQUES SECONDAIRES (résolues après batch-loader) ===
+      seoSwitches, // Résolu car utilisé dans callback JS
+
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
+      // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
+      catalogueMameFamille: catalogueMameFamillePromise,
       relatedArticles: relatedArticlesPromise,
       blogArticle: blogArticlePromise,
     },
@@ -976,16 +998,16 @@ export default function PiecesVehicleRoute() {
               />
             </div>
 
-            {/* Catalogue collapsible */}
-            {data.catalogueMameFamille &&
-              data.catalogueMameFamille.items.length > 0 &&
-              (() => {
-                // Calculer la couleur de la famille depuis catalogueMameFamille
-                const familleColor = data.catalogueMameFamille.family
+            {/* Catalogue collapsible - 🚀 LCP V7: Streamé via Await */}
+            <Suspense fallback={null}>
+              <Await resolve={data.catalogueMameFamille}>
+                {(catalogueMameFamille) => catalogueMameFamille && catalogueMameFamille.items?.length > 0 && (() => {
+                  // Calculer la couleur de la famille depuis catalogueMameFamille
+                  const familleColor = catalogueMameFamille.family
                   ? hierarchyApi.getFamilyColor({
-                      mf_id: data.catalogueMameFamille.family.mf_id,
-                      mf_name: data.catalogueMameFamille.family.mf_name,
-                      mf_pic: data.catalogueMameFamille.family.mf_pic,
+                      mf_id: catalogueMameFamille.family.mf_id,
+                      mf_name: catalogueMameFamille.family.mf_name,
+                      mf_pic: catalogueMameFamille.family.mf_pic,
                     } as any)
                   : "from-blue-950 via-indigo-900 to-purple-900";
 
@@ -1014,9 +1036,9 @@ export default function PiecesVehicleRoute() {
                             />
                           </svg>
                           Catalogue{" "}
-                          {data.catalogueMameFamille?.family?.mf_name || "Système de freinage"}
+                          {catalogueMameFamille?.family?.mf_name || "Système de freinage"}
                           <span className="text-xs font-normal opacity-75">
-                            ({data.catalogueMameFamille.items.length})
+                            ({catalogueMameFamille.items.length})
                           </span>
                         </h2>
                         <svg
@@ -1040,7 +1062,7 @@ export default function PiecesVehicleRoute() {
                       >
                         <div className="p-3 pt-0">
                           <div className="grid grid-cols-4 gap-1.5 auto-rows-max">
-                            {data.catalogueMameFamille.items
+                            {catalogueMameFamille.items
                               .slice(0, 32)
                               .map((item, index) => (
                                 <a
@@ -1098,9 +1120,9 @@ export default function PiecesVehicleRoute() {
                                   <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 to-transparent group-hover:via-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                                 </a>
                               ))}
-                            {data.catalogueMameFamille.items.length > 32 && (
+                            {catalogueMameFamille.items.length > 32 && (
                               <div className="flex items-center justify-center aspect-square rounded-md bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold text-[9px] shadow-sm">
-                                +{data.catalogueMameFamille.items.length - 32}
+                                +{catalogueMameFamille.items.length - 32}
                               </div>
                             )}
                           </div>
@@ -1109,7 +1131,9 @@ export default function PiecesVehicleRoute() {
                     </div>
                   </div>
                 );
-              })()}
+                })()}
+              </Await>
+            </Suspense>
           </aside>
 
           {/* Contenu principal */}
