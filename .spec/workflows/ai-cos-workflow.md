@@ -1,23 +1,24 @@
 ---
 title: "AI-COS Workflow - Usage Quotidien"
 status: active
-version: 2.18.0
+version: 2.32.0
 authors: [DevOps Team, Product Team]
 created: 2025-11-18
-updated: 2025-11-20
+updated: 2025-12-06
 relates-to:
   - ../features/ai-cos-operating-system.md
   - ../architecture/006-ai-cos-enrichment.md
   - ../architecture/005-ai-cos-system.md
   - ../technical/stack-technique-ai-cos.md
-tags: [ai-cos, workflow, guide, daily-use, health-board, escalation, coordination, vision, recommendations, ia-ceo, board-report]
+  - ../../ai-agents-python/README.md
+tags: [ai-cos, workflow, guide, daily-use, health-board, escalation, coordination, vision, recommendations, ia-ceo, board-report, python-agents, cartographer]
 ---
 
 # AI-COS Workflow - Usage Quotidien
 
 ## Vue d'Ensemble
 
-Ce document décrit l'utilisation quotidienne d'AI-COS v2.0 (**61 agents**, **68 KPIs**, **Health Board**, **4 Modes d'Opération**, **Coordination Inter-Domaines**) pour l'équipe technique et produit.
+Ce document décrit l'utilisation quotidienne d'AI-COS v2.32.0 (**76+ agents**, **83 KPIs**, **Health Board**, **4 Modes d'Opération**, **Coordination Inter-Domaines**, **Python Analysis Agents**) pour l'équipe technique et produit.
 
 **Architecture complète** : [ADR-006 AI-COS Enrichment](../architecture/006-ai-cos-enrichment.md)  
 **Stack technique** : [Stack Technique AI-COS v2.0](../technical/stack-technique-ai-cos.md)
@@ -35,7 +36,7 @@ Ce document décrit l'utilisation quotidienne d'AI-COS v2.0 (**61 agents**, **68
 
 **ROI Global** : **227%** (€1.332M gains annuels / €586K coût total) → Rentabilité < 6 mois
 
-**Budget Total AI-COS v2.31.0** : **€1439K** (76+ agents, 83 KPIs, cartographe monorepo, feedback loops, coordination)
+**Budget Total AI-COS v2.32.0** : **€1,710K** (76+ agents, 83 KPIs, cartographe monorepo, feedback loops, python analyzers, coordination)
 
 **Impact Business** :
 - 🎯 Conversion +20% (3.4% → 4.1%)
@@ -11572,6 +11573,7 @@ AI-COS v2.0 représente une **architecture exceptionnelle** qui transforme le mo
 
 ## Change Log
 
+- **2025-12-06 v2.32.0** : Mise à jour majeure cahier des charges AI-COS - Restauration ai-agents-python (12 agents analyse Python architecture security/complexity/duplications/deadCode/dependencies/performance/accessibility/seo/i18n/tests/documentation + 4 agents fixproof autoimport/deadCodeSurgeon/lintFormat/riskScorer), ajout 15 nouveaux KPIs (circular-deps-count=0/avg-package-health>85/architecture-drift<5/largest-bundle-size<500KB/orphan-packages=0/outdated-deps<10/critical-issues=0 Tech + internal-link-ctr>2%/link-injection-rate=100%/ab-test-significance<0.05/cannibalisation<5/lost-backlinks<2 SEO + customs-clearance<48h/antidumping-alerts/port-congestion<30 Logistics), identification 76+ agents actifs vs 61 documentés (+15 agents), services SEO avancés InternalLinkingService ~105k liens + SeoLinkTrackingService A/B testing formulations + DynamicSeoV4Service, 5 dashboards prioritaires à créer (Payment Analytics/SEO Link Performance/Logistics Tracker/Customer 360/Agent Confidence €41K), 5 agents à développer (Payment Reconciliation €20K/Invoice Automation €15K/Content Quality €12K/Vehicle Catalog €18K/Cart Abandonment €15K), intégrations Event Bus manquantes (message.created→IA-Support/message.closed→NPS/customs.events→Logistics/payment.failed→Recovery), budget révisé +€271K total €1,710K ROI 105%, .gitignore mis à jour pour versionner code source Python (ignorer cache/results JSON), documentation ai-agents-python README.md lié, run commands python analyze_all.py / run_full.py / run_incremental.py, architecture agents Python inheritance core/runner.py + core/config.py + core/evidence.py, rapports générés reports/FULL_ANALYSIS_12_AGENTS.md
 - **2025-12-06 v2.31.0** : Ajout Agent Cartographe Monorepo (A-CARTO) - Tech Squad Lead Architecture (CartographerAgentService centralisé avec generateDependencyGraph() graphe D3.js/Mermaid packages/edges/nodes, detectCircularDependencies() madge cycles severity warning/error/critical, calculatePackageHealth() score 0-100 par package metrics dependencyCount/outdatedDeps/testCoverage/bundleSize, detectArchitectureDrift() baseline violations layer/forbidden/orphan/bundle, analyzeBundleSizes() frontend/backend source-map-explorer), 4 SAGAs (Daily_Dependency_Scan 9 steps cron 6h scan→graph→circular→health→drift→report→save→kpi→notify, PR_Architecture_Validation 7 steps validation imports/patterns/circular sur changedFiles post comment, Weekly_Architecture_Report 8 steps rapport complet trends comparison executive summary distribution, Bundle_Size_Monitoring 6 steps analyse bloat thresholds alerting), Configuration dependency-cruiser .dependency-cruiserrc.js 13 règles (no-circular, no-frontend-to-backend, no-backend-to-frontend, ui-restricted-imports, design-tokens-leaf, shared-types-leaf, no-relative-packages, no-unlisted-deps, no-test-in-prod, no-config-imports, themes-only-design-tokens, prisma-backend-only, supabase-server-imports), Controller API CartographerController 18 endpoints REST (/dependency-graph /dependency-graph/mermaid /dependency-graph/d3 /circular-deps /circular-deps/count /package-health /package-health/:name /package-health/summary /architecture-drift /architecture-drift/by-type /architecture-drift/critical /bundle-analysis /report /kpis /kpis/status /validate-pr /saga/trigger /health /status), Dashboard Remix /admin/ai-cos/cartographer visualisation graphe interactif 4 tabs overview/graph/health/issues KPI cards couleur status, 7 KPIs cartographe (circular-deps-count=0 target, average-package-health>80%, architecture-drift-count=0, largest-bundle-size<500KB, orphan-packages<5, outdated-deps<10, critical-issues=0), Event Bus 8 events (graph-generated/circular-deps-detected/health-calculated/drift-detected/bundle-analyzed/report-generated/kpi-alert/critical-alert/daily-scan-complete/weekly-report-complete/pr-validated), Baseline architecture.json allowed/forbidden dependencies layers maxBundleSizes minHealthScores, intégration IA-CTO/IA-DevOps/IA-CEO escalations, budget +€48K total €1439K ROI protection architecture €200K/an évitement dette technique
 - **2025-12-06 v2.30.0** : Ajout Boucles de Feedback automatisées - FeedbackLoopService centralisé (measureImpact/adjustAgentConfidence/escalateToIACeo/requestHumanCeoValidation/recordLearningEvent), 3 SAGAs (Action_Impact_Measurement mesure delta KPIs 1h/24h/7d rollback si ≤-20%, CEO_Escalation_Validation workflow validation Human CEO timeout 48h escalade Board, Agent_Self_Adjustment auto-ajustement confiance ±5pts success rate rolling), 5 tables Supabase (learning_events/ceo_validations/impact_measurements/agent_confidence/learned_patterns), Dashboard Human CEO /admin/ai-cos/ceo/validations, 12 Event Bus events (action.completed/impact.measured/impact.negative/confidence.updated/escalation.created/validation.required/decided/expired/pattern.learned/saga.completed/failed), 8 KPIs feedback (measurement-coverage>95%/positive-impact-rate>70%/rollback-rate<5%/ceo-response<12h/pattern-success>80%/confidence-avg>60/escalation-resolution>90%/saga-completion>98%), budget +€46K total €1391K
 - **2025-12-06 v2.29.0** : Ajout Expansion Squad transversal Marketing Global+Legal+Partenariats - 15 agents (5 Marketing IA-CMO/International Marketer/Localization Engine/Currency Manager/Market Entry Analyzer, 5 Legal IA-Legal/Compliance Bot/Contract AI/IP Monitor/RGPD Auditor, 5 Partnerships IA-Partners/Alliance Manager/M&A Scout/Franchise Bot/Channel Manager), Marchés Tier1 DE/ES/IT Tier2 BE/CH/UK Tier3 PL/NL/PT, Compliance Matrix RGPD/TVA/Garantie par pays, 6 SAGAs Market Entry/Intl Campaign/Legal Audit/Partnership/Franchise/IP Protection, Localization Framework Phrase/Lokalise TM>70%, 10 KPIs intl-revenue>25% compliance=100% partnership-roi>3x, budget +€52K total €1345K
