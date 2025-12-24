@@ -25,7 +25,7 @@ import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
-import { PiecesCatalogueFamille, type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
+import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
@@ -47,18 +47,20 @@ import {
   fetchBlogArticle,
   fetchCrossSellingGammes as _fetchCrossSellingGammes,
   fetchRelatedArticlesForGamme,
+  fetchSeoSwitches,
 } from "../services/pieces/pieces-route.service";
 
 // Types centralisés
 import {
   type GammeData,
   type LoaderData as _LoaderData,
-  type PieceData,
+  type PieceData as _PieceData,
   type VehicleData,
 } from "../types/pieces-route.types";
 
 // Utilitaires
-import { buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
+import { fetchJsonOrNull } from "../utils/fetch.utils";
+import { buildCataloguePromise, buildCompatibilityInfo, buildGammeData, buildVehicleData, type HierarchyData } from "../utils/pieces-loader.utils";
 import {
   calculatePriceStats,
   generateBuyingGuide,
@@ -66,12 +68,13 @@ import {
   generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
   generateSEOContent,
   mapBatchPiecesToData,
+  mergeSeoContent,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
-  toTitleCaseFromSlug,
   validateVehicleIds,
 } from "../utils/pieces-route.utils";
+import { buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
 import { buildVoirAussiLinks } from "../utils/url-builder.utils";
 
 // 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
@@ -189,73 +192,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // hierarchy et switches sont streamés via defer() car below-fold
 
   // 1. Lancer les fetches non-critiques IMMÉDIATEMENT (sans await)
-  const hierarchyPromise = fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(3000), // Timeout 3s pour éviter blocage
-  })
-    .then((res) => (res.ok ? res.json() : null))
-    .catch(() => null);
-
-  const switchesPromise = fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(3000), // Timeout 3s
-  })
-    .then((res) => (res.ok ? res.json() : { data: [] }))
-    .catch(() => ({ data: [] }));
+  const hierarchyPromise = fetchJsonOrNull<HierarchyData>(`http://localhost:3000/api/catalog/gammes/hierarchy`, 3000);
+  const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
   // 2. Seul le batch-loader bloque le LCP (données critiques)
   const batchResponse = await fetchBatchLoader();
 
   // 3. Attendre seoSwitches APRÈS batch-loader (ne bloque pas le LCP, mais résolu avant render)
-  // seoSwitches est utilisé dans un callback JS donc doit être résolu, pas streamé
-  const switchesResponse = await switchesPromise;
-  const rawSwitches = switchesResponse?.data || [];
-  const seoSwitches = rawSwitches.length > 0 ? {
-    verbs: rawSwitches.map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
-    verbCount: rawSwitches.length,
-  } : undefined;
+  const seoSwitches = await seoSwitchesPromise;
 
   console.log(`🚀 [LOADER] batch-loader terminé, hierarchy/switches en streaming`);
 
-  // 5. Construction des objets Vehicle & Gamme
+  // 5. Construction des objets Vehicle & Gamme (via utilitaires centralisés)
+  const vehicle: VehicleData = buildVehicleData({
+    vehicleInfo: batchResponse.vehicleInfo,
+    vehicleIds,
+    urlParams: {
+      marqueAlias: marqueData.alias,
+      modeleAlias: modeleData.alias,
+      typeAlias: typeData.alias,
+    },
+  });
 
-  // 🚀 OPTIMISÉ V3: Utilise vehicleInfo du batch-loader au lieu d'appels séparés
-  const vehicleInfo = batchResponse.vehicleInfo;
-  const typeName = vehicleInfo?.typeName || toTitleCaseFromSlug(typeData.alias);
-  const modelePic = vehicleInfo?.modelePic || undefined;
-
-  const vehicle: VehicleData = {
-    marque: vehicleInfo?.marqueName || toTitleCaseFromSlug(marqueData.alias),
-    modele: vehicleInfo?.modeleName || toTitleCaseFromSlug(modeleData.alias),
-    type: toTitleCaseFromSlug(typeData.alias),
-    typeName,
-    typeId: vehicleIds.typeId,
-    marqueId: vehicleIds.marqueId,
-    modeleId: vehicleIds.modeleId,
-    marqueAlias: vehicleInfo?.marqueAlias || marqueData.alias,
-    modeleAlias: vehicleInfo?.modeleAlias || modeleData.alias,
-    typeAlias: vehicleInfo?.typeAlias || typeData.alias,
-    modelePic,
-    // 🔧 V7: Codes moteur et types mines (depuis batch-loader vehicleInfo)
-    motorCodesFormatted: vehicleInfo?.motorCodesFormatted,
-    mineCodesFormatted: vehicleInfo?.mineCodesFormatted,
-    cnitCodesFormatted: vehicleInfo?.cnitCodesFormatted,
-    // 📊 Specs techniques supplementaires
-    typePowerPs: vehicleInfo?.typePowerPs,
-    typeFuel: vehicleInfo?.typeEngine, // typeEngine contient le type de carburant
-    typeBody: vehicleInfo?.typeBody,
-    // 📅 Dates de production (pour JSON-LD vehicleModelDate)
-    typeDateStart: vehicleInfo?.typeDateStart,
-    typeDateEnd: vehicleInfo?.typeDateEnd,
-  };
-
-  const gamme: GammeData = {
-    id: gammeId,
-    name: toTitleCaseFromSlug(gammeData.alias),
-    alias: gammeData.alias,
-    description: `${toTitleCaseFromSlug(gammeData.alias)} de qualité pour votre véhicule`,
-    image: undefined,
-  };
+  const gamme: GammeData = buildGammeData(gammeId, gammeData.alias);
 
   // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
   const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
@@ -300,22 +259,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Stats prix - Utilise utilitaire centralisé
   const { minPrice, maxPrice } = calculatePriceStats(piecesData);
 
-  // SEO Content
-  let seoContent = generateSEOContent(vehicle, gamme);
-  if (batchResponse.seo) {
-    const seoData = batchResponse.seo;
-    const content = seoData.content || seoData.data?.content;
-    const h1 = seoData.h1 || seoData.data?.h1;
-
-    seoContent = {
-      h1: h1 || seoContent.h1,
-      h2Sections: seoContent.h2Sections,
-      longDescription: content || seoContent.longDescription,
-      technicalSpecs: seoContent.technicalSpecs,
-      compatibilityNotes: seoContent.compatibilityNotes,
-      installationTips: seoContent.installationTips,
-    };
-  }
+  // SEO Content - Utilise utilitaire centralisé
+  const seoContent = mergeSeoContent(generateSEOContent(vehicle, gamme), batchResponse.seo);
 
   // Cross Selling
   const crossSellingGammes = batchResponse.crossSelling || [];
@@ -329,46 +274,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const relatedArticlesPromise = fetchRelatedArticlesForGamme(gamme, vehicle).catch(() => []);
 
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
-  const compatibilityInfo = {
-    engines: [vehicle.type],
-    years: "2010-2024",
-    notes: [
-      "Vérifiez la référence d'origine avant commande",
-      "Compatible avec toutes les versions du moteur",
-    ],
-  };
+  const compatibilityInfo = buildCompatibilityInfo(vehicle);
 
-  // 🚀 LCP OPTIMIZATION: Catalogue Famille Logic (sans appel RPC V2)
-  // Trouver la famille en cherchant quelle famille contient la gamme actuelle
   // 🚀 LCP OPTIMIZATION V7: Catalogue Famille streamé via defer() (below-fold)
-  const catalogueMameFamillePromise: Promise<CatalogueMameFamille | null> = hierarchyPromise.then((hierarchyData) => {
-    if (!hierarchyData?.families) return null;
-
-    const family = hierarchyData.families.find((f: any) =>
-      f.gammes?.some((g: any) =>
-        (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId
-      )
-    );
-
-    if (!family || !family.gammes) return null;
-
-    const otherGammes = family.gammes.filter(
-      (g: any) => (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
-    );
-
-    return {
-      title: `Catalogue ${family.name}`,
-      family: { mf_id: family.id || 0, mf_name: family.name || "", mf_pic: family.image || null },
-      items: otherGammes.map((g: any) => ({
-        name: g.name,
-        link: `/pieces/${g.alias}-${g.id}.html`,
-        image: g.image
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.image}?width=200&quality=85&t=31536000`
-          : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp?width=200&quality=85&t=31536000`,
-        description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
-      })),
-    };
-  }).catch(() => null); // 🛡️ Fallback si hierarchy timeout ou erreur
+  // Utilise utilitaire centralisé pour construire le catalogue
+  const catalogueMameFamillePromise = buildCataloguePromise(gammeId, hierarchyPromise);
 
   const loadTime = Date.now() - startTime;
 

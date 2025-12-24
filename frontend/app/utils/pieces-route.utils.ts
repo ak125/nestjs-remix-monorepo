@@ -398,3 +398,28 @@ export function calculatePriceStats(pieces: PieceData[]): { minPrice: number; ma
     maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
   };
 }
+
+/**
+ * Merge SEO content généré avec données batch-loader
+ * Priorise les données batch si présentes, sinon fallback sur généré
+ */
+export function mergeSeoContent(
+  generated: SEOEnrichedContent,
+  batchSeo: { content?: string; h1?: string; data?: { content?: string; h1?: string } } | undefined
+): SEOEnrichedContent {
+  if (!batchSeo) {
+    return generated;
+  }
+
+  const content = batchSeo.content || batchSeo.data?.content;
+  const h1 = batchSeo.h1 || batchSeo.data?.h1;
+
+  return {
+    h1: h1 || generated.h1,
+    h2Sections: generated.h2Sections,
+    longDescription: content || generated.longDescription,
+    technicalSpecs: generated.technicalSpecs,
+    compatibilityNotes: generated.compatibilityNotes,
+    installationTips: generated.installationTips,
+  };
+}
