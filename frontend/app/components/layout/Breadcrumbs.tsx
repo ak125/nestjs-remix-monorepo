@@ -20,7 +20,7 @@ interface BreadcrumbItem {
 
 interface BreadcrumbsProps {
   items?: BreadcrumbItem[];
-  separator?: "chevron" | "slash" | "arrow";
+  separator?: "chevron" | "slash" | "arrow" | "left-arrow";
   showHome?: boolean;
   maxItems?: number;
   className?: string;
@@ -134,6 +134,8 @@ export function Breadcrumbs({
         return <span className="text-gray-400 mx-2">/</span>;
       case "arrow":
         return <span className="text-gray-400 mx-2">→</span>;
+      case "left-arrow":
+        return <span className="text-gray-400 mx-2">←&apos;</span>;
       default:
         return <ChevronRight className="w-4 h-4 text-gray-400 mx-2" />;
     }
