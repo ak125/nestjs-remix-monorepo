@@ -3,7 +3,7 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  */
 
-import { type VehicleData, type GammeData, type SEOEnrichedContent, type FAQItem, type BlogArticle, type GuideContent } from '../types/pieces-route.types';
+import { type VehicleData, type GammeData, type SEOEnrichedContent, type FAQItem, type BlogArticle, type GuideContent, type PieceData } from '../types/pieces-route.types';
 
 /**
  * Convertit un slug en titre formaté
@@ -354,4 +354,29 @@ export function slugify(text: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+/**
+ * 🔄 Convertit un objet pièce de l'API vers le type PieceData
+ * Évite la duplication du mapping dans la route
+ */
+export function mapApiPieceToData(p: any): PieceData {
+  return {
+    id: p.id,
+    name: p.nom || p.name || "Pièce",
+    brand: p.marque || p.brand || "Marque inconnue",
+    reference: p.reference || "",
+    price: p.prix_unitaire || p.prix_ttc || p.price || 0,
+    priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
+    image: p.image || "",
+    images: p.images || [],
+    stock: p.dispo ? "En stock" : "Sur commande",
+    quality: p.qualite || p.quality || "",
+    stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
+    side: p.filtre_side || undefined,
+    description: p.description || "",
+    url: p.url || "",
+    marque_id: p.marque_id,
+    marque_logo: p.marque_logo,
+  };
 }

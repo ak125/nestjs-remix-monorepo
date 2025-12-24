@@ -75,6 +75,7 @@ export interface PieceData {
   images?: string[]; // Galerie d'images
   marque_id?: number; // ID de la marque équipementier
   marque_logo?: string; // Nom du fichier logo (ex: "bosch.webp")
+  url?: string; // URL de la fiche produit
 }
 
 export interface SEOEnrichedContent {
