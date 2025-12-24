@@ -134,6 +134,49 @@ function buildItemListSchema(
   };
 }
 
+// URL de base Supabase pour les images
+const SUPABASE_BASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads';
+
+/**
+ * Interface pour les meta tags de preload image
+ * Utilise Record pour être compatible avec ServerRuntimeMetaDescriptor
+ */
+export type HeroImagePreloadMeta = {
+  tagName: "link";
+  rel: "preload";
+  as: "image";
+  href: string;
+  fetchpriority: "high";
+  [key: string]: string; // Index signature pour compatibilité Remix meta
+};
+
+/**
+ * Construit le meta tag de preload pour l'image hero du véhicule
+ * Utilisé dans la fonction meta() pour optimiser le LCP
+ *
+ * @param vehicle - Données du véhicule (modelePic, marqueAlias, marque)
+ * @returns Array avec le meta tag ou vide si pas d'image
+ */
+export function buildHeroImagePreload(
+  vehicle: Pick<VehicleData, 'modelePic' | 'marqueAlias' | 'marque'>
+): HeroImagePreloadMeta[] {
+  if (!vehicle.modelePic || vehicle.modelePic === "no.webp") {
+    return [];
+  }
+
+  const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
+
+  return [
+    {
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: `${SUPABASE_BASE_URL}/constructeurs-automobiles/marques-concepts/${marqueSlug}/${vehicle.modelePic}?width=380&quality=85&t=31536000`,
+      fetchpriority: "high",
+    },
+  ];
+}
+
 /**
  * Génère le schéma complet @graph pour la page pièces
  */

@@ -45,6 +45,59 @@ export function isValidInternalUrl(url: string): boolean {
 }
 
 /**
+ * Interface pour un item de breadcrumb
+ */
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+/**
+ * Construit les items de breadcrumb pour la page pièces
+ * @param gamme - Données de la gamme (id, name, alias)
+ * @param vehicle - Données du véhicule
+ * @returns Tableau d'items pour le composant Breadcrumbs
+ */
+export function buildPiecesBreadcrumbs(
+  gamme: { id: number; name: string; alias: string },
+  vehicle: {
+    marque: string;
+    modele: string;
+    type: string;
+    typeName?: string;
+    marqueId: number;
+    modeleId: number;
+    typeId: number;
+    marqueAlias?: string;
+    modeleAlias?: string;
+    typeAlias?: string;
+  }
+): BreadcrumbItem[] {
+  const marqueAlias = vehicle.marqueAlias || normalizeAlias(vehicle.marque);
+  const modeleAlias = vehicle.modeleAlias || normalizeAlias(vehicle.modele);
+  const typeAlias = vehicle.typeAlias || 'type';
+
+  return [
+    { label: "Accueil", href: "/" },
+    {
+      label: gamme.name,
+      href: `/pieces/${gamme.alias}-${gamme.id}.html`,
+    },
+    {
+      label: `Pièces ${vehicle.marque}`,
+      href: `/constructeurs/${marqueAlias}-${vehicle.marqueId}.html`,
+    },
+    {
+      label: `${vehicle.modele} ${vehicle.typeName || vehicle.type}`,
+      href: `/constructeurs/${marqueAlias}-${vehicle.marqueId}/${modeleAlias}-${vehicle.modeleId}/${typeAlias}-${vehicle.typeId}.html`,
+    },
+    {
+      label: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
+    },
+  ];
+}
+
+/**
  * Construit les URLs pour la section "Voir aussi"
  * Utilise les alias normalisés du véhicule
  */

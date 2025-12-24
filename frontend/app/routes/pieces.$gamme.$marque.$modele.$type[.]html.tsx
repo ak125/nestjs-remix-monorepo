@@ -44,6 +44,7 @@ import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 
 // Services API
 import {
+  fetchBatchLoader,
   fetchBlogArticle,
   fetchCrossSellingGammes as _fetchCrossSellingGammes,
   fetchRelatedArticlesForGamme,
@@ -74,8 +75,8 @@ import {
   resolveVehicleIds,
   validateVehicleIds,
 } from "../utils/pieces-route.utils";
-import { buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
-import { buildVoirAussiLinks } from "../utils/url-builder.utils";
+import { buildHeroImagePreload, buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
+import { buildPiecesBreadcrumbs, buildVoirAussiLinks } from "../utils/url-builder.utils";
 
 // 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
@@ -145,49 +146,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  // 4. Batch Loader - Fetch direct sans retry
-  // 🚀 LCP OPTIMIZATION V5: Suppression retry loop (économie 1-3s sur mobile)
-  // Le cache CDN (s-maxage=86400) gère la robustesse
-
-  const fetchBatchLoader = async (): Promise<any> => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/catalog/batch-loader/${vehicleIds.typeId}/${gammeId}`,
-        {
-          method: "GET",
-          signal: AbortSignal.timeout(8000), // 8s au lieu de 15s - fail fast
-          headers: { Accept: "application/json" },
-        },
-      );
-
-      if (!response.ok) {
-        console.warn(`⚠️ [BATCH-LOADER] HTTP ${response.status}`);
-        // Pour 404/410 on laisse passer (gamme invalide)
-        if (response.status === 404 || response.status === 410) {
-          return { pieces: [], validation: { valid: false, http_status: response.status } };
-        }
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error: any) {
-      console.error(`❌ [BATCH-LOADER] Error:`, error.message);
-      // Graceful degradation - retourne structure vide plutôt que 503
-      // Cela permet au cache CDN de servir une version stale si disponible
-      throw new Response(
-        `Service temporairement indisponible.`,
-        {
-          status: 503,
-          statusText: "Service Unavailable",
-          headers: {
-            "Retry-After": "10",
-            "Cache-Control": "no-cache",
-          },
-        },
-      );
-    }
-  };
-
   // 🚀 LCP OPTIMIZATION V7: Seul batch-loader bloque le LCP
   // hierarchy et switches sont streamés via defer() car below-fold
 
@@ -195,8 +153,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const hierarchyPromise = fetchJsonOrNull<HierarchyData>(`http://localhost:3000/api/catalog/gammes/hierarchy`, 3000);
   const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
-  // 2. Seul le batch-loader bloque le LCP (données critiques)
-  const batchResponse = await fetchBatchLoader();
+  // 2. Seul le batch-loader bloque le LCP (données critiques) - Service extrait
+  const batchResponse = await fetchBatchLoader(vehicleIds.typeId, gammeId);
 
   // 3. Attendre seoSwitches APRÈS batch-loader (ne bloque pas le LCP, mais résolu avant render)
   const seoSwitches = await seoSwitchesPromise;
@@ -386,20 +344,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       href: "https://cxpojprgwgubzjyqzmoq.supabase.co",
     },
 
-    // 🚀 LCP Optimization V5: Preload hero vehicle image avec transformation
-    // URL DOIT matcher exactement celle du composant PiecesHeader pour éviter double téléchargement
-    ...(data.vehicle.modelePic && data.vehicle.modelePic !== "no.webp"
-      ? [
-          {
-            tagName: "link",
-            rel: "preload",
-            as: "image",
-            // Utilise /render/image/ avec width=380&quality=85 (identique à optimizeImageUrl dans PiecesHeader)
-            href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}/${data.vehicle.modelePic}?width=380&quality=85&t=31536000`,
-            fetchpriority: "high",
-          },
-        ]
-      : []),
+    // 🚀 LCP Optimization V5: Preload hero vehicle image - Fonction extraite
+    ...buildHeroImagePreload(data.vehicle),
 
     // âœ¨ NOUVEAU: Schema.org Product (rich snippets)
     ...(productSchema
@@ -537,24 +483,7 @@ export default function PiecesVehicleRoute() {
           style={{ pointerEvents: "auto" }}
         >
           <Breadcrumbs
-            items={[
-              { label: "Accueil", href: "/" },
-              {
-                label: data.gamme.name,
-                href: `/pieces/${data.gamme.alias}-${data.gamme.id}.html`,
-              },
-              {
-                label: `Pièces ${data.vehicle.marque}`,
-                href: `/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`,
-              },
-              {
-                label: `${data.vehicle.modele} ${data.vehicle.typeName || data.vehicle.type}`,
-                href: `/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`,
-              },
-              {
-                label: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
-              },
-            ]}
+            items={buildPiecesBreadcrumbs(data.gamme, data.vehicle)}
             showHome={false}
             separator="left-arrow"
             enableSchema={true}

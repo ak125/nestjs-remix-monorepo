@@ -31,7 +31,7 @@ interface BuildVehicleParams {
     typeBody?: string;
     typeDateStart?: string;
     typeDateEnd?: string;
-  } | null;
+  } | null | undefined;
   vehicleIds: {
     marqueId: number;
     modeleId: number;
