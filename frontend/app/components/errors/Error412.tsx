@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
 interface Error412Props {
   url?: string;
@@ -10,64 +10,18 @@ interface Error412Props {
   method?: string;
 }
 
-export function Error412({ 
-  url, 
-  condition, 
-  requirement, 
-  userAgent, 
-  referrer, 
-  method = "GET" 
+export function Error412({
+  url,
+  condition,
+  requirement,
 }: Error412Props) {
-  const [reportSent, setReportSent] = useState(false);
-
-  // Report error to analytics (SSR-safe)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !reportSent && url) {
-      const reportError = async () => {
-        try {
-          const errorData = {
-            code: 412,
-            url,
-            userAgent: userAgent || navigator.userAgent,
-            referrer: referrer || document.referrer,
-            method,
-            metadata: {
-              condition,
-              requirement,
-              timestamp: new Date().toISOString(),
-              screen: {
-                width: screen.width,
-                height: screen.height
-              },
-              viewport: {
-                width: window.innerWidth,
-                height: window.innerHeight
-              },
-              connection: (navigator as any)?.connection?.effectiveType,
-              platform: navigator.platform
-            }
-          };
-
-          await fetch('/api/errors/log', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Internal-Call': 'true'
-            },
-            body: JSON.stringify(errorData)
-          });
-
-          setReportSent(true);
-        } catch (error) {
-          console.warn('Error reporting failed:', error);
-        }
-      };
-
-      // Delay to avoid duplicate reports
-      const timer = setTimeout(reportError, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [url, condition, requirement, userAgent, referrer, method, reportSent]);
+  // Reporting centralisé via hook
+  useErrorAutoReport({
+    code: 412,
+    url,
+    message: "Condition préalable échouée",
+    metadata: { condition, requirement },
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-amber-100">

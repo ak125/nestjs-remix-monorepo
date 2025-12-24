@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
 interface Error404Props {
   url?: string;
@@ -12,15 +13,18 @@ interface Error404Props {
 export function Error404({
   url,
   suggestions: initialSuggestions,
-  userAgent,
-  referrer,
-  method = "GET",
 }: Error404Props) {
   const [suggestions, setSuggestions] = useState<string[]>(
     initialSuggestions || [],
   );
   const [loading, setLoading] = useState(false);
-  const [reported, setReported] = useState(false);
+
+  // Reporting centralisé via hook
+  useErrorAutoReport({
+    code: 404,
+    url,
+    message: "Page non trouvée",
+  });
 
   // Récupérer des suggestions dynamiques depuis le backend optimisé
   useEffect(() => {
@@ -46,55 +50,6 @@ export function Error404({
         });
     }
   }, [url, initialSuggestions]);
-
-  // Reporter automatiquement l'erreur au backend optimisé avec données enrichies
-  useEffect(() => {
-    if (url && !reported) {
-      const errorData = {
-        code: 404,
-        url,
-        userAgent:
-          userAgent ||
-          (typeof navigator !== "undefined" ? navigator.userAgent : undefined),
-        referrer:
-          referrer ||
-          (typeof document !== "undefined" ? document.referrer : undefined),
-        method,
-        metadata: {
-          timestamp: new Date().toISOString(),
-          screen:
-            typeof screen !== "undefined"
-              ? { width: screen.width, height: screen.height }
-              : undefined,
-          viewport:
-            typeof window !== "undefined"
-              ? { width: window.innerWidth, height: window.innerHeight }
-              : undefined,
-          language:
-            typeof navigator !== "undefined" ? navigator.language : undefined,
-          platform:
-            typeof navigator !== "undefined" ? navigator.platform : undefined,
-          connection:
-            typeof navigator !== "undefined" && "connection" in navigator
-              ? (navigator as any).connection?.effectiveType
-              : undefined,
-        },
-      };
-
-      fetch("/api/errors/log", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Internal-Call": "true",
-        },
-        body: JSON.stringify(errorData),
-      })
-        .then(() => setReported(true))
-        .catch((error) => {
-          console.error("Erreur lors du reporting:", error);
-        });
-    }
-  }, [url, userAgent, referrer, method, reported]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

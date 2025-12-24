@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
 import { Alert } from '~/components/ui/alert';
+import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
 interface Error410Props {
   url?: string;
@@ -11,61 +11,18 @@ interface Error410Props {
   method?: string;
 }
 
-export function Error410({ 
-  url, 
-  isOldLink, 
-  redirectTo, 
-  userAgent, 
-  referrer, 
-  method = "GET" 
+export function Error410({
+  url,
+  isOldLink,
+  redirectTo,
 }: Error410Props) {
-  const [reportSent, setReportSent] = useState(false);
-
-  // Auto-report error to analytics (SSR-safe)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !reportSent) {
-      const context = {
-        userAgent: userAgent || navigator.userAgent,
-        referrer: referrer || document.referrer,
-        method,
-        timestamp: new Date().toISOString(),
-        screen: {
-          width: window.screen.width,
-          height: window.screen.height
-        },
-        viewport: {
-          width: window.innerWidth,
-          height: window.innerHeight
-        },
-        connection: (navigator as any).connection?.effectiveType || 'unknown'
-      };
-
-      fetch('/api/errors/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true'
-        },
-        body: JSON.stringify({
-          code: 410,
-          url: url || window.location.pathname,
-          userAgent: context.userAgent,
-          referrer: context.referrer,
-          method: context.method,
-          metadata: {
-            ...context,
-            isOldLink,
-            redirectTo,
-            pageType: '410_gone'
-          }
-        })
-      }).catch(() => {
-        // Silent fail - analytics shouldn't break user experience
-      });
-
-      setReportSent(true);
-    }
-  }, [url, userAgent, referrer, method, isOldLink, redirectTo, reportSent]);
+  // Reporting centralisé via hook
+  useErrorAutoReport({
+    code: 410,
+    url,
+    message: isOldLink ? "Lien obsolète" : "Contenu supprimé",
+    metadata: { isOldLink, redirectTo, pageType: "410_gone" },
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">

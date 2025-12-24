@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
-import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors";
+import { Error401, Error404, Error410, Error412, Error503, ErrorGeneric } from "./components/errors";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
@@ -278,42 +278,93 @@ export default function App() {
 }
 
 // ErrorBoundary globale pour gérer les erreurs de routes
+// Wrappé avec meta noindex pour éviter l'indexation des pages d'erreur
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  if (isRouteErrorResponse(error)) {
-    switch (error.status) {
-      case 404:
-        return <Error404 url={error.data?.url} suggestions={error.data?.suggestions} />;
-      case 410:
-        return <Error410 
-          url={error.data?.url} 
-          isOldLink={error.data?.isOldLink} 
-          redirectTo={error.data?.redirectTo} 
-        />;
-      case 412:
-        return <Error412 
-          condition={error.data?.condition} 
-          requirement={error.data?.requirement} 
-        />;
-      default:
-        return <ErrorGeneric 
-          status={error.status} 
-          message={error.statusText || error.data?.message}
-          details={error.data?.details}
-        />;
+  // Déterminer le contenu d'erreur à afficher
+  const getErrorContent = () => {
+    if (isRouteErrorResponse(error)) {
+      switch (error.status) {
+        case 401:
+          return (
+            <Error401
+              url={error.data?.url}
+              redirectTo={error.data?.redirectTo}
+              message={error.data?.message}
+            />
+          );
+        case 404:
+          return (
+            <Error404
+              url={error.data?.url}
+              suggestions={error.data?.suggestions}
+            />
+          );
+        case 410:
+          return (
+            <Error410
+              url={error.data?.url}
+              isOldLink={error.data?.isOldLink}
+              redirectTo={error.data?.redirectTo}
+            />
+          );
+        case 412:
+          return (
+            <Error412
+              condition={error.data?.condition}
+              requirement={error.data?.requirement}
+            />
+          );
+        case 503:
+          return (
+            <Error503
+              url={error.data?.url}
+              message={error.data?.message}
+              retryAfter={error.data?.retryAfter || 30}
+            />
+          );
+        default:
+          return (
+            <ErrorGeneric
+              status={error.status}
+              message={error.statusText || error.data?.message}
+              details={error.data?.details}
+            />
+          );
+      }
     }
-  }
 
-  // Erreur non-HTTP (erreur JavaScript, etc.)
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorStack = error instanceof Error ? error.stack : JSON.stringify(error, null, 2);
-  
-  return <ErrorGeneric 
-    status={500}
-    message={errorMessage}
-    details={errorStack || "Une erreur technique s'est produite."}
-    showStackTrace={true}
-    stack={errorStack}
-  />;
+    // Erreur non-HTTP (erreur JavaScript, etc.)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack =
+      error instanceof Error ? error.stack : JSON.stringify(error, null, 2);
+
+    return (
+      <ErrorGeneric
+        status={500}
+        message={errorMessage}
+        details={errorStack || "Une erreur technique s'est produite."}
+        showStackTrace={process.env.NODE_ENV === "development"}
+        stack={errorStack}
+      />
+    );
+  };
+
+  // Wrapper avec meta noindex pour SEO
+  return (
+    <html lang="fr">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex, nofollow" />
+        <title>Erreur | Automecanik</title>
+        <Links />
+      </head>
+      <body>
+        {getErrorContent()}
+        <Scripts />
+      </body>
+    </html>
+  );
 }

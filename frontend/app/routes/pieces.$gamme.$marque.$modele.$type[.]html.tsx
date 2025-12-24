@@ -32,6 +32,8 @@ import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
+import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
+import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 
 // Hook custom
@@ -61,12 +63,14 @@ import {
   generateFAQ,
   generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
   generateSEOContent,
+  mapApiPieceToData,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
   toTitleCaseFromSlug,
   validateVehicleIds,
 } from "../utils/pieces-route.utils";
+import { buildVoirAussiLinks } from "../utils/url-builder.utils";
 
 // 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
@@ -251,6 +255,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     image: undefined,
   };
 
+  // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
+  const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
+
   // 🚀 V4: blogArticle et relatedArticles seront récupérés en parallèle plus bas
 
   // 6. Traitement de la réponse Batch
@@ -416,6 +423,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       crossSellingGammes,
       oemRefs: batchResponse.oemRefs || undefined,
       oemRefsSeo: batchResponse.oemRefsSeo || undefined,
+      voirAussiLinks, // 🔗 SEO: URLs pré-calculées pour section "Voir aussi"
       seo: {
         title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
         h1: seoContent.h1,
@@ -676,9 +684,6 @@ export default function PiecesVehicleRoute() {
     togglePieceSelection,
   } = usePiecesFilters(data.pieces);
 
-  // État pour catalogue collapsible (fermé par défaut)
-  const [catalogueOpen, setCatalogueOpen] = useState(false);
-
   // 📊 Track les impressions de la section "Voir aussi" au montage
   useEffect(() => {
     trackImpression("VoirAussi", 4); // 4 liens dans la section
@@ -858,142 +863,11 @@ export default function PiecesVehicleRoute() {
               />
             </div>
 
-            {/* Catalogue collapsible - 🚀 LCP V7: Streamé via Await */}
-            <Suspense fallback={null}>
-              <Await resolve={data.catalogueMameFamille}>
-                {(catalogueMameFamille) => catalogueMameFamille && catalogueMameFamille.items?.length > 0 && (() => {
-                  // Calculer la couleur de la famille depuis catalogueMameFamille
-                  const familleColor = catalogueMameFamille.family
-                  ? hierarchyApi.getFamilyColor({
-                      mf_id: catalogueMameFamille.family.mf_id,
-                      mf_name: catalogueMameFamille.family.mf_name,
-                      mf_pic: catalogueMameFamille.family.mf_pic,
-                    } as any)
-                  : "from-blue-950 via-indigo-900 to-purple-900";
-
-                return (
-                  <div>
-                    <div
-                      className={`relative rounded-lg overflow-hidden shadow-lg bg-gradient-to-br ${familleColor}`}
-                    >
-                      {/* Header cliquable pour toggle */}
-                      <button
-                        onClick={() => setCatalogueOpen(!catalogueOpen)}
-                        className="w-full flex items-center justify-between p-3 hover:bg-white/10 transition-colors"
-                      >
-                        <h2 className="text-sm font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                            />
-                          </svg>
-                          Catalogue{" "}
-                          {catalogueMameFamille?.family?.mf_name || "Système de freinage"}
-                          <span className="text-xs font-normal opacity-75">
-                            ({catalogueMameFamille.items.length})
-                          </span>
-                        </h2>
-                        <svg
-                          className={`w-5 h-5 text-white transition-transform duration-300 ${catalogueOpen ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
-
-                      {/* Contenu collapsible */}
-                      <div
-                        className={`overflow-hidden transition-all duration-300 ${catalogueOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}
-                      >
-                        <div className="p-3 pt-0">
-                          <div className="grid grid-cols-4 gap-1.5 auto-rows-max">
-                            {catalogueMameFamille.items
-                              .slice(0, 32)
-                              .map((item, index) => (
-                                <a
-                                  key={index}
-                                  href={item.link}
-                                  className="group relative aspect-square rounded-md overflow-hidden bg-white border border-white/20 hover:border-white hover:shadow-2xl hover:scale-110 hover:z-10 transition-all duration-300 cursor-pointer"
-                                  title={item.name}
-                                >
-                                  {/* Image du produit */}
-                                  <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-full object-contain p-1 group-hover:p-0.5 transition-all duration-300"
-                                    loading="lazy"
-                                    onError={(e) => {
-                                      e.currentTarget.src =
-                                        "/images/placeholder-product.png";
-                                    }}
-                                  />
-
-                                  {/* Nom du produit - toujours visible en bas */}
-                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent text-white text-[6px] p-1 group-hover:from-black/95 group-hover:via-black/85 transition-all duration-300">
-                                    <p className="line-clamp-2 font-medium text-center leading-tight">
-                                      {item.name}
-                                    </p>
-                                  </div>
-
-                                  {/* Badge "Voir" au hover - apparaît en haut Ã  droite */}
-                                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                                    <div className="bg-white/90 backdrop-blur-sm text-gray-900 text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
-                                      <svg
-                                        className="w-2 h-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={3}
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                        />
-                                      </svg>
-                                      <span>{getAnchorText(index)}</span>
-                                    </div>
-                                  </div>
-
-                                  {/* Effet de brillance au hover */}
-                                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 to-transparent group-hover:via-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                                </a>
-                              ))}
-                            {catalogueMameFamille.items.length > 32 && (
-                              <div className="flex items-center justify-center aspect-square rounded-md bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold text-[9px] shadow-sm">
-                                +{catalogueMameFamille.items.length - 32}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-                })()}
-              </Await>
-            </Suspense>
+            {/* Catalogue collapsible - Composant extrait */}
+            <PiecesCatalogueFamille
+              catalogueMameFamillePromise={data.catalogueMameFamille}
+              getAnchorText={getAnchorText}
+            />
           </aside>
 
           {/* Contenu principal */}
@@ -1030,32 +904,8 @@ export default function PiecesVehicleRoute() {
                       // âœ… Protection: group.pieces peut être undefined
                       const groupPieces = (group.pieces || []).filter(
                         (p: any) => {
-                          // Mapper l'objet API vers PieceData pour compatibilité avec filtres
-                          const pieceData = {
-                            id: p.id,
-                            name: p.nom || p.name || "Pièce",
-                            brand: p.marque || p.brand || "Marque inconnue",
-                            reference: p.reference || "",
-                            price:
-                              p.prix_unitaire || p.prix_ttc || p.price || 0,
-                            priceFormatted: (
-                              p.prix_unitaire ||
-                              p.prix_ttc ||
-                              p.price ||
-                              0
-                            ).toFixed(2),
-                            image: p.image || "",
-                            images: p.images || [],
-                            stock: p.dispo ? "En stock" : "Sur commande",
-                            quality: p.qualite || p.quality || "",
-                            stars: p.nb_stars
-                              ? parseInt(p.nb_stars)
-                              : undefined,
-                            description: p.description || "",
-                            url: p.url || "",
-                            marque_id: p.marque_id,
-                            marque_logo: p.marque_logo,
-                          };
+                          // Utiliser la fonction utilitaire centralisée
+                          const pieceData = mapApiPieceToData(p);
 
                           // Appliquer les filtres
                           if (
@@ -1140,31 +990,7 @@ export default function PiecesVehicleRoute() {
                           {/* Grille de pièces du groupe */}
                           {viewMode === "grid" && (
                             <PiecesGridView
-                              pieces={groupPieces.map((p: any) => ({
-                                id: p.id,
-                                name: p.nom || p.name || "Pièce",
-                                brand: p.marque || p.brand || "Marque inconnue",
-                                reference: p.reference || "",
-                                price:
-                                  p.prix_unitaire || p.prix_ttc || p.price || 0,
-                                priceFormatted: (
-                                  p.prix_unitaire ||
-                                  p.prix_ttc ||
-                                  p.price ||
-                                  0
-                                ).toFixed(2),
-                                image: p.image || "",
-                                images: p.images || [],
-                                stock: p.dispo ? "En stock" : "Sur commande",
-                                quality: p.qualite || "",
-                                stars: p.nb_stars
-                                  ? parseInt(p.nb_stars)
-                                  : undefined,
-                                description: p.description || "",
-                                url: p.url || "",
-                                marque_id: p.marque_id,
-                                marque_logo: p.marque_logo,
-                              }))}
+                              pieces={groupPieces.map(mapApiPieceToData)}
                               onSelectPiece={handleSelectPiece}
                               selectedPieces={selectedPieces}
                               vehicleMarque={data.vehicle.marque}
@@ -1173,31 +999,7 @@ export default function PiecesVehicleRoute() {
 
                           {viewMode === "list" && (
                             <PiecesListView
-                              pieces={groupPieces.map((p: any) => ({
-                                id: p.id,
-                                name: p.nom || p.name || "Pièce",
-                                brand: p.marque || p.brand || "Marque inconnue",
-                                reference: p.reference || "",
-                                price:
-                                  p.prix_unitaire || p.prix_ttc || p.price || 0,
-                                priceFormatted: (
-                                  p.prix_unitaire ||
-                                  p.prix_ttc ||
-                                  p.price ||
-                                  0
-                                ).toFixed(2),
-                                image: p.image || "",
-                                images: p.images || [],
-                                stock: p.dispo ? "En stock" : "Sur commande",
-                                quality: p.qualite || "",
-                                stars: p.nb_stars
-                                  ? parseInt(p.nb_stars)
-                                  : undefined,
-                                description: p.description || "",
-                                url: p.url || "",
-                                marque_id: p.marque_id,
-                                marque_logo: p.marque_logo,
-                              }))}
+                              pieces={groupPieces.map(mapApiPieceToData)}
                               onSelectPiece={handleSelectPiece}
                               selectedPieces={selectedPieces}
                             />
@@ -1346,97 +1148,13 @@ export default function PiecesVehicleRoute() {
           </Await>
         </Suspense>
 
-        {/* Section "Voir aussi" - Maillage interne SEO */}
-        <section className="container mx-auto px-4 mt-8 mb-12">
-          <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                />
-              </svg>
-              Voir aussi
-            </h2>
-            <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              {/* Lien vers la gamme parent - Ancre enrichie SEO */}
-              <li>
-                <Link
-                  to={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() =>
-                    handleVoirAussiClick(
-                      `/pieces/${data.gamme.alias}-${data.gamme.id}.html`,
-                      `Voir toutes les ${data.gamme.name} neuves - Prix discount`,
-                    )
-                  }
-                  title={`Découvrez notre gamme complète de ${data.gamme.name} neuves Ã  prix réduit`}
-                >
-                  <span className="text-gray-400">←’</span>
-                  Voir toutes les {data.gamme.name} neuves
-                </Link>
-              </li>
-              {/* Lien vers le constructeur - Ancre enrichie avec marque */}
-              <li>
-                <Link
-                  to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() =>
-                    handleVoirAussiClick(
-                      `/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`,
-                      `Toutes les pièces auto ${data.vehicle.marque} pas chères`,
-                    )
-                  }
-                  title={`Catalogue complet de pièces détachées ${data.vehicle.marque} - Qualité origine`}
-                >
-                  <span className="text-gray-400">←’</span>
-                  Pièces auto {data.vehicle.marque} pas chères
-                </Link>
-              </li>
-              {/* Lien vers le modèle - Ancre enrichie avec marque + modèle */}
-              <li>
-                <Link
-                  to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() =>
-                    handleVoirAussiClick(
-                      `/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`,
-                      `Pièces détachées ${data.vehicle.marque} ${data.vehicle.modele} - Livraison rapide`,
-                    )
-                  }
-                  title={`Toutes les pièces détachées pour ${data.vehicle.marque} ${data.vehicle.modele} - Livraison 24/48h`}
-                >
-                  <span className="text-gray-400">←’</span>
-                  Pièces {data.vehicle.marque} {data.vehicle.modele}
-                </Link>
-              </li>
-              {/* Lien vers catalogue complet - Ancre descriptive */}
-              <li>
-                <Link
-                  to="/pieces"
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() =>
-                    handleVoirAussiClick(
-                      "/pieces",
-                      "Catalogue pièces auto toutes marques",
-                    )
-                  }
-                  title="Explorer notre catalogue complet de pièces détachées auto pour toutes les marques"
-                >
-                  <span className="text-gray-400">←’</span>
-                  Catalogue pièces toutes marques
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </section>
+        {/* Section "Voir aussi" - Maillage interne SEO (composant extrait) */}
+        <PiecesVoirAussi
+          links={data.voirAussiLinks}
+          gamme={data.gamme}
+          vehicle={data.vehicle}
+          onLinkClick={handleVoirAussiClick}
+        />
       </div>
 
       {/* Bouton retour en haut */}
