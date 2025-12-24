@@ -3,9 +3,8 @@
  * Génère les schémas JSON-LD pour la page pièces
  */
 
+import { type GammeData, type PieceData, type VehicleData } from "../../types/pieces-route.types";
 import { normalizeImageUrl } from "../image.utils";
-
-import type { GammeData, PieceData, VehicleData } from "../../types/pieces-route.types";
 
 interface SchemaParams {
   vehicle: VehicleData;

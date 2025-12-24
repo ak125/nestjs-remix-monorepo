@@ -259,6 +259,54 @@ export async function fetchRelatedArticlesForGamme(
 }
 
 /**
+ * 🎯 Interface pour les SEO switches
+ */
+export interface SeoSwitches {
+  verbs: Array<{ id: number; content: string }>;
+  verbCount: number;
+}
+
+/**
+ * 🔄 Récupération et transformation des SEO switches pour une gamme
+ *
+ * @param gammeId - ID de la gamme
+ * @param timeoutMs - Timeout en millisecondes (défaut: 3000)
+ * @returns SeoSwitches ou undefined si aucun switch
+ */
+export async function fetchSeoSwitches(
+  gammeId: number,
+  timeoutMs: number = 3000
+): Promise<SeoSwitches | undefined> {
+  try {
+    const response = await fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
+    if (!response.ok) {
+      return undefined;
+    }
+
+    const data = await response.json();
+    const rawSwitches = data?.data || [];
+
+    if (rawSwitches.length === 0) {
+      return undefined;
+    }
+
+    return {
+      verbs: rawSwitches.map((s: { sis_id: number; sis_content: string }) => ({
+        id: s.sis_id,
+        content: s.sis_content,
+      })),
+      verbCount: rawSwitches.length,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * 🔄 Ré-export du service principal pour cohérence
  */
 export { PiecesService } from './pieces.service';
