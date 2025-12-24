@@ -10,9 +10,9 @@ import React, { useEffect, useState } from "react";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { hasStockAvailable } from "../../utils/stock.utils";
+import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
-import { BrandLogo } from "../ui/BrandLogo";
 
 interface PiecesGridViewProps {
   pieces: PieceData[];

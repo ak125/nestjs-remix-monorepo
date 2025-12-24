@@ -11,8 +11,8 @@
  */
 
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
-import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
 import { normalizeImageUrl } from '../../utils/image.utils';
+import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
 
 /**
  * 🔄 Récupération des gammes cross-selling depuis l'API réelle

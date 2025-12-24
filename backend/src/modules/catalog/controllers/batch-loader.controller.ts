@@ -151,10 +151,7 @@ export class BatchLoaderController {
       this.logger.warn(
         `🔒 SEO: Erreur validation typeId=${parsedTypeId} ou gammeId=${parsedGammeId} → 404`,
       );
-      throw new HttpException(
-        'Ressource inexistante',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Ressource inexistante', HttpStatus.NOT_FOUND);
     }
 
     // Réutiliser la logique existante
