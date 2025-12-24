@@ -24,13 +24,14 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
-import { Breadcrumbs as _Breadcrumbs } from "../components/layout/Breadcrumbs";
+import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
 import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
-import { PiecesOemRefsDisplay as _PiecesOemRefsDisplay } from "../components/pieces/PiecesOemRefsDisplay";
+import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
+import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 
 // Hook custom
@@ -767,7 +768,7 @@ export default function PiecesVehicleRoute() {
         />
       </div>
 
-      {/* 🍞 Fil d'ariane SEO optimisé - Liens HTML natifs + JSON-LD Schema */}
+      {/* 🍞 Fil d'ariane SEO optimisé - Réutilisation composant Breadcrumbs */}
       <div
         className="bg-white border-b border-gray-200 relative z-[100]"
         style={{ pointerEvents: "auto", position: "relative" }}
@@ -776,170 +777,29 @@ export default function PiecesVehicleRoute() {
           className="max-w-7xl mx-auto px-4 py-3"
           style={{ pointerEvents: "auto" }}
         >
-          {/* JSON-LD Schema.org pour BreadcrumbList */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  {
-                    "@type": "ListItem",
-                    position: 1,
-                    name: "Accueil",
-                    item: "https://www.automecanik.com/",
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 2,
-                    name: data.gamme.name,
-                    item: `https://www.automecanik.com/pieces/${data.gamme.alias}-${data.gamme.id}.html`,
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 3,
-                    name: `Pièces ${data.vehicle.marque}`,
-                    item: `https://www.automecanik.com/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`,
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 4,
-                    name: `${data.vehicle.marque} ${data.vehicle.modele}`,
-                    item: `https://www.automecanik.com/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}.html`,
-                  },
-                  {
-                    "@type": "ListItem",
-                    position: 5,
-                    name: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
-                    item: `https://www.automecanik.com/pieces/${data.gamme.alias}/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`,
-                  },
-                ],
-              }),
-            }}
+          <Breadcrumbs
+            items={[
+              { label: "Accueil", href: "/" },
+              {
+                label: data.gamme.name,
+                href: `/pieces/${data.gamme.alias}-${data.gamme.id}.html`,
+              },
+              {
+                label: `Pièces ${data.vehicle.marque}`,
+                href: `/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`,
+              },
+              {
+                label: `${data.vehicle.modele} ${data.vehicle.typeName || data.vehicle.type}`,
+                href: `/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`,
+              },
+              {
+                label: `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
+              },
+            ]}
+            showHome={false}
+            separator="left-arrow"
+            enableSchema={true}
           />
-          <nav
-            aria-label="Fil d'Ariane"
-            itemScope
-            itemType="https://schema.org/BreadcrumbList"
-            style={{ pointerEvents: "auto" }}
-          >
-            <ol
-              className="flex items-center flex-wrap gap-1 text-sm"
-              style={{ pointerEvents: "auto" }}
-            >
-              <li
-                className="flex items-center"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-                style={{ pointerEvents: "auto" }}
-              >
-                <a
-                  href="/"
-                  itemProp="item"
-                  style={{
-                    color: "#2563eb",
-                    cursor: "pointer",
-                    pointerEvents: "auto",
-                    position: "relative",
-                    zIndex: 100,
-                  }}
-                  className="hover:underline font-medium"
-                >
-                  <span itemProp="name">Accueil</span>
-                </a>
-                <meta itemProp="position" content="1" />
-              </li>
-              <li
-                className="flex items-center"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-                style={{ pointerEvents: "auto" }}
-              >
-                <span className="text-gray-400 mx-2">←’</span>
-                <a
-                  href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
-                  itemProp="item"
-                  style={{
-                    color: "#2563eb",
-                    cursor: "pointer",
-                    pointerEvents: "auto",
-                    position: "relative",
-                    zIndex: 100,
-                  }}
-                  className="hover:underline font-medium"
-                >
-                  <span itemProp="name">{data.gamme.name}</span>
-                </a>
-                <meta itemProp="position" content="2" />
-              </li>
-              <li
-                className="flex items-center"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-                style={{ pointerEvents: "auto" }}
-              >
-                <span className="text-gray-400 mx-2">←’</span>
-                <a
-                  href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`}
-                  itemProp="item"
-                  style={{
-                    color: "#2563eb",
-                    cursor: "pointer",
-                    pointerEvents: "auto",
-                    position: "relative",
-                    zIndex: 100,
-                  }}
-                  className="hover:underline font-medium"
-                >
-                  <span itemProp="name">Pièces {data.vehicle.marque}</span>
-                </a>
-                <meta itemProp="position" content="3" />
-              </li>
-              <li
-                className="flex items-center"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-                style={{ pointerEvents: "auto" }}
-              >
-                <span className="text-gray-400 mx-2">←’</span>
-                <a
-                  href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`}
-                  itemProp="item"
-                  style={{
-                    color: "#2563eb",
-                    cursor: "pointer",
-                    pointerEvents: "auto",
-                    position: "relative",
-                    zIndex: 100,
-                  }}
-                  className="hover:underline font-medium"
-                >
-                  <span itemProp="name">
-                    {data.vehicle.modele}{" "}
-                    {data.vehicle.typeName || data.vehicle.type}
-                  </span>
-                </a>
-                <meta itemProp="position" content="4" />
-              </li>
-              <li
-                className="flex items-center"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-              >
-                <span className="text-gray-400 mx-2">←’</span>
-                <span className="text-gray-800 font-semibold" itemProp="name">
-                  {data.gamme.name} {data.vehicle.marque} {data.vehicle.modele}
-                </span>
-                <meta itemProp="position" content="5" />
-              </li>
-            </ol>
-          </nav>
         </div>
       </div>
 
@@ -1139,216 +999,16 @@ export default function PiecesVehicleRoute() {
           {/* Contenu principal */}
           <main className="flex-1 min-w-0">
             <div className="space-y-6">
-              {/* Barre d'outils vue */}
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5 animate-in fade-in slide-in-from-top duration-500 delay-150 sticky top-24 z-10">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  {/* Compteur de résultats */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
-                      <svg
-                        className="w-4 h-4 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-                      </svg>
-                      <span className="text-sm font-semibold text-gray-900">
-                        <span className="text-blue-600">
-                          {filteredProducts.length}
-                        </span>{" "}
-                        pièce{filteredProducts.length > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {data.minPrice > 0 && (
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-xl border border-green-100">
-                        <svg
-                          className="w-4 h-4 text-green-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
-                            clipRule="evenodd"
-                          ></path>
-                        </svg>
-                        <span className="text-sm font-semibold text-gray-900">
-                          Dès{" "}
-                          <span className="text-green-600">
-                            {data.minPrice.toFixed(2)}â‚¬
-                          </span>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sélecteur de vue */}
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-1.5 border border-gray-200 shadow-inner">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                        viewMode === "grid"
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                      </svg>
-                      Grille
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                        viewMode === "list"
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                          clipRule="evenodd"
-                        ></path>
-                      </svg>
-                      Liste
-                    </button>
-                    <button
-                      onClick={() => setViewMode("comparison")}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 relative ${
-                        viewMode === "comparison"
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                        <path
-                          fillRule="evenodd"
-                          d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                          clipRule="evenodd"
-                        ></path>
-                      </svg>
-                      Comparer
-                      {selectedPieces.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                          {selectedPieces.length}
-                        </span>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Tri avec boutons visuels - icônes seules */}
-                  <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
-                    <button
-                      onClick={() => setSortBy("name")}
-                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
-                        sortBy === "name"
-                          ? "bg-blue-500 text-white shadow-md"
-                          : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                      }`}
-                      title="Trier par nom (A←’Z)"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setSortBy("price-asc")}
-                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
-                        sortBy === "price-asc"
-                          ? "bg-emerald-500 text-white shadow-md"
-                          : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                      }`}
-                      title="Prix croissant"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setSortBy("price-desc")}
-                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
-                        sortBy === "price-desc"
-                          ? "bg-rose-500 text-white shadow-md"
-                          : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                      }`}
-                      title="Prix décroissant"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4 4m4-4l4 4"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setSortBy("brand")}
-                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
-                        sortBy === "brand"
-                          ? "bg-indigo-500 text-white shadow-md"
-                          : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                      }`}
-                      title="Trier par marque"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              {/* Barre d'outils vue - Composant extrait */}
+              <PiecesToolbar
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                filteredCount={filteredProducts.length}
+                minPrice={data.minPrice}
+                selectedPiecesCount={selectedPieces.length}
+              />
 
               {/* Affichage des pièces selon le mode */}
               {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
@@ -1618,258 +1278,12 @@ export default function PiecesVehicleRoute() {
                   gammeName={data.gamme.name}
                 />
 
-                {/* 🎯 Section Références OEM Constructeur - SEO optimisée */}
-                {data.grouped_pieces &&
-                  data.grouped_pieces.some(
-                    (g: any) => g.oemRefs && g.oemRefs.length > 0,
-                  ) && (
-                    <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                      {/* En-tête de section */}
-                      <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                          <svg
-                            className="w-6 h-6 text-amber-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                            />
-                          </svg>
-                          Références constructeur (OEM){" "}
-                          {data.vehicle.marque}
-                        </h2>
-                        <p className="text-slate-300 text-sm mt-1">
-                          Numéros de pièce d'origine pour votre{" "}
-                          {data.vehicle.marque} {data.vehicle.modele}
-                        </p>
-                      </div>
-
-                      {/* Contenu avec groupes séparés */}
-                      <div className="p-6 space-y-6">
-                        {/* Introduction SEO enrichie */}
-                        <div className="prose prose-gray max-w-none">
-                          <p className="text-gray-600 leading-relaxed">
-                            Vous cherchez des <strong>{data.gamme.name}</strong>{" "}
-                            pour votre{" "}
-                            <strong>
-                              {data.vehicle.marque} {data.vehicle.modele}{" "}
-                              {data.vehicle.type}
-                            </strong>{" "}
-                            ? Ci-dessous, retrouvez toutes les{" "}
-                            <em>références OEM</em> (Original Equipment
-                            Manufacturer) correspondant Ã  votre véhicule. Ces
-                            numéros de pièce d'origine {data.vehicle.marque}{" "}
-                            vous garantissent une compatibilité parfaite.
-                          </p>
-                        </div>
-
-                        {/* Qu'est-ce qu'une référence OEM ? */}
-                        <details className="group bg-blue-50 rounded-lg border border-blue-100">
-                          <summary className="flex items-center justify-between cursor-pointer p-4 text-blue-900 font-medium">
-                            <span className="flex items-center gap-2">
-                              <svg
-                                className="w-5 h-5 text-blue-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              Qu'est-ce qu'une référence OEM ?
-                            </span>
-                            <svg
-                              className="w-5 h-5 text-blue-500 transition-transform group-open:rotate-180"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 9l-7 7-7-7"
-                              />
-                            </svg>
-                          </summary>
-                          <div className="px-4 pb-4 text-sm text-blue-800 space-y-2">
-                            <p>
-                              Une <strong>référence OEM</strong> est le
-                              numéro de pièce attribué par le constructeur
-                              automobile (ici {data.vehicle.marque}) pour
-                              identifier une pièce spécifique. Par exemple,
-                              la référence
-                              <code className="bg-white px-1.5 py-0.5 rounded text-xs mx-1">
-                                {data.grouped_pieces?.[0]?.oemRefs?.[0] ||
-                                  "41 06 003 79R"}
-                              </code>
-                              désigne une pièce d'origine{" "}
-                              {data.vehicle.marque}.
-                            </p>
-                            <p>
-                              <strong>Pourquoi c'est utile ?</strong> Cette
-                              référence vous permet de trouver des pièces
-                              équivalentes chez d'autres fabricants (Bosch,
-                              TRW, Brembo...) qui respectent les mêmes
-                              spécifications techniques que la pièce
-                              d'origine.
-                            </p>
-                          </div>
-                        </details>
-
-                        {/* Groupes OEM (AV/AR) */}
-                        <div className="grid gap-6 md:grid-cols-2">
-                          {data.grouped_pieces
-                            .filter(
-                              (g: any) => g.oemRefs && g.oemRefs.length > 0,
-                            )
-                            .map((group: any, idx: number) => {
-                              const isAvant =
-                                (group.filtre_side || "")
-                                  .toLowerCase()
-                                  .includes("avant") ||
-                                (group.title_h2 || "")
-                                  .toLowerCase()
-                                  .includes("avant");
-                              const positionText = isAvant
-                                ? "à l'avant"
-                                : "Ã  l'arrière";
-                              const _positionIcon = isAvant ? "🔵" : "🟠";
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className={`rounded-lg border p-5 ${isAvant ? "bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200" : "bg-gradient-to-br from-orange-50 to-slate-50 border-orange-200"}`}
-                                >
-                                  {/* Titre H3 OEM avec préfixe et modèle */}
-                                  <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                                    <svg
-                                      className={`w-4 h-4 flex-shrink-0 ${isAvant ? "text-blue-600" : "text-orange-600"}`}
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                                      />
-                                    </svg>
-                                    <span>
-                                      Références OEM{" "}
-                                      {group.title_h2 ||
-                                        `${group.filtre_gamme} ${group.filtre_side}`}{" "}
-                                      {data.vehicle.modele}
-                                    </span>
-                                    <span
-                                      className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${isAvant ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}
-                                    >
-                                      {group.oemRefs.length} réf
-                                      {group.oemRefs.length > 1 ? "s" : ""}
-                                    </span>
-                                  </h3>
-
-                                  {/* Texte explicatif dynamique */}
-                                  <p className="text-sm text-gray-600 mb-3">
-                                    Ces références {data.vehicle.marque}{" "}
-                                    correspondent aux {data.gamme.name}{" "}
-                                    montées {positionText} de votre{" "}
-                                    {data.vehicle.modele}. Utilisez-les pour
-                                    trouver des équivalences chez nos marques
-                                    partenaires.
-                                  </p>
-
-                                  {/* Liste des refs avec meilleur styling */}
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {group.oemRefs.map(
-                                      (ref: string, i: number) => (
-                                        <span
-                                          key={i}
-                                          className={`px-2.5 py-1.5 bg-white border rounded-md text-xs font-mono text-gray-800 shadow-sm hover:shadow transition-all cursor-default ${isAvant ? "border-blue-200 hover:border-blue-400 hover:bg-blue-50" : "border-orange-200 hover:border-orange-400 hover:bg-orange-50"}`}
-                                          title={`Référence OEM ${data.vehicle.marque} - ${group.title_h2 || group.filtre_gamme}`}
-                                        >
-                                          {ref}
-                                        </span>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                        </div>
-
-                        {/* Équivalences et conseils */}
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {/* Conseil équivalences */}
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
-                              <svg
-                                className="w-5 h-5 text-green-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              Équivalences de qualité
-                            </h4>
-                            <p className="text-sm text-green-800">
-                              Les grandes marques comme <strong>Bosch</strong>,{" "}
-                              <strong>TRW</strong>, <strong>Brembo</strong> ou{" "}
-                              <strong>Ferodo</strong> fabriquent des pièces
-                              équivalentes aux références{" "}
-                              {data.vehicle.marque}. Elles offrent souvent le
-                              même niveau de qualité (voire supérieur) Ã 
-                              un prix plus compétitif.
-                            </p>
-                          </div>
-
-                          {/* Conseil sécurité */}
-                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                            <h4 className="font-medium text-amber-900 mb-2 flex items-center gap-2">
-                              <svg
-                                className="w-5 h-5 text-amber-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                                />
-                              </svg>
-                              Sécurité freinage
-                            </h4>
-                            <p className="text-sm text-amber-800">
-                              Le système de freinage est un élément de
-                              sécurité critique. Privilégiez toujours des
-                              pièces de qualité <strong>OES</strong>{" "}
-                              (première monte) ou{" "}
-                              <strong>certifiées ECE R90</strong> pour
-                              garantir des performances de freinage optimales.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </section>
-                  )}
+                {/* 🎯 Section Références OEM Constructeur - Composant extrait */}
+                <PiecesOemSection
+                  groupedPieces={data.grouped_pieces}
+                  vehicle={data.vehicle}
+                  gamme={data.gamme}
+                />
 
                 {/* 🚀 LCP OPTIMIZATION V6: Suspense boundaries pour composants lazy below-fold */}
                 <Suspense fallback={<div className="h-24 bg-gray-100 animate-pulse rounded-lg" />}>

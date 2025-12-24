@@ -1,11 +1,12 @@
 /**
  * 🔄 Services API complémentaires pour la route pièces
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
- * 
+ *
  * ⚠️ IMPORTANT: Ce fichier complète pieces.service.ts existant
  * ⚠️ URLs API strictement préservées - NE PAS MODIFIER
- * 
+ *
  * 📝 CHANGELOG:
+ * - 2025-12-24: Refactoring avec fetchFromEndpointChain() générique
  * - 2025-12-11: Ajout fetchRelatedArticlesForGamme() pour vrais articles blog
  * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
@@ -13,6 +14,87 @@
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
 import { normalizeImageUrl } from '../../utils/image.utils';
 import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
+
+/**
+ * 🔗 Utilitaire générique pour fetch en cascade avec fallback
+ * Essaie chaque endpoint jusqu'à obtenir une réponse valide
+ *
+ * @param endpoints - Liste d'URLs à essayer dans l'ordre
+ * @param parser - Fonction pour extraire/valider les données de la réponse
+ * @param options - { timeout: ms, fallback: valeur par défaut }
+ */
+async function fetchFromEndpointChain<T>(
+  endpoints: string[],
+  parser: (data: unknown) => T | null,
+  options?: { timeout?: number; fallback?: T }
+): Promise<T | null> {
+  const timeout = options?.timeout ?? 2000;
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        signal: AbortSignal.timeout(timeout),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const result = parser(data);
+        if (result !== null) {
+          return result;
+        }
+      }
+    } catch {
+      // Continuer vers le prochain endpoint
+    }
+  }
+
+  return options?.fallback ?? null;
+}
+
+/**
+ * 🎯 Parser pour extraire un article de blog depuis diverses structures API
+ */
+function parseBlogArticleResponse(data: unknown): BlogArticle | null {
+  if (!data || typeof data !== 'object') return null;
+
+  const d = data as Record<string, unknown>;
+
+  // Structure directe: { id, title, ... } ou { data: { id, title, ... } }
+  const article = (d.data as Record<string, unknown>) || d.article || d;
+
+  // Vérifier si c'est un tableau d'articles
+  const articles = (d.articles || d.data || d.results || d.recentArticles) as unknown[];
+  if (Array.isArray(articles) && articles.length > 0) {
+    const firstArticle = articles[0] as Record<string, unknown>;
+    if (firstArticle?.title) {
+      return {
+        id: String(firstArticle.id || firstArticle.slug || 'blog-' + Date.now()),
+        title: String(firstArticle.title),
+        excerpt: String(firstArticle.excerpt || firstArticle.description || (firstArticle.content as string)?.substring(0, 200) || ''),
+        slug: String(firstArticle.slug || firstArticle.url || ''),
+        image: normalizeImageUrl(String(firstArticle.image || firstArticle.thumbnail || firstArticle.featured_image || '')) || undefined,
+        date: String(firstArticle.created_at || firstArticle.date || firstArticle.published_at || new Date().toISOString()),
+        readTime: Number(firstArticle.reading_time || firstArticle.read_time || 5)
+      };
+    }
+  }
+
+  // Structure article unique
+  const a = article as Record<string, unknown>;
+  if (a && (a.h1 || a.title)) {
+    return {
+      id: String(a.id || 'blog-gamme-' + Date.now()),
+      title: String(a.h1 || a.title),
+      excerpt: String(a.excerpt || a.description || ''),
+      slug: String(a.slug || ''),
+      image: normalizeImageUrl(String(a.featuredImage || a.image || '')) || undefined,
+      date: String(a.updatedAt || a.publishedAt || a.created_at || new Date().toISOString()),
+      readTime: Number(a.readingTime || a.reading_time || 5)
+    };
+  }
+
+  return null;
+}
 
 /**
  * 🔄 Récupération des gammes cross-selling depuis l'API réelle
@@ -67,229 +149,113 @@ export async function fetchCrossSellingGammes(
 
 /**
  * 📝 Récupération d'un article de blog depuis l'API réelle
- * 
- * ⚠️ URLs API multiples pour fallback:
- * - /api/blog/article/by-gamme/{pg_alias} (PRIORITÉ - vrais articles)
- * - /api/blog/search?q={gamme}&limit=1
- * - /api/blog/popular?limit=1&category=entretien
- * - /api/blog/homepage
- * 
+ *
+ * ⚠️ URLs API multiples pour fallback (ordre de priorité):
+ * 1. /api/blog/article/by-gamme/{pg_alias} (vrais articles)
+ * 2. /api/blog/search?q={gamme}&limit=1
+ * 3. /api/blog/popular?limit=1&category=entretien
+ * 4. /api/blog/homepage
+ *
  * ⚠️ STRUCTURE URL PRÉSERVÉE - NE PAS MODIFIER
  */
 export async function fetchBlogArticle(
-  gamme: GammeData, 
+  gamme: GammeData,
   _vehicle: VehicleData
 ): Promise<BlogArticle | null> {
-  try {
-    // ⚠️ PRIORITÉ 1: Endpoint by-gamme (vrais articles depuis blog_advice)
-    // 🚀 LCP OPTIMIZATION: Timeout 2s pour fail-fast
-    console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
-    let response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog by-gamme data:`, data);
-      
-      // L'endpoint retourne { success: true, data: {...} }
-      const article = data.data || data.article || data;
-      if (article && (article.h1 || article.title)) {
-        return {
-          id: article.id?.toString() || 'blog-gamme-' + Date.now(),
-          title: article.h1 || article.title,
-          excerpt: article.excerpt || article.description || '',
-          slug: article.slug || '',
-          image: normalizeImageUrl(article.featuredImage || article.image) || undefined,
-          date: article.updatedAt || article.publishedAt || article.created_at || new Date().toISOString(),
-          readTime: article.readingTime || article.reading_time || 5
-        };
-      }
-    }
-    
-    // ⚠️ Essai 2: Recherche par gamme spécifique - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog search data:`, data);
-      
-      // Validation robuste des données
-      if (data && typeof data === 'object') {
-        const articles = data.articles || data.data || data.results || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
+  console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
 
-    // ⚠️ Essai 2: Article populaire général auto - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/popular?limit=1&category=entretien`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog popular data:`, data);
-      
-      if (data && typeof data === 'object') {
-        const articles = data.articles || data.data || data.results || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-popular-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
+  // ⚠️ URLs API EXACTES - NE PAS MODIFIER
+  const endpoints = [
+    `http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
+    `http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`,
+    `http://localhost:3000/api/blog/popular?limit=1&category=entretien`,
+    `http://localhost:3000/api/blog/homepage`,
+  ];
 
-    // ⚠️ Essai 3: Endpoint blog homepage - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/homepage`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog homepage data:`, data);
-      
-      if (data && typeof data === 'object') {
-        const articles = data.recentArticles || data.articles || data.data || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-homepage-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: normalizeImageUrl(article.image || article.thumbnail || article.featured_image) || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
+  const fallback: BlogArticle = {
+    id: 'blog-fallback-' + gamme.id,
+    title: `Guide d'entretien pour ${gamme.name}`,
+    excerpt: `Découvrez nos conseils d'experts pour l'entretien et le remplacement de vos ${gamme.name.toLowerCase()}. Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`,
+    slug: 'guide-entretien-' + gamme.alias,
+    image: undefined,
+    date: new Date().toISOString(),
+    readTime: 5
+  };
 
-    // Fallback: article générique
-    console.log(`🔄 Fallback blog article générique`);
-    return {
-      id: 'blog-fallback-' + gamme.id,
-      title: `Guide d'entretien pour ${gamme.name}`,
-      excerpt: `Découvrez nos conseils d'experts pour l'entretien et le remplacement de vos ${gamme.name.toLowerCase()}. Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`,
-      slug: 'guide-entretien-' + gamme.alias,
-      image: undefined,
-      date: new Date().toISOString(),
-      readTime: 5
-    };
-    
-  } catch (error) {
-    console.error('❌ Erreur fetchBlogArticle:', error);
-    return null;
-  }
+  return fetchFromEndpointChain<BlogArticle>(
+    endpoints,
+    parseBlogArticleResponse,
+    { timeout: 2000, fallback }
+  );
 }
 
 /**
  * 📚 Récupération des articles liés depuis l'API réelle par gamme
- * 
- * Cette fonction remplace generateRelatedArticles() qui générait des slugs fictifs.
- * Elle appelle l'endpoint /api/blog/article/by-gamme/:pg_alias qui retourne:
+ *
+ * Appelle /api/blog/article/by-gamme/:pg_alias qui retourne:
  * - L'article principal de la gamme
  * - Les articles liés (relatedArticles) depuis la table blog_advice
- * 
+ *
  * @param gamme - Données de la gamme (id, alias, name)
  * @param vehicle - Données du véhicule pour le fallback
  * @returns BlogArticle[] - Liste d'articles réels ou fallback statique
  */
 export async function fetchRelatedArticlesForGamme(
-  gamme: GammeData, 
+  gamme: GammeData,
   vehicle: VehicleData
 ): Promise<BlogArticle[]> {
-  try {
-    console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
-    
-    // Appel à l'endpoint by-gamme qui retourne { success: true, data: {...} }
-    // 🚀 LCP OPTIMIZATION: Timeout 2s pour fail-fast
-    const response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    
-    if (!response.ok) {
-      console.warn(`⚠️ [RelatedArticles] API non disponible: ${response.status}`);
-      // Fallback vers articles statiques
-      return generateRelatedArticles(vehicle, gamme);
-    }
-    
-    const responseData = await response.json();
-    console.log(`✅ [RelatedArticles] API response:`, {
-      success: responseData.success,
-      hasData: !!responseData.data
-    });
-    
-    // Structure: { success: true, data: { id, title, slug, h1, excerpt, relatedArticles?, ... } }
-    const articleData = responseData.data;
-    
-    if (!articleData || !articleData.slug) {
-      console.log(`🔄 [RelatedArticles] No valid article data, using fallback`);
-      return generateRelatedArticles(vehicle, gamme);
-    }
-    
+  console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
+
+  // Parser spécialisé pour extraire article principal + articles liés
+  const parseRelatedArticles = (data: unknown): BlogArticle[] | null => {
+    if (!data || typeof data !== 'object') return null;
+
+    const d = data as Record<string, unknown>;
+    const articleData = d.data as Record<string, unknown>;
+
+    if (!articleData?.slug) return null;
+
     const articles: BlogArticle[] = [];
-    
-    // 1. Ajouter l'article principal
+
+    // 1. Article principal
     articles.push({
-      id: articleData.id?.toString() || 'main-' + gamme.id,
-      title: articleData.h1 || articleData.title || `Guide ${gamme.name}`,
-      excerpt: articleData.excerpt || `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`,
-      slug: articleData.slug,
-      image: normalizeImageUrl(articleData.featuredImage) || undefined,
-      date: articleData.updatedAt || articleData.publishedAt || new Date().toISOString(),
-      readTime: articleData.readingTime || 8
+      id: String(articleData.id || 'main-' + gamme.id),
+      title: String(articleData.h1 || articleData.title || `Guide ${gamme.name}`),
+      excerpt: String(articleData.excerpt || `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`),
+      slug: String(articleData.slug),
+      image: normalizeImageUrl(String(articleData.featuredImage || '')) || undefined,
+      date: String(articleData.updatedAt || articleData.publishedAt || new Date().toISOString()),
+      readTime: Number(articleData.readingTime || 8)
     });
-    
-    // 2. Ajouter les articles liés (related) s'ils existent
-    const relatedArticles = articleData.relatedArticles || [];
+
+    // 2. Articles liés (max 3)
+    const relatedArticles = articleData.relatedArticles as Record<string, unknown>[];
     if (Array.isArray(relatedArticles)) {
-      for (const related of relatedArticles.slice(0, 3)) { // Max 3 articles liés
-        if (related && related.slug) {
+      for (const related of relatedArticles.slice(0, 3)) {
+        if (related?.slug) {
           articles.push({
-            id: related.id?.toString() || 'related-' + Date.now(),
-            title: related.h1 || related.title,
-            excerpt: related.excerpt || '',
-            slug: related.slug,
-            image: normalizeImageUrl(related.featuredImage) || undefined,
-            date: related.updatedAt || related.publishedAt || new Date().toISOString(),
-            readTime: related.readingTime || 5
+            id: String(related.id || 'related-' + Date.now()),
+            title: String(related.h1 || related.title),
+            excerpt: String(related.excerpt || ''),
+            slug: String(related.slug),
+            image: normalizeImageUrl(String(related.featuredImage || '')) || undefined,
+            date: String(related.updatedAt || related.publishedAt || new Date().toISOString()),
+            readTime: Number(related.readingTime || 5)
           });
         }
       }
     }
-    
-    console.log(`✅ [RelatedArticles] Returning ${articles.length} real articles`);
-    return articles;
-    
-  } catch (error) {
-    console.error('❌ Erreur fetchRelatedArticlesForGamme:', error);
-    // Fallback vers articles statiques en cas d'erreur
-    return generateRelatedArticles(vehicle, gamme);
-  }
+
+    return articles.length > 0 ? articles : null;
+  };
+
+  const result = await fetchFromEndpointChain<BlogArticle[]>(
+    [`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`],
+    parseRelatedArticles,
+    { timeout: 2000 }
+  );
+
+  return result ?? generateRelatedArticles(vehicle, gamme);
 }
 
 /**
