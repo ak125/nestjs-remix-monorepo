@@ -33,6 +33,7 @@ import { PiecesGroupedDisplay } from "../components/pieces/PiecesGroupedDisplay"
 import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
+import { PiecesRecommendedSection } from "../components/pieces/PiecesRecommendedSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
@@ -59,10 +60,12 @@ import {
 // Utilitaires
 import { buildPiecesProductSchema } from "../utils/seo/pieces-schema.utils";
 import {
+  calculatePriceStats,
   generateBuyingGuide,
   generateFAQ,
   generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
   generateSEOContent,
+  mapBatchPiecesToData,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
@@ -277,32 +280,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   }
 
-  // Mapping Pièces
-  const piecesData: PieceData[] = (batchResponse.pieces || []).map(
-    (piece: any) => ({
-      id: piece.id,
-      name: piece.nom || piece.name || "Pièce",
-      brand: piece.marque || piece.brand || "Marque inconnue",
-      reference: piece.reference || "",
-      price: piece.prix_unitaire || piece.prix_ttc || piece.price || 0,
-      priceFormatted: (
-        piece.prix_unitaire ||
-        piece.prix_ttc ||
-        piece.price ||
-        0
-      ).toFixed(2),
-      image: piece.image || "",
-      images: piece.images || [], // âœ… Mapping des images
-      stock: piece.dispo ? "En stock" : "Sur commande",
-      quality: piece.qualite || "",
-      stars: piece.nb_stars ? parseInt(piece.nb_stars) : undefined, // âœ… Étoiles qualité marque
-      side: piece.filtre_side || undefined, // âœ… Position (Avant/Arrière ou Gauche/Droite)
-      description: piece.description || "",
-      url: piece.url || "",
-      marque_id: piece.marque_id,
-      marque_logo: piece.marque_logo,
-    }),
-  );
+  // Mapping Pièces - Utilise utilitaire centralisé
+  const piecesData = mapBatchPiecesToData(batchResponse.pieces);
 
   if (piecesData.length === 0) {
     throw new Response(
@@ -318,10 +297,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     );
   }
 
-  // Stats prix
-  const prices = piecesData.map((p) => p.price).filter((p) => p > 0);
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+  // Stats prix - Utilise utilitaire centralisé
+  const { minPrice, maxPrice } = calculatePriceStats(piecesData);
 
   // SEO Content
   let seoContent = generateSEOContent(vehicle, gamme);
@@ -793,39 +770,14 @@ export default function PiecesVehicleRoute() {
                 />
               )}
 
-              {/* Pièces recommandées */}
-              {recommendedPieces.length > 0 && viewMode !== "comparison" && (
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
-                  <h3 className="text-lg font-bold text-orange-900 mb-4 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    Nos recommandations
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {recommendedPieces.map((piece) => (
-                      <div
-                        key={piece.id}
-                        className="bg-white rounded-lg p-4 shadow-sm"
-                      >
-                        <div className="font-medium text-gray-900 mb-1 line-clamp-2">
-                          {piece.name}
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">
-                          {piece.brand}
-                        </div>
-                        <div className="text-lg font-bold text-blue-600">
-                          {piece.priceFormatted}â‚¬
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Pièces recommandées - Composant avec SEO switches */}
+              <PiecesRecommendedSection
+                pieces={recommendedPieces}
+                visible={viewMode !== "comparison"}
+                seoSwitches={data.seoSwitches}
+                gamme={data.gamme}
+                vehicle={data.vehicle}
+              />
 
               {/* Sections SEO */}
               <div className="space-y-6 mt-12">

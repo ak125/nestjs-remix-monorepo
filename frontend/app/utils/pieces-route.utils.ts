@@ -380,3 +380,21 @@ export function mapApiPieceToData(p: any): PieceData {
     marque_logo: p.marque_logo,
   };
 }
+
+/**
+ * Mappe un tableau de pièces depuis batch-loader vers PieceData[]
+ */
+export function mapBatchPiecesToData(batchPieces: any[]): PieceData[] {
+  return (batchPieces || []).map(mapApiPieceToData);
+}
+
+/**
+ * Calcule les statistiques de prix (min, max) depuis un tableau de pièces
+ */
+export function calculatePriceStats(pieces: PieceData[]): { minPrice: number; maxPrice: number } {
+  const prices = pieces.map((p) => p.price).filter((p) => p > 0);
+  return {
+    minPrice: prices.length > 0 ? Math.min(...prices) : 0,
+    maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
+  };
+}
