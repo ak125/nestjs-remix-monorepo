@@ -50,11 +50,11 @@ export function validateVehicleIds(params: {
   marqueId: number;
   modeleId: number;
   typeId: number;
-  gammeId: number;
+  gammeId?: number; // 🛡️ Optionnel - validation déléguée au batch-loader si absent
   source?: string;
 }): void {
   const errors: string[] = [];
-  
+
   if (!params.marqueId || params.marqueId <= 0) {
     errors.push(`marqueId invalide: ${params.marqueId}`);
   }
@@ -64,7 +64,8 @@ export function validateVehicleIds(params: {
   if (!params.typeId || params.typeId <= 0) {
     errors.push(`typeId invalide: ${params.typeId}`);
   }
-  if (!params.gammeId || params.gammeId <= 0) {
+  // 🛡️ gammeId optionnel - si fourni, valider; sinon, déléguer au batch-loader
+  if (params.gammeId !== undefined && (!params.gammeId || params.gammeId <= 0)) {
     errors.push(`gammeId invalide: ${params.gammeId}`);
   }
   
@@ -271,28 +272,30 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
           );
           
           if (modelData) {
-            // 🔒 SEO FIX: Rejeter si typeId invalide au lieu de fallback hardcodé
-            if (type.id <= 0) {
-              console.error(`❌ [RESOLVE-VEHICLE] Type ID invalide: ${type.id}`);
-              throw new Error(`Type de véhicule invalide dans l'URL`);
-            }
+            // 🛡️ SEO: Retourner les IDs même si typeId=0
+            // Le batch-loader validera et retournera 404 si nécessaire
             return {
               marqueId: brand.marque_id,
               modeleId: modelData.modele_id,
-              typeId: type.id
+              typeId: type.id // Peut être 0 → batch-loader retournera 404
             };
           }
         }
       }
     }
   } catch (error) {
-    console.warn('⚠️ [RESOLVE-VEHICLE] Erreur appel API:', error);
+    console.error('❌ [RESOLVE-VEHICLE] Erreur appel API:', error);
   }
-  
-  // ❌ Si aucune résolution possible, retourner une erreur
-  // Ne plus utiliser de fallback avec des IDs invalides
-  console.error(`❌ [RESOLVE-VEHICLE] Impossible de résoudre les IDs pour: marque=${marque.alias}, modele=${modele.alias}, type=${type.alias}`);
-  throw new Error(`Véhicule introuvable: ${marque.alias} ${modele.alias} ${type.alias}`);
+
+  // 🛡️ Fallback: Retourner les IDs parsés depuis l'URL (peuvent être 0 si invalides)
+  // Note: Le batch-loader validera ensuite et retournera 404 HTTP si IDs inexistants en DB
+  // Ceci est le comportement attendu pour les URLs malformées ou obsolètes
+  console.warn(`⚠️ [RESOLVE-VEHICLE] Fallback IDs URL: marque=${marque.alias}(${marque.id}), modele=${modele.alias}(${modele.id}), type=${type.alias}(${type.id})`);
+  return {
+    marqueId: marque.id,
+    modeleId: modele.id,
+    typeId: type.id // batch-loader retournera 404 si 0
+  };
 }
 
 /**
@@ -335,8 +338,10 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     return gammeId;
   }
   
-  console.log(`⚠️ [GAMME-ID] Pas de mapping pour ${gamme.alias}, utilisation ID test: 402`);
-  return 402;
+  // 🛡️ Sécurité SEO: Ne pas retourner un ID incorrect si gamme inconnue
+  // Le batch-loader gérera la validation et retournera 404 si nécessaire
+  console.error(`❌ [GAMME-ID] Gamme inconnue: ${gamme.alias} - retour 0 pour validation batch-loader`);
+  return 0; // Le batch-loader validera et retournera 404 si gamme inexistante
 }
 
 /**

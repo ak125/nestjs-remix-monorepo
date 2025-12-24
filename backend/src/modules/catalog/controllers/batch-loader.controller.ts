@@ -118,10 +118,14 @@ export class BatchLoaderController {
       throw new HttpException('Gamme de pièces invalide', HttpStatus.NOT_FOUND);
     }
 
-    // 🔒 Validation SEO: Vérifier que le type existe en base
+    // 🚀 LCP OPTIMIZATION: Validations en parallèle (économie ~100-200ms)
     try {
-      const typeResult = await this.vehiclesService.getTypeById(parsedTypeId);
-      // getTypeById retourne { data: [...], error: null } ou { data: null, error: ... }
+      const [typeResult, gammeExists] = await Promise.all([
+        this.vehiclesService.getTypeById(parsedTypeId),
+        this.gammeService.gammeExists(parsedGammeId),
+      ]);
+
+      // 🔒 Validation SEO: Vérifier que le type existe
       if (!typeResult?.data || typeResult.data.length === 0) {
         this.logger.warn(
           `🔒 SEO: Type inexistant typeId=${parsedTypeId} → 404`,
@@ -131,25 +135,24 @@ export class BatchLoaderController {
           HttpStatus.NOT_FOUND,
         );
       }
+
+      // 🔒 Validation SEO: Vérifier que la gamme existe
+      if (!gammeExists) {
+        this.logger.warn(
+          `🔒 SEO: Gamme inexistante gammeId=${parsedGammeId} → 404`,
+        );
+        throw new HttpException(
+          'Gamme de pièces inexistante',
+          HttpStatus.NOT_FOUND,
+        );
+      }
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.warn(
-        `🔒 SEO: Erreur validation type typeId=${parsedTypeId} → 404`,
+        `🔒 SEO: Erreur validation typeId=${parsedTypeId} ou gammeId=${parsedGammeId} → 404`,
       );
       throw new HttpException(
-        'Type de véhicule inexistant',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // 🔒 Validation SEO: Vérifier que la gamme existe en base
-    const gammeExists = await this.gammeService.gammeExists(parsedGammeId);
-    if (!gammeExists) {
-      this.logger.warn(
-        `🔒 SEO: Gamme inexistante gammeId=${parsedGammeId} → 404`,
-      );
-      throw new HttpException(
-        'Gamme de pièces inexistante',
+        'Ressource inexistante',
         HttpStatus.NOT_FOUND,
       );
     }

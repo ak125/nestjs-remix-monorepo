@@ -82,8 +82,11 @@ export async function fetchBlogArticle(
 ): Promise<BlogArticle | null> {
   try {
     // ⚠️ PRIORITÉ 1: Endpoint by-gamme (vrais articles depuis blog_advice)
+    // 🚀 LCP OPTIMIZATION: Timeout 2s pour fail-fast
     console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
-    let response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`);
+    let response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`, {
+      signal: AbortSignal.timeout(2000),
+    });
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ Blog by-gamme data:`, data);
@@ -104,7 +107,9 @@ export async function fetchBlogArticle(
     }
     
     // ⚠️ Essai 2: Recherche par gamme spécifique - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`);
+    response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`, {
+      signal: AbortSignal.timeout(2000),
+    });
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ Blog search data:`, data);
@@ -130,7 +135,9 @@ export async function fetchBlogArticle(
     }
 
     // ⚠️ Essai 2: Article populaire général auto - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/popular?limit=1&category=entretien`);
+    response = await fetch(`http://localhost:3000/api/blog/popular?limit=1&category=entretien`, {
+      signal: AbortSignal.timeout(2000),
+    });
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ Blog popular data:`, data);
@@ -155,7 +162,9 @@ export async function fetchBlogArticle(
     }
 
     // ⚠️ Essai 3: Endpoint blog homepage - URL EXACTE
-    response = await fetch(`http://localhost:3000/api/blog/homepage`);
+    response = await fetch(`http://localhost:3000/api/blog/homepage`, {
+      signal: AbortSignal.timeout(2000),
+    });
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ Blog homepage data:`, data);
@@ -217,7 +226,10 @@ export async function fetchRelatedArticlesForGamme(
     console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
     
     // Appel à l'endpoint by-gamme qui retourne { success: true, data: {...} }
-    const response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`);
+    // 🚀 LCP OPTIMIZATION: Timeout 2s pour fail-fast
+    const response = await fetch(`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`, {
+      signal: AbortSignal.timeout(2000),
+    });
     
     if (!response.ok) {
       console.warn(`⚠️ [RelatedArticles] API non disponible: ${response.status}`);

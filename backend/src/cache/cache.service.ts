@@ -53,14 +53,14 @@ export class CacheService implements OnModuleInit {
         resolve();
       });
 
-      // Timeout augmenté à 10s
+      // 🚀 LCP OPTIMIZATION: Timeout réduit à 2s pour éviter blocage
       setTimeout(() => {
         if (!this.redisReady) {
-          console.warn('⚠️ Redis non prêt après 10s, continue quand même');
+          console.warn('⚠️ Redis non prêt après 2s, continue quand même');
           this.redisReady = true; // Force ready pour ne pas bloquer
         }
         resolve();
-      }, 10000);
+      }, 2000);
     });
   }
 
