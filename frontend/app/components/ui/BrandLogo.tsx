@@ -1,5 +1,5 @@
-import { Avatar, AvatarImage, AvatarFallback } from './avatar';
 import { cn } from '~/lib/utils';
+import { Avatar, AvatarImage, AvatarFallback } from './avatar';
 
 type BrandType = 'constructeur' | 'equipementier';
 
