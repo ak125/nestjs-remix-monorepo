@@ -9,13 +9,7 @@
  * @see /.spec/docs/ARCHITECTURE-IMAGES.md - Documentation complète
  */
 
-// 🚀 Configuration selon environnement
-// En prod: proxy /img/* via Caddy avec cache 1 an
-// En dev: URLs Supabase directes (render API)
-const IS_PRODUCTION = typeof window !== 'undefined'
-  ? window.location.hostname === 'www.automecanik.com' || window.location.hostname === 'automecanik.com'
-  : process.env.NODE_ENV === 'production';
-
+// 🚀 URLs Supabase directes (render API pour transformation d'images)
 const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 const SUPABASE_RENDER_URL = `${SUPABASE_URL}/storage/v1/render/image/public`;
 const UPLOADS_BUCKET = 'uploads';
@@ -52,52 +46,32 @@ export function normalizeImageUrl(url: string | undefined | null): string {
   // Vérification stricte : doit être une chaîne non vide
   if (!url || typeof url !== 'string') return '';
 
-  // Si déjà une URL Supabase complète
+  // Si déjà une URL Supabase complète, retourner telle quelle
   if (url.includes('supabase.co/storage')) {
-    // En prod, convertir vers proxy /img/ pour cache Caddy
-    if (IS_PRODUCTION) {
-      const match = url.match(/\/public\/(.+?)(?:\?|$)/);
-      if (match) {
-        return `/img/${match[1]}`;
-      }
-    }
     return url;
   }
 
-  // Si déjà une URL proxy /img/
+  // Si URL proxy /img/, convertir vers Supabase direct
   if (url.startsWith('/img/')) {
-    // En dev, convertir vers Supabase direct
-    if (!IS_PRODUCTION) {
-      const path = url.replace('/img/', '');
-      return `${SUPABASE_RENDER_URL}/${path}`;
-    }
-    return url; // En prod, garder le proxy
+    const path = url.replace('/img/', '');
+    return `${SUPABASE_RENDER_URL}/${path}`;
   }
 
-  // CAS 1: Images produits /rack/
+  // CAS 1: Images produits /rack/ → Supabase render
   if (url.startsWith('/rack/')) {
     const path = url.replace('/rack/', '');
-    if (IS_PRODUCTION) {
-      return `/img/${RACK_IMAGES_BUCKET}/${path}`;
-    }
     return `${SUPABASE_RENDER_URL}/${RACK_IMAGES_BUCKET}/${path}`;
   }
 
-  // CAS 2 & 3: Images gammes/familles /upload/
+  // CAS 2 & 3: Images gammes/familles /upload/ → Supabase render
   if (url.startsWith('/upload/')) {
     const path = url.replace('/upload/', '');
-    if (IS_PRODUCTION) {
-      return `/img/${UPLOADS_BUCKET}/${path}`;
-    }
     return `${SUPABASE_RENDER_URL}/${UPLOADS_BUCKET}/${path}`;
   }
 
   // Si URL relative sans préfixe connu, supposer uploads bucket
   if (url.startsWith('/')) {
     const path = url.substring(1);
-    if (IS_PRODUCTION) {
-      return `/img/${UPLOADS_BUCKET}/${path}`;
-    }
     return `${SUPABASE_RENDER_URL}/${UPLOADS_BUCKET}/${path}`;
   }
 
@@ -138,13 +112,11 @@ export function optimizeImageUrl(
     return normalized;
   }
 
-  // Ajouter les paramètres de transformation
-  const params = new URLSearchParams();
-  params.set('width', width.toString());
-  params.set('quality', quality.toString());
-
-  // En prod avec proxy /img/, ou en dev avec Supabase direct
-  if (normalized.startsWith('/img/') || normalized.includes('supabase.co/storage')) {
+  // Ajouter les paramètres de transformation pour URLs Supabase
+  if (normalized.includes('supabase.co/storage')) {
+    const params = new URLSearchParams();
+    params.set('width', width.toString());
+    params.set('quality', quality.toString());
     const separator = normalized.includes('?') ? '&' : '?';
     return `${normalized}${separator}${params.toString()}`;
   }
