@@ -20,8 +20,8 @@ export class GammeRpcService extends SupabaseBaseService {
   private readonly CACHE_TTL_SECONDS = 3600;
   // TTL Stale: 24h - données expirées mais utilisables en fallback
   private readonly STALE_TTL_SECONDS = 86400;
-  // Timeout RPC avant fallback sur cache stale
-  private readonly RPC_TIMEOUT_MS = 5000;
+  // Timeout RPC avant fallback sur cache stale (réduit de 5s à 1.5s pour LCP)
+  private readonly RPC_TIMEOUT_MS = 1500;
 
   constructor(
     private readonly transformer: GammeDataTransformerService,
