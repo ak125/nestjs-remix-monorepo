@@ -138,21 +138,27 @@ function buildItemListSchema(
 const SUPABASE_BASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads';
 
 /**
- * Interface pour les meta tags de preload image
- * Utilise Record pour être compatible avec ServerRuntimeMetaDescriptor
+ * Interface pour les meta tags de preload image responsive
+ * Utilise imagesrcset + imagesizes pour que le navigateur choisisse la bonne taille
+ * @see https://web.dev/articles/preload-responsive-images
  */
 export type HeroImagePreloadMeta = {
   tagName: "link";
   rel: "preload";
   as: "image";
   href: string;
+  imagesrcset: string;
+  imagesizes: string;
   fetchpriority: "high";
   [key: string]: string; // Index signature pour compatibilité Remix meta
 };
 
 /**
- * Construit le meta tag de preload pour l'image hero du véhicule
+ * Construit le meta tag de preload responsive pour l'image hero du véhicule
  * Utilisé dans la fonction meta() pour optimiser le LCP
+ *
+ * 🚀 Utilise imagesrcset + imagesizes pour matcher le srcSet de l'image
+ * Le navigateur choisit automatiquement la bonne taille selon le viewport
  *
  * @param vehicle - Données du véhicule (modelePic, marqueAlias, marque)
  * @returns Array avec le meta tag ou vide si pas d'image
@@ -165,13 +171,26 @@ export function buildHeroImagePreload(
   }
 
   const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
+  const baseUrl = `${SUPABASE_BASE_URL}/constructeurs-automobiles/marques-concepts/${marqueSlug}/${vehicle.modelePic}`;
+
+  // srcSet responsive identique à PiecesHeader.tsx (lignes 211-215)
+  const imagesrcset = [
+    `${baseUrl}?width=200&quality=80&t=31536000 200w`,
+    `${baseUrl}?width=300&quality=85&t=31536000 300w`,
+    `${baseUrl}?width=380&quality=85&t=31536000 380w`,
+  ].join(', ');
+
+  // sizes identique à PiecesHeader.tsx (ligne 216)
+  const imagesizes = "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px";
 
   return [
     {
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: `${SUPABASE_BASE_URL}/constructeurs-automobiles/marques-concepts/${marqueSlug}/${vehicle.modelePic}?width=380&quality=85&t=31536000`,
+      href: "", // Vide pour éviter double téléchargement Safari (web.dev recommandation)
+      imagesrcset,
+      imagesizes,
       fetchpriority: "high",
     },
   ];
