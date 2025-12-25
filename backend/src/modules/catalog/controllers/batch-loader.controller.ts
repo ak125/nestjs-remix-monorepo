@@ -98,7 +98,7 @@ export class BatchLoaderController {
    * 🔒 Validation SEO: Retourne 404 si typeId ou gammeId inexistant
    */
   @Get(':typeId/:gammeId')
-  @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
+  @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400')
   async batchLoadGet(
     @Param('typeId') typeId: string,
     @Param('gammeId') gammeId: string,
@@ -164,7 +164,7 @@ export class BatchLoaderController {
   }
 
   @Post()
-  @Header('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600')
+  @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400')
   async batchLoad(
     @Body() request: BatchLoaderRequest,
   ): Promise<BatchLoaderResponse> {
