@@ -89,7 +89,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
                 onMouseEnter={() => setCurrentImage(img.url)}
                 className={`w-12 h-12 flex-shrink-0 rounded border-2 ${currentImage === img.url ? 'border-blue-400 ring-2 ring-blue-400 scale-110' : 'border-white/50 hover:border-white'} overflow-hidden transition-all bg-white shadow-lg`}
             >
-                <img src={optimizeImageUrl(img.url, 48)} alt={img.alt || alt} className="w-full h-full object-cover" />
+                <img src={optimizeImageUrl(img.url, 48)} alt={img.alt || alt} width={48} height={48} className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </button>
         ))}
         {allImages.length > 5 && (

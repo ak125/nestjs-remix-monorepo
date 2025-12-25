@@ -109,8 +109,11 @@ export function PiecesCatalogueFamille({
                             <img
                               src={item.image}
                               alt={item.name}
+                              width={128}
+                              height={128}
                               className="w-full h-full object-contain p-1 group-hover:p-0.5 transition-all duration-300"
                               loading="lazy"
+                              decoding="async"
                               onError={(e) => {
                                 e.currentTarget.src =
                                   "/images/placeholder-product.png";

@@ -96,8 +96,11 @@ export function PiecesCrossSelling({
                     <img
                       src={gamme.PG_IMAGE}
                       alt={gamme.PG_NAME}
+                      width={320}
+                      height={180}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -261,6 +264,8 @@ export function PiecesCrossSellingCompact({
                   <img
                     src={gamme.PG_IMAGE}
                     alt=""
+                    width={32}
+                    height={32}
                     className="w-8 h-8 object-cover rounded"
                     loading="lazy"
                     decoding="async"

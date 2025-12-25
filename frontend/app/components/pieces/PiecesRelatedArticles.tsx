@@ -84,11 +84,14 @@ export function PiecesRelatedArticles({
               {/* Image optionnelle */}
               {article.image && (
                 <div className="h-40 overflow-hidden">
-                  <img 
+                  <img
                     src={article.image}
                     alt={article.title}
+                    width={320}
+                    height={160}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
               )}

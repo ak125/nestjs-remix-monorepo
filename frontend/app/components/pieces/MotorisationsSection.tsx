@@ -101,7 +101,11 @@ export default function MotorisationsSection({
                       <img
                         src={motorisation.image}
                         alt={`${motorisation.marque_name} ${motorisation.modele_name}`}
+                        width={96}
+                        height={96}
                         className="relative w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-gray-100 group-hover:border-gray-200 group-hover:scale-110 transition-all duration-300 shadow-md"
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           // Fallback vers une image placeholder
                           e.currentTarget.src =

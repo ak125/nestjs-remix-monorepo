@@ -311,8 +311,11 @@ export function ProductCatalog({
                           <img
                             src={product.piece_image}
                             alt={product.piece_name}
+                            width={256}
+                            height={160}
                             className="w-full h-full object-cover"
                             loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <Package className="h-16 w-16 text-gray-300" />
@@ -372,8 +375,11 @@ export function ProductCatalog({
                             <img
                               src={product.piece_image}
                               alt={product.piece_name}
+                              width={64}
+                              height={64}
                               className="w-full h-full object-cover"
                               loading="lazy"
+                              decoding="async"
                             />
                           ) : (
                             <Package className="h-8 w-8 text-gray-300" />

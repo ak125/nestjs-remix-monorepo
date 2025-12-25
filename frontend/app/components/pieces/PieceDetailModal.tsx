@@ -283,7 +283,11 @@ export function PieceDetailModal({
                               : "/images/no.png",
                         )}
                         alt={piece.nom}
+                        width={400}
+                        height={400}
                         className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   </div>
@@ -304,7 +308,11 @@ export function PieceDetailModal({
                           <img
                             src={normalizeImageUrl(`/rack/${img}`)}
                             alt={`Vue ${idx + 1}`}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </button>
                       ))}

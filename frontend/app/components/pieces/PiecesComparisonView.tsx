@@ -154,10 +154,14 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
         <div className="flex justify-center">
           <div className="w-32 h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
             {piece.description ? (
-              <img 
-                src={piece.description} 
+              <img
+                src={piece.description}
                 alt={piece.name}
+                width={128}
+                height={128}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
