@@ -87,11 +87,32 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Preload critical resources
+// Preload critical resources (homepage-specific)
 export function links() {
   return [
     { rel: "preconnect", href: "http://localhost:3000" },
     { rel: "dns-prefetch", href: "http://localhost:3000" },
+
+    // 🚀 Homepage-only: Preload top 3 brand logos (above-fold)
+    { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
+    { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
+    { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
+
+    // 🚀 Homepage-only: Preload critical fonts (Inter + Montserrat)
+    {
+      rel: "preload",
+      as: "font",
+      type: "font/woff2",
+      href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
+      crossOrigin: "anonymous" as const
+    },
+    {
+      rel: "preload",
+      as: "font",
+      type: "font/woff2",
+      href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
+      crossOrigin: "anonymous" as const
+    },
   ];
 }
 
