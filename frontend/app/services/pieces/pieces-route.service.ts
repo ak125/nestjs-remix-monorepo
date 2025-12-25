@@ -11,8 +11,8 @@
  * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
 
-import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
 import { type FiltersData } from '../../components/pieces/PiecesFilterSidebar';
+import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
 import { normalizeImageUrl } from '../../utils/image.utils';
 import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
 

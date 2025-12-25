@@ -61,6 +61,7 @@ import {
 
 // Utilitaires
 import { fetchJsonOrNull } from "../utils/fetch.utils";
+import { isValidPosition } from "../utils/pieces-filters.utils";
 import { buildCataloguePromise, buildCompatibilityInfo, buildGammeData, buildVehicleData, type HierarchyData } from "../utils/pieces-loader.utils";
 import {
   calculatePriceStats,
@@ -443,6 +444,13 @@ export default function PiecesVehicleRoute() {
     // Plaquettes, disques, amortisseurs ←' Position (Avant/Arrière)
     return "Position";
   }, [data.gamme]);
+
+  // ✅ Validation: reset position si invalide (ex: données API changent)
+  useEffect(() => {
+    if (!isValidPosition(activeFilters.position, availablePositions)) {
+      setActiveFilters((prev) => ({ ...prev, position: "all" }));
+    }
+  }, [availablePositions, activeFilters.position, setActiveFilters]);
 
   // 🔗 Fonction pour générer des ancres SEO variées depuis les switches
   const getAnchorText = useCallback((index: number): string => {
