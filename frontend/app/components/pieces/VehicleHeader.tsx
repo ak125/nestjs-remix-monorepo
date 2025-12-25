@@ -78,7 +78,11 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
                   <img
                     src={gamme.image}
                     alt={gamme.name}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               )}

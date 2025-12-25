@@ -121,7 +121,11 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
                       <img
                         src={item.image}
                         alt={item.name}
+                        width={80}
+                        height={80}
                         className="w-16 h-16 md:w-20 md:h-20 object-contain rounded group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           e.currentTarget.src = '/images/default-piece.jpg';
                         }}

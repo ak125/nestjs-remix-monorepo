@@ -22,7 +22,7 @@ import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical"
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
 
-// Lazy load PurchaseGuide (contains framer-motion ~167KB)
+// Lazy load PurchaseGuide (below fold)
 const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
 
 interface LoaderData {
@@ -453,8 +453,11 @@ export default function PiecesDetailPage() {
             <img
               src={data.content.pg_wall}
               alt={data.content.pg_name || ""}
+              width={1920}
+              height={400}
               className="w-full h-full object-cover opacity-25"
               loading="eager"
+              decoding="async"
               onError={(e) => {
                 e.currentTarget.src = '/images/placeholder-hero.webp';
                 e.currentTarget.onerror = null;
@@ -546,8 +549,11 @@ export default function PiecesDetailPage() {
                         <img
                           src={data.content?.pg_pic || '/images/placeholder-product.webp'}
                           alt={data.content?.pg_name || "Pièce auto"}
+                          width={400}
+                          height={400}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
+                          decoding="async"
                           onError={(e) => {
                             e.currentTarget.src = '/images/placeholder-product.webp';
                             e.currentTarget.onerror = null;

@@ -289,6 +289,8 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
           srcSet={generateSrcSet(piece.image_url)}
           sizes="(max-width: 640px) 300px, 400px"
           alt={piece.pie_designation}
+          width={400}
+          height={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
           decoding="async"

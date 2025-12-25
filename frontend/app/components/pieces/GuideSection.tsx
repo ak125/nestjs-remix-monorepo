@@ -94,7 +94,11 @@ export default function GuideSection({
                 <img
                   src={guide.wall || guide.image}
                   alt={guide.title}
+                  width={640}
+                  height={256}
                   className="w-full h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     e.currentTarget.src = "/images/default-guide.jpg";
                   }}

@@ -383,8 +383,11 @@ export default function PiecesCatalogGrid({
                     <img
                       src={category.image}
                       alt={category.systemName}
+                      width={320}
+                      height={180}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                       loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         e.currentTarget.src = '/images/categories/default.svg';
                       }}

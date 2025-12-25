@@ -61,7 +61,11 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
                   <img
                     src={equipementier.pm_logo || equipementier.image}
                     alt={`Logo ${equipementier.pm_name}`}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 object-contain rounded-lg border-2 border-gray-100 p-2 group-hover:border-orange-200 transition-colors"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       e.currentTarget.src = '/images/default-brand.jpg';
                     }}
