@@ -13,19 +13,19 @@ import React from "react";
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
 
-interface FilterOptionData {
+export interface FilterOptionData {
   id: number | string;
   label: string;
   count: number;
   trending?: boolean;
 }
 
-interface FilterGroup {
+export interface FilterGroup {
   type: string;
   options: FilterOptionData[];
 }
 
-interface FiltersData {
+export interface FiltersData {
   filters: FilterGroup[];
   summary?: {
     total_filters: number;
