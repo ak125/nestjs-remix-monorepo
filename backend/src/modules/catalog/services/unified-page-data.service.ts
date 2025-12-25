@@ -344,9 +344,9 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       cacheHit: false,
     };
 
-    // Mise en cache Redis (TTL: 1h = 3600s pour données quasi-statiques)
+    // Mise en cache Redis (TTL: 24h = 86400s pour données quasi-statiques)
     try {
-      await this.cacheService.set(cacheKey, JSON.stringify(result), 3600);
+      await this.cacheService.set(cacheKey, JSON.stringify(result), 86400);
       this.logger.log(`💾 Page unifiée V3 mise en cache - ${cacheKey}`);
     } catch (cacheError) {
       this.logger.warn('⚠️ Erreur mise en cache:', cacheError);
