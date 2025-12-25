@@ -27,7 +27,7 @@ import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
-import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
+import { PiecesFilterSidebar, type FiltersData } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
 import { PiecesGroupedDisplay } from "../components/pieces/PiecesGroupedDisplay";
 import { PiecesHeader } from "../components/pieces/PiecesHeader";
@@ -241,8 +241,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const loadTime = Date.now() - startTime;
 
   // 🚀 OPTIMISÉ V3: filters inclus dans batch-loader, plus d'appel séparé
-  const filtersData =
-    batchResponse.filters?.data || batchResponse.filters || null;
+  const rawFilters = batchResponse.filters;
+  const filtersData: FiltersData | null = rawFilters
+    ? ('filters' in rawFilters ? rawFilters : rawFilters.data) ?? null
+    : null;
 
   // 🚀 LCP OPTIMIZATION V6: defer() pour streamer données non-critiques
   // Données critiques (vehicle, pieces, seo) : retournées immédiatement

@@ -12,6 +12,7 @@
  */
 
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
+import { type FiltersData } from '../../components/pieces/PiecesFilterSidebar';
 import { normalizeImageUrl } from '../../utils/image.utils';
 import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
 
@@ -351,7 +352,7 @@ export interface BatchLoaderResponse {
     data?: { content?: string; h1?: string };
   };
   crossSelling?: CrossSellingGamme[];
-  filters?: { data?: unknown } | null;
+  filters?: { data?: FiltersData } | FiltersData | null;
   oemRefs?: { oemRefs?: string[] };
   oemRefsSeo?: string[];
 }
