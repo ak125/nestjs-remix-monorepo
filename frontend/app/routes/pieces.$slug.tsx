@@ -152,31 +152,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const gammeId = match[1];
 
-  // 🚗 Récupérer véhicule depuis cookie
-  const selectedVehicle = await getVehicleFromCookie(
-    request.headers.get("Cookie")
-  );
-
-  console.log('🚗 Véhicule depuis cookie:', selectedVehicle ? 
-    `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}` : 
-    'Aucun véhicule sélectionné'
-  );
-
   try {
     // 🚀 Configuration API depuis variables d'environnement
     // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
-    
-    // 🚀 Fetch en parallèle : données gamme + switches SEO
+
+    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO (LCP optimization)
     const API_URL = process.env.API_URL || 'http://localhost:3000';
 
-    const [apiData, switchesResponse] = await Promise.all([
+    const [selectedVehicle, apiData, switchesResponse] = await Promise.all([
+      // 🚗 Récupérer véhicule depuis cookie (parallélisé)
+      getVehicleFromCookie(request.headers.get("Cookie")),
       fetchGammePageData(gammeId, { signal: controller.signal }),
       fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, { signal: controller.signal })
         .then(res => res.ok ? res.json() : { data: [] })
         .catch(() => ({ data: [] }))
     ]).finally(() => clearTimeout(timeoutId));
+
+    console.log('🚗 Véhicule depuis cookie:', selectedVehicle ?
+      `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}` :
+      'Aucun véhicule sélectionné'
+    );
 
     // 🔗 Mapper les switches SEO pour ancres variées
     const rawSwitches = switchesResponse?.data || [];
