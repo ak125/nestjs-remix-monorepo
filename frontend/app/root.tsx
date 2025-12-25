@@ -52,30 +52,11 @@ export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
 
-  // Google Fonts - Chargement non-bloquant (preload + stylesheet)
-  { rel: "preload", href: GOOGLE_FONTS_URL, as: "style" },
+  // Google Fonts - Chargement non-bloquant (stylesheet only, preload moved to homepage)
   { rel: "stylesheet", href: GOOGLE_FONTS_URL },
 
-  // Font Preload (Performance SEO Phase 1) - Inter + Montserrat fichiers woff2
-  {
-    rel: "preload",
-    as: "font",
-    type: "font/woff2",
-    href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
-    crossOrigin: "anonymous"
-  },
-  {
-    rel: "preload",
-    as: "font",
-    type: "font/woff2",
-    href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
-    crossOrigin: "anonymous"
-  },
-
-  // Image Preload critiques (Logos constructeurs top 10)
-  { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
-  { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
-  { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
+  // Note: Font preloads + brand image preloads déplacés vers _index.tsx (homepage)
+  // pour améliorer le LCP sur les pages produit (slow 4G)
 
   // Manifest & Icons
   { rel: "manifest", href: "/manifest.json" },
