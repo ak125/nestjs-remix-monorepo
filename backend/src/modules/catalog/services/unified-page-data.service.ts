@@ -8,20 +8,23 @@ import { CacheService } from '../../cache/cache.service';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
- * 🖼️ Transforme les URLs d'images pour utiliser Supabase Image Transformation
- * Réduit la taille des images de ~73% (76KB → 20KB) via compression JPEG
+ * 🖼️ Transforme les URLs d'images pour utiliser le proxy Caddy avec cache 1 an
+ * - Compression JPEG via Supabase /render/image/ (76KB → 20KB, -73%)
+ * - Cache 1 an via Caddy proxy au lieu de 1h direct Supabase
+ * - Route: /img/rack-images/... → Supabase /storage/v1/render/image/public/rack-images/...
  */
 function transformImageUrl(url: string | undefined | null): string {
   if (!url) return '';
-  // Ne transformer que les URLs rack-images avec /object/public/
+  // Ne transformer que les URLs rack-images Supabase
   if (!url.includes('/storage/v1/object/public/rack-images/')) return url;
-  // Transformer /object/public/ → /render/image/public/ et ajouter params
-  return (
-    url.replace(
-      '/storage/v1/object/public/',
-      '/storage/v1/render/image/public/',
-    ) + '?width=400&quality=85'
-  );
+
+  // Extraire le chemin relatif (folder/filename)
+  const match = url.match(/\/rack-images\/(.+)$/);
+  if (!match) return url;
+
+  // Utiliser le proxy Caddy /img/ pour cache 1 an + compression
+  // Caddy forward vers /storage/v1/render/image/public/rack-images/...
+  return `/img/rack-images/${match[1]}?width=400&quality=85`;
 }
 
 /**
