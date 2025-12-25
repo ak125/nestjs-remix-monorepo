@@ -16,10 +16,12 @@ function transformImageUrl(url: string | undefined | null): string {
   // Ne transformer que les URLs rack-images avec /object/public/
   if (!url.includes('/storage/v1/object/public/rack-images/')) return url;
   // Transformer /object/public/ → /render/image/public/ et ajouter params
-  return url.replace(
-    '/storage/v1/object/public/',
-    '/storage/v1/render/image/public/',
-  ) + '?width=400&quality=85';
+  return (
+    url.replace(
+      '/storage/v1/object/public/',
+      '/storage/v1/render/image/public/',
+    ) + '?width=400&quality=85'
+  );
 }
 
 /**
@@ -282,27 +284,31 @@ export class UnifiedPageDataService extends SupabaseBaseService {
     );
 
     // 🖼️ Transformer les URLs d'images pour utiliser /render/image/ (-73% taille)
-    const piecesWithOptimizedImages = (rpcResult.pieces || []).map((p: any) => ({
-      ...p,
-      image: transformImageUrl(p.image),
-      all_images: (p.all_images || []).map((img: any) => ({
-        ...img,
-        url: transformImageUrl(img.url),
-      })),
-    }));
-
-    // Appliquer la transformation aux pièces dans les groupes
-    const groupedPiecesWithOptimizedImages = groupedPiecesWithOem.map((g: any) => ({
-      ...g,
-      pieces: (g.pieces || []).map((p: any) => ({
+    const piecesWithOptimizedImages = (rpcResult.pieces || []).map(
+      (p: any) => ({
         ...p,
         image: transformImageUrl(p.image),
         all_images: (p.all_images || []).map((img: any) => ({
           ...img,
           url: transformImageUrl(img.url),
         })),
-      })),
-    }));
+      }),
+    );
+
+    // Appliquer la transformation aux pièces dans les groupes
+    const groupedPiecesWithOptimizedImages = groupedPiecesWithOem.map(
+      (g: any) => ({
+        ...g,
+        pieces: (g.pieces || []).map((p: any) => ({
+          ...p,
+          image: transformImageUrl(p.image),
+          all_images: (p.all_images || []).map((img: any) => ({
+            ...img,
+            url: transformImageUrl(img.url),
+          })),
+        })),
+      }),
+    );
 
     // SEO déjà processé côté PostgreSQL - juste décoder les entités HTML
     const seo = rpcResult.seo
