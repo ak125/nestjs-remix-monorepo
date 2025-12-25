@@ -49,7 +49,11 @@ interface PiecesFilterSidebarProps {
   brandAverageNotes?: Map<string, number>; // Notes moyennes par marque
 }
 
-export function PiecesFilterSidebar({
+/**
+ * 🎛️ Sidebar Filtres avec React.memo pour optimisation
+ * Re-render uniquement si les props changent
+ */
+export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
   activeFilters,
   setActiveFilters,
   uniqueBrands,
@@ -571,4 +575,4 @@ export function PiecesFilterSidebar({
       </div>
     </div>
   );
-}
+});

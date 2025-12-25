@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { type PieceData, type PiecesFilters, type SortBy, type ViewMode } from '../types/pieces-route.types';
+import { convertStarsToNote } from '../utils/pieces-filters.utils';
 
 export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   // ✅ Protection: S'assurer que pieces est toujours un tableau (stabilisé avec useMemo)
@@ -84,8 +85,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     // Filtre par note minimale (sur 10, calculée depuis stars)
     if (activeFilters.minNote && activeFilters.minNote > 0) {
       result = result.filter(piece => {
-        const stars = piece.stars || 3;
-        const note = Math.round((stars / 6) * 10);
+        const note = convertStarsToNote(piece.stars);
         return note >= activeFilters.minNote!;
       });
     }
@@ -221,24 +221,24 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   // ✨ NOUVEAU: Notes moyennes par marque (calculées à partir des pièces)
   const brandAverageNotes = useMemo(() => {
     const brandNoteSums = new Map<string, { sum: number; count: number }>();
-    
+
     pieces.forEach(piece => {
       if (piece.brand && piece.stars !== undefined) {
         const existing = brandNoteSums.get(piece.brand) || { sum: 0, count: 0 };
-        // Convertir nb_stars (1-6) en note sur 10
-        const note = Math.round((piece.stars / 6) * 10);
+        const note = convertStarsToNote(piece.stars);
         brandNoteSums.set(piece.brand, {
           sum: existing.sum + note,
           count: existing.count + 1
         });
       }
     });
-    
+
     const averages = new Map<string, number>();
     brandNoteSums.forEach((data, brand) => {
+      // Note moyenne avec 1 décimale
       averages.set(brand, Math.round((data.sum / data.count) * 10) / 10);
     });
-    
+
     return averages;
   }, [pieces]);
 
@@ -261,10 +261,11 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     setActiveFilters({
       brands: [],
       priceRange: "all",
-      quality: "all", 
+      quality: "all",
       availability: "all",
       searchText: "",
       minNote: undefined,
+      position: "all",
     });
     setSortBy("name");
   };
