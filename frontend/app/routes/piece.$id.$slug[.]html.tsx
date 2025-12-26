@@ -12,6 +12,7 @@
 
 import {
   type LoaderFunctionArgs,
+  type LinksFunction,
   json,
   type MetaFunction,
 } from "@remix-run/node";
@@ -108,7 +109,10 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "product:price:amount", content: String(piece.prix_ttc) },
     { property: "product:price:currency", content: "EUR" },
     { name: "robots", content: "index, follow" },
-  ];
+    // Preload LCP image for better performance
+    piece.image && { tagName: "link", rel: "preload", as: "image", href: piece.image },
+    piece.image && { property: "og:image", content: piece.image },
+  ].filter(Boolean);
 };
 
 /**
@@ -120,8 +124,12 @@ export default function PieceDetailPage() {
     vehiclesCompatibles,
     crossSelling: _crossSelling,
   } = useLoaderData<typeof loader>();
-  const [selectedImage, setSelectedImage] = useState(piece.image);
 
+  // SSR-safe: use piece.image as initial value, state for client-side changes
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Use selectedImage if set (client-side), otherwise piece.image (SSR)
+  const displayImage = selectedImage || piece.image || "/images/no.png";
   const allImages = [piece.image, ...(piece.images || [])].filter(Boolean);
 
   return (
@@ -151,10 +159,13 @@ export default function PieceDetailPage() {
             <div className="bg-white rounded-2xl shadow-lg p-8 mb-4">
               <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden">
                 <img
-                  src={selectedImage || "/images/no.png"}
+                  src={displayImage}
                   alt={piece.nom}
                   width={500}
                   height={500}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -169,7 +180,7 @@ export default function PieceDetailPage() {
                     onClick={() => setSelectedImage(img)}
                     aria-label={`Voir image ${idx + 1} de ${piece.nom}`}
                     className={`aspect-square bg-white rounded-lg p-2 border-2 transition-all ${
-                      selectedImage === img
+                      displayImage === img
                         ? "border-blue-500 shadow-md"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
