@@ -114,6 +114,10 @@ export function optimizeImageUrl(
 
   // Ajouter les paramètres de transformation pour URLs Supabase
   if (normalized.includes('supabase.co/storage')) {
+    // 🔴 FIX: Ne pas ajouter si params déjà présents (évite HTTP 400)
+    if (normalized.includes('width=') && normalized.includes('quality=')) {
+      return normalized;
+    }
     const params = new URLSearchParams();
     params.set('width', width.toString());
     params.set('quality', quality.toString());
