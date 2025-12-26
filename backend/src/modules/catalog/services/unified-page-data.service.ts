@@ -8,21 +8,54 @@ import { CacheService } from '../../cache/cache.service';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
- * 🖼️ Transforme les URLs d'images pour utiliser Supabase Image Transformation
- * - Compression JPEG via /render/image/ (76KB → 20KB, -73%)
- * - Cache: 1h (limité par Supabase, pas de proxy Caddy /img/ fonctionnel)
+ * 🖼️ Génère une URL d'image optimisée via Supabase render/image
+ * Compression WebP automatique + redimensionnement
+ * Cache Cloudflare par URL unique
  */
-function transformImageUrl(url: string | undefined | null): string {
-  if (!url) return '';
-  // Ne transformer que les URLs rack-images avec /object/public/
-  if (!url.includes('/storage/v1/object/public/rack-images/')) return url;
-  // Transformer /object/public/ → /render/image/public/ et ajouter params
-  return (
-    url.replace(
-      '/storage/v1/object/public/',
-      '/storage/v1/render/image/public/',
-    ) + '?width=400&quality=85'
-  );
+const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+
+function getOptimizedImageUrl(
+  relativePath: string | null | undefined,
+  width = 400,
+  quality = 85,
+): string {
+  if (!relativePath) return '';
+
+  // Si déjà URL complète Supabase, transformer vers render/image
+  if (relativePath.startsWith(SUPABASE_URL)) {
+    // Remplacer /object/public/ par /render/image/public/
+    if (relativePath.includes('/storage/v1/object/public/')) {
+      const transformed = relativePath.replace(
+        '/storage/v1/object/public/',
+        '/storage/v1/render/image/public/',
+      );
+      // Éviter double paramètres
+      if (!transformed.includes('?')) {
+        return `${transformed}?width=${width}&quality=${quality}`;
+      }
+      return transformed;
+    }
+    return relativePath;
+  }
+
+  // Si autre URL complète, retourner telle quelle
+  if (relativePath.startsWith('http')) return relativePath;
+
+  // Déterminer le bucket selon le préfixe
+  let bucket = 'uploads';
+  let path = relativePath;
+
+  if (relativePath.startsWith('/rack/')) {
+    bucket = 'rack-images';
+    path = relativePath.replace('/rack/', '');
+  } else if (relativePath.startsWith('/upload/')) {
+    bucket = 'uploads';
+    path = relativePath.replace('/upload/', '');
+  } else if (relativePath.startsWith('/')) {
+    path = relativePath.substring(1);
+  }
+
+  return `${SUPABASE_URL}/storage/v1/render/image/public/${bucket}/${path}?width=${width}&quality=${quality}`;
 }
 
 /**
@@ -284,29 +317,22 @@ export class UnifiedPageDataService extends SupabaseBaseService {
         `oem_global=${rpcResult.oem_refs?.length || 0}, oem_groupes=${totalGroupOem}`,
     );
 
-    // 🖼️ Transformer les URLs d'images pour utiliser /render/image/ (-73% taille)
+    // 🖼️ Optimiser les URLs d'images avec WebP + compression
     const piecesWithOptimizedImages = (rpcResult.pieces || []).map(
-      (p: any) => ({
-        ...p,
-        image: transformImageUrl(p.image),
-        all_images: (p.all_images || []).map((img: any) => ({
-          ...img,
-          url: transformImageUrl(img.url),
-        })),
+      (piece: any) => ({
+        ...piece,
+        image: getOptimizedImageUrl(piece.image),
+        thumb: getOptimizedImageUrl(piece.thumb || piece.image, 200, 80),
       }),
     );
 
-    // Appliquer la transformation aux pièces dans les groupes
     const groupedPiecesWithOptimizedImages = groupedPiecesWithOem.map(
-      (g: any) => ({
-        ...g,
-        pieces: (g.pieces || []).map((p: any) => ({
-          ...p,
-          image: transformImageUrl(p.image),
-          all_images: (p.all_images || []).map((img: any) => ({
-            ...img,
-            url: transformImageUrl(img.url),
-          })),
+      (group: any) => ({
+        ...group,
+        pieces: (group.pieces || []).map((piece: any) => ({
+          ...piece,
+          image: getOptimizedImageUrl(piece.image),
+          thumb: getOptimizedImageUrl(piece.thumb || piece.image, 200, 80),
         })),
       }),
     );
@@ -353,13 +379,13 @@ export class UnifiedPageDataService extends SupabaseBaseService {
               id: rpcResult.vehicle_info.modele_id,
               name: rpcResult.vehicle_info.modele_name,
               alias: rpcResult.vehicle_info.modele_alias,
-              pic: rpcResult.vehicle_info.modele_pic,
+              pic: getOptimizedImageUrl(rpcResult.vehicle_info.modele_pic, 300, 85),
             },
             marque: {
               id: rpcResult.vehicle_info.marque_id,
               name: rpcResult.vehicle_info.marque_name,
               alias: rpcResult.vehicle_info.marque_alias,
-              logo: rpcResult.vehicle_info.marque_logo,
+              logo: getOptimizedImageUrl(rpcResult.vehicle_info.marque_logo, 150, 90),
             },
             motorCodes: rpcResult.vehicle_info.motor_codes || '',
           }
@@ -369,7 +395,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
             id: rpcResult.gamme_info.pg_id,
             name: rpcResult.gamme_info.pg_name,
             alias: rpcResult.gamme_info.pg_alias,
-            pic: rpcResult.gamme_info.pg_pic,
+            pic: getOptimizedImageUrl(rpcResult.gamme_info.pg_pic, 300, 85),
             mfId: rpcResult.gamme_info.mf_id,
           }
         : null,
