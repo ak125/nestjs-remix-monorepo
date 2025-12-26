@@ -375,13 +375,13 @@ export interface BatchLoaderResponse {
  *
  * @param typeId - ID du type véhicule
  * @param gammeId - ID de la gamme
- * @param timeoutMs - Timeout en millisecondes (défaut: 8000)
+ * @param timeoutMs - Timeout en millisecondes (défaut: 5000 - optimisé PageSpeed)
  * @returns BatchLoaderResponse ou throw Response 503
  */
 export async function fetchBatchLoader(
   typeId: number,
   gammeId: number,
-  timeoutMs: number = 8000
+  timeoutMs: number = 5000
 ): Promise<BatchLoaderResponse> {
   try {
     const response = await fetch(
