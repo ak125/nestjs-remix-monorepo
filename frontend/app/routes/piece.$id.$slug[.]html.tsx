@@ -12,7 +12,6 @@
 
 import {
   type LoaderFunctionArgs,
-  type LinksFunction,
   json,
   type MetaFunction,
 } from "@remix-run/node";
@@ -99,7 +98,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     piece.description ||
     `${piece.nom} de marque ${piece.marque}, référence ${piece.reference}. ${piece.dispo ? "En stock" : "Sur commande"}.`;
 
-  return [
+  const metaTags = [
     { title },
     { name: "description", content: description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
@@ -109,10 +108,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "product:price:amount", content: String(piece.prix_ttc) },
     { property: "product:price:currency", content: "EUR" },
     { name: "robots", content: "index, follow" },
-    // Preload LCP image for better performance
-    piece.image && { tagName: "link", rel: "preload", as: "image", href: piece.image },
-    piece.image && { property: "og:image", content: piece.image },
-  ].filter(Boolean);
+  ];
+
+  // Add og:image for social sharing
+  if (piece.image) {
+    metaTags.push({ property: "og:image", content: piece.image });
+  }
+
+  return metaTags;
 };
 
 /**
