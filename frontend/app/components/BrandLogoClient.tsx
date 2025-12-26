@@ -32,9 +32,11 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
   if (!isClient || !logoPath || !availableLogos.includes(logoPath) || imageError) {
     return (
       <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 overflow-hidden">
-        <img 
+        <img
           src={`data:image/svg+xml;base64,${btoa(svg)}`}
           alt={brandName}
+          width={64}
+          height={64}
           className="w-full h-full object-contain"
         />
       </div>
@@ -63,9 +65,11 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
       {/* Fallback pendant le chargement */}
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 overflow-hidden">
-          <img 
+          <img
             src={`data:image/svg+xml;base64,${btoa(svg)}`}
             alt={brandName}
+            width={64}
+            height={64}
             className="w-full h-full object-contain opacity-50"
           />
         </div>

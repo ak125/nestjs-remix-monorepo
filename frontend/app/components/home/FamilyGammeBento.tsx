@@ -101,8 +101,11 @@ export default function FamilyGammeBento({ className = "" }: FamilyGammeBentoPro
                 <img
                   src={familyImage}
                   alt={family.mf_name_system}
-                  className="w-full h-full object-cover"
+                  width={400}
+                  height={200}
                   loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
                 />
               </div>
               

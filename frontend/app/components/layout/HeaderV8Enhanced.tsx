@@ -230,10 +230,12 @@ export function HeaderV8Enhanced({
               to={data.logo.link || "/"} 
               className="header__logo flex-shrink-0"
             >
-              <img 
-                src={data.logo.url} 
-                alt={data.logo.alt} 
-                className="h-12 w-auto hover:opacity-80 transition-opacity" 
+              <img
+                src={data.logo.url}
+                alt={data.logo.alt}
+                width={120}
+                height={48}
+                className="h-12 w-auto hover:opacity-80 transition-opacity"
               />
             </Link>
 

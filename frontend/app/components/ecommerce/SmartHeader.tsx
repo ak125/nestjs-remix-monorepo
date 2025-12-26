@@ -102,7 +102,7 @@ export function SmartHeader({
               • gap-sm → Espacement serré entre logo et texte
             */}
             <a href="/" className="flex items-center gap-sm hover:opacity-90 transition-opacity">
-              <img src={logoUrl} alt={companyName} className="h-8" />
+              <img src={logoUrl} alt={companyName} width={32} height={32} className="h-8" />
               <span className="font-heading text-xl font-bold">{companyName}</span>
             </a>
 
@@ -292,7 +292,7 @@ export function SmartHeader({
 
             {/* Logo mobile */}
             <a href="/" className="flex items-center gap-xs">
-              <img src={logoUrl} alt={companyName} className="h-6" />
+              <img src={logoUrl} alt={companyName} width={24} height={24} className="h-6" />
               <span className="font-heading text-lg font-bold">{companyName}</span>
             </a>
 

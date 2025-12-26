@@ -67,6 +67,10 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
             <img
               src={productImage}
               alt={productName}
+              width={80}
+              height={80}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -120,11 +124,16 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               onClick={() => handleQuantityChange(quantity - 1)}
               disabled={quantity <= 1 || isUpdating}
               className="h-8 w-8 p-0"
+              aria-label="Diminuer la quantité"
             >
               <Minus className="h-4 w-4" />
             </Button>
-            
+
+            <label className="sr-only" htmlFor={`quantity-${item.id}`}>
+              Quantité
+            </label>
             <input
+              id={`quantity-${item.id}`}
               type="number"
               value={quantity}
               onChange={handleQuantityInputChange}
@@ -133,13 +142,14 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               disabled={isUpdating}
               className="w-16 h-8 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            
+
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleQuantityChange(quantity + 1)}
               disabled={quantity >= stockAvailable || isUpdating}
               className="h-8 w-8 p-0"
+              aria-label="Augmenter la quantité"
             >
               <Plus className="h-4 w-4" />
             </Button>

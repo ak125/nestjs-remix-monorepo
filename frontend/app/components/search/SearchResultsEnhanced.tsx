@@ -194,14 +194,16 @@ export function SearchResultsEnhanced({
               {/* Image placeholder - ✅ OPTIMISÉE WEBP */}
               <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden group-hover:from-gray-200 group-hover:to-gray-300 transition-colors">
                 {item.image ? (
-                  <img 
+                  <img
                     src={optimizeImageUrl(item.image, 400)}
                     srcSet={generateSrcSet(item.image)}
                     sizes="(max-width: 640px) 300px, 400px"
                     alt={item.reference}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    width={400}
+                    height={400}
                     loading="lazy"
                     decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 ) : (
                   <Package className="h-16 w-16 text-gray-400" />

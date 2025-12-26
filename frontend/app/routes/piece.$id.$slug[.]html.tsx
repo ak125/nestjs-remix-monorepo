@@ -153,6 +153,8 @@ export default function PieceDetailPage() {
                 <img
                   src={selectedImage || "/images/no.png"}
                   alt={piece.nom}
+                  width={500}
+                  height={500}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -165,6 +167,7 @@ export default function PieceDetailPage() {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(img)}
+                    aria-label={`Voir image ${idx + 1} de ${piece.nom}`}
                     className={`aspect-square bg-white rounded-lg p-2 border-2 transition-all ${
                       selectedImage === img
                         ? "border-blue-500 shadow-md"
@@ -174,6 +177,10 @@ export default function PieceDetailPage() {
                     <img
                       src={img}
                       alt={`${piece.nom} - vue ${idx + 1}`}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-contain"
                     />
                   </button>

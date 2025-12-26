@@ -72,9 +72,13 @@ export function ProductHoverCard({
           {/* Image produit */}
           {product.imageUrl && (
             <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <img 
-                src={product.imageUrl} 
+              <img
+                src={product.imageUrl}
                 alt={product.name}
+                width={320}
+                height={180}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
               {discountPercent > 0 && (
