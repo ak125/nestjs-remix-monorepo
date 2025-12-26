@@ -13,18 +13,18 @@ const path = require('path');
 const PUBLIC_DIR = path.join(__dirname, '../frontend/public');
 
 const VARIANTS = [
-  // Logo navbar
-  { input: 'logo-navbar.svg', output: 'logo-navbar.webp', width: 280, height: 70 },
-  { input: 'logo-navbar.svg', output: 'logo-navbar@2x.webp', width: 560, height: 140 },
-  
-  // Logo complet
-  { input: 'logo-automecanik.svg', output: 'logo-automecanik.webp', width: 400, height: 100 },
-  { input: 'logo-automecanik.svg', output: 'logo-automecanik@2x.webp', width: 800, height: 200 },
-  
-  // Icône carrée (pour favicon, PWA, etc.)
-  { input: 'logo-navbar.svg', output: 'icon-512.webp', width: 512, height: 512 },
-  { input: 'logo-navbar.svg', output: 'icon-192.webp', width: 192, height: 192 },
-  
+  // Logo navbar (texte seul avec compteur dans O)
+  { input: 'logo-navbar.svg', output: 'logo-navbar.webp', width: 220, height: 36 },
+  { input: 'logo-navbar.svg', output: 'logo-navbar@2x.webp', width: 440, height: 72 },
+
+  // Logo complet (avec tagline)
+  { input: 'logo-automecanik.svg', output: 'logo-automecanik.webp', width: 310, height: 60 },
+  { input: 'logo-automecanik.svg', output: 'logo-automecanik@2x.webp', width: 620, height: 120 },
+
+  // Icônes PWA (depuis logo complet)
+  { input: 'logo-automecanik.svg', output: 'icon-512.webp', width: 512, height: 512 },
+  { input: 'logo-automecanik.svg', output: 'icon-192.webp', width: 192, height: 192 },
+
   // Open Graph / Social Media
   { input: 'logo-automecanik.svg', output: 'logo-og.webp', width: 1200, height: 630 },
 ];
