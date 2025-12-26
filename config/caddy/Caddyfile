@@ -49,12 +49,12 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
 
+        # CRITIQUE: Rewrite AVANT le proxy - forward ?width=400&quality=85 à Supabase
+        rewrite * /storage/v1/render/image/public/{re.img_path.1}{query}
+
         reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
             header_up Host cxpojprgwgubzjyqzmoq.supabase.co
             header_down -Cache-Control
-
-            # CRITIQUE: {query} forward les ?width=400&quality=85 à Supabase
-            rewrite * /storage/v1/render/image/public/{re.img_path.1}{query}
         }
     }
 
