@@ -13,8 +13,18 @@
 
 import { type FiltersData } from '../../components/pieces/PiecesFilterSidebar';
 import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
-import { normalizeImageUrl } from '../../utils/image.utils';
 import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
+
+// Helper inline pour normaliser les URLs d'images blog (remplace image.utils.ts)
+const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+function normalizeImageUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/rack/')) return `${SUPABASE_STORAGE}/rack-images/${url.replace('/rack/', '')}`;
+  if (url.startsWith('/upload/')) return `${SUPABASE_STORAGE}/uploads/${url.replace('/upload/', '')}`;
+  if (url.startsWith('/')) return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+  return url;
+}
 
 /**
  * 🔗 Utilitaire générique pour fetch en cascade avec fallback

@@ -10,7 +10,6 @@ import React, { useState } from "react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
-import { optimizeImageUrl } from "../../utils/image.utils";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 
@@ -48,28 +47,6 @@ const getReliabilityBgColor = (score: number) => {
   if (score >= 5) return "bg-amber-50 border-amber-200";
   if (score >= 3) return "bg-rose-50 border-rose-200";
   return "bg-slate-50 border-slate-200";
-};
-
-/**
- * Helper optimisation images WebP (96px pour miniatures liste)
- */
-const _optimizeImageUrl = (
-  imageUrl: string | undefined,
-  _width: number = 96,
-): string => {
-  if (!imageUrl) return "";
-
-  if (imageUrl.includes("supabase.co/storage")) {
-    const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
-    if (match) {
-      const path = match[1];
-      const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-      // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
-      return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
-    }
-  }
-
-  return imageUrl;
 };
 
 /**
@@ -189,7 +166,7 @@ export const PiecesListView = React.memo(
                     {piece.image &&
                     piece.image !== "/images/pieces/default.png" ? (
                       <img
-                        src={optimizeImageUrl(piece.image, 128)}
+                        src={piece.image}
                         alt={piece.name}
                         width={128}
                         height={128}
