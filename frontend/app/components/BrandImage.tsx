@@ -40,20 +40,24 @@ export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
   // Si on n'est pas encore côté client, afficher le fallback
   if (!isClient) {
     return (
-      <img 
+      <img
         src={svgFallback}
         alt={brandName}
+        width={64}
+        height={64}
         className="w-full h-full object-contain"
       />
     );
   }
-  
+
   // Si erreur d'image ou pas de logo Supabase, utiliser le fallback
   if (imageError || !supabaseUrl) {
     return (
-      <img 
+      <img
         src={svgFallback}
         alt={brandName}
+        width={64}
+        height={64}
         className="w-full h-full object-contain"
       />
     );

@@ -371,9 +371,13 @@ export function SearchFilters({
                     >
                       {/* Logo centré */}
                       <div className="w-full h-10 flex items-center justify-center mb-1 px-1">
-                        <img 
+                        <img
                           src={logoUrl}
                           alt={`Logo ${brandName}`}
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
                           className="max-w-full max-h-full object-contain"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;

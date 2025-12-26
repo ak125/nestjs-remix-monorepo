@@ -172,6 +172,10 @@ export function ProductCard({
         <img
           src={imageUrl}
           alt={imageAlt || name}
+          width={400}
+          height={300}
+          loading="lazy"
+          decoding="async"
           className={`
             w-full h-full object-cover
             transition-transform duration-500

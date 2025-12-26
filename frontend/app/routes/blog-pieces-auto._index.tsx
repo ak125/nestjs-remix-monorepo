@@ -416,11 +416,14 @@ export default function BlogIndex() {
                   <Card className="group h-full overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-500">
                     {article.featuredImage && (
                       <div className="h-56 relative overflow-hidden">
-                        <img 
-                          src={article.featuredImage} 
+                        <img
+                          src={article.featuredImage}
                           alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          width={400}
+                          height={224}
                           loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute top-4 left-4">
                           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
@@ -707,11 +710,14 @@ export default function BlogIndex() {
                     <Card className="group h-full hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
                       {article.featuredImage && (
                         <div className="h-48 relative overflow-hidden">
-                          <img 
-                            src={article.featuredImage} 
+                          <img
+                            src={article.featuredImage}
                             alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            width={400}
+                            height={192}
                             loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           {article.isPopular && (
                             <div className="absolute top-3 right-3">

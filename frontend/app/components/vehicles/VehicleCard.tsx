@@ -59,9 +59,11 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
           {brand.marque_logo && (
-            <img 
-              src={brand.marque_logo} 
+            <img
+              src={brand.marque_logo}
               alt={brand.marque_name}
+              width={32}
+              height={32}
               className="w-8 h-8 object-contain"
             />
           )}

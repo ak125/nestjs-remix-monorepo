@@ -75,8 +75,11 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
           <img
             src={vehicleImageUrl}
             alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
-            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+            width={400}
+            height={192}
             loading="lazy"
+            decoding="async"
+            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/images/placeholder-vehicle.png';
             }}

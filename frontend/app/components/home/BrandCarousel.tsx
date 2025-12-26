@@ -121,9 +121,13 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                       <div className="bg-gray-50 rounded-xl p-4 text-center hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-blue-200">
                         <div className="w-16 h-16 mx-auto mb-3 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           {brand.marque_logo ? (
-                            <img 
-                              src={brand.marque_logo} 
+                            <img
+                              src={brand.marque_logo}
                               alt={`Logo ${brand.marque_name || 'marque'}`}
+                              width={48}
+                              height={48}
+                              loading="lazy"
+                              decoding="async"
                               className="w-12 h-12 object-contain"
                             />
                           ) : (
