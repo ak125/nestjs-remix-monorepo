@@ -152,19 +152,18 @@ export const VehicleProvider: React.FC<VehicleProviderProps> = ({
     return loadVehicleFromStorage();
   }, []);
 
+  // SSR-safe: vehicle est null côté serveur, chargé depuis localStorage côté client
+  // isHydrated permet aux composants enfants de savoir si le chargement client est terminé
   const value: VehicleContextValue = {
-    vehicle,
+    vehicle: isHydrated ? vehicle : null, // null sur SSR, valeur réelle après hydratation
     setVehicle,
     clearVehicle,
-    hasVehicle: !!vehicle,
+    hasVehicle: isHydrated && !!vehicle,
     loadVehicle,
   };
 
-  // Éviter hydration mismatch: ne render children qu'après chargement
-  if (!isHydrated) {
-    return null;
-  }
-
+  // Toujours rendre les enfants - ne PAS bloquer le SSR
+  // Les composants enfants peuvent vérifier hasVehicle ou vehicle === null
   return <VehicleContext.Provider value={value}>{children}</VehicleContext.Provider>;
 };
 
