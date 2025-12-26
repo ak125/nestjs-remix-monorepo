@@ -133,17 +133,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
     image: undefined
   };
 
-  // 5. Récupération des pièces via API directe
+  // 5. Récupération des pièces via RPC V3 (optimisé avec images compressées)
   let piecesData: PieceData[] = [];
-  
+
   try {
     const response = await fetch(
-      `http://localhost:3000/api/catalog/pieces/php-logic/${vehicle.typeId}/${gamme.id}`
+      `http://localhost:3000/api/catalog/batch-loader/${vehicle.typeId}/${gamme.id}`
     );
-    
+
     if (response.ok) {
       const data = await response.json();
-      piecesData = data.pieces || data.data || [];
+      piecesData = data.pieces || [];
     }
   } catch (error) {
     console.error('❌ Erreur récupération pièces:', error);
