@@ -14,7 +14,6 @@ import {
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
-import { optimizeImageUrl } from "../../utils/image.utils";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -204,10 +203,7 @@ export function PiecesHeader({
                         <>
                           {/* 🚀 LCP Optimization V5: srcset responsive + decoding async */}
                           <img
-                            src={optimizeImageUrl(
-                              `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
-                              380
-                            )}
+                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`}
                             srcSet={`
                               https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=200&quality=80&t=31536000 200w,
                               https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=300&quality=85&t=31536000 300w,

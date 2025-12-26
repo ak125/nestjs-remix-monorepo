@@ -4,7 +4,17 @@
  */
 
 import { type GammeData, type PieceData, type VehicleData } from "../../types/pieces-route.types";
-import { normalizeImageUrl } from "../image.utils";
+
+// Helper inline pour normaliser les URLs d'images (remplace image.utils.ts)
+const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+function normalizeImageUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/rack/')) return `${SUPABASE_STORAGE}/rack-images/${url.replace('/rack/', '')}`;
+  if (url.startsWith('/upload/')) return `${SUPABASE_STORAGE}/uploads/${url.replace('/upload/', '')}`;
+  if (url.startsWith('/')) return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+  return url;
+}
 
 interface SchemaParams {
   vehicle: VehicleData;

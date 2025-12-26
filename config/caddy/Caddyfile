@@ -39,13 +39,6 @@ automecanik.com, www.automecanik.com {
     # Redirection apex vers www
     @apex host automecanik.com
     redir @apex https://www.automecanik.com{uri} permanent
-    
-    # ===== REDIRECTIONS 301 IMAGES SUPABASE (SEO) =====
-    @rack_images path_regexp rack_path ^/rack/(.+)$
-    redir @rack_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1} 301
-    
-    @upload_images path_regexp upload_path ^/upload/(.+)$
-    redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
 
     # ===== PROXY IMAGES OPTIMISÉES (cache 1 an) =====
     # Route: /img/{bucket}/{path}?query → Supabase /storage/v1/render/image/public/{bucket}/{path}?query

@@ -9,9 +9,12 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useCart } from "../../hooks/useCart";
-import { normalizeImageUrl } from "../../utils/image.utils";
 import { StarRating } from "../common/StarRating";
 import { BrandLogo } from "../ui/BrandLogo";
+
+// Helper inline pour les images rack (remplace image.utils.ts)
+const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+const getRackImageUrl = (path: string) => `${SUPABASE_STORAGE}/rack-images/${path}`;
 
 interface PieceDetailModalProps {
   pieceId: number | null;
@@ -275,13 +278,13 @@ export function PieceDetailModal({
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 mb-4">
                     <div className="aspect-square overflow-hidden rounded-lg">
                       <img
-                        src={normalizeImageUrl(
+                        src={
                           selectedImage
-                            ? `/rack/${selectedImage}`
+                            ? getRackImageUrl(selectedImage)
                             : piece.image
-                              ? `/rack/${piece.image}`
-                              : "/images/no.png",
-                        )}
+                              ? getRackImageUrl(piece.image)
+                              : "/images/no.png"
+                        }
                         alt={piece.nom}
                         width={400}
                         height={400}
@@ -306,7 +309,7 @@ export function PieceDetailModal({
                           }`}
                         >
                           <img
-                            src={normalizeImageUrl(`/rack/${img}`)}
+                            src={getRackImageUrl(img)}
                             alt={`Vue ${idx + 1}`}
                             width={64}
                             height={64}
