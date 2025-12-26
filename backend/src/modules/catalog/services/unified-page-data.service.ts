@@ -379,13 +379,21 @@ export class UnifiedPageDataService extends SupabaseBaseService {
               id: rpcResult.vehicle_info.modele_id,
               name: rpcResult.vehicle_info.modele_name,
               alias: rpcResult.vehicle_info.modele_alias,
-              pic: getOptimizedImageUrl(rpcResult.vehicle_info.modele_pic, 300, 85),
+              pic: getOptimizedImageUrl(
+                rpcResult.vehicle_info.modele_pic,
+                300,
+                85,
+              ),
             },
             marque: {
               id: rpcResult.vehicle_info.marque_id,
               name: rpcResult.vehicle_info.marque_name,
               alias: rpcResult.vehicle_info.marque_alias,
-              logo: getOptimizedImageUrl(rpcResult.vehicle_info.marque_logo, 150, 90),
+              logo: getOptimizedImageUrl(
+                rpcResult.vehicle_info.marque_logo,
+                150,
+                90,
+              ),
             },
             motorCodes: rpcResult.vehicle_info.motor_codes || '',
           }
