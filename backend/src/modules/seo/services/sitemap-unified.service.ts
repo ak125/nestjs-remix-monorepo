@@ -670,7 +670,11 @@ ${urlEntries}
     columns: string,
     totalLimit: number,
     startOffset = 0,
-    filter?: { column: string; operator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq'; value: number | string },
+    filter?: {
+      column: string;
+      operator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq';
+      value: number | string;
+    },
   ): Promise<T[]> {
     const PAGE_SIZE = 1000;
     const allData: T[] = [];
