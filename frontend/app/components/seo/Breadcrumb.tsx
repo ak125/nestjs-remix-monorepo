@@ -102,7 +102,7 @@ export function Breadcrumb({
               <meta itemProp="position" content={String(index + 1)} />
               
               {index < breadcrumbItems.length - 1 && (
-                <span className="text-gray-400" aria-hidden="true">
+                <span className="text-gray-500" aria-hidden="true">
                   {separator}
                 </span>
               )}
