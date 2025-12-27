@@ -107,6 +107,8 @@ export function ProductGallery({
                   <img
                     src={image.url}
                     alt={image.alt || `${productName} - Image ${index + 1}`}
+                    width={400}
+                    height={400}
                     className="w-full h-full object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
                     onClick={openLightbox}
                   />
@@ -160,6 +162,8 @@ export function ProductGallery({
                   <img
                     src={image.thumbnail || image.url}
                     alt={`Thumbnail ${index + 1}`}
+                    width={80}
+                    height={80}
                     className="w-full h-full object-cover"
                   />
                 </button>
