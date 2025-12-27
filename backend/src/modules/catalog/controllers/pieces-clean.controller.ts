@@ -1,7 +1,5 @@
 import { Controller, Get, Param, Logger, Inject } from '@nestjs/common';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
-import { PiecesEnhancedService } from '../services/pieces-enhanced.service';
-import { PricingService as PricingServiceV5UltimateFinal } from '../../products/services/pricing.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
@@ -17,8 +15,6 @@ export class PiecesCleanController {
 
   constructor(
     private readonly vehiclePiecesService: VehiclePiecesCompatibilityService,
-    private readonly piecesEnhancedService: PiecesEnhancedService,
-    private readonly pricingService: PricingServiceV5UltimateFinal,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -117,47 +113,6 @@ export class PiecesCleanController {
           cache_hit: false,
         },
         timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * 🎯 CATALOGUE ENHANCED - Structure HTML optimisée
-   * GET /api/catalog/pieces/enhanced/:typeId/:pgId
-   */
-  @Get('enhanced/:typeId/:pgId')
-  async enhanced(@Param('typeId') typeId: string, @Param('pgId') pgId: string) {
-    const startTime = Date.now();
-
-    try {
-      this.logger.log(`🎯 [ENHANCED] type_id=${typeId}, pg_id=${pgId}`);
-
-      const result = await this.piecesEnhancedService.getPiecesEnhancedCatalog(
-        parseInt(typeId),
-        parseInt(pgId),
-      );
-
-      const responseTime = Date.now() - startTime;
-
-      return {
-        ...result,
-        api_info: {
-          response_time: `${responseTime}ms`,
-          timestamp: new Date().toISOString(),
-          version: 'ENHANCED_CATALOG_V1',
-        },
-      };
-    } catch (error: any) {
-      const responseTime = Date.now() - startTime;
-      this.logger.error(`❌ [ENHANCED] Erreur: ${error.message}`, error.stack);
-
-      return {
-        success: false,
-        error: error.message,
-        api_info: {
-          response_time: `${responseTime}ms`,
-          timestamp: new Date().toISOString(),
-        },
       };
     }
   }
