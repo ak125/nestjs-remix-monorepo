@@ -50,6 +50,10 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
     return json({ product: productData.data });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error('Erreur lors du chargement du produit:', error);
     throw new Response("Erreur lors du chargement du produit", { status: 500 });
   }

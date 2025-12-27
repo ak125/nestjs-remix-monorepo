@@ -388,7 +388,11 @@ export default function OrderInvoice() {
                       });
                     }
                   } catch (error) {
-                    console.error('Payment error:', error);
+                    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error('Payment error:', error);
                     toast.error('Erreur de paiement', {
                       description: 'Une erreur est survenue lors de l\'initialisation',
                       duration: 4000,

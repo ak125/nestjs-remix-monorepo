@@ -117,6 +117,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     return json<LoaderData>({ security, user });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("Erreur chargement sécurité:", error);
     throw new Response("Erreur chargement sécurité", { status: 500 });
   }

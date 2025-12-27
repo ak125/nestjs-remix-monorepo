@@ -83,6 +83,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       stats: {} 
     });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("Erreur chargement profil:", error);
     throw new Response("Erreur chargement profil", { status: 500 });
   }

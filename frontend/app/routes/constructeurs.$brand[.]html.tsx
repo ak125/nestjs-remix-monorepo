@@ -191,6 +191,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json(bestsellersResponse.data);
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("Erreur récupération bestsellers:", error);
     throw new Response("Error loading brand page", { status: 500 });
   }

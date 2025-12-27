@@ -240,6 +240,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error('Erreur lors du chargement des données:', error);
     throw new Response("Internal Server Error", { status: 500 });
   }
