@@ -138,13 +138,25 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     `Automecanik vous offre toutes les pièces et accessoires autos à prix pas cher pour ${brand?.name} ${modelGroup?.name}`;
   const keywords = metadata?.keywords || `${brand?.name}, ${modelGroup?.name}`;
 
-  return [
+  const result: any[] = [
     { title },
     { name: "description", content: description },
     { name: "keywords", content: keywords },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: "robots", content: "index, follow" },
   ];
+
+  // 🚀 LCP OPTIMIZATION: Preload hero image
+  if (modelGroup?.imageUrl) {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: modelGroup.imageUrl,
+    });
+  }
+
+  return result;
 };
 
 /* ===========================
@@ -300,8 +312,12 @@ export default function BlogPiecesAutoMarqueModele() {
                       modelGroup.imageUrl || "/images/categories/default.svg"
                     }
                     alt={`${brand.name} ${modelGroup.name}`}
+                    width={400}
+                    height={224}
                     className="w-full h-auto max-h-56 object-contain mx-auto"
                     loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
                     onError={(e) => {
                       // Fallback si l'image ne charge pas
                       e.currentTarget.src = "/images/categories/default.svg";
