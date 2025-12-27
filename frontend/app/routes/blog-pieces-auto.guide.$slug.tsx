@@ -74,7 +74,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   );
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
-  return [
+  const result: any[] = [
     { title: `${cleanTitle} - Guide d'Achat Pièces Auto` },
     { name: "description", content: guide.excerpt },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
@@ -85,6 +85,18 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:url", content: canonicalUrl },
     { property: "article:published_time", content: guide.publishedAt },
   ];
+
+  // 🚀 LCP OPTIMIZATION: Preload featured image
+  if (guide.featuredImage) {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: guide.featuredImage,
+    });
+  }
+
+  return result;
 };
 
 /* ===========================
@@ -184,7 +196,12 @@ export default function GuideDetailPage() {
                 <img
                   src={guide.featuredImage}
                   alt={cleanTitle}
+                  width={800}
+                  height={384}
                   className="w-full h-full object-cover"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               </div>

@@ -823,7 +823,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ];
   }
 
-  return [
+  const result: any[] = [
     { title: data.seo.title },
     { name: "description", content: data.seo.description },
     { name: "keywords", content: data.seo.keywords },
@@ -837,6 +837,18 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       "script:ld+json": generateVehicleSchema(data.vehicle, data.breadcrumb),
     },
   ];
+
+  // 🚀 LCP OPTIMIZATION: Preload hero vehicle image
+  if (data.vehicle?.modele_pic && data.vehicle.modele_pic !== "no.webp") {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marque_alias}/${data.vehicle.modele_pic}?width=400&quality=85&t=31536000`,
+    });
+  }
+
+  return result;
 };
 
 // 🎨 Composant principal avec logique PHP intégrée
@@ -1068,8 +1080,12 @@ export default function VehicleDetailPage() {
                           <img
                             src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marque_alias}/${vehicle.modele_pic}?width=400&quality=85&t=31536000`}
                             alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} - ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
+                            width={400}
+                            height={208}
                             className="w-full h-52 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
                             loading="eager"
+                            decoding="async"
+                            fetchPriority="high"
                             onError={() => setImageError(true)}
                           />
                           {/* Gradient overlay */}
