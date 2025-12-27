@@ -162,7 +162,7 @@ export function PiecesStatistics({ pieces, vehicleName, gammeName }: PiecesStati
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-gray-600">Moins de 50€ (économique)</span>
-                  <span className="font-medium text-green-600">{stats.priceDistribution.lowPrice} pièces</span>
+                  <span className="font-medium text-green-700">{stats.priceDistribution.lowPrice} pièces</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
@@ -175,7 +175,7 @@ export function PiecesStatistics({ pieces, vehicleName, gammeName }: PiecesStati
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-gray-600">50€ - 150€ (standard)</span>
-                  <span className="font-medium text-blue-600">{stats.priceDistribution.midPrice} pièces</span>
+                  <span className="font-medium text-blue-700">{stats.priceDistribution.midPrice} pièces</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
@@ -188,7 +188,7 @@ export function PiecesStatistics({ pieces, vehicleName, gammeName }: PiecesStati
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-gray-600">Plus de 150€ (premium)</span>
-                  <span className="font-medium text-purple-600">{stats.priceDistribution.highPrice} pièces</span>
+                  <span className="font-medium text-purple-700">{stats.priceDistribution.highPrice} pièces</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 

@@ -121,7 +121,7 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
         {/* Contenu principal - Résumé ou panier vide */}
         <div className="p-4">
           {itemCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-8 text-gray-600">
               <ShoppingBag className="h-16 w-16 mb-4 opacity-50" />
               <p className="font-medium text-lg">Votre panier est vide</p>
               <p className="text-sm mt-2">Découvrez nos pièces auto</p>
