@@ -33,7 +33,6 @@ import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
 import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
-import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
@@ -95,7 +94,6 @@ import { UnifiedPageDataService } from './services/unified-page-data.service';
     EquipementiersService,
     VehicleFilteredCatalogV4HybridService,
     VehiclePiecesCompatibilityService,
-    PiecesEnhancedService,
     CatalogDataIntegrityService, // 🛡️ Service de validation de l'intégrité
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
