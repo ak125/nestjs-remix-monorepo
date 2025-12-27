@@ -107,8 +107,9 @@ function cleanHtml(html: string): string {
   // Remove tags with quotes/special chars in name (invalid HTML)
   cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, '');
   
-  // Clean style attributes with invalid content
-  cleaned = cleaned.replace(/style="[^"]*mso-[^"]*"/gi, '');
+  // 🛡️ SSR FIX: Supprimer TOUS les attributs style inline
+  // React SSR échoue si html-react-parser passe style comme string au lieu d'objet
+  cleaned = cleaned.replace(/\s+style="[^"]*"/gi, '');
   
   // Remove Word-specific XML namespaces and tags
   cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, '');
