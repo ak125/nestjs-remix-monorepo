@@ -259,13 +259,13 @@ export default function TestHomepageModern() {
         ></div>
 
         {/* Formes décoratives - réduites */}
-        {/* Effet de fond flou décoratif */}
+        {/* 🚀 LCP OPTIMIZATION: Removed animate-pulse for better LCP score */}
         <div
-          className="absolute top-10 right-10 w-64 h-64 bg-semantic-info/10 rounded-full blur-3xl animate-pulse"
+          className="absolute top-10 right-10 w-64 h-64 bg-semantic-info/10 rounded-full blur-3xl"
           aria-hidden="true"
         ></div>
         <div
-          className="absolute bottom-10 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"
+          className="absolute bottom-10 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"
           aria-hidden="true"
         ></div>
 
