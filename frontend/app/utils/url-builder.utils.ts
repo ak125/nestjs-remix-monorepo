@@ -50,12 +50,14 @@ export function isValidInternalUrl(url: string): boolean {
 export interface BreadcrumbItem {
   label: string;
   href?: string;
+  current?: boolean; // 🆕 Marque la page courante (pas de lien cliquable)
 }
 
 /**
  * Construit les items de breadcrumb pour la page pièces
  * @param gamme - Données de la gamme (id, name, alias)
  * @param vehicle - Données du véhicule
+ * @param currentUrl - 🆕 URL canonique de la page courante (pour Schema.org)
  * @returns Tableau d'items pour le composant Breadcrumbs
  */
 export function buildPiecesBreadcrumbs(
@@ -71,7 +73,8 @@ export function buildPiecesBreadcrumbs(
     marqueAlias?: string;
     modeleAlias?: string;
     typeAlias?: string;
-  }
+  },
+  currentUrl?: string // 🆕 URL de la page courante pour Schema.org
 ): BreadcrumbItem[] {
   const marqueAlias = vehicle.marqueAlias || normalizeAlias(vehicle.marque);
   const modeleAlias = vehicle.modeleAlias || normalizeAlias(vehicle.modele);
@@ -93,6 +96,8 @@ export function buildPiecesBreadcrumbs(
     },
     {
       label: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
+      href: currentUrl, // 🆕 URL canonique pour Schema.org (pas cliquable visuellement)
+      current: true,    // 🆕 Marquer comme page courante
     },
   ];
 }

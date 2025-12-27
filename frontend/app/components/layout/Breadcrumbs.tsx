@@ -13,9 +13,9 @@ import { ChevronRight, Home } from "lucide-react";
 
 interface BreadcrumbItem {
   label: string;
-  href?: string;
+  href?: string;          // URL du lien (aussi utilisé pour Schema.org)
   icon?: React.ReactNode;
-  current?: boolean;
+  current?: boolean;      // 🆕 Si true, affiche comme texte même si href existe (pour Schema.org)
 }
 
 interface BreadcrumbsProps {
@@ -64,24 +64,34 @@ export function Breadcrumbs({
   }
 
   // Générer schema JSON-LD pour SEO - OPTIMISÉ
+  // 🔧 FIX: Ne pas utiliser window.location (incompatible SSR)
+  // Chaque élément doit avoir une URL, sauf le dernier qui peut l'omettre selon Google
   const breadcrumbSchema =
     enableSchema && breadcrumbItems.length > 0
       ? {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
-          itemListElement: breadcrumbItems
-            .map((item, index) => ({
+          itemListElement: breadcrumbItems.map((item, index) => {
+            const isLast = index === breadcrumbItems.length - 1;
+            const itemUrl = item.href
+              ? `https://www.automecanik.com${item.href}`
+              : undefined;
+
+            // Construire l'objet ListItem
+            const listItem: Record<string, unknown> = {
               "@type": "ListItem",
               position: index + 1,
               name: item.label,
-              // Pour le dernier élément (page actuelle), utiliser l'URL de la page
-              item: item.href
-                ? `https://www.automecanik.com${item.href}`
-                : typeof window !== "undefined"
-                  ? window.location.href
-                  : undefined,
-            }))
-            .filter((item) => item.item), // Retirer les items sans URL
+            };
+
+            // 🔧 FIX: Ajouter item uniquement si URL existe
+            // Le dernier élément peut omettre item selon la spec Google
+            if (itemUrl) {
+              listItem.item = itemUrl;
+            }
+
+            return listItem;
+          }),
         }
       : null;
 
@@ -162,7 +172,8 @@ export function Breadcrumbs({
               {/* Meta position pour Schema.org */}
               <meta itemProp="position" content={String(index + 1)} />
 
-              {item.href && item.href.length > 0 ? (
+              {/* 🔧 FIX: Si current=true, afficher comme texte même avec href (pour Schema.org) */}
+              {item.href && item.href.length > 0 && !item.current ? (
                 <a
                   href={item.href}
                   className="flex items-center space-x-1 font-medium cursor-pointer"
@@ -185,6 +196,7 @@ export function Breadcrumbs({
                   <span itemProp="name">{item.label}</span>
                 </a>
               ) : (
+                // 🔧 FIX: Page courante - afficher comme texte mais inclure href pour Schema.org
                 <span
                   className={`flex items-center space-x-1 ${
                     item.current
@@ -192,7 +204,14 @@ export function Breadcrumbs({
                       : "text-gray-500"
                   }`}
                   aria-current={item.current ? "page" : undefined}
+                  itemProp={item.href ? "item" : undefined}
+                  itemScope={item.href ? true : undefined}
+                  itemType={item.href ? "https://schema.org/WebPage" : undefined}
                 >
+                  {/* 🔧 FIX: Inclure URL cachée pour Schema.org si href existe */}
+                  {item.href && (
+                    <meta itemProp="url" content={`https://www.automecanik.com${item.href}`} />
+                  )}
                   {item.icon}
                   <span itemProp="name">{item.label}</span>
                 </span>
