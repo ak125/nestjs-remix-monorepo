@@ -123,8 +123,8 @@ export const PiecesGrid: React.FC<PiecesGridProps> = ({
 
       {/* Grid des pièces */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredAndSortedPieces.map((piece) => (
-          <PieceCard key={piece.pie_id} piece={piece} />
+        {filteredAndSortedPieces.map((piece, index) => (
+          <PieceCard key={piece.pie_id} piece={piece} isFirst={index === 0} />
         ))}
       </div>
 
@@ -279,7 +279,7 @@ const generateSrcSet = (imageUrl: string | undefined): string => {
     .join(", ");
 };
 
-const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
+const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({ piece, isFirst = false }) => (
   <div className="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-300 overflow-hidden group">
     {/* Image - ✅ OPTIMISÉE WEBP */}
     <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -292,8 +292,9 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
           width={400}
           height={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
+          loading={isFirst ? "eager" : "lazy"}
           decoding="async"
+          {...(isFirst && { fetchPriority: "high" as const })}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
