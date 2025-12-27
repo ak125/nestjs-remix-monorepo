@@ -252,7 +252,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const { article } = data;
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
-  return [
+  const result: any[] = [
     { title: article.seo_data.meta_title },
     { name: "description", content: article.seo_data.meta_description },
     { name: "keywords", content: article.keywords.join(", ") },
@@ -263,6 +263,18 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
   ];
+
+  // 🚀 LCP OPTIMIZATION: Preload featured image
+  if (article.featuredImage) {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: article.featuredImage,
+    });
+  }
+
+  return result;
 };
 
 // Composant principal - Réutilise le même design que blog.article.$slug.tsx
@@ -356,8 +368,12 @@ export default function LegacyBlogArticle() {
                 <img
                   src={article.featuredImage}
                   alt={article.title}
+                  width={800}
+                  height={256}
                   className="w-full h-64 object-contain drop-shadow-lg"
                   loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </div>
             </CardContent>

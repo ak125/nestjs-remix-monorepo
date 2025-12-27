@@ -6,11 +6,8 @@ import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
-import CatalogueSection from "../components/pieces/CatalogueSection";
-import ConseilsSection from "../components/pieces/ConseilsSection";
-import EquipementiersSection from "../components/pieces/EquipementiersSection";
-import InformationsSection from "../components/pieces/InformationsSection";
-import MotorisationsSection from "../components/pieces/MotorisationsSection";
+// 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
+// Ces sections ne sont pas visibles au premier paint - différer leur chargement
 import { PiecesRelatedArticles as _PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -22,8 +19,13 @@ import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical"
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
 
-// Lazy load PurchaseGuide (below fold)
+// 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
 const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
+const MotorisationsSection = lazy(() => import("../components/pieces/MotorisationsSection").then(m => ({ default: m.default })));
+const CatalogueSection = lazy(() => import("../components/pieces/CatalogueSection").then(m => ({ default: m.default })));
+const EquipementiersSection = lazy(() => import("../components/pieces/EquipementiersSection").then(m => ({ default: m.default })));
+const ConseilsSection = lazy(() => import("../components/pieces/ConseilsSection").then(m => ({ default: m.default })));
+const InformationsSection = lazy(() => import("../components/pieces/InformationsSection").then(m => ({ default: m.default })));
 
 interface LoaderData {
   status: number;
@@ -345,6 +347,23 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     result.push({ "script:ld+json": gammeSchema });
   }
 
+  // 🚀 LCP OPTIMIZATION: Preload hero image pour réduire LCP
+  if (data.content?.pg_wall) {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: data.content.pg_wall,
+    } as any);
+  } else if (data.content?.pg_pic) {
+    result.push({
+      tagName: "link",
+      rel: "preload",
+      as: "image",
+      href: data.content.pg_pic,
+    } as any);
+  }
+
   return result;
 };
 
@@ -462,6 +481,7 @@ export default function PiecesDetailPage() {
               className="w-full h-full object-cover opacity-25"
               loading="eager"
               decoding="async"
+              fetchPriority="high"
               onError={(e) => {
                 e.currentTarget.src = '/images/placeholder-hero.webp';
                 e.currentTarget.onerror = null;
@@ -491,9 +511,9 @@ export default function PiecesDetailPage() {
           aria-hidden="true"
         />
         
-        {/* Formes décoratives organiques */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite] z-[1]" aria-hidden="true"></div>
-        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite] z-[1]" aria-hidden="true"></div>
+        {/* Formes décoratives organiques - animations retirées pour LCP */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl z-[1]" aria-hidden="true"></div>
+        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]" aria-hidden="true"></div>
         
         <div className="relative z-10 container mx-auto px-4 max-w-7xl">
           
@@ -558,6 +578,7 @@ export default function PiecesDetailPage() {
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
                           decoding="async"
+                          fetchPriority="high"
                           onError={(e) => {
                             e.currentTarget.src = '/images/placeholder-product.webp';
                             e.currentTarget.onerror = null;
@@ -566,8 +587,8 @@ export default function PiecesDetailPage() {
                       </div>
                     </div>
                     
-                    {/* Particule décorative */}
-                    <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl animate-[float_8s_ease-in-out_infinite]" aria-hidden="true"></div>
+                    {/* Particule décorative - animation retirée pour LCP */}
+                    <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl" aria-hidden="true"></div>
                   </div>
                 </div>
                 
@@ -651,34 +672,46 @@ export default function PiecesDetailPage() {
           )}
         </section>
 
-        {/* Motorisations - Section critique, chargée immédiatement */}
-        <MotorisationsSection 
-          motorisations={data.motorisations}
-          familleColor={familleColor}
-          familleName={data.famille?.mf_name || 'pièces'}
-        />
+        {/* 🚀 LCP OPTIMIZATION: Sections below-fold lazy-loaded avec Suspense */}
 
-        {/* Informations SEO - Contenu unique riche avec maillage interne */}
-        <InformationsSection 
-          informations={data.informations}
-          catalogueFamille={data.catalogueMameFamille?.items}
-        />
+        {/* Motorisations - Lazy loaded */}
+        <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-lg" />}>
+          <MotorisationsSection
+            motorisations={data.motorisations}
+            familleColor={familleColor}
+            familleName={data.famille?.mf_name || 'pièces'}
+          />
+        </Suspense>
 
-        {/* Équipementiers - Chargé immédiatement pour SEO */}
-        <EquipementiersSection equipementiers={data.equipementiers} />
+        {/* Informations SEO - Lazy loaded */}
+        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+          <InformationsSection
+            informations={data.informations}
+            catalogueFamille={data.catalogueMameFamille?.items}
+          />
+        </Suspense>
 
-        {/* Conseils - Chargé immédiatement pour indexation SEO */}
-        <ConseilsSection 
-          conseils={data.conseils}
-          catalogueFamille={data.catalogueMameFamille?.items}
-          gammeName={data.content?.pg_name}
-        />
+        {/* Équipementiers - Lazy loaded */}
+        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+          <EquipementiersSection equipementiers={data.equipementiers} />
+        </Suspense>
 
-        {/* Catalogue Même Famille - Autres pièces de la famille */}
-        <CatalogueSection 
-          catalogueMameFamille={data.catalogueMameFamille}
-          verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}  
-        />
+        {/* Conseils - Lazy loaded */}
+        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+          <ConseilsSection
+            conseils={data.conseils}
+            catalogueFamille={data.catalogueMameFamille?.items}
+            gammeName={data.content?.pg_name}
+          />
+        </Suspense>
+
+        {/* Catalogue Même Famille - Lazy loaded */}
+        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+          <CatalogueSection
+            catalogueMameFamille={data.catalogueMameFamille}
+            verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}
+          />
+        </Suspense>
 
         {/* Bouton Scroll To Top */}
         <ScrollToTop />
