@@ -364,7 +364,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     modele_relfollow: 1,
     modele_pic: modele_pic, // Nouveau champ pour l'image
     type_id,
-    type_alias,
+    // 🔧 SEO FIX: Priorité à l'alias API normalisé pour éviter les doublons de canonical
+    type_alias: vehicleRecord.type_alias || type_alias,
     type_name,
     type_name_meta: type_name,
     type_power_ps,
@@ -464,7 +465,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   // === GÉNÉRATION CANONIQUE (logique PHP) ===
-  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
+  // 🔧 SEO FIX: Normaliser le type_alias pour le canonical
+  // Utilise l'alias de la BDD, sinon fallback sur l'ID pour éviter les doublons GSC
+  const normalizedTypeAlias =
+    vehicleRecord.type_alias &&
+    vehicleRecord.type_alias.trim() !== '' &&
+    vehicleRecord.type_alias !== 'type'
+      ? vehicleRecord.type_alias
+      : type_id.toString();
+  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${normalizedTypeAlias}-${vehicleData.type_id}.html`;
 
   // === GÉNÉRATION DES CATALOGUES V3 HYBRIDE (approche optimisée 3-étapes) ===
   let catalogFamilies: CatalogFamily[] = [];
