@@ -11,6 +11,7 @@ import {
   Await,
   isRouteErrorResponse,
   useLoaderData,
+  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
@@ -367,6 +368,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
 export default function PiecesVehicleRoute() {
   const data = useLoaderData<typeof loader>();
+  const location = useLocation(); // 🆕 Pour Schema.org breadcrumb
   const { trackClick, trackImpression } = useSeoLinkTracking();
 
   // Hook custom pour la logique de filtrage (gère son propre état)
@@ -493,7 +495,7 @@ export default function PiecesVehicleRoute() {
           style={{ pointerEvents: "auto" }}
         >
           <Breadcrumbs
-            items={buildPiecesBreadcrumbs(data.gamme, data.vehicle)}
+            items={buildPiecesBreadcrumbs(data.gamme, data.vehicle, location.pathname)}
             showHome={false}
             separator="left-arrow"
             enableSchema={true}
