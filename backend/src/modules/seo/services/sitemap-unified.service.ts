@@ -237,11 +237,14 @@ export class SitemapUnifiedService {
         return null;
       }
 
-      const urls: SitemapUrl[] = gammes.map((g) => ({
-        loc: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
-        priority: '0.8',
-        changefreq: 'weekly',
-      }));
+      // 🔧 FIX: Filtrer les gammes sans pg_alias valide (évite /pieces/-xxx.html)
+      const urls: SitemapUrl[] = gammes
+        .filter((g) => g.pg_alias && g.pg_alias.trim() !== '')
+        .map((g) => ({
+          loc: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+          priority: '0.8',
+          changefreq: 'weekly',
+        }));
 
       this.logger.log(`  → ${urls.length} catégories`);
 
