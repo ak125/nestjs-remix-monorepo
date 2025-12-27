@@ -36,6 +36,9 @@ export const links: LinksFunction = () => [
   // 🚀 LCP Optimization: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
+  // 🚀 LCP Optimization: Preload logo navbar (présent sur toutes les pages)
+  { rel: "preload", href: "/logo-navbar.webp", as: "image", type: "image/webp" },
+
   // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
 

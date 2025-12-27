@@ -167,6 +167,8 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
               <img
                 src={vehicle.marque_logo}
                 alt={vehicle.marque_name}
+                width={96}
+                height={32}
                 className="h-8 w-auto object-contain filter brightness-0 invert"
                 loading="lazy"
               />
@@ -185,6 +187,8 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
             <img
               src={vehicle.modele_pic}
               alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
+              width={300}
+              height={160}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               loading="lazy"
             />

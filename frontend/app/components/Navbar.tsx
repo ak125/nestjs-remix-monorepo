@@ -181,6 +181,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 src="/logo-navbar.webp"
                 srcSet="/logo-navbar.webp 1x, /logo-navbar@2x.webp 2x"
                 alt="Automecanik - Pièces auto à prix pas cher"
+                width={144}
+                height={48}
                 className={`relative transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-2xl ${
                   isCompact ? "h-8" : "h-12"
                 } w-auto`}
