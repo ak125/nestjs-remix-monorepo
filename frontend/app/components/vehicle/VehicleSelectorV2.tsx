@@ -367,10 +367,11 @@ export default function VehicleSelectorV2({
         <Car className="w-5 h-5 text-blue-600" />
         
         {/* Marque */}
-        <select 
-          value={selectedBrand?.marque_id || ''} 
+        <select
+          value={selectedBrand?.marque_id || ''}
           onChange={(e) => handleBrandChange(Number(e.target.value))}
           className="flex-1 p-2 border rounded"
+          aria-label="Sélectionner la marque"
         >
           <option value="">Marque</option>
           {brands.map(brand => (
@@ -381,11 +382,12 @@ export default function VehicleSelectorV2({
         </select>
 
         {/* Année */}
-        <select 
-          value={selectedYear || ''} 
+        <select
+          value={selectedYear || ''}
           onChange={(e) => handleYearChange(Number(e.target.value))}
           disabled={!selectedBrand || loadingYears}
           className="p-2 border rounded"
+          aria-label="Sélectionner l'année"
         >
           <option value="">Année</option>
           {years.map(year => (
@@ -394,11 +396,12 @@ export default function VehicleSelectorV2({
         </select>
 
         {/* Modèle */}
-        <select 
-          value={selectedModel?.modele_id || ''} 
+        <select
+          value={selectedModel?.modele_id || ''}
           onChange={(e) => handleModelChange(Number(e.target.value))}
           disabled={!selectedYear || loadingModels}
           className="flex-1 p-2 border rounded"
+          aria-label="Sélectionner le modèle"
         >
           <option value="">Modèle</option>
           {models.map(model => (
@@ -409,14 +412,15 @@ export default function VehicleSelectorV2({
         </select>
 
         {/* Type */}
-        <select 
-          value={selectedType?.type_id || ''} 
+        <select
+          value={selectedType?.type_id || ''}
           onChange={(e) => {
             const selectedType = types.find(t => t.type_id.toString() === e.target.value);
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!selectedModel || loadingTypes}
           className="p-2 border rounded"
+          aria-label="Sélectionner la motorisation"
         >
           <option value="">Motorisation</option>
           {types.map(type => (
