@@ -199,6 +199,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error('Erreur chargement création expédition:', error);
     throw new Response('Erreur serveur', { status: 500 });
   }

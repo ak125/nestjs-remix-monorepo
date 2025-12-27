@@ -512,6 +512,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       `✅ [V4 ULTIMATE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}, Cache: ${hybridResult.performance?.source || "N/A"}`,
     );
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error(
       "❌ [V4 ULTIMATE] Erreur, fallback vers données simulées:",
       error,
@@ -614,7 +618,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         `✅ [FALLBACK] ${popularParts.length} pièces populaires générées depuis les familles`,
       );
     } catch (error) {
-      console.error(
+      // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error(
         "❌ [FALLBACK] Erreur génération pièces populaires:",
         error,
       );

@@ -73,6 +73,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     return json<LoaderData>({ addresses, user });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("Erreur chargement adresses:", error);
     throw new Response("Erreur chargement adresses", { status: 500 });
   }

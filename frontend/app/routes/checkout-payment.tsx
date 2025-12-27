@@ -114,6 +114,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       paymentMethods,
     });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("❌ Error loading payment page:", error);
     throw new Response("Erreur lors du chargement", { status: 500 });
   }
@@ -344,6 +348,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(`/checkout-payment-process/${paymentData.transactionId}`);
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("❌ Payment initialization failed:", error);
     return json<ActionData>(
       { 
@@ -410,7 +418,11 @@ export default function PaymentPage() {
       window.location.href = redirectUrl;
       
     } catch (error) {
-      console.error('❌ ERROR:', error);
+      // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error('❌ ERROR:', error);
       toast.error('Erreur de paiement', {
         description: String(error),
         duration: 5000,

@@ -48,6 +48,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ result: result as PaymentResult });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("❌ Payment return error:", error);
     throw new Response("Erreur lors du traitement du paiement", { status: 500 });
   }

@@ -47,6 +47,10 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 
     return json({ order, user });
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error('Erreur lors du chargement du détail de commande:', error);
     throw new Response("Erreur lors du chargement de la commande", { status: 500 });
   }

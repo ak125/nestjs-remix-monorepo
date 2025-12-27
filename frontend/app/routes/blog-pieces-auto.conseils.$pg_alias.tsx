@@ -230,6 +230,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
     
   } catch (error) {
+    // Propager les Response HTTP (404, etc.) telles quelles
+    if (error instanceof Response) {
+      throw error;
+    }
+    // Pour les vraies erreurs (réseau, parsing), retourner 500
     console.error(`[Legacy URL] Error loading article for gamme: ${pg_alias}`, error);
     throw new Response("Internal Server Error", { status: 500 });
   }
