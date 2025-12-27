@@ -403,12 +403,14 @@ export class SitemapUnifiedService {
           `  📥 Shard ${shard + 1}/${totalShards}: fetching ${shardLimit} URLs from offset ${shardOffset}...`,
         );
 
-        // Utiliser pagination pour récupérer les données du shard
+        // 🛡️ Utiliser pagination avec filtre map_has_item > 0
+        // Exclut les combinaisons véhicule/pièce sans pièces disponibles (évite 404/410)
         const pieces = await this.fetchWithPagination<PieceType>(
           '__sitemap_p_link',
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
           shardLimit,
           shardOffset,
+          { column: 'map_has_item', operator: 'gt', value: 0 },
         );
 
         if (!pieces || pieces.length === 0) {
@@ -657,12 +659,18 @@ ${urlEntries}
 
   /**
    * 📄 Récupère des données avec pagination pour contourner limite Supabase 1000
+   * @param table - Nom de la table Supabase
+   * @param columns - Colonnes à sélectionner
+   * @param totalLimit - Nombre max de lignes à récupérer
+   * @param startOffset - Offset de départ (défaut: 0)
+   * @param filter - Filtre optionnel { column, operator, value }
    */
   private async fetchWithPagination<T>(
     table: string,
     columns: string,
     totalLimit: number,
     startOffset = 0,
+    filter?: { column: string; operator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq'; value: number | string },
   ): Promise<T[]> {
     const PAGE_SIZE = 1000;
     const allData: T[] = [];
@@ -673,10 +681,36 @@ ${urlEntries}
       const remaining = totalLimit - fetchedCount;
       const batchSize = Math.min(PAGE_SIZE, remaining);
 
-      const { data, error } = await this.supabase
-        .from(table)
-        .select(columns)
-        .range(currentOffset, currentOffset + batchSize - 1);
+      // 🛡️ Construire la requête avec filtre optionnel
+      let query = this.supabase.from(table).select(columns);
+
+      if (filter) {
+        switch (filter.operator) {
+          case 'gt':
+            query = query.gt(filter.column, filter.value);
+            break;
+          case 'gte':
+            query = query.gte(filter.column, filter.value);
+            break;
+          case 'lt':
+            query = query.lt(filter.column, filter.value);
+            break;
+          case 'lte':
+            query = query.lte(filter.column, filter.value);
+            break;
+          case 'eq':
+            query = query.eq(filter.column, filter.value);
+            break;
+          case 'neq':
+            query = query.neq(filter.column, filter.value);
+            break;
+        }
+      }
+
+      const { data, error } = await query.range(
+        currentOffset,
+        currentOffset + batchSize - 1,
+      );
 
       if (error) {
         this.logger.error(
