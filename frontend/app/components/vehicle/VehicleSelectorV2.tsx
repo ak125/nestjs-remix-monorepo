@@ -430,7 +430,7 @@ export default function VehicleSelectorV2({
           ))}
         </select>
 
-        <Button onClick={handleReset} variant="outline" size="sm">
+        <Button onClick={handleReset} variant="outline" size="sm" aria-label="Réinitialiser la sélection de véhicule">
           <RotateCcw className="w-4 h-4" />
         </Button>
       </div>

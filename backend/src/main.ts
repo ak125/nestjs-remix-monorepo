@@ -117,7 +117,11 @@ async function bootstrap() {
           contentSecurityPolicy: {
             directives: {
               defaultSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Pour Tailwind CSS + Google Fonts
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                'https://fonts.googleapis.com', // Google Fonts
+              ], // Pour Tailwind CSS
               scriptSrc: [
                 "'self'",
                 "'unsafe-inline'",

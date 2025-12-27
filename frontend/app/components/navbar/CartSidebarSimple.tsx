@@ -95,7 +95,7 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
                 <span className="text-sm font-semibold text-gray-800">
                   🚚 Livraison gratuite dès 150€
                 </span>
-                <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
                   {Math.round((subtotal / 150) * 100)}%
                 </span>
               </div>

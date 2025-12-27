@@ -297,12 +297,12 @@ export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
                       return "from-slate-400 via-gray-500 to-zinc-500";
                     };
                     const getTextColor = (score: number) => {
-                      if (score >= 10) return "text-teal-600";
-                      if (score >= 8) return "text-emerald-600";
-                      if (score >= 7) return "text-blue-600";
-                      if (score >= 5) return "text-amber-600";
-                      if (score >= 3) return "text-rose-600";
-                      return "text-slate-500";
+                      if (score >= 10) return "text-teal-700";
+                      if (score >= 8) return "text-emerald-700";
+                      if (score >= 7) return "text-blue-700";
+                      if (score >= 5) return "text-amber-700";
+                      if (score >= 3) return "text-rose-700";
+                      return "text-slate-600";
                     };
                     const noteColor = getTextColor(noteAvg);
                     const barColor = getBarColor(noteAvg);
