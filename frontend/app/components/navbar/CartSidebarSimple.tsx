@@ -65,6 +65,7 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Fermer le panier"
             className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
           >
             <X className="h-4 w-4" />

@@ -444,6 +444,7 @@ export function AdvancedVehicleSelector({
                 onChange={(e) => setSelectedBrand(Number(e.target.value) || null)}
                 className="selector-select"
                 disabled={loading}
+                aria-label="Sélectionner la marque"
               >
                 <option value="">{placeholder.brand || "Choisir une marque"}</option>
                 {brands.map(brand => (
@@ -471,6 +472,7 @@ export function AdvancedVehicleSelector({
                   onChange={(e) => setSelectedYear(Number(e.target.value) || null)}
                   className="selector-select"
                   disabled={loading}
+                  aria-label="Sélectionner l'année"
                 >
                   <option value="">{placeholder.year || "Choisir une année"}</option>
                   {years.map(year => (
@@ -499,6 +501,7 @@ export function AdvancedVehicleSelector({
                   onChange={(e) => setSelectedModel(Number(e.target.value) || null)}
                   className="selector-select"
                   disabled={loading}
+                  aria-label="Sélectionner le modèle"
                 >
                   <option value="">{placeholder.model || "Choisir un modèle"}</option>
                   {models.map(model => (

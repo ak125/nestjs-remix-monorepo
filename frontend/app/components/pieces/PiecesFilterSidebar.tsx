@@ -98,7 +98,7 @@ export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
                 <Package className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-xs">Filtres</h3>
+                <h2 className="font-bold text-white text-xs">Filtres</h2>
                 <p className="text-white/60 text-[10px] font-medium">
                   Affiner la recherche
                 </p>
