@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
+import { trackBeginCheckout } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
@@ -228,6 +229,13 @@ export default function CheckoutPage() {
       });
     }
   }, [error]);
+
+  // 📊 GA4: Tracker le debut du checkout
+  useEffect(() => {
+    if (cart?.items?.length) {
+      trackBeginCheckout(cart.items, cart.summary?.total_price || 0);
+    }
+  }, []);
 
   if (!cart || loaderError) {
     return (

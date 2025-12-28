@@ -105,7 +105,7 @@ export function trackScrollDepth(articleId: string, percentage: number) {
   if (typeof window !== 'undefined' && window.gtag) {
     // Track milestones: 25%, 50%, 75%, 100%
     const milestone = Math.floor(percentage / 25) * 25;
-    
+
     window.gtag('event', 'scroll_depth', {
       article_id: articleId,
       scroll_percentage: milestone,
@@ -113,4 +113,86 @@ export function trackScrollDepth(articleId: string, percentage: number) {
     });
   }
   console.log('📊 Analytics: Scroll depth', { articleId, percentage });
+}
+
+// ============================================================================
+// E-COMMERCE GA4 - Tracking Funnel Paiement
+// ============================================================================
+
+interface CartItem {
+  id?: string;
+  productId?: string;
+  name?: string;
+  title?: string;
+  price?: number;
+  quantity?: number;
+}
+
+/**
+ * Helper pour formater les items au format GA4
+ */
+function formatGA4Item(item: CartItem, index: number) {
+  return {
+    item_id: item.id || item.productId || `item_${index}`,
+    item_name: item.name || item.title || 'Produit',
+    price: item.price || 0,
+    quantity: item.quantity || 1
+  };
+}
+
+/**
+ * 🛒 E-commerce: Vue du panier
+ */
+export function trackViewCart(items: CartItem[], value: number) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'view_cart', {
+      currency: 'EUR',
+      value,
+      items: items.map(formatGA4Item)
+    });
+  }
+  console.log('📊 Analytics: view_cart', { itemCount: items.length, value });
+}
+
+/**
+ * 📋 E-commerce: Debut checkout
+ */
+export function trackBeginCheckout(items: CartItem[], value: number) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'begin_checkout', {
+      currency: 'EUR',
+      value,
+      items: items.map(formatGA4Item)
+    });
+  }
+  console.log('📊 Analytics: begin_checkout', { itemCount: items.length, value });
+}
+
+/**
+ * 💳 E-commerce: Info paiement ajoutee
+ */
+export function trackAddPaymentInfo(value: number, paymentType: string = 'card') {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'add_payment_info', {
+      currency: 'EUR',
+      value,
+      payment_type: paymentType
+    });
+  }
+  console.log('📊 Analytics: add_payment_info', { value, paymentType });
+}
+
+/**
+ * ✅ E-commerce: Achat finalise
+ */
+export function trackPurchase(transactionId: string, value: number, items: CartItem[] = []) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'purchase', {
+      transaction_id: transactionId,
+      currency: 'EUR',
+      value,
+      items: items.map(formatGA4Item)
+    });
+  }
+  console.log('📊 Analytics: purchase', { transactionId, value });
 }

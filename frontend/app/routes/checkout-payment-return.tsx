@@ -1,9 +1,11 @@
 import { Alert } from '@fafa/ui';
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { useEffect } from "react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { processPaymentReturn } from "../services/payment.server";
 import { formatPrice } from "../utils/orders";
+import { trackPurchase } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
@@ -59,6 +61,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function PaymentReturnPage() {
   const { result } = useLoaderData<typeof loader>();
+
+  // 📊 GA4: Tracker l'achat finalise
+  useEffect(() => {
+    if (result?.status === 'SUCCESS') {
+      trackPurchase(result.transactionId, result.amount);
+    }
+  }, [result]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
