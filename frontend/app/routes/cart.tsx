@@ -518,7 +518,10 @@ export default function CartPage() {
   // 📊 GA4: Tracker la vue du panier
   useEffect(() => {
     if (cart?.items?.length) {
-      trackViewCart(cart.items, cart.summary?.subtotal || 0);
+      const validItems = cart.items.filter((item): item is NonNullable<typeof item> => item !== null);
+      if (validItems.length > 0) {
+        trackViewCart(validItems as any[], cart.summary?.subtotal || 0);
+      }
     }
   }, []);
 

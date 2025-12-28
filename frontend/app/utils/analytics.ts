@@ -116,6 +116,82 @@ export function trackScrollDepth(articleId: string, percentage: number) {
 }
 
 // ============================================================================
+// E-COMMERCE GA4 - Tracking Produits
+// ============================================================================
+
+interface ProductItem {
+  id?: string;
+  productId?: string;
+  name?: string;
+  title?: string;
+  price?: number;
+  category?: string;
+  brand?: string;
+}
+
+/**
+ * Helper pour formater un produit au format GA4
+ */
+function formatGA4Product(item: ProductItem, index: number = 0) {
+  return {
+    item_id: item.id || item.productId || `item_${index}`,
+    item_name: item.name || item.title || 'Produit',
+    price: item.price || 0,
+    item_category: item.category || 'Pièces Auto',
+    item_brand: item.brand || 'AutoMecanik',
+    index
+  };
+}
+
+/**
+ * 👁️ E-commerce: Vue d'un produit
+ */
+export function trackViewItem(product: ProductItem) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'view_item', {
+      currency: 'EUR',
+      value: product.price || 0,
+      items: [formatGA4Product(product)]
+    });
+  }
+  console.log('📊 Analytics: view_item', { productId: product.id || product.productId, name: product.name || product.title });
+}
+
+/**
+ * 🛒 E-commerce: Ajout au panier
+ */
+export function trackAddToCart(product: ProductItem, quantity: number = 1) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'add_to_cart', {
+      currency: 'EUR',
+      value: (product.price || 0) * quantity,
+      items: [{
+        ...formatGA4Product(product),
+        quantity
+      }]
+    });
+  }
+  console.log('📊 Analytics: add_to_cart', { productId: product.id || product.productId, quantity });
+}
+
+/**
+ * 🗑️ E-commerce: Retrait du panier
+ */
+export function trackRemoveFromCart(product: ProductItem, quantity: number = 1) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'remove_from_cart', {
+      currency: 'EUR',
+      value: (product.price || 0) * quantity,
+      items: [{
+        ...formatGA4Product(product),
+        quantity
+      }]
+    });
+  }
+  console.log('📊 Analytics: remove_from_cart', { productId: product.id || product.productId, quantity });
+}
+
+// ============================================================================
 // E-COMMERCE GA4 - Tracking Funnel Paiement
 // ============================================================================
 
