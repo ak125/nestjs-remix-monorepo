@@ -1,8 +1,9 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, json, redirect } from "@remix-run/node";
 import { useLoaderData, useActionData, Link } from "@remix-run/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from 'sonner';
 import { requireAuth } from "../auth/unified.server";
+import { trackAddPaymentInfo } from "~/utils/analytics";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
 
@@ -372,7 +373,12 @@ export default function PaymentPage() {
 
   console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
   console.log('👤 User:', user?.email || 'unknown');
-  
+
+  // 📊 GA4: Tracker l'info paiement
+  useEffect(() => {
+    trackAddPaymentInfo(order.totalTTC || 0, 'card');
+  }, []);
+
   // Handler pour soumettre avec fetch + header X-Fetch-Body
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

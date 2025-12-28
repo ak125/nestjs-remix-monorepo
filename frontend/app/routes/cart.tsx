@@ -34,10 +34,11 @@ import {
   ArrowRight,
   ChevronLeft,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getCart } from "../services/cart.server";
+import { trackViewCart } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
@@ -513,6 +514,13 @@ export default function CartPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // 📊 GA4: Tracker la vue du panier
+  useEffect(() => {
+    if (cart?.items?.length) {
+      trackViewCart(cart.items, cart.summary?.subtotal || 0);
+    }
+  }, []);
 
   // Afficher une notification temporaire
   const showNotification = (type: "success" | "error", message: string) => {
