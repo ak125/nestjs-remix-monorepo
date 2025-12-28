@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useCart } from "../../hooks/useCart";
+import { trackViewItem, trackAddToCart } from "../../utils/analytics";
 import { StarRating } from "../common/StarRating";
 import { BrandLogo } from "../ui/BrandLogo";
 
@@ -116,6 +117,14 @@ export function PieceDetailModal({
         });
 
         setPiece(pieceData);
+
+        // GA4: Tracker la vue du produit
+        trackViewItem({
+          id: String(pieceData.id),
+          name: pieceData.nom,
+          price: pieceData.prix_ttc,
+          brand: pieceData.marque,
+        });
         setSelectedImage(pieceData.image || "");
       } catch (err) {
         console.error("❌ Erreur chargement pièce:", err);
@@ -161,6 +170,14 @@ export function PieceDetailModal({
 
   const handleAddToCart = async () => {
     if (!piece) return;
+
+    // GA4: Tracker l'ajout au panier
+    trackAddToCart({
+      id: String(piece.id),
+      name: piece.nom,
+      price: piece.prix_ttc,
+      brand: piece.marque,
+    }, 1);
 
     setAddingToCart(true);
     try {

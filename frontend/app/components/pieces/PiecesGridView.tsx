@@ -8,6 +8,7 @@
 import React, { useEffect, useState } from "react";
 
 import { useCart } from "../../hooks/useCart";
+import { trackAddToCart } from "../../utils/analytics";
 import { type PieceData } from "../../types/pieces-route.types";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
@@ -82,6 +83,17 @@ export function PiecesGridView({
     }
 
     console.log("🛒 Click Ajouter panier, piece:", pieceId);
+
+    // GA4: Tracker l'ajout au panier
+    const piece = pieces.find(p => p.id === pieceId);
+    if (piece) {
+      trackAddToCart({
+        id: String(piece.id),
+        name: piece.name,
+        price: piece.price,
+        brand: piece.brand,
+      }, 1);
+    }
 
     // Marquer comme en cours
     setLoadingItems((prev) => new Set(prev).add(pieceId));
