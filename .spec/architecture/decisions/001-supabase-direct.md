@@ -423,7 +423,7 @@ await supabase
 
 - **ADR-002**: Monorepo Architecture (NestJS + Remix) - Justifie centralisation data layer
 - **ADR-003**: Design Tokens Strategy - Indépendant de cette décision
-- **ADR-005**: Meilisearch for Search - Complémentaire (search vs transactionnal data)
+- **ADR-005**: V-Level Calculator - Architecture de calcul des niveaux vehicules
 
 ## References
 
