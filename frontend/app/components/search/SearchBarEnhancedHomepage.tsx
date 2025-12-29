@@ -6,16 +6,18 @@
  * - Raccourcis clavier (Cmd/Ctrl + K)
  * - Recherches populaires
  * - Preview des résultats en temps réel
+ *
+ * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
 import { Form, useNavigate } from '@remix-run/react';
-import { 
-  Search, 
-  X, 
-  Loader2, 
-  TrendingUp, 
-  History, 
-  Package, 
+import {
+  Search,
+  X,
+  Loader2,
+  TrendingUp,
+  History,
+  Package,
   Tag,
   ArrowRight,
   Zap,
@@ -25,6 +27,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
 import { cn } from '../../lib/utils';
+import { scheduleIdleCallback } from '../../utils/performance.utils';
 
 interface SearchBarEnhancedHomepageProps {
   initialQuery?: string;
@@ -83,14 +86,20 @@ export function SearchBarEnhancedHomepage({
   }, []);
 
   // Sauvegarder une recherche récente
+  // ⚡ Différé avec scheduleIdleCallback pour éviter de bloquer l'INP
   const saveRecentSearch = (searchQuery: string) => {
     const updated = [
       searchQuery,
       ...recentSearches.filter(s => s !== searchQuery)
     ].slice(0, 5);
-    
+
+    // Mettre à jour l'état immédiatement pour UX réactive
     setRecentSearches(updated);
-    localStorage.setItem('recentSearches', JSON.stringify(updated));
+
+    // Différer l'écriture localStorage au temps idle
+    scheduleIdleCallback(() => {
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+    });
   };
 
   // Raccourci clavier Cmd/Ctrl + K

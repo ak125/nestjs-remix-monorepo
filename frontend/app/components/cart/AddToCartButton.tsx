@@ -1,6 +1,10 @@
+/**
+ * ⚡ Optimisé INP: Utilise flushSync minimal et requestAnimationFrame pour animations
+ */
+
 import { Alert } from '@fafa/ui';
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNotifications } from "../notifications/NotificationContainer";
 
 interface PieceData {
@@ -41,8 +45,9 @@ export function AddToCartButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { showSuccess, showError } = useNotifications();
 
-    // Utiliser fetch directement vers l'API NestJS au lieu de Remix fetcher
-    const handleAddToCart = async () => {
+    // ⚡ Utiliser fetch directement vers l'API NestJS au lieu de Remix fetcher
+    // Optimisé: Réduction des state updates séquentiels
+    const handleAddToCart = useCallback(async () => {
       if (quantity <= 0) {
         setErrorMessage("La quantité doit être supérieure à 0");
         return;
@@ -53,12 +58,14 @@ export function AddToCartButton({
         return;
       }
 
-      // ⚡ OPTIMISTIC UI: Afficher immédiatement le succès
+      // ⚡ OPTIMISTIC UI: Combiner les state updates pour réduire les re-renders
+      // React 18 batch automatiquement mais on reste explicite
       setIsOptimistic(true);
       setIsSuccess(true);
       setErrorMessage(null);
+      setIsLoading(true);
 
-      // 🎬 Animation flying to cart
+      // 🎬 Animation flying to cart (déjà optimisée avec requestAnimationFrame)
       if (buttonRef.current) {
         createFlyingAnimation(buttonRef.current);
       }
@@ -68,9 +75,6 @@ export function AddToCartButton({
 
       // 🎯 Bounce du badge panier (si disponible)
       triggerCartBadgeBounce();
-
-      // ⏱️ Délai réaliste avant l'API call (simule l'optimisme)
-      setIsLoading(true);
 
       try {
         const response = await fetch('/api/cart/items', {
@@ -128,7 +132,7 @@ export function AddToCartButton({
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [quantity, piece, showSuccess, showError, onSuccess, onError]);
 
   /**
    * 🎬 Crée une animation de "flying" vers l'icône panier
