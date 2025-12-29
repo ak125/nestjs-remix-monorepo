@@ -628,4 +628,36 @@ export class AdminGammesSeoController {
       );
     }
   }
+
+  // ============== V-LEVEL ENDPOINTS ==============
+
+  /**
+   * 🔄 POST /api/admin/gammes-seo/:pgId/recalculate-vlevel
+   * Recalcule les V-Level pour une gamme spécifique
+   */
+  @Post(':pgId/recalculate-vlevel')
+  async recalculateVLevel(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`🔄 POST /api/admin/gammes-seo/${pgId}/recalculate-vlevel`);
+
+      const result = await this.gammesSeoService.recalculateVLevel(pgId);
+
+      return {
+        success: true,
+        message: result.message,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error recalculating V-Level for gamme ${pgId}:`, error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors du recalcul V-Level',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

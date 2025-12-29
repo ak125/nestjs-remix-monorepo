@@ -1,7 +1,7 @@
 ---
 title: "AI-COS Operating System"
 status: active
-version: 2.3.0
+version: 2.7.0
 authors: [Product Team, Tech Team]
 created: 2025-11-18
 updated: 2025-12-29
@@ -1332,6 +1332,197 @@ Le contenu technique vehicule (pannes, symptomes, reparations, entretien) est or
 - **Versionne** : Git history complet
 - **Leger** : Markdown, pas de fichiers lourds
 
+## Systeme de Validation des Donnees Vehicules
+
+### REGLE D'OR
+
+> **On ne JAMAIS ajoute une info brute (web, forum, crawler) directement dans les fiches.**
+
+| Workflow | Resultat |
+|----------|----------|
+| ❌ Raw Web → Fiche | INTERDIT |
+| ✅ Raw Web → SQL Staging → Validation → Git JSON → Fiche | CORRECT |
+
+### Architecture Hybride : SQL Staging + Git Validated
+
+| Couche | Stockage | Contenu |
+|--------|----------|---------|
+| **Staging** | `__vehicle_staging` (SQL) | Donnees brutes, non validees |
+| **Validated** | `/data/vehicles/*.json` (Git) | Donnees validees |
+| **Fiches** | `/docs/vehicles/*.md` (Git) | Fiches generees |
+
+```
+┌─────────────────┐
+│   Sources Web   │ (forums, RTA, constructeur)
+└────────┬────────┘
+         │ collect.py
+         ▼
+┌─────────────────┐
+│  SQL Staging    │ __vehicle_staging (status: pending)
+└────────┬────────┘
+         │ validate.py (Triple Verification)
+         ▼
+┌─────────────────┐
+│   Git JSON      │ /data/vehicles/*.json (status: validated)
+└────────┬────────┘
+         │ generate.py
+         ▼
+┌─────────────────┐
+│  Fiches MD      │ /docs/vehicles/*.md
+└─────────────────┘
+```
+
+### Securite : FicheGenerator Isole
+
+```python
+class FicheGenerator:
+    """
+    REGLE DE SECURITE : Ce generateur n'a JAMAIS acces au SQL staging.
+    Il lit UNIQUEMENT les fichiers JSON valides dans Git.
+    """
+    ALLOWED_SOURCES = ["data/vehicles/**/*.json"]  # Git only
+
+    def __init__(self):
+        # ⛔ PAS de connexion DB - interdit par design
+        self.db = None
+```
+
+### Systeme de Triple Verification
+
+#### Verification 1 — Croisement Multi-Sources
+
+L'IA doit trouver **au moins 2 sources differentes** confirmant l'information :
+
+| Source | Poids |
+|--------|-------|
+| Constructeur officiel | 1.0 |
+| Revue Technique Auto | 0.95 |
+| Base pieces OEM | 0.85 |
+| Forum specialise | 0.6 |
+| YouTube garage pro | 0.5 |
+| Forum generaliste | 0.3 |
+
+**Regle** : Minimum **2 sources differentes** obligatoires.
+
+#### Verification 2 — Reference OEM/Constructeur
+
+Pour les donnees techniques, on verifie la correspondance :
+
+| Element | Verification |
+|---------|--------------|
+| Code moteur | K9K 708, K9K 732, F4R 830... |
+| References OEM | Courroie CT1065, Galet VKMA06134... |
+| Tableau constructeur | Intervalles officiels |
+
+**Regle** : Si une info ne correspond a AUCUN moteur ou AUCUNE reference OEM → status = `probable_false`
+
+#### Verification 3 — Regles Metier Internes
+
+Fichier de regles pour detecter les aberrations :
+
+| Type | Min | Max |
+|------|-----|-----|
+| Courroie distribution | 60 000 km | 200 000 km |
+| Vidange | 10 000 km | 30 000 km |
+| Liquide frein | 2 ans | 4 ans |
+
+**Regle** : Valeur hors fourchette → REJET automatique
+
+### Seuils de Confiance
+
+| Score | Action |
+|-------|--------|
+| **≥ 0.90** | Auto-approve ✅ Publication automatique |
+| **0.75 – 0.90** | Validation humaine OU IA specialisee 🔍 |
+| **< 0.75** | REJET automatique ❌ |
+
+```python
+class Validator:
+    THRESHOLDS = {
+        "auto_approve": 0.90,
+        "manual_review": 0.75,
+        "auto_reject": 0.75  # < this value
+    }
+
+    def validate(self, item):
+        confidence = self._calculate_confidence(item)
+
+        if confidence >= self.THRESHOLDS["auto_approve"]:
+            return "approved"
+        elif confidence >= self.THRESHOLDS["manual_review"]:
+            return "pending_review"
+        else:
+            return "rejected"
+```
+
+### Pipeline Simplifie : 3 Scripts
+
+```
+collect.py → validate.py → generate.py
+    ↓            ↓              ↓
+SQL Staging   Git JSON      Markdown
+(pending)    (validated)    (fiches)
+```
+
+#### Script 1 — collect.py (IA Collecte)
+
+- Recherche web multi-sources (forums, RTA, constructeur)
+- Extraction structuree via Claude
+- Stockage SQL staging (status: pending, confidence: 0.0)
+
+```bash
+python scripts/collect.py --vehicle "renault_clio_3_k9k" --sources web,forums,rta
+```
+
+#### Script 2 — validate.py (Triple Verification + Gate)
+
+- Verification 1 : Croisement multi-sources
+- Verification 2 : Reference OEM/constructeur
+- Verification 3 : Regles metier
+- Gate : Export vers Git JSON si confidence >= 0.75
+
+```bash
+python scripts/validate.py --vehicle "renault_clio_3_k9k" --auto-approve
+```
+
+#### Script 3 — generate.py (Generation Fiches)
+
+- Lit UNIQUEMENT Git JSON (⛔ jamais SQL)
+- Genere fiches Markdown
+- Aucune connexion DB par design
+
+```bash
+python scripts/generate.py --vehicle "renault_clio_3_k9k"
+```
+
+### Modele de Generation : 100% IA + Validation Humaine
+
+| Etape | Responsable | Action |
+|-------|-------------|--------|
+| Generation | **IA (Claude)** | Genere 100% du contenu |
+| Validation | **Humain** | Review et approbation |
+| Publication | **Script** | Git commit + RAG index |
+
+**Regle fondamentale** : L'humain ne redige JAMAIS - il valide seulement.
+
+### Balises de Generation
+
+| Balise | Source | Description |
+|--------|--------|-------------|
+| `<!-- AUTO:BEGIN:* -->` | SQL/JSON | Donnees structurees (templates Jinja2) |
+| `<!-- AI:GENERATED -->` | LLM | Contenu editorial genere par Claude |
+
+### Workflow Complet
+
+```
+1. collect.py   → Collecte IA multi-sources → SQL staging (pending)
+2. validate.py  → Triple Verification → confidence score
+3. Gate         → Si >= 0.75 → Export Git JSON
+4. generate.py  → Lit Git JSON → Genere Markdown
+5. Commit       → Git commit automatique
+6. RAG          → Indexation namespace knowledge:vehicles
+```
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -1341,6 +1532,7 @@ Le contenu technique vehicule (pannes, symptomes, reparations, entretien) est or
 
 ## Change Log
 
+- **2025-12-29 v2.7.0** : Systeme Validation Donnees - REGLE D'OR (jamais info brute web → fiche), architecture hybride SQL staging + Git validated, Triple Verification (multi-sources avec poids, OEM, regles metier), seuils confiance (≥0.90 auto, 0.75-0.90 review, <0.75 rejet), Pipeline 3 scripts (collect/validate/generate), modele 100% IA + validation humaine
 - **2025-12-29 v2.3.0** : Ajout section Fiches Documentaires Vehicules (pannes, symptomes, entretien)
 - **2025-12-29 v2.2.0** : Ajout section Fiches Documentaires Pricing (tracabilite tarifs fournisseurs)
 - **2025-12-29 v2.1.1** : Mise a jour references fichiers renommes (ai-cos-vision.md, ai-cos-enrichment-plan.md)
