@@ -36,9 +36,9 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 
-import { trackViewCart } from "~/utils/analytics";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { trackViewCart } from "~/utils/analytics";
 import { getCart } from "../services/cart.server";
 
 // 🤖 SEO: Page transactionnelle non indexable

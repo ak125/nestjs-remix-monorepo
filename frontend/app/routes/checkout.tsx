@@ -8,8 +8,8 @@ import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-
 import { useEffect } from "react";
 import { toast } from 'sonner';
 
-import { trackBeginCheckout } from "~/utils/analytics";
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
+import { trackBeginCheckout } from "~/utils/analytics";
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
 
