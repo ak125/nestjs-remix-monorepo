@@ -14,9 +14,10 @@
  */
 
 import { useEffect, useState, useRef } from "react";
+
+import { throttle } from "../../utils/performance.utils";
 import { Navbar } from "../Navbar";
 import { TopBar } from "./TopBar";
-import { throttle } from "../../utils/performance.utils";
 
 interface NavigationHeaderProps {
   logo: string;
