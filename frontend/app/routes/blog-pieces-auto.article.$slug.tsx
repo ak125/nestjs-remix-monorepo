@@ -15,11 +15,12 @@ import {
   Tag,
 } from "lucide-react";
 
-// Error components
-import { Error410 } from "~/components/errors/Error410";
-import { Error404 } from "~/components/errors/Error404";
 import { useState } from "react";
 import { toast } from "sonner";
+
+// Error components
+import { Error404 } from "~/components/errors/Error404";
+import { Error410 } from "~/components/errors/Error410";
 
 // UI Components
 import { HtmlContent } from "~/components/seo/HtmlContent";
