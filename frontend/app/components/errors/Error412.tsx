@@ -1,5 +1,7 @@
 import { Link } from "@remix-run/react";
+import { useEffect } from "react";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
+import { ErrorSearchBar } from "./ErrorSearchBar";
 
 interface Error412Props {
   url?: string;
@@ -22,6 +24,19 @@ export function Error412({
     message: "Condition préalable échouée",
     metadata: { condition, requirement },
   });
+
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-amber-100">
@@ -55,6 +70,11 @@ export function Error412({
                 <p className="font-mono text-sm text-gray-800 break-all">{url}</p>
               </div>
             )}
+
+            {/* Barre de recherche */}
+            <div className="mb-8">
+              <ErrorSearchBar placeholder="Rechercher une pièce, un véhicule..." />
+            </div>
           </div>
 
           {/* Détails de l'erreur */}
@@ -141,7 +161,7 @@ export function Error412({
               </button>
 
               <Link
-                to="/support/contact"
+                to="/contact"
                 className="group flex flex-col items-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
               >
                 <svg className="w-8 h-8 text-purple-500 mb-3 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,8 +238,8 @@ export function Error412({
             <div className="bg-white rounded-lg shadow-sm p-6">
               <p className="text-gray-600">
                 Si le problème persiste après avoir essayé ces solutions,{" "}
-                <Link 
-                  to="/support/contact" 
+                <Link
+                  to="/contact"
                   className="text-yellow-600 hover:text-yellow-700 font-medium"
                 >
                   contactez notre support technique

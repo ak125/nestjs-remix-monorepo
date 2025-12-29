@@ -43,6 +43,19 @@ export function Error503({
     }
   }, [countdown, isRetrying]);
 
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
@@ -140,13 +153,9 @@ export function Error503({
         {/* Info supplémentaire */}
         <div className="mt-8 p-4 bg-white/50 rounded-lg">
           <p className="text-sm text-gray-500">
-            Si le problème persiste, consultez notre{" "}
-            <Link to="/status" className="text-blue-600 hover:underline">
-              page de statut
-            </Link>{" "}
-            ou{" "}
-            <Link to="/support/contact" className="text-blue-600 hover:underline">
-              contactez le support
+            Si le problème persiste,{" "}
+            <Link to="/contact" className="text-blue-600 hover:underline">
+              contactez notre support technique
             </Link>
             .
           </p>

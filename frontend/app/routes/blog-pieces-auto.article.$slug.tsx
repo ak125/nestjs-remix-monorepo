@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
   ArrowLeft,
   Calendar,
@@ -14,6 +14,10 @@ import {
   Bookmark,
   Tag,
 } from "lucide-react";
+
+// Error components
+import { Error410 } from "~/components/errors/Error410";
+import { Error404 } from "~/components/errors/Error404";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -167,6 +171,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
         error: "Slug manquant",
       },
       { status: 400 },
+    );
+  }
+
+  // 🎯 Détection des URLs legacy "entretien-..." qui n'existent plus (78k URLs GSC)
+  // Ces URLs ont été générées pour le sitemap mais le contenu n'a jamais été créé
+  // Retourner 410 Gone pour que Google les retire de l'index
+  const isLegacyEntretienUrl = slug.startsWith('entretien-') &&
+    /-(ampoule|filtre|plaquette|courroie|frein|huile|bougie|batterie|essuie|disque|tambour|roulement|rotule|triangle|biellette|silentbloc|cardan|soufflet|cremaillere|direction|suspension|amortisseur|ressort|barre|stabilisateur|joint|culasse|soupape|segment|piston|bielle|vilebrequin|arbre|came|distribution|pompe|injecteur|turbo|echappement|catalyseur|sonde|capteur|thermostat|radiateur|ventilateur|durite|liquide|antigel|lave|glace|retroviseur|phare|clignotant|feu|stop|recul|antibrouillard|klaxon|avertisseur|demarreur|alternateur|bobine|allumage|faisceau|relais|fusible|contacteur|commodo|interrupteur|bouton|poignee|serrure|barillet|cle|telecommande|antenne|autoradio|haut|parleur|vitre|leve|moteur|mecanisme|regulateur|charniere|compas|verin|hayon|coffre|capot|portiere|aile|pare|choc|calandre|grille|enjoliveur|jante|roue|pneu|valve|ecrou|goujon|cache|enjoliveur)/i.test(slug);
+
+  if (isLegacyEntretienUrl) {
+    // Retourner 410 Gone - Signal à Google que le contenu est définitivement supprimé
+    throw new Response(
+      JSON.stringify({
+        error: 'Content Permanently Removed',
+        code: 'CONTENT_GONE',
+        message: 'Ce contenu n\'est plus disponible sur notre site.',
+        suggestion: 'Utilisez notre recherche pour trouver des guides similaires.',
+        searchUrl: '/search?q=' + encodeURIComponent(slug.replace(/entretien-/i, '').replace(/-/g, ' ').slice(0, 50))
+      }),
+      {
+        status: 410,
+        statusText: 'Gone',
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 
@@ -535,6 +563,66 @@ export default function BlogArticle() {
             )}
           </aside>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ErrorBoundary pour gérer les erreurs 410 Gone (URLs legacy) et 404
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  // Gérer les réponses HTTP (410, 404, etc.)
+  if (isRouteErrorResponse(error)) {
+    // 410 Gone - Contenu définitivement supprimé (URLs legacy "entretien-...")
+    if (error.status === 410) {
+      // Extraire les données JSON si disponibles
+      let errorData: { searchUrl?: string; message?: string } = {};
+      try {
+        if (typeof error.data === 'string') {
+          errorData = JSON.parse(error.data);
+        } else if (error.data) {
+          errorData = error.data;
+        }
+      } catch {
+        // Ignorer les erreurs de parsing
+      }
+
+      return (
+        <Error410
+          url={typeof window !== 'undefined' ? window.location.href : undefined}
+          isOldLink={true}
+          redirectTo={errorData.searchUrl}
+        />
+      );
+    }
+
+    // 404 Not Found
+    if (error.status === 404) {
+      return (
+        <Error404
+          url={typeof window !== 'undefined' ? window.location.href : undefined}
+        />
+      );
+    }
+  }
+
+  // Erreur par défaut
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Une erreur est survenue
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Nous n'avons pas pu charger cet article. Veuillez réessayer.
+        </p>
+        <Link
+          to="/blog-pieces-auto"
+          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          Retour aux articles
+        </Link>
       </div>
     </div>
   );

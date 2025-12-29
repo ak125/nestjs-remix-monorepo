@@ -1,6 +1,8 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
+import { ErrorSearchBar } from "./ErrorSearchBar";
+import { PopularCategories } from "./PopularCategories";
 
 interface Error404Props {
   url?: string;
@@ -25,6 +27,19 @@ export function Error404({
     url,
     message: "Page non trouvée",
   });
+
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
 
   // Récupérer des suggestions dynamiques depuis le backend optimisé
   useEffect(() => {
@@ -99,6 +114,16 @@ export function Error404({
                 </code>
               </div>
             )}
+
+            {/* Barre de recherche intégrée */}
+            <div className="mb-8">
+              <ErrorSearchBar placeholder="Rechercher une pièce, un véhicule..." />
+            </div>
+          </div>
+
+          {/* Catégories populaires */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <PopularCategories title="Catégories populaires" columns={4} />
           </div>
 
           {/* Suggestions intelligentes */}
@@ -210,7 +235,7 @@ export function Error404({
               </button>
 
               <Link
-                to="/support/contact"
+                to="/contact"
                 className="flex items-center justify-center px-6 py-4 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors font-medium"
               >
                 <svg
@@ -389,7 +414,7 @@ export function Error404({
               <p className="text-sm text-gray-500">
                 Si le problème persiste,{" "}
                 <Link
-                  to="/support/contact"
+                  to="/contact"
                   className="text-blue-600 hover:text-blue-800 underline"
                 >
                   contactez notre équipe support
