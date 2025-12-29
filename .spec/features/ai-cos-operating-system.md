@@ -1523,6 +1523,225 @@ python scripts/generate.py --vehicle "renault_clio_3_k9k"
 6. RAG          → Indexation namespace knowledge:vehicles
 ```
 
+### Architecture SQL pour > 5000 Vehicules
+
+Pour supporter plus de 5000 vehicules avec performances optimales, on utilise le partitionnement SQL par marque.
+
+#### Schema Principal avec Partitionnement
+
+```sql
+-- Table principale partitionnee par marque
+CREATE TABLE __vehicles (
+  id text PRIMARY KEY,
+  marque text NOT NULL,
+  modele text NOT NULL,
+  generation text,
+  annee_debut int,
+  annee_fin int,
+  motorisation jsonb,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+) PARTITION BY LIST (marque);
+
+-- Partitions par marque (les plus courantes)
+CREATE TABLE __vehicles_renault PARTITION OF __vehicles FOR VALUES IN ('renault');
+CREATE TABLE __vehicles_peugeot PARTITION OF __vehicles FOR VALUES IN ('peugeot');
+CREATE TABLE __vehicles_citroen PARTITION OF __vehicles FOR VALUES IN ('citroen');
+CREATE TABLE __vehicles_volkswagen PARTITION OF __vehicles FOR VALUES IN ('volkswagen');
+CREATE TABLE __vehicles_autres PARTITION OF __vehicles DEFAULT;
+
+-- Index par marque/modele pour recherche rapide
+CREATE INDEX idx_vehicles_marque_modele ON __vehicles (marque, modele);
+CREATE INDEX idx_vehicles_motorisation ON __vehicles USING GIN (motorisation);
+```
+
+#### Table Symptomes/Pannes
+
+```sql
+CREATE TABLE __vehicle_symptoms (
+  id serial PRIMARY KEY,
+  vehicle_id text REFERENCES __vehicles(id) ON DELETE CASCADE,
+  code text NOT NULL,              -- ex: SYM-CLO3-K9K-001
+  title text NOT NULL,
+  category text NOT NULL,          -- entretien, panne, usure
+  severity text DEFAULT 'medium',  -- low, medium, high, critical
+  signs jsonb,                     -- symptomes observables
+  causes jsonb,                    -- causes possibles
+  fix jsonb,                       -- solutions
+  confidence_score decimal(3,2),   -- 0.00 - 1.00
+  source_count int DEFAULT 0,      -- nombre sources validees
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_symptoms_vehicle ON __vehicle_symptoms (vehicle_id);
+CREATE INDEX idx_symptoms_category ON __vehicle_symptoms (category);
+CREATE INDEX idx_symptoms_confidence ON __vehicle_symptoms (confidence_score);
+```
+
+#### Table Staging (donnees brutes)
+
+```sql
+CREATE TABLE __vehicle_staging (
+  id serial PRIMARY KEY,
+  vehicle_ref text NOT NULL,       -- renault_clio_3_k9k
+  data_type text NOT NULL,         -- symptom, maintenance, part
+  raw_data jsonb NOT NULL,
+  source_url text,
+  source_type text,                -- forum, rta, oem, youtube
+  source_weight decimal(3,2),      -- poids de la source
+  confidence_score decimal(3,2) DEFAULT 0.0,
+  status text DEFAULT 'pending',   -- pending, validated, rejected
+  validated_at timestamptz,
+  validated_by text,               -- human_user_id ou ai_agent
+  rejection_reason text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_staging_status ON __vehicle_staging (status);
+CREATE INDEX idx_staging_vehicle ON __vehicle_staging (vehicle_ref);
+```
+
+#### Avantages du Partitionnement
+
+| Aspect | Benefice |
+|--------|----------|
+| Performance | Requetes filtrées par marque = scan partition unique |
+| Maintenance | Vacuum/analyze par partition |
+| Scalabilite | Ajout nouvelles marques sans impact |
+| Archive | DROP partition pour purge anciens modeles |
+
+### Modele Hybride : Zones AUTO + MANUAL
+
+Pour les fiches avec contenu mixte (genere + manuel), on preserve les zones manuelles lors des regenerations.
+
+#### Patterns de Zones
+
+```markdown
+<!-- AUTO:BEGIN:motorisation -->
+## Motorisation
+K9K 832 - 1.5 dCi 90ch
+<!-- AUTO:END:motorisation -->
+
+<!-- MANUAL:BEGIN:astuces_garage -->
+## Astuces de Garage
+> Note du mécanicien : Sur ce moteur, toujours...
+<!-- MANUAL:END:astuces_garage -->
+
+<!-- AI:GENERATED:2025-12-29 -->
+Le moteur K9K 832 équipe la Clio 3...
+<!-- AI:END -->
+```
+
+#### HybridFicheGenerator
+
+```python
+import re
+from pathlib import Path
+
+class HybridFicheGenerator:
+    """
+    Generateur qui preserve les zones MANUAL lors des regenerations.
+    Lit UNIQUEMENT depuis Git JSON - jamais de connexion SQL.
+    """
+
+    MANUAL_PATTERN = r'<!-- MANUAL:BEGIN:(\w+) -->.*?<!-- MANUAL:END:\1 -->'
+    AUTO_PATTERN = r'<!-- AUTO:BEGIN:(\w+) -->.*?<!-- AUTO:END:\1 -->'
+
+    def __init__(self):
+        self.db = None  # ⛔ JAMAIS de connexion SQL par design
+
+    def regenerate(self, fiche_path: Path, json_data: dict) -> str:
+        """
+        Regenere une fiche en preservant les zones MANUAL.
+        """
+        # 1. Lire fiche existante
+        existing_content = ""
+        if fiche_path.exists():
+            existing_content = fiche_path.read_text()
+
+        # 2. Extraire zones MANUAL a preserver
+        manual_zones = self._extract_manual_zones(existing_content)
+
+        # 3. Generer nouveau contenu AUTO
+        new_content = self._generate_auto_content(json_data)
+
+        # 4. Fusionner : nouveau AUTO + ancien MANUAL
+        final_content = self._merge_zones(new_content, manual_zones)
+
+        return final_content
+
+    def _extract_manual_zones(self, content: str) -> dict:
+        """Extrait toutes les zones MANUAL existantes."""
+        zones = {}
+        for match in re.finditer(self.MANUAL_PATTERN, content, re.DOTALL):
+            zone_name = match.group(1)
+            zones[zone_name] = match.group(0)
+        return zones
+
+    def _generate_auto_content(self, json_data: dict) -> str:
+        """Genere le contenu AUTO depuis les donnees JSON validees."""
+        # Template Jinja2 ou string formatting
+        content = f"""# {json_data['title']}
+
+<!-- AUTO:BEGIN:motorisation -->
+## Motorisation
+{json_data.get('motorisation', 'Non specifie')}
+<!-- AUTO:END:motorisation -->
+
+<!-- AUTO:BEGIN:entretien -->
+## Entretien
+{self._format_entretien(json_data.get('entretien', []))}
+<!-- AUTO:END:entretien -->
+
+<!-- AUTO:BEGIN:pannes -->
+## Pannes Courantes
+{self._format_pannes(json_data.get('pannes', []))}
+<!-- AUTO:END:pannes -->
+"""
+        return content
+
+    def _merge_zones(self, new_content: str, manual_zones: dict) -> str:
+        """Fusionne nouveau contenu avec zones MANUAL preservees."""
+        final = new_content
+
+        # Ajouter les zones MANUAL a la fin ou a leur position originale
+        for zone_name, zone_content in manual_zones.items():
+            marker = f"<!-- MANUAL_PLACEHOLDER:{zone_name} -->"
+            if marker in final:
+                final = final.replace(marker, zone_content)
+            else:
+                # Ajouter a la fin avant le footer
+                final += f"\n\n{zone_content}"
+
+        return final
+
+    def _format_entretien(self, items: list) -> str:
+        return "\n".join([f"- {item}" for item in items]) or "Aucun"
+
+    def _format_pannes(self, items: list) -> str:
+        return "\n".join([f"- {item}" for item in items]) or "Aucune"
+```
+
+#### Workflow Regeneration
+
+```
+1. Lecture fiche existante
+2. Extraction zones MANUAL (preservees)
+3. Lecture Git JSON (donnees validees)
+4. Generation nouveau contenu AUTO
+5. Fusion AUTO + MANUAL
+6. Ecriture fiche finale
+7. Git commit
+```
+
+#### Regles de Preservation
+
+| Zone | Regeneration | Preservation |
+|------|--------------|--------------|
+| `AUTO:BEGIN/END` | ✅ Regenere | ❌ Non preserve |
+| `MANUAL:BEGIN/END` | ❌ Non touche | ✅ Toujours preserve |
+| `AI:GENERATED` | ✅ Peut etre regenere | ⚠️ Selon config |
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -1532,6 +1751,7 @@ python scripts/generate.py --vehicle "renault_clio_3_k9k"
 
 ## Change Log
 
+- **2025-12-29 v2.7.1** : Architecture SQL pour > 5000 vehicules (partitionnement par marque, tables __vehicles, __vehicle_symptoms, __vehicle_staging), Modele Hybride zones AUTO + MANUAL (HybridFicheGenerator avec preservation zones manuelles lors regenerations)
 - **2025-12-29 v2.7.0** : Systeme Validation Donnees - REGLE D'OR (jamais info brute web → fiche), architecture hybride SQL staging + Git validated, Triple Verification (multi-sources avec poids, OEM, regles metier), seuils confiance (≥0.90 auto, 0.75-0.90 review, <0.75 rejet), Pipeline 3 scripts (collect/validate/generate), modele 100% IA + validation humaine
 - **2025-12-29 v2.3.0** : Ajout section Fiches Documentaires Vehicules (pannes, symptomes, entretien)
 - **2025-12-29 v2.2.0** : Ajout section Fiches Documentaires Pricing (tracabilite tarifs fournisseurs)
