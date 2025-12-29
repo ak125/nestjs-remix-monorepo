@@ -1523,6 +1523,537 @@ python scripts/generate.py --vehicle "renault_clio_3_k9k"
 6. RAG          → Indexation namespace knowledge:vehicles
 ```
 
+### Pipeline d'Alimentation Automatise (7 Etapes)
+
+#### Sources d'Information
+
+| Source | Type | Fiabilite | Validation |
+|--------|------|-----------|------------|
+| TecDoc (API/export) | Structuree | Haute | Automatique |
+| PHP dump (migration) | Legacy | Moyenne | Manuelle |
+| Docs constructeur | Officielle | Haute | Automatique |
+| Expertise atelier | Interne | Haute | Automatique |
+| Retours clients | Support | Moyenne | Review |
+| Forums specialises | Externe | Basse | Stricte |
+
+#### Diagramme Pipeline Complet
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  SOURCES D'INFORMATION                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  • TecDoc (API/export)     • Forums (scraping valide)              │
+│  • PHP dump (migration)    • Retours clients (tickets support)     │
+│  • Docs constructeur       • Expertise atelier                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. EXTRACTION IA (Claude)                                          │
+│  └─ Raw text → JSON structure (code, title, signs, causes, fix)    │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  2. VALIDATION SCHEMA (Pydantic)                                    │
+│  ├─ Validation structure obligatoire                               │
+│  ├─ Detection doublons automatique                                 │
+│  └─ Score confiance selon source                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  3. ENRICHISSEMENT RAG                                              │
+│  ├─ Recherche retours clients similaires                           │
+│  ├─ Claude : reformulation pro, ajout contexte                     │
+│  └─ Liens : pieces concernees, codes OBD associes                  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  4. STOCKAGE (status: pending_validation)                           │
+│  └─ INSERT INTO __vehicle_symptoms (...) VALUES (...)              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  5. VALIDATION HUMAINE (Interface Admin)                            │
+│  ├─ ✅ Approve → status = 'approved'                               │
+│  ├─ ❌ Reject → status = 'rejected' + motif                        │
+│  └─ 📝 Edit → corrections manuelles                                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  6. GENERATION FICHE (automatique post-approval)                    │
+│  ├─ Script: python generate_vehicle_docs.py --vehicle <id>         │
+│  ├─ Update sections AUTO:BEGIN/END                                 │
+│  └─ Commit Git automatique                                         │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  7. INDEXATION RAG                                                  │
+│  └─ Weaviate namespace: knowledge:diagnostic                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Schemas Pydantic
+
+```python
+from pydantic import BaseModel, validator, Field
+from typing import List, Optional
+from enum import Enum
+from datetime import datetime
+
+class SourceType(str, Enum):
+    """Types de sources avec niveaux de confiance implicites"""
+    TECDOC = "tecdoc"           # Haute confiance (0.9)
+    PHP_DUMP = "php_dump"       # Moyenne confiance (0.7)
+    CONSTRUCTEUR = "constructeur"  # Haute confiance (0.95)
+    EXPERTISE = "expertise_atelier"  # Haute confiance (0.9)
+    CLIENT = "retour_client"    # Moyenne confiance (0.6)
+    FORUM = "forum"             # Basse confiance (0.4)
+
+CONFIDENCE_SCORES = {
+    SourceType.TECDOC: 0.9,
+    SourceType.PHP_DUMP: 0.7,
+    SourceType.CONSTRUCTEUR: 0.95,
+    SourceType.EXPERTISE: 0.9,
+    SourceType.CLIENT: 0.6,
+    SourceType.FORUM: 0.4,
+}
+
+class SourceInfo(BaseModel):
+    """Information sur la source d'une donnee"""
+    type: SourceType
+    url: Optional[str] = None
+    date: datetime = Field(default_factory=datetime.now)
+    validated_by: Optional[str] = None
+
+    @property
+    def confidence(self) -> float:
+        return CONFIDENCE_SCORES.get(self.type, 0.5)
+
+class Symptom(BaseModel):
+    """Schema de validation pour un symptome vehicule"""
+    code: str = Field(..., min_length=3, max_length=50)
+    title: str = Field(..., min_length=5, max_length=200)
+    category: str = Field(..., pattern=r'^(injection|moteur|transmission|freinage|electricite|depollution|climatisation|autres)$')
+    severity: str = Field(default="medium", pattern=r'^(low|medium|high|critical)$')
+    signs: List[str] = Field(..., min_items=1)
+    causes: List[str] = Field(..., min_items=1)
+    fix: List[str] = Field(..., min_items=1)
+    obd_codes: List[str] = Field(default_factory=list)
+    pieces_concernees: List[str] = Field(default_factory=list)
+    source: SourceInfo
+
+    @validator('title')
+    def title_not_empty(cls, v):
+        if not v or len(v.strip()) < 5:
+            raise ValueError('title trop court (min 5 caracteres)')
+        return v.strip()
+
+    @validator('signs', 'causes', 'fix')
+    def at_least_one_item(cls, v):
+        if len(v) < 1:
+            raise ValueError('au moins un element requis')
+        return [item.strip() for item in v if item.strip()]
+```
+
+#### VehicleFichePipeline Class
+
+```python
+from supabase import Client
+from anthropic import Anthropic
+from datetime import datetime
+import subprocess
+import json
+
+class VehicleFichePipeline:
+    """
+    Pipeline complet d'alimentation des fiches vehicules.
+
+    Workflow:
+    1. Reception info brute
+    2. Extraction IA (Claude)
+    3. Validation Pydantic
+    4. Enrichissement RAG
+    5. Stockage pending
+    6. Validation humaine
+    7. Generation fiche + Commit + Index RAG
+    """
+
+    def __init__(self, db: Client, claude: Anthropic, rag_service):
+        self.db = db
+        self.claude = claude
+        self.rag = rag_service
+
+    async def process_new_info(self, vehicle_id: str, raw_info: str, source: SourceInfo) -> dict:
+        """
+        Etapes 1-5 : Reception → Stockage pending
+        """
+        # 1. Reception (raw_info)
+
+        # 2. Extraction IA
+        structured = await self._extract_with_claude(raw_info)
+
+        # 3. Validation schema Pydantic
+        try:
+            symptom = Symptom(**structured, source=source)
+        except ValidationError as e:
+            return {"status": "validation_failed", "errors": e.errors()}
+
+        # 4. Detection doublon
+        existing = await self._check_duplicate(vehicle_id, symptom.code)
+        if existing:
+            return {"status": "duplicate", "existing_id": existing["id"]}
+
+        # 4b. Enrichissement RAG
+        enriched = await self._enrich_with_rag(symptom, vehicle_id)
+
+        # 5. Stockage pending
+        result = self.db.table("__vehicle_symptoms").insert({
+            "vehicle_id": vehicle_id,
+            "code": symptom.code,
+            "title": symptom.title,
+            "category": symptom.category,
+            "severity": symptom.severity,
+            "signs": symptom.signs,
+            "causes": symptom.causes,
+            "fix": symptom.fix,
+            "obd_codes": symptom.obd_codes,
+            "pieces_concernees": symptom.pieces_concernees,
+            "source_type": source.type.value,
+            "confidence_score": source.confidence,
+            "status": "pending_validation"
+        }).execute()
+
+        return {"status": "pending", "symptom_id": result.data[0]["id"]}
+
+    async def approve(self, symptom_id: str, approved_by: str) -> dict:
+        """
+        Etapes 6-7 : Validation humaine → Publication
+        """
+        # 6. Update status
+        self.db.table("__vehicle_symptoms").update({
+            "status": "approved",
+            "validated_by": approved_by,
+            "validated_at": datetime.now().isoformat()
+        }).eq("id", symptom_id).execute()
+
+        # Get vehicle_id
+        symptom = self.db.table("__vehicle_symptoms").select("vehicle_id").eq("id", symptom_id).single().execute()
+        vehicle_id = symptom.data["vehicle_id"]
+
+        # 7a. Regenerer fiche
+        fiche_path = await self._regenerate_fiche(vehicle_id)
+
+        # 7b. Commit Git
+        subprocess.run([
+            "git", "add", fiche_path,
+            "&&", "git", "commit", "-m", f"docs(vehicle): update {vehicle_id} fiche [auto]"
+        ], check=True)
+
+        # 7c. Index RAG
+        await self.rag.index_document(fiche_path, namespace="knowledge:diagnostic")
+
+        return {"status": "published", "vehicle_id": vehicle_id, "fiche_path": fiche_path}
+
+    async def reject(self, symptom_id: str, rejected_by: str, reason: str) -> dict:
+        """Rejeter une information avec motif"""
+        self.db.table("__vehicle_symptoms").update({
+            "status": "rejected",
+            "validated_by": rejected_by,
+            "validated_at": datetime.now().isoformat(),
+            "rejection_reason": reason
+        }).eq("id", symptom_id).execute()
+
+        return {"status": "rejected", "reason": reason}
+
+    async def _extract_with_claude(self, raw_info: str) -> dict:
+        """Extraction structuree via Claude"""
+        response = self.claude.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1000,
+            messages=[{
+                "role": "user",
+                "content": f"""Extrait les informations structurees de ce texte sur un probleme vehicule.
+
+Texte: {raw_info}
+
+Retourne un JSON avec:
+- code: identifiant unique (ex: "egr_encrassee")
+- title: titre court
+- category: une de [injection, moteur, transmission, freinage, electricite, depollution, climatisation, autres]
+- signs: liste des symptomes observables
+- causes: liste des causes possibles
+- fix: liste des solutions/reparations"""
+            }]
+        )
+        return json.loads(response.content[0].text)
+
+    async def _check_duplicate(self, vehicle_id: str, code: str) -> Optional[dict]:
+        """Verifie si un symptome similaire existe deja"""
+        result = self.db.table("__vehicle_symptoms") \
+            .select("id") \
+            .eq("vehicle_id", vehicle_id) \
+            .eq("code", code) \
+            .execute()
+        return result.data[0] if result.data else None
+
+    async def _enrich_with_rag(self, symptom: Symptom, vehicle_id: str) -> Symptom:
+        """Enrichit avec contexte RAG (retours clients similaires)"""
+        similar = await self.rag.search(
+            f"{symptom.title} {vehicle_id}",
+            namespace="knowledge:diagnostic",
+            limit=3
+        )
+        # Enrichissement via Claude si resultats pertinents
+        if similar:
+            # ... enrichissement
+            pass
+        return symptom
+
+    async def _regenerate_fiche(self, vehicle_id: str) -> str:
+        """Regenere la fiche Markdown du vehicule"""
+        generator = FicheGenerator(self.db)
+        return generator.generate_and_save(vehicle_id)
+```
+
+#### FicheGenerator avec Jinja2
+
+```python
+from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
+from datetime import datetime
+from supabase import Client
+
+class FicheGenerator:
+    """
+    Generateur de fiches Markdown avec templates Jinja2.
+
+    REGLE DE SECURITE: Ce generateur n'a JAMAIS acces aux donnees staging.
+    Il lit UNIQUEMENT les donnees validees (status = 'approved').
+    """
+
+    def __init__(self, db: Client, template_dir: str = "templates/fiches"):
+        self.db = db
+        self.env = Environment(loader=FileSystemLoader(template_dir))
+        self.fiche_template = self.env.get_template("vehicle_fiche.md.j2")
+
+    def generate_fiche(self, vehicle_id: str) -> str:
+        """Genere le contenu Markdown de la fiche"""
+        vehicle = self._get_vehicle_data(vehicle_id)
+        symptoms = self._get_approved_symptoms(vehicle_id)
+        maintenance = self._get_maintenance(vehicle_id)
+
+        return self.fiche_template.render(
+            vehicle=vehicle,
+            symptoms=symptoms,
+            maintenance=maintenance,
+            generated_at=datetime.now().isoformat(),
+            schema_version="1.0"
+        )
+
+    def generate_and_save(self, vehicle_id: str) -> str:
+        """Genere et sauvegarde la fiche"""
+        vehicle = self._get_vehicle_data(vehicle_id)
+        content = self.generate_fiche(vehicle_id)
+
+        # Path: docs/vehicles/{marque}/{modele}/fiche.md
+        fiche_path = Path(f"docs/vehicles/{vehicle['marque']}/{vehicle['modele']}/fiche.md")
+        fiche_path.parent.mkdir(parents=True, exist_ok=True)
+        fiche_path.write_text(content)
+
+        return str(fiche_path)
+
+    def _get_vehicle_data(self, vehicle_id: str) -> dict:
+        """Recupere les donnees du vehicule"""
+        result = self.db.table("__vehicles").select("*").eq("id", vehicle_id).single().execute()
+        return result.data
+
+    def _get_approved_symptoms(self, vehicle_id: str) -> list:
+        """Recupere UNIQUEMENT les symptomes valides (status = approved)"""
+        result = self.db.table("__vehicle_symptoms") \
+            .select("*") \
+            .eq("vehicle_id", vehicle_id) \
+            .eq("status", "approved") \
+            .order("category") \
+            .execute()
+        return result.data
+
+    def _get_maintenance(self, vehicle_id: str) -> list:
+        """Recupere les operations d'entretien"""
+        result = self.db.table("__vehicle_maintenance") \
+            .select("*") \
+            .eq("vehicle_id", vehicle_id) \
+            .order("interval_km") \
+            .execute()
+        return result.data
+```
+
+#### Template Jinja2 (vehicle_fiche.md.j2)
+
+```jinja2
+---
+marque: {{ vehicle.marque }}
+modele: {{ vehicle.modele }}
+generation: {{ vehicle.generation }}
+motorisations: {{ vehicle.motorisations | tojson }}
+annees: [{{ vehicle.annee_debut }}, {{ vehicle.annee_fin }}]
+generated_at: {{ generated_at }}
+schema_version: "{{ schema_version }}"
+namespace: knowledge:diagnostic:{{ vehicle.marque | lower }}:{{ vehicle.modele | lower }}
+---
+
+# {{ vehicle.marque }} {{ vehicle.modele }} – {{ vehicle.generation }}
+
+## Resume
+<!-- AI:GENERATED source=claude -->
+{{ vehicle.description | default("Description a generer par IA.") }}
+
+---
+
+## Pannes & Symptomes Frequents
+<!-- AUTO:BEGIN:symptoms source=supabase:__vehicle_symptoms -->
+
+{% for category, items in symptoms | groupby('category') %}
+### {{ category | title }}
+
+{% for symptom in items %}
+#### {{ symptom.title }}
+
+**Signes :**
+{% for sign in symptom.signs %}
+- {{ sign }}
+{% endfor %}
+
+**Causes probables :**
+{% for cause in symptom.causes %}
+- {{ cause }}
+{% endfor %}
+
+**Pistes de reparation :**
+{% for fix in symptom.fix %}
+- {{ fix }}
+{% endfor %}
+
+{% if symptom.obd_codes %}
+**Codes OBD :** {{ symptom.obd_codes | join(', ') }}
+{% endif %}
+
+---
+
+{% endfor %}
+{% endfor %}
+
+<!-- AUTO:END:symptoms -->
+
+---
+
+## Entretien & Intervalles
+<!-- AUTO:BEGIN:maintenance source=supabase:__vehicle_maintenance -->
+
+| Operation | Intervalle | Cout estime |
+|-----------|------------|-------------|
+{% for item in maintenance %}
+| {{ item.operation }} | {{ item.interval_km }} km / {{ item.interval_months }} mois | {{ item.cost_min }}-{{ item.cost_max }}€ |
+{% endfor %}
+
+<!-- AUTO:END:maintenance -->
+
+---
+
+## Sources
+
+- Donnees validees via pipeline AI-COS
+- Generated at: {{ generated_at }}
+```
+
+#### CI/CD GitHub Actions
+
+```yaml
+# .github/workflows/generate-vehicle-fiches.yml
+name: Generate Vehicle Fiches
+
+on:
+  push:
+    paths:
+      - 'data/vehicles/**/*.json'
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+    inputs:
+      vehicle_id:
+        description: 'Vehicle ID to regenerate (or "all")'
+        required: false
+        default: 'all'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate JSON schemas
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s schemas/vehicle.schema.json -d "data/vehicles/**/*.json"
+          ajv validate -s schemas/symptom.schema.json -d "data/symptoms/**/*.json"
+
+  generate:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase jinja2 pydantic
+
+      - name: Generate fiches
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.vehicle_id }}" = "all" ] || [ -z "${{ github.event.inputs.vehicle_id }}" ]; then
+            python scripts/generate_vehicle_docs.py --all
+          else
+            python scripts/generate_vehicle_docs.py --vehicle "${{ github.event.inputs.vehicle_id }}"
+          fi
+
+      - name: Commit generated fiches
+        run: |
+          git config user.name "AI-COS Bot"
+          git config user.email "bot@automecanik.fr"
+          git add docs/vehicles/
+          git diff --staged --quiet || git commit -m "chore: regenerate vehicle fiches [skip ci]"
+          git push
+```
+
+#### Comparatif : Pipeline Manuel vs Automatise
+
+| Aspect | Pipeline Manuel | Pipeline Automatise |
+|--------|-----------------|---------------------|
+| **Validation donnees** | ❌ Manuelle, risque erreurs | ✅ Pydantic automatique |
+| **Tracabilite source** | ❌ Non documentee | ✅ SourceType + confidence |
+| **Detection doublons** | ❌ Manuelle | ✅ Automatique (code unique) |
+| **Enrichissement IA** | ❌ Manuel | ✅ Claude + RAG contextuel |
+| **CI/CD** | ❌ Scripts manuels | ✅ GitHub Actions |
+| **Workflow validation** | ❌ Implicite | ✅ Status explicite (pending → approved/rejected) |
+| **Audit trail** | ❌ Non | ✅ validated_by, validated_at, rejection_reason |
+| **Scalabilite** | ⚠️ Limitee | ✅ 10k+ vehicules |
+
 ### Architecture SQL pour > 5000 Vehicules
 
 Pour supporter plus de 5000 vehicules avec performances optimales, on utilise le partitionnement SQL par marque.
@@ -1751,6 +2282,7 @@ class HybridFicheGenerator:
 
 ## Change Log
 
+- **2025-12-29 v2.7.2** : Pipeline Alimentation Automatise complet (7 etapes avec diagramme), Schemas Pydantic (SourceType, SourceInfo, Symptom avec validators), VehicleFichePipeline class (process_new_info, approve, reject, enrichissement RAG), FicheGenerator avec Jinja2 templates, CI/CD GitHub Actions (validation JSON + generation fiches), Comparatif Pipeline Manuel vs Automatise
 - **2025-12-29 v2.7.1** : Architecture SQL pour > 5000 vehicules (partitionnement par marque, tables __vehicles, __vehicle_symptoms, __vehicle_staging), Modele Hybride zones AUTO + MANUAL (HybridFicheGenerator avec preservation zones manuelles lors regenerations)
 - **2025-12-29 v2.7.0** : Systeme Validation Donnees - REGLE D'OR (jamais info brute web → fiche), architecture hybride SQL staging + Git validated, Triple Verification (multi-sources avec poids, OEM, regles metier), seuils confiance (≥0.90 auto, 0.75-0.90 review, <0.75 rejet), Pipeline 3 scripts (collect/validate/generate), modele 100% IA + validation humaine
 - **2025-12-29 v2.3.0** : Ajout section Fiches Documentaires Vehicules (pannes, symptomes, entretien)
