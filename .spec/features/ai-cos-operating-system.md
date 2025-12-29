@@ -1,7 +1,7 @@
 ---
 title: "AI-COS Operating System"
 status: active
-version: 2.2.0
+version: 2.3.0
 authors: [Product Team, Tech Team]
 created: 2025-11-18
 updated: 2025-12-29
@@ -1257,6 +1257,81 @@ Les mises a jour tarifs fournisseurs sont tracees via des **fiches markdown** da
 - Indexable par RAG (namespace `knowledge:pricing`)
 - Tracabilite complete
 
+## Fiches Documentaires Vehicules
+
+### Principe
+
+Le contenu technique vehicule (pannes, symptomes, reparations, entretien) est organise via des **fiches markdown** dans Git, indexables par le RAG pour recherche semantique.
+
+```
+/docs/vehicles/
+├── pannes/
+│   ├── moteur-diesel-vibrations.md
+│   ├── abs-temoin-allume.md
+│   └── climatisation-ne-refroidit-plus.md
+├── entretien/
+│   ├── intervalles-vidange.md
+│   ├── kit-distribution-timing.md
+│   └── plaquettes-usure-normale.md
+├── symptomes/
+│   ├── bruit-claquement-direction.md
+│   └── fumee-blanche-echappement.md
+└── _template.md
+```
+
+### Structure d'une fiche
+
+```markdown
+# {Type} : {Titre}
+
+**Vehicules concernes :** {Marque Modele (annees)}
+**Symptomes :** {Description courte}
+**Frequence :** {Courante/Rare} ({X}% des cas atelier)
+
+## Causes possibles
+1. Cause principale (X%)
+2. Cause secondaire (Y%)
+
+## Diagnostic
+- Tests a effectuer
+- Codes OBD associes
+
+## Solution
+- Intervention et cout estime
+
+## Pieces liees
+- References produits catalogue
+
+## Sources
+- Origine des informations
+```
+
+### Integration AI-COS
+
+| Agent | Role |
+|-------|------|
+| **SEO Sentinel** | Genere contenu blog/guides depuis fiches |
+| **Support Bot** | Repond aux questions clients via RAG |
+| **Stock Forecaster** | Anticipe demande pieces liees |
+| **Content Bot** | Detecte fiches manquantes ou obsoletes |
+
+### Namespaces RAG
+
+| Namespace | Contenu |
+|-----------|---------|
+| `knowledge:vehicles:pannes` | Fiches pannes et reparations |
+| `knowledge:vehicles:entretien` | Fiches maintenance preventive |
+| `knowledge:vehicles:symptomes` | Fiches diagnostic symptomes |
+
+### Avantages
+
+- **SEO** : Contenu indexable pour blog/guides
+- **IA** : RAG peut repondre "pourquoi mon diesel vibre ?"
+- **Atelier** : Base de connaissance partagee
+- **Ventes** : Suggestions pieces automatiques
+- **Versionne** : Git history complet
+- **Leger** : Markdown, pas de fichiers lourds
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -1266,6 +1341,7 @@ Les mises a jour tarifs fournisseurs sont tracees via des **fiches markdown** da
 
 ## Change Log
 
+- **2025-12-29 v2.3.0** : Ajout section Fiches Documentaires Vehicules (pannes, symptomes, entretien)
 - **2025-12-29 v2.2.0** : Ajout section Fiches Documentaires Pricing (tracabilite tarifs fournisseurs)
 - **2025-12-29 v2.1.1** : Mise a jour references fichiers renommes (ai-cos-vision.md, ai-cos-enrichment-plan.md)
 - **2025-11-19 v2.1.0** : Enrichissement coordination inter-domaines (3 mécanismes, 3 scénarios multi-agents, 4 KPIs coordination, dashboard section)
