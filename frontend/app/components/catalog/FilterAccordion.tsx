@@ -1,6 +1,6 @@
 /**
  * FilterAccordion - Composant pour les filtres de catalogue avec sections pliables
- * 
+ *
  * @features
  * - Filtres par prix (range slider)
  * - Filtres par marques (checkboxes multiples)
@@ -8,7 +8,9 @@
  * - Filtre de disponibilité (en stock uniquement)
  * - Reset des filtres par section
  * - Compteur de filtres actifs
- * 
+ *
+ * ⚡ Optimisé INP: Range sliders debouncés pour éviter les mises à jour excessives
+ *
  * @example
  * <FilterAccordion
  *   filters={filters}
@@ -18,13 +20,14 @@
  */
 
 import { X, Check, DollarSign, Tag, Package, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '../ui/accordion';
+import { debounce } from '../../utils/performance.utils';
 
 export interface FilterOption {
   id: string;
@@ -69,10 +72,71 @@ export function FilterAccordion({
 }: FilterAccordionProps) {
   const [localFilters, setLocalFilters] = useState<FilterData>(filters);
 
+  // ⚡ État local pour les sliders (feedback visuel immédiat)
+  const [sliderValues, setSliderValues] = useState({
+    min: filters.priceRange?.currentMin ?? filters.priceRange?.min ?? 0,
+    max: filters.priceRange?.currentMax ?? filters.priceRange?.max ?? 1000,
+  });
+
+  // Synchroniser les valeurs du slider quand les filtres changent de l'extérieur
+  useEffect(() => {
+    if (filters.priceRange) {
+      setSliderValues({
+        min: filters.priceRange.currentMin,
+        max: filters.priceRange.currentMax,
+      });
+    }
+  }, [filters.priceRange?.currentMin, filters.priceRange?.currentMax]);
+
+  // ⚡ Debounce pour les mises à jour de prix (150ms)
+  const debouncedPriceUpdateRef = useRef(
+    debounce((newFilters: FilterData) => {
+      setLocalFilters(newFilters);
+      onFilterChange?.(newFilters);
+    }, 150)
+  );
+
+  // Cleanup du debounce au démontage
+  useEffect(() => {
+    return () => {
+      debouncedPriceUpdateRef.current.cancel();
+    };
+  }, []);
+
   const updateFilters = (newFilters: FilterData) => {
     setLocalFilters(newFilters);
     onFilterChange?.(newFilters);
   };
+
+  // ⚡ Handler optimisé pour le slider min
+  const handleMinPriceChange = useCallback((value: number) => {
+    // Feedback visuel immédiat
+    setSliderValues(prev => ({ ...prev, min: value }));
+
+    // Mise à jour debouncée vers le parent
+    debouncedPriceUpdateRef.current({
+      ...localFilters,
+      priceRange: {
+        ...localFilters.priceRange!,
+        currentMin: value,
+      },
+    });
+  }, [localFilters]);
+
+  // ⚡ Handler optimisé pour le slider max
+  const handleMaxPriceChange = useCallback((value: number) => {
+    // Feedback visuel immédiat
+    setSliderValues(prev => ({ ...prev, max: value }));
+
+    // Mise à jour debouncée vers le parent
+    debouncedPriceUpdateRef.current({
+      ...localFilters,
+      priceRange: {
+        ...localFilters.priceRange!,
+        currentMax: value,
+      },
+    });
+  }, [localFilters]);
 
   const toggleBrand = (brandId: string) => {
     const updatedBrands = localFilters.brands?.map((brand) =>
@@ -94,6 +158,12 @@ export function FilterAccordion({
 
   const resetPriceRange = () => {
     if (!localFilters.priceRange) return;
+    // ⚡ Reset les valeurs locales immédiatement
+    setSliderValues({
+      min: localFilters.priceRange.min,
+      max: localFilters.priceRange.max,
+    });
+    // Puis met à jour les filtres
     updateFilters({
       ...localFilters,
       priceRange: {
@@ -144,51 +214,38 @@ export function FilterAccordion({
             </AccordionTrigger>
             <AccordionContent className="pb-4">
               <div className="space-y-4">
+                {/* ⚡ Affiche les valeurs locales pour feedback immédiat */}
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-700">
-                    {localFilters.priceRange.currentMin}€
+                    {sliderValues.min}€
                   </span>
                   <span className="text-gray-400">-</span>
                   <span className="font-medium text-gray-700">
-                    {localFilters.priceRange.currentMax}€
+                    {sliderValues.max}€
                   </span>
                 </div>
                 <div className="space-y-2">
+                  {/* ⚡ Slider min avec handler debouncé */}
                   <input
                     type="range"
                     min={localFilters.priceRange.min}
                     max={localFilters.priceRange.max}
-                    value={localFilters.priceRange.currentMin}
-                    onChange={(e) =>
-                      updateFilters({
-                        ...localFilters,
-                        priceRange: {
-                          ...localFilters.priceRange!,
-                          currentMin: parseInt(e.target.value),
-                        },
-                      })
-                    }
+                    value={sliderValues.min}
+                    onChange={(e) => handleMinPriceChange(parseInt(e.target.value))}
                     className="w-full"
                   />
+                  {/* ⚡ Slider max avec handler debouncé */}
                   <input
                     type="range"
                     min={localFilters.priceRange.min}
                     max={localFilters.priceRange.max}
-                    value={localFilters.priceRange.currentMax}
-                    onChange={(e) =>
-                      updateFilters({
-                        ...localFilters,
-                        priceRange: {
-                          ...localFilters.priceRange!,
-                          currentMax: parseInt(e.target.value),
-                        },
-                      })
-                    }
+                    value={sliderValues.max}
+                    onChange={(e) => handleMaxPriceChange(parseInt(e.target.value))}
                     className="w-full"
                   />
                 </div>
-                {(localFilters.priceRange.currentMin !== localFilters.priceRange.min ||
-                  localFilters.priceRange.currentMax !== localFilters.priceRange.max) && (
+                {(sliderValues.min !== localFilters.priceRange.min ||
+                  sliderValues.max !== localFilters.priceRange.max) && (
                   <button
                     onClick={resetPriceRange}
                     className="text-xs text-blue-600 hover:text-blue-700"

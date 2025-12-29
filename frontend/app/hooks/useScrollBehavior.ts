@@ -1,12 +1,17 @@
 /**
  * Hook pour gérer le comportement de scroll de la page
  * Gère le smooth scroll et le bouton "retour en haut"
+ *
+ * ⚡ Optimisé INP: Scroll listener throttlé à 100ms
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { throttle } from '../utils/performance.utils';
 
 export function useScrollBehavior() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  // Garder référence au handler throttlé pour cleanup
+  const throttledHandlerRef = useRef<ReturnType<typeof throttle> | null>(null);
 
   // Active le smooth scroll au montage
   useEffect(() => {
@@ -17,13 +22,18 @@ export function useScrollBehavior() {
   }, []);
 
   // Affiche/masque le bouton de retour en haut
+  // ⚡ Throttlé à 100ms pour réduire l'INP
   useEffect(() => {
-    const handleScroll = () => {
+    throttledHandlerRef.current = throttle(() => {
       setShowScrollTop(window.scrollY > 500);
+    }, 100);
+
+    window.addEventListener('scroll', throttledHandlerRef.current, { passive: true });
+    return () => {
+      if (throttledHandlerRef.current) {
+        window.removeEventListener('scroll', throttledHandlerRef.current);
+      }
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Fonction de scroll vers une section

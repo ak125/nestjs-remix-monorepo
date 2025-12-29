@@ -1,20 +1,22 @@
 /**
  * 🎯 Navigation Header - Architecture à 2 niveaux
- * 
+ *
  * Stratégie Expert :
  * - TopBar (contexte) : visible static, cachée au scroll
  * - Navbar (actions) : sticky, reste visible
- * 
+ *
  * Comportements :
  * - Scroll = 0 : TopBar visible + Navbar normale
  * - Scroll > 40px : TopBar cachée + Navbar sticky compacte
- * 
+ *
  * Performance : 60 FPS, GPU accelerated transforms
+ * ⚡ Optimisé INP: Scroll listener throttlé à 100ms
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Navbar } from "../Navbar";
 import { TopBar } from "./TopBar";
+import { throttle } from "../../utils/performance.utils";
 
 interface NavigationHeaderProps {
   logo: string;
@@ -31,25 +33,31 @@ interface NavigationHeaderProps {
   } | null;
 }
 
-export function NavigationHeader({ 
-  logo, 
+export function NavigationHeader({
+  logo,
   topBarConfig = {
     tagline: "Pièces auto à prix pas cher",
     phone: "01 48 49 78 69",
     showQuickLinks: true
   },
-  user 
+  user
 }: NavigationHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  // Garder référence au handler throttlé pour cleanup
+  const throttledHandlerRef = useRef<ReturnType<typeof throttle> | null>(null);
 
+  // ⚡ Throttlé à 100ms pour réduire l'INP
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 40); // TopBar height
-    };
+    throttledHandlerRef.current = throttle(() => {
+      setIsScrolled(window.scrollY > 40); // TopBar height
+    }, 100);
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', throttledHandlerRef.current, { passive: true });
+    return () => {
+      if (throttledHandlerRef.current) {
+        window.removeEventListener('scroll', throttledHandlerRef.current);
+      }
+    };
   }, []);
 
   return (

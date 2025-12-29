@@ -1,10 +1,13 @@
 /**
  * Hook pour la Command Palette Universal
  * Gère l'état, les raccourcis, et l'historique des commandes
+ *
+ * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
 import { useLocation } from '@remix-run/react'
 import { useState, useEffect, useCallback } from 'react'
+import { scheduleIdleCallback } from '../utils/performance.utils'
 
 interface RecentAction {
   id: string
@@ -32,13 +35,19 @@ export function useCommandPalette() {
   }, [])
 
   // Sauvegarder les actions récentes
+  // ⚡ Différé avec scheduleIdleCallback pour éviter de bloquer l'INP
   const saveRecentActions = useCallback((actions: RecentAction[]) => {
-    try {
-      localStorage.setItem('command-palette-recent', JSON.stringify(actions))
-      setRecentActions(actions)
-    } catch (error) {
-      console.warn('Erreur lors de la sauvegarde des actions récentes:', error)
-    }
+    // Mettre à jour l'état immédiatement pour UX réactive
+    setRecentActions(actions)
+
+    // Différer l'écriture localStorage au temps idle
+    scheduleIdleCallback(() => {
+      try {
+        localStorage.setItem('command-palette-recent', JSON.stringify(actions))
+      } catch (error) {
+        console.warn('Erreur lors de la sauvegarde des actions récentes:', error)
+      }
+    })
   }, [])
 
   // Ajouter une action aux récentes
