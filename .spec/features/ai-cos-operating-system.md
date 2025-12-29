@@ -1,13 +1,13 @@
 ---
 title: "AI-COS Operating System"
 status: active
-version: 2.1.0
+version: 2.2.0
 authors: [Product Team, Tech Team]
 created: 2025-11-18
-updated: 2025-11-19
+updated: 2025-12-29
 relates-to:
-  - ../architecture/006-ai-cos-enrichment.md
-  - ../architecture/005-ai-cos-system.md
+  - ../architecture/ai-cos-enrichment-plan.md
+  - ../architecture/ai-cos-vision.md
   - ../technical/stack-technique-ai-cos.md
 tags: [ai-cos, agents, kpis, orchestration, feature, health-board, modes, coordination]
 priority: critical
@@ -1206,15 +1206,68 @@ GET /api/ai-cos/snapshots/latest
 - [ ] Monitoring Grafana/Loki
 - [ ] Documentation utilisateur finale
 
+## Fiches Documentaires Pricing
+
+### Principe
+
+Les mises a jour tarifs fournisseurs sont tracees via des **fiches markdown** dans Git, sans stocker les fichiers bruts.
+
+```
+/docs/pricing/updates/
+├── tarif-2024-11.md
+├── tarif-2025-01.md
+└── ...
+```
+
+### Structure d'une fiche
+
+```markdown
+# Mise a jour tarif - {Mois} {Annee}
+
+**Date de reception :** JJ/MM/AAAA
+**Source :** Fournisseur XYZ
+**Fichier :** {emplacement du fichier brut}
+**Type :** Prix public + remise + disponibilite
+**Volume :** X lignes
+
+## Modifications cles
+- Description des changements majeurs
+
+## Actions effectuees
+- Import SQL
+- Tables mises a jour
+
+## Historique lie
+- Fiche precedente
+- Tickets associes
+```
+
+### Integration AI-COS
+
+| Agent | Role |
+|-------|------|
+| **Pricing Bot** | Detecte les nouvelles fiches, valide coherence |
+| **IA-CFO** | Analyse impact marge, alertes |
+| **Stock Manager** | Synchronise disponibilites |
+
+### Avantages
+
+- Leger (markdown, pas de fichiers lourds)
+- Versionne par Git
+- Indexable par RAG (namespace `knowledge:pricing`)
+- Tracabilite complete
+
 ## Related Documents
 
-- [ADR-005: AI-COS System](../architecture/005-ai-cos-system.md)
+- [AI-COS Vision](../architecture/ai-cos-vision.md)
 - [AI-COS Workflow](../workflows/ai-cos-workflow.md)
 - [Cache Multi-Levels](../architecture/003-cache-redis-multi-levels.md)
 - [Spec Kit README](../README.md)
 
 ## Change Log
 
+- **2025-12-29 v2.2.0** : Ajout section Fiches Documentaires Pricing (tracabilite tarifs fournisseurs)
+- **2025-12-29 v2.1.1** : Mise a jour references fichiers renommes (ai-cos-vision.md, ai-cos-enrichment-plan.md)
 - **2025-11-19 v2.1.0** : Enrichissement coordination inter-domaines (3 mécanismes, 3 scénarios multi-agents, 4 KPIs coordination, dashboard section)
 - **2025-11-18 v2.0.0** : Transformation Entreprise Augmentée (57 agents, 52 KPIs, 5 squads, 4 modes, 3 méta-couches, Health Board)
 - **2025-11-18 v1.0.0** : Version initiale (draft)
