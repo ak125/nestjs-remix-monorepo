@@ -1,8 +1,10 @@
 import {
   Controller,
   Get,
+  Patch,
   Param,
   Query,
+  Body,
   UseGuards,
   Logger,
   HttpException,
@@ -12,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { AdviceService, AdviceFilters } from '../services/advice.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
 /**
  * 💡 AdviceController - Contrôleur spécialisé pour les conseils automobiles
@@ -132,6 +135,53 @@ export class AdviceController {
       );
       throw new HttpException(
         'Erreur lors de la recherche',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ✏️ Mettre à jour un conseil (admin seulement)
+   * PATCH /api/blog/advice/123
+   */
+  @Patch(':id')
+  @UseGuards(IsAdminGuard)
+  async updateAdvice(
+    @Param('id', ParseIntPipe) id: number,
+    @Body()
+    body: {
+      title?: string;
+      preview?: string;
+      content?: string;
+      h1?: string;
+      descrip?: string;
+      keywords?: string;
+    },
+  ) {
+    try {
+      this.logger.log(`✏️ PATCH /api/blog/advice/${id}`);
+
+      const result = await this.adviceService.updateAdvice(id, body);
+
+      if (!result.success) {
+        throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+      }
+
+      return {
+        success: true,
+        message: 'Conseil mis à jour avec succès',
+        data: result.data,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `❌ Erreur mise à jour conseil ${id}: ${(error as Error).message}`,
+      );
+      throw new HttpException(
+        'Erreur lors de la mise à jour',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
