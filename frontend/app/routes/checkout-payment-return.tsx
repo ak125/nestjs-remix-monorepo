@@ -1,11 +1,12 @@
 import { Alert } from '@fafa/ui';
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { useEffect } from "react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
+
+import { trackPurchase } from "~/utils/analytics";
 import { processPaymentReturn } from "../services/payment.server";
 import { formatPrice } from "../utils/orders";
-import { trackPurchase } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [

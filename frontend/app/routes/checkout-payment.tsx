@@ -2,8 +2,9 @@ import { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, js
 import { useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useRef, useState, useEffect } from "react";
 import { toast } from 'sonner';
-import { requireAuth } from "../auth/unified.server";
+
 import { trackAddPaymentInfo } from "~/utils/analytics";
+import { requireAuth } from "../auth/unified.server";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
 
@@ -374,9 +375,10 @@ export default function PaymentPage() {
   console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
   console.log('👤 User:', user?.email || 'unknown');
 
-  // 📊 GA4: Tracker l'info paiement
+  // 📊 GA4: Tracker l'info paiement (une seule fois au montage)
   useEffect(() => {
     trackAddPaymentInfo(order.totalTTC || 0, 'card');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handler pour soumettre avec fetch + header X-Fetch-Body

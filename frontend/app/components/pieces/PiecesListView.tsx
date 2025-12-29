@@ -9,8 +9,8 @@
 import React, { useState } from "react";
 
 import { useCart } from "../../hooks/useCart";
-import { trackAddToCart } from "../../utils/analytics";
 import { type PieceData } from "../../types/pieces-route.types";
+import { trackAddToCart } from "../../utils/analytics";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 

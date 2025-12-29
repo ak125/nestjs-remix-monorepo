@@ -72,7 +72,7 @@ export function Breadcrumbs({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: breadcrumbItems.map((item, index) => {
-            const isLast = index === breadcrumbItems.length - 1;
+            const _isLast = index === breadcrumbItems.length - 1;
             const itemUrl = item.href
               ? `https://www.automecanik.com${item.href}`
               : undefined;
