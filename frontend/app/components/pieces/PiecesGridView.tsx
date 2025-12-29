@@ -9,11 +9,11 @@
  * - Set pour lookups O(1) sur selectedPieces
  */
 
-import React, { useEffect, useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 
 import { useCart } from "../../hooks/useCart";
-import { trackAddToCart } from "../../utils/analytics";
 import { type PieceData } from "../../types/pieces-route.types";
+import { trackAddToCart } from "../../utils/analytics";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";

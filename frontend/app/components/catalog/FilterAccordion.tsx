@@ -21,13 +21,14 @@
 
 import { X, Check, DollarSign, Tag, Package, Layers } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
+
+import { debounce } from '../../utils/performance.utils';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '../ui/accordion';
-import { debounce } from '../../utils/performance.utils';
 
 export interface FilterOption {
   id: string;
@@ -86,7 +87,7 @@ export function FilterAccordion({
         max: filters.priceRange.currentMax,
       });
     }
-  }, [filters.priceRange?.currentMin, filters.priceRange?.currentMax]);
+  }, [filters.priceRange]);
 
   // ⚡ Debounce pour les mises à jour de prix (150ms)
   const debouncedPriceUpdateRef = useRef(
@@ -98,8 +99,9 @@ export function FilterAccordion({
 
   // Cleanup du debounce au démontage
   useEffect(() => {
+    const debouncedFn = debouncedPriceUpdateRef.current;
     return () => {
-      debouncedPriceUpdateRef.current.cancel();
+      debouncedFn.cancel();
     };
   }, []);
 
