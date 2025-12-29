@@ -7,10 +7,11 @@ import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type 
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
 import { useEffect } from "react";
 import { toast } from 'sonner';
+
+import { trackBeginCheckout } from "~/utils/analytics";
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
-import { trackBeginCheckout } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
@@ -230,11 +231,12 @@ export default function CheckoutPage() {
     }
   }, [error]);
 
-  // 📊 GA4: Tracker le debut du checkout
+  // 📊 GA4: Tracker le debut du checkout (une seule fois au montage)
   useEffect(() => {
     if (cart?.items?.length) {
       trackBeginCheckout(cart.items, cart.summary?.total_price || 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!cart || loaderError) {

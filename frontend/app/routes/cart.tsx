@@ -35,10 +35,11 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import React, { useEffect } from "react";
+
+import { trackViewCart } from "~/utils/analytics";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getCart } from "../services/cart.server";
-import { trackViewCart } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
@@ -515,7 +516,7 @@ export default function CartPage() {
     message: string;
   } | null>(null);
 
-  // 📊 GA4: Tracker la vue du panier
+  // 📊 GA4: Tracker la vue du panier (une seule fois au montage)
   useEffect(() => {
     if (cart?.items?.length) {
       const validItems = cart.items.filter((item): item is NonNullable<typeof item> => item !== null);
@@ -523,6 +524,7 @@ export default function CartPage() {
         trackViewCart(validItems as any[], cart.summary?.subtotal || 0);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Afficher une notification temporaire
