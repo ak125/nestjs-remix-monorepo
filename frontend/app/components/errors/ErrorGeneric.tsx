@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { useEffect } from "react";
 
 interface ErrorGenericProps {
   status?: number;
@@ -42,6 +43,19 @@ export function ErrorGeneric({
   
   const color = getStatusColor();
   const statusDescription = getStatusDescription();
+
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
@@ -147,11 +161,11 @@ export function ErrorGeneric({
                 >
                   ← Page précédente
                 </button>
-                <Link to="/support/contact" className="text-indigo-600 hover:text-indigo-500">
+                <Link to="/contact" className="text-indigo-600 hover:text-indigo-500">
                   Signaler le problème
                 </Link>
-                <Link to="/help" className="text-indigo-600 hover:text-indigo-500">
-                  Centre d'aide
+                <Link to="/blog-pieces-auto" className="text-indigo-600 hover:text-indigo-500">
+                  Guides et conseils
                 </Link>
               </div>
             </div>

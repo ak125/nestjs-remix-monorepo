@@ -1,6 +1,9 @@
 import { Link } from "@remix-run/react";
+import { useEffect } from "react";
 import { Alert } from '~/components/ui/alert';
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
+import { ErrorSearchBar } from "./ErrorSearchBar";
+import { PopularCategories } from "./PopularCategories";
 
 interface Error410Props {
   url?: string;
@@ -23,6 +26,19 @@ export function Error410({
     message: isOldLink ? "Lien obsolète" : "Contenu supprimé",
     metadata: { isOldLink, redirectTo, pageType: "410_gone" },
   });
+
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
@@ -129,14 +145,14 @@ export function Error410({
               </Link>
               
               <Link
-                to="/products"
+                to="/pieces/catalogue"
                 className="flex flex-col items-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-all hover:scale-105"
               >
                 <svg className="w-8 h-8 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
                 <span className="font-medium text-gray-900">Catalogue</span>
-                <span className="text-sm text-gray-500 text-center mt-1">Parcourir nos produits</span>
+                <span className="text-sm text-gray-500 text-center mt-1">Parcourir nos pièces</span>
               </Link>
               
               <Link
@@ -151,7 +167,7 @@ export function Error410({
               </Link>
               
               <Link
-                to="/support/contact"
+                to="/contact"
                 className="flex flex-col items-center p-6 bg-white rounded-lg shadow hover:shadow-lg transition-all hover:scale-105"
               >
                 <svg className="w-8 h-8 text-purple-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,6 +177,19 @@ export function Error410({
                 <span className="text-sm text-gray-500 text-center mt-1">Obtenir de l'aide</span>
               </Link>
             </div>
+          </div>
+
+          {/* Barre de recherche */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+              Rechercher du contenu
+            </h3>
+            <ErrorSearchBar placeholder="Rechercher une pièce, un véhicule..." />
+          </div>
+
+          {/* Catégories populaires */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <PopularCategories title="Catégories populaires" columns={4} />
           </div>
 
           {/* Section d'aide détaillée */}
@@ -173,39 +202,39 @@ export function Error410({
                 <h4 className="font-medium text-gray-900 mb-2">Navigation</h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>
-                    <Link to="/sitemap" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Plan du site complet
+                    <Link to="/pieces/catalogue" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Catalogue complet des pièces
                     </Link>
                   </li>
                   <li>
-                    <Link to="/constructeurs" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Parcourir par constructeur
+                    <Link to="/pieces/catalogue" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Parcourir par marque
                     </Link>
                   </li>
                   <li>
-                    <Link to="/categories" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Explorer les catégories
+                    <Link to="/blog-pieces-auto" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Guides et conseils
                     </Link>
                   </li>
                 </ul>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Assistance</h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>
-                    <Link to="/docs/faq" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Questions fréquentes
+                    <Link to="/contact" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Nous contacter
                     </Link>
                   </li>
                   <li>
-                    <Link to="/support/live-chat" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Chat en direct
+                    <Link to="/blog-pieces-auto" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Articles et tutoriels
                     </Link>
                   </li>
                   <li>
-                    <Link to="/support/feedback" className="text-orange-600 hover:text-orange-700 transition-colors">
-                      → Signaler un problème
+                    <Link to="/" className="text-orange-600 hover:text-orange-700 transition-colors">
+                      → Retour à l'accueil
                     </Link>
                   </li>
                 </ul>

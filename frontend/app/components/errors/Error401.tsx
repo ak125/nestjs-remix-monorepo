@@ -50,6 +50,19 @@ export function Error401({
     }
   }, [countdown, isRedirecting, loginUrl]);
 
+  // SEO: noindex, follow - Google ne indexe pas cette page mais suit les liens
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="robots"]');
+    if (meta) {
+      meta.setAttribute('content', 'noindex, follow');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'robots';
+      newMeta.content = 'noindex, follow';
+      document.head.appendChild(newMeta);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -138,7 +151,7 @@ export function Error401({
               </Link>{" "}
               ou{" "}
               <Link
-                to="/support/contact"
+                to="/contact"
                 className="text-blue-600 hover:underline"
               >
                 contactez le support
