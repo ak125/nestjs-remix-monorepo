@@ -2726,6 +2726,277 @@ class HybridFicheGenerator:
 | `MANUAL:BEGIN/END` | ❌ Non touche | ✅ Toujours preserve |
 | `AI:GENERATED` | ✅ Peut etre regenere | ⚠️ Selon config |
 
+---
+
+## Knowledge Graph + Reasoning Engine (v2.8.0)
+
+### Principe Fondamental
+
+> **Le meilleur modèle n'est pas "tables + règles", c'est un Knowledge Graph + Reasoning Engine.**
+
+Evolution de l'architecture vers un graphe de connaissances pour :
+- Diagnostic multi-symptômes naturel
+- Ajout de connaissances sans refactor
+- Pannes récurrentes par modèle
+- SEO/Insights automatiques
+
+### Architecture du Knowledge Graph
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        KNOWLEDGE GRAPH                                │
+│                                                                       │
+│  ┌─────────┐    ┌──────────┐    ┌────────────┐    ┌───────────┐      │
+│  │ VEHICLE │───►│ SYSTEM   │───►│ OBSERVABLE │───►│   FAULT   │      │
+│  │  Node   │    │   Node   │    │    Node    │    │   Node    │      │
+│  └─────────┘    └──────────┘    └────────────┘    └─────┬─────┘      │
+│       │                                                  │            │
+│       │         ┌────────────────────────────────────────┘            │
+│       │         │                                                     │
+│       │         ▼                                                     │
+│       │    ┌────────────┐    ┌───────────┐                           │
+│       └───►│   ACTION   │◄───│   PART    │◄──────────────────────────┤
+│            │    Node    │    │   Node    │                           │
+│            └────────────┘    └───────────┘                           │
+│                                                                       │
+│  Edges: CAUSES, FIXED_BY, COMPATIBLE_WITH, CORRELATES_WITH          │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Types de Nodes
+
+| Type | Description | Exemple |
+|------|-------------|---------|
+| **Vehicle** | Véhicule spécifique | Renault Clio 3 1.5 dCi K9K |
+| **System** | Système du véhicule | Moteur, Freinage, Refroidissement |
+| **Observable** | Symptôme observable | Fumée noire, voyant moteur |
+| **Fault** | Panne identifiée | EGR encrassée, turbo HS |
+| **Action** | Action diagnostic/réparation | Nettoyage EGR, remplacement |
+| **Part** | Pièce concernée | Vanne EGR, Turbo |
+
+### Types de Relations (Edges)
+
+| Edge Type | Description | Exemple |
+|-----------|-------------|---------|
+| `HAS_SYSTEM` | Vehicle → System | Clio → Moteur |
+| `SHOWS_SYMPTOM` | System → Observable | Moteur → fumée noire |
+| `CAUSES` | Observable → Fault | fumée noire → EGR encrassée |
+| `FIXED_BY` | Fault → Part | EGR encrassée → Vanne EGR |
+| `DIAGNOSED_BY` | Fault → Action | EGR encrassée → Nettoyage |
+| `COMPATIBLE_WITH` | Part → Vehicle | Vanne EGR → Clio K9K |
+| `CORRELATES_WITH` | Observable ↔ Observable | symptômes associés |
+| `OFTEN_WITH` | Fault ↔ Fault | pannes souvent liées |
+
+### Tables SQL
+
+```sql
+-- kg_nodes : Entités du graphe
+CREATE TABLE kg_nodes (
+  node_id UUID PRIMARY KEY,
+  node_type TEXT NOT NULL,      -- Vehicle, System, Observable, Fault, Action, Part
+  node_label TEXT NOT NULL,     -- "Fumée noire à l'échappement"
+  node_category TEXT,           -- "Électrique", "Mécanique"
+  node_data JSONB DEFAULT '{}', -- Metadata flexible
+  confidence FLOAT DEFAULT 1.0,
+  sources TEXT[],               -- ["TecDoc", "RTA", "Forum"]
+  version INT DEFAULT 1,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- kg_edges : Relations versionnées
+CREATE TABLE kg_edges (
+  edge_id UUID PRIMARY KEY,
+  source_node_id UUID REFERENCES kg_nodes,
+  target_node_id UUID REFERENCES kg_nodes,
+  edge_type TEXT NOT NULL,
+  weight FLOAT DEFAULT 1.0,
+  confidence FLOAT DEFAULT 1.0,
+  evidence JSONB DEFAULT '{}',
+  sources TEXT[],
+  version INT DEFAULT 1,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- kg_reasoning_cache : Cache diagnostics
+CREATE TABLE kg_reasoning_cache (
+  cache_id UUID PRIMARY KEY,
+  query_hash TEXT UNIQUE,
+  input_observables TEXT[],
+  result_faults JSONB,
+  result_score FLOAT,
+  result_explanation TEXT,
+  hit_count INT DEFAULT 0,
+  expires_at TIMESTAMPTZ
+);
+```
+
+### Reasoning Engine (TypeScript)
+
+```typescript
+class KnowledgeGraphService {
+  /**
+   * Diagnostic multi-symptômes via traversal du graphe.
+   *
+   * Exemple:
+   * - vehicle: "renault-clio-3-1.5-dci"
+   * - observables: ["fumée noire", "perte puissance", "voyant moteur"]
+   * - Résultat: Vanne EGR défaillante (confidence: 0.94)
+   */
+  async diagnose(
+    vehicleId: string,
+    observables: string[],
+    confidenceThreshold = 0.75
+  ): Promise<DiagnosticResult> {
+    // 1. Trouver les nodes Observable correspondants
+    const observableNodes = await this.findObservableNodes(observables);
+
+    // 2. Traverser le graphe: Observable → CAUSES → Fault
+    const faultCandidates = await this.traverseToFaults(observableNodes);
+
+    // 3. Scorer chaque fault par symptômes matchés
+    const scoredFaults = this.scoreFaults(faultCandidates, observableNodes);
+
+    // 4. Enrichir avec Actions et Parts
+    return this.enrichWithSolutions(scoredFaults);
+  }
+
+  private scoreFaults(faults: FaultCandidate[], observables: UUID[]): ScoredFault[] {
+    /**
+     * Score = (symptômes matchés / total) × confiance moyenne
+     *
+     * Exemple:
+     * - EGR Fault: 3/3 symptômes → 1.0 × 0.94 = 0.94 ✅
+     * - Turbo Fault: 2/3 symptômes → 0.66 × 0.85 = 0.56
+     */
+    const faultScores = new Map<string, { matches: number; confidenceSum: number }>();
+
+    for (const fault of faults) {
+      const current = faultScores.get(fault.faultId) || { matches: 0, confidenceSum: 0 };
+      current.matches++;
+      current.confidenceSum += fault.confidence;
+      faultScores.set(fault.faultId, current);
+    }
+
+    return Array.from(faultScores.entries())
+      .map(([faultId, data]) => ({
+        faultId,
+        score: (data.matches / observables.length) * (data.confidenceSum / data.matches),
+        matchedSymptoms: data.matches,
+        totalSymptoms: observables.length,
+      }))
+      .sort((a, b) => b.score - a.score);
+  }
+}
+```
+
+### RPC Functions SQL
+
+```sql
+-- Diagnostic complet: symptômes → pannes scorées avec pièces/actions
+CREATE FUNCTION kg_diagnose(
+  p_vehicle_id UUID,
+  p_observable_labels TEXT[],
+  p_confidence_threshold FLOAT DEFAULT 0.75
+) RETURNS TABLE (
+  fault_id UUID,
+  fault_label TEXT,
+  match_score FLOAT,
+  matched_symptoms INT,
+  total_symptoms INT,
+  parts JSONB,
+  actions JSONB
+) AS $$
+  -- 1. Trouve les Observable nodes correspondants
+  -- 2. Traverse: Observable → CAUSES → Fault
+  -- 3. Score par nombre de symptômes matchés
+  -- 4. Enrichit avec FIXED_BY → Parts et DIAGNOSED_BY → Actions
+$$ LANGUAGE plpgsql;
+```
+
+### Exemple Diagnostic : Vanne EGR
+
+**Input utilisateur:**
+> "Ma Clio 3 1.5 dCi fait de la fumée noire, perd de la puissance et le voyant moteur s'allume"
+
+**Traversal Graph:**
+```
+Observable["fumée noire"] ──CAUSES──► Fault["EGR encrassée"] ──FIXED_BY──► Part["Vanne EGR"]
+Observable["perte puissance"] ──CAUSES──► Fault["EGR encrassée"]
+Observable["voyant moteur"] ──CAUSES──► Fault["EGR encrassée"]
+                                              │
+                                              └──DIAGNOSED_BY──► Action["Nettoyage EGR"]
+```
+
+**Scoring:**
+| Fault | Symptômes matchés | Score |
+|-------|-------------------|-------|
+| EGR encrassée | 3/3 | 1.0 × 0.94 = **0.94** |
+| Turbo HS | 2/3 | 0.66 × 0.85 = 0.56 |
+| Injecteur | 1/3 | 0.33 × 0.80 = 0.26 |
+
+**Output:**
+```json
+{
+  "diagnostic": "Vanne EGR encrassée",
+  "confidence": 0.94,
+  "matched_symptoms": ["fumée noire", "perte puissance", "voyant moteur"],
+  "recommended_actions": ["Nettoyage EGR", "Remplacement si nécessaire"],
+  "parts": [
+    {"ref": "EGR-REN-K9K-001", "name": "Vanne EGR Renault K9K", "price": 189.90}
+  ],
+  "explanation": "Les 3 symptômes correspondent au profil typique d'une EGR défaillante sur K9K."
+}
+```
+
+### Avantages vs Architecture Tables + Règles
+
+| Critère | Tables + Règles | Knowledge Graph |
+|---------|-----------------|-----------------|
+| Ajout connaissance | Refactor code | `INSERT INTO kg_edges` |
+| Diagnostic multi-symptômes | Code complexe | Traversal naturel |
+| Pannes récurrentes | Stats manuelles | Query `OFTEN_WITH` |
+| Explication | Hardcodée | Générée du chemin |
+| SEO/Insights | Queries SQL custom | Graph analytics |
+| Versioning | Difficile | Natif (`version` column) |
+
+### Intégration Architecture 1 IA + 3 Agents
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         1 APPEL CLAUDE                               │
+│                                                                      │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐             │
+│  │  AGENT #1    │──►│  AGENT #2    │──►│  AGENT #3    │             │
+│  │  COLLECTEUR  │   │  GRAPH QUERY │   │  REASONER    │             │
+│  │              │   │              │   │              │             │
+│  │ Parse texte  │   │ Traverse KG  │   │ Score final  │             │
+│  │ → Observables│   │ → Faults     │   │ + Explication│             │
+│  └──────────────┘   └──────────────┘   └──────────────┘             │
+│                                                                      │
+│  Agent #2 utilise le Knowledge Graph au lieu de règles hardcodées   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Migration des Données Existantes
+
+| Source | Target Node Type | Méthode |
+|--------|------------------|---------|
+| `auto_type` | Vehicle | Import direct avec `type_id` |
+| `pieces_gamme` | Observable, Fault | Mapping sémantique |
+| `pieces_relation_type` | Edge COMPATIBLE_WITH | Conversion directe |
+| Forums/RTA | Edge CAUSES | Extraction IA + validation |
+
+### Fichiers Créés
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_knowledge_graph.sql` | Tables + RPC functions |
+| `backend/src/modules/knowledge-graph/kg.module.ts` | Module NestJS |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Reasoning Engine |
+| `backend/src/modules/knowledge-graph/kg-data.service.ts` | CRUD nodes/edges |
+
+---
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -2735,6 +3006,7 @@ class HybridFicheGenerator:
 
 ## Change Log
 
+- **2025-12-30 v2.8.0** : Knowledge Graph + Reasoning Engine (architecture graphe Vehicle → System → Observable → Fault → Action → Part), tables kg_nodes/kg_edges/kg_reasoning_cache avec RPC functions, KnowledgeGraphService TypeScript pour diagnostic multi-symptomes, scoring automatique par symptomes matches, integration architecture 1 IA + 3 Agents, migration progressive depuis donnees existantes
 - **2025-12-30 v2.7.5** : Principe Data Integrity systemique (7 controles obligatoires pour TOUTE info entrant dans le systeme), application multi-domaines (vehicules, produits, pricing, SEO, support, blog), diagramme flux avec gates de rejet, integration architecture 1 IA + 3 Agents (controles 1-3) + pipeline (controles 4-7), garantie zero erreur critique
 - **2025-12-30 v2.7.4** : Architecture 1 IA + 3 Agents (1 appel Claude = 3 roles sequentiels, economie 66% cout API, contexte partage), PROMPT_TRIPLE_AGENT template multi-roles, TripleAgentValidator class Python, regle securite "aucun agent ne publie seul", 90% validation automatique sans intervention humaine
 - **2025-12-30 v2.7.3** : Cas d'usage realiste Vanne EGR Clio 3 (demonstration systeme anti-fake), Schema ValidationResult avec coherence semantique (semantic_match, semantic_reason, semantic_category), Matrice coherence semantique par categorie piece (EGR, Turbo, Freins, Injection, Distribution, Embrayage, Direction, Climatisation)
