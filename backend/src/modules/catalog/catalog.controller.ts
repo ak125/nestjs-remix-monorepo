@@ -16,6 +16,7 @@ import {
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CatalogService, HomeCatalogData } from './catalog.service';
 import { CatalogFamilyService } from './services/catalog-family.service';
+import { HomepageRpcService } from './services/homepage-rpc.service';
 
 @ApiTags('Catalog - API Complète')
 @Controller('api/catalog')
@@ -26,6 +27,7 @@ export class CatalogController {
   constructor(
     private readonly catalogService: CatalogService,
     private readonly catalogFamilyService: CatalogFamilyService,
+    private readonly homepageRpcService: HomepageRpcService,
   ) {}
 
   /**
@@ -224,6 +226,49 @@ export class CatalogController {
   async getHomepageData() {
     this.logger.log('🏠 Requête données homepage reçue');
     return this.catalogService.getHomepageData();
+  }
+
+  /**
+   * GET /api/catalog/homepage-rpc
+   * ⚡ RPC optimisée - combine 4 appels API en 1 seule requête PostgreSQL
+   * Performance: <150ms au lieu de 400-800ms
+   */
+  @Get('homepage-rpc')
+  @ApiOperation({
+    summary: 'Homepage RPC optimisée',
+    description:
+      'Combine 4 appels API (equipementiers, blog, catalog, brands) en 1 seule requête PostgreSQL. LCP < 1.5s.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Données homepage récupérées via RPC optimisée',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        equipementiers: { type: 'array' },
+        blog_articles: { type: 'array' },
+        catalog: { type: 'object' },
+        brands: { type: 'array' },
+        stats: { type: 'object' },
+        _performance: { type: 'object' },
+      },
+    },
+  })
+  async getHomepageRpc() {
+    this.logger.log('⚡ [RPC] Requête homepage optimisée');
+    const startTime = performance.now();
+
+    try {
+      const result = await this.homepageRpcService.getHomepageDataOptimized();
+      this.logger.log(
+        `✅ RPC homepage en ${(performance.now() - startTime).toFixed(1)}ms`,
+      );
+      return result;
+    } catch (error: any) {
+      this.logger.error('❌ RPC homepage error:', error);
+      throw error; // NO fallback - retourne 500
+    }
   }
 
   /**

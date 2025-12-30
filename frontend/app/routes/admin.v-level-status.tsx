@@ -14,7 +14,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { useState } from "react";
 import {
   BarChart3,
   RefreshCw,
@@ -25,6 +24,7 @@ import {
   TrendingUp,
   Layers,
 } from "lucide-react";
+import { useState } from "react";
 
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -150,12 +150,7 @@ export default function VLevelStatusPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <AdminBreadcrumb
-        items={[
-          { label: "Admin", href: "/admin" },
-          { label: "V-Level Status" },
-        ]}
-      />
+      <AdminBreadcrumb currentPage="V-Level Status" />
 
       <div className="flex items-center justify-between">
         <div>

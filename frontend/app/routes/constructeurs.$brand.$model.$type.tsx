@@ -100,7 +100,7 @@ interface PopularPart {
   addon_content: string;
 }
 
-interface MetaTagsAriane {
+interface _MetaTagsAriane {
   mta_id: number;
   mta_title: string;
   mta_descrip: string;
