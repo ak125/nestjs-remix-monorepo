@@ -1,7 +1,7 @@
 ---
 title: "AI-COS Operating System"
 status: active
-version: 2.3.0
+version: 2.7.0
 authors: [Product Team, Tech Team]
 created: 2025-11-18
 updated: 2025-12-29
@@ -1332,6 +1332,2062 @@ Le contenu technique vehicule (pannes, symptomes, reparations, entretien) est or
 - **Versionne** : Git history complet
 - **Leger** : Markdown, pas de fichiers lourds
 
+## Systeme de Validation des Donnees Vehicules
+
+### REGLE D'OR
+
+> **On ne JAMAIS ajoute une info brute (web, forum, crawler) directement dans les fiches.**
+
+| Workflow | Resultat |
+|----------|----------|
+| ❌ Raw Web → Fiche | INTERDIT |
+| ✅ Raw Web → SQL Staging → Validation → Git JSON → Fiche | CORRECT |
+
+### Architecture Hybride : SQL Staging + Git Validated
+
+| Couche | Stockage | Contenu |
+|--------|----------|---------|
+| **Staging** | `__vehicle_staging` (SQL) | Donnees brutes, non validees |
+| **Validated** | `/data/vehicles/*.json` (Git) | Donnees validees |
+| **Fiches** | `/docs/vehicles/*.md` (Git) | Fiches generees |
+
+```
+┌─────────────────┐
+│   Sources Web   │ (forums, RTA, constructeur)
+└────────┬────────┘
+         │ collect.py
+         ▼
+┌─────────────────┐
+│  SQL Staging    │ __vehicle_staging (status: pending)
+└────────┬────────┘
+         │ validate.py (Triple Verification)
+         ▼
+┌─────────────────┐
+│   Git JSON      │ /data/vehicles/*.json (status: validated)
+└────────┬────────┘
+         │ generate.py
+         ▼
+┌─────────────────┐
+│  Fiches MD      │ /docs/vehicles/*.md
+└─────────────────┘
+```
+
+### Securite : FicheGenerator Isole
+
+```python
+class FicheGenerator:
+    """
+    REGLE DE SECURITE : Ce generateur n'a JAMAIS acces au SQL staging.
+    Il lit UNIQUEMENT les fichiers JSON valides dans Git.
+    """
+    ALLOWED_SOURCES = ["data/vehicles/**/*.json"]  # Git only
+
+    def __init__(self):
+        # ⛔ PAS de connexion DB - interdit par design
+        self.db = None
+```
+
+### Systeme de Triple Verification
+
+#### Verification 1 — Croisement Multi-Sources
+
+L'IA doit trouver **au moins 2 sources differentes** confirmant l'information :
+
+| Source | Poids |
+|--------|-------|
+| Constructeur officiel | 1.0 |
+| Revue Technique Auto | 0.95 |
+| Base pieces OEM | 0.85 |
+| Forum specialise | 0.6 |
+| YouTube garage pro | 0.5 |
+| Forum generaliste | 0.3 |
+
+**Regle** : Minimum **2 sources differentes** obligatoires.
+
+#### Verification 2 — Reference OEM/Constructeur
+
+Pour les donnees techniques, on verifie la correspondance :
+
+| Element | Verification |
+|---------|--------------|
+| Code moteur | K9K 708, K9K 732, F4R 830... |
+| References OEM | Courroie CT1065, Galet VKMA06134... |
+| Tableau constructeur | Intervalles officiels |
+
+**Regle** : Si une info ne correspond a AUCUN moteur ou AUCUNE reference OEM → status = `probable_false`
+
+#### Verification 3 — Regles Metier Internes
+
+Fichier de regles pour detecter les aberrations :
+
+| Type | Min | Max |
+|------|-----|-----|
+| Courroie distribution | 60 000 km | 200 000 km |
+| Vidange | 10 000 km | 30 000 km |
+| Liquide frein | 2 ans | 4 ans |
+
+**Regle** : Valeur hors fourchette → REJET automatique
+
+### Seuils de Confiance
+
+| Score | Action |
+|-------|--------|
+| **≥ 0.90** | Auto-approve ✅ Publication automatique |
+| **0.75 – 0.90** | Validation humaine OU IA specialisee 🔍 |
+| **< 0.75** | REJET automatique ❌ |
+
+```python
+class Validator:
+    THRESHOLDS = {
+        "auto_approve": 0.90,
+        "manual_review": 0.75,
+        "auto_reject": 0.75  # < this value
+    }
+
+    def validate(self, item):
+        confidence = self._calculate_confidence(item)
+
+        if confidence >= self.THRESHOLDS["auto_approve"]:
+            return "approved"
+        elif confidence >= self.THRESHOLDS["manual_review"]:
+            return "pending_review"
+        else:
+            return "rejected"
+```
+
+### Cas d'Usage : Validation Symptome Vanne EGR (Clio 3)
+
+#### Contexte
+
+L'IA collecte des symptomes pour la fiche "Vanne EGR - Renault Clio 3 1.5 dCi K9K".
+
+#### Symptomes Valides (multi-sources)
+
+| Symptome | Sources | Confiance | Decision |
+|----------|---------|-----------|----------|
+| Fumee noire | RTA, Forum, TecDoc, Constructeur | 0.94 | ✅ Auto-approve |
+| Perte de puissance | RTA, Forum, TecDoc | 0.91 | ✅ Auto-approve |
+| Mode degrade | TecDoc, Constructeur | 0.92 | ✅ Auto-approve |
+| Voyant moteur | RTA, TecDoc, Forum, Constructeur | 0.95 | ✅ Auto-approve |
+
+#### Symptome Rejete (1 seule source)
+
+```json
+{
+  "info": "claquement moteur",
+  "valid": false,
+  "sources_count": 1,
+  "sources_required": 2,
+  "semantic_match": false,
+  "semantic_reason": "claquement = mecanique (distribution, bielles), EGR = emissions",
+  "confidence": 0.32,
+  "reason": "seulement 1 source, incoherent avec symptomes EGR typiques"
+}
+```
+
+#### Analyse Technique
+
+| Critere | Resultat |
+|---------|----------|
+| Sources | ❌ 1 seule (< 2 minimum) |
+| Coherence semantique | ❌ Claquement ≠ EGR |
+| Score confiance | 0.32 (< 0.75 seuil rejet) |
+
+**Pourquoi "claquement moteur" est incoherent ?**
+
+- Claquement = probleme mecanique (chaine distribution, bielles, pre-allumage)
+- EGR = systeme emissions (recirculation gaz echappement)
+
+**Decision finale** : REJET ❌ - Cette info ne sera JAMAIS ajoutee a la fiche.
+
+#### Benefice
+
+- ✅ Protege la qualite des fiches techniques
+- ✅ Evite les erreurs de diagnostic
+- ✅ Economise temps et argent (pas de pieces inutiles)
+
+#### Schema ValidationResult avec Coherence Semantique
+
+```python
+class ValidationResult(BaseModel):
+    """Resultat de validation avec coherence semantique."""
+
+    info: str = Field(..., description="Information a valider")
+    valid: bool = Field(..., description="Valide ou non")
+
+    # Sources
+    sources_count: int = Field(..., ge=0)
+    sources_required: int = Field(default=2)
+    sources_list: List[str] = Field(default_factory=list)
+
+    # Coherence semantique (ANTI-FAKE)
+    semantic_match: bool = Field(..., description="Coherence avec le contexte")
+    semantic_reason: Optional[str] = Field(None, description="Explication si incoherent")
+    semantic_category_expected: Optional[str] = Field(None, description="Categorie attendue")
+    semantic_category_found: Optional[str] = Field(None, description="Categorie detectee")
+
+    # Score final
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    reason: str = Field(..., description="Raison de la decision")
+
+    @validator('valid', pre=True, always=True)
+    def compute_valid(cls, v, values):
+        """Auto-calcul de valid base sur sources + semantic + confidence."""
+        sources_ok = values.get('sources_count', 0) >= values.get('sources_required', 2)
+        semantic_ok = values.get('semantic_match', False)
+        confidence_ok = values.get('confidence', 0) >= 0.75
+        return sources_ok and semantic_ok and confidence_ok
+```
+
+#### Matrice Coherence Semantique par Categorie
+
+| Categorie Piece | Symptomes Attendus | Symptomes Incoherents |
+|-----------------|--------------------|-----------------------|
+| **EGR** | fumee, puissance, ralenti, voyant | claquement, vibration chassis |
+| **Turbo** | sifflement, fumee, puissance | ABS, direction |
+| **Freins** | bruit freinage, vibration pedale | fumee echappement |
+| **Injection** | demarrage, ralenti, consommation | climatisation |
+| **Distribution** | claquement, calage, demarrage | echappement, freins |
+| **Embrayage** | patinage, vibration, bruit pedale | voyant ABS, direction |
+| **Direction** | bruit braquage, durete, jeu | fumee, consommation |
+| **Climatisation** | froid insuffisant, bruit compresseur | voyant moteur, puissance |
+
+Cette matrice permet de detecter automatiquement les incoherences semantiques.
+
+### Architecture Optimisee : 1 IA + 3 Agents
+
+#### Principe Fondamental
+
+> **1 seul appel Claude** execute **3 roles d'agents** sequentiellement.
+> Chaque agent voit le travail du precedent = contexte partage.
+
+#### Comparatif Cout
+
+| Approche | API Calls | Cout | Latence | Contexte |
+|----------|-----------|------|---------|----------|
+| ❌ 3 IA separees | 3 | 3x | ~3s | Perdu entre calls |
+| ✅ 1 IA + 3 Agents | 1 | 1x | ~1s | Partage |
+
+**Economie** : 66% reduction cout API + meilleure coherence.
+
+#### Diagramme Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    1 APPEL CLAUDE                                │
+│                                                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ AGENT #1    │→ │ AGENT #2    │→ │ AGENT #3    │              │
+│  │ COLLECTEUR  │  │ MECANIQUE   │  │ COHERENCE   │              │
+│  │             │  │             │  │             │              │
+│  │ Extraction  │  │ Validation  │  │ Score final │              │
+│  │ JSON        │  │ technique   │  │ Decision    │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│                                                                  │
+│  Contexte partage : chaque agent voit le travail precedent      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Roles des 3 Agents
+
+| Agent | Role | Input | Output |
+|-------|------|-------|--------|
+| **#1 COLLECTEUR** | Extraction et structuration | Raw text | JSON structure |
+| **#2 MECANIQUE** | Validation technique auto | JSON | tech_valid: bool |
+| **#3 COHERENCE** | Score final et decision | JSON + tech | confidence + decision |
+
+#### Regle de Securite
+
+> **Aucun agent ne peut publier seul.**
+
+| Agent | Peut collecter | Peut valider | Peut publier |
+|-------|----------------|--------------|--------------|
+| #1 COLLECTEUR | ✅ | ❌ | ❌ |
+| #2 MECANIQUE | ❌ | ✅ | ❌ |
+| #3 COHERENCE | ❌ | ❌ | ✅ (si #1 + #2 OK) |
+
+#### Prompt Multi-Roles (PROMPT_TRIPLE_AGENT)
+
+```python
+PROMPT_TRIPLE_AGENT = """
+Tu vas analyser cette information en 3 etapes distinctes.
+Reponds avec les 3 sections clairement separees.
+
+---
+## ETAPE 1 — AGENT COLLECTEUR
+Role : Extracteur de donnees automobile
+Tache : Structure l'information brute en JSON
+
+Output attendu :
+{
+  "symptom": "description du symptome",
+  "category": "categorie piece (egr, turbo, freins, etc.)",
+  "sources": ["source1", "source2"],
+  "raw_confidence": 0.0
+}
+
+---
+## ETAPE 2 — AGENT MECANIQUE
+Role : Expert mecanique automobile (20 ans experience)
+Tache : Verifie la coherence technique
+
+Questions a repondre :
+1. Ce symptome est-il coherent avec cette piece/categorie ?
+2. Est-ce techniquement plausible ?
+3. Les sources sont-elles fiables pour ce type d'info ?
+
+Output attendu :
+{
+  "tech_valid": true/false,
+  "tech_reason": "explication technique",
+  "tech_confidence": 0.0
+}
+
+---
+## ETAPE 3 — AGENT COHERENCE
+Role : Data scientist specialise qualite donnees
+Tache : Decision finale basee sur les 2 agents precedents
+
+Controles :
+1. Score sources (>= 2 sources differentes ?)
+2. Score semantique (matrice coherence categorie/symptome)
+3. Score technique (resultat agent #2)
+
+Output final :
+{
+  "valid": true/false,
+  "confidence": 0.0,
+  "decision": "approved|rejected|pending_review",
+  "reason": "synthese des 3 agents"
+}
+"""
+```
+
+#### Implementation Python (TripleAgentValidator)
+
+```python
+class TripleAgentValidator:
+    """Validation par 1 IA + 3 Agents (roles sequentiels)."""
+
+    def __init__(self, claude_client):
+        self.claude = claude_client
+        self.prompt_template = PROMPT_TRIPLE_AGENT
+
+    async def validate(self, raw_info: str, context: dict) -> ValidationResult:
+        """1 seul appel Claude, 3 roles executes sequentiellement."""
+
+        prompt = f"""
+{self.prompt_template}
+
+---
+## INFORMATION A ANALYSER
+
+Vehicule : {context["vehicle"]}
+Categorie piece : {context["category"]}
+Information brute : {raw_info}
+
+Procede maintenant avec les 3 etapes.
+"""
+
+        # 1 SEUL appel API (pas 3)
+        response = await self.claude.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        # Parse les 3 sections de la reponse
+        result = self._parse_triple_response(response.content[0].text)
+
+        return ValidationResult(
+            agent1_output=result["collecteur"],
+            agent2_output=result["mecanique"],
+            agent3_output=result["coherence"],
+            final_decision=result["coherence"]["decision"],
+            final_confidence=result["coherence"]["confidence"]
+        )
+
+    def _parse_triple_response(self, content: str) -> dict:
+        """Parse la reponse structuree en 3 sections JSON."""
+        import re
+        import json
+
+        sections = {}
+
+        # Extract JSON blocks from each section
+        patterns = {
+            "collecteur": r"ETAPE 1.*?```json\s*(\{.*?\})\s*```",
+            "mecanique": r"ETAPE 2.*?```json\s*(\{.*?\})\s*```",
+            "coherence": r"ETAPE 3.*?```json\s*(\{.*?\})\s*```"
+        }
+
+        for key, pattern in patterns.items():
+            match = re.search(pattern, content, re.DOTALL)
+            if match:
+                sections[key] = json.loads(match.group(1))
+
+        return sections
+```
+
+#### Seuils de Decision Automatique
+
+| Score final | Decision | Intervention |
+|-------------|----------|--------------|
+| **>= 0.90** | `approved` | ❌ Aucune (100% auto) |
+| **0.75-0.90** | `pending_review` | ⚠️ Re-verification ou humain |
+| **< 0.75** | `rejected` | ❌ Aucune (auto-rejet) |
+
+**Resultat** : **90% des cas** traites automatiquement sans intervention humaine.
+
+#### Avantage Contexte Partage
+
+```
+Agent #2 peut referencer Agent #1 :
+"L'extraction indique 'claquement moteur' mais pour une EGR
+ c'est incoherent car EGR = emissions, pas mecanique."
+
+Agent #3 peut synthetiser :
+"Agent #1 : extraction OK (4 sources)
+ Agent #2 : REJET technique (incoherence semantique)
+ Decision finale : rejected, confidence 0.32"
+```
+
+**Impossible avec 3 appels separes** car le contexte serait perdu entre chaque call.
+
+#### Exemple Complet : Validation EGR avec Triple Agent
+
+```json
+// Input
+{
+  "vehicle": "Renault Clio 3 1.5 dCi K9K",
+  "category": "egr",
+  "raw_info": "La vanne EGR cause des claquements moteur selon un forum"
+}
+
+// Output Agent #1 (Collecteur)
+{
+  "symptom": "claquement moteur",
+  "category": "egr",
+  "sources": ["forum_auto"],
+  "raw_confidence": 0.4
+}
+
+// Output Agent #2 (Mecanique)
+{
+  "tech_valid": false,
+  "tech_reason": "Claquement = mecanique (distribution, bielles). EGR = emissions. Incoherent.",
+  "tech_confidence": 0.2
+}
+
+// Output Agent #3 (Coherence)
+{
+  "valid": false,
+  "confidence": 0.32,
+  "decision": "rejected",
+  "reason": "1 seule source (forum), incoherence semantique EGR/claquement, rejet Agent #2"
+}
+```
+
+### Principe d'Integrite des Donnees (Data Integrity)
+
+#### Regle Fondamentale
+
+> **Toute information ajoutee au systeme passe par 7 controles obligatoires.**
+> Ce principe s'applique a TOUS les domaines, pas seulement aux vehicules.
+
+#### Les 7 Controles Obligatoires
+
+| # | Controle | Description | Responsable |
+|---|----------|-------------|-------------|
+| 1 | **Croisement sources** | Info croisee avec min 2 sources fiables | Agent #1 |
+| 2 | **Regles techniques** | Regles metier du domaine respectees | Agent #2 |
+| 3 | **Detection incoherences** | Anomalies semantiques detectees | Agent #3 |
+| 4 | **Donnees structurees** | JSON/Schema Pydantic valides | Pipeline |
+| 5 | **Generation auto** | Fiches generees automatiquement | FicheGenerator |
+| 6 | **Reutilisation** | Systeme reutilise ces donnees propres | RAG Index |
+| 7 | **Diffusion controlee** | IA ne diffuse QUE des infos validees | Gate final |
+
+#### Diagramme Flux Data Integrity
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ENTREE : Nouvelle information (web, API, humain, migration)    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  1. CROISEMENT SOURCES                                          │
+│  └─ Minimum 2 sources differentes ? → Si non : REJET            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. REGLES TECHNIQUES                                           │
+│  └─ Regles metier du domaine respectees ? → Si non : REJET      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. DETECTION INCOHERENCES                                      │
+│  └─ Matrice semantique OK ? → Si non : REJET                    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. DONNEES STRUCTUREES                                         │
+│  └─ Schema Pydantic valide ? → Si non : REJET                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. GENERATION AUTO                                             │
+│  └─ Fiche/contenu genere automatiquement                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  6. REUTILISATION                                               │
+│  └─ Donnee indexee dans RAG pour reutilisation                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  7. DIFFUSION CONTROLEE                                         │
+│  └─ IA peut maintenant utiliser cette info validee              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Application par Domaine
+
+| Domaine | Controle 1 (Sources) | Controle 2 (Regles) | Controle 3 (Coherence) |
+|---------|----------------------|---------------------|------------------------|
+| **Vehicules** | TecDoc + RTA | Regles mecanique | Matrice symptomes |
+| **Produits** | Fournisseur + TecDoc | Compatibilite OE | Coherence categorie |
+| **Pricing** | Fournisseur + historique | Marge min/max | Ecart prix marche |
+| **SEO** | Google + concurrent | Regles SEO | Densite mots-cles |
+| **Support** | FAQ + historique tickets | Ton/politesse | Pertinence reponse |
+| **Blog** | Sources officielles + expertise | Regles editoriales | Coherence thematique |
+
+#### Benefices Systemiques
+
+| Benefice | Impact |
+|----------|--------|
+| **Zero fake** | IA ne diffuse jamais d'info non validee |
+| **Tracabilite** | Chaque donnee a une source prouvee |
+| **Qualite** | Fiches toujours a jour et coherentes |
+| **Confiance** | Utilisateurs font confiance au systeme |
+| **Scalabilite** | 90% automatique, humain sur 10% edge cases |
+| **Reputatoin** | Marque protegee contre erreurs critiques |
+
+#### Integration avec Architecture 1 IA + 3 Agents
+
+Les 3 agents executent les controles 1-3 dans un seul appel Claude :
+
+| Agent | Controles executes |
+|-------|-------------------|
+| Agent #1 COLLECTEUR | Controle 1 (croisement sources) |
+| Agent #2 MECANIQUE/METIER | Controle 2 (regles techniques du domaine) |
+| Agent #3 COHERENCE | Controle 3 (detection incoherences) + Decision |
+
+Le pipeline automatique execute les controles 4-7 apres validation des agents :
+
+```
+Agents (1-3) → Pipeline (4-7) → Donnee validee dans systeme
+```
+
+#### Garantie Zero Erreur Critique
+
+```
+❌ SANS Data Integrity :
+   Info brute → Directement dans fiche → Risque erreur critique
+
+✅ AVEC Data Integrity :
+   Info brute → 7 controles → Validation → Fiche propre
+
+   Si echec a n'importe quel controle → REJET automatique
+   L'info n'entre JAMAIS dans le systeme sans validation
+```
+
+### Pipeline Simplifie : 3 Scripts
+
+```
+collect.py → validate.py → generate.py
+    ↓            ↓              ↓
+SQL Staging   Git JSON      Markdown
+(pending)    (validated)    (fiches)
+```
+
+#### Script 1 — collect.py (IA Collecte)
+
+- Recherche web multi-sources (forums, RTA, constructeur)
+- Extraction structuree via Claude
+- Stockage SQL staging (status: pending, confidence: 0.0)
+
+```bash
+python scripts/collect.py --vehicle "renault_clio_3_k9k" --sources web,forums,rta
+```
+
+#### Script 2 — validate.py (Triple Verification + Gate)
+
+- Verification 1 : Croisement multi-sources
+- Verification 2 : Reference OEM/constructeur
+- Verification 3 : Regles metier
+- Gate : Export vers Git JSON si confidence >= 0.75
+
+```bash
+python scripts/validate.py --vehicle "renault_clio_3_k9k" --auto-approve
+```
+
+#### Script 3 — generate.py (Generation Fiches)
+
+- Lit UNIQUEMENT Git JSON (⛔ jamais SQL)
+- Genere fiches Markdown
+- Aucune connexion DB par design
+
+```bash
+python scripts/generate.py --vehicle "renault_clio_3_k9k"
+```
+
+### Modele de Generation : 100% IA + Validation Humaine
+
+| Etape | Responsable | Action |
+|-------|-------------|--------|
+| Generation | **IA (Claude)** | Genere 100% du contenu |
+| Validation | **Humain** | Review et approbation |
+| Publication | **Script** | Git commit + RAG index |
+
+**Regle fondamentale** : L'humain ne redige JAMAIS - il valide seulement.
+
+### Balises de Generation
+
+| Balise | Source | Description |
+|--------|--------|-------------|
+| `<!-- AUTO:BEGIN:* -->` | SQL/JSON | Donnees structurees (templates Jinja2) |
+| `<!-- AI:GENERATED -->` | LLM | Contenu editorial genere par Claude |
+
+### Workflow Complet
+
+```
+1. collect.py   → Collecte IA multi-sources → SQL staging (pending)
+2. validate.py  → Triple Verification → confidence score
+3. Gate         → Si >= 0.75 → Export Git JSON
+4. generate.py  → Lit Git JSON → Genere Markdown
+5. Commit       → Git commit automatique
+6. RAG          → Indexation namespace knowledge:vehicles
+```
+
+### Pipeline d'Alimentation Automatise (7 Etapes)
+
+#### Sources d'Information
+
+| Source | Type | Fiabilite | Validation |
+|--------|------|-----------|------------|
+| TecDoc (API/export) | Structuree | Haute | Automatique |
+| PHP dump (migration) | Legacy | Moyenne | Manuelle |
+| Docs constructeur | Officielle | Haute | Automatique |
+| Expertise atelier | Interne | Haute | Automatique |
+| Retours clients | Support | Moyenne | Review |
+| Forums specialises | Externe | Basse | Stricte |
+
+#### Diagramme Pipeline Complet
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  SOURCES D'INFORMATION                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  • TecDoc (API/export)     • Forums (scraping valide)              │
+│  • PHP dump (migration)    • Retours clients (tickets support)     │
+│  • Docs constructeur       • Expertise atelier                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. EXTRACTION IA (Claude)                                          │
+│  └─ Raw text → JSON structure (code, title, signs, causes, fix)    │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  2. VALIDATION SCHEMA (Pydantic)                                    │
+│  ├─ Validation structure obligatoire                               │
+│  ├─ Detection doublons automatique                                 │
+│  └─ Score confiance selon source                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  3. ENRICHISSEMENT RAG                                              │
+│  ├─ Recherche retours clients similaires                           │
+│  ├─ Claude : reformulation pro, ajout contexte                     │
+│  └─ Liens : pieces concernees, codes OBD associes                  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  4. STOCKAGE (status: pending_validation)                           │
+│  └─ INSERT INTO __vehicle_symptoms (...) VALUES (...)              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  5. VALIDATION HUMAINE (Interface Admin)                            │
+│  ├─ ✅ Approve → status = 'approved'                               │
+│  ├─ ❌ Reject → status = 'rejected' + motif                        │
+│  └─ 📝 Edit → corrections manuelles                                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  6. GENERATION FICHE (automatique post-approval)                    │
+│  ├─ Script: python generate_vehicle_docs.py --vehicle <id>         │
+│  ├─ Update sections AUTO:BEGIN/END                                 │
+│  └─ Commit Git automatique                                         │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  7. INDEXATION RAG                                                  │
+│  └─ Weaviate namespace: knowledge:diagnostic                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Schemas Pydantic
+
+```python
+from pydantic import BaseModel, validator, Field
+from typing import List, Optional
+from enum import Enum
+from datetime import datetime
+
+class SourceType(str, Enum):
+    """Types de sources avec niveaux de confiance implicites"""
+    TECDOC = "tecdoc"           # Haute confiance (0.9)
+    PHP_DUMP = "php_dump"       # Moyenne confiance (0.7)
+    CONSTRUCTEUR = "constructeur"  # Haute confiance (0.95)
+    EXPERTISE = "expertise_atelier"  # Haute confiance (0.9)
+    CLIENT = "retour_client"    # Moyenne confiance (0.6)
+    FORUM = "forum"             # Basse confiance (0.4)
+
+CONFIDENCE_SCORES = {
+    SourceType.TECDOC: 0.9,
+    SourceType.PHP_DUMP: 0.7,
+    SourceType.CONSTRUCTEUR: 0.95,
+    SourceType.EXPERTISE: 0.9,
+    SourceType.CLIENT: 0.6,
+    SourceType.FORUM: 0.4,
+}
+
+class SourceInfo(BaseModel):
+    """Information sur la source d'une donnee"""
+    type: SourceType
+    url: Optional[str] = None
+    date: datetime = Field(default_factory=datetime.now)
+    validated_by: Optional[str] = None
+
+    @property
+    def confidence(self) -> float:
+        return CONFIDENCE_SCORES.get(self.type, 0.5)
+
+class Symptom(BaseModel):
+    """Schema de validation pour un symptome vehicule"""
+    code: str = Field(..., min_length=3, max_length=50)
+    title: str = Field(..., min_length=5, max_length=200)
+    category: str = Field(..., pattern=r'^(injection|moteur|transmission|freinage|electricite|depollution|climatisation|autres)$')
+    severity: str = Field(default="medium", pattern=r'^(low|medium|high|critical)$')
+    signs: List[str] = Field(..., min_items=1)
+    causes: List[str] = Field(..., min_items=1)
+    fix: List[str] = Field(..., min_items=1)
+    obd_codes: List[str] = Field(default_factory=list)
+    pieces_concernees: List[str] = Field(default_factory=list)
+    source: SourceInfo
+
+    @validator('title')
+    def title_not_empty(cls, v):
+        if not v or len(v.strip()) < 5:
+            raise ValueError('title trop court (min 5 caracteres)')
+        return v.strip()
+
+    @validator('signs', 'causes', 'fix')
+    def at_least_one_item(cls, v):
+        if len(v) < 1:
+            raise ValueError('au moins un element requis')
+        return [item.strip() for item in v if item.strip()]
+```
+
+#### VehicleFichePipeline Class
+
+```python
+from supabase import Client
+from anthropic import Anthropic
+from datetime import datetime
+import subprocess
+import json
+
+class VehicleFichePipeline:
+    """
+    Pipeline complet d'alimentation des fiches vehicules.
+
+    Workflow:
+    1. Reception info brute
+    2. Extraction IA (Claude)
+    3. Validation Pydantic
+    4. Enrichissement RAG
+    5. Stockage pending
+    6. Validation humaine
+    7. Generation fiche + Commit + Index RAG
+    """
+
+    def __init__(self, db: Client, claude: Anthropic, rag_service):
+        self.db = db
+        self.claude = claude
+        self.rag = rag_service
+
+    async def process_new_info(self, vehicle_id: str, raw_info: str, source: SourceInfo) -> dict:
+        """
+        Etapes 1-5 : Reception → Stockage pending
+        """
+        # 1. Reception (raw_info)
+
+        # 2. Extraction IA
+        structured = await self._extract_with_claude(raw_info)
+
+        # 3. Validation schema Pydantic
+        try:
+            symptom = Symptom(**structured, source=source)
+        except ValidationError as e:
+            return {"status": "validation_failed", "errors": e.errors()}
+
+        # 4. Detection doublon
+        existing = await self._check_duplicate(vehicle_id, symptom.code)
+        if existing:
+            return {"status": "duplicate", "existing_id": existing["id"]}
+
+        # 4b. Enrichissement RAG
+        enriched = await self._enrich_with_rag(symptom, vehicle_id)
+
+        # 5. Stockage pending
+        result = self.db.table("__vehicle_symptoms").insert({
+            "vehicle_id": vehicle_id,
+            "code": symptom.code,
+            "title": symptom.title,
+            "category": symptom.category,
+            "severity": symptom.severity,
+            "signs": symptom.signs,
+            "causes": symptom.causes,
+            "fix": symptom.fix,
+            "obd_codes": symptom.obd_codes,
+            "pieces_concernees": symptom.pieces_concernees,
+            "source_type": source.type.value,
+            "confidence_score": source.confidence,
+            "status": "pending_validation"
+        }).execute()
+
+        return {"status": "pending", "symptom_id": result.data[0]["id"]}
+
+    async def approve(self, symptom_id: str, approved_by: str) -> dict:
+        """
+        Etapes 6-7 : Validation humaine → Publication
+        """
+        # 6. Update status
+        self.db.table("__vehicle_symptoms").update({
+            "status": "approved",
+            "validated_by": approved_by,
+            "validated_at": datetime.now().isoformat()
+        }).eq("id", symptom_id).execute()
+
+        # Get vehicle_id
+        symptom = self.db.table("__vehicle_symptoms").select("vehicle_id").eq("id", symptom_id).single().execute()
+        vehicle_id = symptom.data["vehicle_id"]
+
+        # 7a. Regenerer fiche
+        fiche_path = await self._regenerate_fiche(vehicle_id)
+
+        # 7b. Commit Git
+        subprocess.run([
+            "git", "add", fiche_path,
+            "&&", "git", "commit", "-m", f"docs(vehicle): update {vehicle_id} fiche [auto]"
+        ], check=True)
+
+        # 7c. Index RAG
+        await self.rag.index_document(fiche_path, namespace="knowledge:diagnostic")
+
+        return {"status": "published", "vehicle_id": vehicle_id, "fiche_path": fiche_path}
+
+    async def reject(self, symptom_id: str, rejected_by: str, reason: str) -> dict:
+        """Rejeter une information avec motif"""
+        self.db.table("__vehicle_symptoms").update({
+            "status": "rejected",
+            "validated_by": rejected_by,
+            "validated_at": datetime.now().isoformat(),
+            "rejection_reason": reason
+        }).eq("id", symptom_id).execute()
+
+        return {"status": "rejected", "reason": reason}
+
+    async def _extract_with_claude(self, raw_info: str) -> dict:
+        """Extraction structuree via Claude"""
+        response = self.claude.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1000,
+            messages=[{
+                "role": "user",
+                "content": f"""Extrait les informations structurees de ce texte sur un probleme vehicule.
+
+Texte: {raw_info}
+
+Retourne un JSON avec:
+- code: identifiant unique (ex: "egr_encrassee")
+- title: titre court
+- category: une de [injection, moteur, transmission, freinage, electricite, depollution, climatisation, autres]
+- signs: liste des symptomes observables
+- causes: liste des causes possibles
+- fix: liste des solutions/reparations"""
+            }]
+        )
+        return json.loads(response.content[0].text)
+
+    async def _check_duplicate(self, vehicle_id: str, code: str) -> Optional[dict]:
+        """Verifie si un symptome similaire existe deja"""
+        result = self.db.table("__vehicle_symptoms") \
+            .select("id") \
+            .eq("vehicle_id", vehicle_id) \
+            .eq("code", code) \
+            .execute()
+        return result.data[0] if result.data else None
+
+    async def _enrich_with_rag(self, symptom: Symptom, vehicle_id: str) -> Symptom:
+        """Enrichit avec contexte RAG (retours clients similaires)"""
+        similar = await self.rag.search(
+            f"{symptom.title} {vehicle_id}",
+            namespace="knowledge:diagnostic",
+            limit=3
+        )
+        # Enrichissement via Claude si resultats pertinents
+        if similar:
+            # ... enrichissement
+            pass
+        return symptom
+
+    async def _regenerate_fiche(self, vehicle_id: str) -> str:
+        """Regenere la fiche Markdown du vehicule"""
+        generator = FicheGenerator(self.db)
+        return generator.generate_and_save(vehicle_id)
+```
+
+#### FicheGenerator avec Jinja2
+
+```python
+from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
+from datetime import datetime
+from supabase import Client
+
+class FicheGenerator:
+    """
+    Generateur de fiches Markdown avec templates Jinja2.
+
+    REGLE DE SECURITE: Ce generateur n'a JAMAIS acces aux donnees staging.
+    Il lit UNIQUEMENT les donnees validees (status = 'approved').
+    """
+
+    def __init__(self, db: Client, template_dir: str = "templates/fiches"):
+        self.db = db
+        self.env = Environment(loader=FileSystemLoader(template_dir))
+        self.fiche_template = self.env.get_template("vehicle_fiche.md.j2")
+
+    def generate_fiche(self, vehicle_id: str) -> str:
+        """Genere le contenu Markdown de la fiche"""
+        vehicle = self._get_vehicle_data(vehicle_id)
+        symptoms = self._get_approved_symptoms(vehicle_id)
+        maintenance = self._get_maintenance(vehicle_id)
+
+        return self.fiche_template.render(
+            vehicle=vehicle,
+            symptoms=symptoms,
+            maintenance=maintenance,
+            generated_at=datetime.now().isoformat(),
+            schema_version="1.0"
+        )
+
+    def generate_and_save(self, vehicle_id: str) -> str:
+        """Genere et sauvegarde la fiche"""
+        vehicle = self._get_vehicle_data(vehicle_id)
+        content = self.generate_fiche(vehicle_id)
+
+        # Path: docs/vehicles/{marque}/{modele}/fiche.md
+        fiche_path = Path(f"docs/vehicles/{vehicle['marque']}/{vehicle['modele']}/fiche.md")
+        fiche_path.parent.mkdir(parents=True, exist_ok=True)
+        fiche_path.write_text(content)
+
+        return str(fiche_path)
+
+    def _get_vehicle_data(self, vehicle_id: str) -> dict:
+        """Recupere les donnees du vehicule"""
+        result = self.db.table("__vehicles").select("*").eq("id", vehicle_id).single().execute()
+        return result.data
+
+    def _get_approved_symptoms(self, vehicle_id: str) -> list:
+        """Recupere UNIQUEMENT les symptomes valides (status = approved)"""
+        result = self.db.table("__vehicle_symptoms") \
+            .select("*") \
+            .eq("vehicle_id", vehicle_id) \
+            .eq("status", "approved") \
+            .order("category") \
+            .execute()
+        return result.data
+
+    def _get_maintenance(self, vehicle_id: str) -> list:
+        """Recupere les operations d'entretien"""
+        result = self.db.table("__vehicle_maintenance") \
+            .select("*") \
+            .eq("vehicle_id", vehicle_id) \
+            .order("interval_km") \
+            .execute()
+        return result.data
+```
+
+#### Template Jinja2 (vehicle_fiche.md.j2)
+
+```jinja2
+---
+marque: {{ vehicle.marque }}
+modele: {{ vehicle.modele }}
+generation: {{ vehicle.generation }}
+motorisations: {{ vehicle.motorisations | tojson }}
+annees: [{{ vehicle.annee_debut }}, {{ vehicle.annee_fin }}]
+generated_at: {{ generated_at }}
+schema_version: "{{ schema_version }}"
+namespace: knowledge:diagnostic:{{ vehicle.marque | lower }}:{{ vehicle.modele | lower }}
+---
+
+# {{ vehicle.marque }} {{ vehicle.modele }} – {{ vehicle.generation }}
+
+## Resume
+<!-- AI:GENERATED source=claude -->
+{{ vehicle.description | default("Description a generer par IA.") }}
+
+---
+
+## Pannes & Symptomes Frequents
+<!-- AUTO:BEGIN:symptoms source=supabase:__vehicle_symptoms -->
+
+{% for category, items in symptoms | groupby('category') %}
+### {{ category | title }}
+
+{% for symptom in items %}
+#### {{ symptom.title }}
+
+**Signes :**
+{% for sign in symptom.signs %}
+- {{ sign }}
+{% endfor %}
+
+**Causes probables :**
+{% for cause in symptom.causes %}
+- {{ cause }}
+{% endfor %}
+
+**Pistes de reparation :**
+{% for fix in symptom.fix %}
+- {{ fix }}
+{% endfor %}
+
+{% if symptom.obd_codes %}
+**Codes OBD :** {{ symptom.obd_codes | join(', ') }}
+{% endif %}
+
+---
+
+{% endfor %}
+{% endfor %}
+
+<!-- AUTO:END:symptoms -->
+
+---
+
+## Entretien & Intervalles
+<!-- AUTO:BEGIN:maintenance source=supabase:__vehicle_maintenance -->
+
+| Operation | Intervalle | Cout estime |
+|-----------|------------|-------------|
+{% for item in maintenance %}
+| {{ item.operation }} | {{ item.interval_km }} km / {{ item.interval_months }} mois | {{ item.cost_min }}-{{ item.cost_max }}€ |
+{% endfor %}
+
+<!-- AUTO:END:maintenance -->
+
+---
+
+## Sources
+
+- Donnees validees via pipeline AI-COS
+- Generated at: {{ generated_at }}
+```
+
+#### CI/CD GitHub Actions
+
+```yaml
+# .github/workflows/generate-vehicle-fiches.yml
+name: Generate Vehicle Fiches
+
+on:
+  push:
+    paths:
+      - 'data/vehicles/**/*.json'
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+    inputs:
+      vehicle_id:
+        description: 'Vehicle ID to regenerate (or "all")'
+        required: false
+        default: 'all'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate JSON schemas
+        run: |
+          npm install -g ajv-cli
+          ajv validate -s schemas/vehicle.schema.json -d "data/vehicles/**/*.json"
+          ajv validate -s schemas/symptom.schema.json -d "data/symptoms/**/*.json"
+
+  generate:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase jinja2 pydantic
+
+      - name: Generate fiches
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.vehicle_id }}" = "all" ] || [ -z "${{ github.event.inputs.vehicle_id }}" ]; then
+            python scripts/generate_vehicle_docs.py --all
+          else
+            python scripts/generate_vehicle_docs.py --vehicle "${{ github.event.inputs.vehicle_id }}"
+          fi
+
+      - name: Commit generated fiches
+        run: |
+          git config user.name "AI-COS Bot"
+          git config user.email "bot@automecanik.fr"
+          git add docs/vehicles/
+          git diff --staged --quiet || git commit -m "chore: regenerate vehicle fiches [skip ci]"
+          git push
+```
+
+#### Comparatif : Pipeline Manuel vs Automatise
+
+| Aspect | Pipeline Manuel | Pipeline Automatise |
+|--------|-----------------|---------------------|
+| **Validation donnees** | ❌ Manuelle, risque erreurs | ✅ Pydantic automatique |
+| **Tracabilite source** | ❌ Non documentee | ✅ SourceType + confidence |
+| **Detection doublons** | ❌ Manuelle | ✅ Automatique (code unique) |
+| **Enrichissement IA** | ❌ Manuel | ✅ Claude + RAG contextuel |
+| **CI/CD** | ❌ Scripts manuels | ✅ GitHub Actions |
+| **Workflow validation** | ❌ Implicite | ✅ Status explicite (pending → approved/rejected) |
+| **Audit trail** | ❌ Non | ✅ validated_by, validated_at, rejection_reason |
+| **Scalabilite** | ⚠️ Limitee | ✅ 10k+ vehicules |
+
+### Architecture SQL pour > 5000 Vehicules
+
+Pour supporter plus de 5000 vehicules avec performances optimales, on utilise le partitionnement SQL par marque.
+
+#### Schema Principal avec Partitionnement
+
+```sql
+-- Table principale partitionnee par marque
+CREATE TABLE __vehicles (
+  id text PRIMARY KEY,
+  marque text NOT NULL,
+  modele text NOT NULL,
+  generation text,
+  annee_debut int,
+  annee_fin int,
+  motorisation jsonb,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+) PARTITION BY LIST (marque);
+
+-- Partitions par marque (les plus courantes)
+CREATE TABLE __vehicles_renault PARTITION OF __vehicles FOR VALUES IN ('renault');
+CREATE TABLE __vehicles_peugeot PARTITION OF __vehicles FOR VALUES IN ('peugeot');
+CREATE TABLE __vehicles_citroen PARTITION OF __vehicles FOR VALUES IN ('citroen');
+CREATE TABLE __vehicles_volkswagen PARTITION OF __vehicles FOR VALUES IN ('volkswagen');
+CREATE TABLE __vehicles_autres PARTITION OF __vehicles DEFAULT;
+
+-- Index par marque/modele pour recherche rapide
+CREATE INDEX idx_vehicles_marque_modele ON __vehicles (marque, modele);
+CREATE INDEX idx_vehicles_motorisation ON __vehicles USING GIN (motorisation);
+```
+
+#### Table Symptomes/Pannes
+
+```sql
+CREATE TABLE __vehicle_symptoms (
+  id serial PRIMARY KEY,
+  vehicle_id text REFERENCES __vehicles(id) ON DELETE CASCADE,
+  code text NOT NULL,              -- ex: SYM-CLO3-K9K-001
+  title text NOT NULL,
+  category text NOT NULL,          -- entretien, panne, usure
+  severity text DEFAULT 'medium',  -- low, medium, high, critical
+  signs jsonb,                     -- symptomes observables
+  causes jsonb,                    -- causes possibles
+  fix jsonb,                       -- solutions
+  confidence_score decimal(3,2),   -- 0.00 - 1.00
+  source_count int DEFAULT 0,      -- nombre sources validees
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_symptoms_vehicle ON __vehicle_symptoms (vehicle_id);
+CREATE INDEX idx_symptoms_category ON __vehicle_symptoms (category);
+CREATE INDEX idx_symptoms_confidence ON __vehicle_symptoms (confidence_score);
+```
+
+#### Table Staging (donnees brutes)
+
+```sql
+CREATE TABLE __vehicle_staging (
+  id serial PRIMARY KEY,
+  vehicle_ref text NOT NULL,       -- renault_clio_3_k9k
+  data_type text NOT NULL,         -- symptom, maintenance, part
+  raw_data jsonb NOT NULL,
+  source_url text,
+  source_type text,                -- forum, rta, oem, youtube
+  source_weight decimal(3,2),      -- poids de la source
+  confidence_score decimal(3,2) DEFAULT 0.0,
+  status text DEFAULT 'pending',   -- pending, validated, rejected
+  validated_at timestamptz,
+  validated_by text,               -- human_user_id ou ai_agent
+  rejection_reason text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_staging_status ON __vehicle_staging (status);
+CREATE INDEX idx_staging_vehicle ON __vehicle_staging (vehicle_ref);
+```
+
+#### Avantages du Partitionnement
+
+| Aspect | Benefice |
+|--------|----------|
+| Performance | Requetes filtrées par marque = scan partition unique |
+| Maintenance | Vacuum/analyze par partition |
+| Scalabilite | Ajout nouvelles marques sans impact |
+| Archive | DROP partition pour purge anciens modeles |
+
+### Modele Hybride : Zones AUTO + MANUAL
+
+Pour les fiches avec contenu mixte (genere + manuel), on preserve les zones manuelles lors des regenerations.
+
+#### Patterns de Zones
+
+```markdown
+<!-- AUTO:BEGIN:motorisation -->
+## Motorisation
+K9K 832 - 1.5 dCi 90ch
+<!-- AUTO:END:motorisation -->
+
+<!-- MANUAL:BEGIN:astuces_garage -->
+## Astuces de Garage
+> Note du mécanicien : Sur ce moteur, toujours...
+<!-- MANUAL:END:astuces_garage -->
+
+<!-- AI:GENERATED:2025-12-29 -->
+Le moteur K9K 832 équipe la Clio 3...
+<!-- AI:END -->
+```
+
+#### HybridFicheGenerator
+
+```python
+import re
+from pathlib import Path
+
+class HybridFicheGenerator:
+    """
+    Generateur qui preserve les zones MANUAL lors des regenerations.
+    Lit UNIQUEMENT depuis Git JSON - jamais de connexion SQL.
+    """
+
+    MANUAL_PATTERN = r'<!-- MANUAL:BEGIN:(\w+) -->.*?<!-- MANUAL:END:\1 -->'
+    AUTO_PATTERN = r'<!-- AUTO:BEGIN:(\w+) -->.*?<!-- AUTO:END:\1 -->'
+
+    def __init__(self):
+        self.db = None  # ⛔ JAMAIS de connexion SQL par design
+
+    def regenerate(self, fiche_path: Path, json_data: dict) -> str:
+        """
+        Regenere une fiche en preservant les zones MANUAL.
+        """
+        # 1. Lire fiche existante
+        existing_content = ""
+        if fiche_path.exists():
+            existing_content = fiche_path.read_text()
+
+        # 2. Extraire zones MANUAL a preserver
+        manual_zones = self._extract_manual_zones(existing_content)
+
+        # 3. Generer nouveau contenu AUTO
+        new_content = self._generate_auto_content(json_data)
+
+        # 4. Fusionner : nouveau AUTO + ancien MANUAL
+        final_content = self._merge_zones(new_content, manual_zones)
+
+        return final_content
+
+    def _extract_manual_zones(self, content: str) -> dict:
+        """Extrait toutes les zones MANUAL existantes."""
+        zones = {}
+        for match in re.finditer(self.MANUAL_PATTERN, content, re.DOTALL):
+            zone_name = match.group(1)
+            zones[zone_name] = match.group(0)
+        return zones
+
+    def _generate_auto_content(self, json_data: dict) -> str:
+        """Genere le contenu AUTO depuis les donnees JSON validees."""
+        # Template Jinja2 ou string formatting
+        content = f"""# {json_data['title']}
+
+<!-- AUTO:BEGIN:motorisation -->
+## Motorisation
+{json_data.get('motorisation', 'Non specifie')}
+<!-- AUTO:END:motorisation -->
+
+<!-- AUTO:BEGIN:entretien -->
+## Entretien
+{self._format_entretien(json_data.get('entretien', []))}
+<!-- AUTO:END:entretien -->
+
+<!-- AUTO:BEGIN:pannes -->
+## Pannes Courantes
+{self._format_pannes(json_data.get('pannes', []))}
+<!-- AUTO:END:pannes -->
+"""
+        return content
+
+    def _merge_zones(self, new_content: str, manual_zones: dict) -> str:
+        """Fusionne nouveau contenu avec zones MANUAL preservees."""
+        final = new_content
+
+        # Ajouter les zones MANUAL a la fin ou a leur position originale
+        for zone_name, zone_content in manual_zones.items():
+            marker = f"<!-- MANUAL_PLACEHOLDER:{zone_name} -->"
+            if marker in final:
+                final = final.replace(marker, zone_content)
+            else:
+                # Ajouter a la fin avant le footer
+                final += f"\n\n{zone_content}"
+
+        return final
+
+    def _format_entretien(self, items: list) -> str:
+        return "\n".join([f"- {item}" for item in items]) or "Aucun"
+
+    def _format_pannes(self, items: list) -> str:
+        return "\n".join([f"- {item}" for item in items]) or "Aucune"
+```
+
+#### Workflow Regeneration
+
+```
+1. Lecture fiche existante
+2. Extraction zones MANUAL (preservees)
+3. Lecture Git JSON (donnees validees)
+4. Generation nouveau contenu AUTO
+5. Fusion AUTO + MANUAL
+6. Ecriture fiche finale
+7. Git commit
+```
+
+#### Regles de Preservation
+
+| Zone | Regeneration | Preservation |
+|------|--------------|--------------|
+| `AUTO:BEGIN/END` | ✅ Regenere | ❌ Non preserve |
+| `MANUAL:BEGIN/END` | ❌ Non touche | ✅ Toujours preserve |
+| `AI:GENERATED` | ✅ Peut etre regenere | ⚠️ Selon config |
+
+---
+
+## Knowledge Graph + Reasoning Engine (v2.8.0)
+
+### Principe Fondamental
+
+> **Le meilleur modèle n'est pas "tables + règles", c'est un Knowledge Graph + Reasoning Engine.**
+
+Evolution de l'architecture vers un graphe de connaissances pour :
+- Diagnostic multi-symptômes naturel
+- Ajout de connaissances sans refactor
+- Pannes récurrentes par modèle
+- SEO/Insights automatiques
+
+### Architecture du Knowledge Graph
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        KNOWLEDGE GRAPH                                │
+│                                                                       │
+│  ┌─────────┐    ┌──────────┐    ┌────────────┐    ┌───────────┐      │
+│  │ VEHICLE │───►│ SYSTEM   │───►│ OBSERVABLE │───►│   FAULT   │      │
+│  │  Node   │    │   Node   │    │    Node    │    │   Node    │      │
+│  └─────────┘    └──────────┘    └────────────┘    └─────┬─────┘      │
+│       │                                                  │            │
+│       │         ┌────────────────────────────────────────┘            │
+│       │         │                                                     │
+│       │         ▼                                                     │
+│       │    ┌────────────┐    ┌───────────┐                           │
+│       └───►│   ACTION   │◄───│   PART    │◄──────────────────────────┤
+│            │    Node    │    │   Node    │                           │
+│            └────────────┘    └───────────┘                           │
+│                                                                       │
+│  Edges: CAUSES, FIXED_BY, COMPATIBLE_WITH, CORRELATES_WITH          │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Types de Nodes
+
+| Type | Description | Exemple |
+|------|-------------|---------|
+| **Vehicle** | Véhicule spécifique | Renault Clio 3 1.5 dCi K9K |
+| **System** | Système du véhicule | Moteur, Freinage, Refroidissement |
+| **Observable** | Symptôme observable | Fumée noire, voyant moteur |
+| **Fault** | Panne identifiée | EGR encrassée, turbo HS |
+| **Action** | Action diagnostic/réparation | Nettoyage EGR, remplacement |
+| **Part** | Pièce concernée | Vanne EGR, Turbo |
+
+### Types de Relations (Edges)
+
+| Edge Type | Description | Exemple |
+|-----------|-------------|---------|
+| `HAS_SYSTEM` | Vehicle → System | Clio → Moteur |
+| `SHOWS_SYMPTOM` | System → Observable | Moteur → fumée noire |
+| `CAUSES` | Observable → Fault | fumée noire → EGR encrassée |
+| `FIXED_BY` | Fault → Part | EGR encrassée → Vanne EGR |
+| `DIAGNOSED_BY` | Fault → Action | EGR encrassée → Nettoyage |
+| `COMPATIBLE_WITH` | Part → Vehicle | Vanne EGR → Clio K9K |
+| `CORRELATES_WITH` | Observable ↔ Observable | symptômes associés |
+| `OFTEN_WITH` | Fault ↔ Fault | pannes souvent liées |
+
+### Tables SQL
+
+```sql
+-- kg_nodes : Entités du graphe
+CREATE TABLE kg_nodes (
+  node_id UUID PRIMARY KEY,
+  node_type TEXT NOT NULL,      -- Vehicle, System, Observable, Fault, Action, Part
+  node_label TEXT NOT NULL,     -- "Fumée noire à l'échappement"
+  node_category TEXT,           -- "Électrique", "Mécanique"
+  node_data JSONB DEFAULT '{}', -- Metadata flexible
+  confidence FLOAT DEFAULT 1.0,
+  sources TEXT[],               -- ["TecDoc", "RTA", "Forum"]
+  version INT DEFAULT 1,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- kg_edges : Relations versionnées
+CREATE TABLE kg_edges (
+  edge_id UUID PRIMARY KEY,
+  source_node_id UUID REFERENCES kg_nodes,
+  target_node_id UUID REFERENCES kg_nodes,
+  edge_type TEXT NOT NULL,
+  weight FLOAT DEFAULT 1.0,
+  confidence FLOAT DEFAULT 1.0,
+  evidence JSONB DEFAULT '{}',
+  sources TEXT[],
+  version INT DEFAULT 1,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- kg_reasoning_cache : Cache diagnostics
+CREATE TABLE kg_reasoning_cache (
+  cache_id UUID PRIMARY KEY,
+  query_hash TEXT UNIQUE,
+  input_observables TEXT[],
+  result_faults JSONB,
+  result_score FLOAT,
+  result_explanation TEXT,
+  hit_count INT DEFAULT 0,
+  expires_at TIMESTAMPTZ
+);
+```
+
+### Reasoning Engine (TypeScript)
+
+```typescript
+class KnowledgeGraphService {
+  /**
+   * Diagnostic multi-symptômes via traversal du graphe.
+   *
+   * Exemple:
+   * - vehicle: "renault-clio-3-1.5-dci"
+   * - observables: ["fumée noire", "perte puissance", "voyant moteur"]
+   * - Résultat: Vanne EGR défaillante (confidence: 0.94)
+   */
+  async diagnose(
+    vehicleId: string,
+    observables: string[],
+    confidenceThreshold = 0.75
+  ): Promise<DiagnosticResult> {
+    // 1. Trouver les nodes Observable correspondants
+    const observableNodes = await this.findObservableNodes(observables);
+
+    // 2. Traverser le graphe: Observable → CAUSES → Fault
+    const faultCandidates = await this.traverseToFaults(observableNodes);
+
+    // 3. Scorer chaque fault par symptômes matchés
+    const scoredFaults = this.scoreFaults(faultCandidates, observableNodes);
+
+    // 4. Enrichir avec Actions et Parts
+    return this.enrichWithSolutions(scoredFaults);
+  }
+
+  private scoreFaults(faults: FaultCandidate[], observables: UUID[]): ScoredFault[] {
+    /**
+     * Score = (symptômes matchés / total) × confiance moyenne
+     *
+     * Exemple:
+     * - EGR Fault: 3/3 symptômes → 1.0 × 0.94 = 0.94 ✅
+     * - Turbo Fault: 2/3 symptômes → 0.66 × 0.85 = 0.56
+     */
+    const faultScores = new Map<string, { matches: number; confidenceSum: number }>();
+
+    for (const fault of faults) {
+      const current = faultScores.get(fault.faultId) || { matches: 0, confidenceSum: 0 };
+      current.matches++;
+      current.confidenceSum += fault.confidence;
+      faultScores.set(fault.faultId, current);
+    }
+
+    return Array.from(faultScores.entries())
+      .map(([faultId, data]) => ({
+        faultId,
+        score: (data.matches / observables.length) * (data.confidenceSum / data.matches),
+        matchedSymptoms: data.matches,
+        totalSymptoms: observables.length,
+      }))
+      .sort((a, b) => b.score - a.score);
+  }
+}
+```
+
+### RPC Functions SQL
+
+```sql
+-- Diagnostic complet: symptômes → pannes scorées avec pièces/actions
+CREATE FUNCTION kg_diagnose(
+  p_vehicle_id UUID,
+  p_observable_labels TEXT[],
+  p_confidence_threshold FLOAT DEFAULT 0.75
+) RETURNS TABLE (
+  fault_id UUID,
+  fault_label TEXT,
+  match_score FLOAT,
+  matched_symptoms INT,
+  total_symptoms INT,
+  parts JSONB,
+  actions JSONB
+) AS $$
+  -- 1. Trouve les Observable nodes correspondants
+  -- 2. Traverse: Observable → CAUSES → Fault
+  -- 3. Score par nombre de symptômes matchés
+  -- 4. Enrichit avec FIXED_BY → Parts et DIAGNOSED_BY → Actions
+$$ LANGUAGE plpgsql;
+```
+
+### Exemple Diagnostic : Vanne EGR
+
+**Input utilisateur:**
+> "Ma Clio 3 1.5 dCi fait de la fumée noire, perd de la puissance et le voyant moteur s'allume"
+
+**Traversal Graph:**
+```
+Observable["fumée noire"] ──CAUSES──► Fault["EGR encrassée"] ──FIXED_BY──► Part["Vanne EGR"]
+Observable["perte puissance"] ──CAUSES──► Fault["EGR encrassée"]
+Observable["voyant moteur"] ──CAUSES──► Fault["EGR encrassée"]
+                                              │
+                                              └──DIAGNOSED_BY──► Action["Nettoyage EGR"]
+```
+
+**Scoring:**
+| Fault | Symptômes matchés | Score |
+|-------|-------------------|-------|
+| EGR encrassée | 3/3 | 1.0 × 0.94 = **0.94** |
+| Turbo HS | 2/3 | 0.66 × 0.85 = 0.56 |
+| Injecteur | 1/3 | 0.33 × 0.80 = 0.26 |
+
+**Output:**
+```json
+{
+  "diagnostic": "Vanne EGR encrassée",
+  "confidence": 0.94,
+  "matched_symptoms": ["fumée noire", "perte puissance", "voyant moteur"],
+  "recommended_actions": ["Nettoyage EGR", "Remplacement si nécessaire"],
+  "parts": [
+    {"ref": "EGR-REN-K9K-001", "name": "Vanne EGR Renault K9K", "price": 189.90}
+  ],
+  "explanation": "Les 3 symptômes correspondent au profil typique d'une EGR défaillante sur K9K."
+}
+```
+
+### Avantages vs Architecture Tables + Règles
+
+| Critère | Tables + Règles | Knowledge Graph |
+|---------|-----------------|-----------------|
+| Ajout connaissance | Refactor code | `INSERT INTO kg_edges` |
+| Diagnostic multi-symptômes | Code complexe | Traversal naturel |
+| Pannes récurrentes | Stats manuelles | Query `OFTEN_WITH` |
+| Explication | Hardcodée | Générée du chemin |
+| SEO/Insights | Queries SQL custom | Graph analytics |
+| Versioning | Difficile | Natif (`version` column) |
+
+### Intégration Architecture 1 IA + 3 Agents
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         1 APPEL CLAUDE                               │
+│                                                                      │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐             │
+│  │  AGENT #1    │──►│  AGENT #2    │──►│  AGENT #3    │             │
+│  │  COLLECTEUR  │   │  GRAPH QUERY │   │  REASONER    │             │
+│  │              │   │              │   │              │             │
+│  │ Parse texte  │   │ Traverse KG  │   │ Score final  │             │
+│  │ → Observables│   │ → Faults     │   │ + Explication│             │
+│  └──────────────┘   └──────────────┘   └──────────────┘             │
+│                                                                      │
+│  Agent #2 utilise le Knowledge Graph au lieu de règles hardcodées   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Migration des Données Existantes
+
+| Source | Target Node Type | Méthode |
+|--------|------------------|---------|
+| `auto_type` | Vehicle | Import direct avec `type_id` |
+| `pieces_gamme` | Observable, Fault | Mapping sémantique |
+| `pieces_relation_type` | Edge COMPATIBLE_WITH | Conversion directe |
+| Forums/RTA | Edge CAUSES | Extraction IA + validation |
+
+### Fichiers Créés
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_knowledge_graph.sql` | Tables + RPC functions |
+| `backend/src/modules/knowledge-graph/kg.module.ts` | Module NestJS |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Reasoning Engine |
+| `backend/src/modules/knowledge-graph/kg-data.service.ts` | CRUD nodes/edges |
+
+---
+
+## Taxonomies Contrôlées (v2.8.1)
+
+> **Vocabulaires contrôlés pour des corrélations stables et des statistiques fiables.**
+
+### Problème Résolu
+
+Sans taxonomies, les symptômes sont décrits en texte libre :
+- "Bruit au freinage" vs "Bruit de frein" vs "Grincement freins"
+- Impossible d'agréger les statistiques
+- Corrélations instables
+
+### Solution : 7 Taxonomies Automobiles
+
+| Taxonomie | Valeurs | Usage |
+|-----------|---------|-------|
+| `tax_phase` | freinage, acceleration, ralenti, virage, demarrage, constant | Contexte d'occurrence |
+| `tax_temp` | froid, chaud, any | Température moteur |
+| `tax_freq` | intermittent, permanent | Fréquence du symptôme |
+| `tax_intensity` | faible, moyen, fort | Intensité perçue |
+| `tax_risk` | securite, panne_simple, confort | Niveau de risque |
+| `tax_localisation` | avant, arriere, lateral, moteur, habitacle | Zone du véhicule |
+| `tax_cote` | gauche, droite, central, bilateral | Côté affecté |
+
+### Architecture : Colonnes Directes
+
+Approche choisie : **colonnes sur `kg_nodes`** avec CHECK constraints (pas de tables séparées).
+
+```sql
+-- Migration SQL (simplifié)
+ALTER TABLE kg_nodes
+  ADD COLUMN tax_phase TEXT CHECK (tax_phase IN ('freinage', 'acceleration', 'ralenti', 'virage', 'demarrage', 'constant')),
+  ADD COLUMN tax_temp TEXT CHECK (tax_temp IN ('froid', 'chaud', 'any')),
+  ADD COLUMN tax_freq TEXT CHECK (tax_freq IN ('intermittent', 'permanent')),
+  ADD COLUMN tax_intensity TEXT CHECK (tax_intensity IN ('faible', 'moyen', 'fort')),
+  ADD COLUMN tax_risk TEXT CHECK (tax_risk IN ('securite', 'panne_simple', 'confort')),
+  ADD COLUMN tax_localisation TEXT CHECK (tax_localisation IN ('avant', 'arriere', 'lateral', 'moteur', 'habitacle')),
+  ADD COLUMN tax_cote TEXT CHECK (tax_cote IN ('gauche', 'droite', 'central', 'bilateral'));
+
+-- Index pour requêtes rapides
+CREATE INDEX idx_kg_nodes_tax_phase ON kg_nodes(tax_phase) WHERE tax_phase IS NOT NULL;
+CREATE INDEX idx_kg_nodes_tax_risk ON kg_nodes(tax_risk) WHERE tax_risk IS NOT NULL;
+```
+
+### Exemple : Symptôme avec Taxonomies
+
+```json
+{
+  "node_type": "Observable",
+  "node_label": "Bruit au freinage",
+  "node_alias": "bruit-freinage",
+  "tax_phase": "freinage",
+  "tax_temp": "froid",
+  "tax_freq": "intermittent",
+  "tax_intensity": "moyen",
+  "tax_risk": "securite",
+  "tax_localisation": "avant",
+  "tax_cote": "bilateral"
+}
+```
+
+### Diagnostic Contextuel
+
+Avec les taxonomies, le Reasoning Engine peut filtrer par contexte :
+
+```sql
+-- "Bruit au freinage à froid, intermittent, à l'avant"
+SELECT f.node_label AS fault, AVG(e.confidence) AS score
+FROM kg_nodes o
+JOIN kg_edges e ON e.source_node_id = o.node_id AND e.edge_type = 'CAUSES'
+JOIN kg_nodes f ON f.node_id = e.target_node_id
+WHERE o.node_type = 'Observable'
+  AND o.tax_phase = 'freinage'
+  AND o.tax_temp = 'froid'
+  AND o.tax_freq = 'intermittent'
+  AND o.tax_localisation = 'avant'
+GROUP BY f.node_id, f.node_label
+ORDER BY score DESC;
+```
+
+### Avantages
+
+| Aspect | Sans Taxonomies | Avec Taxonomies |
+|--------|-----------------|-----------------|
+| Corrélations | Instables (texte libre) | Stables (valeurs contrôlées) |
+| Statistiques | Impossibles | `GROUP BY tax_phase, tax_risk` |
+| Multi-langue | Refactoring total | Code stable, labels traduits |
+| Machine Learning | Données bruitées | Features propres |
+| Requêtes | Recherche floue | Filtres précis |
+
+### Comparatif Architectures
+
+| Critère | Tables Séparées | Colonnes Directes |
+|---------|-----------------|-------------------|
+| Complexité | 3 tables + JOINs | 1 ALTER TABLE |
+| Performance | JOINs multiples | Accès direct |
+| Maintenance | Service dédié | Pas de code supplémentaire |
+| Extensibilité | INSERT nouvelle ligne | ALTER ADD COLUMN |
+| **Choix** | ❌ Over-engineering | ✅ **Recommandé** |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_taxonomy.sql` | ALTER TABLE + CHECK constraints |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enums TypeScript pour taxonomies |
+| `backend/src/modules/knowledge-graph/kg-data.service.ts` | Filtres par taxonomies |
+
+---
+
+## Double Score : Probability + Confidence (v2.8.2)
+
+> **Signature professionnelle : ne jamais être trop affirmatif sans données suffisantes.**
+
+### Concept : Deux Scores Distincts
+
+| Score | Mesure | Type d'Incertitude | Facteurs |
+|-------|--------|-------------------|----------|
+| **Probability** | Probabilité que la panne soit la cause | Aléatoire (inhérente au système) | Corrélations statistiques, poids des edges |
+| **Confidence** | Qualité/fiabilité de l'analyse | Épistémique (manque de données) | Observables fournis, cohérence, contexte |
+
+### Parallèle avec les Systèmes Pros
+
+```
+🏥 Médical  : "Probabilité pneumonie 70%, confiance 50% (manque radio thorax)"
+🚗 Auto    : "Probabilité alternateur 80%, confiance 60% (manque contexte démarrage)"
+```
+
+**C'est exactement ce que font les systèmes OEM (Bosch ESI, Delphi, etc.)**
+
+### Structure de Données
+
+```typescript
+interface DiagnosisResult {
+  fault: KgNode;
+  probability: number;      // 0-100% - "Cette panne est probable"
+  confidence: number;       // 0-100% - "Je suis sûr de mon analyse"
+  missing_data?: string[];  // Infos manquantes pour augmenter confidence
+  reasoning: string;        // Explication textuelle
+}
+```
+
+### Calcul du Confidence Score
+
+```sql
+-- Facteurs qui augmentent la confidence
+confidence_score = base_confidence
+  + (observables_fournis / observables_requis) * 30  -- Complétude données
+  + (coherence_check ? 20 : 0)                        -- Cohérence symptômes
+  + (taxonomies_matched ? 15 : 0)                     -- Contexte précis (phase, temp)
+  + (vehicle_history ? 10 : 0)                        -- Historique véhicule connu
+```
+
+### Exemple de Réponse API
+
+```json
+{
+  "diagnosis": [
+    {
+      "fault": "Alternateur défaillant",
+      "probability": 82,
+      "confidence": 65,
+      "message": "Cause très probable, mais confirmez si le problème survient à froid",
+      "missing_data": ["tax_phase", "kilométrage"]
+    },
+    {
+      "fault": "Batterie fatiguée",
+      "probability": 45,
+      "confidence": 80,
+      "message": "Cause possible, analyse fiable avec les données fournies"
+    }
+  ]
+}
+```
+
+### Avantages Business
+
+| Bénéfice | Impact |
+|----------|--------|
+| **Réduction litiges** | Jamais "affirmatif" sans données suffisantes |
+| **Engagement utilisateur** | Incite à compléter les infos manquantes |
+| **Différenciation** | Signature pro vs concurrents "basiques" |
+| **Évolutivité** | S'améliore automatiquement avec plus de données |
+
+### Dépendances
+
+**Requiert v2.8.1 (Taxonomies)** car :
+- Les taxonomies enrichissent le confidence score
+- `tax_phase`, `tax_temp` améliorent la précision du contexte
+- Séquence logique : Structure → Contexte → Qualité
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Interface `DiagnosisResult` avec probability/confidence |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Méthodes `calculateConfidence()` et `calculateProbability()` |
+| `backend/src/modules/knowledge-graph/kg.controller.ts` | Endpoint `/diagnose` retourne le double score |
+
+---
+
+## Gate Safety : Sécurité Routière (v2.8.3)
+
+> **Obligation légale et éthique : un système de diagnostic automobile DOIT gérer les cas dangereux.**
+
+### Concept : Prioriser la Sécurité
+
+Un système sérieux doit distinguer les cas critiques et adapter sa réponse :
+- Désactiver la vente agressive
+- Afficher des alertes appropriées
+- Recommander des actions prudentes
+
+### Niveaux de Sécurité
+
+| Level | Description | UX | Vente |
+|-------|-------------|-----|-------|
+| `critical` | Arrêt immédiat obligatoire | Alerte rouge plein écran | ❌ Désactivée |
+| `urgent` | Contrôle dans 24h | Bandeau orange | ⚠️ Avertissement |
+| `warning` | Contrôle recommandé | Info jaune | ✅ Normale |
+| `normal` | Maintenance standard | Standard | ✅ Normale |
+
+### Triggers Sécurité Critiques
+
+```typescript
+const SAFETY_TRIGGERS = {
+  critical: [
+    'Perte de freinage',
+    'Direction bloquée',
+    'Pédale de frein molle',
+    'Odeur brûlé habitacle'
+  ],
+  urgent: [
+    'Fumée noire abondante',
+    'Surchauffe moteur',
+    'Voyant huile allumé',
+    'Voyant frein allumé fixe'
+  ],
+  warning: [
+    'Bruit anormal freinage',
+    'Vibrations volant',
+    'Consommation excessive'
+  ]
+};
+```
+
+### Structure de Données
+
+```sql
+-- Ajouter sur kg_nodes
+ALTER TABLE kg_nodes
+  ADD COLUMN safety_level TEXT CHECK (safety_level IN (
+    'critical', 'urgent', 'warning', 'normal'
+  )) DEFAULT 'normal';
+
+-- Index pour requêtes prioritaires
+CREATE INDEX idx_kg_nodes_safety ON kg_nodes(safety_level)
+  WHERE safety_level IN ('critical', 'urgent');
+```
+
+### Réponse API avec Safety Gate
+
+```json
+{
+  "diagnosis": [...],
+  "safety": {
+    "level": "critical",
+    "alert": true,
+    "message": "⚠️ ARRÊT IMMÉDIAT RECOMMANDÉ",
+    "instructions": [
+      "Ne pas conduire le véhicule",
+      "Contacter un dépanneur",
+      "Faire contrôler par un professionnel"
+    ],
+    "disable_sales": true,
+    "emergency_contacts": {
+      "depannage": "0 800 XXX XXX",
+      "urgences": "112"
+    }
+  }
+}
+```
+
+### Avantages Business
+
+| Bénéfice | Impact |
+|----------|--------|
+| **Protection juridique** | "Nous avons averti l'utilisateur" |
+| **Image de marque** | Plateforme responsable |
+| **Différenciation** | Aucun concurrent ne fait ça |
+| **Confiance client** | Priorité sécurité > vente |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_safety.sql` | ALTER TABLE + safety_level |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enum `SafetyLevel`, interface `SafetyGate` |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Méthode `evaluateSafety()` |
+
+---
+
+## Observable Types : Symptom / Sign / DTC (v2.8.4)
+
+> **Passer au niveau pro garage : distinguer les types d'observables pour améliorer la précision.**
+
+### Types d'Observables
+
+| Type | Nature | Fiabilité | Exemple |
+|------|--------|-----------|---------|
+| **Symptom** | Ressenti subjectif | 60% | "La voiture tire à droite" |
+| **Sign** | Observable objectif | 80% | "Fumée noire à l'échappement" |
+| **DTC** | Code OBD standardisé | 95% | "P0171 - Mélange trop pauvre" |
+
+### Structure de Données
+
+```sql
+-- Ajouter sur kg_nodes (type Observable uniquement)
+ALTER TABLE kg_nodes
+  ADD COLUMN observable_type TEXT CHECK (observable_type IN (
+    'symptom',   -- Ressenti utilisateur
+    'sign',      -- Observable visuel/mesurable
+    'dtc'        -- Code OBD-II (P/B/C/U + 4 chiffres)
+  ));
+
+-- Validation format DTC (format OBD-II standard)
+ALTER TABLE kg_nodes
+  ADD CONSTRAINT check_dtc_format
+  CHECK (
+    observable_type != 'dtc' OR
+    node_label ~ '^[PBCU][0-9]{4}'
+  );
+```
+
+### Impact sur le Scoring
+
+```typescript
+const OBSERVABLE_WEIGHT = {
+  symptom: 0.6,   // Subjectif, peut être mal décrit
+  sign: 0.8,      // Objectif, vérifiable
+  dtc: 0.95       // Standardisé, précis, technique
+};
+```
+
+### Codes OBD-II Standards
+
+| Préfixe | Système | Exemple |
+|---------|---------|---------|
+| **P** | Powertrain (moteur/transmission) | P0300 - Ratés d'allumage |
+| **B** | Body (carrosserie) | B0100 - Airbag |
+| **C** | Chassis (châssis) | C0035 - ABS |
+| **U** | Network (réseau CAN) | U0100 - Communication ECU |
+
+### ROI Business
+
+| Opportunité | Impact |
+|-------------|--------|
+| **Précision diagnostic** | +30% accuracy avec DTCs |
+| **Service OBD** | Proposer "scan OBD gratuit" → vente pièces |
+| **Partenariats** | Intégration valise diag (Delphi, Autel, Launch) |
+| **Crédibilité** | "Nous parlons le langage des pros" |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_observable_types.sql` | ALTER TABLE + constraint DTC |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enum `ObservableType` |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | `OBSERVABLE_WEIGHT` dans scoring |
+
+---
+
+## Roadmap Knowledge Graph
+
+```
+v2.8.0 ──► v2.8.1 ──► v2.8.2 ──► v2.8.3 ──► v2.8.4
+   │          │          │          │          │
+   ▼          ▼          ▼          ▼          ▼
+Module    Taxono-    Double     Gate      Observable
+  KG      mies       Score     Safety      Types
+        (7 cols)   (Prob/Conf) (sécurité) (Sym/Sign/DTC)
+```
+
+| Version | Feature | Statut | Description |
+|---------|---------|--------|-------------|
+| **v2.8.0** | Knowledge Graph + Reasoning Engine | ✅ Terminé | Architecture graphe, tables kg_nodes/kg_edges, diagnostic multi-symptômes |
+| **v2.8.1** | Taxonomies Contrôlées | 📋 Planifié | 7 colonnes (phase, temp, freq, intensity, risk, localisation, cote) |
+| **v2.8.2** | Double Score | 📋 Planifié | Probability + Confidence, missing_data suggestions |
+| **v2.8.3** | Gate Safety | 📋 Planifié | Niveaux sécurité (critical/urgent/warning), disable_sales |
+| **v2.8.4** | Observable Types | 📋 Planifié | Symptom/Sign/DTC, poids différenciés, validation OBD-II |
+
+---
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -1341,6 +3397,17 @@ Le contenu technique vehicule (pannes, symptomes, reparations, entretien) est or
 
 ## Change Log
 
+- **2025-12-30 v2.8.4** : Observable Types - Symptom/Sign/DTC (niveau pro garage), 3 types observables avec poids différenciés (60%/80%/95%), validation format OBD-II pour DTCs (P/B/C/U + 4 chiffres), intégration scoring pondéré, préparation future API OBD Scanner
+- **2025-12-30 v2.8.3** : Gate Safety - Sécurité Routière (obligation légale et éthique), 4 niveaux sécurité (critical/urgent/warning/normal), triggers automatiques pour cas dangereux (freinage, direction, moteur), désactivation vente sur alertes critiques, réponse API avec instructions et contacts urgence
+- **2025-12-30 v2.8.2** : Double Score Probability + Confidence (signature diagnostic pro), séparation incertitude aléatoire vs épistémique, calcul confidence basé sur complétude données/cohérence/taxonomies/historique, suggestions missing_data pour engagement utilisateur, parallèle systèmes OEM (Bosch ESI, Delphi)
+- **2025-12-30 v2.8.1** : Taxonomies Contrôlées (7 colonnes: tax_phase, tax_temp, tax_freq, tax_intensity, tax_risk, tax_localisation, tax_cote), approche colonnes directes + CHECK constraints vs tables séparées, index composites pour requêtes diagnostiques contextuelles
+- **2025-12-30 v2.8.0** : Knowledge Graph + Reasoning Engine (architecture graphe Vehicle → System → Observable → Fault → Action → Part), tables kg_nodes/kg_edges/kg_reasoning_cache avec RPC functions, KnowledgeGraphService TypeScript pour diagnostic multi-symptomes, scoring automatique par symptomes matches, integration architecture 1 IA + 3 Agents, migration progressive depuis donnees existantes
+- **2025-12-30 v2.7.5** : Principe Data Integrity systemique (7 controles obligatoires pour TOUTE info entrant dans le systeme), application multi-domaines (vehicules, produits, pricing, SEO, support, blog), diagramme flux avec gates de rejet, integration architecture 1 IA + 3 Agents (controles 1-3) + pipeline (controles 4-7), garantie zero erreur critique
+- **2025-12-30 v2.7.4** : Architecture 1 IA + 3 Agents (1 appel Claude = 3 roles sequentiels, economie 66% cout API, contexte partage), PROMPT_TRIPLE_AGENT template multi-roles, TripleAgentValidator class Python, regle securite "aucun agent ne publie seul", 90% validation automatique sans intervention humaine
+- **2025-12-30 v2.7.3** : Cas d'usage realiste Vanne EGR Clio 3 (demonstration systeme anti-fake), Schema ValidationResult avec coherence semantique (semantic_match, semantic_reason, semantic_category), Matrice coherence semantique par categorie piece (EGR, Turbo, Freins, Injection, Distribution, Embrayage, Direction, Climatisation)
+- **2025-12-29 v2.7.2** : Pipeline Alimentation Automatise complet (7 etapes avec diagramme), Schemas Pydantic (SourceType, SourceInfo, Symptom avec validators), VehicleFichePipeline class (process_new_info, approve, reject, enrichissement RAG), FicheGenerator avec Jinja2 templates, CI/CD GitHub Actions (validation JSON + generation fiches), Comparatif Pipeline Manuel vs Automatise
+- **2025-12-29 v2.7.1** : Architecture SQL pour > 5000 vehicules (partitionnement par marque, tables __vehicles, __vehicle_symptoms, __vehicle_staging), Modele Hybride zones AUTO + MANUAL (HybridFicheGenerator avec preservation zones manuelles lors regenerations)
+- **2025-12-29 v2.7.0** : Systeme Validation Donnees - REGLE D'OR (jamais info brute web → fiche), architecture hybride SQL staging + Git validated, Triple Verification (multi-sources avec poids, OEM, regles metier), seuils confiance (≥0.90 auto, 0.75-0.90 review, <0.75 rejet), Pipeline 3 scripts (collect/validate/generate), modele 100% IA + validation humaine
 - **2025-12-29 v2.3.0** : Ajout section Fiches Documentaires Vehicules (pannes, symptomes, entretien)
 - **2025-12-29 v2.2.0** : Ajout section Fiches Documentaires Pricing (tracabilite tarifs fournisseurs)
 - **2025-12-29 v2.1.1** : Mise a jour references fichiers renommes (ai-cos-vision.md, ai-cos-enrichment-plan.md)

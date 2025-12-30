@@ -226,6 +226,12 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
           description: "230 gammes G-Level"
         },
         {
+          name: "V-Level Status",
+          href: "/admin/v-level-status",
+          icon: BarChart3,
+          description: "Dashboard V-Level global"
+        },
+        {
           name: "Sitemaps",
           href: "/admin/seo?tab=tools", 
           icon: FileText,

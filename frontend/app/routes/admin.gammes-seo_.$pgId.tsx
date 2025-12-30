@@ -36,8 +36,15 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  Download,
+  Search,
+  Globe,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  RefreshCw,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -58,8 +65,38 @@ import {
   TabsTrigger,
 } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
 
 // Types
+interface VLevelItem {
+  id: number;
+  gamme_name: string;
+  model_name: string;
+  brand: string;
+  variant_name: string;
+  energy: string;
+  v_level: string;
+  rank: number;
+  score: number;
+  search_volume: number | null;
+  updated_at: string | null;
+}
+
+// Freshness status helper
+const getFreshnessStatus = (lastUpdated: string | null) => {
+  if (!lastUpdated) return { status: "unknown", color: "gray", text: "Inconnu", icon: "❓" };
+  const days = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 7) return { status: "fresh", color: "green", text: "Frais", icon: "✅" };
+  if (days <= 30) return { status: "stale", color: "yellow", text: "Périmé", icon: "⚠️" };
+  return { status: "old", color: "red", text: "Ancien", icon: "🔴" };
+};
+
 interface GammeDetail {
   gamme: {
     pg_id: number;
@@ -114,25 +151,55 @@ interface GammeDetail {
       type_name: string;
       marque_name: string;
       modele_name: string;
+      fuel: string;
+      year_from: string;
+      year_to: string;
+      power_ps: string;
     }>;
-    level2: Array<any>;
-    level5: Array<any>;
+    level2: Array<{
+      cgc_id: number;
+      type_id: number;
+      type_name: string;
+      marque_name: string;
+      modele_name: string;
+      fuel: string;
+      year_from: string;
+      year_to: string;
+      power_ps: string;
+    }>;
+    level5: Array<{
+      cgc_id: number;
+      type_id: number;
+      type_name: string;
+      marque_name: string;
+      modele_name: string;
+      fuel: string;
+      year_from: string;
+      year_to: string;
+      power_ps: string;
+    }>;
   };
-  vLevel: Array<{
-    id: number;
-    gamme_name: string;
-    model_name: string;
-    brand: string;
-    variant_name: string;
-    energy: string;
-    v_level: string;
-    rank: number;
-    score: number;
-  }>;
+  vLevel: {
+    v1: VLevelItem[];
+    v2: VLevelItem[];
+    v3: VLevelItem[];
+    v4: VLevelItem[];
+    v5: VLevelItem[];
+  };
   stats: {
     products_count: number;
     articles_count: number;
     vehicles_level1_count: number;
+    vehicles_level2_count: number;
+    vehicles_level5_count: number;
+    vehicles_total_count: number;
+    vLevel_v1_count: number;
+    vLevel_v2_count: number;
+    vLevel_v3_count: number;
+    vLevel_v4_count: number;
+    vLevel_v5_count: number;
+    vLevel_total_count: number;
+    vLevel_last_updated: string | null;
     last_article_date: string | null;
   };
 }
@@ -256,6 +323,218 @@ export default function AdminGammeSeoDetail() {
   const [showAllVariations, setShowAllVariations] = useState<Set<string>>(new Set());
   const MAX_VISIBLE_VARIATIONS = 5;
 
+  // State for article edit modal
+  const [editingArticle, setEditingArticle] = useState<{
+    ba_id: number;
+    ba_title: string;
+    ba_preview: string;
+  } | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    preview: "",
+  });
+  const [isEditSaving, setIsEditSaving] = useState(false);
+  const [vehicleSearch, setVehicleSearch] = useState("");
+  const [energyFilter, setEnergyFilter] = useState<"all" | "diesel" | "essence">("all");
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    valid: boolean;
+    violations: Array<{
+      model_name: string;
+      variant_name: string;
+      energy: string;
+      v2_count: number;
+      g1_total: number;
+      percentage: number;
+    }>;
+    g1_count: number;
+    summary: { total_v1: number; valid_v1: number; invalid_v1: number };
+  } | null>(null);
+
+  // Détecter les doublons V2 par énergie (violation règle V2 = UNIQUE par gamme+énergie)
+  const v2Violations = useMemo(() => {
+    const check = (items: VLevelItem[], energy: string) => {
+      const models = items
+        .filter((v) => v.energy?.toLowerCase() === energy)
+        .map((v) => v.model_name);
+      const duplicates = models.filter((m, i) => models.indexOf(m) !== i);
+      return [...new Set(duplicates)];
+    };
+    return {
+      diesel: check(detail.vLevel.v2, "diesel"),
+      essence: check(detail.vLevel.v2, "essence"),
+    };
+  }, [detail.vLevel.v2]);
+
+  // Export CSV V-Levels
+  const exportVLevelToCSV = () => {
+    const allItems = [
+      ...detail.vLevel.v1.map((v) => ({ ...v, level: "V1" })),
+      ...detail.vLevel.v2.map((v) => ({ ...v, level: "V2" })),
+      ...detail.vLevel.v3.map((v) => ({ ...v, level: "V3" })),
+      ...detail.vLevel.v4.map((v) => ({ ...v, level: "V4" })),
+      ...detail.vLevel.v5.map((v) => ({ ...v, level: "V5" })),
+    ];
+
+    const headers = [
+      "V-Level",
+      "Marque",
+      "Modele",
+      "Variante",
+      "Energie",
+      "Rang",
+      "Score",
+      "Volume",
+    ];
+    const rows = allItems.map((v) => [
+      v.level,
+      v.brand,
+      v.model_name,
+      v.variant_name,
+      v.energy,
+      v.rank,
+      v.score,
+      v.search_volume || "",
+    ]);
+
+    const csv = [headers, ...rows].map((r) => r.join(";")).join("\n");
+    const blob = new Blob(["\ufeff" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `v-level-${detail.gamme.pg_alias}-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Recalcul V-Level
+  const handleRecalculateVLevel = async () => {
+    setIsRecalculating(true);
+    try {
+      const res = await fetch(
+        `/api/admin/gammes-seo/${detail.gamme.pg_id}/recalculate-vlevel`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        // Rafraîchir la page pour voir les nouvelles données
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Erreur recalcul V-Level:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
+  // Validation V1 >= 30% G1
+  const handleValidateV1Rules = async () => {
+    setIsValidating(true);
+    try {
+      const res = await fetch("/api/admin/gammes-seo/v-level/validate", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setValidationResult(data.data);
+      }
+    } catch (error) {
+      console.error("Erreur validation V1:", error);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // Filtre V-Level par énergie
+  const filterByEnergy = (items: VLevelItem[]) => {
+    if (energyFilter === "all") return items;
+    return items.filter((item) => item.energy?.toLowerCase() === energyFilter);
+  };
+
+  // Fonction d'export CSV pour les véhicules
+  const exportVehiclesToCSV = (
+    vehicles: typeof detail.vehicles.level1,
+    filename: string
+  ) => {
+    const headers = [
+      "Marque",
+      "Modèle",
+      "Moteur",
+      "Puissance",
+      "Carburant",
+      "Années",
+    ];
+    const rows = vehicles.map((v) => [
+      v.marque_name,
+      v.modele_name,
+      v.type_name,
+      v.power_ps ? `${v.power_ps}ch` : "",
+      v.fuel || "",
+      v.year_from && v.year_to ? `${v.year_from}-${v.year_to}` : "",
+    ]);
+
+    const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Filtrer et trier les véhicules
+  const filterAndSortVehicles = (vehicles: typeof detail.vehicles.level1) => {
+    return vehicles
+      .filter((v) =>
+        `${v.marque_name} ${v.modele_name} ${v.type_name}`
+          .toLowerCase()
+          .includes(vehicleSearch.toLowerCase())
+      )
+      .sort(
+        (a, b) => parseInt(b.year_from || "0") - parseInt(a.year_from || "0")
+      );
+  };
+
+  // Fonction pour la couleur du badge selon le carburant
+  const getFuelBadgeClass = (fuel: string) => {
+    const fuelLower = fuel?.toLowerCase() || "";
+    if (fuelLower.includes("diesel")) return "bg-blue-100 text-blue-800 border-blue-200";
+    if (fuelLower.includes("essence")) return "bg-green-100 text-green-800 border-green-200";
+    if (fuelLower.includes("hybrid") || fuelLower.includes("électrique"))
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    return "";
+  };
+
+  // Fonction pour la couleur des compteurs de caractères SEO
+  const getCharCountClass = (current: number, optimal: number, max: number) => {
+    if (current === 0) return "text-gray-400";
+    if (current <= optimal) return "text-green-600";
+    if (current <= max) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  // Fonction pour le status des compteurs de caractères
+  const getCharCountStatus = (current: number, optimal: number, max: number) => {
+    if (current === 0) return "Vide";
+    if (current <= optimal) return "Optimal";
+    if (current <= max) return "Acceptable";
+    return "Trop long";
+  };
+
+  // Progress bar pour les stats
+  const getProgressColor = (value: number, target: number) => {
+    const ratio = value / target;
+    if (ratio >= 0.8) return "bg-green-500";
+    if (ratio >= 0.5) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+
   const toggleSwitch = (alias: string) => {
     setExpandedSwitches((prev) => {
       const next = new Set(prev);
@@ -285,21 +564,177 @@ export default function AdminGammeSeoDetail() {
   const isG1 = detail.gamme.pg_top === "1";
   const inSitemap = detail.gamme.pg_sitemap === "1";
 
-  // Group V-Level by model
-  const vLevelByModel = detail.vLevel.reduce(
-    (acc, item) => {
-      if (!acc[item.model_name]) {
-        acc[item.model_name] = { diesel: [], essence: [] };
-      }
-      if (item.energy === "diesel") {
-        acc[item.model_name].diesel.push(item);
+  // Open edit modal for an article
+  const openEditModal = (article: typeof detail.articles[0]) => {
+    setEditingArticle({
+      ba_id: article.ba_id,
+      ba_title: article.ba_title,
+      ba_preview: article.ba_preview,
+    });
+    setEditForm({
+      title: article.ba_title,
+      preview: article.ba_preview,
+    });
+  };
+
+  // Save article changes
+  const saveArticle = async () => {
+    if (!editingArticle) return;
+
+    setIsEditSaving(true);
+    try {
+      const response = await fetch(`/api/blog/advice/${editingArticle.ba_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: editForm.title,
+          preview: editForm.preview,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Refresh the page to get updated data
+        window.location.reload();
       } else {
-        acc[item.model_name].essence.push(item);
+        alert("Erreur: " + (result.message || "Impossible de sauvegarder"));
       }
-      return acc;
-    },
-    {} as Record<string, { diesel: typeof detail.vLevel; essence: typeof detail.vLevel }>
-  );
+    } catch (error) {
+      alert("Erreur de connexion");
+    } finally {
+      setIsEditSaving(false);
+      setEditingArticle(null);
+    }
+  };
+
+  // Composant VLevelCard pour afficher chaque niveau
+  const VLevelCard = ({
+    title,
+    description,
+    items,
+    colorClass,
+    icon,
+    defaultExpanded = true,
+  }: {
+    title: string;
+    description: string;
+    items: VLevelItem[];
+    colorClass: string;
+    icon: string;
+    defaultExpanded?: boolean;
+  }) => {
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+    const dieselItems = items.filter((v) => v.energy?.toLowerCase() === "diesel");
+    const essenceItems = items.filter((v) => v.energy?.toLowerCase() === "essence" || v.energy?.toLowerCase() === "petrol");
+
+    return (
+      <Card className={colorClass}>
+        <CardHeader
+          className="cursor-pointer py-3"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{icon}</span>
+              <div>
+                <CardTitle className="text-base">{title}</CardTitle>
+                <CardDescription className="text-xs">{description}</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{items.length}</Badge>
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        {isExpanded && items.length > 0 && (
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Diesel */}
+              <div>
+                <h4 className="text-sm font-medium text-blue-700 mb-2 flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                  Diesel ({dieselItems.length})
+                </h4>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {dieselItems.length === 0 ? (
+                    <span className="text-gray-400 text-sm">Aucun</span>
+                  ) : (
+                    dieselItems.map((v) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center justify-between text-sm bg-white p-2 rounded border"
+                      >
+                        <span className="truncate flex-1">
+                          {v.brand} {v.model_name} {v.variant_name}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs ml-2">
+                          {v.search_volume && (
+                            <span className="text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
+                              {v.search_volume.toLocaleString()}/m
+                            </span>
+                          )}
+                          <span className="text-gray-400">
+                            #{v.rank} ({v.score})
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+              {/* Essence */}
+              <div>
+                <h4 className="text-sm font-medium text-green-700 mb-2 flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  Essence ({essenceItems.length})
+                </h4>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {essenceItems.length === 0 ? (
+                    <span className="text-gray-400 text-sm">Aucun</span>
+                  ) : (
+                    essenceItems.map((v) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center justify-between text-sm bg-white p-2 rounded border"
+                      >
+                        <span className="truncate flex-1">
+                          {v.brand} {v.model_name} {v.variant_name}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs ml-2">
+                          {v.search_volume && (
+                            <span className="text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
+                              {v.search_volume.toLocaleString()}/m
+                            </span>
+                          )}
+                          <span className="text-gray-400">
+                            #{v.rank} ({v.score})
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        )}
+        {isExpanded && items.length === 0 && (
+          <CardContent className="pt-0">
+            <p className="text-center text-gray-400 py-4 text-sm">
+              Aucune motorisation dans ce niveau
+            </p>
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -341,58 +776,156 @@ export default function AdminGammeSeoDetail() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Améliorées avec progress bars */}
       <div className="mb-6 grid grid-cols-4 gap-4">
-        <Card>
+        {/* Produits */}
+        <Card className={detail.stats.products_count > 0 ? "border-green-200" : "border-orange-200"}>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-500">Produits</p>
                 <p className="text-2xl font-bold">{detail.stats.products_count}</p>
               </div>
-              <Package className="h-8 w-8 text-gray-300" />
+              <div className={`p-2 rounded-full ${detail.stats.products_count > 0 ? "bg-green-100" : "bg-orange-100"}`}>
+                <Package className={`h-6 w-6 ${detail.stats.products_count > 0 ? "text-green-600" : "text-orange-600"}`} />
+              </div>
             </div>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full ${detail.stats.products_count > 50 ? "bg-green-500" : detail.stats.products_count > 0 ? "bg-yellow-500" : "bg-gray-300"}`}
+                style={{ width: `${Math.min((detail.stats.products_count / 100) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              {detail.stats.products_count > 50 ? "Bien fourni" : detail.stats.products_count > 0 ? "À enrichir" : "Aucun produit"}
+            </p>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Articles */}
+        <Card className={detail.stats.articles_count > 0 ? "border-blue-200" : "border-gray-200"}>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-500">Articles</p>
                 <p className="text-2xl font-bold">{detail.stats.articles_count}</p>
               </div>
-              <FileText className="h-8 w-8 text-gray-300" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Vehicules (Vedettes)</p>
-                <p className="text-2xl font-bold">
-                  {detail.stats.vehicles_level1_count}
-                </p>
+              <div className={`p-2 rounded-full ${detail.stats.articles_count > 0 ? "bg-blue-100" : "bg-gray-100"}`}>
+                <FileText className={`h-6 w-6 ${detail.stats.articles_count > 0 ? "text-blue-600" : "text-gray-400"}`} />
               </div>
-              <Car className="h-8 w-8 text-gray-300" />
             </div>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full ${detail.stats.articles_count >= 3 ? "bg-green-500" : detail.stats.articles_count > 0 ? "bg-blue-500" : "bg-gray-300"}`}
+                style={{ width: `${Math.min((detail.stats.articles_count / 5) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              {detail.stats.articles_count >= 3 ? "Contenu riche" : detail.stats.articles_count > 0 ? `${3 - detail.stats.articles_count} article(s) de plus recommandé(s)` : "Aucun article"}
+            </p>
           </CardContent>
         </Card>
+
+        {/* Motorisations V-Level */}
+        <Card className={detail.stats.vLevel_total_count > 0 ? "border-purple-200" : "border-gray-200"}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-sm text-gray-500">Motorisations V-Level</p>
+                <p className="text-2xl font-bold">{detail.stats.vLevel_total_count}</p>
+              </div>
+              <div className={`p-2 rounded-full ${detail.stats.vLevel_total_count > 0 ? "bg-purple-100" : "bg-gray-100"}`}>
+                <TrendingUp className={`h-6 w-6 ${detail.stats.vLevel_total_count > 0 ? "text-purple-600" : "text-gray-400"}`} />
+              </div>
+            </div>
+            {/* Mini bars par V-Level */}
+            <div className="flex gap-0.5 mb-1">
+              {[
+                { key: 'v1', count: detail.stats.vLevel_v1_count, color: 'bg-amber-500' },
+                { key: 'v2', count: detail.stats.vLevel_v2_count, color: 'bg-green-500' },
+                { key: 'v3', count: detail.stats.vLevel_v3_count, color: 'bg-blue-500' },
+                { key: 'v4', count: detail.stats.vLevel_v4_count, color: 'bg-gray-400' },
+                { key: 'v5', count: detail.stats.vLevel_v5_count, color: 'bg-orange-500' },
+              ].map(({ key, count, color }) => (
+                <div key={key} className="flex-1">
+                  <div
+                    className={`h-1.5 ${color} rounded-sm`}
+                    style={{
+                      width: `${Math.max((count / Math.max(detail.stats.vLevel_total_count, 1)) * 100, count > 0 ? 10 : 0)}%`
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between text-xs text-gray-400 flex-wrap gap-1">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                V1: {detail.stats.vLevel_v1_count}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                V2: {detail.stats.vLevel_v2_count}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                V3: {detail.stats.vLevel_v3_count}
+              </span>
+            </div>
+            {/* Indicateur fraîcheur des données */}
+            {(() => {
+              const freshness = getFreshnessStatus(detail.stats.vLevel_last_updated);
+              return (
+                <div className={`mt-2 pt-2 border-t text-xs flex items-center justify-between ${
+                  freshness.status === "old" ? "text-red-600 bg-red-50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg" :
+                  freshness.status === "stale" ? "text-yellow-700" : "text-gray-500"
+                }`}>
+                  <span>
+                    {freshness.icon} MAJ: {detail.stats.vLevel_last_updated
+                      ? new Date(detail.stats.vLevel_last_updated).toLocaleDateString("fr-FR")
+                      : "Jamais"}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                    freshness.status === "fresh" ? "bg-green-100 text-green-700" :
+                    freshness.status === "stale" ? "bg-yellow-100 text-yellow-700" :
+                    freshness.status === "old" ? "bg-red-100 text-red-700" :
+                    "bg-gray-100 text-gray-600"
+                  }`}>
+                    {freshness.text}
+                  </span>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Dernier article */}
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-sm text-gray-500">Dernier article</p>
                 <p className="text-lg font-medium">
                   {detail.stats.last_article_date
-                    ? new Date(detail.stats.last_article_date).toLocaleDateString(
-                        "fr-FR"
-                      )
+                    ? new Date(detail.stats.last_article_date).toLocaleDateString("fr-FR")
                     : "Aucun"}
                 </p>
               </div>
-              <Calendar className="h-8 w-8 text-gray-300" />
+              <div className="p-2 rounded-full bg-gray-100">
+                <Calendar className="h-6 w-6 text-gray-600" />
+              </div>
             </div>
+            {detail.stats.last_article_date && (
+              <p className="text-xs text-gray-400">
+                {(() => {
+                  const days = Math.floor((Date.now() - new Date(detail.stats.last_article_date).getTime()) / (1000 * 60 * 60 * 24));
+                  if (days === 0) return "Aujourd'hui";
+                  if (days === 1) return "Hier";
+                  if (days < 30) return `Il y a ${days} jours`;
+                  if (days < 365) return `Il y a ${Math.floor(days / 30)} mois`;
+                  return `Il y a ${Math.floor(days / 365)} an(s)`;
+                })()}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -424,9 +957,44 @@ export default function AdminGammeSeoDetail() {
 
         {/* TAB SEO */}
         <TabsContent value="seo">
+          {/* Google Preview */}
+          <Card className="mb-6 border-blue-200 bg-gradient-to-r from-blue-50 to-white">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-lg">Aperçu Google</CardTitle>
+              </div>
+              <CardDescription>
+                Prévisualisation de l'affichage dans les résultats de recherche
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-white p-4 rounded-lg border shadow-sm max-w-2xl">
+                {/* URL */}
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                    <span className="text-xs font-bold text-orange-600">A</span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-700">automecanik.com</span>
+                    <span className="text-sm text-gray-500"> › pieces › {detail.gamme.pg_alias}</span>
+                  </div>
+                </div>
+                {/* Title */}
+                <h3 className="text-xl text-blue-800 hover:underline cursor-pointer mb-1 leading-tight">
+                  {seoForm.sg_title || detail.gamme.pg_name || "Titre de la page"}
+                </h3>
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {seoForm.sg_descrip || "Ajoutez une meta description pour voir l'aperçu..."}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
-              <CardTitle>Donnees SEO</CardTitle>
+              <CardTitle>Données SEO</CardTitle>
               <CardDescription>
                 Meta title, description, H1 et contenu de la page gamme
               </CardDescription>
@@ -437,7 +1005,18 @@ export default function AdminGammeSeoDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sg_title">Meta Title</Label>
+                    <Label htmlFor="sg_title" className="flex items-center gap-2">
+                      Meta Title
+                      {seoForm.sg_title.length > 0 && seoForm.sg_title.length <= 60 && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
+                      {seoForm.sg_title.length > 60 && seoForm.sg_title.length <= 70 && (
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      )}
+                      {seoForm.sg_title.length > 70 && (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )}
+                    </Label>
                     <Input
                       id="sg_title"
                       name="sg_title"
@@ -446,10 +1025,27 @@ export default function AdminGammeSeoDetail() {
                         setSeoForm({ ...seoForm, sg_title: e.target.value })
                       }
                       placeholder="Titre SEO"
+                      className={seoForm.sg_title.length > 70 ? "border-red-300" : ""}
                     />
-                    <p className="text-xs text-gray-500">
-                      {seoForm.sg_title.length}/60 caracteres
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              seoForm.sg_title.length <= 60 ? "bg-green-500" :
+                              seoForm.sg_title.length <= 70 ? "bg-yellow-500" : "bg-red-500"
+                            }`}
+                            style={{ width: `${Math.min((seoForm.sg_title.length / 70) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-medium ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}>
+                          {getCharCountStatus(seoForm.sg_title.length, 60, 70)}
+                        </span>
+                      </div>
+                      <span className={`text-xs ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}>
+                        {seoForm.sg_title.length}/60 caractères
+                      </span>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sg_h1">H1</Label>
@@ -462,11 +1058,25 @@ export default function AdminGammeSeoDetail() {
                       }
                       placeholder="Titre H1"
                     />
+                    <p className="text-xs text-gray-400">
+                      Le H1 s'affiche sur la page, pas dans Google
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sg_descrip">Meta Description</Label>
+                  <Label htmlFor="sg_descrip" className="flex items-center gap-2">
+                    Meta Description
+                    {seoForm.sg_descrip.length > 0 && seoForm.sg_descrip.length <= 160 && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
+                    {seoForm.sg_descrip.length > 160 && seoForm.sg_descrip.length <= 180 && (
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                    )}
+                    {seoForm.sg_descrip.length > 180 && (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </Label>
                   <Textarea
                     id="sg_descrip"
                     name="sg_descrip"
@@ -476,10 +1086,27 @@ export default function AdminGammeSeoDetail() {
                     }
                     placeholder="Description SEO"
                     rows={3}
+                    className={seoForm.sg_descrip.length > 180 ? "border-red-300" : ""}
                   />
-                  <p className="text-xs text-gray-500">
-                    {seoForm.sg_descrip.length}/160 caracteres
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            seoForm.sg_descrip.length <= 160 ? "bg-green-500" :
+                            seoForm.sg_descrip.length <= 180 ? "bg-yellow-500" : "bg-red-500"
+                          }`}
+                          style={{ width: `${Math.min((seoForm.sg_descrip.length / 180) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <span className={`text-xs font-medium ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}>
+                        {getCharCountStatus(seoForm.sg_descrip.length, 160, 180)}
+                      </span>
+                    </div>
+                    <span className={`text-xs ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}>
+                      {seoForm.sg_descrip.length}/160 caractères
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -491,12 +1118,26 @@ export default function AdminGammeSeoDetail() {
                     onChange={(e) =>
                       setSeoForm({ ...seoForm, sg_keywords: e.target.value })
                     }
-                    placeholder="Mots-cles separes par des virgules"
+                    placeholder="Mots-clés séparés par des virgules"
                   />
+                  {seoForm.sg_keywords && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {seoForm.sg_keywords.split(",").map((kw, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {kw.trim()}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sg_content">Contenu</Label>
+                  <Label htmlFor="sg_content" className="flex items-center gap-2">
+                    Contenu
+                    <span className="text-xs text-gray-400 font-normal">
+                      ({seoForm.sg_content.length} caractères)
+                    </span>
+                  </Label>
                   <Textarea
                     id="sg_content"
                     name="sg_content"
@@ -735,7 +1376,7 @@ export default function AdminGammeSeoDetail() {
                       </div>
                       <div className="flex items-center gap-2">
                         <a
-                          href={`https://automecanik.com/conseil/${article.ba_alias}`}
+                          href={`https://www.automecanik.com/blog-pieces-auto/conseils/${article.ba_alias}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -743,7 +1384,11 @@ export default function AdminGammeSeoDetail() {
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </a>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditModal(article)}
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -758,28 +1403,113 @@ export default function AdminGammeSeoDetail() {
         {/* TAB VEHICLES */}
         <TabsContent value="vehicles">
           <div className="space-y-6">
+            {/* Barre de recherche */}
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Rechercher un véhicule..."
+                  value={vehicleSearch}
+                  onChange={(e) => setVehicleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-2">
+                <span className="text-sm text-gray-500">
+                  Total: {detail.vehicles.level1.length + detail.vehicles.level2.length + detail.vehicles.level5.length} véhicules
+                </span>
+              </div>
+            </div>
+
             {/* Level 1 - Vedettes */}
             <Card>
-              <CardHeader>
-                <CardTitle>Niveau 1 - Vedettes</CardTitle>
-                <CardDescription>
-                  Vehicules affiches en grille sur la page gamme (max 20)
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Niveau 1 - Vedettes</CardTitle>
+                  <CardDescription>
+                    Véhicules affichés en grille sur la page gamme ({filterAndSortVehicles(detail.vehicles.level1).length} véhicules)
+                  </CardDescription>
+                </div>
+                {detail.vehicles.level1.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      exportVehiclesToCSV(
+                        filterAndSortVehicles(detail.vehicles.level1),
+                        `vehicules-niveau1-${detail.gamme.pg_alias}.csv`
+                      )
+                    }
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
-                {detail.vehicles.level1.length === 0 ? (
+                {filterAndSortVehicles(detail.vehicles.level1).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    Aucun vehicule vedette
+                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule vedette"}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {detail.vehicles.level1.map((v) => (
+                    {filterAndSortVehicles(detail.vehicles.level1).map((v) => (
                       <Badge
                         key={v.cgc_id}
                         variant="secondary"
-                        className="text-sm"
+                        className={`text-sm ${getFuelBadgeClass(v.fuel)}`}
                       >
                         {v.marque_name} {v.modele_name} {v.type_name}
+                        {v.power_ps && ` ${v.power_ps}ch`}
+                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Level 2 - Secondaires */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Niveau 2 - Secondaires</CardTitle>
+                  <CardDescription>
+                    Véhicules secondaires associés à cette gamme ({filterAndSortVehicles(detail.vehicles.level2).length} véhicules)
+                  </CardDescription>
+                </div>
+                {detail.vehicles.level2.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      exportVehiclesToCSV(
+                        filterAndSortVehicles(detail.vehicles.level2),
+                        `vehicules-niveau2-${detail.gamme.pg_alias}.csv`
+                      )
+                    }
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                {filterAndSortVehicles(detail.vehicles.level2).length === 0 ? (
+                  <p className="text-center text-gray-500 py-4">
+                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule secondaire"}
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {filterAndSortVehicles(detail.vehicles.level2).map((v) => (
+                      <Badge
+                        key={v.cgc_id}
+                        variant="outline"
+                        className={`text-sm ${getFuelBadgeClass(v.fuel)}`}
+                      >
+                        {v.marque_name} {v.modele_name} {v.type_name}
+                        {v.power_ps && ` ${v.power_ps}ch`}
+                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
                       </Badge>
                     ))}
                   </div>
@@ -789,26 +1519,45 @@ export default function AdminGammeSeoDetail() {
 
             {/* Level 5 - Blog */}
             <Card>
-              <CardHeader>
-                <CardTitle>Niveau 5 - Blog</CardTitle>
-                <CardDescription>
-                  Vehicules cites dans les articles blog
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Niveau 5 - Blog</CardTitle>
+                  <CardDescription>
+                    Véhicules cités dans les articles blog ({filterAndSortVehicles(detail.vehicles.level5).length} véhicules)
+                  </CardDescription>
+                </div>
+                {detail.vehicles.level5.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      exportVehiclesToCSV(
+                        filterAndSortVehicles(detail.vehicles.level5),
+                        `vehicules-niveau5-${detail.gamme.pg_alias}.csv`
+                      )
+                    }
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
-                {detail.vehicles.level5.length === 0 ? (
+                {filterAndSortVehicles(detail.vehicles.level5).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    Aucun vehicule blog
+                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule blog"}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {detail.vehicles.level5.map((v) => (
+                    {filterAndSortVehicles(detail.vehicles.level5).map((v) => (
                       <Badge
                         key={v.cgc_id}
                         variant="outline"
-                        className="text-sm"
+                        className={`text-sm ${getFuelBadgeClass(v.fuel)}`}
                       >
                         {v.marque_name} {v.modele_name} {v.type_name}
+                        {v.power_ps && ` ${v.power_ps}ch`}
+                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
                       </Badge>
                     ))}
                   </div>
@@ -818,80 +1567,226 @@ export default function AdminGammeSeoDetail() {
           </div>
         </TabsContent>
 
-        {/* TAB V-LEVEL */}
+        {/* TAB V-LEVEL - Version complète avec tous les niveaux */}
         <TabsContent value="vlevel">
-          <Card>
-            <CardHeader>
-              <CardTitle>Donnees V-Level</CardTitle>
-              <CardDescription>
-                Motorisations championnes (V2) par modele et energie
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {Object.keys(vLevelByModel).length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
-                  Aucune donnee V-Level pour cette gamme
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="px-4 py-2 text-left">Modele</th>
-                        <th className="px-4 py-2 text-left">Diesel (V2)</th>
-                        <th className="px-4 py-2 text-left">Essence (V2)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(vLevelByModel).map(([model, data]) => {
-                        const dieselV2 = data.diesel.find(
-                          (v) => v.v_level === "V2"
-                        );
-                        const essenceV2 = data.essence.find(
-                          (v) => v.v_level === "V2"
-                        );
-                        return (
-                          <tr key={model} className="border-b">
-                            <td className="px-4 py-3 font-medium">{model}</td>
-                            <td className="px-4 py-3">
-                              {dieselV2 ? (
-                                <span className="inline-flex items-center gap-1">
-                                  <Badge variant="default" className="text-xs">
-                                    V2
-                                  </Badge>
-                                  {dieselV2.variant_name}
-                                  <span className="text-gray-400">
-                                    ({dieselV2.score})
-                                  </span>
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              {essenceV2 ? (
-                                <span className="inline-flex items-center gap-1">
-                                  <Badge variant="default" className="text-xs">
-                                    V2
-                                  </Badge>
-                                  {essenceV2.variant_name}
-                                  <span className="text-gray-400">
-                                    ({essenceV2.score})
-                                  </span>
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+          <div className="space-y-4">
+            {/* Warning si données périmées */}
+            {(() => {
+              const freshness = getFreshnessStatus(detail.stats.vLevel_last_updated);
+              if (freshness.status === "stale" || freshness.status === "old") {
+                return (
+                  <div className={`p-3 rounded-lg flex items-center gap-3 ${
+                    freshness.status === "old"
+                      ? "bg-red-50 border border-red-200 text-red-800"
+                      : "bg-yellow-50 border border-yellow-200 text-yellow-800"
+                  }`}>
+                    <span className="text-xl">{freshness.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {freshness.status === "old"
+                          ? "Données V-Level très anciennes"
+                          : "Données V-Level à mettre à jour"}
+                      </p>
+                      <p className="text-sm opacity-80">
+                        Dernière mise à jour: {detail.stats.vLevel_last_updated
+                          ? new Date(detail.stats.vLevel_last_updated).toLocaleDateString("fr-FR")
+                          : "Jamais"}
+                        {freshness.status === "old"
+                          ? " (> 30 jours). Les classements peuvent être obsolètes."
+                          : " (> 7 jours). Un recalcul est recommandé."}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Warning violation V2 (doublons) */}
+            {(v2Violations.diesel.length > 0 || v2Violations.essence.length > 0) && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Violation règle V2</p>
+                  <p className="text-sm">
+                    V2 doit être UNIQUE par gamme+énergie. Doublons détectés:
+                    {v2Violations.diesel.length > 0 && (
+                      <span className="ml-1">
+                        <span className="font-medium">Diesel:</span> {v2Violations.diesel.join(", ")}
+                      </span>
+                    )}
+                    {v2Violations.essence.length > 0 && (
+                      <span className="ml-1">
+                        <span className="font-medium">Essence:</span> {v2Violations.essence.join(", ")}
+                      </span>
+                    )}
+                  </p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+
+            {/* Barre d'actions: Filtres + Boutons */}
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+              {/* Filtres Diesel/Essence */}
+              <div className="flex gap-2">
+              <Button
+                variant={energyFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEnergyFilter("all")}
+              >
+                Tous
+              </Button>
+              <Button
+                variant={energyFilter === "diesel" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEnergyFilter("diesel")}
+                className={energyFilter === "diesel" ? "" : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"}
+              >
+                Diesel
+              </Button>
+              <Button
+                variant={energyFilter === "essence" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEnergyFilter("essence")}
+                className={energyFilter === "essence" ? "" : "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"}
+              >
+                Essence
+              </Button>
+              </div>
+
+              {/* Boutons d'action */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRecalculateVLevel}
+                  disabled={isRecalculating}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${isRecalculating ? "animate-spin" : ""}`}
+                  />
+                  {isRecalculating ? "Recalcul..." : "Recalculer"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportVLevelToCSV}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleValidateV1Rules}
+                  disabled={isValidating}
+                >
+                  <CheckCircle2
+                    className={`h-4 w-4 mr-2 ${isValidating ? "animate-pulse" : ""}`}
+                  />
+                  {isValidating ? "Validation..." : "Valider V1"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Résultats de validation V1 */}
+            {validationResult && (
+              <Card className={validationResult.valid ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    {validationResult.valid ? (
+                      <>
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <span className="text-green-800">Validation V1 OK</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                        <span className="text-red-800">Violations V1 detectees</span>
+                      </>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm space-y-2">
+                    <p>
+                      <span className="font-medium">Gammes G1:</span> {validationResult.g1_count} |
+                      <span className="font-medium ml-2">V1 valides:</span> {validationResult.summary.valid_v1}/{validationResult.summary.total_v1}
+                    </p>
+                    {validationResult.violations.length > 0 && (
+                      <div className="mt-2">
+                        <p className="font-medium text-red-800 mb-1">Violations (V1 avec {"<"}30% G1):</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {validationResult.violations.map((v, idx) => (
+                            <li key={idx} className="text-red-700">
+                              {v.model_name} ({v.energy}) - {v.percentage}% ({v.v2_count}/{v.g1_total} G1)
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* V1 - Champions Modèle */}
+            <VLevelCard
+              title="V1 - Champions Modele"
+              description="Variants GLOBAUX dominants (>=30% G1 gammes)"
+              items={filterByEnergy(detail.vLevel.v1)}
+              colorClass="border-amber-200 bg-amber-50"
+              icon="🏆"
+              defaultExpanded={true}
+            />
+
+            {/* V2 - Champions Gamme */}
+            <VLevelCard
+              title="V2 - Champions Gamme"
+              description="Champions LOCAUX #1 par gamme+energie (UNIQUE)"
+              items={filterByEnergy(detail.vLevel.v2)}
+              colorClass="border-green-200 bg-green-50"
+              icon="🥇"
+              defaultExpanded={true}
+            />
+
+            {/* V3 - Challengers */}
+            <VLevelCard
+              title="V3 - Challengers"
+              description="Positions #2, #3, #4..."
+              items={filterByEnergy(detail.vLevel.v3)}
+              colorClass="border-blue-200 bg-blue-50"
+              icon="🥈"
+              defaultExpanded={true}
+            />
+
+            {/* V4 - Faibles */}
+            <VLevelCard
+              title="V4 - Faibles"
+              description="Variants non recherches"
+              items={filterByEnergy(detail.vLevel.v4)}
+              colorClass="border-gray-200 bg-gray-50"
+              icon="📉"
+              defaultExpanded={false}
+            />
+
+            {/* V5 - Bloc B */}
+            <VLevelCard
+              title="V5 - Bloc B"
+              description="Variants catalogue hors V1-V4"
+              items={filterByEnergy(detail.vLevel.v5)}
+              colorClass="border-orange-200 bg-orange-50"
+              icon="📦"
+              defaultExpanded={false}
+            />
+
+            {/* Message si aucune donnée */}
+            {detail.stats.vLevel_total_count === 0 && (
+              <Card>
+                <CardContent className="py-8">
+                  <p className="text-center text-gray-500">
+                    Aucune donnee V-Level pour cette gamme
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* TAB CONSEILS */}
@@ -945,6 +1840,53 @@ export default function AdminGammeSeoDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Article Modal */}
+      <Dialog
+        open={editingArticle !== null}
+        onOpenChange={(open) => !open && setEditingArticle(null)}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Modifier l'article</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="article-title">Titre</Label>
+              <Input
+                id="article-title"
+                value={editForm.title}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, title: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="article-preview">Aperçu</Label>
+              <Textarea
+                id="article-preview"
+                value={editForm.preview}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, preview: e.target.value }))
+                }
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingArticle(null)}
+              disabled={isEditSaving}
+            >
+              Annuler
+            </Button>
+            <Button onClick={saveArticle} disabled={isEditSaving}>
+              {isEditSaving ? "Sauvegarde..." : "Sauvegarder"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

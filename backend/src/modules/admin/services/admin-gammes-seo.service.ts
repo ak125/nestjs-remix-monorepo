@@ -622,9 +622,9 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         if (currentGamme?.pg_top === '1') {
           // Vérifier s'il y a des produits en stock pour cette gamme
           const { count: productCount } = await this.supabase
-            .from('__products')
+            .from('pieces')
             .select('*', { count: 'exact', head: true })
-            .eq('pg_id', pgId)
+            .eq('pg_id', pgId.toString())
             .gt('stock', 0);
 
           if (productCount && productCount > 0) {
@@ -1006,7 +1006,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     }>;
     articles: any[];
     vehicles: { level1: any[]; level2: any[]; level5: any[] };
-    vLevel: any[];
+    vLevel: { v1: any[]; v2: any[]; v3: any[]; v4: any[]; v5: any[] };
     stats: any;
   }> {
     try {
@@ -1018,7 +1018,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .select(
           'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img',
         )
-        .eq('pg_id', pgId)
+        .eq('pg_id', pgId.toString())
         .single();
 
       if (gammeError || !gamme) {
@@ -1029,14 +1029,14 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const { data: seo } = await this.supabase
         .from('seo_gamme')
         .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
-        .eq('sg_pg_id', pgId)
+        .eq('sg_pg_id', pgId.toString())
         .single();
 
       // 3. Conseils (seo_gamme_conseil)
       const { data: conseils } = await this.supabase
         .from('seo_gamme_conseil')
         .select('sgc_id, sgc_title, sgc_content')
-        .eq('sgc_pg_id', pgId)
+        .eq('sgc_pg_id', pgId.toString())
         .order('sgc_id', { ascending: true });
 
       // 4. Item Switches (__seo_item_switch) - GROUPÉS par alias
@@ -1104,38 +1104,159 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           (variations[0]?.content.length > 50 ? '...' : ''),
       }));
 
-      // 6. Articles blog liés
+      // 6. Articles blog liés (table __blog_advice)
       const { data: articles } = await this.supabase
-        .from('__blog_article')
+        .from('__blog_advice')
         .select(
           'ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update',
         )
-        .eq('ba_pg_id', pgId)
+        .eq('ba_pg_id', pgId.toString())
         .order('ba_create', { ascending: false })
         .limit(20);
 
-      // 7. Véhicules compatibles - Level 1 (catalog_gamme_car)
-      const { data: vehiclesLevel1 } = await this.supabase
-        .from('catalog_gamme_car')
-        .select('cgc_id, cgc_type_id')
-        .eq('cgc_pg_id', pgId)
-        .limit(100);
+      // 7. Véhicules compatibles - TOUS les niveaux (__cross_gamme_car) avec noms
+      const { data: rawVehicles } = await this.supabase
+        .from('__cross_gamme_car')
+        .select('cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level')
+        .eq('cgc_pg_id', pgId.toString())
+        .limit(500); // Plus de véhicules pour couvrir tous les niveaux
 
-      // 8. V-Level (gamme_seo_metrics pour v_level)
-      const { data: vLevel } = await this.supabase
+      // Type pour véhicule enrichi
+      type EnrichedVehicle = {
+        cgc_id: string;
+        type_id: string;
+        type_name: string;
+        marque_name: string;
+        modele_name: string;
+        engine?: string;
+        fuel?: string;
+        level?: string;
+      };
+
+      // Enrichir avec les noms des marques/modèles/types
+      // Structure attendue par le frontend: cgc_id, type_id, type_name, marque_name, modele_name
+      let allVehicles: EnrichedVehicle[] = [];
+
+      if (rawVehicles && rawVehicles.length > 0) {
+        // Collecter les IDs type uniques
+        const typeIds = [
+          ...new Set(rawVehicles.map((v) => v.cgc_type_id).filter(Boolean)),
+        ];
+
+        // Requête simple sans jointures (les FK ne sont pas définies dans Supabase)
+        const { data: typesData } =
+          typeIds.length > 0
+            ? await this.supabase
+                .from('auto_type')
+                .select(
+                  'type_id, type_name, type_engine, type_fuel, type_marque_id, type_modele_id, type_year_from, type_year_to, type_power_ps',
+                )
+                .in('type_id', typeIds)
+            : { data: [] };
+
+        // Map avec STRING KEYS - IMPORTANT: type_marque_id est STRING ("140"), marque_id est NUMBER (140)
+        const typeMap = new Map(
+          (typesData || []).map((t: any) => [
+            String(t.type_id),
+            {
+              name: t.type_name || '',
+              engine: t.type_engine || '',
+              fuel: t.type_fuel || '',
+              marque_id: String(t.type_marque_id || ''),
+              modele_id: String(t.type_modele_id || ''),
+              year_from: t.type_year_from || '',
+              year_to: t.type_year_to || '',
+              power_ps: t.type_power_ps || '',
+            },
+          ]),
+        );
+
+        // Collecter les IDs marque/modele (strings dans auto_type)
+        const allMarqueIds = new Set<string>();
+        const allModeleIds = new Set<string>();
+        for (const t of typesData || []) {
+          if (t.type_marque_id) allMarqueIds.add(String(t.type_marque_id));
+          if (t.type_modele_id) allModeleIds.add(String(t.type_modele_id));
+        }
+
+        // Lookups séparés pour marque et modele
+        const [marques, modeles] = await Promise.all([
+          allMarqueIds.size > 0
+            ? this.supabase
+                .from('auto_marque')
+                .select('marque_id, marque_name')
+                .in('marque_id', [...allMarqueIds])
+            : { data: [] },
+          allModeleIds.size > 0
+            ? this.supabase
+                .from('auto_modele')
+                .select('modele_id, modele_name')
+                .in('modele_id', [...allModeleIds])
+            : { data: [] },
+        ]);
+
+        // Maps avec STRING KEYS - conversion car marque_id/modele_id sont NUMBER dans la réponse
+        const marqueMap = new Map(
+          (marques.data || []).map((m: any) => [
+            String(m.marque_id),
+            m.marque_name,
+          ]),
+        );
+        const modeleMap = new Map(
+          (modeles.data || []).map((m: any) => [
+            String(m.modele_id),
+            m.modele_name,
+          ]),
+        );
+
+        // Enrichir les véhicules
+        allVehicles = rawVehicles.map((v: any) => {
+          const typeInfo = typeMap.get(String(v.cgc_type_id));
+          return {
+            cgc_id: v.cgc_id,
+            type_id: v.cgc_type_id || '',
+            type_name: typeInfo?.name || '',
+            marque_name: marqueMap.get(typeInfo?.marque_id || '') || '',
+            modele_name: modeleMap.get(typeInfo?.modele_id || '') || '',
+            engine: typeInfo?.engine || '',
+            fuel: typeInfo?.fuel || '',
+            level: v.cgc_level || '1',
+            year_from: typeInfo?.year_from || '',
+            year_to: typeInfo?.year_to || '',
+            power_ps: typeInfo?.power_ps || '',
+          };
+        });
+      }
+
+      // Séparer par niveau
+      const vehiclesLevel1 = allVehicles.filter((v) => v.level === '1');
+      const vehiclesLevel2 = allVehicles.filter((v) => v.level === '2');
+      const vehiclesLevel5 = allVehicles.filter((v) => v.level === '5');
+
+      // 8. V-Level (gamme_seo_metrics pour v_level) - Récupérer TOUS les niveaux
+      const { data: vLevelData } = await this.supabase
         .from('gamme_seo_metrics')
         .select(
-          'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score',
+          'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
         )
-        .eq('gamme_id', pgId)
-        .order('rank', { ascending: true })
-        .limit(50);
+        .eq('gamme_id', pgId.toString())
+        .order('v_level', { ascending: true })
+        .order('rank', { ascending: true });
 
-      // 9. Stats
+      // Grouper par V-Level
+      const vLevelGrouped = {
+        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
+        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
+        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
+        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
+        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
+      };
+
+      // 9. Stats (table pieces)
       const { count: productsCount } = await this.supabase
-        .from('__products')
+        .from('pieces')
         .select('*', { count: 'exact', head: true })
-        .eq('pg_id', pgId);
+        .eq('pg_id', pgId.toString());
 
       return {
         gamme,
@@ -1150,21 +1271,378 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         conseils: conseils || [],
         switchGroups,
         familySwitchGroups,
-        articles: articles || [],
+        // Articles enrichis avec sections_count (par défaut 0 car pas de table sections)
+        articles: (articles || []).map((a: any) => ({
+          ...a,
+          sections_count: 0, // TODO: Compter les sections si une table existe
+        })),
         vehicles: {
-          level1: vehiclesLevel1 || [],
-          level2: [],
-          level5: [],
+          level1: vehiclesLevel1,
+          level2: vehiclesLevel2,
+          level5: vehiclesLevel5,
         },
-        vLevel: vLevel || [],
+        vLevel: vLevelGrouped,
         stats: {
           products_count: productsCount || 0,
           articles_count: (articles || []).length,
-          vehicles_level1_count: (vehiclesLevel1 || []).length,
+          vehicles_level1_count: vehiclesLevel1.length,
+          vehicles_level2_count: vehiclesLevel2.length,
+          vehicles_level5_count: vehiclesLevel5.length,
+          vehicles_total_count: allVehicles.length,
+          // Stats V-Level
+          vLevel_v1_count: vLevelGrouped.v1.length,
+          vLevel_v2_count: vLevelGrouped.v2.length,
+          vLevel_v3_count: vLevelGrouped.v3.length,
+          vLevel_v4_count: vLevelGrouped.v4.length,
+          vLevel_v5_count: vLevelGrouped.v5.length,
+          vLevel_total_count: (vLevelData || []).length,
+          // Date de dernière mise à jour V-Level (plus récente)
+          vLevel_last_updated:
+            vLevelData && vLevelData.length > 0
+              ? (vLevelData as any[]).reduce(
+                  (latest: string | null, v: any) => {
+                    if (!v.updated_at) return latest;
+                    if (!latest) return v.updated_at;
+                    return new Date(v.updated_at) > new Date(latest)
+                      ? v.updated_at
+                      : latest;
+                  },
+                  null,
+                )
+              : null,
+          // Date du dernier article (plus récent en premier)
+          last_article_date:
+            articles && articles.length > 0
+              ? articles[0].ba_update || articles[0].ba_create
+              : null,
         },
       };
     } catch (error) {
       this.logger.error(`❌ Error in getGammeDetail(${pgId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔄 Recalcule les V-Level pour une gamme
+   * Pour l'instant: met à jour updated_at pour marquer comme recalculé
+   * TODO: Intégrer le vrai pipeline de calcul V-Level
+   */
+  async recalculateVLevel(pgId: number): Promise<{
+    success: boolean;
+    message: string;
+    updatedCount: number;
+  }> {
+    try {
+      this.logger.log(`🔄 Recalculating V-Level for gamme ${pgId}`);
+
+      // Mettre à jour updated_at pour tous les enregistrements de cette gamme
+      const { data, error } = await this.supabase
+        .from('gamme_seo_metrics')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('gamme_id', pgId.toString())
+        .select('id');
+
+      if (error) {
+        this.logger.error(
+          `❌ Error updating V-Level for gamme ${pgId}:`,
+          error,
+        );
+        throw error;
+      }
+
+      const updatedCount = data?.length || 0;
+
+      this.logger.log(
+        `✅ V-Level recalculated for gamme ${pgId}: ${updatedCount} records updated`,
+      );
+
+      return {
+        success: true,
+        message: `V-Level recalculé: ${updatedCount} enregistrements mis à jour`,
+        updatedCount,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error in recalculateVLevel(${pgId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 Valide les règles V-Level:
+   * - V1 doit être V2 dans >= 30% des gammes G1
+   * - Détecte les violations de cette règle
+   */
+  async validateV1Rules(): Promise<{
+    valid: boolean;
+    violations: Array<{
+      model_name: string;
+      variant_name: string;
+      energy: string;
+      v2_count: number;
+      g1_total: number;
+      percentage: number;
+    }>;
+    g1_count: number;
+    summary: {
+      total_v1: number;
+      valid_v1: number;
+      invalid_v1: number;
+    };
+  }> {
+    try {
+      this.logger.log('🔍 Validating V1 rules (>= 30% G1 gammes)');
+
+      // 1. Compter les gammes G1 (pg_top = '1')
+      const { count: g1Count, error: g1Error } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_top', '1');
+
+      if (g1Error) {
+        this.logger.error('❌ Error counting G1 gammes:', g1Error);
+        throw g1Error;
+      }
+
+      const totalG1 = g1Count || 0;
+      this.logger.log(`📊 Total G1 gammes: ${totalG1}`);
+
+      // 2. Récupérer tous les V1
+      const { data: v1Data, error: v1Error } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('model_name, variant_name, energy')
+        .eq('v_level', 'V1');
+
+      if (v1Error) {
+        this.logger.error('❌ Error fetching V1 data:', v1Error);
+        throw v1Error;
+      }
+
+      const v1Items = v1Data || [];
+      this.logger.log(`📊 Total V1 items: ${v1Items.length}`);
+
+      // 3. Pour chaque V1 unique (model_name + energy), compter combien de gammes G1 l'ont en V2
+      const violations: Array<{
+        model_name: string;
+        variant_name: string;
+        energy: string;
+        v2_count: number;
+        g1_total: number;
+        percentage: number;
+      }> = [];
+
+      // Grouper les V1 par model_name + energy (pour éviter les doublons)
+      const uniqueV1 = new Map<
+        string,
+        { model_name: string; variant_name: string; energy: string }
+      >();
+      for (const v1 of v1Items) {
+        const key = `${v1.model_name}|${v1.energy}`;
+        if (!uniqueV1.has(key)) {
+          uniqueV1.set(key, v1);
+        }
+      }
+
+      // Vérifier chaque V1 unique
+      for (const [, v1] of uniqueV1) {
+        // Compter combien de fois cette variante est V2 dans des gammes G1
+        const { count: v2Count, error: v2Error } = await this.supabase
+          .from('gamme_seo_metrics')
+          .select('gamme_id', { count: 'exact', head: true })
+          .eq('model_name', v1.model_name)
+          .ilike('energy', v1.energy)
+          .eq('v_level', 'V2');
+
+        if (v2Error) {
+          this.logger.warn(
+            `⚠️ Error counting V2 for ${v1.model_name}:`,
+            v2Error,
+          );
+          continue;
+        }
+
+        const v2CountNum = v2Count || 0;
+        const percentage = totalG1 > 0 ? (v2CountNum / totalG1) * 100 : 0;
+
+        // Si < 30%, c'est une violation
+        if (percentage < 30) {
+          violations.push({
+            model_name: v1.model_name,
+            variant_name: v1.variant_name || '',
+            energy: v1.energy,
+            v2_count: v2CountNum,
+            g1_total: totalG1,
+            percentage: Math.round(percentage * 10) / 10,
+          });
+        }
+      }
+
+      const result = {
+        valid: violations.length === 0,
+        violations,
+        g1_count: totalG1,
+        summary: {
+          total_v1: uniqueV1.size,
+          valid_v1: uniqueV1.size - violations.length,
+          invalid_v1: violations.length,
+        },
+      };
+
+      this.logger.log(
+        `✅ V1 validation complete: ${result.summary.valid_v1}/${result.summary.total_v1} valid`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Error in validateV1Rules():', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Statistiques globales V-Level pour le dashboard
+   */
+  async getVLevelGlobalStats(): Promise<{
+    totalGammes: number;
+    gammesWithVLevel: number;
+    distribution: {
+      v1: number;
+      v2: number;
+      v3: number;
+      v4: number;
+      v5: number;
+      total: number;
+    };
+    freshness: {
+      fresh: number;
+      stale: number;
+      old: number;
+    };
+    lastUpdated: string | null;
+    g1Stats: {
+      total: number;
+      withV2: number;
+      coverage: number;
+    };
+  }> {
+    try {
+      this.logger.log('📊 Fetching V-Level global stats');
+
+      // 1. Total gammes
+      const { count: totalGammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true });
+
+      // 2. Gammes avec V-Level data
+      const { data: gammesWithData } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('gamme_id')
+        .not('v_level', 'is', null);
+
+      const uniqueGammes = new Set(
+        (gammesWithData || []).map((g: any) => g.gamme_id),
+      );
+
+      // 3. Distribution par V-Level
+      const { data: allVLevels } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('v_level, updated_at');
+
+      const distribution = {
+        v1: 0,
+        v2: 0,
+        v3: 0,
+        v4: 0,
+        v5: 0,
+        total: 0,
+      };
+
+      const freshness = {
+        fresh: 0,
+        stale: 0,
+        old: 0,
+      };
+
+      let lastUpdated: string | null = null;
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+      for (const item of allVLevels || []) {
+        distribution.total++;
+        switch (item.v_level) {
+          case 'V1':
+            distribution.v1++;
+            break;
+          case 'V2':
+            distribution.v2++;
+            break;
+          case 'V3':
+            distribution.v3++;
+            break;
+          case 'V4':
+            distribution.v4++;
+            break;
+          case 'V5':
+            distribution.v5++;
+            break;
+        }
+
+        // Freshness
+        if (item.updated_at) {
+          const updated = new Date(item.updated_at).getTime();
+          const age = now - updated;
+          if (age <= sevenDays) {
+            freshness.fresh++;
+          } else if (age <= thirtyDays) {
+            freshness.stale++;
+          } else {
+            freshness.old++;
+          }
+
+          if (!lastUpdated || item.updated_at > lastUpdated) {
+            lastUpdated = item.updated_at;
+          }
+        }
+      }
+
+      // 4. G1 stats
+      const { count: g1Total } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_top', '1');
+
+      const { data: g1WithV2 } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('gamme_id')
+        .eq('v_level', 'V2');
+
+      const g1GammesWithV2 = new Set(
+        (g1WithV2 || []).map((g: any) => g.gamme_id),
+      );
+
+      const stats = {
+        totalGammes: totalGammes || 0,
+        gammesWithVLevel: uniqueGammes.size,
+        distribution,
+        freshness,
+        lastUpdated,
+        g1Stats: {
+          total: g1Total || 0,
+          withV2: g1GammesWithV2.size,
+          coverage: g1Total
+            ? Math.round((g1GammesWithV2.size / g1Total) * 100)
+            : 0,
+        },
+      };
+
+      this.logger.log(
+        `✅ V-Level global stats: ${distribution.total} entries, ${uniqueGammes.size} gammes`,
+      );
+
+      return stats;
+    } catch (error) {
+      this.logger.error('❌ Error in getVLevelGlobalStats():', error);
       throw error;
     }
   }

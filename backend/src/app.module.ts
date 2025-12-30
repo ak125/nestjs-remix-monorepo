@@ -44,6 +44,7 @@ import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
 import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
+import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // 🧠 NOUVEAU - Knowledge Graph + Reasoning Engine v2.8.0 !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -142,6 +143,9 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
 
     // 🤖 AI & CONTENT GENERATION
     AiContentModule, // 🤖 ACTIVÉ - Module IA pour génération de contenu intelligent !
+
+    // 🧠 KNOWLEDGE GRAPH & REASONING ENGINE
+    KnowledgeGraphModule, // 🧠 ACTIVÉ - Knowledge Graph + Reasoning Engine v2.8.0 !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

@@ -461,38 +461,42 @@ export class AuthController {
    */
   @Post('auth/test-login')
   async createTestSession(@Req() request: Express.Request) {
-    try {
-      const testUser = {
-        id: '1',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        level: 5,
-        isAdmin: false,
-        isPro: true,
-        isActive: true,
-      };
+    const testUser = {
+      id: '1',
+      email: 'admin@test.com',
+      firstName: 'Admin',
+      lastName: 'Test',
+      level: 9, // Superadmin level
+      isAdmin: true,
+      isPro: true,
+      isActive: true,
+    };
 
-      // Créer manuellement la session
+    // Créer la session et attendre qu'elle soit sauvegardée
+    return new Promise((resolve, reject) => {
       (request as any).login(testUser, (err: any) => {
         if (err) {
           console.error('Erreur lors de la création de session:', err);
+          resolve({
+            success: false,
+            error: err.message,
+          });
         } else {
-          console.log('✅ Session de test créée pour:', testUser.email);
+          // Sauvegarder la session avant de répondre
+          (request as any).session.save((saveErr: any) => {
+            if (saveErr) {
+              console.error('Erreur sauvegarde session:', saveErr);
+            }
+            console.log('✅ Session de test créée pour:', testUser.email);
+            resolve({
+              success: true,
+              message: 'Session de test créée',
+              user: testUser,
+            });
+          });
         }
       });
-
-      return {
-        success: true,
-        message: 'Session de test créée',
-        user: testUser,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    });
   }
 
   /**
