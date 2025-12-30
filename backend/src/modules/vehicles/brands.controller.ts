@@ -11,6 +11,7 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
   Body,
   Param,
@@ -23,6 +24,7 @@ import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { BrandSeoService } from './services/seo/brand-seo.service';
+import { BrandRpcService } from './services/brand-rpc.service';
 
 // 🖼️ URL Supabase Storage pour les images
 const SUPABASE_STORAGE_URL =
@@ -37,6 +39,7 @@ export class BrandsController {
     private readonly modelsService: VehicleModelsService,
     private readonly typesService: VehicleTypesService,
     private readonly brandSeoService: BrandSeoService,
+    private readonly brandRpcService: BrandRpcService,
   ) {
     this.logger.log(
       '✅ BrandsController initialisé - Routes /api/brands/* actives',
@@ -333,5 +336,70 @@ export class BrandsController {
         error: error instanceof Error ? error.message : 'Erreur inconnue',
       };
     }
+  }
+
+  // ========================================
+  // 🚀 RPC OPTIMISÉ - Endpoint pour page marque (LCP)
+  // ========================================
+
+  /**
+   * GET /api/brands/:id/page-data-rpc
+   * ⚡ Récupère TOUTES les données d'une page marque en 1 seule requête RPC
+   * Remplace 6 appels API séquentiels (400-800ms → ~100ms)
+   * Utilisé par le loader frontend /constructeurs/{brand}.html
+   */
+  @Get(':id/page-data-rpc')
+  async getBrandPageDataRpc(@Param('id', ParseIntPipe) marqueId: number) {
+    this.logger.log(`⚡ GET /api/brands/${marqueId}/page-data-rpc`);
+
+    try {
+      const result =
+        await this.brandRpcService.getBrandPageDataOptimized(marqueId);
+
+      return {
+        success: true,
+        data: result,
+        _performance: result._performance,
+        _cache: result._cache,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ RPC Error for brand ${marqueId}:`,
+        error instanceof Error ? error.message : error,
+      );
+
+      // Pas de fallback - erreur 500
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        marque_id: marqueId,
+      };
+    }
+  }
+
+  /**
+   * POST /api/brands/cache/warm
+   * 🔥 Préchauffe le cache pour les marques populaires
+   */
+  @Post('cache/warm')
+  async warmBrandCache(@Body() body: { marqueIds?: number[] }) {
+    // Marques populaires par défaut
+    const defaultPopularBrands = [140, 33, 32, 85, 177, 106, 121, 52]; // Renault, BMW, Audi, Mercedes, VW, Peugeot, Citroën, Ford
+    const marqueIds = body.marqueIds || defaultPopularBrands;
+
+    this.logger.log(`🔥 Warm cache pour ${marqueIds.length} marques`);
+
+    const result = await this.brandRpcService.warmCache(marqueIds);
+    return { status: 200, ...result };
+  }
+
+  /**
+   * POST /api/brands/:id/cache/invalidate
+   * 🗑️ Invalide le cache d'une marque spécifique
+   */
+  @Post(':id/cache/invalidate')
+  async invalidateBrandCache(@Param('id', ParseIntPipe) marqueId: number) {
+    await this.brandRpcService.invalidateCache(marqueId);
+    return { status: 200, message: `Cache invalidé pour brand ${marqueId}` };
   }
 }
