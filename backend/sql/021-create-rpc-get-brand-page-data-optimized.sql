@@ -40,8 +40,7 @@ BEGIN
     'marque_alias', marque_alias,
     'marque_logo', marque_logo,
     'marque_display', marque_display,
-    'marque_relfollow', marque_relfollow,
-    'marque_country', marque_country
+    'marque_relfollow', marque_relfollow
   )
   INTO v_brand
   FROM auto_marque
@@ -148,7 +147,7 @@ BEGIN
     INNER JOIN auto_marque amb ON amb.marque_id::TEXT = cgc.cgc_marque_id
     WHERE cgc.cgc_level = '1'
       AND cgc.cgc_marque_id = p_marque_id::TEXT
-      AND pg.pg_activ = '1'
+      AND pg.pg_display = '1'
     ORDER BY pg.pg_id, pg.pg_top DESC
     LIMIT 12
   ) sub;
@@ -171,25 +170,23 @@ BEGIN
   END IF;
 
   -- ========================================
-  -- SECTION 6: RELATED BRANDS (même pays d'origine)
+  -- SECTION 6: RELATED BRANDS (marques populaires)
   -- ========================================
   SELECT COALESCE(jsonb_agg(
     jsonb_build_object(
       'marque_id', marque_id,
       'marque_name', marque_name,
       'marque_alias', marque_alias,
-      'marque_logo', marque_logo,
-      'marque_country', marque_country
+      'marque_logo', marque_logo
     ) ORDER BY marque_name
   ), '[]'::jsonb)
   INTO v_related_brands
   FROM (
-    SELECT marque_id, marque_name, marque_alias, marque_logo, marque_country
+    SELECT marque_id, marque_name, marque_alias, marque_logo
     FROM auto_marque
     WHERE marque_display = '1'
       AND marque_id != p_marque_id
-      AND marque_country = (SELECT marque_country FROM auto_marque WHERE marque_id = p_marque_id)
-    ORDER BY marque_name
+    ORDER BY marque_top DESC NULLS LAST, marque_name
     LIMIT 8
   ) sub;
 
@@ -208,7 +205,7 @@ BEGIN
   FROM (
     SELECT DISTINCT pg.pg_id, pg.pg_name, pg.pg_alias, pg.pg_img, pg.pg_top
     FROM pieces_gamme pg
-    WHERE pg.pg_activ = '1'
+    WHERE pg.pg_display = '1'
       AND pg.pg_display = '1'
       AND pg.pg_level IN ('1', '2')
     ORDER BY pg.pg_top DESC NULLS LAST
