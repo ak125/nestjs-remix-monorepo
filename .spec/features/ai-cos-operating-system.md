@@ -3297,15 +3297,85 @@ CREATE INDEX idx_kg_nodes_safety ON kg_nodes(safety_level)
 
 ---
 
+## Observable Types : Symptom / Sign / DTC (v2.8.4)
+
+> **Passer au niveau pro garage : distinguer les types d'observables pour améliorer la précision.**
+
+### Types d'Observables
+
+| Type | Nature | Fiabilité | Exemple |
+|------|--------|-----------|---------|
+| **Symptom** | Ressenti subjectif | 60% | "La voiture tire à droite" |
+| **Sign** | Observable objectif | 80% | "Fumée noire à l'échappement" |
+| **DTC** | Code OBD standardisé | 95% | "P0171 - Mélange trop pauvre" |
+
+### Structure de Données
+
+```sql
+-- Ajouter sur kg_nodes (type Observable uniquement)
+ALTER TABLE kg_nodes
+  ADD COLUMN observable_type TEXT CHECK (observable_type IN (
+    'symptom',   -- Ressenti utilisateur
+    'sign',      -- Observable visuel/mesurable
+    'dtc'        -- Code OBD-II (P/B/C/U + 4 chiffres)
+  ));
+
+-- Validation format DTC (format OBD-II standard)
+ALTER TABLE kg_nodes
+  ADD CONSTRAINT check_dtc_format
+  CHECK (
+    observable_type != 'dtc' OR
+    node_label ~ '^[PBCU][0-9]{4}'
+  );
+```
+
+### Impact sur le Scoring
+
+```typescript
+const OBSERVABLE_WEIGHT = {
+  symptom: 0.6,   // Subjectif, peut être mal décrit
+  sign: 0.8,      // Objectif, vérifiable
+  dtc: 0.95       // Standardisé, précis, technique
+};
+```
+
+### Codes OBD-II Standards
+
+| Préfixe | Système | Exemple |
+|---------|---------|---------|
+| **P** | Powertrain (moteur/transmission) | P0300 - Ratés d'allumage |
+| **B** | Body (carrosserie) | B0100 - Airbag |
+| **C** | Chassis (châssis) | C0035 - ABS |
+| **U** | Network (réseau CAN) | U0100 - Communication ECU |
+
+### ROI Business
+
+| Opportunité | Impact |
+|-------------|--------|
+| **Précision diagnostic** | +30% accuracy avec DTCs |
+| **Service OBD** | Proposer "scan OBD gratuit" → vente pièces |
+| **Partenariats** | Intégration valise diag (Delphi, Autel, Launch) |
+| **Crédibilité** | "Nous parlons le langage des pros" |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_observable_types.sql` | ALTER TABLE + constraint DTC |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enum `ObservableType` |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | `OBSERVABLE_WEIGHT` dans scoring |
+
+---
+
 ## Roadmap Knowledge Graph
 
 ```
-v2.8.0 ────► v2.8.1 ────► v2.8.2 ────► v2.8.3
-   │            │            │            │
-   ▼            ▼            ▼            ▼
-Module KG   Taxonomies   Double Score   Gate
-+ Reasoning  Contrôlées   Probability   Safety
-  Engine    (7 colonnes)  + Confidence  (sécurité)
+v2.8.0 ──► v2.8.1 ──► v2.8.2 ──► v2.8.3 ──► v2.8.4
+   │          │          │          │          │
+   ▼          ▼          ▼          ▼          ▼
+Module    Taxono-    Double     Gate      Observable
+  KG      mies       Score     Safety      Types
+        (7 cols)   (Prob/Conf) (sécurité) (Sym/Sign/DTC)
 ```
 
 | Version | Feature | Statut | Description |
@@ -3314,6 +3384,7 @@ Module KG   Taxonomies   Double Score   Gate
 | **v2.8.1** | Taxonomies Contrôlées | 📋 Planifié | 7 colonnes (phase, temp, freq, intensity, risk, localisation, cote) |
 | **v2.8.2** | Double Score | 📋 Planifié | Probability + Confidence, missing_data suggestions |
 | **v2.8.3** | Gate Safety | 📋 Planifié | Niveaux sécurité (critical/urgent/warning), disable_sales |
+| **v2.8.4** | Observable Types | 📋 Planifié | Symptom/Sign/DTC, poids différenciés, validation OBD-II |
 
 ---
 
@@ -3326,6 +3397,7 @@ Module KG   Taxonomies   Double Score   Gate
 
 ## Change Log
 
+- **2025-12-30 v2.8.4** : Observable Types - Symptom/Sign/DTC (niveau pro garage), 3 types observables avec poids différenciés (60%/80%/95%), validation format OBD-II pour DTCs (P/B/C/U + 4 chiffres), intégration scoring pondéré, préparation future API OBD Scanner
 - **2025-12-30 v2.8.3** : Gate Safety - Sécurité Routière (obligation légale et éthique), 4 niveaux sécurité (critical/urgent/warning/normal), triggers automatiques pour cas dangereux (freinage, direction, moteur), désactivation vente sur alertes critiques, réponse API avec instructions et contacts urgence
 - **2025-12-30 v2.8.2** : Double Score Probability + Confidence (signature diagnostic pro), séparation incertitude aléatoire vs épistémique, calcul confidence basé sur complétude données/cohérence/taxonomies/historique, suggestions missing_data pour engagement utilisateur, parallèle systèmes OEM (Bosch ESI, Delphi)
 - **2025-12-30 v2.8.1** : Taxonomies Contrôlées (7 colonnes: tax_phase, tax_temp, tax_freq, tax_intensity, tax_risk, tax_localisation, tax_cote), approche colonnes directes + CHECK constraints vs tables séparées, index composites pour requêtes diagnostiques contextuelles
