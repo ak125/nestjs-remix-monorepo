@@ -115,7 +115,7 @@ export function RelatedBrandsSection({
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Link
-                  to={brand.link}
+                  to={brand.link || `/constructeurs/${brand.marque_alias}.html`}
                   prefetch="intent"
                   onClick={() => onLinkClick?.(brand, anchorText)}
                   className="flex flex-col items-center p-3 md:p-4 bg-white rounded-lg border border-gray-200 

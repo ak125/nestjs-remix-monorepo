@@ -26,7 +26,7 @@ export interface BrandData {
   marque_logo?: string;
   marque_wall?: string;
   marque_relfollow: number;  // 1 = indexé, 0 = noindex
-  marque_sitemap: number;
+  marque_sitemap?: number;   // 1 = dans sitemap (optionnel car pas toujours retourné)
   marque_display: number;    // 1 = affiché, 0 = masqué
   marque_sort?: number;
   marque_top?: number;       // 1 = marque populaire
@@ -204,8 +204,8 @@ export interface RelatedBrand {
   marque_name: string;
   marque_alias: string;
   marque_logo: string | null;
-  marque_country: string | null;
-  link: string;
+  marque_country?: string | null;
+  link?: string;
 }
 
 /**
