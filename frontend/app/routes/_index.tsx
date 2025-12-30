@@ -27,9 +27,8 @@ import { useHomeData } from "../hooks/useHomeData";
 import { useNewsletterState } from "../hooks/useNewsletterState";
 import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
-// RPC optimisée remplace ces imports:
-// import { brandApi } from "../services/api/brand.api";
-// import { hierarchyApi } from "../services/api/hierarchy.api";
+// hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
+import { hierarchyApi } from "../services/api/hierarchy.api";
 
 export const meta: MetaFunction = () => {
   return [
@@ -122,7 +121,7 @@ export function links() {
  * ⚡ Utilise RPC optimisée: 1 appel PostgreSQL au lieu de 4 API calls
  * Performance: <150ms au lieu de 400-800ms
  */
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(_args: LoaderFunctionArgs) {
   const startTime = Date.now();
 
   try {
@@ -149,7 +148,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       equipementiersData: rpcData.equipementiers || [],
       blogArticlesData: rpcData.blog_articles || [],
       catalogData: rpcData.catalog || { families: [] },
-      brandsData: rpcData.brands || [],
+      // 🔧 FIX: Transformer brands du format RPC (marque_*) vers format frontend (id, name, slug, logo)
+      brandsData: (rpcData.brands || []).map((brand: any) => ({
+        id: brand.marque_id,
+        name: brand.marque_name,
+        slug: brand.marque_alias,
+        logo: brand.marque_logo,
+      })),
       success: true,
       timestamp: new Date().toISOString(),
       _performance: {

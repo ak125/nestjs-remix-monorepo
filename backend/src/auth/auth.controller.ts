@@ -473,7 +473,7 @@ export class AuthController {
     };
 
     // Créer la session et attendre qu'elle soit sauvegardée
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve) => {
       (request as any).login(testUser, (err: any) => {
         if (err) {
           console.error('Erreur lors de la création de session:', err);
