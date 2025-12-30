@@ -38,6 +38,7 @@ import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
+import { HomepageRpcService } from './services/homepage-rpc.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -102,6 +103,8 @@ import { UnifiedPageDataService } from './services/unified-page-data.service';
     OemPlatformMappingService,
     // ⚡ UNIFIED PAGE DATA - RPC V3 (1 requête avec SEO intégré PostgreSQL)
     UnifiedPageDataService,
+    // 🏠 HOMEPAGE RPC - 4 appels API en 1
+    HomepageRpcService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
@@ -117,6 +120,7 @@ import { UnifiedPageDataService } from './services/unified-page-data.service';
     VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
     OemPlatformMappingService, // 🔧 Exporté pour filtrage OEM SEO
     UnifiedPageDataService, // ✅ Exporté pour GammeRestModule (RPC V3)
+    HomepageRpcService, // 🏠 Exporté pour homepage RPC
   ],
 })
 export class CatalogModule {

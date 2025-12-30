@@ -56,6 +56,13 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -65,13 +72,6 @@ import {
   TabsTrigger,
 } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "~/components/ui/dialog";
 
 // Types
 interface VLevelItem {
@@ -528,7 +528,7 @@ export default function AdminGammeSeoDetail() {
   };
 
   // Progress bar pour les stats
-  const getProgressColor = (value: number, target: number) => {
+  const _getProgressColor = (value: number, target: number) => {
     const ratio = value / target;
     if (ratio >= 0.8) return "bg-green-500";
     if (ratio >= 0.5) return "bg-yellow-500";
