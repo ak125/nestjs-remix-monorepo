@@ -143,6 +143,14 @@ export async function loader(_args: LoaderFunctionArgs) {
     const loadTime = Date.now() - startTime;
     console.log(`⚡ Homepage RPC loader: ${loadTime}ms`);
 
+    // Helper pour générer l'URL complète du logo depuis le nom de fichier
+    const generateLogoUrl = (filename?: string): string | undefined => {
+      if (!filename) return undefined;
+      const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
+      const path = `constructeurs-automobiles/marques-logos/${filename}`;
+      return `${SUPABASE_URL}/storage/v1/object/public/uploads/${path}`;
+    };
+
     // Transform RPC response to match expected loader data structure
     return json({
       equipementiersData: rpcData.equipementiers || [],
@@ -153,7 +161,7 @@ export async function loader(_args: LoaderFunctionArgs) {
         id: brand.marque_id,
         name: brand.marque_name,
         slug: brand.marque_alias,
-        logo: brand.marque_logo,
+        logo: generateLogoUrl(brand.marque_logo),
       })),
       success: true,
       timestamp: new Date().toISOString(),
