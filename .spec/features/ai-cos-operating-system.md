@@ -1554,6 +1554,240 @@ class ValidationResult(BaseModel):
 
 Cette matrice permet de detecter automatiquement les incoherences semantiques.
 
+### Architecture Optimisee : 1 IA + 3 Agents
+
+#### Principe Fondamental
+
+> **1 seul appel Claude** execute **3 roles d'agents** sequentiellement.
+> Chaque agent voit le travail du precedent = contexte partage.
+
+#### Comparatif Cout
+
+| Approche | API Calls | Cout | Latence | Contexte |
+|----------|-----------|------|---------|----------|
+| ❌ 3 IA separees | 3 | 3x | ~3s | Perdu entre calls |
+| ✅ 1 IA + 3 Agents | 1 | 1x | ~1s | Partage |
+
+**Economie** : 66% reduction cout API + meilleure coherence.
+
+#### Diagramme Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    1 APPEL CLAUDE                                │
+│                                                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ AGENT #1    │→ │ AGENT #2    │→ │ AGENT #3    │              │
+│  │ COLLECTEUR  │  │ MECANIQUE   │  │ COHERENCE   │              │
+│  │             │  │             │  │             │              │
+│  │ Extraction  │  │ Validation  │  │ Score final │              │
+│  │ JSON        │  │ technique   │  │ Decision    │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│                                                                  │
+│  Contexte partage : chaque agent voit le travail precedent      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Roles des 3 Agents
+
+| Agent | Role | Input | Output |
+|-------|------|-------|--------|
+| **#1 COLLECTEUR** | Extraction et structuration | Raw text | JSON structure |
+| **#2 MECANIQUE** | Validation technique auto | JSON | tech_valid: bool |
+| **#3 COHERENCE** | Score final et decision | JSON + tech | confidence + decision |
+
+#### Regle de Securite
+
+> **Aucun agent ne peut publier seul.**
+
+| Agent | Peut collecter | Peut valider | Peut publier |
+|-------|----------------|--------------|--------------|
+| #1 COLLECTEUR | ✅ | ❌ | ❌ |
+| #2 MECANIQUE | ❌ | ✅ | ❌ |
+| #3 COHERENCE | ❌ | ❌ | ✅ (si #1 + #2 OK) |
+
+#### Prompt Multi-Roles (PROMPT_TRIPLE_AGENT)
+
+```python
+PROMPT_TRIPLE_AGENT = """
+Tu vas analyser cette information en 3 etapes distinctes.
+Reponds avec les 3 sections clairement separees.
+
+---
+## ETAPE 1 — AGENT COLLECTEUR
+Role : Extracteur de donnees automobile
+Tache : Structure l'information brute en JSON
+
+Output attendu :
+{
+  "symptom": "description du symptome",
+  "category": "categorie piece (egr, turbo, freins, etc.)",
+  "sources": ["source1", "source2"],
+  "raw_confidence": 0.0
+}
+
+---
+## ETAPE 2 — AGENT MECANIQUE
+Role : Expert mecanique automobile (20 ans experience)
+Tache : Verifie la coherence technique
+
+Questions a repondre :
+1. Ce symptome est-il coherent avec cette piece/categorie ?
+2. Est-ce techniquement plausible ?
+3. Les sources sont-elles fiables pour ce type d'info ?
+
+Output attendu :
+{
+  "tech_valid": true/false,
+  "tech_reason": "explication technique",
+  "tech_confidence": 0.0
+}
+
+---
+## ETAPE 3 — AGENT COHERENCE
+Role : Data scientist specialise qualite donnees
+Tache : Decision finale basee sur les 2 agents precedents
+
+Controles :
+1. Score sources (>= 2 sources differentes ?)
+2. Score semantique (matrice coherence categorie/symptome)
+3. Score technique (resultat agent #2)
+
+Output final :
+{
+  "valid": true/false,
+  "confidence": 0.0,
+  "decision": "approved|rejected|pending_review",
+  "reason": "synthese des 3 agents"
+}
+"""
+```
+
+#### Implementation Python (TripleAgentValidator)
+
+```python
+class TripleAgentValidator:
+    """Validation par 1 IA + 3 Agents (roles sequentiels)."""
+
+    def __init__(self, claude_client):
+        self.claude = claude_client
+        self.prompt_template = PROMPT_TRIPLE_AGENT
+
+    async def validate(self, raw_info: str, context: dict) -> ValidationResult:
+        """1 seul appel Claude, 3 roles executes sequentiellement."""
+
+        prompt = f"""
+{self.prompt_template}
+
+---
+## INFORMATION A ANALYSER
+
+Vehicule : {context["vehicle"]}
+Categorie piece : {context["category"]}
+Information brute : {raw_info}
+
+Procede maintenant avec les 3 etapes.
+"""
+
+        # 1 SEUL appel API (pas 3)
+        response = await self.claude.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        # Parse les 3 sections de la reponse
+        result = self._parse_triple_response(response.content[0].text)
+
+        return ValidationResult(
+            agent1_output=result["collecteur"],
+            agent2_output=result["mecanique"],
+            agent3_output=result["coherence"],
+            final_decision=result["coherence"]["decision"],
+            final_confidence=result["coherence"]["confidence"]
+        )
+
+    def _parse_triple_response(self, content: str) -> dict:
+        """Parse la reponse structuree en 3 sections JSON."""
+        import re
+        import json
+
+        sections = {}
+
+        # Extract JSON blocks from each section
+        patterns = {
+            "collecteur": r"ETAPE 1.*?```json\s*(\{.*?\})\s*```",
+            "mecanique": r"ETAPE 2.*?```json\s*(\{.*?\})\s*```",
+            "coherence": r"ETAPE 3.*?```json\s*(\{.*?\})\s*```"
+        }
+
+        for key, pattern in patterns.items():
+            match = re.search(pattern, content, re.DOTALL)
+            if match:
+                sections[key] = json.loads(match.group(1))
+
+        return sections
+```
+
+#### Seuils de Decision Automatique
+
+| Score final | Decision | Intervention |
+|-------------|----------|--------------|
+| **>= 0.90** | `approved` | ❌ Aucune (100% auto) |
+| **0.75-0.90** | `pending_review` | ⚠️ Re-verification ou humain |
+| **< 0.75** | `rejected` | ❌ Aucune (auto-rejet) |
+
+**Resultat** : **90% des cas** traites automatiquement sans intervention humaine.
+
+#### Avantage Contexte Partage
+
+```
+Agent #2 peut referencer Agent #1 :
+"L'extraction indique 'claquement moteur' mais pour une EGR
+ c'est incoherent car EGR = emissions, pas mecanique."
+
+Agent #3 peut synthetiser :
+"Agent #1 : extraction OK (4 sources)
+ Agent #2 : REJET technique (incoherence semantique)
+ Decision finale : rejected, confidence 0.32"
+```
+
+**Impossible avec 3 appels separes** car le contexte serait perdu entre chaque call.
+
+#### Exemple Complet : Validation EGR avec Triple Agent
+
+```json
+// Input
+{
+  "vehicle": "Renault Clio 3 1.5 dCi K9K",
+  "category": "egr",
+  "raw_info": "La vanne EGR cause des claquements moteur selon un forum"
+}
+
+// Output Agent #1 (Collecteur)
+{
+  "symptom": "claquement moteur",
+  "category": "egr",
+  "sources": ["forum_auto"],
+  "raw_confidence": 0.4
+}
+
+// Output Agent #2 (Mecanique)
+{
+  "tech_valid": false,
+  "tech_reason": "Claquement = mecanique (distribution, bielles). EGR = emissions. Incoherent.",
+  "tech_confidence": 0.2
+}
+
+// Output Agent #3 (Coherence)
+{
+  "valid": false,
+  "confidence": 0.32,
+  "decision": "rejected",
+  "reason": "1 seule source (forum), incoherence semantique EGR/claquement, rejet Agent #2"
+}
+```
+
 ### Pipeline Simplifie : 3 Scripts
 
 ```
@@ -2381,6 +2615,7 @@ class HybridFicheGenerator:
 
 ## Change Log
 
+- **2025-12-30 v2.7.4** : Architecture 1 IA + 3 Agents (1 appel Claude = 3 roles sequentiels, economie 66% cout API, contexte partage), PROMPT_TRIPLE_AGENT template multi-roles, TripleAgentValidator class Python, regle securite "aucun agent ne publie seul", 90% validation automatique sans intervention humaine
 - **2025-12-30 v2.7.3** : Cas d'usage realiste Vanne EGR Clio 3 (demonstration systeme anti-fake), Schema ValidationResult avec coherence semantique (semantic_match, semantic_reason, semantic_category), Matrice coherence semantique par categorie piece (EGR, Turbo, Freins, Injection, Distribution, Embrayage, Direction, Climatisation)
 - **2025-12-29 v2.7.2** : Pipeline Alimentation Automatise complet (7 etapes avec diagramme), Schemas Pydantic (SourceType, SourceInfo, Symptom avec validators), VehicleFichePipeline class (process_new_info, approve, reject, enrichissement RAG), FicheGenerator avec Jinja2 templates, CI/CD GitHub Actions (validation JSON + generation fiches), Comparatif Pipeline Manuel vs Automatise
 - **2025-12-29 v2.7.1** : Architecture SQL pour > 5000 vehicules (partitionnement par marque, tables __vehicles, __vehicle_symptoms, __vehicle_staging), Modele Hybride zones AUTO + MANUAL (HybridFicheGenerator avec preservation zones manuelles lors regenerations)
