@@ -1788,6 +1788,126 @@ Agent #3 peut synthetiser :
 }
 ```
 
+### Principe d'Integrite des Donnees (Data Integrity)
+
+#### Regle Fondamentale
+
+> **Toute information ajoutee au systeme passe par 7 controles obligatoires.**
+> Ce principe s'applique a TOUS les domaines, pas seulement aux vehicules.
+
+#### Les 7 Controles Obligatoires
+
+| # | Controle | Description | Responsable |
+|---|----------|-------------|-------------|
+| 1 | **Croisement sources** | Info croisee avec min 2 sources fiables | Agent #1 |
+| 2 | **Regles techniques** | Regles metier du domaine respectees | Agent #2 |
+| 3 | **Detection incoherences** | Anomalies semantiques detectees | Agent #3 |
+| 4 | **Donnees structurees** | JSON/Schema Pydantic valides | Pipeline |
+| 5 | **Generation auto** | Fiches generees automatiquement | FicheGenerator |
+| 6 | **Reutilisation** | Systeme reutilise ces donnees propres | RAG Index |
+| 7 | **Diffusion controlee** | IA ne diffuse QUE des infos validees | Gate final |
+
+#### Diagramme Flux Data Integrity
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ENTREE : Nouvelle information (web, API, humain, migration)    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  1. CROISEMENT SOURCES                                          │
+│  └─ Minimum 2 sources differentes ? → Si non : REJET            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. REGLES TECHNIQUES                                           │
+│  └─ Regles metier du domaine respectees ? → Si non : REJET      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. DETECTION INCOHERENCES                                      │
+│  └─ Matrice semantique OK ? → Si non : REJET                    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. DONNEES STRUCTUREES                                         │
+│  └─ Schema Pydantic valide ? → Si non : REJET                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. GENERATION AUTO                                             │
+│  └─ Fiche/contenu genere automatiquement                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  6. REUTILISATION                                               │
+│  └─ Donnee indexee dans RAG pour reutilisation                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  7. DIFFUSION CONTROLEE                                         │
+│  └─ IA peut maintenant utiliser cette info validee              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Application par Domaine
+
+| Domaine | Controle 1 (Sources) | Controle 2 (Regles) | Controle 3 (Coherence) |
+|---------|----------------------|---------------------|------------------------|
+| **Vehicules** | TecDoc + RTA | Regles mecanique | Matrice symptomes |
+| **Produits** | Fournisseur + TecDoc | Compatibilite OE | Coherence categorie |
+| **Pricing** | Fournisseur + historique | Marge min/max | Ecart prix marche |
+| **SEO** | Google + concurrent | Regles SEO | Densite mots-cles |
+| **Support** | FAQ + historique tickets | Ton/politesse | Pertinence reponse |
+| **Blog** | Sources officielles + expertise | Regles editoriales | Coherence thematique |
+
+#### Benefices Systemiques
+
+| Benefice | Impact |
+|----------|--------|
+| **Zero fake** | IA ne diffuse jamais d'info non validee |
+| **Tracabilite** | Chaque donnee a une source prouvee |
+| **Qualite** | Fiches toujours a jour et coherentes |
+| **Confiance** | Utilisateurs font confiance au systeme |
+| **Scalabilite** | 90% automatique, humain sur 10% edge cases |
+| **Reputatoin** | Marque protegee contre erreurs critiques |
+
+#### Integration avec Architecture 1 IA + 3 Agents
+
+Les 3 agents executent les controles 1-3 dans un seul appel Claude :
+
+| Agent | Controles executes |
+|-------|-------------------|
+| Agent #1 COLLECTEUR | Controle 1 (croisement sources) |
+| Agent #2 MECANIQUE/METIER | Controle 2 (regles techniques du domaine) |
+| Agent #3 COHERENCE | Controle 3 (detection incoherences) + Decision |
+
+Le pipeline automatique execute les controles 4-7 apres validation des agents :
+
+```
+Agents (1-3) → Pipeline (4-7) → Donnee validee dans systeme
+```
+
+#### Garantie Zero Erreur Critique
+
+```
+❌ SANS Data Integrity :
+   Info brute → Directement dans fiche → Risque erreur critique
+
+✅ AVEC Data Integrity :
+   Info brute → 7 controles → Validation → Fiche propre
+
+   Si echec a n'importe quel controle → REJET automatique
+   L'info n'entre JAMAIS dans le systeme sans validation
+```
+
 ### Pipeline Simplifie : 3 Scripts
 
 ```
@@ -2615,6 +2735,7 @@ class HybridFicheGenerator:
 
 ## Change Log
 
+- **2025-12-30 v2.7.5** : Principe Data Integrity systemique (7 controles obligatoires pour TOUTE info entrant dans le systeme), application multi-domaines (vehicules, produits, pricing, SEO, support, blog), diagramme flux avec gates de rejet, integration architecture 1 IA + 3 Agents (controles 1-3) + pipeline (controles 4-7), garantie zero erreur critique
 - **2025-12-30 v2.7.4** : Architecture 1 IA + 3 Agents (1 appel Claude = 3 roles sequentiels, economie 66% cout API, contexte partage), PROMPT_TRIPLE_AGENT template multi-roles, TripleAgentValidator class Python, regle securite "aucun agent ne publie seul", 90% validation automatique sans intervention humaine
 - **2025-12-30 v2.7.3** : Cas d'usage realiste Vanne EGR Clio 3 (demonstration systeme anti-fake), Schema ValidationResult avec coherence semantique (semantic_match, semantic_reason, semantic_category), Matrice coherence semantique par categorie piece (EGR, Turbo, Freins, Injection, Distribution, Embrayage, Direction, Climatisation)
 - **2025-12-29 v2.7.2** : Pipeline Alimentation Automatise complet (7 etapes avec diagramme), Schemas Pydantic (SourceType, SourceInfo, Symptom avec validators), VehicleFichePipeline class (process_new_info, approve, reject, enrichissement RAG), FicheGenerator avec Jinja2 templates, CI/CD GitHub Actions (validation JSON + generation fiches), Comparatif Pipeline Manuel vs Automatise
