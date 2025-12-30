@@ -638,7 +638,9 @@ export class AdminGammesSeoController {
   @Post(':pgId/recalculate-vlevel')
   async recalculateVLevel(@Param('pgId', ParseIntPipe) pgId: number) {
     try {
-      this.logger.log(`🔄 POST /api/admin/gammes-seo/${pgId}/recalculate-vlevel`);
+      this.logger.log(
+        `🔄 POST /api/admin/gammes-seo/${pgId}/recalculate-vlevel`,
+      );
 
       const result = await this.gammesSeoService.recalculateVLevel(pgId);
 
@@ -649,7 +651,10 @@ export class AdminGammesSeoController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Error recalculating V-Level for gamme ${pgId}:`, error);
+      this.logger.error(
+        `❌ Error recalculating V-Level for gamme ${pgId}:`,
+        error,
+      );
       throw new HttpException(
         {
           success: false,
@@ -683,6 +688,35 @@ export class AdminGammesSeoController {
         {
           success: false,
           message: 'Erreur lors de la validation V-Level',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📊 GET /api/admin/gammes-seo/v-level/global-stats
+   * Statistiques globales V-Level pour le dashboard
+   */
+  @Get('v-level/global-stats')
+  async getVLevelGlobalStats() {
+    try {
+      this.logger.log('📊 GET /api/admin/gammes-seo/v-level/global-stats');
+
+      const stats = await this.gammesSeoService.getVLevelGlobalStats();
+
+      return {
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error fetching V-Level global stats:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des stats V-Level',
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

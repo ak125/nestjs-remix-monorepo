@@ -1144,12 +1144,15 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         ];
 
         // Requête simple sans jointures (les FK ne sont pas définies dans Supabase)
-        const { data: typesData } = typeIds.length > 0
-          ? await this.supabase
-              .from('auto_type')
-              .select('type_id, type_name, type_engine, type_fuel, type_marque_id, type_modele_id, type_year_from, type_year_to, type_power_ps')
-              .in('type_id', typeIds)
-          : { data: [] };
+        const { data: typesData } =
+          typeIds.length > 0
+            ? await this.supabase
+                .from('auto_type')
+                .select(
+                  'type_id, type_name, type_engine, type_fuel, type_marque_id, type_modele_id, type_year_from, type_year_to, type_power_ps',
+                )
+                .in('type_id', typeIds)
+            : { data: [] };
 
         // Map avec STRING KEYS - IMPORTANT: type_marque_id est STRING ("140"), marque_id est NUMBER (140)
         const typeMap = new Map(
@@ -1194,10 +1197,16 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
         // Maps avec STRING KEYS - conversion car marque_id/modele_id sont NUMBER dans la réponse
         const marqueMap = new Map(
-          (marques.data || []).map((m: any) => [String(m.marque_id), m.marque_name]),
+          (marques.data || []).map((m: any) => [
+            String(m.marque_id),
+            m.marque_name,
+          ]),
         );
         const modeleMap = new Map(
-          (modeles.data || []).map((m: any) => [String(m.modele_id), m.modele_name]),
+          (modeles.data || []).map((m: any) => [
+            String(m.modele_id),
+            m.modele_name,
+          ]),
         );
 
         // Enrichir les véhicules
@@ -1288,16 +1297,24 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           vLevel_v5_count: vLevelGrouped.v5.length,
           vLevel_total_count: (vLevelData || []).length,
           // Date de dernière mise à jour V-Level (plus récente)
-          vLevel_last_updated: vLevelData && vLevelData.length > 0
-            ? (vLevelData as any[]).reduce((latest: string | null, v: any) => {
-                if (!v.updated_at) return latest;
-                if (!latest) return v.updated_at;
-                return new Date(v.updated_at) > new Date(latest) ? v.updated_at : latest;
-              }, null)
-            : null,
+          vLevel_last_updated:
+            vLevelData && vLevelData.length > 0
+              ? (vLevelData as any[]).reduce(
+                  (latest: string | null, v: any) => {
+                    if (!v.updated_at) return latest;
+                    if (!latest) return v.updated_at;
+                    return new Date(v.updated_at) > new Date(latest)
+                      ? v.updated_at
+                      : latest;
+                  },
+                  null,
+                )
+              : null,
           // Date du dernier article (plus récent en premier)
           last_article_date:
-            articles && articles.length > 0 ? articles[0].ba_update || articles[0].ba_create : null,
+            articles && articles.length > 0
+              ? articles[0].ba_update || articles[0].ba_create
+              : null,
         },
       };
     } catch (error) {
@@ -1327,7 +1344,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .select('id');
 
       if (error) {
-        this.logger.error(`❌ Error updating V-Level for gamme ${pgId}:`, error);
+        this.logger.error(
+          `❌ Error updating V-Level for gamme ${pgId}:`,
+          error,
+        );
         throw error;
       }
 
@@ -1475,6 +1495,154 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       return result;
     } catch (error) {
       this.logger.error('❌ Error in validateV1Rules():', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Statistiques globales V-Level pour le dashboard
+   */
+  async getVLevelGlobalStats(): Promise<{
+    totalGammes: number;
+    gammesWithVLevel: number;
+    distribution: {
+      v1: number;
+      v2: number;
+      v3: number;
+      v4: number;
+      v5: number;
+      total: number;
+    };
+    freshness: {
+      fresh: number;
+      stale: number;
+      old: number;
+    };
+    lastUpdated: string | null;
+    g1Stats: {
+      total: number;
+      withV2: number;
+      coverage: number;
+    };
+  }> {
+    try {
+      this.logger.log('📊 Fetching V-Level global stats');
+
+      // 1. Total gammes
+      const { count: totalGammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true });
+
+      // 2. Gammes avec V-Level data
+      const { data: gammesWithData } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('gamme_id')
+        .not('v_level', 'is', null);
+
+      const uniqueGammes = new Set(
+        (gammesWithData || []).map((g: any) => g.gamme_id),
+      );
+
+      // 3. Distribution par V-Level
+      const { data: allVLevels } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('v_level, updated_at');
+
+      const distribution = {
+        v1: 0,
+        v2: 0,
+        v3: 0,
+        v4: 0,
+        v5: 0,
+        total: 0,
+      };
+
+      const freshness = {
+        fresh: 0,
+        stale: 0,
+        old: 0,
+      };
+
+      let lastUpdated: string | null = null;
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+      for (const item of allVLevels || []) {
+        distribution.total++;
+        switch (item.v_level) {
+          case 'V1':
+            distribution.v1++;
+            break;
+          case 'V2':
+            distribution.v2++;
+            break;
+          case 'V3':
+            distribution.v3++;
+            break;
+          case 'V4':
+            distribution.v4++;
+            break;
+          case 'V5':
+            distribution.v5++;
+            break;
+        }
+
+        // Freshness
+        if (item.updated_at) {
+          const updated = new Date(item.updated_at).getTime();
+          const age = now - updated;
+          if (age <= sevenDays) {
+            freshness.fresh++;
+          } else if (age <= thirtyDays) {
+            freshness.stale++;
+          } else {
+            freshness.old++;
+          }
+
+          if (!lastUpdated || item.updated_at > lastUpdated) {
+            lastUpdated = item.updated_at;
+          }
+        }
+      }
+
+      // 4. G1 stats
+      const { count: g1Total } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_top', '1');
+
+      const { data: g1WithV2 } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('gamme_id')
+        .eq('v_level', 'V2');
+
+      const g1GammesWithV2 = new Set(
+        (g1WithV2 || []).map((g: any) => g.gamme_id),
+      );
+
+      const stats = {
+        totalGammes: totalGammes || 0,
+        gammesWithVLevel: uniqueGammes.size,
+        distribution,
+        freshness,
+        lastUpdated,
+        g1Stats: {
+          total: g1Total || 0,
+          withV2: g1GammesWithV2.size,
+          coverage: g1Total
+            ? Math.round((g1GammesWithV2.size / g1Total) * 100)
+            : 0,
+        },
+      };
+
+      this.logger.log(
+        `✅ V-Level global stats: ${distribution.total} entries, ${uniqueGammes.size} gammes`,
+      );
+
+      return stats;
+    } catch (error) {
+      this.logger.error('❌ Error in getVLevelGlobalStats():', error);
       throw error;
     }
   }
