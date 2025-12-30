@@ -88,15 +88,21 @@ export const meta: MetaFunction = () => {
 };
 
 // Preload critical resources (homepage-specific)
+const SUPABASE_STORAGE = "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos";
+
 export function links() {
   return [
-    { rel: "preconnect", href: "http://localhost:3000" },
-    { rel: "dns-prefetch", href: "http://localhost:3000" },
+    // 🔌 Preconnect to Supabase for faster image loading
+    { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
+    { rel: "dns-prefetch", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
 
-    // 🚀 Homepage-only: Preload top 3 brand logos (above-fold)
-    { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
-    { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
-    { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
+    // 🚀 LCP Optimization: Preload top 6 brand logos (above-fold, sorted alphabetically)
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/alfa-romeo.webp`, type: "image/webp" },
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/audi.webp`, type: "image/webp" },
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/bmw.webp`, type: "image/webp" },
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/chevrolet.webp`, type: "image/webp" },
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/citroen.webp`, type: "image/webp" },
+    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/dacia.webp`, type: "image/webp" },
 
     // 🚀 Homepage-only: Preload critical fonts (Inter + Montserrat)
     {
@@ -583,8 +589,10 @@ export default function TestHomepageModern() {
                               src={brand.logo}
                               alt={`Logo ${brand.name}`}
                               className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                              loading="lazy"
-                              decoding="async"
+                              // 🚀 LCP: First 6 images are eager-loaded (above-fold)
+                              loading={index < 6 ? "eager" : "lazy"}
+                              fetchPriority={index < 6 ? "high" : "auto"}
+                              decoding={index < 6 ? "sync" : "async"}
                               width="200"
                               height="200"
                               onError={(e) => {
