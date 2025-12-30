@@ -39,6 +39,7 @@ import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
 import { HomepageRpcService } from './services/homepage-rpc.service';
+import { CacheWarmingService } from './services/cache-warming.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -105,6 +106,8 @@ import { HomepageRpcService } from './services/homepage-rpc.service';
     UnifiedPageDataService,
     // 🏠 HOMEPAGE RPC - 4 appels API en 1
     HomepageRpcService,
+    // 🔥 CACHE WARMING - Préchauffage au démarrage
+    CacheWarmingService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
