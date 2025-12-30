@@ -1347,4 +1347,135 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       throw error;
     }
   }
+
+  /**
+   * 🔍 Valide les règles V-Level:
+   * - V1 doit être V2 dans >= 30% des gammes G1
+   * - Détecte les violations de cette règle
+   */
+  async validateV1Rules(): Promise<{
+    valid: boolean;
+    violations: Array<{
+      model_name: string;
+      variant_name: string;
+      energy: string;
+      v2_count: number;
+      g1_total: number;
+      percentage: number;
+    }>;
+    g1_count: number;
+    summary: {
+      total_v1: number;
+      valid_v1: number;
+      invalid_v1: number;
+    };
+  }> {
+    try {
+      this.logger.log('🔍 Validating V1 rules (>= 30% G1 gammes)');
+
+      // 1. Compter les gammes G1 (pg_top = '1')
+      const { count: g1Count, error: g1Error } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_top', '1');
+
+      if (g1Error) {
+        this.logger.error('❌ Error counting G1 gammes:', g1Error);
+        throw g1Error;
+      }
+
+      const totalG1 = g1Count || 0;
+      this.logger.log(`📊 Total G1 gammes: ${totalG1}`);
+
+      // 2. Récupérer tous les V1
+      const { data: v1Data, error: v1Error } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('model_name, variant_name, energy')
+        .eq('v_level', 'V1');
+
+      if (v1Error) {
+        this.logger.error('❌ Error fetching V1 data:', v1Error);
+        throw v1Error;
+      }
+
+      const v1Items = v1Data || [];
+      this.logger.log(`📊 Total V1 items: ${v1Items.length}`);
+
+      // 3. Pour chaque V1 unique (model_name + energy), compter combien de gammes G1 l'ont en V2
+      const violations: Array<{
+        model_name: string;
+        variant_name: string;
+        energy: string;
+        v2_count: number;
+        g1_total: number;
+        percentage: number;
+      }> = [];
+
+      // Grouper les V1 par model_name + energy (pour éviter les doublons)
+      const uniqueV1 = new Map<
+        string,
+        { model_name: string; variant_name: string; energy: string }
+      >();
+      for (const v1 of v1Items) {
+        const key = `${v1.model_name}|${v1.energy}`;
+        if (!uniqueV1.has(key)) {
+          uniqueV1.set(key, v1);
+        }
+      }
+
+      // Vérifier chaque V1 unique
+      for (const [, v1] of uniqueV1) {
+        // Compter combien de fois cette variante est V2 dans des gammes G1
+        const { count: v2Count, error: v2Error } = await this.supabase
+          .from('gamme_seo_metrics')
+          .select('gamme_id', { count: 'exact', head: true })
+          .eq('model_name', v1.model_name)
+          .ilike('energy', v1.energy)
+          .eq('v_level', 'V2');
+
+        if (v2Error) {
+          this.logger.warn(
+            `⚠️ Error counting V2 for ${v1.model_name}:`,
+            v2Error,
+          );
+          continue;
+        }
+
+        const v2CountNum = v2Count || 0;
+        const percentage = totalG1 > 0 ? (v2CountNum / totalG1) * 100 : 0;
+
+        // Si < 30%, c'est une violation
+        if (percentage < 30) {
+          violations.push({
+            model_name: v1.model_name,
+            variant_name: v1.variant_name || '',
+            energy: v1.energy,
+            v2_count: v2CountNum,
+            g1_total: totalG1,
+            percentage: Math.round(percentage * 10) / 10,
+          });
+        }
+      }
+
+      const result = {
+        valid: violations.length === 0,
+        violations,
+        g1_count: totalG1,
+        summary: {
+          total_v1: uniqueV1.size,
+          valid_v1: uniqueV1.size - violations.length,
+          invalid_v1: violations.length,
+        },
+      };
+
+      this.logger.log(
+        `✅ V1 validation complete: ${result.summary.valid_v1}/${result.summary.total_v1} valid`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Error in validateV1Rules():', error);
+      throw error;
+    }
+  }
 }

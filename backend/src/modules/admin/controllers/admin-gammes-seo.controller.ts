@@ -660,4 +660,33 @@ export class AdminGammesSeoController {
       );
     }
   }
+
+  /**
+   * 🔍 GET /api/admin/gammes-seo/v-level/validate
+   * Valide les règles V-Level (V1 >= 30% G1)
+   */
+  @Get('v-level/validate')
+  async validateVLevelRules() {
+    try {
+      this.logger.log('🔍 GET /api/admin/gammes-seo/v-level/validate');
+
+      const result = await this.gammesSeoService.validateV1Rules();
+
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error validating V-Level rules:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la validation V-Level',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
