@@ -171,11 +171,11 @@ BEGIN
     'catalog', (
       WITH compatible_gammes AS (
         -- Gammes compatibles avec ce véhicule (logique PHP)
-        SELECT DISTINCT prt.rtp_pg_id::INTEGER AS pg_id
+        SELECT DISTINCT prt.rtp_pg_id AS pg_id
         FROM pieces_relation_type prt
         INNER JOIN pieces p ON prt.rtp_piece_id = p.piece_id
         INNER JOIN pieces_gamme pg ON p.piece_pg_id = pg.pg_id
-        WHERE prt.rtp_type_id = p_type_id::TEXT
+        WHERE prt.rtp_type_id = p_type_id
           AND p.piece_display = true
           AND pg.pg_display = '1'
           AND pg.pg_level IN ('1', '2')
