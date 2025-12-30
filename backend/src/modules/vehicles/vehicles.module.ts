@@ -37,12 +37,19 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
 // Services SEO
 import { BrandSeoService } from './services/seo/brand-seo.service';
 
+// Service RPC optimisé (LCP)
+import { VehicleRpcService } from './services/vehicle-rpc.service';
+
 // Module Catalog pour le maillage interne
 import { CatalogModule } from '../catalog/catalog.module';
+
+// Module Cache Redis
+import { CacheModule as RedisCacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule,
+    RedisCacheModule, // 🔴 Redis cache pour VehicleRpcService
     forwardRef(() => CatalogModule), // 🔗 Pour le maillage interne (gammes populaires)
     CacheModule.registerAsync({
       inject: [ConfigService],
@@ -81,6 +88,9 @@ import { CatalogModule } from '../catalog/catalog.module';
 
     // SEO
     BrandSeoService,
+
+    // RPC optimisé (LCP)
+    VehicleRpcService,
   ],
   exports: [
     VehiclesService,
@@ -92,6 +102,7 @@ import { CatalogModule } from '../catalog/catalog.module';
     VehicleSearchService,
     VehicleMineService,
     VehicleCacheService,
+    VehicleRpcService,
   ],
 })
 export class VehiclesModule {}

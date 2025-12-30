@@ -15,6 +15,7 @@ import {
   LinkInjectionResult,
 } from '../../seo/internal-linking.service';
 import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 
 /**
  * 📰 BlogService - Service principal AMÉLIORÉ pour la gestion du contenu blog
@@ -653,39 +654,85 @@ export class BlogService {
   }
 
   /**
-   * 📄 Récupération d'un article par slug
+   * 📄 Récupération d'un article par slug (version robuste)
+   * Gère les URLs avec espaces ET tirets automatiquement
    */
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
     try {
-      // Chercher dans toutes les tables via supabase
-      const { data, error } = await this.supabaseService.client
-        .from(TABLES.blog_advice)
-        .select('*')
-        .eq('ba_alias', slug)
-        .single();
+      // Générer les variantes de slug à essayer
+      const slugVariants = this.generateSlugVariants(slug);
 
-      if (error || !data) {
-        // Essayer dans les guides
+      // Essayer chaque variante dans les tables advice et guide
+      for (const variant of slugVariants) {
+        // Chercher dans blog_advice
+        const { data: adviceData } = await this.supabaseService.client
+          .from(TABLES.blog_advice)
+          .select('*')
+          .eq('ba_alias', variant)
+          .single();
+
+        if (adviceData) {
+          this.logger.debug(`✅ Article trouvé avec alias: "${variant}"`);
+          return await this.transformAdviceToArticleWithSections(adviceData);
+        }
+
+        // Chercher dans blog_guide
         const { data: guideData } = await this.supabaseService.client
           .from(TABLES.blog_guide)
           .select('*')
-          .eq('bg_alias', slug)
+          .eq('bg_alias', variant)
           .single();
 
         if (guideData) {
+          this.logger.debug(`✅ Guide trouvé avec alias: "${variant}"`);
           return this.transformGuideToArticle(guideData);
         }
-
-        return null;
       }
 
-      return await this.transformAdviceToArticleWithSections(data);
+      this.logger.debug(
+        `❌ Aucun article trouvé pour: "${slug}" (variantes testées: ${slugVariants.join(', ')})`,
+      );
+      return null;
     } catch (error) {
       this.logger.error(
         `❌ Erreur récupération article ${slug}: ${(error as Error).message}`,
       );
       return null;
     }
+  }
+
+  /**
+   * 🔄 Génère les variantes de slug à essayer
+   * - Slug original
+   * - Slug normalisé (espaces → tirets)
+   * - Slug dé-normalisé (tirets → espaces) pour compatibilité BDD legacy
+   */
+  private generateSlugVariants(slug: string): string[] {
+    const variants = new Set<string>();
+
+    // 1. Slug original (décodé de l'URL)
+    const decodedSlug = decodeURIComponent(slug);
+    variants.add(decodedSlug);
+
+    // 2. Slug normalisé (espaces → tirets, minuscules, sans accents)
+    const normalized = normalizeAlias(decodedSlug);
+    if (normalized && normalized !== decodedSlug) {
+      variants.add(normalized);
+    }
+
+    // 3. Slug avec espaces restaurés (tirets → espaces) pour BDD legacy
+    const withSpaces = decodedSlug.replace(/-/g, ' ');
+    if (withSpaces !== decodedSlug) {
+      variants.add(withSpaces);
+    }
+
+    // 4. Version lowercase simple
+    const lowercase = decodedSlug.toLowerCase();
+    if (lowercase !== decodedSlug) {
+      variants.add(lowercase);
+    }
+
+    return Array.from(variants);
   }
 
   /**

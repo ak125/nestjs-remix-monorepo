@@ -27,10 +27,6 @@ import {
 import { useState, useEffect } from "react";
 import { ModelContentV1Display, type ModelContentV1Data } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
-import {
-  catalogFamiliesApi,
-  type CatalogFamily as ApiCatalogFamily,
-} from "../services/api/catalog-families.api";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 
@@ -159,268 +155,96 @@ export function shouldRevalidate({
   return currentUrl.pathname !== nextUrl.pathname;
 }
 
-// 🔄 Loader avec logique métier PHP convertie
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  // 🔍 Vérifier le cache d'abord
-  const cacheKey = `${params.brand}-${params.model}-${params.type}`;
-  const cached = loaderCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
-    return json(cached.data);
-  }
+// ========================================
+// 🚀 RPC OPTIMISÉ - Transformation des données
+// ========================================
 
-  console.log("🔄 Vehicle detail loader appelé avec params:", params);
+/**
+ * Transforme la réponse RPC en LoaderData
+ * Compatible avec la structure existante de la page
+ */
+function transformRpcToLoaderData(
+  rpcData: any,
+  params: { brand: string; model: string; type: string },
+): LoaderData {
+  const v = rpcData.vehicle;
+  const seoCustom = rpcData.seo_custom;
 
-  // Validation stricte des paramètres
-  const { brand, model, type } = params;
-  console.log("🔍 Paramètres destructurés:", { brand, model, type });
-
-  if (!brand || !model || !type) {
-    console.error("❌ Paramètres manquants:", { brand, model, type });
-    throw new Response("Paramètres manquants", { status: 400 });
-  }
-
-  // ⚠️ Validation assouplie : brand et model doivent avoir un tiret, mais pas type
-  // Type peut être soit "{alias}-{id}.html" soit juste "{id}.html"
-  if (!brand.includes("-") || !model.includes("-")) {
-    console.error("❌ Format de paramètres invalide pour brand/model");
-    throw new Response("URL invalide", { status: 400 });
-  }
-
-  console.log(
-    "✅ Tous les paramètres sont présents, génération des données...",
-  );
-
-  // === PARSING DES PARAMÈTRES (logique PHP adaptée) ===
-  const brandParts = brand.split("-");
+  // Parsing des paramètres URL (pour fallback)
+  const brandParts = params.brand.split("-");
   const marque_id = parseInt(brandParts[brandParts.length - 1]) || 0;
   const marque_alias = brandParts.slice(0, -1).join("-");
 
-  const modelParts = model.split("-");
+  const modelParts = params.model.split("-");
   const modele_id = parseInt(modelParts[modelParts.length - 1]) || 0;
   const modele_alias = modelParts.slice(0, -1).join("-");
 
-  // Type parsing: support des formats "{alias}-{id}.html" ET "{id}.html"
-  const typeWithoutHtml = type.replace(".html", "");
+  const typeWithoutHtml = params.type.replace(".html", "");
   const typeParts = typeWithoutHtml.split("-");
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
-  // 🔥 FIX: type_alias doit être SANS l'ID final
-  const type_alias = typeParts.slice(0, -1).join("-") || typeWithoutHtml;
 
-  // === APPEL API /full POUR RÉCUPÉRER TOUTES LES DONNÉES (codes moteur, mines, etc.) ===
-  console.log(`🔍 Appel API /full pour type_id=${type_id}`);
-  const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
-
-  // 🛡️ ROBUSTESSE: Fetch avec retry pour éviter erreurs temporaires
-  let vehicleResponse: Response | null = null;
-  let retryCount = 0;
-  const maxRetries = 2;
-
-  while (retryCount <= maxRetries && !vehicleResponse?.ok) {
-    try {
-      vehicleResponse = await fetch(
-        `${baseUrl}/api/vehicles/types/${type_id}/full`,
-        {
-          headers: { "internal-call": "true" },
-          signal: AbortSignal.timeout(10000),
-        },
-      );
-
-      if (vehicleResponse.ok) break;
-    } catch (error) {
-      const currentRetry = ++retryCount;
-      console.warn(
-        `⚠️ [VEHICLE-API] Tentative ${currentRetry}/${maxRetries + 1} échouée:`,
-        error,
-      );
-
-      if (currentRetry > maxRetries) {
-        console.error("❌ [VEHICLE-API] Backend inaccessible après retries");
-        throw new Response("Service temporairement indisponible", {
-          status: 503,
-          headers: { "Retry-After": "30" },
-        });
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 500 * currentRetry));
-    }
-  }
-
-  if (!vehicleResponse?.ok) {
-    console.error("❌ API error:", vehicleResponse?.status);
-    throw new Response("Véhicule non trouvé", { status: 404 });
-  }
-
-  const apiData = await vehicleResponse.json();
-  console.log("✅ Données API /full reçues:", JSON.stringify(apiData, null, 2));
-
-  // === APPEL API POUR RÉCUPÉRER LES META TAGS ARIANE ===
-  let metaTagsData: MetaTagsAriane | null = null;
-  try {
-    const metaTagsResponse = await fetch(
-      `${baseUrl}/api/vehicles/meta-tags/${type_id}`,
-      { headers: { "internal-call": "true" } },
-    );
-
-    if (metaTagsResponse.ok) {
-      const metaTagsJson = await metaTagsResponse.json();
-      metaTagsData = metaTagsJson.data;
-      console.log("✅ Meta tags ariane trouvés:", metaTagsData);
-    } else {
-      console.log("ℹ️ Pas de meta tags ariane pour ce véhicule");
-    }
-  } catch (error) {
-    console.log("⚠️ Erreur récupération meta tags:", error);
-  }
-
-  // === APPEL API POUR RÉCUPÉRER LE CONTENU V1 (encyclopédique) ===
-  let modelContentV1: ModelContentV1Data | null = null;
-  try {
-    const v1Response = await fetch(
-      `${baseUrl}/api/blog/model-content-v1/${marque_alias}/${modele_alias}`,
-      { headers: { "internal-call": "true" } },
-    );
-
-    if (v1Response.ok) {
-      const v1Json = await v1Response.json();
-      if (v1Json.success && v1Json.data) {
-        modelContentV1 = v1Json.data;
-        console.log("✅ Contenu V1 trouvé pour:", marque_alias, modele_alias);
-      }
-    } else {
-      console.log("ℹ️ Pas de contenu V1 pour ce modèle");
-    }
-  } catch (error) {
-    console.log("⚠️ Erreur récupération contenu V1:", error);
-  }
-
-  // L'API /full retourne un objet plat (pas un tableau)
-  const vehicleRecord = apiData.data;
-
-  if (!vehicleRecord || !apiData.success) {
-    console.error("❌ Aucun véhicule trouvé dans la réponse API /full:", apiData);
-    throw new Response("Véhicule non trouvé", { status: 404 });
-  }
-
-  // === EXTRACTION DES DONNÉES (structure plate de l'API /full) ===
-  const marque_name = vehicleRecord.marque_name;
-  const marque_alias_api = vehicleRecord.marque_alias;
-  const modele_name = vehicleRecord.modele_name;
-  const modele_pic = vehicleRecord.modele_pic;
-  const modele_alias_api = vehicleRecord.modele_alias;
-  const type_name = vehicleRecord.type_name;
-  const type_power_ps = vehicleRecord.type_power_ps;
-  const type_fuel = vehicleRecord.type_fuel;
-  const type_body = vehicleRecord.type_body;
-  const type_month_from = vehicleRecord.type_month_from;
-  const type_year_from = vehicleRecord.type_year_from;
-  const type_month_to = vehicleRecord.type_month_to;
-  const type_year_to = vehicleRecord.type_year_to;
-
-  // 🔧 Codes moteur et types mines (nouveaux champs API /full)
-  const motor_codes = vehicleRecord.motor_codes || [];
-  const motor_codes_formatted = vehicleRecord.motor_codes_formatted || "";
-  const mine_codes = vehicleRecord.mine_codes || [];
-  const mine_codes_formatted = vehicleRecord.mine_codes_formatted || "";
-  const cnit_codes = vehicleRecord.cnit_codes || [];
-  const cnit_codes_formatted = vehicleRecord.cnit_codes_formatted || "";
-  const power_formatted = vehicleRecord.power_formatted || "";
-  const cylinder_cm3 = vehicleRecord.cylinder_cm3 || null;
-  const production_date_formatted = vehicleRecord.production_date_formatted || "";
-
-  // Vérification des données critiques
-  if (!marque_name || !modele_name || !type_name || !type_power_ps) {
-    console.error("❌ Données API /full incomplètes:", {
-      marque_name,
-      modele_name,
-      type_name,
-      type_power_ps,
-      fullResponse: apiData,
-    });
-    throw new Response("Données véhicule incomplètes", { status: 500 });
-  }
-
-  // === FORMATAGE DE LA DATE (logique PHP exacte) ===
+  // Formatage de la date (logique PHP)
   let type_date = "";
-  if (!type_year_to) {
-    type_date = `du ${type_month_from}/${type_year_from}`;
+  if (!v.type_year_to) {
+    type_date = `du ${v.type_month_from}/${v.type_year_from}`;
   } else {
-    type_date = `de ${type_year_from} à ${type_year_to}`;
+    type_date = `de ${v.type_year_from} à ${v.type_year_to}`;
   }
 
-  // === DONNÉES VÉHICULE SELON STRUCTURE PHP (avec power et date pour affichage) ===
+  // Données véhicule
   const vehicleData: VehicleData = {
-    marque_id,
-    marque_alias: marque_alias_api || marque_alias, // Priorité aux données API
-    marque_name,
-    marque_name_meta: marque_name,
-    marque_name_meta_title: marque_name,
-    marque_logo: `${marque_alias_api || marque_alias}.webp`,
-    marque_relfollow: 1,
-    modele_id,
-    modele_alias: modele_alias_api || modele_alias, // Priorité aux données API
-    modele_name,
-    modele_name_meta: modele_name,
-    modele_relfollow: 1,
-    modele_pic: modele_pic, // Nouveau champ pour l'image
-    type_id,
-    // 🔧 SEO FIX: Priorité à l'alias API normalisé pour éviter les doublons de canonical
-    type_alias: vehicleRecord.type_alias || type_alias,
-    type_name,
-    type_name_meta: type_name,
-    type_power_ps,
-    type_body,
-    type_fuel,
-    type_month_from,
-    type_year_from,
-    type_month_to,
-    type_year_to,
-    type_relfollow: 1,
-    power: type_power_ps,
+    marque_id: v.marque_id || marque_id,
+    marque_alias: v.marque_alias || marque_alias,
+    marque_name: v.marque_name,
+    marque_name_meta: v.marque_name_meta || v.marque_name,
+    marque_name_meta_title: v.marque_name_meta_title || v.marque_name,
+    marque_logo: v.marque_logo || `${v.marque_alias}.webp`,
+    marque_relfollow: v.marque_relfollow || 1,
+    modele_id: v.modele_id || modele_id,
+    modele_alias: v.modele_alias || modele_alias,
+    modele_name: v.modele_name,
+    modele_name_meta: v.modele_name_meta || v.modele_name,
+    modele_relfollow: v.modele_relfollow || 1,
+    modele_pic: v.modele_pic,
+    type_id: v.type_id || type_id,
+    type_alias: v.type_alias || typeWithoutHtml,
+    type_name: v.type_name,
+    type_name_meta: v.type_name_meta || v.type_name,
+    type_power_ps: v.type_power_ps,
+    type_body: v.type_body,
+    type_fuel: v.type_fuel,
+    type_month_from: v.type_month_from,
+    type_year_from: v.type_year_from,
+    type_month_to: v.type_month_to,
+    type_year_to: v.type_year_to,
+    type_relfollow: v.type_relfollow || 1,
+    power: v.type_power_ps,
     date: type_date,
-    // 🔧 Codes moteur et types mines (depuis API /full)
-    motor_codes,
-    motor_codes_formatted,
-    mine_codes,
-    mine_codes_formatted,
-    cnit_codes,
-    cnit_codes_formatted,
-    power_formatted,
-    cylinder_cm3,
-    production_date_formatted,
+    motor_codes: rpcData.motor_codes || [],
+    motor_codes_formatted: (rpcData.motor_codes || []).join(", "),
+    mine_codes: rpcData.mine_codes || [],
+    mine_codes_formatted: (rpcData.mine_codes || []).join(", "),
+    cnit_codes: rpcData.cnit_codes || [],
+    cnit_codes_formatted: (rpcData.cnit_codes || []).join(", "),
+    power_formatted: v.type_power_ps ? `${v.type_power_ps} ch` : "",
+    cylinder_cm3: v.type_liter ? Math.round(parseFloat(v.type_liter) * 1000) : undefined,
+    production_date_formatted: type_date,
   };
 
-  // === SYSTÈME SEO AVEC SWITCH DYNAMIQUE (logique PHP adaptée) ===
+  // Système SEO avec switch dynamique
   const getSeoSwitch = (alias: number, typeId: number): string => {
     const switches: Record<number, string[]> = {
       1: ["à prix discount", "pas cher", "à mini prix", "en promotion"],
       2: ["et équipements", "et accessoires", "neuves", "d'origine"],
-      10: [
-        "Toutes les pièces auto",
-        "Trouvez toutes les pièces",
-        "Catalogue complet",
-        "Pièces détachées",
-      ],
-      11: [
-        "Toutes les références",
-        "L'ensemble des pièces",
-        "Toutes les gammes",
-        "Tous les produits",
-      ],
-      12: [
-        "nos fournisseurs certifiés",
-        "nos partenaires agréés",
-        "nos distributeurs",
-        "nos fournisseurs",
-      ],
+      10: ["Toutes les pièces auto", "Trouvez toutes les pièces", "Catalogue complet", "Pièces détachées"],
+      11: ["Toutes les références", "L'ensemble des pièces", "Toutes les gammes", "Tous les produits"],
+      12: ["nos fournisseurs certifiés", "nos partenaires agréés", "nos distributeurs", "nos fournisseurs"],
     };
-
     const options = switches[alias] || [""];
-    const index = typeId % options.length;
-    return options[index];
+    return options[typeId % options.length];
   };
 
-  // === META TAGS ARIANE - PRIORITÉ SUR LES VALEURS PAR DÉFAUT ===
+  // SEO (priorité aux données personnalisées)
   let seoTitle: string;
   let seoDescription: string;
   let seoKeywords: string;
@@ -428,26 +252,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   let content: string;
   let content2: string;
 
-  if (metaTagsData) {
-    // Utiliser les meta tags de la table ___meta_tags_ariane
-    console.log("🏷️ Utilisation des meta tags ariane personnalisés");
-    seoTitle =
-      metaTagsData.mta_title ||
-      `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
-    seoDescription = metaTagsData.mta_descrip || "";
-    seoKeywords =
-      metaTagsData.mta_keywords ||
-      `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
-    h1 =
-      metaTagsData.mta_h1 ||
-      `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
-    content = metaTagsData.mta_content || "";
-    content2 = ""; // La table n'a qu'un seul champ content
+  if (seoCustom) {
+    seoTitle = seoCustom.mta_title || `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
+    seoDescription = seoCustom.mta_descrip || "";
+    seoKeywords = seoCustom.mta_keywords || `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
+    h1 = seoCustom.mta_h1 || `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
+    content = seoCustom.mta_content || "";
+    content2 = "";
   } else {
-    // SEO avec système de switch (reprend la logique PHP exacte)
-    console.log(
-      "📝 Génération des meta tags par défaut avec système de switch",
-    );
     const comp_switch_title = getSeoSwitch(1, type_id);
     const comp_switch_desc = getSeoSwitch(2, type_id);
     const comp_switch_content1 = getSeoSwitch(10, type_id);
@@ -457,229 +269,58 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     seoTitle = `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${comp_switch_title}`;
     seoDescription = `Catalogue pièces détachées pour ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${vehicleData.type_power_ps} ch ${type_date} neuves ${comp_switch_desc}`;
     seoKeywords = `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}, ${vehicleData.type_power_ps} ch, ${type_date}`;
-
-    // H1 et contenu (logique PHP exacte)
     h1 = `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
     content = `${comp_switch_content1} pour le modèle <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_body}</b> <strong>${type_date}</strong> de motorisation <strong>${vehicleData.type_name} ${vehicleData.type_power_ps}</strong> ch.`;
     content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
   }
 
-  // === GÉNÉRATION CANONIQUE (logique PHP) ===
-  // 🔧 SEO FIX: Normaliser le type_alias pour le canonical
-  // Utilise l'alias de la BDD, sinon fallback sur l'ID pour éviter les doublons GSC
-  const normalizedTypeAlias =
-    vehicleRecord.type_alias &&
-    vehicleRecord.type_alias.trim() !== '' &&
-    vehicleRecord.type_alias !== 'type'
-      ? vehicleRecord.type_alias
-      : type_id.toString();
+  // Canonical URL
+  const normalizedTypeAlias = v.type_alias && v.type_alias.trim() !== "" && v.type_alias !== "type"
+    ? v.type_alias
+    : type_id.toString();
   const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${normalizedTypeAlias}-${vehicleData.type_id}.html`;
 
-  // === GÉNÉRATION DES CATALOGUES V3 HYBRIDE (approche optimisée 3-étapes) ===
-  let catalogFamilies: CatalogFamily[] = [];
-  let popularParts: PopularPart[] = [];
-  let queryType = "UNKNOWN";
-  let seoValid = false;
-  let seoValidation = { familyCount: 0, gammeCount: 0, isIndexable: false };
+  // Catalogue (depuis RPC)
+  const catalogFamilies: CatalogFamily[] = (rpcData.catalog?.families || []).map((f: any) => ({
+    mf_id: parseInt(f.mf_id),
+    mf_name: f.mf_name,
+    mf_description: f.mf_description || `Système ${f.mf_name.toLowerCase()}`,
+    mf_pic: f.mf_pic || `${f.mf_name.toLowerCase()}.webp`,
+    gammes: (f.gammes || []).map((g: any) => ({
+      pg_id: g.pg_id,
+      pg_alias: g.pg_alias,
+      pg_name: g.pg_name,
+    })),
+  }));
 
-  try {
-    // 🚀 NOUVEAU V4: Service hybride ultime avec cache intelligent + requêtes parallèles
-    console.log(
-      `🚀 [V4 ULTIMATE] Récupération des familles pour type_id: ${type_id}...`,
-    );
-    const hybridResult =
-      await catalogFamiliesApi.getCatalogFamiliesForVehicleV4(type_id);
-
-    // Extraction des données hybrides
-    catalogFamilies = hybridResult.catalog.map((family: ApiCatalogFamily) => ({
-      mf_id: family.mf_id,
-      mf_name: family.mf_name,
-      mf_description:
-        family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
-      mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
-      gammes: family.gammes.map((gamme) => ({
-        pg_id: gamme.pg_id,
-        pg_alias: gamme.pg_alias,
-        pg_name: gamme.pg_name,
-      })),
-    }));
-
-    popularParts = hybridResult.popularParts.map((part: any) => ({
-      cgc_pg_id: part.cgc_pg_id,
-      pg_alias: part.pg_alias,
-      pg_name: part.pg_name,
-      pg_name_meta: part.pg_name_meta,
-      pg_img: part.pg_img || "no.webp", // ✅ Ajout de la propriété manquante
-      addon_content: part.addon_content,
-    }));
-
-    queryType = hybridResult.queryType;
-    seoValid = hybridResult.seoValid;
-    seoValidation = hybridResult.seoValidation;
-
-    console.log(
-      `✅ [V4 ULTIMATE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}, Cache: ${hybridResult.performance?.source || "N/A"}`,
-    );
-  } catch (error) {
-    // Propager les Response HTTP (404, etc.) telles quelles
-    if (error instanceof Response) {
-      throw error;
-    }
-    console.error(
-      "❌ [V4 ULTIMATE] Erreur, fallback vers données simulées:",
-      error,
-    );
-
-    // Fallback vers les données simulées en cas d'erreur totale
-    queryType = "SIMULATION_FALLBACK";
-    seoValid = false;
-    seoValidation = { familyCount: 0, gammeCount: 0, isIndexable: false };
-    catalogFamilies = [
-      {
-        mf_id: 1,
-        mf_name: "Freinage",
-        mf_description: "Système de freinage",
-        mf_pic: "freinage.webp",
-        gammes: [
-          {
-            pg_id: 101,
-            pg_alias: "disques-frein",
-            pg_name: "Disques de frein",
-          },
-          {
-            pg_id: 102,
-            pg_alias: "plaquettes",
-            pg_name: "Plaquettes de frein",
-          },
-        ],
-      },
-      {
-        mf_id: 2,
-        mf_name: "Moteur",
-        mf_description: "Système moteur",
-        mf_pic: "moteur.webp",
-        gammes: [
-          { pg_id: 201, pg_alias: "filtres-huile", pg_name: "Filtres à huile" },
-          { pg_id: 202, pg_alias: "bougies", pg_name: "Bougies d'allumage" },
-        ],
-      },
-    ];
-  }
-
-  // === VALIDATION ROBOTS (logique PHP avec données réelles de l'API) ===
-  // 🎯 Utilise seoValidation depuis l'API au lieu des valeurs mock
-  const realFamilyCount = seoValidation.familyCount;
-  const realGammeCount = seoValidation.gammeCount;
-
-  let pageRobots = "index, follow";
-  let _relfollow = 1; // Préfixé avec _ pour indiquer intentionnellement inutilisé
-
-  // Logique de validation SEO (exactement comme dans le PHP)
-  if (
-    vehicleData.marque_relfollow &&
-    vehicleData.modele_relfollow &&
-    vehicleData.type_relfollow
-  ) {
-    if (realFamilyCount < 3) {
-      pageRobots = "noindex, nofollow";
-      _relfollow = 0;
-    } else if (realGammeCount < 5) {
-      pageRobots = "noindex, nofollow";
-      _relfollow = 0;
-    }
-  } else {
-    pageRobots = "noindex, nofollow";
-    _relfollow = 0;
-  }
-
-  console.log(
-    `🔍 [SEO VALIDATION] familyCount=${realFamilyCount}, gammeCount=${realGammeCount}, robots=${pageRobots}`,
-  );
-
-  // === CONSTRUCTION DU CONTENU SEO ET DES DONNÉES ===
-  const generateSeoContent = (
-    pgName: string,
-    vehicleData: VehicleData,
-    typeId: number,
-  ): string => {
+  // Pièces populaires (depuis RPC)
+  const generateSeoContent = (pgName: string, vd: VehicleData, tid: number): string => {
     const switches = ["Achetez", "Trouvez", "Commandez", "Choisissez"];
     const qualities = ["d'origine", "de qualité", "certifiées", "garanties"];
-    const switchIndex = typeId % switches.length;
-    const qualityIndex = (typeId + 1) % qualities.length;
-
-    return `${switches[switchIndex]} ${pgName} ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}, ${qualities[qualityIndex]} à prix bas.`;
+    return `${switches[tid % switches.length]} ${pgName} ${vd.marque_name_meta} ${vd.modele_name_meta} ${vd.type_name_meta}, ${qualities[(tid + 1) % qualities.length]} à prix bas.`;
   };
 
-  // 🎯 Fallback pièces populaires si l'API V3 hybride n'en a pas fourni
-  if (popularParts.length === 0) {
-    console.log(
-      "⚠️ [V3 HYBRIDE] Aucune pièce populaire reçue, génération fallback...",
-    );
+  const popularParts: PopularPart[] = (rpcData.popular_parts || []).map((p: any, idx: number) => ({
+    cgc_pg_id: p.pg_id,
+    pg_alias: p.pg_alias,
+    pg_name: p.pg_name,
+    pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
+    pg_img: p.pg_img || "no.webp",
+    addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
+  }));
 
-    try {
-      const vehicleName = `${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
-      popularParts = catalogFamiliesApi.generatePopularParts(
-        catalogFamilies,
-        vehicleName,
-        type_id,
-      );
-      console.log(
-        `✅ [FALLBACK] ${popularParts.length} pièces populaires générées depuis les familles`,
-      );
-    } catch (error) {
-      // Propager les Response HTTP (404, etc.) telles quelles
-    if (error instanceof Response) {
-      throw error;
-    }
-    console.error(
-        "❌ [FALLBACK] Erreur génération pièces populaires:",
-        error,
-      );
-
-      // Fallback manuel total
-      popularParts = [
-        {
-          cgc_pg_id: 101,
-          pg_alias: "disques-frein",
-          pg_name: "Disques de frein",
-          pg_name_meta: "disques de frein",
-          pg_img: "disques-frein.webp",
-          addon_content: generateSeoContent(
-            "disques de frein",
-            vehicleData,
-            type_id,
-          ),
-        },
-        {
-          cgc_pg_id: 201,
-          pg_alias: "filtres-huile",
-          pg_name: "Filtres à huile",
-          pg_name_meta: "filtres à huile",
-          pg_img: "filtres-huile.webp",
-          addon_content: generateSeoContent(
-            "filtres à huile",
-            vehicleData,
-            type_id + 1,
-          ),
-        },
-        {
-          cgc_pg_id: 301,
-          pg_alias: "amortisseurs",
-          pg_name: "Amortisseurs",
-          pg_name_meta: "amortisseurs",
-          pg_img: "amortisseurs.webp",
-          addon_content: generateSeoContent(
-            "amortisseurs",
-            vehicleData,
-            type_id + 2,
-          ),
-        },
-      ];
-    }
+  // Validation SEO pour robots
+  const seoValidation = rpcData.seo_validation || {};
+  let pageRobots = "index, follow";
+  if (!seoValidation.is_indexable) {
+    pageRobots = "noindex, nofollow";
   }
 
-  // === CONSTRUCTION DES DONNÉES FINALES ===
-  const loaderData: LoaderData = {
+  // Blog content - RPC returns simple bsm_* fields, but ModelContentV1Data expects full structure
+  // For now, set to null. To get full model content, a separate API call would be needed.
+  const modelContentV1: ModelContentV1Data | null = null;
+
+  return {
     vehicle: vehicleData,
     catalogFamilies,
     popularParts,
@@ -697,33 +338,88 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       items: [
         { name: "Accueil", url: "/" },
         { name: "Constructeurs", url: "/constructeurs" },
-        {
-          name: vehicleData.marque_name,
-          url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html`,
-        },
-        {
-          name: `${vehicleData.modele_name} ${vehicleData.type_name}`,
-          url: "",
-        },
+        { name: vehicleData.marque_name, url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html` },
+        { name: `${vehicleData.modele_name} ${vehicleData.type_name}`, url: "" },
       ],
-      // Legacy support
       brand: vehicleData.marque_name,
       model: vehicleData.modele_name,
       type: vehicleData.type_name,
     },
-    // V1 Content - Encyclopedic content (optional, placed after catalog)
     modelContentV1,
   };
+}
 
-  console.log("✅ Données générées avec succès:", {
-    vehicleData: vehicleData.marque_name + " " + vehicleData.modele_name,
-    catalogFamiliesCount: catalogFamilies.length,
-    popularPartsCount: popularParts.length,
+// 🚀 Loader optimisé avec RPC (remplace 4 appels API → 1 seul)
+export async function loader({ params }: LoaderFunctionArgs) {
+  // 🔍 Vérifier le cache mémoire d'abord
+  const cacheKey = `${params.brand}-${params.model}-${params.type}`;
+  const cached = loaderCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
+    return json(cached.data);
+  }
+
+  console.log("🚀 [RPC] Vehicle detail loader avec params:", params);
+
+  // Validation stricte des paramètres
+  const { brand, model, type } = params;
+
+  if (!brand || !model || !type) {
+    console.error("❌ Paramètres manquants:", { brand, model, type });
+    throw new Response("Paramètres manquants", { status: 400 });
+  }
+
+  if (!brand.includes("-") || !model.includes("-")) {
+    console.error("❌ Format de paramètres invalide pour brand/model");
+    throw new Response("URL invalide", { status: 400 });
+  }
+
+  // Parsing du type_id
+  const typeWithoutHtml = type.replace(".html", "");
+  const typeParts = typeWithoutHtml.split("-");
+  const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
+
+  const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
+
+  // ========================================
+  // 🚀 APPEL RPC OPTIMISÉ (1 seul appel au lieu de 4)
+  // ========================================
+  console.log(`⚡ [RPC] Appel page-data-rpc pour type_id=${type_id}`);
+
+  const rpcResponse = await fetch(
+    `${baseUrl}/api/vehicles/types/${type_id}/page-data-rpc`,
+    {
+      headers: { "internal-call": "true" },
+      signal: AbortSignal.timeout(5000), // 5s timeout
+    },
+  );
+
+  if (!rpcResponse.ok) {
+    console.error(`❌ [RPC] Erreur HTTP ${rpcResponse.status}`);
+    throw new Response("Service indisponible", { status: 500 });
+  }
+
+  const rpcResult = await rpcResponse.json();
+
+  if (!rpcResult.success || !rpcResult.data?.vehicle) {
+    console.error("❌ [RPC] Données invalides:", rpcResult);
+    throw new Response("Véhicule non trouvé", { status: 404 });
+  }
+
+  console.log(
+    `✅ [RPC] Données reçues en ${rpcResult._performance?.totalTime?.toFixed(0) || "N/A"}ms`,
+  );
+
+  // ========================================
+  // 🔄 TRANSFORMATION RPC → LoaderData
+  // ========================================
+  const loaderData = transformRpcToLoaderData(rpcResult.data, {
+    brand,
+    model,
+    type,
   });
 
-  console.log("✅ Données générées, mise en cache:", cacheKey);
-
-  // Mettre en cache
+  // Mettre en cache mémoire
   loaderCache.set(cacheKey, {
     data: loaderData,
     timestamp: Date.now(),
@@ -735,10 +431,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     loaderCache.delete(oldestKey);
   }
 
+  console.log("✅ [RPC] Données générées:", {
+    vehicle: `${loaderData.vehicle.marque_name} ${loaderData.vehicle.modele_name}`,
+    families: loaderData.catalogFamilies.length,
+    parts: loaderData.popularParts.length,
+  });
+
   return json(loaderData);
 }
 
-// � Générer le breadcrumb structuré Schema.org
+// 🚗 Générer le breadcrumb structuré Schema.org
 // 🚗 Génère le schema @graph complet: Car + BreadcrumbList
 function generateVehicleSchema(vehicle: any, breadcrumb: any) {
   const baseUrl = "https://www.automecanik.com";
