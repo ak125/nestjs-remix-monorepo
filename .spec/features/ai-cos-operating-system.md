@@ -3106,6 +3106,116 @@ ORDER BY score DESC;
 
 ---
 
+## Double Score : Probability + Confidence (v2.8.2)
+
+> **Signature professionnelle : ne jamais être trop affirmatif sans données suffisantes.**
+
+### Concept : Deux Scores Distincts
+
+| Score | Mesure | Type d'Incertitude | Facteurs |
+|-------|--------|-------------------|----------|
+| **Probability** | Probabilité que la panne soit la cause | Aléatoire (inhérente au système) | Corrélations statistiques, poids des edges |
+| **Confidence** | Qualité/fiabilité de l'analyse | Épistémique (manque de données) | Observables fournis, cohérence, contexte |
+
+### Parallèle avec les Systèmes Pros
+
+```
+🏥 Médical  : "Probabilité pneumonie 70%, confiance 50% (manque radio thorax)"
+🚗 Auto    : "Probabilité alternateur 80%, confiance 60% (manque contexte démarrage)"
+```
+
+**C'est exactement ce que font les systèmes OEM (Bosch ESI, Delphi, etc.)**
+
+### Structure de Données
+
+```typescript
+interface DiagnosisResult {
+  fault: KgNode;
+  probability: number;      // 0-100% - "Cette panne est probable"
+  confidence: number;       // 0-100% - "Je suis sûr de mon analyse"
+  missing_data?: string[];  // Infos manquantes pour augmenter confidence
+  reasoning: string;        // Explication textuelle
+}
+```
+
+### Calcul du Confidence Score
+
+```sql
+-- Facteurs qui augmentent la confidence
+confidence_score = base_confidence
+  + (observables_fournis / observables_requis) * 30  -- Complétude données
+  + (coherence_check ? 20 : 0)                        -- Cohérence symptômes
+  + (taxonomies_matched ? 15 : 0)                     -- Contexte précis (phase, temp)
+  + (vehicle_history ? 10 : 0)                        -- Historique véhicule connu
+```
+
+### Exemple de Réponse API
+
+```json
+{
+  "diagnosis": [
+    {
+      "fault": "Alternateur défaillant",
+      "probability": 82,
+      "confidence": 65,
+      "message": "Cause très probable, mais confirmez si le problème survient à froid",
+      "missing_data": ["tax_phase", "kilométrage"]
+    },
+    {
+      "fault": "Batterie fatiguée",
+      "probability": 45,
+      "confidence": 80,
+      "message": "Cause possible, analyse fiable avec les données fournies"
+    }
+  ]
+}
+```
+
+### Avantages Business
+
+| Bénéfice | Impact |
+|----------|--------|
+| **Réduction litiges** | Jamais "affirmatif" sans données suffisantes |
+| **Engagement utilisateur** | Incite à compléter les infos manquantes |
+| **Différenciation** | Signature pro vs concurrents "basiques" |
+| **Évolutivité** | S'améliore automatiquement avec plus de données |
+
+### Dépendances
+
+**Requiert v2.8.1 (Taxonomies)** car :
+- Les taxonomies enrichissent le confidence score
+- `tax_phase`, `tax_temp` améliorent la précision du contexte
+- Séquence logique : Structure → Contexte → Qualité
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Interface `DiagnosisResult` avec probability/confidence |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Méthodes `calculateConfidence()` et `calculateProbability()` |
+| `backend/src/modules/knowledge-graph/kg.controller.ts` | Endpoint `/diagnose` retourne le double score |
+
+---
+
+## Roadmap Knowledge Graph
+
+```
+v2.8.0 ────────► v2.8.1 ────────► v2.8.2
+   │                │                │
+   ▼                ▼                ▼
+Module KG      Taxonomies      Double Score
++ Reasoning    Contrôlées      Probability
+  Engine       (7 colonnes)    + Confidence
+```
+
+| Version | Feature | Statut | Description |
+|---------|---------|--------|-------------|
+| **v2.8.0** | Knowledge Graph + Reasoning Engine | ✅ Terminé | Architecture graphe, tables kg_nodes/kg_edges, diagnostic multi-symptômes |
+| **v2.8.1** | Taxonomies Contrôlées | 📋 Planifié | 7 colonnes (phase, temp, freq, intensity, risk, localisation, cote) |
+| **v2.8.2** | Double Score | 📋 Planifié | Probability + Confidence, missing_data suggestions |
+
+---
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
@@ -3115,6 +3225,8 @@ ORDER BY score DESC;
 
 ## Change Log
 
+- **2025-12-30 v2.8.2** : Double Score Probability + Confidence (signature diagnostic pro), séparation incertitude aléatoire vs épistémique, calcul confidence basé sur complétude données/cohérence/taxonomies/historique, suggestions missing_data pour engagement utilisateur, parallèle systèmes OEM (Bosch ESI, Delphi)
+- **2025-12-30 v2.8.1** : Taxonomies Contrôlées (7 colonnes: tax_phase, tax_temp, tax_freq, tax_intensity, tax_risk, tax_localisation, tax_cote), approche colonnes directes + CHECK constraints vs tables séparées, index composites pour requêtes diagnostiques contextuelles
 - **2025-12-30 v2.8.0** : Knowledge Graph + Reasoning Engine (architecture graphe Vehicle → System → Observable → Fault → Action → Part), tables kg_nodes/kg_edges/kg_reasoning_cache avec RPC functions, KnowledgeGraphService TypeScript pour diagnostic multi-symptomes, scoring automatique par symptomes matches, integration architecture 1 IA + 3 Agents, migration progressive depuis donnees existantes
 - **2025-12-30 v2.7.5** : Principe Data Integrity systemique (7 controles obligatoires pour TOUTE info entrant dans le systeme), application multi-domaines (vehicules, produits, pricing, SEO, support, blog), diagramme flux avec gates de rejet, integration architecture 1 IA + 3 Agents (controles 1-3) + pipeline (controles 4-7), garantie zero erreur critique
 - **2025-12-30 v2.7.4** : Architecture 1 IA + 3 Agents (1 appel Claude = 3 roles sequentiels, economie 66% cout API, contexte partage), PROMPT_TRIPLE_AGENT template multi-roles, TripleAgentValidator class Python, regle securite "aucun agent ne publie seul", 90% validation automatique sans intervention humaine
