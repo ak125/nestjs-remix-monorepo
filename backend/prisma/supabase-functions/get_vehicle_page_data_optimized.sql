@@ -77,7 +77,7 @@ BEGIN
       FROM auto_type at
       INNER JOIN auto_modele am ON am.modele_id::TEXT = at.type_modele_id
       INNER JOIN auto_marque amarq ON amarq.marque_id::SMALLINT = am.modele_marque_id
-      WHERE at.type_id = p_type_id
+      WHERE at.type_id = p_type_id::TEXT
         AND at.type_display = '1'
       LIMIT 1
     ),
@@ -155,11 +155,10 @@ BEGIN
         'bsm_id', bsm_id,
         'bsm_h1', bsm_h1,
         'bsm_content', bsm_content,
-        'bsm_preview', bsm_preview
+        'bsm_descrip', bsm_descrip
       )
       FROM __blog_seo_marque
-      WHERE bsm_marque_alias = v_marque_alias
-        AND bsm_modele_alias = v_modele_alias
+      WHERE bsm_marque_id = v_marque_id::TEXT
       LIMIT 1
     )
   );

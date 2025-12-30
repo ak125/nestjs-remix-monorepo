@@ -177,6 +177,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               <div className="absolute -inset-2 bg-gradient-to-r from-semantic-info/20 via-secondary-400/20 to-semantic-info/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
 
               {/* Logo WebP avec srcset pour haute résolution */}
+              {/* eslint-disable-next-line react/no-unknown-property */}
               <img
                 src="/logo-navbar.webp"
                 srcSet="/logo-navbar.webp 1x, /logo-navbar@2x.webp 2x"
@@ -187,7 +188,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                   isCompact ? "h-8" : "h-12"
                 } w-auto`}
                 loading="eager"
-                fetchPriority="high"
+                // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
+                fetchpriority="high"
               />
             </div>
           </Link>

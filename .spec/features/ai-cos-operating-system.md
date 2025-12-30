@@ -2997,6 +2997,115 @@ Observable["voyant moteur"] ──CAUSES──► Fault["EGR encrassée"]
 
 ---
 
+## Taxonomies Contrôlées (v2.8.1)
+
+> **Vocabulaires contrôlés pour des corrélations stables et des statistiques fiables.**
+
+### Problème Résolu
+
+Sans taxonomies, les symptômes sont décrits en texte libre :
+- "Bruit au freinage" vs "Bruit de frein" vs "Grincement freins"
+- Impossible d'agréger les statistiques
+- Corrélations instables
+
+### Solution : 7 Taxonomies Automobiles
+
+| Taxonomie | Valeurs | Usage |
+|-----------|---------|-------|
+| `tax_phase` | freinage, acceleration, ralenti, virage, demarrage, constant | Contexte d'occurrence |
+| `tax_temp` | froid, chaud, any | Température moteur |
+| `tax_freq` | intermittent, permanent | Fréquence du symptôme |
+| `tax_intensity` | faible, moyen, fort | Intensité perçue |
+| `tax_risk` | securite, panne_simple, confort | Niveau de risque |
+| `tax_localisation` | avant, arriere, lateral, moteur, habitacle | Zone du véhicule |
+| `tax_cote` | gauche, droite, central, bilateral | Côté affecté |
+
+### Architecture : Colonnes Directes
+
+Approche choisie : **colonnes sur `kg_nodes`** avec CHECK constraints (pas de tables séparées).
+
+```sql
+-- Migration SQL (simplifié)
+ALTER TABLE kg_nodes
+  ADD COLUMN tax_phase TEXT CHECK (tax_phase IN ('freinage', 'acceleration', 'ralenti', 'virage', 'demarrage', 'constant')),
+  ADD COLUMN tax_temp TEXT CHECK (tax_temp IN ('froid', 'chaud', 'any')),
+  ADD COLUMN tax_freq TEXT CHECK (tax_freq IN ('intermittent', 'permanent')),
+  ADD COLUMN tax_intensity TEXT CHECK (tax_intensity IN ('faible', 'moyen', 'fort')),
+  ADD COLUMN tax_risk TEXT CHECK (tax_risk IN ('securite', 'panne_simple', 'confort')),
+  ADD COLUMN tax_localisation TEXT CHECK (tax_localisation IN ('avant', 'arriere', 'lateral', 'moteur', 'habitacle')),
+  ADD COLUMN tax_cote TEXT CHECK (tax_cote IN ('gauche', 'droite', 'central', 'bilateral'));
+
+-- Index pour requêtes rapides
+CREATE INDEX idx_kg_nodes_tax_phase ON kg_nodes(tax_phase) WHERE tax_phase IS NOT NULL;
+CREATE INDEX idx_kg_nodes_tax_risk ON kg_nodes(tax_risk) WHERE tax_risk IS NOT NULL;
+```
+
+### Exemple : Symptôme avec Taxonomies
+
+```json
+{
+  "node_type": "Observable",
+  "node_label": "Bruit au freinage",
+  "node_alias": "bruit-freinage",
+  "tax_phase": "freinage",
+  "tax_temp": "froid",
+  "tax_freq": "intermittent",
+  "tax_intensity": "moyen",
+  "tax_risk": "securite",
+  "tax_localisation": "avant",
+  "tax_cote": "bilateral"
+}
+```
+
+### Diagnostic Contextuel
+
+Avec les taxonomies, le Reasoning Engine peut filtrer par contexte :
+
+```sql
+-- "Bruit au freinage à froid, intermittent, à l'avant"
+SELECT f.node_label AS fault, AVG(e.confidence) AS score
+FROM kg_nodes o
+JOIN kg_edges e ON e.source_node_id = o.node_id AND e.edge_type = 'CAUSES'
+JOIN kg_nodes f ON f.node_id = e.target_node_id
+WHERE o.node_type = 'Observable'
+  AND o.tax_phase = 'freinage'
+  AND o.tax_temp = 'froid'
+  AND o.tax_freq = 'intermittent'
+  AND o.tax_localisation = 'avant'
+GROUP BY f.node_id, f.node_label
+ORDER BY score DESC;
+```
+
+### Avantages
+
+| Aspect | Sans Taxonomies | Avec Taxonomies |
+|--------|-----------------|-----------------|
+| Corrélations | Instables (texte libre) | Stables (valeurs contrôlées) |
+| Statistiques | Impossibles | `GROUP BY tax_phase, tax_risk` |
+| Multi-langue | Refactoring total | Code stable, labels traduits |
+| Machine Learning | Données bruitées | Features propres |
+| Requêtes | Recherche floue | Filtres précis |
+
+### Comparatif Architectures
+
+| Critère | Tables Séparées | Colonnes Directes |
+|---------|-----------------|-------------------|
+| Complexité | 3 tables + JOINs | 1 ALTER TABLE |
+| Performance | JOINs multiples | Accès direct |
+| Maintenance | Service dédié | Pas de code supplémentaire |
+| Extensibilité | INSERT nouvelle ligne | ALTER ADD COLUMN |
+| **Choix** | ❌ Over-engineering | ✅ **Recommandé** |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_taxonomy.sql` | ALTER TABLE + CHECK constraints |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enums TypeScript pour taxonomies |
+| `backend/src/modules/knowledge-graph/kg-data.service.ts` | Filtres par taxonomies |
+
+---
+
 ## Related Documents
 
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
