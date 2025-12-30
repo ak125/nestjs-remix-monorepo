@@ -3197,15 +3197,115 @@ confidence_score = base_confidence
 
 ---
 
+## Gate Safety : Sécurité Routière (v2.8.3)
+
+> **Obligation légale et éthique : un système de diagnostic automobile DOIT gérer les cas dangereux.**
+
+### Concept : Prioriser la Sécurité
+
+Un système sérieux doit distinguer les cas critiques et adapter sa réponse :
+- Désactiver la vente agressive
+- Afficher des alertes appropriées
+- Recommander des actions prudentes
+
+### Niveaux de Sécurité
+
+| Level | Description | UX | Vente |
+|-------|-------------|-----|-------|
+| `critical` | Arrêt immédiat obligatoire | Alerte rouge plein écran | ❌ Désactivée |
+| `urgent` | Contrôle dans 24h | Bandeau orange | ⚠️ Avertissement |
+| `warning` | Contrôle recommandé | Info jaune | ✅ Normale |
+| `normal` | Maintenance standard | Standard | ✅ Normale |
+
+### Triggers Sécurité Critiques
+
+```typescript
+const SAFETY_TRIGGERS = {
+  critical: [
+    'Perte de freinage',
+    'Direction bloquée',
+    'Pédale de frein molle',
+    'Odeur brûlé habitacle'
+  ],
+  urgent: [
+    'Fumée noire abondante',
+    'Surchauffe moteur',
+    'Voyant huile allumé',
+    'Voyant frein allumé fixe'
+  ],
+  warning: [
+    'Bruit anormal freinage',
+    'Vibrations volant',
+    'Consommation excessive'
+  ]
+};
+```
+
+### Structure de Données
+
+```sql
+-- Ajouter sur kg_nodes
+ALTER TABLE kg_nodes
+  ADD COLUMN safety_level TEXT CHECK (safety_level IN (
+    'critical', 'urgent', 'warning', 'normal'
+  )) DEFAULT 'normal';
+
+-- Index pour requêtes prioritaires
+CREATE INDEX idx_kg_nodes_safety ON kg_nodes(safety_level)
+  WHERE safety_level IN ('critical', 'urgent');
+```
+
+### Réponse API avec Safety Gate
+
+```json
+{
+  "diagnosis": [...],
+  "safety": {
+    "level": "critical",
+    "alert": true,
+    "message": "⚠️ ARRÊT IMMÉDIAT RECOMMANDÉ",
+    "instructions": [
+      "Ne pas conduire le véhicule",
+      "Contacter un dépanneur",
+      "Faire contrôler par un professionnel"
+    ],
+    "disable_sales": true,
+    "emergency_contacts": {
+      "depannage": "0 800 XXX XXX",
+      "urgences": "112"
+    }
+  }
+}
+```
+
+### Avantages Business
+
+| Bénéfice | Impact |
+|----------|--------|
+| **Protection juridique** | "Nous avons averti l'utilisateur" |
+| **Image de marque** | Plateforme responsable |
+| **Différenciation** | Aucun concurrent ne fait ça |
+| **Confiance client** | Priorité sécurité > vente |
+
+### Fichiers à Modifier
+
+| Fichier | Description |
+|---------|-------------|
+| `backend/supabase/migrations/20251230_kg_safety.sql` | ALTER TABLE + safety_level |
+| `backend/src/modules/knowledge-graph/kg.types.ts` | Enum `SafetyLevel`, interface `SafetyGate` |
+| `backend/src/modules/knowledge-graph/kg.service.ts` | Méthode `evaluateSafety()` |
+
+---
+
 ## Roadmap Knowledge Graph
 
 ```
-v2.8.0 ────────► v2.8.1 ────────► v2.8.2
-   │                │                │
-   ▼                ▼                ▼
-Module KG      Taxonomies      Double Score
-+ Reasoning    Contrôlées      Probability
-  Engine       (7 colonnes)    + Confidence
+v2.8.0 ────► v2.8.1 ────► v2.8.2 ────► v2.8.3
+   │            │            │            │
+   ▼            ▼            ▼            ▼
+Module KG   Taxonomies   Double Score   Gate
++ Reasoning  Contrôlées   Probability   Safety
+  Engine    (7 colonnes)  + Confidence  (sécurité)
 ```
 
 | Version | Feature | Statut | Description |
@@ -3213,6 +3313,7 @@ Module KG      Taxonomies      Double Score
 | **v2.8.0** | Knowledge Graph + Reasoning Engine | ✅ Terminé | Architecture graphe, tables kg_nodes/kg_edges, diagnostic multi-symptômes |
 | **v2.8.1** | Taxonomies Contrôlées | 📋 Planifié | 7 colonnes (phase, temp, freq, intensity, risk, localisation, cote) |
 | **v2.8.2** | Double Score | 📋 Planifié | Probability + Confidence, missing_data suggestions |
+| **v2.8.3** | Gate Safety | 📋 Planifié | Niveaux sécurité (critical/urgent/warning), disable_sales |
 
 ---
 
@@ -3225,6 +3326,7 @@ Module KG      Taxonomies      Double Score
 
 ## Change Log
 
+- **2025-12-30 v2.8.3** : Gate Safety - Sécurité Routière (obligation légale et éthique), 4 niveaux sécurité (critical/urgent/warning/normal), triggers automatiques pour cas dangereux (freinage, direction, moteur), désactivation vente sur alertes critiques, réponse API avec instructions et contacts urgence
 - **2025-12-30 v2.8.2** : Double Score Probability + Confidence (signature diagnostic pro), séparation incertitude aléatoire vs épistémique, calcul confidence basé sur complétude données/cohérence/taxonomies/historique, suggestions missing_data pour engagement utilisateur, parallèle systèmes OEM (Bosch ESI, Delphi)
 - **2025-12-30 v2.8.1** : Taxonomies Contrôlées (7 colonnes: tax_phase, tax_temp, tax_freq, tax_intensity, tax_risk, tax_localisation, tax_cote), approche colonnes directes + CHECK constraints vs tables séparées, index composites pour requêtes diagnostiques contextuelles
 - **2025-12-30 v2.8.0** : Knowledge Graph + Reasoning Engine (architecture graphe Vehicle → System → Observable → Fault → Action → Part), tables kg_nodes/kg_edges/kg_reasoning_cache avec RPC functions, KnowledgeGraphService TypeScript pour diagnostic multi-symptomes, scoring automatique par symptomes matches, integration architecture 1 IA + 3 Agents, migration progressive depuis donnees existantes
