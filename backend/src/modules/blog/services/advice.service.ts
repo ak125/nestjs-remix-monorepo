@@ -1041,11 +1041,15 @@ export class AdviceService {
       // Construire l'objet de mise à jour avec les colonnes correctes
       const updateData: Record<string, any> = {};
       if (updates.title !== undefined) updateData.ba_title = updates.title;
-      if (updates.preview !== undefined) updateData.ba_preview = updates.preview;
-      if (updates.content !== undefined) updateData.ba_content = updates.content;
+      if (updates.preview !== undefined)
+        updateData.ba_preview = updates.preview;
+      if (updates.content !== undefined)
+        updateData.ba_content = updates.content;
       if (updates.h1 !== undefined) updateData.ba_h1 = updates.h1;
-      if (updates.descrip !== undefined) updateData.ba_descrip = updates.descrip;
-      if (updates.keywords !== undefined) updateData.ba_keywords = updates.keywords;
+      if (updates.descrip !== undefined)
+        updateData.ba_descrip = updates.descrip;
+      if (updates.keywords !== undefined)
+        updateData.ba_keywords = updates.keywords;
 
       // Ajouter la date de mise à jour
       updateData.ba_update = new Date().toISOString();
