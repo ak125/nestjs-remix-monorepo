@@ -19,7 +19,6 @@ import {
 } from '@nestjs/common';
 import { KgService } from './kg.service';
 import { KgDataService } from './kg-data.service';
-import { KgSeedService } from './seed/kg-seed.service';
 import {
   CreateKgNodeDto,
   UpdateKgNodeDto,
@@ -37,7 +36,6 @@ export class KgController {
   constructor(
     private readonly kgService: KgService,
     private readonly kgDataService: KgDataService,
-    private readonly kgSeedService: KgSeedService,
   ) {}
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -247,53 +245,5 @@ export class KgController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteEdge(@Param('id') id: string) {
     await this.kgDataService.deleteEdge(id);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SEED ENDPOINTS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /**
-   * Exécuter le seed du Knowledge Graph
-   *
-   * POST /api/knowledge-graph/seed
-   */
-  @Post('seed')
-  async seed() {
-    this.logger.log('🌱 Seed request received');
-    const isSeeded = await this.kgSeedService.isSeeded();
-    if (isSeeded) {
-      return {
-        success: false,
-        message: 'Knowledge Graph already seeded. Use /seed/force to reseed.',
-      };
-    }
-    return this.kgSeedService.seedAll();
-  }
-
-  /**
-   * Forcer le seed (même si déjà peuplé)
-   *
-   * POST /api/knowledge-graph/seed/force
-   */
-  @Post('seed/force')
-  async seedForce() {
-    this.logger.warn('🌱 Force seed request received');
-    return this.kgSeedService.seedAll();
-  }
-
-  /**
-   * Vérifier si le graphe est peuplé
-   *
-   * GET /api/knowledge-graph/seed/status
-   */
-  @Get('seed/status')
-  async seedStatus() {
-    const isSeeded = await this.kgSeedService.isSeeded();
-    const stats = await this.kgDataService.getStats();
-    return {
-      isSeeded,
-      stats,
-    };
   }
 }
