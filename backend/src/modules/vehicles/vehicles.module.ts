@@ -39,6 +39,7 @@ import { BrandSeoService } from './services/seo/brand-seo.service';
 
 // Service RPC optimisé (LCP)
 import { VehicleRpcService } from './services/vehicle-rpc.service';
+import { BrandRpcService } from './services/brand-rpc.service';
 
 // Module Catalog pour le maillage interne
 import { CatalogModule } from '../catalog/catalog.module';
@@ -91,6 +92,7 @@ import { CacheModule as RedisCacheModule } from '../cache/cache.module';
 
     // RPC optimisé (LCP)
     VehicleRpcService,
+    BrandRpcService,
   ],
   exports: [
     VehiclesService,
@@ -103,6 +105,7 @@ import { CacheModule as RedisCacheModule } from '../cache/cache.module';
     VehicleMineService,
     VehicleCacheService,
     VehicleRpcService,
+    BrandRpcService,
   ],
 })
 export class VehiclesModule {}
