@@ -1455,6 +1455,105 @@ class Validator:
             return "rejected"
 ```
 
+### Cas d'Usage : Validation Symptome Vanne EGR (Clio 3)
+
+#### Contexte
+
+L'IA collecte des symptomes pour la fiche "Vanne EGR - Renault Clio 3 1.5 dCi K9K".
+
+#### Symptomes Valides (multi-sources)
+
+| Symptome | Sources | Confiance | Decision |
+|----------|---------|-----------|----------|
+| Fumee noire | RTA, Forum, TecDoc, Constructeur | 0.94 | ✅ Auto-approve |
+| Perte de puissance | RTA, Forum, TecDoc | 0.91 | ✅ Auto-approve |
+| Mode degrade | TecDoc, Constructeur | 0.92 | ✅ Auto-approve |
+| Voyant moteur | RTA, TecDoc, Forum, Constructeur | 0.95 | ✅ Auto-approve |
+
+#### Symptome Rejete (1 seule source)
+
+```json
+{
+  "info": "claquement moteur",
+  "valid": false,
+  "sources_count": 1,
+  "sources_required": 2,
+  "semantic_match": false,
+  "semantic_reason": "claquement = mecanique (distribution, bielles), EGR = emissions",
+  "confidence": 0.32,
+  "reason": "seulement 1 source, incoherent avec symptomes EGR typiques"
+}
+```
+
+#### Analyse Technique
+
+| Critere | Resultat |
+|---------|----------|
+| Sources | ❌ 1 seule (< 2 minimum) |
+| Coherence semantique | ❌ Claquement ≠ EGR |
+| Score confiance | 0.32 (< 0.75 seuil rejet) |
+
+**Pourquoi "claquement moteur" est incoherent ?**
+
+- Claquement = probleme mecanique (chaine distribution, bielles, pre-allumage)
+- EGR = systeme emissions (recirculation gaz echappement)
+
+**Decision finale** : REJET ❌ - Cette info ne sera JAMAIS ajoutee a la fiche.
+
+#### Benefice
+
+- ✅ Protege la qualite des fiches techniques
+- ✅ Evite les erreurs de diagnostic
+- ✅ Economise temps et argent (pas de pieces inutiles)
+
+#### Schema ValidationResult avec Coherence Semantique
+
+```python
+class ValidationResult(BaseModel):
+    """Resultat de validation avec coherence semantique."""
+
+    info: str = Field(..., description="Information a valider")
+    valid: bool = Field(..., description="Valide ou non")
+
+    # Sources
+    sources_count: int = Field(..., ge=0)
+    sources_required: int = Field(default=2)
+    sources_list: List[str] = Field(default_factory=list)
+
+    # Coherence semantique (ANTI-FAKE)
+    semantic_match: bool = Field(..., description="Coherence avec le contexte")
+    semantic_reason: Optional[str] = Field(None, description="Explication si incoherent")
+    semantic_category_expected: Optional[str] = Field(None, description="Categorie attendue")
+    semantic_category_found: Optional[str] = Field(None, description="Categorie detectee")
+
+    # Score final
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    reason: str = Field(..., description="Raison de la decision")
+
+    @validator('valid', pre=True, always=True)
+    def compute_valid(cls, v, values):
+        """Auto-calcul de valid base sur sources + semantic + confidence."""
+        sources_ok = values.get('sources_count', 0) >= values.get('sources_required', 2)
+        semantic_ok = values.get('semantic_match', False)
+        confidence_ok = values.get('confidence', 0) >= 0.75
+        return sources_ok and semantic_ok and confidence_ok
+```
+
+#### Matrice Coherence Semantique par Categorie
+
+| Categorie Piece | Symptomes Attendus | Symptomes Incoherents |
+|-----------------|--------------------|-----------------------|
+| **EGR** | fumee, puissance, ralenti, voyant | claquement, vibration chassis |
+| **Turbo** | sifflement, fumee, puissance | ABS, direction |
+| **Freins** | bruit freinage, vibration pedale | fumee echappement |
+| **Injection** | demarrage, ralenti, consommation | climatisation |
+| **Distribution** | claquement, calage, demarrage | echappement, freins |
+| **Embrayage** | patinage, vibration, bruit pedale | voyant ABS, direction |
+| **Direction** | bruit braquage, durete, jeu | fumee, consommation |
+| **Climatisation** | froid insuffisant, bruit compresseur | voyant moteur, puissance |
+
+Cette matrice permet de detecter automatiquement les incoherences semantiques.
+
 ### Pipeline Simplifie : 3 Scripts
 
 ```
@@ -2282,6 +2381,7 @@ class HybridFicheGenerator:
 
 ## Change Log
 
+- **2025-12-30 v2.7.3** : Cas d'usage realiste Vanne EGR Clio 3 (demonstration systeme anti-fake), Schema ValidationResult avec coherence semantique (semantic_match, semantic_reason, semantic_category), Matrice coherence semantique par categorie piece (EGR, Turbo, Freins, Injection, Distribution, Embrayage, Direction, Climatisation)
 - **2025-12-29 v2.7.2** : Pipeline Alimentation Automatise complet (7 etapes avec diagramme), Schemas Pydantic (SourceType, SourceInfo, Symptom avec validators), VehicleFichePipeline class (process_new_info, approve, reject, enrichissement RAG), FicheGenerator avec Jinja2 templates, CI/CD GitHub Actions (validation JSON + generation fiches), Comparatif Pipeline Manuel vs Automatise
 - **2025-12-29 v2.7.1** : Architecture SQL pour > 5000 vehicules (partitionnement par marque, tables __vehicles, __vehicle_symptoms, __vehicle_staging), Modele Hybride zones AUTO + MANUAL (HybridFicheGenerator avec preservation zones manuelles lors regenerations)
 - **2025-12-29 v2.7.0** : Systeme Validation Donnees - REGLE D'OR (jamais info brute web → fiche), architecture hybride SQL staging + Git validated, Triple Verification (multi-sources avec poids, OEM, regles metier), seuils confiance (≥0.90 auto, 0.75-0.90 review, <0.75 rejet), Pipeline 3 scripts (collect/validate/generate), modele 100% IA + validation humaine
