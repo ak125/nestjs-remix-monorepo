@@ -406,14 +406,14 @@ export class SitemapUnifiedService {
           `  📥 Shard ${shard + 1}/${totalShards}: fetching ${shardLimit} URLs from offset ${shardOffset}...`,
         );
 
-        // 🛡️ Utiliser pagination avec filtre map_has_item > 0
-        // Exclut les combinaisons véhicule/pièce sans pièces disponibles (évite 404/410)
+        // 🛡️ Utiliser pagination avec filtre map_has_item > 5
+        // Exclut les pages thin content (≤5 produits) aligné avec noindex frontend
         const pieces = await this.fetchWithPagination<PieceType>(
           '__sitemap_p_link',
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
           shardLimit,
           shardOffset,
-          { column: 'map_has_item', operator: 'gt', value: 0 },
+          { column: 'map_has_item', operator: 'gt', value: 5 },
         );
 
         if (!pieces || pieces.length === 0) {
