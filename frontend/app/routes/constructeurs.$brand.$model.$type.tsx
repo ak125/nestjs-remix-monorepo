@@ -1216,26 +1216,6 @@ export default function VehicleDetailPage() {
                     </div>
                   </div>
                 </div>
-                {/* 🔧 Code(s) moteur - COMMENTÉ: En attente import table link_typ_eng (liaison type_id ↔ eng_id)
-                {vehicle.motor_codes_formatted && (
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <div
-                      className="p-2 rounded-lg"
-                      style={{ backgroundColor: `${brandPrimary}20` }}
-                    >
-                      <Cog size={20} style={{ color: brandPrimary }} />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase">
-                        Code(s) Moteur
-                      </div>
-                      <div className="font-semibold text-gray-900">
-                        {vehicle.motor_codes_formatted}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                */}
                 {/* 🔧 Type Mine / CNIT - affiché uniquement si disponible */}
                 {(vehicle.mine_codes_formatted ||
                   vehicle.cnit_codes_formatted) && (

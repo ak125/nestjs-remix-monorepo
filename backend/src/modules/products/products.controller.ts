@@ -144,14 +144,6 @@ export class ProductsController {
   }
 
   /**
-   * Test simple des marques
-   */
-  @Get('brands-test')
-  async getBrandsTest() {
-    return this.productsService.getBrandsTest();
-  }
-
-  /**
    * 🔍 PHASE 9: Recherche produits pour ProductSearch component
    * Endpoint: GET /api/products/search?query=...&limit=10
    */
