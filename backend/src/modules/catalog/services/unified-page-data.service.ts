@@ -12,7 +12,8 @@ import { decodeHtmlEntities } from '../../../utils/html-entities';
  * Compression WebP automatique + redimensionnement
  * Cache Cloudflare par URL unique
  */
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 
 function getOptimizedImageUrl(
   relativePath: string | null | undefined,

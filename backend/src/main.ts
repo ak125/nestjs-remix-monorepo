@@ -132,7 +132,8 @@ async function bootstrap() {
                 "'self'",
                 'data:',
                 'blob:',
-                process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
+                process.env.SUPABASE_URL ||
+                  'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
                 'https://www.google-analytics.com', // Pixel GA
                 'https://www.googletagmanager.com', // Pixel GTM
               ],
