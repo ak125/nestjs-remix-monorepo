@@ -1,86 +1,87 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 60" fill="none">
-  <!--
-    AUTOMECANIK - Logo Complet avec Compteur dans le O
-    Sans icône engrenage, avec tagline
-  -->
-
-  <!-- AUTOMECANIK en paths SVG -->
-  <g transform="translate(6, 6)">
-    <!-- AUT en noir -->
-    <g fill="#0f172a">
-      <!-- A -->
-      <path d="M0 38L11 6h7l11 32h-6l-2-7H8l-2 7H0zm9-12h8l-4-13-4 13z"/>
-      <!-- U -->
-      <path d="M32 6h6v20c0 5 3 8 7 8s7-3 7-8V6h6v20c0 8-5 13-13 13s-13-5-13-13V6z"/>
-      <!-- T -->
-      <path d="M62 6h22v5h-8v27h-6V11h-8V6z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <!-- Full premium logo with tagline -->
+  
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feFlood flood-color="#3b82f6" flood-opacity="0.3"/>
+      <feComposite in2="coloredBlur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon: Professional Gear + Wrench with strong presence -->
+  <g transform="translate(15, 15)">
+    <!-- Multi-layer outer glow for depth -->
+    <circle cx="35" cy="35" r="36" fill="url(#mainGradient)" opacity="0.2" filter="url(#strongGlow)"/>
+    <circle cx="35" cy="35" r="32" fill="url(#mainGradient)" opacity="0.12"/>
+    
+    <!-- Main circle with enhanced border (transparent background) -->
+    <circle cx="35" cy="35" r="30" fill="none" stroke="url(#mainGradient)" stroke-width="4"/>
+    
+    <!-- Gear teeth - 8 directional -->
+    <g fill="url(#mainGradient)" filter="url(#glow)">
+      <rect x="32" y="8" width="6" height="12" rx="2"/>
+      <rect x="32" y="50" width="6" height="12" rx="2"/>
+      <rect x="8" y="32" width="12" height="6" ry="2"/>
+      <rect x="50" y="32" width="12" height="6" ry="2"/>
+      <rect x="16" y="16" width="8" height="8" rx="2" transform="rotate(45 20 20)"/>
+      <rect x="46" y="16" width="8" height="8" rx="2" transform="rotate(-45 50 20)"/>
+      <rect x="16" y="46" width="8" height="8" rx="2" transform="rotate(-45 20 50)"/>
+      <rect x="46" y="46" width="8" height="8" rx="2" transform="rotate(45 50 50)"/>
     </g>
-
-    <!-- O = Compteur (bleu) -->
-    <g transform="translate(86, 4)">
-      <!-- Cercle du O -->
-      <circle cx="14" cy="17" r="16" fill="none" stroke="#2563eb" stroke-width="3"/>
-      <!-- Graduations -->
-      <g stroke="#1d4ed8" stroke-width="1.5" opacity="0.5">
-        <line x1="14" y1="3" x2="14" y2="7"/>
-        <line x1="24" y1="9" x2="21" y2="11"/>
-        <line x1="28" y1="17" x2="24" y2="17"/>
-      </g>
-      <!-- Aiguille -->
-      <path d="M14 17L22 10" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Centre -->
-      <circle cx="14" cy="17" r="3.5" fill="#f59e0b"/>
-      <circle cx="14" cy="17" r="1.5" fill="#ffffff"/>
-    </g>
-
-    <!-- MECANIK en bleu -->
-    <g fill="#2563eb">
-      <!-- M -->
-      <path d="M120 6l9 24 9-24h9v32h-6V14l-9 26h-5l-9-26v24h-6V6h8z"/>
-      <!-- E -->
-      <path d="M154 6h19v5h-13v8h12v5h-12v9h13v5h-19V6z"/>
-      <!-- C -->
-      <path d="M178 22c0-10 6-17 14-17 6 0 10 3 12 9l-5 2c-1-4-3-6-7-6-5 0-8 4-8 12s3 12 8 12c4 0 6-2 7-6l5 2c-2 6-6 9-12 9-8 0-14-7-14-17z"/>
-      <!-- A -->
-      <path d="M206 38l11-32h7l11 32h-6l-2-7h-13l-2 7h-6zm9-12h9l-4.5-13-4.5 13z"/>
-      <!-- N -->
-      <path d="M238 6h7l12 24V6h6v32h-7l-12-24v24h-6V6z"/>
-      <!-- I -->
-      <path d="M270 6h6v32h-6V6z"/>
-      <!-- K -->
-      <path d="M282 6h6v13l12-13h8l-14 15 15 17h-8l-11-13-2 2v11h-6V6z"/>
+    
+    <!-- Center hub with depth (no white background) -->
+    <circle cx="35" cy="35" r="14" fill="url(#mainGradient)" filter="url(#glow)"/>
+    <circle cx="35" cy="35" r="5" fill="url(#mainGradient)"/>
+    <circle cx="33" cy="33" r="2" fill="rgba(255,255,255,0.6)"/>
+    
+    <!-- Dynamic wrench (no white fill) -->
+    <g fill="url(#accentGrad)" opacity="0.95" filter="url(#glow)">
+      <path d="M45 42 L58 55 L55 58 L42 45 L39 48 L36 45 Z"/>
+      <circle cx="37" cy="46" r="3" fill="rgba(255,255,255,0.8)"/>
+      <circle cx="37" cy="46" r="1.5" fill="url(#accentGrad)"/>
     </g>
   </g>
-
-  <!-- Ligne accent -->
-  <line x1="6" y1="48" x2="140" y2="48" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
-
-  <!-- Tagline en paths -->
-  <g transform="translate(6, 52)" fill="#64748b">
-    <g transform="scale(0.35)">
-      <!-- PIÈCES AUTO À PRIX PAS CHER -->
-      <path d="M0 0v18h3v-6h3c3.5 0 5.5-2 5.5-5.5S9.5 0 6 0H0zm3 3h3c1.5 0 2.5 1 2.5 2.5S7.5 8 6 8H3V3z"/>
-      <path d="M14 0v18h3V0h-3z"/>
-      <path d="M21 0v18h9v-3h-6v-4h5v-3h-5V3h6V0h-9z"/>
-      <path d="M33 9c0-5 3-9 7-9 2.5 0 4.5 1.5 5.5 4l-2.5 1c-.5-1.5-1.5-2-3-2-2.5 0-4 2-4 6s1.5 6 4 6c1.5 0 2.5-1 3-2l2.5 1c-1 2.5-3 4-5.5 4-4 0-7-4-7-9z"/>
-      <path d="M49 0v18h9v-3h-6v-4h5v-3h-5V3h6V0h-9z"/>
-      <path d="M61 14c.5 1.5 2.5 4 5.5 4s5-2 5-4.5c0-2.5-2-3.5-4.5-4.5-2-.5-2.5-1-2.5-2s1-2 2.5-2c1 0 2 .5 2.5 2l2.5-1c-1-2-3-3-5-3-3.5 0-5.5 2-5.5 5 0 2.5 2 3.5 4.5 4.5 1.5.5 2.5 1 2.5 2s-1 2-2.5 2-3-1-3.5-2.5l-2 1.5z"/>
-      <path d="M88 18h3l1-4h5l1 4h3l-5-18h-3l-5 18zm5-7l2-6 2 6h-4z"/>
-      <path d="M104 0v12c0 3.5 2 6 5 6s5-2.5 5-6V0h-3v12c0 2-1 3-2 3s-2-1-2-3V0h-3z"/>
-      <path d="M117 0v3h4v15h3V3h4V0h-11z"/>
-      <path d="M130 9c0 5 3 9.5 7 9.5s7-4.5 7-9.5-3-9-7-9-7 4-7 9zm3 0c0-4 1.5-6 4-6s4 2 4 6-1.5 6-4 6-4-2-4-6z"/>
-      <path d="M158 18h3l1-4h5l1 4h3l-5-18h-3l-5 18zm5-7l2-6 2 6h-4z"/>
-      <path d="M176 0v18h3v-6h3c3.5 0 5.5-2 5.5-5.5S185.5 0 182 0h-6zm3 3h3c1.5 0 2.5 1 2.5 2.5S183.5 8 182 8h-3V3z"/>
-      <path d="M191 0v18h3v-6h2l3 6h4l-4-7c2-1 3-2.5 3-5 0-3-2-6-5-6h-6zm3 3h3c1.5 0 2.5 1 2.5 2.5s-1 2.5-2.5 2.5h-3V3z"/>
-      <path d="M210 0v18h3V0h-3z"/>
-      <path d="M217 0l4 7-4 11h3l3-6 3 6h3l-4-11 4-7h-3l-3 5-3-5h-3z"/>
-      <path d="M240 0v18h3v-6h3c3.5 0 5.5-2 5.5-5.5S249.5 0 246 0h-6zm3 3h3c1.5 0 2.5 1 2.5 2.5S247.5 8 246 8h-3V3z"/>
-      <path d="M255 18h3l1-4h5l1 4h3l-5-18h-3l-5 18zm5-7l2-6 2 6h-4z"/>
-      <path d="M271 14c.5 1.5 2.5 4 5.5 4s5-2 5-4.5c0-2.5-2-3.5-4.5-4.5-2-.5-2.5-1-2.5-2s1-2 2.5-2c1 0 2 .5 2.5 2l2.5-1c-1-2-3-3-5-3-3.5 0-5.5 2-5.5 5 0 2.5 2 3.5 4.5 4.5 1.5.5 2.5 1 2.5 2s-1 2-2.5 2-3-1-3.5-2.5l-2 1.5z"/>
-      <path d="M295 9c0-5 3-9 7-9 2.5 0 4.5 1.5 5.5 4l-2.5 1c-.5-1.5-1.5-2-3-2-2.5 0-4 2-4 6s1.5 6 4 6c1.5 0 2.5-1 3-2l2.5 1c-1 2.5-3 4-5.5 4-4 0-7-4-7-9z"/>
-      <path d="M311 0v18h3v-7h5v7h3V0h-3v8h-5V0h-3z"/>
-      <path d="M326 0v18h9v-3h-6v-4h5v-3h-5V3h6V0h-9z"/>
-      <path d="M338 0v18h3v-6h2l3 6h4l-4-7c2-1 3-2.5 3-5 0-3-2-6-5-6h-6zm3 3h3c1.5 0 2.5 1 2.5 2.5s-1 2.5-2.5 2.5h-3V3z"/>
-    </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(95, 0)">
+    <!-- Main title - AUTOMECANK (no space) -->
+    <text x="0" y="48" font-family="'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif" font-size="42" font-weight="900" letter-spacing="-1.2">
+      <tspan fill="#0f172a">AUTO</tspan><tspan fill="url(#mainGradient)">MECANK</tspan>
+    </text>
+    
+    <!-- Tagline with strong emphasis -->
+    <text x="0" y="72" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#64748b" letter-spacing="2.5">
+      PIÈCES AUTO À PRIX PAS CHER
+    </text>
+    
+    <!-- Strong premium underline -->
+    <line x1="0" y1="56" x2="140" y2="56" stroke="url(#accentGrad)" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    
+    <!-- Multiple accent dots for rhythm -->
+    <circle cx="-8" cy="48" r="4" fill="url(#accentGrad)" opacity="0.5"/>
+    <circle cx="280" cy="48" r="5" fill="url(#accentGrad)" opacity="0.8"/>
+    <circle cx="290" cy="48" r="3" fill="url(#accentGrad)" opacity="0.6"/>
   </g>
 </svg>

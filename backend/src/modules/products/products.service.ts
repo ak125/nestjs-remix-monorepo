@@ -929,26 +929,6 @@ export class ProductsService extends SupabaseBaseService {
   }
 
   /**
-   * Test simple des marques
-   */
-  async getBrandsTest() {
-    try {
-      const { data, error } = await this.client
-        .from(TABLES.auto_marque)
-        .select('marque_id, marque_name')
-        .limit(10);
-
-      if (error) {
-        return { error: error.message };
-      }
-
-      return { count: data?.length || 0, data };
-    } catch (error) {
-      return { error: 'Exception: ' + error };
-    }
-  }
-
-  /**
    * 🔍 PHASE 9: Recherche rapide de produits pour ProductSearch component
    * Recherche dans: nom, référence, marque
    */
