@@ -231,16 +231,20 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
       { title: 'Pièces automobile' },
-      { name: 'description', content: 'Catalogue de pièces détachées' }
+      { name: 'description', content: 'Catalogue de pièces détachées' },
+      { name: 'robots', content: 'noindex, nofollow' }
     ];
   }
+
+  // noindex si ≤ 5 produits (thin content)
+  const robotsContent = data.count <= 5 ? 'noindex, follow' : 'index, follow';
 
   return [
     { title: data.seo.title },
     { name: 'description', content: data.seo.description },
     { property: 'og:title', content: data.seo.title },
     { property: 'og:description', content: data.seo.description },
-    { name: 'robots', content: 'index, follow' }
+    { name: 'robots', content: robotsContent }
   ];
 };
 
