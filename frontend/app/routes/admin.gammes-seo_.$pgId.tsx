@@ -22,6 +22,8 @@ import {
 } from "@remix-run/react";
 import {
   ArrowLeft,
+  ArrowRight,
+  BarChart3,
   Eye,
   FileText,
   Car,
@@ -43,8 +45,10 @@ import {
   AlertCircle,
   XCircle,
   RefreshCw,
+  Trophy,
+  BookOpen,
 } from "lucide-react";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -126,12 +130,18 @@ interface GammeDetail {
     alias: string;
     count: number;
     sample: string;
+    name?: string;
+    placeholder?: string;
+    usedInTemplate?: boolean;
     variations: Array<{ sis_id: number; content: string }>;
   }>;
   familySwitchGroups: Array<{
     alias: string;
     count: number;
     sample: string;
+    name?: string;
+    placeholder?: string;
+    usedInTemplate?: boolean;
     variations: Array<{ id: number; content: string }>;
   }>;
   articles: Array<{
@@ -202,6 +212,48 @@ interface GammeDetail {
     vLevel_last_updated: string | null;
     last_article_date: string | null;
   };
+  purchaseGuide: PurchaseGuideData | null;
+}
+
+// Interface for Purchase Guide data
+interface PurchaseGuideData {
+  id?: number;
+  pgId?: string;
+  step1: {
+    title: string;
+    content: string;
+    highlight: string;
+    bullets?: string[];
+  };
+  step2: {
+    economique: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+    };
+    qualitePlus: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+      badge?: string;
+    };
+    premium: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+    };
+  };
+  step3: {
+    title: string;
+    content: string;
+    alerts: Array<{ type: 'danger' | 'warning' | 'info'; text: string }>;
+    relatedGammes?: Array<{ pgId: number; pgName: string; pgAlias: string }>;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Loader
@@ -292,6 +344,131 @@ export async function action({ request, params }: ActionFunctionArgs) {
       return json(result);
     }
 
+    if (intent === "updatePurchaseGuide") {
+      const guideDataRaw = formData.get("guideData") as string;
+      const guideData = JSON.parse(guideDataRaw);
+
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/${pgId}/purchase-guide`,
+        {
+          method: "PUT",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(guideData),
+        }
+      );
+
+      const result = await response.json();
+      return json(result);
+    }
+
+    // === INFORMATIONS TECHNIQUES ===
+    if (intent === "addInformation") {
+      const content = formData.get("content") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/${pgId}/informations`,
+        {
+          method: "POST",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    if (intent === "updateInformation") {
+      const sgiId = formData.get("sgiId") as string;
+      const content = formData.get("content") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/informations/${sgiId}`,
+        {
+          method: "PUT",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    if (intent === "deleteInformation") {
+      const sgiId = formData.get("sgiId") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/informations/${sgiId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    // === ÉQUIPEMENTIERS ===
+    if (intent === "addEquipementier") {
+      const pmId = formData.get("pmId") as string;
+      const content = formData.get("content") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/${pgId}/equipementiers`,
+        {
+          method: "POST",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ pmId: parseInt(pmId, 10), content }),
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    if (intent === "updateEquipementier") {
+      const segId = formData.get("segId") as string;
+      const content = formData.get("content") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/equipementiers/${segId}`,
+        {
+          method: "PUT",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    if (intent === "deleteEquipementier") {
+      const segId = formData.get("segId") as string;
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/equipementiers/${segId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
     return json({ success: false, message: "Action non reconnue" });
   } catch (error) {
     return json({
@@ -338,6 +515,12 @@ export default function AdminGammeSeoDetail() {
   const [energyFilter, setEnergyFilter] = useState<"all" | "diesel" | "essence">("all");
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+
+  // State pour édition Family Switches
+  const [editingSwitch, setEditingSwitch] = useState<{ id: number; content: string } | null>(null);
+  const [newSwitchAlias, setNewSwitchAlias] = useState<number | null>(null);
+  const [newSwitchContent, setNewSwitchContent] = useState("");
+  const [switchSaving, setSwitchSaving] = useState(false);
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     violations: Array<{
@@ -351,6 +534,66 @@ export default function AdminGammeSeoDetail() {
     g1_count: number;
     summary: { total_v1: number; valid_v1: number; invalid_v1: number };
   } | null>(null);
+
+  // State for Purchase Guide form
+  const getDefaultGuideForm = (): Omit<PurchaseGuideData, 'id' | 'pgId' | 'createdAt' | 'updatedAt'> => ({
+    step1: {
+      title: `Identifiez votre ${detail.gamme.pg_name.toLowerCase()}`,
+      content: '',
+      highlight: '',
+      bullets: [],
+    },
+    step2: {
+      economique: { subtitle: 'Usage standard', description: '', specs: [], priceRange: '' },
+      qualitePlus: { subtitle: 'Équipement d\'origine', description: '', specs: [], priceRange: '', badge: 'Le plus choisi' },
+      premium: { subtitle: 'Haute performance', description: '', specs: [], priceRange: '' },
+    },
+    step3: {
+      title: 'Sécurité et conseils',
+      content: '',
+      alerts: [],
+      relatedGammes: [],
+    },
+  });
+
+  const [guideForm, setGuideForm] = useState(() => {
+    if (detail.purchaseGuide) {
+      return {
+        step1: detail.purchaseGuide.step1,
+        step2: detail.purchaseGuide.step2,
+        step3: detail.purchaseGuide.step3,
+      };
+    }
+    return getDefaultGuideForm();
+  });
+  const [guideSaving, setGuideSaving] = useState(false);
+
+  // Helper to update nested guide form state
+  const updateGuideForm = (path: string, value: any) => {
+    setGuideForm(prev => {
+      const newForm = JSON.parse(JSON.stringify(prev));
+      const parts = path.split('.');
+      let current = newForm;
+      for (let i = 0; i < parts.length - 1; i++) {
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
+      return newForm;
+    });
+  };
+
+  // Save purchase guide
+  const savePurchaseGuide = async () => {
+    setGuideSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('intent', 'updatePurchaseGuide');
+      formData.append('guideData', JSON.stringify(guideForm));
+      fetcher.submit(formData, { method: 'post' });
+    } finally {
+      setGuideSaving(false);
+    }
+  };
 
   // Détecter les doublons V2 par énergie (violation règle V2 = UNIQUE par gamme+énergie)
   const v2Violations = useMemo(() => {
@@ -366,6 +609,72 @@ export default function AdminGammeSeoDetail() {
       essence: check(detail.vLevel.v2, "essence"),
     };
   }, [detail.vLevel.v2]);
+
+  // Handlers pour Family Switches CRUD
+  const handleCreateSwitch = async (alias: number, content: string) => {
+    setSwitchSaving(true);
+    try {
+      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alias, content }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setNewSwitchAlias(null);
+        setNewSwitchContent("");
+        window.location.reload(); // Refresh pour voir le nouveau switch
+      } else {
+        alert(result.message || "Erreur lors de la création");
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    } finally {
+      setSwitchSaving(false);
+    }
+  };
+
+  const handleUpdateSwitch = async (id: number, content: string) => {
+    setSwitchSaving(true);
+    try {
+      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setEditingSwitch(null);
+        window.location.reload();
+      } else {
+        alert(result.message || "Erreur lors de la mise à jour");
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    } finally {
+      setSwitchSaving(false);
+    }
+  };
+
+  const handleDeleteSwitch = async (id: number) => {
+    if (!confirm("Supprimer ce switch ?")) return;
+    setSwitchSaving(true);
+    try {
+      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (result.success) {
+        window.location.reload();
+      } else {
+        alert(result.message || "Erreur lors de la suppression");
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    } finally {
+      setSwitchSaving(false);
+    }
+  };
 
   // Export CSV V-Levels
   const exportVLevelToCSV = () => {
@@ -763,6 +1072,19 @@ export default function AdminGammeSeoDetail() {
           {inSitemap && (
             <Badge variant="outline">Sitemap</Badge>
           )}
+          {detail.stats.vLevel_v1_count > 0 && (
+            <Badge className="bg-amber-100 text-amber-800 border-amber-300">
+              <Trophy className="h-3 w-3 mr-1" />
+              {detail.stats.vLevel_v1_count} V1
+            </Badge>
+          )}
+          <Link to="/admin/v-level-status">
+            <Button variant="outline" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+              <BarChart3 className="h-4 w-4 mr-1" />
+              V-Level
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
           <a
             href={`https://automecanik.com/pieces-auto/${detail.gamme.pg_alias}`}
             target="_blank"
@@ -932,10 +1254,18 @@ export default function AdminGammeSeoDetail() {
 
       {/* Tabs */}
       <Tabs defaultValue="seo" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-wrap">
           <TabsTrigger value="seo" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
             SEO
+          </TabsTrigger>
+          <TabsTrigger value="informations" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Informations
+          </TabsTrigger>
+          <TabsTrigger value="equipementiers" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Équipementiers
           </TabsTrigger>
           <TabsTrigger value="blog" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -952,6 +1282,13 @@ export default function AdminGammeSeoDetail() {
           <TabsTrigger value="conseils" className="flex items-center gap-2">
             <Wrench className="h-4 w-4" />
             Conseils ({detail.conseils.length})
+          </TabsTrigger>
+          <TabsTrigger value="guide" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Guide d'achat
+            {detail.purchaseGuide && (
+              <CheckCircle2 className="h-3 w-3 text-green-500" />
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -1170,7 +1507,9 @@ export default function AdminGammeSeoDetail() {
                     Switches d'items (alias 1-3). Cliquez pour voir les variations.
                   </p>
                   <div className="space-y-3">
-                    {detail.switchGroups.map((group) => {
+                    {[...detail.switchGroups]
+                      .sort((a, b) => parseInt(a.alias) - parseInt(b.alias))
+                      .map((group) => {
                       const isOpen = expandedSwitches.has(group.alias);
                       return (
                         <div
@@ -1184,9 +1523,13 @@ export default function AdminGammeSeoDetail() {
                             className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors rounded-t-lg"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-medium text-gray-900">
-                                Switch #{group.alias}
+                              <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                {group.usedInTemplate ? '✓' : '!'}
                               </span>
+                              <span className="font-medium text-gray-900">
+                                #{group.alias} - {group.name || `Alias ${group.alias}`}
+                              </span>
+                              <code className="text-xs bg-gray-200 px-1 rounded">{group.placeholder || `#Switch_${group.alias}#`}</code>
                               <Badge variant="secondary">{group.count} variations</Badge>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1248,13 +1591,15 @@ export default function AdminGammeSeoDetail() {
               {detail.familySwitchGroups && detail.familySwitchGroups.length > 0 && (
                 <div className="mt-8 border-t pt-6">
                   <h3 className="mb-4 text-lg font-medium">
-                    Family Switches <code className="text-xs bg-gray-100 px-2 py-1 rounded">#FamilySwitch_1# ... #FamilySwitch_16#</code>
+                    Family Switches <code className="text-xs bg-gray-100 px-2 py-1 rounded">#FamilySwitch_11# ... #FamilySwitch_16#</code>
                   </h3>
                   <p className="text-sm text-gray-500 mb-4">
-                    Switches de famille (alias 1-16). Cliquez pour voir les variations.
+                    Switches de famille (alias 11-16). Cliquez pour voir les variations.
                   </p>
                   <div className="space-y-3">
-                    {detail.familySwitchGroups.map((group) => {
+                    {[...detail.familySwitchGroups]
+                      .sort((a, b) => parseInt(a.alias) - parseInt(b.alias))
+                      .map((group) => {
                       const isOpen = expandedSwitches.has(`family_${group.alias}`);
                       return (
                         <div
@@ -1268,9 +1613,13 @@ export default function AdminGammeSeoDetail() {
                             className="w-full p-4 flex items-center justify-between hover:bg-blue-100 transition-colors rounded-t-lg"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-medium text-blue-900">
-                                FamilySwitch #{group.alias}
+                              <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                {group.usedInTemplate ? '✓' : '!'}
                               </span>
+                              <span className="font-medium text-blue-900">
+                                #{group.alias} - {group.name || `Alias ${group.alias}`}
+                              </span>
+                              <code className="text-xs bg-blue-200 px-1 rounded">{group.placeholder || `#FamilySwitch_${group.alias}#`}</code>
                               <Badge variant="secondary">{group.count} variations</Badge>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1299,12 +1648,55 @@ export default function AdminGammeSeoDetail() {
                                 {visibleVariations.map((variation, idx) => (
                                   <div
                                     key={variation.id}
-                                    className="flex items-center gap-2 p-2 bg-white rounded border text-sm"
+                                    className="flex items-center gap-2 p-2 bg-white rounded border text-sm group"
                                   >
                                     <span className="text-blue-400 w-6">#{idx + 1}</span>
-                                    <span className="flex-1 text-gray-700">
-                                      {variation.content || "(vide)"}
-                                    </span>
+                                    {editingSwitch?.id === variation.id ? (
+                                      <>
+                                        <input
+                                          type="text"
+                                          value={editingSwitch.content}
+                                          onChange={(e) => setEditingSwitch({ ...editingSwitch, content: e.target.value })}
+                                          className="flex-1 px-2 py-1 border rounded text-sm"
+                                          autoFocus
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleUpdateSwitch(variation.id, editingSwitch.content)}
+                                          disabled={switchSaving}
+                                          className="text-green-600 hover:text-green-800 px-2"
+                                        >
+                                          ✓
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditingSwitch(null)}
+                                          className="text-gray-500 hover:text-gray-700 px-2"
+                                        >
+                                          ✕
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="flex-1 text-gray-700">
+                                          {variation.content || "(vide)"}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditingSwitch({ id: variation.id, content: variation.content })}
+                                          className="opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 px-2 transition-opacity"
+                                        >
+                                          ✏️
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteSwitch(variation.id)}
+                                          className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 px-2 transition-opacity"
+                                        >
+                                          🗑️
+                                        </button>
+                                      </>
+                                    )}
                                   </div>
                                 ))}
                                 {hiddenCount > 0 && (
@@ -1318,6 +1710,42 @@ export default function AdminGammeSeoDetail() {
                                       : `▼ Voir les ${hiddenCount} autres variations`}
                                   </button>
                                 )}
+                                {/* Bouton Ajouter */}
+                                {newSwitchAlias === parseInt(group.alias) ? (
+                                  <div className="flex items-center gap-2 mt-3 p-2 bg-green-50 rounded border border-green-200">
+                                    <input
+                                      type="text"
+                                      value={newSwitchContent}
+                                      onChange={(e) => setNewSwitchContent(e.target.value)}
+                                      placeholder="Nouveau contenu..."
+                                      className="flex-1 px-2 py-1 border rounded text-sm"
+                                      autoFocus
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCreateSwitch(parseInt(group.alias), newSwitchContent)}
+                                      disabled={switchSaving || !newSwitchContent.trim()}
+                                      className="text-green-600 hover:text-green-800 px-2 disabled:opacity-50"
+                                    >
+                                      ✓ Créer
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => { setNewSwitchAlias(null); setNewSwitchContent(""); }}
+                                      className="text-gray-500 hover:text-gray-700 px-2"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setNewSwitchAlias(parseInt(group.alias))}
+                                    className="w-full py-2 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors border border-dashed border-green-300 mt-2"
+                                  >
+                                    ➕ Ajouter une variation
+                                  </button>
+                                )}
                               </div>
                             );
                           })()}
@@ -1327,6 +1755,94 @@ export default function AdminGammeSeoDetail() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB INFORMATIONS */}
+        <TabsContent value="informations">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-indigo-600" />
+                  Informations Techniques
+                </CardTitle>
+                <CardDescription>
+                  Gérez les informations techniques affichées sur la page gamme
+                </CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const content = prompt("Nouvelle information technique:");
+                  if (content && content.trim()) {
+                    fetcher.submit(
+                      { intent: "addInformation", content: content.trim() },
+                      { method: "post" }
+                    );
+                  }
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 mb-4">
+                  Ces informations apparaissent dans la section "Informations" de la page gamme publique.
+                  Elles sont automatiquement enrichies avec des liens vers les gammes connexes.
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <p className="text-center text-gray-500 py-4">
+                    Chargement des informations via l'API...
+                    <br />
+                    <span className="text-xs">Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}/informations</span>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB ÉQUIPEMENTIERS */}
+        <TabsContent value="equipementiers">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-orange-600" />
+                  Équipementiers
+                </CardTitle>
+                <CardDescription>
+                  Gérez les descriptions SEO par marque équipementier
+                </CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  alert("Fonctionnalité à implémenter: sélection de marque via dropdown");
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter marque
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 mb-4">
+                  Ces descriptions personnalisées s'affichent pour chaque équipementier sur la page gamme.
+                  Exemple: "Les plaquettes de frein BOSCH pour votre véhicule..."
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <p className="text-center text-gray-500 py-4">
+                    Chargement des équipementiers via l'API...
+                    <br />
+                    <span className="text-xs">Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}/equipementiers</span>
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1838,6 +2354,359 @@ export default function AdminGammeSeoDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* TAB GUIDE D'ACHAT */}
+        <TabsContent value="guide">
+          <div className="space-y-6">
+            {/* Header avec status */}
+            <Card className={detail.purchaseGuide ? "border-green-200" : "border-orange-200"}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${detail.purchaseGuide ? "bg-green-100" : "bg-orange-100"}`}>
+                      <BookOpen className={`h-5 w-5 ${detail.purchaseGuide ? "text-green-600" : "text-orange-600"}`} />
+                    </div>
+                    <div>
+                      <CardTitle>Guide d'achat - {detail.gamme.pg_name}</CardTitle>
+                      <CardDescription>
+                        {detail.purchaseGuide
+                          ? `Derniere mise a jour: ${new Date(detail.purchaseGuide.updatedAt || '').toLocaleDateString('fr-FR')}`
+                          : "Aucun guide configure - Remplissez les champs ci-dessous"}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button onClick={savePurchaseGuide} disabled={guideSaving}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {guideSaving ? "Sauvegarde..." : "Sauvegarder le guide"}
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* ETAPE 1: Compatibilite */}
+            <Card>
+              <CardHeader className="bg-blue-50 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+                  <div>
+                    <CardTitle className="text-lg">Compatibilite et identification</CardTitle>
+                    <CardDescription>Comment identifier la bonne piece</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="step1_title">Titre de l'etape</Label>
+                    <Input
+                      id="step1_title"
+                      value={guideForm.step1.title}
+                      onChange={(e) => updateGuideForm('step1.title', e.target.value)}
+                      placeholder={`Identifiez votre ${detail.gamme.pg_name.toLowerCase()}`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="step1_highlight">Point cle (mise en avant)</Label>
+                    <Input
+                      id="step1_highlight"
+                      value={guideForm.step1.highlight}
+                      onChange={(e) => updateGuideForm('step1.highlight', e.target.value)}
+                      placeholder="Ex: Verifiez la reference OEM sur votre piece actuelle"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="step1_content">Contenu explicatif</Label>
+                  <Textarea
+                    id="step1_content"
+                    value={guideForm.step1.content}
+                    onChange={(e) => updateGuideForm('step1.content', e.target.value)}
+                    placeholder="Expliquez comment identifier la bonne piece pour son vehicule..."
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Points cles (un par ligne)</Label>
+                  <Textarea
+                    value={(guideForm.step1.bullets || []).join('\n')}
+                    onChange={(e) => updateGuideForm('step1.bullets', e.target.value.split('\n').filter(b => b.trim()))}
+                    placeholder="Selectionnez votre vehicule dans notre selecteur&#10;Verifiez la reference OEM&#10;Comparez avec la piece d'origine"
+                    rows={4}
+                  />
+                  <p className="text-xs text-gray-500">Chaque ligne devient un point de la liste</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ETAPE 2: Gammes de prix */}
+            <Card>
+              <CardHeader className="bg-green-50 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+                  <div>
+                    <CardTitle className="text-lg">Gammes de prix</CardTitle>
+                    <CardDescription>Les 3 niveaux de qualite proposes</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-3 gap-6">
+                  {/* Economique */}
+                  <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🥉</span>
+                      <h4 className="font-semibold">Economique</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Sous-titre</Label>
+                        <Input
+                          value={guideForm.step2.economique.subtitle}
+                          onChange={(e) => updateGuideForm('step2.economique.subtitle', e.target.value)}
+                          placeholder="Usage standard"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Description</Label>
+                        <Textarea
+                          value={guideForm.step2.economique.description}
+                          onChange={(e) => updateGuideForm('step2.economique.description', e.target.value)}
+                          placeholder="Description de cette gamme..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Specs (une par ligne)</Label>
+                        <Textarea
+                          value={(guideForm.step2.economique.specs || []).join('\n')}
+                          onChange={(e) => updateGuideForm('step2.economique.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          placeholder="Type : Aftermarket&#10;Garantie : 1 an"
+                          rows={3}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Prix</Label>
+                        <Input
+                          value={guideForm.step2.economique.priceRange}
+                          onChange={(e) => updateGuideForm('step2.economique.priceRange', e.target.value)}
+                          placeholder="A partir de 29€"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Qualite+ */}
+                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🥈</span>
+                        <h4 className="font-semibold">Qualite+</h4>
+                      </div>
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        {guideForm.step2.qualitePlus.badge || 'Le plus choisi'}
+                      </Badge>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Sous-titre</Label>
+                        <Input
+                          value={guideForm.step2.qualitePlus.subtitle}
+                          onChange={(e) => updateGuideForm('step2.qualitePlus.subtitle', e.target.value)}
+                          placeholder="Equipement d'origine"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Description</Label>
+                        <Textarea
+                          value={guideForm.step2.qualitePlus.description}
+                          onChange={(e) => updateGuideForm('step2.qualitePlus.description', e.target.value)}
+                          placeholder="Description de cette gamme..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Specs (une par ligne)</Label>
+                        <Textarea
+                          value={(guideForm.step2.qualitePlus.specs || []).join('\n')}
+                          onChange={(e) => updateGuideForm('step2.qualitePlus.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          placeholder="Type : Qualite OE&#10;Garantie : 2 ans"
+                          rows={3}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Prix</Label>
+                        <Input
+                          value={guideForm.step2.qualitePlus.priceRange}
+                          onChange={(e) => updateGuideForm('step2.qualitePlus.priceRange', e.target.value)}
+                          placeholder="A partir de 59€"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Premium */}
+                  <div className="space-y-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🥇</span>
+                      <h4 className="font-semibold">Premium</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Sous-titre</Label>
+                        <Input
+                          value={guideForm.step2.premium.subtitle}
+                          onChange={(e) => updateGuideForm('step2.premium.subtitle', e.target.value)}
+                          placeholder="Haute performance"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Description</Label>
+                        <Textarea
+                          value={guideForm.step2.premium.description}
+                          onChange={(e) => updateGuideForm('step2.premium.description', e.target.value)}
+                          placeholder="Description de cette gamme..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Specs (une par ligne)</Label>
+                        <Textarea
+                          value={(guideForm.step2.premium.specs || []).join('\n')}
+                          onChange={(e) => updateGuideForm('step2.premium.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          placeholder="Type : Premium OEM&#10;Garantie : 3 ans"
+                          rows={3}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Prix</Label>
+                        <Input
+                          value={guideForm.step2.premium.priceRange}
+                          onChange={(e) => updateGuideForm('step2.premium.priceRange', e.target.value)}
+                          placeholder="A partir de 99€"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ETAPE 3: Securite et conseils */}
+            <Card>
+              <CardHeader className="bg-red-50 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+                  <div>
+                    <CardTitle className="text-lg">Securite et conseils</CardTitle>
+                    <CardDescription>Alertes et precautions pour l'installation</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="step3_title">Titre de l'etape</Label>
+                    <Input
+                      id="step3_title"
+                      value={guideForm.step3.title}
+                      onChange={(e) => updateGuideForm('step3.title', e.target.value)}
+                      placeholder="Securite et conseils"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="step3_content">Contenu</Label>
+                  <Textarea
+                    id="step3_content"
+                    value={guideForm.step3.content}
+                    onChange={(e) => updateGuideForm('step3.content', e.target.value)}
+                    placeholder="Conseils de securite et d'installation..."
+                    rows={3}
+                  />
+                </div>
+
+                {/* Alertes */}
+                <div className="space-y-3">
+                  <Label>Alertes de securite</Label>
+                  <div className="space-y-2">
+                    {(guideForm.step3.alerts || []).map((alert, idx) => (
+                      <div key={idx} className={`flex items-center gap-2 p-2 rounded-lg border ${
+                        alert.type === 'danger' ? 'bg-red-50 border-red-200' :
+                        alert.type === 'warning' ? 'bg-yellow-50 border-yellow-200' :
+                        'bg-blue-50 border-blue-200'
+                      }`}>
+                        <select
+                          value={alert.type}
+                          onChange={(e) => {
+                            const newAlerts = [...(guideForm.step3.alerts || [])];
+                            newAlerts[idx] = { ...newAlerts[idx], type: e.target.value as 'danger' | 'warning' | 'info' };
+                            updateGuideForm('step3.alerts', newAlerts);
+                          }}
+                          className="h-8 text-sm rounded border px-2"
+                        >
+                          <option value="danger">Danger</option>
+                          <option value="warning">Attention</option>
+                          <option value="info">Info</option>
+                        </select>
+                        <Input
+                          value={alert.text}
+                          onChange={(e) => {
+                            const newAlerts = [...(guideForm.step3.alerts || [])];
+                            newAlerts[idx] = { ...newAlerts[idx], text: e.target.value };
+                            updateGuideForm('step3.alerts', newAlerts);
+                          }}
+                          className="flex-1 h-8 text-sm"
+                          placeholder="Texte de l'alerte..."
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newAlerts = (guideForm.step3.alerts || []).filter((_, i) => i !== idx);
+                            updateGuideForm('step3.alerts', newAlerts);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newAlerts = [...(guideForm.step3.alerts || []), { type: 'info' as const, text: '' }];
+                        updateGuideForm('step3.alerts', newAlerts);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter une alerte
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Bouton de sauvegarde en bas */}
+            <div className="flex justify-end">
+              <Button onClick={savePurchaseGuide} disabled={guideSaving} size="lg">
+                <Save className="mr-2 h-5 w-5" />
+                {guideSaving ? "Sauvegarde en cours..." : "Sauvegarder le guide d'achat"}
+              </Button>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
