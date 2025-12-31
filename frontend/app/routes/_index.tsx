@@ -591,7 +591,8 @@ export default function TestHomepageModern() {
                               className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                               // 🚀 LCP: First 6 images are eager-loaded (above-fold)
                               loading={index < 6 ? "eager" : "lazy"}
-                              fetchPriority={index < 6 ? "high" : "auto"}
+                              // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
+                              fetchpriority={index < 6 ? "high" : "auto"}
                               decoding={index < 6 ? "sync" : "async"}
                               width="200"
                               height="200"
