@@ -215,7 +215,8 @@ export function PiecesHeader({
                             height={192}
                             className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
                             loading="eager"
-                            fetchPriority="high"
+                            // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
+                            fetchpriority="high"
                             decoding="async"
                             onError={() => setImageError(true)}
                           />
