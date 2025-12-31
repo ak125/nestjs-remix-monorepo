@@ -331,7 +331,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { name: "description", content: data.seo.description },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
-    { name: "robots", content: "index, follow" },
+    // noindex si ≤ 5 produits (thin content)
+    { name: "robots", content: data.count <= 5 ? "noindex, follow" : "index, follow" },
 
     // âœ¨ NOUVEAU: Canonical URL
     { tagName: "link", rel: "canonical", href: canonicalUrl },
