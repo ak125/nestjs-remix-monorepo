@@ -268,4 +268,49 @@ export class GammeUnifiedService extends SupabaseBaseService {
       return false;
     }
   }
+
+  /**
+   * 🔧 Récupère les gammes avec détails pour affichage
+   * Format compatible avec l'ancien CatalogGammeService.getGammesForDisplay()
+   */
+  async getGammesForDisplay(): Promise<{
+    manufacturers: { [id: string]: { name: string; gammes: Gamme[] } };
+    stats: { total_gammes: number; total_manufacturers: number };
+  }> {
+    try {
+      this.logger.log('🔧 Récupération gammes pour affichage (unifié)...');
+
+      // 1. Récupérer la hiérarchie complète (avec cache Redis)
+      const hierarchy = await this.getHierarchy();
+
+      // 2. Transformer vers le format d'affichage par manufacturer
+      const manufacturers: {
+        [id: string]: { name: string; gammes: Gamme[] };
+      } = {};
+
+      // Grouper par famille (qui représente le manufacturer/family)
+      for (const family of hierarchy.families) {
+        manufacturers[family.id] = {
+          name: family.name,
+          gammes: family.gammes,
+        };
+      }
+
+      const stats = {
+        total_gammes: hierarchy.stats.total_gammes,
+        total_manufacturers: hierarchy.stats.total_families,
+      };
+
+      this.logger.log(
+        `✅ Affichage préparé (unifié): ${stats.total_gammes} gammes, ${stats.total_manufacturers} fabricants`,
+      );
+
+      return { manufacturers, stats };
+    } catch (error) {
+      this.logger.error('❌ Erreur préparation affichage:', error);
+      throw new BadRequestException(
+        "Erreur lors de la préparation des données d'affichage",
+      );
+    }
+  }
 }

@@ -6,6 +6,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CatalogFamily } from '../interfaces/catalog-family.interface';
 import { CatalogGamme, CatalogGammeService } from './catalog-gamme.service';
+import { GammeUnifiedService } from './gamme-unified.service';
+import { Gamme } from '../types/gamme.types';
 
 export interface FamilyWithGammes extends CatalogFamily {
   gammes: CatalogGamme[];
@@ -32,7 +34,10 @@ export interface HierarchyStats {
 
 @Injectable()
 export class FamilyGammeHierarchyService extends SupabaseBaseService {
-  constructor(private readonly catalogGammeService: CatalogGammeService) {
+  constructor(
+    private readonly catalogGammeService: CatalogGammeService,
+    private readonly gammeUnifiedService: GammeUnifiedService,
+  ) {
     super();
   }
 
@@ -136,70 +141,62 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
   }
 
   /**
-   * 🔄 Fallback: Ancienne méthode en cas d'erreur avec la fonction SQL
+   * 🔄 Fallback: Utilise GammeUnifiedService.getHierarchy() en cas d'erreur avec la fonction SQL
+   * Migré de CatalogGammeService vers GammeUnifiedService
    */
   private async getFamilyGammeHierarchyFallback(): Promise<{
     hierarchy: FamilyGammeHierarchy;
     stats: HierarchyStats;
   }> {
-    // 1. Récupérer toutes les familles actives
-    const { data: families, error: familiesError } = await this.supabase
-      .from(TABLES.catalog_family)
-      .select('*')
-      .eq('mf_display', '1')
-      .order('mf_sort', { ascending: true });
+    this.logger.log('🔄 Fallback: utilisation de GammeUnifiedService.getHierarchy()');
 
-    if (familiesError) {
-      throw new BadRequestException(
-        `Erreur familles: ${familiesError.message}`,
-      );
-    }
+    // Utiliser GammeUnifiedService.getHierarchy() qui fait déjà le travail
+    const unifiedHierarchy = await this.gammeUnifiedService.getHierarchy();
 
-    // 2. Récupérer toutes les gammes avec noms enrichis
-    const gammes = await this.catalogGammeService.getAllGammes();
-
-    // 3. Créer le mapping famille → gammes
+    // Transformer vers le format FamilyGammeHierarchy attendu
     const hierarchy: FamilyGammeHierarchy = {};
 
-    // Initialiser toutes les familles
-    for (const family of families || []) {
-      hierarchy[family.mf_id] = {
-        family,
-        gammes: [],
+    for (const family of unifiedHierarchy.families) {
+      // Convertir les gammes du format Gamme vers CatalogGamme
+      const catalogGammes: CatalogGamme[] = family.gammes.map((gamme) => ({
+        mc_id: String(gamme.id),
+        mc_mf_id: String(family.id),
+        mc_mf_prime: String(family.id),
+        mc_pg_id: String(gamme.id),
+        mc_sort: String(gamme.sort_order || 0),
+        pg_id: String(gamme.id),
+        pg_name: gamme.name,
+        pg_alias: gamme.alias,
+        pg_image: gamme.image,
+      }));
+
+      hierarchy[family.id] = {
+        family: {
+          mf_id: parseInt(String(family.id), 10) || 0,
+          mf_name: family.name,
+          mf_sort: family.sort_order,
+          mf_display: 1,
+          mf_image: family.image,
+        },
+        gammes: catalogGammes,
         stats: {
-          total_gammes: 0,
-          manufacturers_count: 0,
+          total_gammes: family.stats.total_gammes,
+          manufacturers_count: family.stats.manufacturers_count,
         },
       };
     }
 
-    // 4. Distribuer les gammes dans les familles
-    for (const gamme of gammes || []) {
-      const familyId = gamme.mc_mf_prime;
-
-      if (familyId && hierarchy[familyId]) {
-        hierarchy[familyId].gammes.push(gamme);
-        hierarchy[familyId].stats.total_gammes++;
-
-        // Compter les fabricants uniques
-        const uniqueManufacturers = new Set(
-          hierarchy[familyId].gammes.map((g) => g.mc_mf_id),
-        );
-        hierarchy[familyId].stats.manufacturers_count =
-          uniqueManufacturers.size;
-      }
-    }
-
-    // 5. Trier les gammes par mc_sort
-    Object.values(hierarchy).forEach((family) => {
-      family.gammes.sort((a, b) => parseInt(a.mc_sort) - parseInt(b.mc_sort));
-    });
-
-    // 6. Calculer les statistiques globales
-    const stats = this.calculateHierarchyStats(hierarchy, gammes || []);
+    const stats: HierarchyStats = {
+      total_families: unifiedHierarchy.stats.total_families,
+      total_gammes: unifiedHierarchy.stats.total_gammes,
+      total_manufacturers: unifiedHierarchy.stats.total_manufacturers,
+      families_with_gammes: unifiedHierarchy.families.filter(
+        (f) => f.gammes.length > 0,
+      ).length,
+    };
 
     this.logger.log(
-      `✅ Hiérarchie construite (fallback): ${stats.total_families} familles, ${stats.total_gammes} gammes`,
+      `✅ Hiérarchie construite (fallback via GammeUnifiedService): ${stats.total_families} familles, ${stats.total_gammes} gammes`,
     );
 
     return { hierarchy, stats };
