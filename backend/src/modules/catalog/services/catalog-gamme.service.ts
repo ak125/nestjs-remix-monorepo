@@ -25,6 +25,12 @@ export interface CatalogGammeWithDetails extends CatalogGamme {
   sort_order?: number;
 }
 
+/**
+ * @deprecated Utiliser GammeUnifiedService à la place.
+ * Ce service est conservé temporairement pour:
+ * - VehiclesController.getPopularGammesForMaillage() (SEO specific)
+ * Migration en cours vers GammeUnifiedService.
+ */
 @Injectable()
 export class CatalogGammeService extends SupabaseBaseService {
   /**

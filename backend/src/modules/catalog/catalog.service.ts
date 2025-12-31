@@ -7,6 +7,7 @@ import { TABLES } from '@repo/database-types';
 // import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
 import { CatalogFamilyService } from './services/catalog-family.service';
 import { CatalogGammeService } from './services/catalog-gamme.service';
+import { GammeUnifiedService } from './services/gamme-unified.service';
 
 // ========================================
 // 📊 INTERFACES ÉTENDUES
@@ -47,6 +48,7 @@ export class CatalogService
   constructor(
     private readonly catalogFamilyService: CatalogFamilyService,
     private readonly catalogGammeService: CatalogGammeService,
+    private readonly gammeUnifiedService: GammeUnifiedService,
   ) {
     super();
   }
@@ -91,27 +93,29 @@ export class CatalogService
 
   /**
    * 🔧 Récupérer les vraies gammes de la table catalog_gamme
+   * Migré vers GammeUnifiedService pour consolidation
    */
   async getCatalogGammes() {
     this.logger.log(
-      '🔧 Récupération des vraies gammes catalog_gamme via CatalogService',
+      '🔧 Récupération des gammes via GammeUnifiedService',
     );
-    return this.catalogGammeService.getGammesForDisplay();
+    return this.gammeUnifiedService.getGammesForDisplay();
   }
 
   /**
    * 🔄 Récupérer les gammes combinées (familles + catalog_gamme)
+   * Migré vers GammeUnifiedService pour consolidation
    */
   async getCombinedGammes() {
     this.logger.log(
-      '🔄 Récupération des gammes combinées (familles + catalog_gamme)',
+      '🔄 Récupération des gammes combinées via GammeUnifiedService',
     );
 
     try {
       // Récupérer les deux sources en parallèle
       const [familiesGammes, catalogGammes] = await Promise.all([
         this.catalogFamilyService.getFamiliesWithGammes(),
-        this.catalogGammeService.getGammesForDisplay(),
+        this.gammeUnifiedService.getGammesForDisplay(),
       ]);
 
       return {
