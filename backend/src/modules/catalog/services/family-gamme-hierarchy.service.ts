@@ -1,4 +1,3 @@
-import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/family-gamme-hierarchy.service.ts
 // 🏗️ Service pour gérer la hiérarchie Familles → Gammes (sous-catégories)
 
@@ -7,7 +6,6 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { CatalogFamily } from '../interfaces/catalog-family.interface';
 import { CatalogGamme, CatalogGammeService } from './catalog-gamme.service';
 import { GammeUnifiedService } from './gamme-unified.service';
-import { Gamme } from '../types/gamme.types';
 
 export interface FamilyWithGammes extends CatalogFamily {
   gammes: CatalogGamme[];
