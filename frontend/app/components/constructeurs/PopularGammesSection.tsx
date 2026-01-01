@@ -99,8 +99,8 @@ function getGammeImageUrl(imgFilename: string | null): string | undefined {
 export function PopularGammesSection({
   gammes,
   brandName,
-  brandAlias,
-  brandId,
+  brandAlias: _brandAlias,
+  brandId: _brandId,
   className = "",
   onLinkClick,
 }: PopularGammesSectionProps) {

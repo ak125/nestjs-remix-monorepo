@@ -96,9 +96,7 @@ export class CatalogService
    * Migré vers GammeUnifiedService pour consolidation
    */
   async getCatalogGammes() {
-    this.logger.log(
-      '🔧 Récupération des gammes via GammeUnifiedService',
-    );
+    this.logger.log('🔧 Récupération des gammes via GammeUnifiedService');
     return this.gammeUnifiedService.getGammesForDisplay();
   }
 
