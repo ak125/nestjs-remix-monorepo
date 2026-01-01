@@ -137,10 +137,10 @@ export function PopularGammesSection({
             const icon = getGammeIcon(gamme.pg_name);
             const imageUrl = getGammeImageUrl(gamme.pg_img);
 
-            // Construit l'URL vers la page pièces avec la marque
+            // Construit l'URL vers la page gamme (format: /pieces/{alias}-{id}.html)
             const gammeUrl =
               gamme.link ||
-              `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`;
+              `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
 
             return (
               <article
@@ -240,7 +240,7 @@ export function PopularGammesSection({
                 "@type": "ListItem",
                 position: index + 1,
                 name: `${gamme.pg_name} ${brandName}`,
-                url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`}`,
+                url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`}`,
               })),
             }),
           }}
