@@ -57,13 +57,14 @@ BEGIN
 
   -- ========================================
   -- SECTION 2: SEO DATA (__seo_marque)
+  -- Variables SEO remplacées: #VMarque# → nom marque, #PrixPasCher# → 'pas cher'
   -- ========================================
   SELECT COALESCE(jsonb_build_object(
-    'sm_title', sm_title,
-    'sm_descrip', sm_descrip,
+    'sm_title', REPLACE(REPLACE(sm_title, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher'),
+    'sm_descrip', REPLACE(REPLACE(sm_descrip, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher'),
     'sm_keywords', sm_keywords,
-    'sm_h1', sm_h1,
-    'sm_content', sm_content
+    'sm_h1', REPLACE(REPLACE(sm_h1, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher'),
+    'sm_content', REPLACE(REPLACE(sm_content, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher')
   ), '{}'::jsonb)
   INTO v_seo
   FROM __seo_marque
@@ -101,7 +102,7 @@ BEGIN
         'marque_alias', amb.marque_alias,
         'marque_name', amb.marque_name,
         'marque_name_meta_title', amb.marque_name_meta_title,
-        'vehicle_url', '/constructeurs/' || amb.marque_alias || '/' || am.modele_alias || '/' || at.type_alias || '-' || at.type_id || '.html',
+        'vehicle_url', '/constructeurs/' || amb.marque_alias || '-' || amb.marque_id || '/' || am.modele_alias || '-' || am.modele_id || '/' || at.type_alias || '-' || at.type_id || '.html',
         'image_url', 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/' || amb.marque_alias || '/' || COALESCE(am.modele_pic, 'no.png')
       ) AS vehicle_data
     FROM __cross_gamme_car_new cgc
@@ -137,7 +138,7 @@ BEGIN
         'modele_alias', am.modele_alias,
         'marque_name', amb.marque_name,
         'marque_alias', amb.marque_alias,
-        'part_url', '/pieces/' || pg.pg_alias || '/' || amb.marque_alias || '/' || am.modele_alias || '/' || at.type_alias || '-' || at.type_id || '.html',
+        'part_url', '/pieces/' || pg.pg_alias || '-' || pg.pg_id || '/' || amb.marque_alias || '-' || amb.marque_id || '/' || am.modele_alias || '-' || am.modele_id || '/' || at.type_alias || '-' || at.type_id || '.html',
         'image_url', 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/' || COALESCE(pg.pg_img, 'no.png')
       ) AS part_data
     FROM __cross_gamme_car_new cgc
@@ -154,11 +155,12 @@ BEGIN
 
   -- ========================================
   -- SECTION 5: BLOG CONTENT (__blog_seo_marque)
+  -- Variables SEO remplacées: #VMarque# → nom marque, #PrixPasCher# → 'pas cher'
   -- ========================================
   SELECT COALESCE(jsonb_build_object(
-    'bsm_h1', bsm_h1,
-    'bsm_content', bsm_content,
-    'bsm_descrip', bsm_descrip
+    'bsm_h1', REPLACE(REPLACE(bsm_h1, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher'),
+    'bsm_content', REPLACE(REPLACE(bsm_content, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher'),
+    'bsm_descrip', REPLACE(REPLACE(bsm_descrip, '#VMarque#', v_brand->>'marque_name'), '#PrixPasCher#', 'pas cher')
   ), '{}'::jsonb)
   INTO v_blog
   FROM __blog_seo_marque
