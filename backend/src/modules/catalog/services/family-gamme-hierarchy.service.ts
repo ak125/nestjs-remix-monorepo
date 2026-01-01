@@ -146,7 +146,9 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
     hierarchy: FamilyGammeHierarchy;
     stats: HierarchyStats;
   }> {
-    this.logger.log('🔄 Fallback: utilisation de GammeUnifiedService.getHierarchy()');
+    this.logger.log(
+      '🔄 Fallback: utilisation de GammeUnifiedService.getHierarchy()',
+    );
 
     // Utiliser GammeUnifiedService.getHierarchy() qui fait déjà le travail
     const unifiedHierarchy = await this.gammeUnifiedService.getHierarchy();
