@@ -16,7 +16,9 @@ import {
 import { useLoaderData, useNavigation, useSearchParams, Link } from "@remix-run/react";
 import {
   AlertTriangle,
+  ArrowRight,
   ArrowUpDown,
+  BarChart3,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
@@ -937,6 +939,13 @@ export default function AdminGammesSeo() {
               Export CSV
             </Button>
           </a>
+          <Link to="/admin/v-level-status">
+            <Button variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              V-Level Status
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
         </div>
       </div>
 
