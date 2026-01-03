@@ -22,8 +22,7 @@ import {
   BookOpen,
   Edit,
   Eye,
-  Tag,
-  Palette
+  Tag
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
