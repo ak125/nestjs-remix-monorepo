@@ -42,9 +42,8 @@ export const links: LinksFunction = () => [
   // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
 
-  // 🚀 CSS animations - Prefetch (non-bloquant, chargé en arrière-plan)
-  // Sera appliqué après le CSS critique via le composant DeferredStyles
-  { rel: "prefetch", href: animationsStylesheet, as: "style" },
+  // CSS animations - Chargé de façon synchrone pour éviter hydration mismatch
+  { rel: "stylesheet", href: animationsStylesheet },
 
   // DNS Prefetch & Preconnect (Performance SEO Phase 1)
   { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
@@ -133,14 +132,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const revalidator = useRevalidator();
   const location = useLocation();
   
-  // 📊 Google Analytics - Tracking des navigations SPA
+  // 📊 Google Analytics - Tracking des navigations SPA (optimisé avec requestIdleCallback)
   useEffect(() => {
-    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-      window.gtag('config', 'G-ZVG6K5R740', {
-        page_path: location.pathname + location.search,
-        page_title: document.title,
-        page_location: window.location.href
-      });
+    if (typeof window === 'undefined') return;
+
+    const trackPageView = () => {
+      if (typeof window.gtag === 'function') {
+        window.gtag('config', 'G-ZVG6K5R740', {
+          page_path: location.pathname + location.search,
+          page_title: document.title,
+          page_location: window.location.href
+        });
+      }
+    };
+
+    // Utiliser requestIdleCallback pour ne pas bloquer l'INP
+    if ('requestIdleCallback' in window) {
+      (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(trackPageView, { timeout: 1000 });
+    } else {
+      // Fallback pour Safari
+      setTimeout(trackPageView, 0);
     }
   }, [location.pathname, location.search]);
   
@@ -155,23 +166,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('cart:updated', handleCartUpdated);
   }, [revalidator]);
 
-  // 🚀 LCP Optimization: Charger animations.css après le rendu initial (non-bloquant)
-  useEffect(() => {
-    // Attendre que le LCP soit rendu avant de charger les animations
-    const loadDeferredStyles = () => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = animationsStylesheet;
-      document.head.appendChild(link);
-    };
-
-    // Utiliser requestIdleCallback si disponible, sinon setTimeout
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(loadDeferredStyles, { timeout: 2000 });
-    } else {
-      setTimeout(loadDeferredStyles, 100);
-    }
-  }, []);
 
   // DEBUG: Log pour voir si les données arrivent
   if (typeof window !== 'undefined') {
@@ -185,45 +179,76 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        {/* Google Analytics 4 - Chargement différé sur interaction/idle pour optimiser LCP */}
+        {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
 
-              // Fonction pour charger GTM une seule fois
+              // Consent Mode v2 - Default denied (RGPD compliant)
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'wait_for_update': 500
+              });
+
+              // Fonction pour accorder le consentement analytics
+              window.__grantAnalyticsConsent = function() {
+                gtag('consent', 'update', { 'analytics_storage': 'granted' });
+              };
+
+              // Fonction pour charger GTM une seule fois (optimisée avec requestIdleCallback)
               window.__loadGTM = function() {
                 if (window.__gtmLoaded) return;
                 window.__gtmLoaded = true;
 
-                var script = document.createElement('script');
-                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740';
-                script.async = true;
-                script.onload = function() {
-                  gtag('js', new Date());
-                  gtag('config', 'G-ZVG6K5R740', {
-                    page_title: document.title,
-                    page_location: window.location.href
-                  });
+                var loadScript = function() {
+                  var script = document.createElement('script');
+                  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740';
+                  script.async = true;
+                  script.onload = function() {
+                    gtag('js', new Date());
+                    gtag('config', 'G-ZVG6K5R740', {
+                      page_title: document.title,
+                      page_location: window.location.href,
+                      send_page_view: true
+                    });
+                    // Accorder le consentement analytics après chargement
+                    window.__grantAnalyticsConsent();
+                  };
+                  document.head.appendChild(script);
                 };
-                document.head.appendChild(script);
+
+                // Double requestIdleCallback pour minimiser l'impact sur le main thread
+                if ('requestIdleCallback' in window) {
+                  requestIdleCallback(loadScript, { timeout: 2000 });
+                } else {
+                  setTimeout(loadScript, 0);
+                }
               };
 
-              // Charger sur première interaction (scroll, click, keypress, touch)
-              var events = ['scroll', 'click', 'keypress', 'touchstart'];
+              // Charger sur première interaction (scroll, click, keypress, touch, mousemove)
+              var events = ['scroll', 'click', 'keypress', 'touchstart', 'mousemove'];
               var loadOnInteraction = function() {
                 window.__loadGTM();
                 events.forEach(function(e) {
-                  window.removeEventListener(e, loadOnInteraction, { passive: true });
+                  window.removeEventListener(e, loadOnInteraction, { passive: true, capture: true });
                 });
               };
               events.forEach(function(e) {
-                window.addEventListener(e, loadOnInteraction, { passive: true });
+                window.addEventListener(e, loadOnInteraction, { passive: true, capture: true });
               });
 
-              // Fallback: charger après 4s si pas d'interaction (pour le SEO/analytics)
-              setTimeout(window.__loadGTM, 4000);
+              // Fallback: charger quand le browser est idle (plus intelligent que setTimeout fixe)
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(window.__loadGTM, { timeout: 5000 });
+              } else {
+                // Safari/anciens navigateurs: timeout de 3s
+                setTimeout(window.__loadGTM, 3000);
+              }
             `,
           }}
         />

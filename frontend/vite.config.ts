@@ -19,6 +19,41 @@ export default defineConfig({
 		commonjsOptions: {
 			include: [/frontend/, /backend/, /node_modules/],
 		},
+		// 🚀 Optimisation chunking pour Lighthouse
+		rollupOptions: {
+			output: {
+				manualChunks: (id: string) => {
+					// Core React - cache long-terme
+					if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
+					if (id.includes('node_modules/react/') || id.includes('node_modules/scheduler')) return 'vendor-react';
+					// Remix framework
+					if (id.includes('@remix-run')) return 'vendor-remix';
+					// UI Components (Radix) - large mais stable
+					if (id.includes('@radix-ui')) return 'vendor-radix';
+					// Icons - tree-shaken
+					if (id.includes('lucide-react')) return 'vendor-icons';
+					// Data fetching & state
+					if (id.includes('@tanstack')) return 'vendor-tanstack';
+					if (id.includes('zustand')) return 'vendor-state';
+					// Forms (Conform, Zod, react-hook-form)
+					if (id.includes('@conform-to') || id.includes('zod') || id.includes('react-hook-form') || id.includes('@hookform')) return 'vendor-forms';
+					// Charts (recharts) - lazy load sur dashboard
+					if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'vendor-charts';
+					// Rich text editor (Tiptap) - lazy load
+					if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor';
+					// Carousel
+					if (id.includes('embla-carousel')) return 'vendor-carousel';
+					// Utilities
+					if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) return 'vendor-utils';
+					// Toast
+					if (id.includes('sonner')) return 'vendor-toast';
+					// Autres node_modules
+					if (id.includes('node_modules')) return 'vendor-common';
+					return undefined;
+				},
+			},
+		},
+		chunkSizeWarningLimit: 500,
 	},
 	plugins: [
 		// cjsInterop({
@@ -44,8 +79,8 @@ export default defineConfig({
 						"**/*.css",
 						"**/*.test.{js,jsx,ts,tsx}",
 						"**/__*.*",
-						// Exclure admin en production automatiquement
-						...(isProduction ? ["**/admin.*", "**/admin/**"] : []),
+						// Exclure admin, ui-kit et design-system en production
+						...(isProduction ? ["**/admin.*", "**/admin/**", "**/ui-kit.*", "**/ui-kit/**", "**/design-system.*"] : []),
 						// This is for server-side utilities you want to colocate next to
 						// your routes without making an additional directory.
 						// If you need a route that includes "server" or "client" in the
