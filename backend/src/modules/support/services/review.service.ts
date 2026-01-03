@@ -207,18 +207,48 @@ export class ReviewService extends SupabaseBaseService {
 
   /**
    * Récupérer les avis avec filtres
-   *
-   * ⚠️ DÉSACTIVÉ TEMPORAIREMENT (2026-01-03)
-   * Cause: LIKE query sur ___xtr_msg (12.8M rows) = timeout 15s
-   * Solution: Migrer vers table dédiée `reviews`
-   * @see 20260104_create_reviews_table.sql (migration en attente)
    */
-  async getReviews(_filters?: ReviewFilters): Promise<ReviewData[]> {
-    this.logger.warn(
-      '⚠️ getReviews() désactivé: LIKE sur ___xtr_msg cause timeout (12.8M rows). ' +
-        'Retourne [] en attendant migration vers table `reviews`.',
-    );
-    return [];
+  async getReviews(filters?: ReviewFilters): Promise<ReviewData[]> {
+    try {
+      let query = this.supabase
+        .from(TABLES.xtr_msg)
+        .select('*')
+        .like('msg_content', '%"type":"review"%')
+        .order('msg_date', { ascending: false });
+
+      // Appliquer les filtres
+      if (filters) {
+        if (filters.customer_id) {
+          query = query.eq('msg_cst_id', filters.customer_id);
+        }
+        if (filters.startDate) {
+          query = query.gte('msg_date', filters.startDate.toISOString());
+        }
+        if (filters.endDate) {
+          query = query.lte('msg_date', filters.endDate.toISOString());
+        }
+      }
+
+      const { data: messages, error } = await query;
+
+      if (error) {
+        throw new Error(
+          `Erreur lors de la récupération des avis: ${error.message}`,
+        );
+      }
+
+      // Enrichir les données et appliquer les filtres JSON
+      const reviews = await Promise.all(
+        messages.map((message) => this.enrichReviewData(message)),
+      );
+
+      return this.applyContentFilters(reviews, filters);
+    } catch (error) {
+      this.logger.error(
+        `Erreur lors de la récupération des avis: ${(error as Error).message}`,
+      );
+      throw error;
+    }
   }
 
   /**

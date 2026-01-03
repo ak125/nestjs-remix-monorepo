@@ -1,15 +1,10 @@
 /**
  * 📋 GAMME SEO AUDIT SERVICE
  *
- * ✅ MIGRÉ: Utilise maintenant la table dédiée `gamme_seo_audit`
- *    au lieu de `___xtr_msg` (12.8M rows, LIKE queries = timeouts)
- *
  * Service pour tracker l'historique des actions sur les gammes SEO
  * - Qui a fait quoi, quand
  * - Valeurs avant/après
  * - Impact des modifications
- *
- * @migration 2026-01-03 - Migration depuis ___xtr_msg vers gamme_seo_audit
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -23,10 +18,7 @@ export type GammeSeoActionType =
   | 'BATCH_DEMOTE_NOINDEX' // Rétrogradation en masse vers NOINDEX
   | 'BATCH_MARK_G1' // Marquage en masse G1
   | 'BATCH_UNMARK_G1' // Retrait en masse G1
-  | 'SINGLE_UPDATE' // Mise à jour individuelle
-  | 'UPDATE_G_LEVEL' // Mise à jour classification G (G1/G2/G3/G4)
-  | 'UPDATE_V_LEVEL' // Mise à jour classification V (V1-V5)
-  | 'BULK_UPDATE'; // Mise à jour en masse générique
+  | 'SINGLE_UPDATE'; // Mise à jour individuelle
 
 // Interface d'une entrée d'audit
 export interface GammeSeoAuditEntry {
@@ -34,29 +26,27 @@ export interface GammeSeoAuditEntry {
   admin_id: number;
   admin_email: string;
   action_type: GammeSeoActionType;
-  entity_type: 'threshold' | 'gamme' | 'batch' | 'vehicle' | 'model';
+  entity_type: 'threshold' | 'gamme' | 'batch';
   entity_ids: number[] | null; // pg_ids affectés
   old_values: any | null;
   new_values: any | null;
   impact_summary: string;
-  metadata?: any | null;
   created_at?: string;
 }
 
 // Interface pour les filtres de l'historique
 export interface AuditHistoryFilters {
   actionType?: GammeSeoActionType;
-  entityType?: 'threshold' | 'gamme' | 'batch' | 'vehicle' | 'model';
+  entityType?: 'threshold' | 'gamme' | 'batch';
   adminId?: number;
-  adminEmail?: string;
   dateFrom?: string;
   dateTo?: string;
   limit?: number;
   offset?: number;
 }
 
-// Table d'audit dédiée (migrée depuis ___xtr_msg)
-const AUDIT_TABLE = 'gamme_seo_audit';
+// Nom de la table d'audit (utilise ___xtr_msg avec un préfixe pour éviter de créer une nouvelle table)
+const AUDIT_MSG_PREFIX = 'GAMME_SEO_AUDIT';
 
 @Injectable()
 export class GammeSeoAuditService extends SupabaseBaseService {
@@ -64,42 +54,42 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
   /**
    * 📝 Enregistre une action dans l'historique
-   * ✅ Utilise maintenant la table dédiée `gamme_seo_audit`
    */
   async logAction(params: {
     adminId: number;
     adminEmail: string;
     actionType: GammeSeoActionType;
-    entityType: 'threshold' | 'gamme' | 'batch' | 'vehicle' | 'model';
+    entityType: 'threshold' | 'gamme' | 'batch';
     entityIds?: number[];
     oldValues?: any;
     newValues?: any;
     impactSummary: string;
-    metadata?: any;
   }): Promise<{ success: boolean; auditId?: number }> {
     try {
       this.logger.log(
         `📝 Logging action: ${params.actionType} by ${params.adminEmail}`,
       );
 
-      // Utilise la table dédiée gamme_seo_audit
+      // Utilise la table ___xtr_msg avec un format structuré
       const { data, error } = await this.supabase
-        .from(AUDIT_TABLE)
+        .from('___xtr_msg')
         .insert({
-          admin_id: params.adminId,
-          admin_email: params.adminEmail,
-          action_type: params.actionType,
-          entity_type: params.entityType,
-          entity_ids: params.entityIds || null,
-          old_values: params.oldValues || null,
-          new_values: params.newValues || null,
-          metadata: {
+          msg_cst_id: params.adminId,
+          msg_date: new Date().toISOString(),
+          msg_subject: `${AUDIT_MSG_PREFIX}:${params.actionType}`,
+          msg_content: JSON.stringify({
+            admin_email: params.adminEmail,
+            action_type: params.actionType,
+            entity_type: params.entityType,
+            entity_ids: params.entityIds || null,
+            old_values: params.oldValues || null,
+            new_values: params.newValues || null,
             impact_summary: params.impactSummary,
-            ...params.metadata,
-          },
-          created_at: new Date().toISOString(),
+          }),
+          msg_open: '1',
+          msg_close: '0',
         })
-        .select('id')
+        .select('msg_id')
         .single();
 
       if (error) {
@@ -107,8 +97,8 @@ export class GammeSeoAuditService extends SupabaseBaseService {
         return { success: false };
       }
 
-      this.logger.log(`✅ Audit logged with ID: ${data?.id}`);
-      return { success: true, auditId: data?.id };
+      this.logger.log(`✅ Audit logged with ID: ${data?.msg_id}`);
+      return { success: true, auditId: data?.msg_id };
     } catch (error) {
       this.logger.error('❌ Error in logAction:', error);
       return { success: false };
@@ -117,7 +107,6 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
   /**
    * 📜 Récupère l'historique des actions
-   * ✅ Utilise maintenant la table dédiée `gamme_seo_audit`
    */
   async getAuditHistory(filters: AuditHistoryFilters = {}): Promise<{
     data: GammeSeoAuditEntry[];
@@ -129,30 +118,30 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       const limit = filters.limit || 50;
       const offset = filters.offset || 0;
 
-      // Build query - utilise la table dédiée (pas de LIKE, pas de JSON parsing)
+      // Build query
       let query = this.supabase
-        .from(AUDIT_TABLE)
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .from('___xtr_msg')
+        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content', {
+          count: 'exact',
+        })
+        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`)
+        .order('msg_date', { ascending: false });
 
       // Apply filters
       if (filters.actionType) {
-        query = query.eq('action_type', filters.actionType);
-      }
-      if (filters.entityType) {
-        query = query.eq('entity_type', filters.entityType);
+        query = query.eq(
+          'msg_subject',
+          `${AUDIT_MSG_PREFIX}:${filters.actionType}`,
+        );
       }
       if (filters.adminId) {
-        query = query.eq('admin_id', filters.adminId);
-      }
-      if (filters.adminEmail) {
-        query = query.eq('admin_email', filters.adminEmail);
+        query = query.eq('msg_cst_id', filters.adminId);
       }
       if (filters.dateFrom) {
-        query = query.gte('created_at', filters.dateFrom);
+        query = query.gte('msg_date', filters.dateFrom);
       }
       if (filters.dateTo) {
-        query = query.lte('created_at', filters.dateTo);
+        query = query.lte('msg_date', filters.dateTo);
       }
 
       // Pagination
@@ -165,20 +154,40 @@ export class GammeSeoAuditService extends SupabaseBaseService {
         throw error;
       }
 
-      // Map results - plus simple car les données sont déjà structurées
-      const entries: GammeSeoAuditEntry[] = (data || []).map((row: any) => ({
-        id: row.id,
-        admin_id: row.admin_id,
-        admin_email: row.admin_email || 'unknown',
-        action_type: row.action_type,
-        entity_type: row.entity_type || 'gamme',
-        entity_ids: row.entity_ids || null,
-        old_values: row.old_values || null,
-        new_values: row.new_values || null,
-        impact_summary: row.metadata?.impact_summary || '',
-        metadata: row.metadata || null,
-        created_at: row.created_at,
-      }));
+      // Parse results
+      const entries: GammeSeoAuditEntry[] = (data || [])
+        .map((row: any) => {
+          let content: any = {};
+          try {
+            content = JSON.parse(row.msg_content || '{}');
+          } catch {
+            content = {};
+          }
+
+          // Filter by entityType if specified
+          if (
+            filters.entityType &&
+            content.entity_type !== filters.entityType
+          ) {
+            return null;
+          }
+
+          return {
+            id: row.msg_id,
+            admin_id: row.msg_cst_id,
+            admin_email: content.admin_email || 'unknown',
+            action_type:
+              content.action_type ||
+              row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, ''),
+            entity_type: content.entity_type || 'unknown',
+            entity_ids: content.entity_ids || null,
+            old_values: content.old_values || null,
+            new_values: content.new_values || null,
+            impact_summary: content.impact_summary || '',
+            created_at: row.msg_date,
+          };
+        })
+        .filter(Boolean);
 
       this.logger.log(`✅ Found ${entries.length} audit entries`);
       return {
@@ -193,7 +202,6 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
   /**
    * 📊 Statistiques d'audit (pour dashboard)
-   * ✅ Utilise maintenant la table dédiée `gamme_seo_audit`
    */
   async getAuditStats(): Promise<{
     totalActions: number;
@@ -207,31 +215,38 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      // Get audit entries from last week - plus de LIKE, requête directe
+      // Get all audit entries
       const { data, error } = await this.supabase
-        .from(AUDIT_TABLE)
-        .select('id, admin_email, action_type, created_at')
-        .gte('created_at', lastWeek.toISOString());
+        .from('___xtr_msg')
+        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content')
+        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`)
+        .gte('msg_date', lastWeek.toISOString());
 
       if (error) throw error;
 
       const entries = data || [];
 
-      // Calculate stats - plus simple car données structurées
+      // Calculate stats
       const actionsLast24h = entries.filter(
-        (e: any) => new Date(e.created_at) >= yesterday,
+        (e: any) => new Date(e.msg_date) >= yesterday,
       ).length;
       const actionsByType: Record<string, number> = {};
       const adminCounts: Record<string, number> = {};
 
       entries.forEach((row: any) => {
         // Count by action type
-        const actionType = row.action_type || 'UNKNOWN';
+        const actionType =
+          row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, '') || 'UNKNOWN';
         actionsByType[actionType] = (actionsByType[actionType] || 0) + 1;
 
         // Count by admin
-        const email = row.admin_email || 'unknown';
-        adminCounts[email] = (adminCounts[email] || 0) + 1;
+        try {
+          const content = JSON.parse(row.msg_content || '{}');
+          const email = content.admin_email || 'unknown';
+          adminCounts[email] = (adminCounts[email] || 0) + 1;
+        } catch {
+          // Ignore parse errors
+        }
       });
 
       // Top admins
@@ -242,8 +257,9 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
       // Get total count
       const { count: totalCount } = await this.supabase
-        .from(AUDIT_TABLE)
-        .select('id', { count: 'exact', head: true });
+        .from('___xtr_msg')
+        .select('msg_id', { count: 'exact', head: true })
+        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`);
 
       return {
         totalActions: totalCount || 0,
@@ -280,9 +296,6 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       BATCH_MARK_G1: `${count || 0} gamme(s) marquée(s) G1`,
       BATCH_UNMARK_G1: `${count || 0} gamme(s) retirée(s) de G1`,
       SINGLE_UPDATE: `1 gamme mise à jour${details ? ': ' + details : ''}`,
-      UPDATE_G_LEVEL: `${count || 1} gamme(s) G-Level modifié${details ? ': ' + details : ''}`,
-      UPDATE_V_LEVEL: `${count || 1} variante(s) V-Level modifié${details ? ': ' + details : ''}`,
-      BULK_UPDATE: `${count || 0} élément(s) mis à jour${details ? ': ' + details : ''}`,
     };
     return summaries[actionType] || 'Action effectuée';
   }
