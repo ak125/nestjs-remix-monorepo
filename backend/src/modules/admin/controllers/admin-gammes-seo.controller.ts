@@ -16,6 +16,8 @@
  * - POST /api/admin/gammes-seo/thresholds/reset → Réinitialiser seuils
  * - GET  /api/admin/gammes-seo/audit            → Historique des actions
  * - GET  /api/admin/gammes-seo/audit/stats      → Stats audit
+ * - PUT  /api/admin/gammes-seo/:pgId/seo        → Sauvegarder SEO depuis formulaire
+ * - POST /api/admin/gammes-seo/:pgId/generate-seo → Générer SEO automatiquement
  */
 
 import {
@@ -24,6 +26,7 @@ import {
   Put,
   Patch,
   Post,
+  Delete,
   Query,
   Body,
   Param,
@@ -717,6 +720,779 @@ export class AdminGammesSeoController {
         {
           success: false,
           message: 'Erreur lors de la récupération des stats V-Level',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============== SEO MANAGEMENT ENDPOINTS ==============
+
+  /**
+   * 💾 PUT /api/admin/gammes-seo/:pgId/seo
+   * Met à jour les données SEO d'une gamme (depuis le formulaire admin)
+   */
+  @Put(':pgId/seo')
+  async updateGammeSeo(
+    @Param('pgId', ParseIntPipe) pgId: number,
+    @Body()
+    seoData: {
+      sg_title: string;
+      sg_descrip: string;
+      sg_keywords: string;
+      sg_h1: string;
+      sg_content: string;
+    },
+  ) {
+    try {
+      this.logger.log(`💾 PUT /api/admin/gammes-seo/${pgId}/seo`);
+
+      const result = await this.gammesSeoService.updateGammeSeo(pgId, seoData);
+
+      return {
+        success: true,
+        message: result.message,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error updating SEO for gamme ${pgId}:`, error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la mise à jour SEO',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============== PURCHASE GUIDE ENDPOINTS ==============
+
+  /**
+   * 📖 GET /api/admin/gammes-seo/:pgId/purchase-guide
+   * Récupère le guide d'achat d'une gamme
+   */
+  @Get(':pgId/purchase-guide')
+  async getPurchaseGuide(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`📖 GET /api/admin/gammes-seo/${pgId}/purchase-guide`);
+
+      const guide = await this.gammesSeoService.getPurchaseGuide(pgId);
+
+      return {
+        success: true,
+        data: guide,
+        message: guide ? 'Guide récupéré' : 'Aucun guide pour cette gamme',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Error fetching purchase guide for gamme ${pgId}:`,
+        error,
+      );
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération du guide',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 💾 PUT /api/admin/gammes-seo/:pgId/purchase-guide
+   * Met à jour ou crée le guide d'achat d'une gamme
+   */
+  @Put(':pgId/purchase-guide')
+  async updatePurchaseGuide(
+    @Param('pgId', ParseIntPipe) pgId: number,
+    @Body()
+    guideData: {
+      step1: {
+        title: string;
+        content: string;
+        highlight: string;
+        bullets?: string[];
+      };
+      step2: {
+        economique: {
+          subtitle: string;
+          description: string;
+          specs: string[];
+          priceRange: string;
+        };
+        qualitePlus: {
+          subtitle: string;
+          description: string;
+          specs: string[];
+          priceRange: string;
+          badge?: string;
+        };
+        premium: {
+          subtitle: string;
+          description: string;
+          specs: string[];
+          priceRange: string;
+        };
+      };
+      step3: {
+        title: string;
+        content: string;
+        alerts: Array<{ type: 'danger' | 'warning' | 'info'; text: string }>;
+        relatedGammes?: Array<{
+          pgId: number;
+          pgName: string;
+          pgAlias: string;
+        }>;
+      };
+    },
+  ) {
+    try {
+      this.logger.log(`💾 PUT /api/admin/gammes-seo/${pgId}/purchase-guide`);
+
+      const result = await this.gammesSeoService.updatePurchaseGuide(
+        pgId,
+        guideData,
+      );
+
+      return {
+        success: result.success,
+        message: result.message,
+        data: result.guide,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Error updating purchase guide for gamme ${pgId}:`,
+        error,
+      );
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la mise à jour du guide d'achat",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ DELETE /api/admin/gammes-seo/:pgId/purchase-guide
+   * Supprime le guide d'achat d'une gamme
+   */
+  @Delete(':pgId/purchase-guide')
+  async deletePurchaseGuide(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`🗑️ DELETE /api/admin/gammes-seo/${pgId}/purchase-guide`);
+
+      const result = await this.gammesSeoService.deletePurchaseGuide(pgId);
+
+      return {
+        success: result.success,
+        message: result.message,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Error deleting purchase guide for gamme ${pgId}:`,
+        error,
+      );
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la suppression du guide d'achat",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============== SEO GENERATION ENDPOINTS ==============
+
+  /**
+   * 🎯 POST /api/admin/gammes-seo/:pgId/generate-seo
+   * Génère le contenu SEO pour une gamme spécifique
+   */
+  @Post(':pgId/generate-seo')
+  async generateGammeSeo(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`🎯 POST /api/admin/gammes-seo/${pgId}/generate-seo`);
+
+      const result = await this.gammesSeoService.generateGammeSeo(pgId);
+
+      return {
+        success: true,
+        message: result.message,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error generating SEO for gamme ${pgId}:`, error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la génération SEO',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🚀 POST /api/admin/gammes-seo/generate-all
+   * Génère le SEO pour toutes les gammes (batch)
+   */
+  @Post('generate-all')
+  async generateAllGammesSeo(
+    @Body()
+    body: {
+      onlyEmpty?: boolean;
+      gLevels?: string[];
+      limit?: number;
+    },
+  ) {
+    try {
+      this.logger.log('🚀 POST /api/admin/gammes-seo/generate-all');
+
+      const result = await this.gammesSeoService.generateAllGammesSeo({
+        onlyEmpty: body.onlyEmpty ?? true,
+        gLevels: body.gLevels,
+        limit: body.limit,
+      });
+
+      return {
+        success: result.success,
+        message: result.message,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error in batch SEO generation:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la génération SEO batch',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📊 GET /api/admin/gammes-seo/seo-stats
+   * Statistiques de couverture SEO
+   */
+  @Get('seo-stats')
+  async getSeoGenerationStats() {
+    try {
+      this.logger.log('📊 GET /api/admin/gammes-seo/seo-stats');
+
+      const stats = await this.gammesSeoService.getSeoGenerationStats();
+
+      return {
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error getting SEO stats:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des stats SEO',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // =========================================================================
+  // CRUD Family Switches
+  // =========================================================================
+
+  /**
+   * ➕ POST /api/admin/gammes-seo/:pgId/switches
+   * Créer un Family Switch
+   */
+  @Post(':pgId/switches')
+  async createFamilySwitch(
+    @Param('pgId') pgId: string,
+    @Body() body: { alias: number; content: string },
+  ) {
+    try {
+      this.logger.log(`➕ POST /api/admin/gammes-seo/${pgId}/switches`);
+
+      const result = await this.gammesSeoService.createFamilySwitch(
+        parseInt(pgId, 10),
+        body.alias,
+        body.content,
+      );
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.error },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        id: result.id,
+        message: `Switch alias ${body.alias} créé`,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error creating family switch:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la création du switch',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ✏️ PUT /api/admin/gammes-seo/:pgId/switches/:id
+   * Modifier un Family Switch
+   */
+  @Put(':pgId/switches/:id')
+  async updateFamilySwitch(
+    @Param('pgId') pgId: string,
+    @Param('id') id: string,
+    @Body() body: { content: string },
+  ) {
+    try {
+      this.logger.log(`✏️ PUT /api/admin/gammes-seo/${pgId}/switches/${id}`);
+
+      const result = await this.gammesSeoService.updateFamilySwitch(
+        parseInt(id, 10),
+        body.content,
+      );
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.error },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Switch mis à jour',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error updating family switch:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la mise à jour du switch',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ DELETE /api/admin/gammes-seo/:pgId/switches/:id
+   * Supprimer un Family Switch
+   */
+  @Delete(':pgId/switches/:id')
+  async deleteFamilySwitch(
+    @Param('pgId') pgId: string,
+    @Param('id') id: string,
+  ) {
+    try {
+      this.logger.log(`🗑️ DELETE /api/admin/gammes-seo/${pgId}/switches/${id}`);
+
+      const result = await this.gammesSeoService.deleteFamilySwitch(
+        parseInt(id, 10),
+      );
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.error },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Switch supprimé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error deleting family switch:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la suppression du switch',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============== INFORMATIONS TECHNIQUES ENDPOINTS ==============
+
+  /**
+   * 📚 GET /api/admin/gammes-seo/:pgId/informations
+   * Récupère toutes les informations techniques d'une gamme
+   */
+  @Get(':pgId/informations')
+  async getInformations(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`📚 GET /api/admin/gammes-seo/${pgId}/informations`);
+      const data = await this.gammesSeoService.getInformations(pgId);
+      return {
+        success: true,
+        data,
+        count: data.length,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error getting informations:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des informations',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ➕ POST /api/admin/gammes-seo/:pgId/informations
+   * Ajoute une nouvelle information technique
+   */
+  @Post(':pgId/informations')
+  async addInformation(
+    @Param('pgId', ParseIntPipe) pgId: number,
+    @Body('content') content: string,
+  ) {
+    try {
+      this.logger.log(`➕ POST /api/admin/gammes-seo/${pgId}/informations`);
+
+      if (!content || content.trim().length === 0) {
+        throw new HttpException(
+          { success: false, message: 'Le contenu est requis' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const result = await this.gammesSeoService.addInformation(pgId, content);
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        data: result.item,
+        message: 'Information ajoutée',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error adding information:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de l'ajout de l'information",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ✏️ PUT /api/admin/gammes-seo/informations/:sgiId
+   * Met à jour une information technique
+   */
+  @Put('informations/:sgiId')
+  async updateInformation(
+    @Param('sgiId', ParseIntPipe) sgiId: number,
+    @Body('content') content: string,
+  ) {
+    try {
+      this.logger.log(`✏️ PUT /api/admin/gammes-seo/informations/${sgiId}`);
+
+      if (!content || content.trim().length === 0) {
+        throw new HttpException(
+          { success: false, message: 'Le contenu est requis' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const result = await this.gammesSeoService.updateInformation(sgiId, content);
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Information mise à jour',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error updating information:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la mise à jour de l'information",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ DELETE /api/admin/gammes-seo/informations/:sgiId
+   * Supprime une information technique
+   */
+  @Delete('informations/:sgiId')
+  async deleteInformation(@Param('sgiId', ParseIntPipe) sgiId: number) {
+    try {
+      this.logger.log(`🗑️ DELETE /api/admin/gammes-seo/informations/${sgiId}`);
+
+      const result = await this.gammesSeoService.deleteInformation(sgiId);
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Information supprimée',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error deleting information:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la suppression de l'information",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============== ÉQUIPEMENTIERS ENDPOINTS ==============
+
+  /**
+   * 🏭 GET /api/admin/gammes-seo/:pgId/equipementiers
+   * Récupère tous les équipementiers d'une gamme
+   */
+  @Get(':pgId/equipementiers')
+  async getEquipementiers(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`🏭 GET /api/admin/gammes-seo/${pgId}/equipementiers`);
+      const data = await this.gammesSeoService.getEquipementiers(pgId);
+      return {
+        success: true,
+        data,
+        count: data.length,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error getting equipementiers:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des équipementiers',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📋 GET /api/admin/gammes-seo/marques/available
+   * Liste des marques disponibles pour le dropdown
+   */
+  @Get('marques/available')
+  async getAvailableMarques() {
+    try {
+      this.logger.log('📋 GET /api/admin/gammes-seo/marques/available');
+      const data = await this.gammesSeoService.getAvailableMarques();
+      return {
+        success: true,
+        data,
+        count: data.length,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error getting available marques:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des marques',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ➕ POST /api/admin/gammes-seo/:pgId/equipementiers
+   * Ajoute un équipementier à une gamme
+   */
+  @Post(':pgId/equipementiers')
+  async addEquipementier(
+    @Param('pgId', ParseIntPipe) pgId: number,
+    @Body() body: { pmId: number; content: string },
+  ) {
+    try {
+      this.logger.log(`➕ POST /api/admin/gammes-seo/${pgId}/equipementiers`);
+
+      if (!body.pmId) {
+        throw new HttpException(
+          { success: false, message: 'La marque est requise' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const result = await this.gammesSeoService.addEquipementier(
+        pgId,
+        body.pmId,
+        body.content || '',
+      );
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        data: result.item,
+        message: 'Équipementier ajouté',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error adding equipementier:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de l'ajout de l'équipementier",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ✏️ PUT /api/admin/gammes-seo/equipementiers/:segId
+   * Met à jour la description d'un équipementier
+   */
+  @Put('equipementiers/:segId')
+  async updateEquipementier(
+    @Param('segId', ParseIntPipe) segId: number,
+    @Body('content') content: string,
+  ) {
+    try {
+      this.logger.log(`✏️ PUT /api/admin/gammes-seo/equipementiers/${segId}`);
+
+      const result = await this.gammesSeoService.updateEquipementier(segId, content || '');
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Équipementier mis à jour',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error updating equipementier:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la mise à jour de l'équipementier",
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ DELETE /api/admin/gammes-seo/equipementiers/:segId
+   * Supprime un équipementier d'une gamme
+   */
+  @Delete('equipementiers/:segId')
+  async deleteEquipementier(@Param('segId', ParseIntPipe) segId: number) {
+    try {
+      this.logger.log(`🗑️ DELETE /api/admin/gammes-seo/equipementiers/${segId}`);
+
+      const result = await this.gammesSeoService.deleteEquipementier(segId);
+
+      if (!result.success) {
+        throw new HttpException(
+          { success: false, message: result.message },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Équipementier supprimé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ Error deleting equipementier:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: "Erreur lors de la suppression de l'équipementier",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
