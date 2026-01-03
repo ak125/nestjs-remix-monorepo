@@ -16,6 +16,10 @@ import {
   DEFAULT_THRESHOLDS,
 } from './gamme-seo-thresholds.service';
 import { GammeSeoAuditService } from './gamme-seo-audit.service';
+import {
+  getSwitchAliasConfig,
+  SWITCH_ALIAS_NAMES,
+} from '../../../config/seo-switch-aliases.config';
 
 // ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
 // Ordre du catalogue Automecanik par familles techniques
@@ -134,6 +138,15 @@ export interface GammeSeoUpdateData {
   pg_sitemap?: string;
   user_notes?: string;
   user_action?: string;
+}
+
+export interface EquipementierItem {
+  seg_id: number;
+  seg_content: string;
+  seg_pm_id: number;
+  pm_id: number;
+  pm_name: string;
+  pm_logo: string;
 }
 
 // ============== SERVICE ==============
@@ -1007,12 +1020,18 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     articles: any[];
     vehicles: { level1: any[]; level2: any[]; level5: any[] };
     vLevel: { v1: any[]; v2: any[]; v3: any[]; v4: any[]; v5: any[] };
+    purchaseGuide: PurchaseGuideData | null;
     stats: any;
   }> {
     try {
-      this.logger.log(`📋 getGammeDetail(${pgId})`);
+      const totalStart = performance.now();
+      const timings: Record<string, number> = {};
+      let queryStart: number;
+
+      this.logger.log(`📋 getGammeDetail(${pgId}) - START`);
 
       // 1. Gamme de base (pieces_gamme)
+      queryStart = performance.now();
       const { data: gamme, error: gammeError } = await this.supabase
         .from('pieces_gamme')
         .select(
@@ -1021,30 +1040,42 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .eq('pg_id', pgId.toString())
         .single();
 
+      timings['1_pieces_gamme'] = performance.now() - queryStart;
+
       if (gammeError || !gamme) {
         throw new Error(`Gamme ${pgId} non trouvée`);
       }
 
-      // 2. SEO (seo_gamme)
+      // 2. SEO (__seo_gamme)
+      queryStart = performance.now();
       const { data: seo } = await this.supabase
-        .from('seo_gamme')
+        .from('__seo_gamme')
         .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
         .eq('sg_pg_id', pgId.toString())
-        .single();
+        .maybeSingle();
+      timings['2_seo_gamme'] = performance.now() - queryStart;
 
       // 3. Conseils (seo_gamme_conseil)
+      queryStart = performance.now();
       const { data: conseils } = await this.supabase
         .from('seo_gamme_conseil')
         .select('sgc_id, sgc_title, sgc_content')
         .eq('sgc_pg_id', pgId.toString())
         .order('sgc_id', { ascending: true });
+      timings['3_conseils'] = performance.now() - queryStart;
 
       // 4. Item Switches (__seo_item_switch) - GROUPÉS par alias
+      // Note: Alias 1 & 2 sont spécifiques à la gamme, Alias 3 est GLOBAL (pgId=0)
+      // Pattern identique à Family Switches (ligne 1112)
+      queryStart = performance.now();
       const { data: rawSwitches } = await this.supabase
         .from('__seo_item_switch')
-        .select('sis_id, sis_alias, sis_content')
-        .eq('sis_pg_id', pgId.toString())
+        .select('sis_id, sis_alias, sis_content, sis_pg_id')
+        .or(
+          `and(sis_pg_id.eq.${pgId},sis_alias.in.(1,2)),and(sis_pg_id.eq.0,sis_alias.eq.3)`,
+        )
         .order('sis_alias', { ascending: true });
+      timings['4_item_switches'] = performance.now() - queryStart;
 
       // Grouper Item Switches par alias - TOUTES les variations
       const switchGroups = Object.entries(
@@ -1062,22 +1093,46 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           },
           {} as Record<string, Array<{ sis_id: number; content: string }>>,
         ),
-      ).map(([alias, variations]) => ({
-        alias,
-        count: variations.length,
-        variations, // TOUTES les variations (pas de slice)
-        sample:
-          variations[0]?.content.substring(0, 50) +
-          (variations[0]?.content.length > 50 ? '...' : ''),
-      }));
+      ).map(([alias, variations]) => {
+        const config = getSwitchAliasConfig(alias, 'item');
+        const placeholder = config?.placeholder || `#Switch_${alias}#`;
+        return {
+          alias,
+          name: config?.name || SWITCH_ALIAS_NAMES.item[alias] || `Alias ${alias}`,
+          placeholder,
+          description: config?.description || '',
+          usedInTemplate: seo?.sg_content?.includes(placeholder) || false,
+          count: variations.length,
+          variations, // TOUTES les variations (pas de slice)
+          sample:
+            variations[0]?.content.substring(0, 50) +
+            (variations[0]?.content.length > 50 ? '...' : ''),
+        };
+      });
 
-      // 5. Family Switches (__seo_family_gamme_car_switch) - alias 1-16
-      // Note: Colonnes avec suffixe 's' (sfgcs_*) selon le type SeoFamilyGammeCarSwitch
+      // 5. Family Switches (__seo_family_gamme_car_switch) - alias 11-16
+      // Note: Les Family Switches sont indexés par mf_id (famille), pas pg_id
+      // On récupère d'abord le mc_mf_prime depuis catalog_gamme
+      queryStart = performance.now();
+      const { data: catalogData } = await this.supabase
+        .from('catalog_gamme')
+        .select('mc_mf_prime')
+        .eq('mc_pg_id', pgId.toString())
+        .maybeSingle();
+      timings['5a_catalog_gamme'] = performance.now() - queryStart;
+
+      const mfId = catalogData?.mc_mf_prime || '0';
+      this.logger.debug(`🔍 Family mfId pour pgId=${pgId}: ${mfId}`);
+
+      // Requête Family Switches avec mf_id + pg_id (0 = global, pgId = spécifique)
+      queryStart = performance.now();
       const { data: rawFamilySwitches } = await this.supabase
         .from('__seo_family_gamme_car_switch')
-        .select('sfgcs_id, sfgcs_alias, sfgcs_content')
-        .eq('sfgcs_pg_id', pgId.toString())
+        .select('sfgcs_id, sfgcs_alias, sfgcs_content, sfgcs_pg_id')
+        .eq('sfgcs_mf_id', mfId)
+        .or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`)
         .order('sfgcs_alias', { ascending: true });
+      timings['5b_family_switches'] = performance.now() - queryStart;
 
       // Grouper Family Switches par alias - TOUTES les variations
       const familySwitchGroups = Object.entries(
@@ -1095,16 +1150,25 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           },
           {} as Record<string, Array<{ id: number; content: string }>>,
         ),
-      ).map(([alias, variations]) => ({
-        alias,
-        count: variations.length,
-        variations, // TOUTES les variations
-        sample:
-          variations[0]?.content.substring(0, 50) +
-          (variations[0]?.content.length > 50 ? '...' : ''),
-      }));
+      ).map(([alias, variations]) => {
+        const config = getSwitchAliasConfig(alias, 'family');
+        const placeholder = config?.placeholder || `#FamilySwitch_${alias}#`;
+        return {
+          alias,
+          name: config?.name || SWITCH_ALIAS_NAMES.family[alias] || `Alias ${alias}`,
+          placeholder,
+          description: config?.description || '',
+          usedInTemplate: seo?.sg_content?.includes(placeholder) || false,
+          count: variations.length,
+          variations, // TOUTES les variations
+          sample:
+            variations[0]?.content.substring(0, 50) +
+            (variations[0]?.content.length > 50 ? '...' : ''),
+        };
+      });
 
       // 6. Articles blog liés (table __blog_advice)
+      queryStart = performance.now();
       const { data: articles } = await this.supabase
         .from('__blog_advice')
         .select(
@@ -1113,13 +1177,16 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .eq('ba_pg_id', pgId.toString())
         .order('ba_create', { ascending: false })
         .limit(20);
+      timings['6_blog_advice'] = performance.now() - queryStart;
 
       // 7. Véhicules compatibles - TOUS les niveaux (__cross_gamme_car) avec noms
+      queryStart = performance.now();
       const { data: rawVehicles } = await this.supabase
         .from('__cross_gamme_car')
         .select('cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level')
         .eq('cgc_pg_id', pgId.toString())
         .limit(500); // Plus de véhicules pour couvrir tous les niveaux
+      timings['7_cross_gamme_car'] = performance.now() - queryStart;
 
       // Type pour véhicule enrichi
       type EnrichedVehicle = {
@@ -1144,6 +1211,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         ];
 
         // Requête simple sans jointures (les FK ne sont pas définies dans Supabase)
+        queryStart = performance.now();
         const { data: typesData } =
           typeIds.length > 0
             ? await this.supabase
@@ -1153,6 +1221,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
                 )
                 .in('type_id', typeIds)
             : { data: [] };
+        timings['8_auto_type'] = performance.now() - queryStart;
 
         // Map avec STRING KEYS - IMPORTANT: type_marque_id est STRING ("140"), marque_id est NUMBER (140)
         const typeMap = new Map(
@@ -1180,6 +1249,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         }
 
         // Lookups séparés pour marque et modele
+        queryStart = performance.now();
         const [marques, modeles] = await Promise.all([
           allMarqueIds.size > 0
             ? this.supabase
@@ -1194,6 +1264,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
                 .in('modele_id', [...allModeleIds])
             : { data: [] },
         ]);
+        timings['9_marque_modele'] = performance.now() - queryStart;
 
         // Maps avec STRING KEYS - conversion car marque_id/modele_id sont NUMBER dans la réponse
         const marqueMap = new Map(
@@ -1234,14 +1305,16 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const vehiclesLevel5 = allVehicles.filter((v) => v.level === '5');
 
       // 8. V-Level (gamme_seo_metrics pour v_level) - Récupérer TOUS les niveaux
+      queryStart = performance.now();
       const { data: vLevelData } = await this.supabase
         .from('gamme_seo_metrics')
         .select(
           'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
         )
-        .eq('gamme_id', pgId.toString())
+        .eq('pg_id', pgId.toString())
         .order('v_level', { ascending: true })
         .order('rank', { ascending: true });
+      timings['10_vlevel_metrics'] = performance.now() - queryStart;
 
       // Grouper par V-Level
       const vLevelGrouped = {
@@ -1253,10 +1326,30 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       };
 
       // 9. Stats (table pieces)
+      queryStart = performance.now();
       const { count: productsCount } = await this.supabase
         .from('pieces')
         .select('*', { count: 'exact', head: true })
         .eq('pg_id', pgId.toString());
+      timings['11_pieces_count'] = performance.now() - queryStart;
+
+      // 10. Purchase Guide (__seo_gamme_purchase_guide)
+      queryStart = performance.now();
+      const { data: purchaseGuideData } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .select('*')
+        .eq('sgpg_pg_id', pgId.toString())
+        .maybeSingle();
+      timings['12_purchase_guide'] = performance.now() - queryStart;
+
+      const purchaseGuide = this.transformPurchaseGuideFromDb(purchaseGuideData);
+
+      // Log du timing total
+      const totalTime = performance.now() - totalStart;
+      this.logger.log(
+        `✅ getGammeDetail(${pgId}) completed in ${totalTime.toFixed(0)}ms`,
+      );
+      this.logger.log(`📊 Timing breakdown: ${JSON.stringify(timings)}`);
 
       return {
         gamme,
@@ -1282,6 +1375,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           level5: vehiclesLevel5,
         },
         vLevel: vLevelGrouped,
+        purchaseGuide,
         stats: {
           products_count: productsCount || 0,
           articles_count: (articles || []).length,
@@ -1315,6 +1409,13 @@ export class AdminGammesSeoService extends SupabaseBaseService {
             articles && articles.length > 0
               ? articles[0].ba_update || articles[0].ba_create
               : null,
+          // Debug: timings de performance
+          _debug: {
+            totalTimeMs: Math.round(totalTime),
+            timings: Object.fromEntries(
+              Object.entries(timings).map(([k, v]) => [k, Math.round(v)]),
+            ),
+          },
         },
       };
     } catch (error) {
@@ -1325,42 +1426,149 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
   /**
    * 🔄 Recalcule les V-Level pour une gamme
-   * Pour l'instant: met à jour updated_at pour marquer comme recalculé
-   * TODO: Intégrer le vrai pipeline de calcul V-Level
+   * Algorithme simplifié basé sur search_volume existant:
+   * - Par énergie (diesel/essence), trier par search_volume DESC
+   * - Position 1 → V2 (champion gamme, UNIQUE par énergie)
+   * - Positions 2-4 → V3 (challengers)
+   * - search_volume = 0 ou null → V4 (faibles)
+   * - Reste → V5 (bloc B)
+   * Note: V1 (global) est calculé séparément via validateV1Rules
    */
   async recalculateVLevel(pgId: number): Promise<{
     success: boolean;
     message: string;
     updatedCount: number;
+    details: {
+      v2: number;
+      v3: number;
+      v4: number;
+      v5: number;
+    };
   }> {
     try {
       this.logger.log(`🔄 Recalculating V-Level for gamme ${pgId}`);
 
-      // Mettre à jour updated_at pour tous les enregistrements de cette gamme
-      const { data, error } = await this.supabase
+      // 1. Récupérer tous les enregistrements pour cette gamme
+      const { data: records, error: fetchError } = await this.supabase
         .from('gamme_seo_metrics')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('gamme_id', pgId.toString())
-        .select('id');
+        .select('id, energy, search_volume, v_level')
+        .eq('pg_id', pgId.toString());
 
-      if (error) {
+      if (fetchError) {
         this.logger.error(
-          `❌ Error updating V-Level for gamme ${pgId}:`,
-          error,
+          `❌ Error fetching gamme_seo_metrics for gamme ${pgId}:`,
+          fetchError,
         );
-        throw error;
+        throw fetchError;
       }
 
-      const updatedCount = data?.length || 0;
+      if (!records || records.length === 0) {
+        return {
+          success: true,
+          message: 'Aucun enregistrement à recalculer pour cette gamme',
+          updatedCount: 0,
+          details: { v2: 0, v3: 0, v4: 0, v5: 0 },
+        };
+      }
+
+      // 2. Grouper par énergie (normaliser diesel/essence)
+      const byEnergy = new Map<string, typeof records>();
+      for (const record of records) {
+        const energy = (record.energy || 'unknown').toLowerCase();
+        const normalizedEnergy =
+          energy.includes('diesel') || energy.includes('gasoil')
+            ? 'diesel'
+            : energy.includes('essence') || energy.includes('petrol')
+              ? 'essence'
+              : energy;
+
+        if (!byEnergy.has(normalizedEnergy)) {
+          byEnergy.set(normalizedEnergy, []);
+        }
+        byEnergy.get(normalizedEnergy)!.push(record);
+      }
+
+      // 3. Pour chaque groupe d'énergie, recalculer V-Level
+      const updates: Array<{ id: number; v_level: string; rank: number }> = [];
+      const details = { v2: 0, v3: 0, v4: 0, v5: 0 };
+
+      for (const [energy, energyRecords] of byEnergy) {
+        // Trier par search_volume DESC (nulls last)
+        const sorted = [...energyRecords].sort((a, b) => {
+          const volA = a.search_volume ?? -1;
+          const volB = b.search_volume ?? -1;
+          return volB - volA;
+        });
+
+        sorted.forEach((record, index) => {
+          let newVLevel: string;
+          const searchVol = record.search_volume ?? 0;
+
+          // Skip V1 (global champion) - keep existing if already V1
+          if (record.v_level === 'V1') {
+            return; // Don't change V1, it's calculated globally
+          }
+
+          if (index === 0 && searchVol > 0) {
+            // Position 1 avec volume > 0 → V2 (champion gamme)
+            newVLevel = 'V2';
+            details.v2++;
+          } else if (index >= 1 && index <= 3 && searchVol > 0) {
+            // Positions 2-4 avec volume > 0 → V3 (challengers)
+            newVLevel = 'V3';
+            details.v3++;
+          } else if (searchVol === 0 || searchVol === null) {
+            // Pas de volume de recherche → V4 (faibles)
+            newVLevel = 'V4';
+            details.v4++;
+          } else {
+            // Reste → V5 (bloc B)
+            newVLevel = 'V5';
+            details.v5++;
+          }
+
+          updates.push({
+            id: record.id,
+            v_level: newVLevel,
+            rank: index + 1,
+          });
+        });
+      }
+
+      // 4. Appliquer les mises à jour
+      let updatedCount = 0;
+      for (const update of updates) {
+        const { error: updateError } = await this.supabase
+          .from('gamme_seo_metrics')
+          .update({
+            v_level: update.v_level,
+            rank: update.rank,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', update.id);
+
+        if (updateError) {
+          this.logger.warn(
+            `⚠️ Error updating record ${update.id}:`,
+            updateError,
+          );
+        } else {
+          updatedCount++;
+        }
+      }
 
       this.logger.log(
-        `✅ V-Level recalculated for gamme ${pgId}: ${updatedCount} records updated`,
+        `✅ V-Level recalculated for gamme ${pgId}: ${updatedCount}/${updates.length} records updated`,
+      );
+      this.logger.log(
+        `   Details: V2=${details.v2}, V3=${details.v3}, V4=${details.v4}, V5=${details.v5}`,
       );
 
       return {
         success: true,
-        message: `V-Level recalculé: ${updatedCount} enregistrements mis à jour`,
+        message: `V-Level recalculé: ${updatedCount} enregistrements mis à jour (V2: ${details.v2}, V3: ${details.v3}, V4: ${details.v4}, V5: ${details.v5})`,
         updatedCount,
+        details,
       };
     } catch (error) {
       this.logger.error(`❌ Error in recalculateVLevel(${pgId}):`, error);
@@ -1448,7 +1656,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         // Compter combien de fois cette variante est V2 dans des gammes G1
         const { count: v2Count, error: v2Error } = await this.supabase
           .from('gamme_seo_metrics')
-          .select('gamme_id', { count: 'exact', head: true })
+          .select('pg_id', { count: 'exact', head: true })
           .eq('model_name', v1.model_name)
           .ilike('energy', v1.energy)
           .eq('v_level', 'V2');
@@ -1536,11 +1744,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       // 2. Gammes avec V-Level data
       const { data: gammesWithData } = await this.supabase
         .from('gamme_seo_metrics')
-        .select('gamme_id')
+        .select('pg_id')
         .not('v_level', 'is', null);
 
       const uniqueGammes = new Set(
-        (gammesWithData || []).map((g: any) => g.gamme_id),
+        (gammesWithData || []).map((g: any) => g.pg_id),
       );
 
       // 3. Distribution par V-Level
@@ -1614,11 +1822,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
       const { data: g1WithV2 } = await this.supabase
         .from('gamme_seo_metrics')
-        .select('gamme_id')
+        .select('pg_id')
         .eq('v_level', 'V2');
 
       const g1GammesWithV2 = new Set(
-        (g1WithV2 || []).map((g: any) => g.gamme_id),
+        (g1WithV2 || []).map((g: any) => g.pg_id),
       );
 
       const stats = {
@@ -1646,4 +1854,1075 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       throw error;
     }
   }
+
+  // ============== SEO CONTENT MANAGEMENT ==============
+
+  /**
+   * 💾 Met à jour les données SEO d'une gamme (depuis l'interface admin)
+   * Utilisé par le formulaire "Données SEO" dans /admin/gammes-seo/:pgId
+   */
+  async updateGammeSeo(
+    pgId: number,
+    seoData: {
+      sg_title: string;
+      sg_descrip: string;
+      sg_keywords: string;
+      sg_h1: string;
+      sg_content: string;
+    },
+  ): Promise<{
+    success: boolean;
+    message: string;
+    seo: typeof seoData;
+    isNew: boolean;
+  }> {
+    try {
+      this.logger.log(`💾 Updating SEO for gamme ${pgId}`);
+
+      // 1. Vérifier si un enregistrement existe déjà
+      const { data: existingSeo } = await this.supabase
+        .from('__seo_gamme')
+        .select('sg_id')
+        .eq('sg_pg_id', pgId.toString())
+        .maybeSingle();
+
+      // 2. Mettre à jour ou insérer
+      if (existingSeo) {
+        const { error: updateError } = await this.supabase
+          .from('__seo_gamme')
+          .update({
+            sg_title: seoData.sg_title,
+            sg_descrip: seoData.sg_descrip,
+            sg_keywords: seoData.sg_keywords,
+            sg_h1: seoData.sg_h1,
+            sg_content: seoData.sg_content,
+          })
+          .eq('sg_id', existingSeo.sg_id);
+
+        if (updateError) {
+          throw new Error(`Update failed: ${updateError.message}`);
+        }
+
+        this.logger.log(`✅ SEO updated for gamme ${pgId}`);
+        return {
+          success: true,
+          message: `SEO mis à jour avec succès`,
+          seo: seoData,
+          isNew: false,
+        };
+      } else {
+        const { error: insertError } = await this.supabase
+          .from('__seo_gamme')
+          .insert({
+            sg_pg_id: pgId.toString(),
+            sg_title: seoData.sg_title,
+            sg_descrip: seoData.sg_descrip,
+            sg_keywords: seoData.sg_keywords,
+            sg_h1: seoData.sg_h1,
+            sg_content: seoData.sg_content,
+          });
+
+        if (insertError) {
+          throw new Error(`Insert failed: ${insertError.message}`);
+        }
+
+        this.logger.log(`✅ SEO created for gamme ${pgId}`);
+        return {
+          success: true,
+          message: `SEO créé avec succès`,
+          seo: seoData,
+          isNew: true,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`❌ Error updating SEO for gamme ${pgId}:`, error);
+      throw error;
+    }
+  }
+
+  // ============== SEO CONTENT GENERATOR ==============
+
+  /**
+   * 🎯 Génère le contenu SEO pour une gamme spécifique
+   * Basé sur le G-Level et les données de la gamme
+   */
+  async generateGammeSeo(pgId: number): Promise<{
+    success: boolean;
+    message: string;
+    seo: {
+      sg_title: string;
+      sg_descrip: string;
+      sg_keywords: string;
+      sg_h1: string;
+      sg_content: string;
+    };
+    isNew: boolean;
+  }> {
+    try {
+      this.logger.log(`🎯 Generating SEO for gamme ${pgId}`);
+
+      // 1. Récupérer les données de la gamme
+      const { data: gamme, error: gammeError } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_name_meta, pg_top, pg_level, pg_alias')
+        .eq('pg_id', pgId.toString())
+        .single();
+
+      if (gammeError || !gamme) {
+        throw new Error(`Gamme ${pgId} not found`);
+      }
+
+      // 2. Récupérer les metrics (trends, g_level)
+      const { data: metrics } = await this.supabase
+        .from('gamme_seo_metrics')
+        .select('trends_index, g_level_recommended, seo_score')
+        .eq('pg_id', pgId.toString())
+        .maybeSingle();
+
+      // 3. Déterminer le G-Level effectif
+      const gLevel =
+        gamme.pg_top === '1'
+          ? 'G1'
+          : metrics?.g_level_recommended || 'G3';
+
+      // 4. Générer le contenu SEO basé sur le template
+      const gammeName = gamme.pg_name || '';
+      const gammeNameMeta = gamme.pg_name_meta || gammeName;
+      const seoContent = this.generateSeoContent(gammeName, gammeNameMeta, gLevel);
+
+      // 5. Vérifier si un enregistrement existe déjà
+      const { data: existingSeo } = await this.supabase
+        .from('__seo_gamme')
+        .select('sg_id')
+        .eq('sg_pg_id', pgId.toString())
+        .maybeSingle();
+
+      // 6. Insérer ou mettre à jour
+      if (existingSeo) {
+        const { error: updateError } = await this.supabase
+          .from('__seo_gamme')
+          .update({
+            sg_title: seoContent.title,
+            sg_descrip: seoContent.description,
+            sg_keywords: seoContent.keywords,
+            sg_h1: seoContent.h1,
+            sg_content: seoContent.content,
+          })
+          .eq('sg_id', existingSeo.sg_id);
+
+        if (updateError) {
+          throw new Error(`Update failed: ${updateError.message}`);
+        }
+
+        this.logger.log(`✅ SEO updated for gamme ${pgId}`);
+        return {
+          success: true,
+          message: `SEO mis à jour pour ${gammeName}`,
+          seo: {
+            sg_title: seoContent.title,
+            sg_descrip: seoContent.description,
+            sg_keywords: seoContent.keywords,
+            sg_h1: seoContent.h1,
+            sg_content: seoContent.content,
+          },
+          isNew: false,
+        };
+      } else {
+        const { error: insertError } = await this.supabase
+          .from('__seo_gamme')
+          .insert({
+            sg_pg_id: pgId.toString(),
+            sg_title: seoContent.title,
+            sg_descrip: seoContent.description,
+            sg_keywords: seoContent.keywords,
+            sg_h1: seoContent.h1,
+            sg_content: seoContent.content,
+          });
+
+        if (insertError) {
+          throw new Error(`Insert failed: ${insertError.message}`);
+        }
+
+        this.logger.log(`✅ SEO created for gamme ${pgId}`);
+        return {
+          success: true,
+          message: `SEO créé pour ${gammeName}`,
+          seo: {
+            sg_title: seoContent.title,
+            sg_descrip: seoContent.description,
+            sg_keywords: seoContent.keywords,
+            sg_h1: seoContent.h1,
+            sg_content: seoContent.content,
+          },
+          isNew: true,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`❌ Error generating SEO for gamme ${pgId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📝 Génère le contenu SEO basé sur templates
+   */
+  private generateSeoContent(
+    gammeName: string,
+    gammeNameMeta: string,
+    gLevel: string,
+  ): {
+    title: string;
+    description: string;
+    keywords: string;
+    h1: string;
+    content: string;
+  } {
+    // Templates SEO par G-Level
+    const templates: Record<string, {
+      title: string;
+      description: string;
+      h1: string;
+      content: string;
+    }> = {
+      G1: {
+        title: `${gammeNameMeta} | Pièces auto qualité OE - Automecanik`,
+        description: `Large choix de ${gammeName.toLowerCase()} pour toutes marques. Qualité OE, prix compétitifs, livraison rapide. Trouvez la pièce adaptée à votre véhicule.`,
+        h1: gammeName,
+        content: `<p>Découvrez notre sélection de <strong>${gammeName.toLowerCase()}</strong> pour votre véhicule. Chez Automecanik, nous proposons des pièces de qualité équipementier d'origine (OE) aux meilleurs prix.</p>
+<h2>Pourquoi choisir nos ${gammeName.toLowerCase()} ?</h2>
+<ul>
+  <li>Qualité équipementier d'origine garantie</li>
+  <li>Compatible avec toutes les marques automobiles</li>
+  <li>Prix compétitifs et livraison rapide</li>
+  <li>Service client expert pour vous conseiller</li>
+</ul>
+<p>Sélectionnez votre véhicule pour trouver la pièce compatible avec votre modèle.</p>`,
+      },
+      G2: {
+        title: `${gammeNameMeta} - Pièces auto | Automecanik`,
+        description: `${gammeName} pour votre véhicule. Pièces de qualité, prix attractifs. Commandez en ligne sur Automecanik.`,
+        h1: gammeName,
+        content: `<p>Retrouvez notre gamme de <strong>${gammeName.toLowerCase()}</strong>. Pièces de qualité pour l'entretien et la réparation de votre véhicule.</p>
+<p>Utilisez notre sélecteur de véhicule pour trouver les pièces compatibles avec votre automobile.</p>`,
+      },
+      G3: {
+        title: `${gammeNameMeta} | Automecanik`,
+        description: `${gammeName} disponibles sur Automecanik. Trouvez la pièce compatible avec votre véhicule.`,
+        h1: gammeName,
+        content: `<p>Pièces <strong>${gammeName.toLowerCase()}</strong> disponibles. Sélectionnez votre véhicule pour voir les références compatibles.</p>`,
+      },
+    };
+
+    const template = templates[gLevel] || templates.G3;
+
+    // Générer les keywords
+    const keywords = [
+      gammeName.toLowerCase(),
+      `${gammeName.toLowerCase()} voiture`,
+      `${gammeName.toLowerCase()} auto`,
+      `acheter ${gammeName.toLowerCase()}`,
+      `prix ${gammeName.toLowerCase()}`,
+    ].join(', ');
+
+    return {
+      title: template.title,
+      description: template.description,
+      keywords,
+      h1: template.h1,
+      content: template.content,
+    };
+  }
+
+  /**
+   * 🚀 Génère le SEO pour toutes les gammes sans contenu
+   * Batch generation avec progress tracking
+   */
+  async generateAllGammesSeo(options?: {
+    onlyEmpty?: boolean;
+    gLevels?: string[];
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    stats: {
+      total: number;
+      created: number;
+      updated: number;
+      errors: number;
+    };
+    errors: Array<{ pgId: number; error: string }>;
+  }> {
+    const stats = { total: 0, created: 0, updated: 0, errors: 0 };
+    const errors: Array<{ pgId: number; error: string }> = [];
+
+    try {
+      this.logger.log('🚀 Starting batch SEO generation');
+
+      // 1. Récupérer les gammes à traiter
+      let query = this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name')
+        .eq('pg_display', '1');
+
+      // Filtre G-Level si spécifié
+      if (options?.gLevels?.includes('G1')) {
+        query = query.eq('pg_top', '1');
+      }
+
+      const { data: gammes, error: gammesError } = await query
+        .order('pg_id')
+        .limit(options?.limit || 1000);
+
+      if (gammesError) {
+        throw new Error(`Failed to fetch gammes: ${gammesError.message}`);
+      }
+
+      if (!gammes || gammes.length === 0) {
+        return {
+          success: true,
+          message: 'Aucune gamme à traiter',
+          stats,
+          errors,
+        };
+      }
+
+      // 2. Si onlyEmpty, filtrer les gammes sans SEO
+      let gammesToProcess = gammes;
+      if (options?.onlyEmpty) {
+        const { data: existingSeo } = await this.supabase
+          .from('__seo_gamme')
+          .select('sg_pg_id');
+
+        const existingPgIds = new Set(
+          (existingSeo || []).map((s: any) => s.sg_pg_id),
+        );
+
+        gammesToProcess = gammes.filter(
+          (g) => !existingPgIds.has(g.pg_id?.toString()),
+        );
+      }
+
+      stats.total = gammesToProcess.length;
+      this.logger.log(`📊 Processing ${stats.total} gammes`);
+
+      // 3. Générer le SEO pour chaque gamme
+      for (const gamme of gammesToProcess) {
+        try {
+          const pgId = parseInt(gamme.pg_id || '0', 10);
+          if (!pgId) continue;
+
+          const result = await this.generateGammeSeo(pgId);
+
+          if (result.isNew) {
+            stats.created++;
+          } else {
+            stats.updated++;
+          }
+        } catch (error) {
+          stats.errors++;
+          errors.push({
+            pgId: parseInt(gamme.pg_id || '0', 10),
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+
+      const message = `SEO généré: ${stats.created} créés, ${stats.updated} mis à jour, ${stats.errors} erreurs`;
+      this.logger.log(`✅ ${message}`);
+
+      return {
+        success: stats.errors === 0,
+        message,
+        stats,
+        errors,
+      };
+    } catch (error) {
+      this.logger.error('❌ Error in batch SEO generation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Récupère les statistiques SEO des gammes
+   */
+  async getSeoGenerationStats(): Promise<{
+    totalGammes: number;
+    gammesWithSeo: number;
+    gammesWithoutSeo: number;
+    coverage: number;
+    byGLevel: {
+      g1: { total: number; withSeo: number };
+      g2: { total: number; withSeo: number };
+      g3: { total: number; withSeo: number };
+    };
+  }> {
+    try {
+      // Total gammes actives
+      const { count: totalGammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_display', '1');
+
+      // Gammes avec SEO
+      const { count: gammesWithSeo } = await this.supabase
+        .from('__seo_gamme')
+        .select('*', { count: 'exact', head: true });
+
+      // G1 (top gammes)
+      const { count: g1Total } = await this.supabase
+        .from('pieces_gamme')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_display', '1')
+        .eq('pg_top', '1');
+
+      // G1 avec SEO
+      const { data: g1Gammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id')
+        .eq('pg_display', '1')
+        .eq('pg_top', '1');
+
+      const g1PgIds = (g1Gammes || []).map((g: any) => g.pg_id?.toString());
+
+      const { count: g1WithSeo } = g1PgIds.length > 0
+        ? await this.supabase
+            .from('__seo_gamme')
+            .select('*', { count: 'exact', head: true })
+            .in('sg_pg_id', g1PgIds)
+        : { count: 0 };
+
+      const total = totalGammes || 0;
+      const withSeo = gammesWithSeo || 0;
+      const g1TotalCount = g1Total || 0;
+      const g1WithSeoCount = g1WithSeo || 0;
+
+      return {
+        totalGammes: total,
+        gammesWithSeo: withSeo,
+        gammesWithoutSeo: total - withSeo,
+        coverage: total > 0 ? Math.round((withSeo / total) * 100) : 0,
+        byGLevel: {
+          g1: { total: g1TotalCount, withSeo: g1WithSeoCount },
+          g2: { total: 0, withSeo: 0 }, // Calculé si besoin
+          g3: { total: total - g1TotalCount, withSeo: withSeo - g1WithSeoCount },
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Error getting SEO generation stats:', error);
+      throw error;
+    }
+  }
+
+  // =========================================================================
+  // CRUD Family Switches
+  // =========================================================================
+
+  /**
+   * Créer un Family Switch
+   */
+  async createFamilySwitch(
+    pgId: number,
+    alias: number,
+    content: string,
+  ): Promise<{ success: boolean; id?: number; error?: string }> {
+    try {
+      // 1. Récupérer le mf_id depuis catalog_gamme
+      const { data: catalogData } = await this.supabase
+        .from('catalog_gamme')
+        .select('mc_mf_prime')
+        .eq('mc_pg_id', pgId.toString())
+        .maybeSingle();
+
+      const mfId = catalogData?.mc_mf_prime || '0';
+
+      if (mfId === '0') {
+        return { success: false, error: 'Famille non trouvée pour cette gamme' };
+      }
+
+      // 2. Insérer le switch
+      const { data, error } = await this.supabase
+        .from('__seo_family_gamme_car_switch')
+        .insert({
+          sfgcs_mf_id: mfId,
+          sfgcs_pg_id: pgId.toString(),
+          sfgcs_alias: alias.toString(),
+          sfgcs_content: content,
+        })
+        .select('sfgcs_id')
+        .single();
+
+      if (error) {
+        this.logger.error('❌ Error creating family switch:', error);
+        return { success: false, error: error.message };
+      }
+
+      this.logger.log(`✅ Family switch créé: id=${data.sfgcs_id}, alias=${alias}`);
+      return { success: true, id: data.sfgcs_id };
+    } catch (error) {
+      this.logger.error('❌ Error in createFamilySwitch:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  /**
+   * Modifier un Family Switch
+   */
+  async updateFamilySwitch(
+    id: number,
+    content: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_family_gamme_car_switch')
+        .update({ sfgcs_content: content })
+        .eq('sfgcs_id', id);
+
+      if (error) {
+        this.logger.error('❌ Error updating family switch:', error);
+        return { success: false, error: error.message };
+      }
+
+      this.logger.log(`✅ Family switch mis à jour: id=${id}`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error('❌ Error in updateFamilySwitch:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  /**
+   * Supprimer un Family Switch
+   */
+  async deleteFamilySwitch(
+    id: number,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_family_gamme_car_switch')
+        .delete()
+        .eq('sfgcs_id', id);
+
+      if (error) {
+        this.logger.error('❌ Error deleting family switch:', error);
+        return { success: false, error: error.message };
+      }
+
+      this.logger.log(`✅ Family switch supprimé: id=${id}`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error('❌ Error in deleteFamilySwitch:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  // =========================================================================
+  // PURCHASE GUIDE CRUD
+  // =========================================================================
+
+  /**
+   * 📖 Interface pour les données du guide d'achat
+   */
+  private transformPurchaseGuideFromDb(data: any): PurchaseGuideData | null {
+    if (!data) return null;
+
+    return {
+      id: data.sgpg_id,
+      pgId: data.sgpg_pg_id,
+      step1: {
+        title: data.sgpg_step1_title || 'Vérifiez la compatibilité',
+        content: data.sgpg_step1_content || '',
+        highlight: data.sgpg_step1_highlight || '',
+        bullets: data.sgpg_step1_bullets || [],
+      },
+      step2: {
+        economique: {
+          subtitle: data.sgpg_eco_subtitle || '',
+          description: data.sgpg_eco_description || '',
+          specs: data.sgpg_eco_specs || [],
+          priceRange: data.sgpg_eco_price || '',
+        },
+        qualitePlus: {
+          subtitle: data.sgpg_qplus_subtitle || '',
+          description: data.sgpg_qplus_description || '',
+          specs: data.sgpg_qplus_specs || [],
+          priceRange: data.sgpg_qplus_price || '',
+          badge: data.sgpg_qplus_badge || 'Le plus choisi',
+        },
+        premium: {
+          subtitle: data.sgpg_premium_subtitle || '',
+          description: data.sgpg_premium_description || '',
+          specs: data.sgpg_premium_specs || [],
+          priceRange: data.sgpg_premium_price || '',
+        },
+      },
+      step3: {
+        title: data.sgpg_step3_title || 'Sécurité et conseils',
+        content: data.sgpg_step3_content || '',
+        alerts: data.sgpg_step3_alerts || [],
+        relatedGammes: data.sgpg_related_gammes || [],
+      },
+      createdAt: data.sgpg_created_at,
+      updatedAt: data.sgpg_updated_at,
+    };
+  }
+
+  /**
+   * 📖 Récupérer le guide d'achat d'une gamme
+   */
+  async getPurchaseGuide(pgId: number): Promise<PurchaseGuideData | null> {
+    try {
+      this.logger.log(`📖 Getting purchase guide for gamme ${pgId}`);
+
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .select('*')
+        .eq('sgpg_pg_id', pgId.toString())
+        .maybeSingle();
+
+      if (error) {
+        this.logger.error(`❌ Error fetching purchase guide:`, error);
+        throw error;
+      }
+
+      const guide = this.transformPurchaseGuideFromDb(data);
+      this.logger.log(
+        guide
+          ? `✅ Purchase guide found for gamme ${pgId}`
+          : `ℹ️ No purchase guide for gamme ${pgId}`,
+      );
+
+      return guide;
+    } catch (error) {
+      this.logger.error(`❌ Error in getPurchaseGuide(${pgId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 💾 Mettre à jour ou créer le guide d'achat d'une gamme
+   */
+  async updatePurchaseGuide(
+    pgId: number,
+    guideData: Omit<PurchaseGuideData, 'id' | 'pgId' | 'createdAt' | 'updatedAt'>,
+  ): Promise<{ success: boolean; message: string; guide: PurchaseGuideData | null }> {
+    try {
+      this.logger.log(`💾 Updating purchase guide for gamme ${pgId}`);
+
+      // Transformer les données pour la DB
+      const dbData = {
+        sgpg_pg_id: pgId.toString(),
+        sgpg_step1_title: guideData.step1.title,
+        sgpg_step1_content: guideData.step1.content,
+        sgpg_step1_highlight: guideData.step1.highlight,
+        sgpg_step1_bullets: guideData.step1.bullets || [],
+        sgpg_eco_subtitle: guideData.step2.economique.subtitle,
+        sgpg_eco_description: guideData.step2.economique.description,
+        sgpg_eco_specs: guideData.step2.economique.specs || [],
+        sgpg_eco_price: guideData.step2.economique.priceRange,
+        sgpg_qplus_subtitle: guideData.step2.qualitePlus.subtitle,
+        sgpg_qplus_description: guideData.step2.qualitePlus.description,
+        sgpg_qplus_specs: guideData.step2.qualitePlus.specs || [],
+        sgpg_qplus_price: guideData.step2.qualitePlus.priceRange,
+        sgpg_qplus_badge: guideData.step2.qualitePlus.badge || 'Le plus choisi',
+        sgpg_premium_subtitle: guideData.step2.premium.subtitle,
+        sgpg_premium_description: guideData.step2.premium.description,
+        sgpg_premium_specs: guideData.step2.premium.specs || [],
+        sgpg_premium_price: guideData.step2.premium.priceRange,
+        sgpg_step3_title: guideData.step3.title,
+        sgpg_step3_content: guideData.step3.content,
+        sgpg_step3_alerts: guideData.step3.alerts || [],
+        sgpg_related_gammes: guideData.step3.relatedGammes || [],
+        sgpg_updated_at: new Date().toISOString(),
+      };
+
+      // Vérifier si le guide existe déjà
+      const { data: existing } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_id')
+        .eq('sgpg_pg_id', pgId.toString())
+        .maybeSingle();
+
+      let result;
+      let isNew = false;
+
+      if (existing) {
+        // Update existing
+        result = await this.supabase
+          .from('__seo_gamme_purchase_guide')
+          .update(dbData)
+          .eq('sgpg_id', existing.sgpg_id)
+          .select('*')
+          .single();
+      } else {
+        // Insert new
+        isNew = true;
+        result = await this.supabase
+          .from('__seo_gamme_purchase_guide')
+          .insert({
+            ...dbData,
+            sgpg_created_at: new Date().toISOString(),
+          })
+          .select('*')
+          .single();
+      }
+
+      if (result.error) {
+        this.logger.error(`❌ Error saving purchase guide:`, result.error);
+        throw result.error;
+      }
+
+      const guide = this.transformPurchaseGuideFromDb(result.data);
+      const action = isNew ? 'créé' : 'mis à jour';
+      this.logger.log(`✅ Purchase guide ${action} for gamme ${pgId}`);
+
+      return {
+        success: true,
+        message: `Guide d'achat ${action} avec succès`,
+        guide,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error in updatePurchaseGuide(${pgId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🗑️ Supprimer le guide d'achat d'une gamme
+   */
+  async deletePurchaseGuide(
+    pgId: number,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      this.logger.log(`🗑️ Deleting purchase guide for gamme ${pgId}`);
+
+      const { error } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .delete()
+        .eq('sgpg_pg_id', pgId.toString());
+
+      if (error) {
+        this.logger.error(`❌ Error deleting purchase guide:`, error);
+        throw error;
+      }
+
+      this.logger.log(`✅ Purchase guide deleted for gamme ${pgId}`);
+      return {
+        success: true,
+        message: `Guide d'achat supprimé`,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error in deletePurchaseGuide(${pgId}):`, error);
+      throw error;
+    }
+  }
+
+  // =========================================================================
+  // INFORMATIONS TECHNIQUES (__seo_gamme_info)
+  // =========================================================================
+
+  /**
+   * Récupère toutes les informations techniques d'une gamme
+   */
+  async getInformations(
+    pgId: number,
+  ): Promise<{ sgi_id: number; sgi_content: string }[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_info')
+        .select('sgi_id, sgi_content')
+        .eq('sgi_pg_id', pgId)
+        .order('sgi_id', { ascending: true });
+
+      if (error) {
+        this.logger.error(`Error fetching informations for gamme ${pgId}:`, error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error(`Error in getInformations(${pgId}):`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Ajoute une nouvelle information technique
+   */
+  async addInformation(
+    pgId: number,
+    content: string,
+  ): Promise<{ success: boolean; item?: any; message?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_info')
+        .insert({ sgi_pg_id: pgId, sgi_content: content })
+        .select('sgi_id, sgi_content')
+        .single();
+
+      if (error) {
+        this.logger.error(`Error adding information for gamme ${pgId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Information added for gamme ${pgId}`);
+      return { success: true, item: data };
+    } catch (error) {
+      this.logger.error(`Error in addInformation(${pgId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+
+  /**
+   * Met à jour une information technique
+   */
+  async updateInformation(
+    sgiId: number,
+    content: string,
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_gamme_info')
+        .update({ sgi_content: content })
+        .eq('sgi_id', sgiId);
+
+      if (error) {
+        this.logger.error(`Error updating information ${sgiId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Information ${sgiId} updated`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(`Error in updateInformation(${sgiId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+
+  /**
+   * Supprime une information technique
+   */
+  async deleteInformation(
+    sgiId: number,
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_gamme_info')
+        .delete()
+        .eq('sgi_id', sgiId);
+
+      if (error) {
+        this.logger.error(`Error deleting information ${sgiId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Information ${sgiId} deleted`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(`Error in deleteInformation(${sgiId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+
+  // =========================================================================
+  // ÉQUIPEMENTIERS (__seo_equip_gamme)
+  // =========================================================================
+
+  /**
+   * Récupère tous les équipementiers d'une gamme avec infos marque
+   */
+  async getEquipementiers(pgId: number): Promise<EquipementierItem[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_equip_gamme')
+        .select(
+          `
+          seg_id,
+          seg_content,
+          seg_pm_id,
+          pieces_marque!inner(pm_id, pm_name, pm_logo)
+        `,
+        )
+        .eq('seg_pg_id', pgId);
+
+      if (error) {
+        this.logger.error(`Error fetching equipementiers for gamme ${pgId}:`, error);
+        return [];
+      }
+
+      // Transformer pour un format plus simple
+      return (data || []).map((item: any) => ({
+        seg_id: item.seg_id,
+        seg_content: item.seg_content,
+        seg_pm_id: item.seg_pm_id,
+        pm_id: item.pieces_marque?.pm_id,
+        pm_name: item.pieces_marque?.pm_name,
+        pm_logo: item.pieces_marque?.pm_logo,
+      }));
+    } catch (error) {
+      this.logger.error(`Error in getEquipementiers(${pgId}):`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Liste des marques disponibles (pour dropdown)
+   */
+  async getAvailableMarques(): Promise<
+    { pm_id: number; pm_name: string; pm_logo: string }[]
+  > {
+    try {
+      const { data, error } = await this.supabase
+        .from('pieces_marque')
+        .select('pm_id, pm_name, pm_logo')
+        .order('pm_name', { ascending: true });
+
+      if (error) {
+        this.logger.error('Error fetching available marques:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('Error in getAvailableMarques:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Ajoute un équipementier à une gamme
+   */
+  async addEquipementier(
+    pgId: number,
+    pmId: number,
+    content: string,
+  ): Promise<{ success: boolean; item?: any; message?: string }> {
+    try {
+      // Vérifier si l'équipementier existe déjà pour cette gamme
+      const { data: existing } = await this.supabase
+        .from('__seo_equip_gamme')
+        .select('seg_id')
+        .eq('seg_pg_id', pgId)
+        .eq('seg_pm_id', pmId)
+        .single();
+
+      if (existing) {
+        return {
+          success: false,
+          message: 'Cet équipementier existe déjà pour cette gamme',
+        };
+      }
+
+      const { data, error } = await this.supabase
+        .from('__seo_equip_gamme')
+        .insert({ seg_pg_id: pgId, seg_pm_id: pmId, seg_content: content })
+        .select('seg_id, seg_content, seg_pm_id')
+        .single();
+
+      if (error) {
+        this.logger.error(`Error adding equipementier for gamme ${pgId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Equipementier added for gamme ${pgId}`);
+      return { success: true, item: data };
+    } catch (error) {
+      this.logger.error(`Error in addEquipementier(${pgId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+
+  /**
+   * Met à jour la description d'un équipementier
+   */
+  async updateEquipementier(
+    segId: number,
+    content: string,
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_equip_gamme')
+        .update({ seg_content: content })
+        .eq('seg_id', segId);
+
+      if (error) {
+        this.logger.error(`Error updating equipementier ${segId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Equipementier ${segId} updated`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(`Error in updateEquipementier(${segId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+
+  /**
+   * Supprime un équipementier d'une gamme
+   */
+  async deleteEquipementier(
+    segId: number,
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { error } = await this.supabase
+        .from('__seo_equip_gamme')
+        .delete()
+        .eq('seg_id', segId);
+
+      if (error) {
+        this.logger.error(`Error deleting equipementier ${segId}:`, error);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Equipementier ${segId} deleted`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(`Error in deleteEquipementier(${segId}):`, error);
+      return { success: false, message: 'Erreur serveur' };
+    }
+  }
+}
+
+// =========================================================================
+// PURCHASE GUIDE DATA INTERFACE
+// =========================================================================
+
+export interface PurchaseGuideData {
+  id?: number;
+  pgId?: string;
+  step1: {
+    title: string;
+    content: string;
+    highlight: string;
+    bullets?: string[];
+  };
+  step2: {
+    economique: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+    };
+    qualitePlus: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+      badge?: string;
+    };
+    premium: {
+      subtitle: string;
+      description: string;
+      specs: string[];
+      priceRange: string;
+    };
+  };
+  step3: {
+    title: string;
+    content: string;
+    alerts: Array<{ type: 'danger' | 'warning' | 'info'; text: string }>;
+    relatedGammes?: Array<{ pgId: number; pgName: string; pgAlias: string }>;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }
