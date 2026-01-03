@@ -13,7 +13,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { useLoaderData, useRevalidator, Link } from "@remix-run/react";
 import {
   BarChart3,
   RefreshCw,
@@ -23,6 +23,8 @@ import {
   Database,
   TrendingUp,
   Layers,
+  ArrowRight,
+  Tag,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -160,6 +162,13 @@ export default function VLevelStatusPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link to="/admin/gammes-seo">
+            <Button variant="outline" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
+              <Tag className="h-4 w-4 mr-2" />
+              Gammes SEO
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
           <Button
             variant="outline"
             onClick={() => revalidator.revalidate()}

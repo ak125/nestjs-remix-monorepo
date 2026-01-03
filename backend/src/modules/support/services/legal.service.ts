@@ -1,4 +1,3 @@
-import { TABLES } from '@repo/database-types';
 import {
   Injectable,
   Logger,
@@ -7,17 +6,25 @@ import {
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+/**
+ * ✅ MIGRÉ: Utilise maintenant les tables dédiées (migration 20260108)
+ *    - `legal_documents` - Documents légaux avec colonnes indexées
+ *    - `legal_document_versions` - Historique des versions
+ *    - `legal_acceptances` - Acceptations par les utilisateurs
+ *    au lieu de `___xtr_msg` (12.8M rows, LIKE queries = timeouts)
+ */
 export interface LegalDocument {
+  // Champs legacy (conservés pour compatibilité)
   msg_id: string;
-  msg_cst_id: string; // Staff ID qui a créé le document
-  msg_cnfa_id?: string; // Staff ID qui a modifié
+  msg_cst_id: string;
+  msg_cnfa_id?: string;
   msg_date: string;
-  msg_subject: string; // Titre du document
-  msg_content: string; // Contenu JSON avec le document légal
-  msg_open: '0' | '1'; // 1 = draft, 0 = publié
-  msg_close: '0' | '1'; // 1 = archivé, 0 = actif
+  msg_subject: string;
+  msg_content: string;
+  msg_open: '0' | '1';
+  msg_close: '0' | '1';
 
-  // Données dérivées du JSON dans msg_content
+  // Données du document
   id: string;
   type:
     | 'terms'
@@ -88,6 +95,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Créer un nouveau document légal
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async createDocument(
     documentData: CreateLegalDocumentRequest,
@@ -97,31 +105,24 @@ export class LegalService extends SupabaseBaseService {
 
       const version = 'v1.0';
       const effectiveDate = documentData.effectiveDate || new Date();
+      const slug = this.generateSlug(documentData.title);
 
-      // Préparer le contenu JSON
-      const contentData = {
-        type: 'legal_document',
-        documentType: documentData.type,
-        content: documentData.content,
-        version,
-        effectiveDate: effectiveDate.toISOString(),
-        published: false,
-        language: documentData.language || 'fr',
-        slug: this.generateSlug(documentData.title),
-        metadata: documentData.metadata || {},
-        createdAt: new Date().toISOString(),
-      };
-
-      // Créer le document dans ___xtr_msg
-      const { data: legalMessage, error } = await this.supabase
-        .from(TABLES.xtr_msg)
+      // Créer le document dans la nouvelle table legal_documents
+      const { data: newDoc, error } = await this.supabase
+        .from('legal_documents')
         .insert({
-          msg_cst_id: documentData.createdBy || '1', // Utiliser ID par défaut si null
-          msg_date: new Date().toISOString(),
-          msg_subject: documentData.title,
-          msg_content: JSON.stringify(contentData),
-          msg_open: '1', // Draft
-          msg_close: '0', // Actif
+          document_type: documentData.type,
+          title: documentData.title,
+          content: documentData.content,
+          slug,
+          version,
+          effective_date: effectiveDate.toISOString(),
+          published: false,
+          is_draft: true,
+          is_archived: false,
+          language: documentData.language || 'fr',
+          metadata: documentData.metadata || {},
+          created_by: documentData.createdBy || 'system',
         })
         .select('*')
         .single();
@@ -133,9 +134,9 @@ export class LegalService extends SupabaseBaseService {
       }
 
       this.logger.log(
-        `Document légal créé: ${legalMessage.msg_id} - Type: ${documentData.type}`,
+        `Document légal créé: ${newDoc.id} - Type: ${documentData.type}`,
       );
-      return await this.enrichDocumentData(legalMessage);
+      return this.mapToLegalDocument(newDoc);
     } catch (error) {
       this.logger.error(
         `Échec de création du document: ${(error as Error).message}`,
@@ -147,41 +148,45 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer un document par ID ou slug
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async getDocument(identifier: string): Promise<LegalDocument | null> {
     try {
-      let message = null;
+      // Essayer d'abord par ID numérique
+      const numericId = parseInt(identifier, 10);
 
-      // Essayer par ID de message d'abord
-      const { data: messageById } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .select('*')
-        .eq('msg_id', identifier)
-        .like('msg_content', '%"type":"legal_document"%')
-        .single();
+      let doc = null;
 
-      if (messageById) {
-        message = messageById;
-      } else {
-        // Essayer par slug dans le contenu JSON
-        const { data: messages } = await this.supabase
-          .from(TABLES.xtr_msg)
+      if (!isNaN(numericId)) {
+        const { data } = await this.supabase
+          .from('legal_documents')
           .select('*')
-          .like('msg_content', '%"type":"legal_document"%');
-
-        if (messages) {
-          message = messages.find((msg) => {
-            try {
-              const content = JSON.parse(msg.msg_content || '{}');
-              return content.slug === identifier;
-            } catch {
-              return false;
-            }
-          });
-        }
+          .eq('id', numericId)
+          .single();
+        doc = data;
       }
 
-      return message ? await this.enrichDocumentData(message) : null;
+      // Sinon essayer par slug
+      if (!doc) {
+        const { data } = await this.supabase
+          .from('legal_documents')
+          .select('*')
+          .eq('slug', identifier)
+          .single();
+        doc = data;
+      }
+
+      // Essayer par legacy_msg_id
+      if (!doc) {
+        const { data } = await this.supabase
+          .from('legal_documents')
+          .select('*')
+          .eq('legacy_msg_id', identifier)
+          .single();
+        doc = data;
+      }
+
+      return doc ? this.mapToLegalDocument(doc) : null;
     } catch (error) {
       this.logger.error(
         `Erreur lors de la récupération du document ${identifier}: ${(error as Error).message}`,
@@ -192,30 +197,24 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer un document par type
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async getDocumentByType(
     type: LegalDocument['type'],
   ): Promise<LegalDocument | null> {
     try {
-      const { data: messages } = await this.supabase
-        .from(TABLES.xtr_msg)
+      const { data: doc, error } = await this.supabase
+        .from('legal_documents')
         .select('*')
-        .like('msg_content', '%"type":"legal_document"%')
-        .eq('msg_open', '0') // Seulement les documents publiés
-        .order('msg_date', { ascending: false });
+        .eq('document_type', type)
+        .eq('published', true)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
 
-      if (!messages) return null;
+      if (error || !doc) return null;
 
-      const message = messages.find((msg) => {
-        try {
-          const content = JSON.parse(msg.msg_content || '{}');
-          return content.documentType === type;
-        } catch {
-          return false;
-        }
-      });
-
-      return message ? await this.enrichDocumentData(message) : null;
+      return this.mapToLegalDocument(doc);
     } catch (error) {
       this.logger.error(
         `Erreur lors de la récupération du document de type ${type}: ${(error as Error).message}`,
@@ -226,6 +225,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer tous les documents avec filtres
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async getAllDocuments(filters?: {
     type?: LegalDocument['type'];
@@ -234,17 +234,26 @@ export class LegalService extends SupabaseBaseService {
   }): Promise<LegalDocument[]> {
     try {
       let query = this.supabase
-        .from(TABLES.xtr_msg)
+        .from('legal_documents')
         .select('*')
-        .like('msg_content', '%"type":"legal_document"%')
-        .order('msg_date', { ascending: false });
+        .order('updated_at', { ascending: false });
+
+      // Filtrer par type
+      if (filters?.type) {
+        query = query.eq('document_type', filters.type);
+      }
 
       // Filtrer par statut de publication
       if (filters?.published !== undefined) {
-        query = query.eq('msg_open', filters.published ? '0' : '1');
+        query = query.eq('published', filters.published);
       }
 
-      const { data: messages, error } = await query;
+      // Filtrer par langue
+      if (filters?.language) {
+        query = query.eq('language', filters.language);
+      }
+
+      const { data: docs, error } = await query;
 
       if (error) {
         throw new Error(
@@ -252,12 +261,7 @@ export class LegalService extends SupabaseBaseService {
         );
       }
 
-      // Enrichir et filtrer par contenu JSON
-      const documents = await Promise.all(
-        messages.map((message) => this.enrichDocumentData(message)),
-      );
-
-      return this.applyContentFilters(documents, filters);
+      return (docs || []).map((doc) => this.mapToLegalDocument(doc));
     } catch (error) {
       this.logger.error(
         `Erreur lors de la récupération des documents: ${(error as Error).message}`,
@@ -268,6 +272,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Mettre à jour un document
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async updateDocument(
     documentId: string,
@@ -281,29 +286,33 @@ export class LegalService extends SupabaseBaseService {
         throw new NotFoundException(`Document ${documentId} introuvable`);
       }
 
-      // Sauvegarder la version actuelle
+      // Sauvegarder la version actuelle si des changements sont indiqués
       if (changes) {
         await this.saveVersion(documentId, document, changes, updatedBy);
       }
 
-      // Préparer le contenu mis à jour
-      const currentContent = JSON.parse(document.msg_content || '{}');
-      const updatedContent = {
-        ...currentContent,
-        ...updates,
-        lastUpdated: new Date().toISOString(),
-        updatedBy,
+      // Préparer les données de mise à jour
+      const updateData: Record<string, any> = {
+        updated_by: updatedBy,
       };
 
+      if (updates.title) updateData.title = updates.title;
+      if (updates.content) updateData.content = updates.content;
+      if (updates.type) updateData.document_type = updates.type;
+      if (updates.language) updateData.language = updates.language;
+      if (updates.slug) updateData.slug = updates.slug;
+      if (updates.metadata) updateData.metadata = updates.metadata;
+      if (updates.effectiveDate)
+        updateData.effective_date = updates.effectiveDate;
+
+      // Extraire l'ID numérique
+      const numericId = parseInt(document.id, 10);
+
       // Mettre à jour le document
-      const { data: updatedMessage, error } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .update({
-          msg_subject: updates.title || document.msg_subject,
-          msg_content: JSON.stringify(updatedContent),
-          msg_cnfa_id: updatedBy,
-        })
-        .eq('msg_id', documentId)
+      const { data: updatedDoc, error } = await this.supabase
+        .from('legal_documents')
+        .update(updateData)
+        .eq('id', numericId)
         .select('*')
         .single();
 
@@ -312,7 +321,7 @@ export class LegalService extends SupabaseBaseService {
       }
 
       this.logger.log(`Document ${documentId} mis à jour par ${updatedBy}`);
-      return await this.enrichDocumentData(updatedMessage);
+      return this.mapToLegalDocument(updatedDoc);
     } catch (error) {
       this.logger.error(
         `Erreur lors de la mise à jour du document ${documentId}: ${(error as Error).message}`,
@@ -323,6 +332,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Publier ou dépublier un document
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async publishDocument(
     documentId: string,
@@ -334,19 +344,16 @@ export class LegalService extends SupabaseBaseService {
         throw new NotFoundException(`Document ${documentId} introuvable`);
       }
 
-      // Mettre à jour le contenu JSON
-      const content = JSON.parse(document.msg_content || '{}');
-      content.published = published;
-      content.lastUpdated = new Date().toISOString();
+      const numericId = parseInt(document.id, 10);
 
       // Mettre à jour le statut
-      const { data: updatedMessage, error } = await this.supabase
-        .from(TABLES.xtr_msg)
+      const { data: updatedDoc, error } = await this.supabase
+        .from('legal_documents')
         .update({
-          msg_content: JSON.stringify(content),
-          msg_open: published ? '0' : '1', // 0 = publié, 1 = draft
+          published,
+          is_draft: !published,
         })
-        .eq('msg_id', documentId)
+        .eq('id', numericId)
         .select('*')
         .single();
 
@@ -357,7 +364,7 @@ export class LegalService extends SupabaseBaseService {
       this.logger.log(
         `Document ${documentId} ${published ? 'publié' : 'dépublié'}`,
       );
-      return await this.enrichDocumentData(updatedMessage);
+      return this.mapToLegalDocument(updatedDoc);
     } catch (error) {
       this.logger.error(
         `Erreur lors de la publication du document ${documentId}: ${(error as Error).message}`,
@@ -368,6 +375,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Supprimer un document
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_documents`
    */
   async deleteDocument(documentId: string): Promise<void> {
     try {
@@ -376,10 +384,12 @@ export class LegalService extends SupabaseBaseService {
         throw new NotFoundException(`Document ${documentId} introuvable`);
       }
 
+      const numericId = parseInt(document.id, 10);
+
       const { error } = await this.supabase
-        .from(TABLES.xtr_msg)
+        .from('legal_documents')
         .delete()
-        .eq('msg_id', documentId);
+        .eq('id', numericId);
 
       if (error) {
         throw new Error(`Erreur lors de la suppression: ${error.message}`);
@@ -396,6 +406,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Enregistrer l'acceptation d'un document légal
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_acceptances`
    */
   async acceptDocument(
     documentType: LegalDocument['type'],
@@ -411,26 +422,23 @@ export class LegalService extends SupabaseBaseService {
         );
       }
 
-      // Créer un enregistrement d'acceptation dans ___xtr_msg
-      const acceptanceData = {
-        type: 'legal_acceptance',
-        userId,
-        documentId: document.id,
-        documentType: document.type,
-        version: document.version,
-        ipAddress,
-        userAgent,
-        acceptedAt: new Date().toISOString(),
-      };
+      const numericDocId = parseInt(document.id, 10);
 
-      const { error } = await this.supabase.from(TABLES.xtr_msg).insert({
-        msg_cst_id: userId,
-        msg_date: new Date().toISOString(),
-        msg_subject: `Acceptation ${documentType}`,
-        msg_content: JSON.stringify(acceptanceData),
-        msg_open: '0', // Fermé
-        msg_close: '0', // Actif
-      });
+      // Créer un enregistrement d'acceptation dans legal_acceptances
+      const { error } = await this.supabase.from('legal_acceptances').upsert(
+        {
+          user_id: userId,
+          document_id: isNaN(numericDocId) ? null : numericDocId,
+          document_type: documentType,
+          document_version: document.version,
+          ip_address: ipAddress || null,
+          user_agent: userAgent || null,
+          accepted_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'user_id,document_type,document_version',
+        },
+      );
 
       if (error) {
         throw new Error(`Erreur lors de l'enregistrement: ${error.message}`);
@@ -449,6 +457,7 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer les acceptations d'un utilisateur
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_acceptances`
    */
   async getUserAcceptances(userId: string): Promise<
     Array<{
@@ -458,33 +467,19 @@ export class LegalService extends SupabaseBaseService {
     }>
   > {
     try {
-      const { data: messages } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .select('*')
-        .eq('msg_cst_id', userId)
-        .like('msg_content', '%"type":"legal_acceptance"%')
-        .order('msg_date', { ascending: false });
+      const { data: acceptances, error } = await this.supabase
+        .from('legal_acceptances')
+        .select('document_type, document_version, accepted_at')
+        .eq('user_id', userId)
+        .order('accepted_at', { ascending: false });
 
-      if (!messages) return [];
+      if (error || !acceptances) return [];
 
-      return messages
-        .map((msg) => {
-          try {
-            const content = JSON.parse(msg.msg_content || '{}');
-            return {
-              documentType: content.documentType,
-              version: content.version,
-              acceptedAt: new Date(content.acceptedAt),
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean) as Array<{
-        documentType: LegalDocument['type'];
-        version: string;
-        acceptedAt: Date;
-      }>;
+      return acceptances.map((acc) => ({
+        documentType: acc.document_type as LegalDocument['type'],
+        version: acc.document_version,
+        acceptedAt: new Date(acc.accepted_at),
+      }));
     } catch (error) {
       this.logger.error(
         `Erreur lors de la récupération des acceptations de ${userId}: ${(error as Error).message}`,
@@ -513,39 +508,32 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer les versions d'un document
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_document_versions`
    */
   async getDocumentVersions(
     documentId: string,
   ): Promise<LegalDocumentVersion[]> {
     try {
-      const { data: messages } = await this.supabase
-        .from(TABLES.xtr_msg)
+      const numericId = parseInt(documentId, 10);
+
+      const { data: versions, error } = await this.supabase
+        .from('legal_document_versions')
         .select('*')
-        .like('msg_content', `%"documentId":"${documentId}"%`)
-        .like('msg_content', '%"type":"legal_version"%')
-        .order('msg_date', { ascending: false });
+        .eq('document_id', numericId)
+        .order('created_at', { ascending: false });
 
-      if (!messages) return [];
+      if (error || !versions) return [];
 
-      return messages
-        .map((msg) => {
-          try {
-            const content = JSON.parse(msg.msg_content || '{}');
-            return {
-              id: msg.msg_id,
-              documentId: content.documentId,
-              version: content.version,
-              content: content.content,
-              changes: content.changes,
-              effectiveDate: new Date(content.effectiveDate),
-              createdAt: new Date(msg.msg_date),
-              createdBy: msg.msg_cst_id,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean) as LegalDocumentVersion[];
+      return versions.map((v) => ({
+        id: v.id.toString(),
+        documentId: v.document_id.toString(),
+        version: v.version,
+        content: v.content,
+        changes: v.changes || '',
+        effectiveDate: new Date(v.effective_date),
+        createdAt: new Date(v.created_at),
+        createdBy: v.created_by,
+      }));
     } catch (error) {
       this.logger.error(
         `Erreur lors de la récupération des versions: ${(error as Error).message}`,
@@ -556,31 +544,34 @@ export class LegalService extends SupabaseBaseService {
 
   /**
    * Récupérer une version spécifique
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_document_versions`
    */
   async getDocumentVersion(
     documentId: string,
     versionId: string,
   ): Promise<LegalDocumentVersion | null> {
     try {
-      const { data: message } = await this.supabase
-        .from(TABLES.xtr_msg)
+      const numericDocId = parseInt(documentId, 10);
+      const numericVersionId = parseInt(versionId, 10);
+
+      const { data: version, error } = await this.supabase
+        .from('legal_document_versions')
         .select('*')
-        .eq('msg_id', versionId)
-        .like('msg_content', `%"documentId":"${documentId}"%`)
+        .eq('id', numericVersionId)
+        .eq('document_id', numericDocId)
         .single();
 
-      if (!message) return null;
+      if (error || !version) return null;
 
-      const content = JSON.parse(message.msg_content || '{}');
       return {
-        id: message.msg_id,
-        documentId: content.documentId,
-        version: content.version,
-        content: content.content,
-        changes: content.changes,
-        effectiveDate: new Date(content.effectiveDate),
-        createdAt: new Date(message.msg_date),
-        createdBy: message.msg_cst_id,
+        id: version.id.toString(),
+        documentId: version.document_id.toString(),
+        version: version.version,
+        content: version.content,
+        changes: version.changes || '',
+        effectiveDate: new Date(version.effective_date),
+        createdAt: new Date(version.created_at),
+        createdBy: version.created_by,
       };
     } catch (error) {
       this.logger.error(
@@ -621,6 +612,47 @@ export class LegalService extends SupabaseBaseService {
   }
 
   // ==================== MÉTHODES UTILITAIRES ====================
+
+  /**
+   * Convertir une row de la table legal_documents vers l'interface LegalDocument
+   * ✅ Nouvelle méthode pour la migration vers les tables dédiées
+   */
+  private mapToLegalDocument(row: any): LegalDocument {
+    return {
+      // Champs legacy (compatibilité - simulés depuis les nouvelles colonnes)
+      msg_id: row.legacy_msg_id || row.id?.toString() || '',
+      msg_cst_id: row.created_by || '',
+      msg_cnfa_id: row.updated_by || undefined,
+      msg_date: row.created_at || new Date().toISOString(),
+      msg_subject: row.title || '',
+      msg_content: JSON.stringify({
+        type: 'legal_document',
+        documentType: row.document_type,
+        content: row.content,
+        version: row.version,
+        slug: row.slug,
+        language: row.language,
+        metadata: row.metadata,
+      }),
+      msg_open: row.is_draft ? '1' : '0',
+      msg_close: row.is_archived ? '1' : '0',
+
+      // Données du document (nouvelles colonnes)
+      id: row.id?.toString() || '',
+      type: row.document_type || 'custom',
+      title: row.title || '',
+      content: row.content || '',
+      version: row.version || 'v1.0',
+      effectiveDate: new Date(row.effective_date || row.created_at),
+      lastUpdated: new Date(row.updated_at || row.created_at),
+      published: row.published ?? false,
+      language: row.language || 'fr',
+      slug: row.slug || '',
+      metadata: row.metadata || {},
+      createdBy: row.created_by || 'system',
+      updatedBy: row.updated_by || undefined,
+    };
+  }
 
   /**
    * Initialiser les documents par défaut
@@ -679,47 +711,8 @@ export class LegalService extends SupabaseBaseService {
   }
 
   /**
-   * Enrichir les données de document avec les informations dérivées
-   */
-  private async enrichDocumentData(message: any): Promise<LegalDocument> {
-    try {
-      const content = JSON.parse(message.msg_content || '{}');
-
-      return {
-        msg_id: message.msg_id,
-        msg_cst_id: message.msg_cst_id,
-        msg_cnfa_id: message.msg_cnfa_id,
-        msg_date: message.msg_date,
-        msg_subject: message.msg_subject,
-        msg_content: message.msg_content,
-        msg_open: message.msg_open,
-        msg_close: message.msg_close,
-
-        // Données dérivées du JSON
-        id: message.msg_id,
-        type: content.documentType || 'custom',
-        title: message.msg_subject || '',
-        content: content.content || '',
-        version: content.version || 'v1.0',
-        effectiveDate: new Date(content.effectiveDate || message.msg_date),
-        lastUpdated: new Date(content.lastUpdated || message.msg_date),
-        published: content.published || message.msg_open === '0',
-        language: content.language || 'fr',
-        slug: content.slug || this.generateSlug(message.msg_subject),
-        metadata: content.metadata || {},
-        createdBy: message.msg_cst_id,
-        updatedBy: content.updatedBy || message.msg_cnfa_id,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Erreur dans enrichDocumentData: ${(error as Error).message}`,
-      );
-      throw error;
-    }
-  }
-
-  /**
    * Sauvegarder une version du document
+   * ✅ MIGRÉ: Utilise maintenant la table `legal_document_versions`
    */
   private async saveVersion(
     documentId: string,
@@ -728,65 +721,21 @@ export class LegalService extends SupabaseBaseService {
     createdBy: string,
   ): Promise<void> {
     try {
-      const versionData = {
-        type: 'legal_version',
-        documentId,
+      const numericDocId = parseInt(documentId, 10);
+
+      await this.supabase.from('legal_document_versions').insert({
+        document_id: numericDocId,
         version: document.version,
         content: document.content,
         changes,
-        effectiveDate: document.effectiveDate.toISOString(),
-      };
-
-      await this.supabase.from(TABLES.xtr_msg).insert({
-        msg_cst_id: createdBy,
-        msg_date: new Date().toISOString(),
-        msg_subject: `Version ${document.version} - ${document.title}`,
-        msg_content: JSON.stringify(versionData),
-        msg_open: '0',
-        msg_close: '0',
+        effective_date: document.effectiveDate.toISOString(),
+        created_by: createdBy,
       });
     } catch (error) {
       this.logger.error(
         `Erreur lors de la sauvegarde de version: ${(error as Error).message}`,
       );
     }
-  }
-
-  /**
-   * Appliquer les filtres basés sur le contenu JSON
-   */
-  private applyContentFilters(
-    documents: LegalDocument[],
-    filters?: {
-      type?: LegalDocument['type'];
-      published?: boolean;
-      language?: string;
-    },
-  ): LegalDocument[] {
-    if (!filters) {
-      return documents;
-    }
-
-    return documents
-      .filter((doc) => {
-        if (filters.type && doc.type !== filters.type) {
-          return false;
-        }
-        if (
-          filters.published !== undefined &&
-          doc.published !== filters.published
-        ) {
-          return false;
-        }
-        if (filters.language && doc.language !== filters.language) {
-          return false;
-        }
-        return true;
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
-      );
   }
 
   /**
