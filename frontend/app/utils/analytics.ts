@@ -6,6 +6,10 @@
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
+    __gtmLoaded?: boolean;
+    __loadGTM?: () => void;
+    __grantAnalyticsConsent?: () => void;
   }
 }
 
