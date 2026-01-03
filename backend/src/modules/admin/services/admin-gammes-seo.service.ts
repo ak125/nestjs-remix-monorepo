@@ -637,7 +637,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           const { count: productCount } = await this.supabase
             .from('pieces')
             .select('*', { count: 'exact', head: true })
-            .eq('pg_id', pgId.toString())
+            .eq('piece_pg_id', pgId.toString())
             .gt('stock', 0);
 
           if (productCount && productCount > 0) {
@@ -1330,7 +1330,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const { count: productsCount } = await this.supabase
         .from('pieces')
         .select('*', { count: 'exact', head: true })
-        .eq('pg_id', pgId.toString());
+        .eq('piece_pg_id', pgId.toString());
       timings['11_pieces_count'] = performance.now() - queryStart;
 
       // 10. Purchase Guide (__seo_gamme_purchase_guide)
