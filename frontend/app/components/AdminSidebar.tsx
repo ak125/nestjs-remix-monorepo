@@ -246,14 +246,6 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       ]
     },
     {
-      name: "Design System",
-      href: "/admin/design-system",
-      icon: Palette,
-      description: "Tokens & Templates",
-      badge: { count: 'v1.0', color: "bg-purple-600" },
-      notification: false
-    },
-    {
       name: "Rapports",
       href: "/admin/reports",
       icon: BarChart3,

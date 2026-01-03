@@ -959,18 +959,6 @@ export default function AdminDashboard() {
                     Documentation
                   </h3>
                   <div className="space-y-3">
-                    <Link
-                      to="/admin/design-system"
-                      className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-lg border-2 border-purple-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Palette className="h-5 w-5 text-purple-600" />
-                        <span className="font-bold text-purple-900">Interface complète</span>
-                      </div>
-                      <Badge variant="success">
-                        Nouvelle page
-                      </Badge>
-                    </Link>
                     
                     <a
                       href="https://github.com/ak125/nestjs-remix-monorepo/blob/main/DESIGN-SYSTEM-USAGE-GUIDE.md"
