@@ -143,7 +143,7 @@ export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
                     onClick={() =>
                       setActiveFilters({ ...activeFilters, position: "all" })
                     }
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
                       !activeFilters.position ||
                       activeFilters.position === "all"
                         ? "bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/30"
@@ -158,7 +158,7 @@ export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
                       onClick={() =>
                         setActiveFilters({ ...activeFilters, position: pos })
                       }
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
                         activeFilters.position === pos
                           ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"

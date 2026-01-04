@@ -261,7 +261,7 @@ export function SearchFilters({
                     <div key={preset.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors group">
                       <button
                         onClick={() => loadPreset(preset)}
-                        className="flex-1 text-left text-xs font-medium text-slate-700 hover:text-slate-900 truncate"
+                        className="flex-1 min-w-0 text-left text-xs font-medium text-slate-700 hover:text-slate-900 truncate"
                       >
                         📋 {preset.name}
                       </button>
@@ -474,7 +474,7 @@ export function SearchFilters({
                         <Layers className="w-4 h-4" />
                       </div>
                       
-                      <span className="flex-1 text-left text-xs font-medium text-slate-700 truncate">
+                      <span className="flex-1 min-w-0 text-left text-xs font-medium text-slate-700 truncate">
                         {option.label}
                       </span>
                       
@@ -652,7 +652,7 @@ export function SearchFilters({
                           onChange={() => handleFilterChange(facet.field, option.value)}
                           className="w-4 h-4 rounded border-2 border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="flex-1 text-xs font-medium text-slate-700 truncate">
+                        <span className="flex-1 min-w-0 text-xs font-medium text-slate-700 truncate">
                           {option.label}
                         </span>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${

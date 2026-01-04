@@ -6,12 +6,17 @@
  * - Compteur de résultats + badge prix minimum
  * - Sélecteur de vue (Grid/List/Comparison)
  * - Boutons de tri (Nom/Prix croissant/Prix décroissant/Marque)
+ *
+ * Mobile-first:
+ * - Vue icons-only (pas de labels texte)
+ * - Tri en dropdown au lieu de 4 boutons icons
  */
 
 import {
   ArrowDownAZ,
   ArrowDownUp,
   ArrowUpDown,
+  ChevronDown,
   ClipboardList,
   Euro,
   LayoutGrid,
@@ -22,6 +27,7 @@ import {
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Select, SelectItem } from "../ui/select";
 
 interface PiecesToolbarProps {
   // État vue
@@ -38,6 +44,14 @@ interface PiecesToolbarProps {
   selectedPiecesCount: number;
 }
 
+// Labels de tri pour le dropdown mobile
+const SORT_OPTIONS = [
+  { value: "name", label: "Nom (A-Z)", icon: ArrowDownAZ },
+  { value: "price-asc", label: "Prix croissant", icon: ArrowUpDown },
+  { value: "price-desc", label: "Prix décroissant", icon: ArrowDownUp },
+  { value: "brand", label: "Par marque", icon: Tag },
+] as const;
+
 export function PiecesToolbar({
   viewMode,
   setViewMode,
@@ -47,9 +61,89 @@ export function PiecesToolbar({
   minPrice,
   selectedPiecesCount,
 }: PiecesToolbarProps) {
+  const currentSort = SORT_OPTIONS.find((o) => o.value === sortBy);
+
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5 sticky top-24 z-10">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10">
+      {/* Layout Mobile: Compact vertical */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {/* Ligne 1: Compteur + Tri dropdown */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Badge nombre compact */}
+          <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-blue-100">
+            <Package className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-bold text-blue-600">{filteredCount}</span>
+          </div>
+
+          {/* Dropdown Tri mobile - Select natif simplifié */}
+          <Select
+            value={sortBy}
+            onValueChange={(v) => setSortBy(v as typeof sortBy)}
+            className="w-[140px] h-9 text-xs bg-white border border-gray-200 rounded-md"
+          >
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
+
+        {/* Ligne 2: Vue icons + Prix min */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Vue icons-only */}
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+            <Button
+              variant={viewMode === "grid" ? "blue" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("grid")}
+              className={`h-11 w-11 ${viewMode === "grid" ? "shadow-sm" : ""}`}
+              title="Grille"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "blue" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("list")}
+              className={`h-11 w-11 ${viewMode === "list" ? "shadow-sm" : ""}`}
+              title="Liste"
+            >
+              <LayoutList className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === "comparison" ? "blue" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("comparison")}
+              className={`h-11 w-11 relative ${viewMode === "comparison" ? "shadow-sm" : ""}`}
+              title="Comparer"
+            >
+              <ClipboardList className="w-4 h-4" />
+              {selectedPiecesCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                >
+                  {selectedPiecesCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+
+          {/* Prix min compact */}
+          {minPrice > 0 && (
+            <div className="flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-1.5 rounded-lg border border-green-100">
+              <Euro className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-bold text-green-600">
+                {minPrice.toFixed(2).replace(".", ",")} €
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Layout Desktop: Horizontal comme avant */}
+      <div className="hidden sm:flex items-center justify-between flex-wrap gap-4">
         {/* Compteur de résultats */}
         <div className="flex items-center gap-3">
           {/* Badge nombre de pièces */}
@@ -128,7 +222,7 @@ export function PiecesToolbar({
           </Button>
         </div>
 
-        {/* Boutons de tri */}
+        {/* Boutons de tri desktop */}
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
           <Button
             variant={sortBy === "name" ? "blue" : "outline"}
