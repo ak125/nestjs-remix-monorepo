@@ -10,8 +10,8 @@
  * - Tous les produits restent chargés (SEO préservé)
  */
 
-import { useState, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
+import { useState, useCallback } from "react";
 import { type PieceData, type PiecesFilters } from "../../types/pieces-route.types";
 import { mapApiPieceToData } from "../../utils/pieces-route.utils";
 

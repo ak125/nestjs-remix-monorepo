@@ -29,6 +29,11 @@ const EquipementiersSection = lazy(() => import("../components/pieces/Equipement
 const ConseilsSection = lazy(() => import("../components/pieces/ConseilsSection").then(m => ({ default: m.default })));
 const InformationsSection = lazy(() => import("../components/pieces/InformationsSection").then(m => ({ default: m.default })));
 
+// 📖 Nouvelles sections SEO V2 (howToChoose, symptoms, FAQ)
+const HowToChooseSection = lazy(() => import("../components/seo/HowToChooseSection").then(m => ({ default: m.HowToChooseSection })));
+const SymptomsSection = lazy(() => import("../components/seo/SymptomsSection").then(m => ({ default: m.SymptomsSection })));
+const FAQSection = lazy(() => import("../components/seo/FAQSection").then(m => ({ default: m.FAQSection })));
+
 interface LoaderData {
   status: number;
   selectedVehicle?: VehicleCookie | null;
@@ -154,6 +159,11 @@ interface LoaderData {
     };
     timing: { title: string; years: string; km: string; note: string };
     arguments: Array<{ title: string; content: string; icon: string }>;
+    // Nouvelles sections Phase 2
+    h1Override?: string | null;
+    howToChoose?: string | null;
+    symptoms?: string[] | null;
+    faq?: Array<{ question: string; answer: string }> | null;
   } | null;
 }
 
@@ -550,11 +560,18 @@ export default function PiecesDetailPage() {
             )}
           </div>
           
-          {/* Titre H1 dynamique optimisé SEO */}
+          {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
           <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
-                {data.content?.h1 || `${data.content?.pg_name || "Pièces auto"} pas cher`}
+                {(() => {
+                  // Priorité: h1Override > h1 existant > fallback
+                  const rawH1 = data.purchaseGuideData?.h1Override
+                    || data.content?.h1
+                    || `${data.content?.pg_name || "Pièces auto"} pas cher`;
+                  // Nettoyer les balises HTML (<b>, </b>, etc.)
+                  return rawH1.replace(/<[^>]*>/g, '');
+                })()}
               </span>
             </h1>
           </div>
@@ -660,6 +677,16 @@ export default function PiecesDetailPage() {
         </Suspense>
       )}
 
+      {/* 📖 Comment choisir - Position 6 après Purchase Guide (intro/risk/timing/arguments) */}
+      {data.purchaseGuideData?.howToChoose && (
+        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+          <HowToChooseSection
+            content={data.purchaseGuideData.howToChoose}
+            gammeName={data.content?.pg_name || 'cette pièce'}
+          />
+        </Suspense>
+      )}
+
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
         <div className="container mx-auto px-4 mt-4">
@@ -697,6 +724,16 @@ export default function PiecesDetailPage() {
           />
         </Suspense>
 
+        {/* 📖 Symptômes d'usure - Position 10 après Motorisations */}
+        {data.purchaseGuideData?.symptoms && data.purchaseGuideData.symptoms.length > 0 && (
+          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+            <SymptomsSection
+              symptoms={data.purchaseGuideData.symptoms}
+              gammeName={data.content?.pg_name || 'cette pièce'}
+            />
+          </Suspense>
+        )}
+
         {/* Informations SEO - Lazy loaded */}
         <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
           <InformationsSection
@@ -726,6 +763,16 @@ export default function PiecesDetailPage() {
             verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}
           />
         </Suspense>
+
+        {/* 📖 FAQ avec Schema.org - Lazy loaded (à la fin pour SEO longue traîne) */}
+        {data.purchaseGuideData?.faq && data.purchaseGuideData.faq.length > 0 && (
+          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+            <FAQSection
+              faq={data.purchaseGuideData.faq}
+              gammeName={data.content?.pg_name || 'cette pièce'}
+            />
+          </Suspense>
+        )}
 
         {/* Bouton Scroll To Top */}
         <ScrollToTop />

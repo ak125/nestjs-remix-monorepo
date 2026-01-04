@@ -5,9 +5,9 @@
  * Sans changer de page (comme PHP legacy)
  */
 
+import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
 
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";

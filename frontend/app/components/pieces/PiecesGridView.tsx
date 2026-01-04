@@ -9,8 +9,8 @@
  * - Set pour lookups O(1) sur selectedPieces
  */
 
-import React, { useState, useMemo, useCallback, memo } from "react";
 import { Truck } from "lucide-react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
