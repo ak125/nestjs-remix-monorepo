@@ -1,0 +1,42 @@
+import { Info } from 'lucide-react';
+import { cn } from '~/lib/utils';
+
+interface UXMessageBoxProps {
+  gammeName?: string;
+  className?: string;
+}
+
+/**
+ * Encadré UX - Message de réassurance pour guider l'utilisateur
+ * "Pas besoin de savoir quelle pièce choisir. Sélectionnez simplement votre véhicule."
+ */
+export function UXMessageBox({ gammeName, className }: UXMessageBoxProps) {
+  const pieceType = gammeName?.toLowerCase() || 'pièce';
+
+  return (
+    <div
+      className={cn(
+        'container mx-auto px-4 -mt-4 mb-6 relative z-10',
+        className
+      )}
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm">
+          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <Info className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-blue-900 font-medium text-base leading-relaxed">
+              Pas besoin de savoir quelle {pieceType} choisir.
+            </p>
+            <p className="text-blue-700 text-sm mt-1">
+              Sélectionnez simplement votre véhicule et nous vous proposons uniquement les références compatibles.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default UXMessageBox;
