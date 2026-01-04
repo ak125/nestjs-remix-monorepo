@@ -129,8 +129,20 @@ jobs:
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
-          # Utiliser le dossier production dans le home du runner
-          cd ~/production
+          PROD_DIR=~/production
+
+          # Créer les dossiers
+          mkdir -p $PROD_DIR/config/caddy
+
+          # Sync depuis Git (rm avant cp pour éviter permission denied)
+          rm -f $PROD_DIR/docker-compose.prod.yml
+          rm -f $PROD_DIR/docker-compose.caddy.yml
+          rm -f $PROD_DIR/config/caddy/Caddyfile
+          cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
+          cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
+          cp $GITHUB_WORKSPACE/config/caddy/Caddyfile $PROD_DIR/config/caddy/
+
+          cd $PROD_DIR
 
           # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
