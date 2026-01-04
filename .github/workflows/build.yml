@@ -29,14 +29,12 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.0.0
 
-      # Setup cache
+      # Setup cache - v2: removed restore-keys to force clean builds
       - name: ⚡️ Cache Docker layers
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.ref_name }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-v2
       - name: 🐳 Build Production Image
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v5.1.0
