@@ -36,8 +36,8 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Cache-busting: invalidate build layer on each commit
 ARG CACHEBUST=1
 
-# Build monorepo (backend + frontend)
-RUN echo "Build cache bust: $CACHEBUST" && npm run build
+# Build monorepo (backend + frontend) - force fresh build, no Turbo cache
+RUN echo "Build cache bust: $CACHEBUST" && rm -rf node_modules/.cache && npx turbo run build --force
 
 FROM base AS runner
 WORKDIR /app
