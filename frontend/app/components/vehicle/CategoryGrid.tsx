@@ -186,11 +186,11 @@ function CategoryCard({
   return (
     <div className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
       {/* Image avec aspect ratio fixe */}
-      <div className="aspect-w-16 aspect-h-12 bg-gray-100">
+      <div className="aspect-[4/3] bg-gray-100">
         <LazyImage
           src={category.image_url}
           alt={`Pièces ${category.name} pour ${vehicle.brand} ${vehicle.model}`}
-          className="w-full h-48 object-cover"
+          className="w-full h-full object-cover"
           onLoad={onImageLoad}
           onError={onImageError}
         />
@@ -300,8 +300,8 @@ export function CategoryGrid({
     switch (maxColumns) {
       case 2: return `${baseClasses} grid-cols-1 md:grid-cols-2`;
       case 3: return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
-      case 4: return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`;
-      case 6: return `${baseClasses} grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6`;
+      case 4: return `${baseClasses} grid-cols-2 md:grid-cols-3 lg:grid-cols-4`;
+      case 6: return `${baseClasses} grid-cols-2 md:grid-cols-4 lg:grid-cols-6`;
       default: return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
     }
   }, [maxColumns]);

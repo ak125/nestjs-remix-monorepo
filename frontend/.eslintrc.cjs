@@ -20,13 +20,25 @@ module.exports = {
 	},
 
 		rules: {
-			'@typescript-eslint/no-unused-vars': ['warn', {
-				argsIgnorePattern: '^_|^(?:request|context|index)$',
-				varsIgnorePattern: '^_',
-				caughtErrorsIgnorePattern: '^_',
-			}],
+		'@typescript-eslint/no-unused-vars': ['warn', {
+			argsIgnorePattern: '^_|^(?:request|context|index)$',
+			varsIgnorePattern: '^_',
+			caughtErrorsIgnorePattern: '^_',
+		}],
 		'import/order': 'warn',
 		'jsx-a11y/anchor-has-content': 'off',
+		// UI Lint: Classes Tailwind interdites
+		'no-restricted-syntax': [
+			'error',
+			{
+				selector: 'JSXAttribute[name.name="className"][value.value=/w-screen/]',
+				message: '❌ w-screen interdit - utiliser w-full (voir docs/layout.rules.md)',
+			},
+			{
+				selector: 'JSXAttribute[name.name="className"][value.value=/(?<!overflow-)hidden(?!.*sm:|.*md:|.*lg:)/]',
+				message: '⚠️ hidden sans breakpoint responsive - vérifier si intentionnel',
+			},
+		],
 	},
 
 	overrides: [

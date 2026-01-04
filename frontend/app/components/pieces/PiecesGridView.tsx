@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useMemo, useCallback, memo } from "react";
+import { Truck } from "lucide-react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -179,6 +180,17 @@ const PieceCard = memo(function PieceCard({
           </div>
         )}
 
+        {/* Badge disponibilité */}
+        {hasStock ? (
+          <span className="absolute top-2 right-2 px-2 py-1 bg-emerald-500 text-white text-xs font-semibold rounded shadow-md z-10">
+            En stock
+          </span>
+        ) : (
+          <span className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded shadow-md z-10">
+            Rupture
+          </span>
+        )}
+
         {/* Checkbox sélection */}
         {onSelect && (
           <button
@@ -204,24 +216,33 @@ const PieceCard = memo(function PieceCard({
 
       {/* Footer: Marque + Référence + Prix + Bouton */}
       <div className="p-2.5 pt-2 border-t border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
-        <div className="flex items-center gap-1.5 mb-2 truncate">
+        <div className="flex items-center gap-1.5 mb-2 min-w-0">
           <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide flex-shrink-0">
             {piece.brand}
           </span>
-          <span className="text-slate-300">|</span>
+          <span className="text-slate-300 flex-shrink-0">|</span>
           <code className="text-sm sm:text-base font-mono font-bold text-indigo-700 truncate">
             {piece.reference}
           </code>
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-baseline">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
-              {priceWhole}
-            </span>
-            <span className="text-sm sm:text-base font-bold text-slate-400">
-              ,{priceCents}€
-            </span>
+          <div className="flex flex-col">
+            <div className="flex items-baseline">
+              <span className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
+                {priceWhole}
+              </span>
+              <span className="text-sm sm:text-base font-bold text-slate-400">
+                ,{priceCents}€
+              </span>
+            </div>
+            {/* Info livraison */}
+            {hasStock && (
+              <div className="flex items-center gap-1 text-xs text-emerald-600 mt-0.5">
+                <Truck className="w-3 h-3" />
+                <span>Livré 24-48h</span>
+              </div>
+            )}
           </div>
 
           <button
@@ -373,7 +394,7 @@ export function PiecesGridView({
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         <PieceDetailModal pieceId={selectedPieceId} vehicleMarque={vehicleMarque} onClose={handleCloseModal} />
 
         {pieces.map((piece) => (
