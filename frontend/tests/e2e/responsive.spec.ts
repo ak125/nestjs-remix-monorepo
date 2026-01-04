@@ -169,9 +169,9 @@ test.describe('Responsive - Funnel E-commerce', () => {
       await page.goto('/checkout');
       await page.waitForLoadState('networkidle');
 
-      // Si redirigé vers login, le test passe (comportement normal)
-      const loginPrompt = page.getByText(/connecter|connexion|login/i).first();
-      if (await loginPrompt.isVisible()) {
+      // Si redirigé vers login (par URL), le test passe (comportement normal)
+      const currentUrl = page.url();
+      if (currentUrl.includes('/login') || currentUrl.includes('/connexion')) {
         return; // Redirigé vers login - OK
       }
 
