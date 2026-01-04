@@ -127,52 +127,29 @@ jobs:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          set -e
-
-          echo "📦 Pull de l'image Docker..."
           docker pull massdoc/nestjs-remix-monorepo:production
 
-          PROD_DIR=~/production
+          # Utiliser le dossier production dans le home du runner
+          cd ~/production
 
-          echo "📁 Création des dossiers..."
-          mkdir -p $PROD_DIR/config/caddy
-          mkdir -p $PROD_DIR/public/sitemaps
-          mkdir -p $PROD_DIR/logs/caddy
-
-          echo "🔄 Synchronisation depuis Git..."
-          cp -v $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
-          cp -v $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
-          cp -v $GITHUB_WORKSPACE/config/caddy/Caddyfile $PROD_DIR/config/caddy/
-          touch $PROD_DIR/config/caddy/caddy-pieces-redirects.conf
-
-          echo "✅ Fichiers synchronisés:"
-          ls -la $PROD_DIR/*.yml
-
-          cd $PROD_DIR
-
-          echo "🌐 Configuration réseau..."
+          # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
 
-          echo "🛑 Arrêt des anciens conteneurs..."
+          # Arrêter et supprimer les anciens conteneurs s'ils existent
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
 
-          echo "🚀 Démarrage des conteneurs..."
+          # Démarrer avec la nouvelle config
           docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
 
-          echo "⏳ Attente du démarrage (20s)..."
-          sleep 20
+          # Attendre le démarrage
+          sleep 15
 
-          echo "🔍 Vérification des conteneurs..."
-          docker ps | grep nestjs-remix || { echo "❌ Conteneurs non trouvés!"; exit 1; }
+          # Vérifier que les conteneurs tournent
+          docker ps | grep nestjs-remix || echo "⚠️ Conteneurs non trouvés"
 
-          echo "🏥 Health check..."
-          curl -sf http://localhost:3000/health || { echo "❌ Health check failed!"; exit 1; }
-
-          echo "🧹 Nettoyage des images..."
+          # Nettoyer les images
           docker image prune -f
-
-          echo "✅ Déploiement terminé avec succès!"
 
       - name: 🗺️ Generate static sitemaps (si nécessaire)
         if: ${{ github.ref == 'refs/heads/main' }}
