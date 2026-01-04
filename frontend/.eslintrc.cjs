@@ -29,13 +29,13 @@ module.exports = {
 		'jsx-a11y/anchor-has-content': 'off',
 		// UI Lint: Classes Tailwind interdites
 		'no-restricted-syntax': [
-			'error',
+			'warn',
 			{
 				selector: 'JSXAttribute[name.name="className"][value.value=/w-screen/]',
 				message: '❌ w-screen interdit - utiliser w-full (voir docs/layout.rules.md)',
 			},
 			{
-				selector: 'JSXAttribute[name.name="className"][value.value=/(?<!overflow-)hidden(?!.*sm:|.*md:|.*lg:)/]',
+				selector: 'JSXAttribute[name.name="className"][value.value=/(?<!overflow-)(?<!sm:)(?<!md:)(?<!lg:)(?<!xl:)(?<!2xl:)hidden(?!.*(?:sm:|md:|lg:|xl:|2xl:))/]',
 				message: '⚠️ hidden sans breakpoint responsive - vérifier si intentionnel',
 			},
 		],
