@@ -32,6 +32,9 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
+// 🎯 Layout components
+import { MobileBottomBar, MobileBottomBarSpacer } from "../components/layout/MobileBottomBar";
+
 // 🎯 Composants partagés avec page pièces
 import { PiecesFilterSidebar } from "../components/pieces/PiecesFilterSidebar";
 import { PiecesGridView } from "../components/pieces/PiecesGridView";
@@ -44,7 +47,6 @@ import { SearchBar } from "../components/search/SearchBar";
 
 // UI
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { MobileBottomBar, MobileBottomBarSpacer } from "../components/layout/MobileBottomBar";
 
 // Hook et types
 import { usePiecesFilters } from "../hooks/use-pieces-filters";

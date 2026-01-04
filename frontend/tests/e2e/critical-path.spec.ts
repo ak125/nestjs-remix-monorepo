@@ -13,7 +13,7 @@
  * Temps d'exécution: ~2min par viewport
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // 6 Viewports couvrant 98%+ du trafic réel
 const viewports = {
@@ -221,9 +221,8 @@ test.describe('4. Filtres', () => {
           await page.waitForTimeout(300);
         }
 
-        // Vérifier que des produits sont toujours affichés
-        const hasProducts = await page.locator('.group\\/card, [data-testid="piece-card"]').first().isVisible({ timeout: 3000 }).catch(() => false);
-        // Le test passe même si pas de produits (filtrage peut tout masquer)
+        // Vérifier que des produits sont toujours affichés (le filtrage peut tout masquer)
+        await page.locator('.group\\/card, [data-testid="piece-card"]').first().isVisible({ timeout: 3000 }).catch(() => false);
         expect(true).toBe(true);
       } else {
         console.log(`[${name}] No filter options found`);

@@ -218,8 +218,8 @@ test.describe('Gallery - Touch Swipe (Gap 5)', () => {
     // Si galerie multi-images existe, les dots doivent être visibles
     const galleryWithMultiple = page.locator('.group\\/gallery').first();
     if (await galleryWithMultiple.isVisible()) {
-      // Les dots sont optionnels selon le nombre d'images
-      const hasDots = await dotsContainer.isVisible().catch(() => false);
+      // Les dots sont optionnels selon le nombre d'images (vérifie sans stocker)
+      await dotsContainer.isVisible().catch(() => false);
       // Test passe si dots présents ou si produit n'a qu'une image
       expect(true).toBe(true);
     }
@@ -638,8 +638,6 @@ test.describe('Cross-breakpoint - Responsive Behavior', () => {
     // Mobile: MobileBottomBar visible
     await page.setViewportSize(viewports.mobile);
     await page.waitForTimeout(300);
-
-    const mobileBar = page.locator('.fixed.bottom-0').first();
 
     // Desktop: MobileBottomBar masqué (md:hidden ou lg:hidden)
     await page.setViewportSize(viewports.desktop);
