@@ -1,8 +1,9 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
-import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
+import { CheckCircle2, Truck, Shield, Users, Car } from 'lucide-react';
 import { useEffect, lazy, Suspense } from "react";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
@@ -20,7 +21,8 @@ import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
-const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
+// Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)
+const PurchaseGuideSection = lazy(() => import("../components/seo/PurchaseGuideSection").then(m => ({ default: m.PurchaseGuideSection })));
 const MotorisationsSection = lazy(() => import("../components/pieces/MotorisationsSection").then(m => ({ default: m.default })));
 const CatalogueSection = lazy(() => import("../components/pieces/CatalogueSection").then(m => ({ default: m.default })));
 const EquipementiersSection = lazy(() => import("../components/pieces/EquipementiersSection").then(m => ({ default: m.default })));
@@ -138,6 +140,21 @@ interface LoaderData {
     verbCount: number;
     nounCount: number;
   };
+  // 📖 Purchase Guide V2 - structure orientée client
+  purchaseGuideData?: {
+    id: number;
+    pgId: string;
+    intro: { title: string; role: string; syncParts: string[] };
+    risk: {
+      title: string;
+      explanation: string;
+      consequences: string[];
+      costRange: string;
+      conclusion: string;
+    };
+    timing: { title: string; years: string; km: string; note: string };
+    arguments: Array<{ title: string; content: string; icon: string }>;
+  } | null;
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -624,8 +641,8 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
-      {/* 💡 Guide d'achat personnalisé par famille - Sous le hero */}
-      {data.famille && (
+      {/* 💡 Guide d'achat V2 - Contenu orienté client (intro/risk/timing/arguments) */}
+      {data.purchaseGuideData && (
         <Suspense fallback={
           <div className="container mx-auto px-4 -mt-space-3 mb-space-6">
             <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
@@ -635,12 +652,9 @@ export default function PiecesDetailPage() {
             </div>
           </div>
         }>
-          <PurchaseGuide
-            familleId={data.famille.mf_id}
-            familleName={data.famille.mf_name}
-            productName={data.content?.pg_name}
-            productAlias={data.content?.pg_alias}
-            familleColor={familleColor}
+          <PurchaseGuideSection
+            guide={data.purchaseGuideData}
+            gammeName={data.content?.pg_name}
             className="-mt-space-3 mb-space-6"
           />
         </Suspense>
@@ -717,6 +731,23 @@ export default function PiecesDetailPage() {
         <ScrollToTop />
 
       </div>
+
+      {/* Mobile Bottom Bar - CTA Choisir véhicule */}
+      <MobileBottomBarSpacer />
+      <MobileBottomBar>
+        <button
+          onClick={() => {
+            const selector = document.getElementById('vehicle-selector');
+            if (selector) {
+              selector.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }}
+          className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target"
+        >
+          <Car className="w-5 h-5" />
+          <span>Choisir véhicule</span>
+        </button>
+      </MobileBottomBar>
     </div>
   );
 }

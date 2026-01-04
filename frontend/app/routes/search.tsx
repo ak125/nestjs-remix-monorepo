@@ -44,6 +44,7 @@ import { SearchBar } from "../components/search/SearchBar";
 
 // UI
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { MobileBottomBar, MobileBottomBarSpacer } from "../components/layout/MobileBottomBar";
 
 // Hook et types
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
@@ -877,7 +878,7 @@ export default function SearchPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">Recherchez des pièces automobiles</h2>
               <p className="text-gray-600 mb-6">
-                Utilisez la barre de recherche ci-dessus pour trouver des pièces par référence, 
+                Utilisez la barre de recherche ci-dessus pour trouver des pièces par référence,
                 véhicule compatible, ou description.
               </p>
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
@@ -889,6 +890,25 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile Bottom Bar - Filtrer */}
+      <MobileBottomBarSpacer />
+      <MobileBottomBar>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>Filtrer</span>
+          {(activeFilters.brands.length > 0 || activeFilters.quality !== 'all' || activeFilters.priceRange !== 'all') && (
+            <span className="bg-white text-blue-600 text-xs px-2 py-0.5 rounded-full font-bold">
+              {activeFilters.brands.length + (activeFilters.quality !== 'all' ? 1 : 0) + (activeFilters.priceRange !== 'all' ? 1 : 0)}
+            </span>
+          )}
+        </button>
+      </MobileBottomBar>
     </div>
   );
 }

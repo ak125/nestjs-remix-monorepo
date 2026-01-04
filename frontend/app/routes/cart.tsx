@@ -38,6 +38,7 @@ import React, { useEffect } from "react";
 
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
 import { trackViewCart } from "~/utils/analytics";
 import { getCart } from "../services/cart.server";
 
@@ -817,7 +818,23 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+
+        {/* Spacer for MobileBottomBar */}
+        <MobileBottomBarSpacer />
       </div>
+
+      {/* Mobile Bottom Bar - CTA Commander */}
+      <MobileBottomBar>
+        <Link
+          to="/checkout"
+          className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl flex items-center justify-center gap-2 touch-target"
+        >
+          <span className="text-white font-bold">
+            Commander ({cart.summary.total_items})
+          </span>
+          <ArrowRight className="h-5 w-5 text-white" />
+        </Link>
+      </MobileBottomBar>
     </div>
   );
 }

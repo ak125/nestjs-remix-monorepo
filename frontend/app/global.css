@@ -46,6 +46,8 @@
     line-height: var(--line-height-relaxed); /* 1.6 */
     /* Évite CLS lors de l'ouverture de modals (scrollbar disparaît) */
     scrollbar-gutter: stable;
+    /* Empêche le scroll horizontal sur mobile */
+    overflow-x: hidden;
   }
 
   /* Headings avec échelles fluides */
