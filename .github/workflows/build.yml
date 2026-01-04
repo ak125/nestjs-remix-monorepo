@@ -34,10 +34,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          # Inclure hash des assets publics pour invalider le cache si assets changent
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ hashFiles('frontend/public/**') }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.ref_name }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
       - name: 🐳 Build Production Image
         if: ${{ github.ref == 'refs/heads/main' }}
