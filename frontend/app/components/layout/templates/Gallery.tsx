@@ -30,7 +30,7 @@ export const Gallery: React.FC<GalleryProps> = ({
       case 4:
         return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
       case 5:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5';
+        return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
       default:
         return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
     }
@@ -52,11 +52,11 @@ export const Gallery: React.FC<GalleryProps> = ({
         <div className={`grid gap-6 ${getGridCols()}`}>
           {images.map((image, index) => (
             <div key={index} className="gallery-item group">
-              <div className="relative overflow-hidden rounded-lg shadow-lg">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-lg">
                 <img
                   src={image.src}
                   alt={image.alt}
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 
                 {/* Overlay avec caption */}

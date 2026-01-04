@@ -7,6 +7,7 @@
  */
 
 import React, { useState } from "react";
+import { Truck } from "lucide-react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -120,7 +121,7 @@ export const PiecesListView = React.memo(
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {pieces.map((piece) => {
           const isSelected = selectedPieces.includes(piece.id);
           const hasStock = hasStockAvailable(piece.stock);
@@ -202,6 +203,16 @@ export const PiecesListView = React.memo(
                         </svg>
                       </div>
                     )}
+                    {/* Badge disponibilité */}
+                    {hasStock ? (
+                      <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-semibold rounded shadow-sm">
+                        En stock
+                      </span>
+                    ) : (
+                      <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-semibold rounded shadow-sm">
+                        Rupture
+                      </span>
+                    )}
                   </div>
 
                   {/* Infos Mobile: Logo + Marque + Ref + Fiabilité */}
@@ -219,20 +230,20 @@ export const PiecesListView = React.memo(
 
                       {/* Badge OES */}
                       {piece.quality === "OES" && (
-                        <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded shadow-sm uppercase tracking-wide">
+                        <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wide">
                           OES
                         </span>
                       )}
 
                       {/* Marque */}
-                      <span className="text-xs sm:text-sm font-black text-slate-900 uppercase truncate">
+                      <span className="text-xs sm:text-sm font-bold text-gray-600 uppercase truncate">
                         {piece.brand}
                       </span>
                     </div>
 
                     {/* Référence */}
                     <div>
-                      <span className="text-[10px] sm:text-xs font-mono font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                      <span className="text-xs sm:text-sm font-mono font-bold text-blue-700">
                         {piece.reference}
                       </span>
                     </div>
@@ -258,16 +269,25 @@ export const PiecesListView = React.memo(
 
                 {/* ROW 2 Mobile / Right side Desktop: Prix + Bouton */}
                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-0 sm:pl-0 sm:ml-auto">
-                  {/* Prix */}
+                  {/* Prix + Livraison */}
                   <div className="text-left sm:text-right">
-                    <span className="text-xl sm:text-lg font-black text-slate-900">
-                      {typeof piece.price === "number"
-                        ? piece.price.toFixed(2)
-                        : piece.priceFormatted}
-                    </span>
-                    <span className="text-sm font-semibold text-slate-400 ml-0.5">
-                      €
-                    </span>
+                    <div>
+                      <span className="text-lg sm:text-xl font-bold text-gray-900">
+                        {typeof piece.price === "number"
+                          ? piece.price.toFixed(2)
+                          : piece.priceFormatted}
+                      </span>
+                      <span className="text-sm font-bold text-gray-400 ml-0.5">
+                        €
+                      </span>
+                    </div>
+                    {/* Info livraison */}
+                    {hasStock && (
+                      <div className="flex items-center gap-1 text-xs text-emerald-600 mt-0.5">
+                        <Truck className="w-3 h-3" />
+                        <span>Livré 24-48h</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Bouton panier - plus grand sur mobile */}

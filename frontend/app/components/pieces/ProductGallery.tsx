@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 interface ProductGalleryProps {
   images?: { id: string; url: string; sort: number; alt: string }[];
@@ -10,6 +10,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
   // Initialiser avec l'image principale ou la première de la liste
   const initialImage = mainImage || (images.length > 0 ? images[0].url : '');
   const [currentImage, setCurrentImage] = useState(initialImage);
+
+  // Touch swipe state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
   // Combiner mainImage et images array, assurer l'unicité et le tri
   const allImages = useMemo(() => {
@@ -33,6 +37,45 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
     
     return list.sort((a, b) => a.sort - b.sort);
   }, [images, mainImage, alt]);
+
+  // Current index based on currentImage
+  const currentIndex = useMemo(() => {
+    const idx = allImages.findIndex(img => img.url === currentImage);
+    return idx >= 0 ? idx : 0;
+  }, [allImages, currentImage]);
+
+  // Swipe threshold (min distance to trigger navigation)
+  const minSwipeDistance = 50;
+
+  // Touch handlers for swipe
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+
+    if (isSwipe) {
+      if (distance > 0 && currentIndex < allImages.length - 1) {
+        // Swipe left → next image
+        setCurrentImage(allImages[currentIndex + 1].url);
+      } else if (distance < 0 && currentIndex > 0) {
+        // Swipe right → previous image
+        setCurrentImage(allImages[currentIndex - 1].url);
+      }
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd, currentIndex, allImages]);
 
   // Fallback si aucune image
   if (allImages.length === 0) {
@@ -71,12 +114,34 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
         alt={alt}
         width={400}
         height={400}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain touch-pan-y"
         loading="lazy"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       />
-      
-      {/* Thumbnails overlay on hover */}
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 via-black/40 to-transparent backdrop-blur-sm translate-y-full group-hover/gallery:translate-y-0 transition-transform duration-300 flex gap-2 overflow-x-auto scrollbar-hide z-10">
+
+      {/* 📱 Mobile swipe dot indicators - visible on touch devices only */}
+      <div className="flex gap-1.5 justify-center absolute bottom-2 left-1/2 -translate-x-1/2 sm:hidden z-10">
+        {allImages.slice(0, 5).map((_, i) => (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setCurrentImage(allImages[i].url);
+            }}
+            className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? 'bg-blue-500 scale-125' : 'bg-white/70'} shadow-sm`}
+            aria-label={`Image ${i + 1}`}
+          />
+        ))}
+        {allImages.length > 5 && (
+          <span className="text-white/70 text-xs font-bold">+{allImages.length - 5}</span>
+        )}
+      </div>
+
+      {/* Thumbnails overlay on hover (desktop) */}
+      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 via-black/40 to-transparent backdrop-blur-sm translate-y-full group-hover/gallery:translate-y-0 transition-transform duration-300 hidden sm:flex gap-2 overflow-x-auto scrollbar-hide z-10">
         {allImages.slice(0, 5).map((img, idx) => (
             <button
                 key={img.id || idx}
@@ -97,9 +162,9 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
             </div>
         )}
       </div>
-      
-      {/* Indicateur multi-images (visible quand pas hover) */}
-      <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+
+      {/* Indicateur multi-images (visible quand pas hover, desktop only) */}
+      <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none hidden sm:flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>

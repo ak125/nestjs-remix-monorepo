@@ -171,7 +171,7 @@ export function MobileProductCard({
       {/* ========================================
           IMAGE + BADGES
       ======================================== */}
-      <div className={`relative ${imageHeight} bg-[#F5F7FA] overflow-hidden`}>
+      <div className={`relative ${imageHeight} bg-slate-50 overflow-hidden`}>
         <img
           src={product.imageUrl}
           alt={product.name}
@@ -181,14 +181,14 @@ export function MobileProductCard({
         
         {/* Badge réduction */}
         {discount > 0 && (
-          <div className="absolute top-3 left-3 px-3 py-1.5 bg-[#C0392B] text-white font-heading font-bold text-sm rounded-full shadow-lg">
+          <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-700 text-white font-heading font-bold text-sm rounded-full shadow-lg">
             -{discount}%
           </div>
         )}
         
         {/* Badge stock faible */}
         {hasLowStock && (
-          <div className="absolute top-3 right-3 px-3 py-1.5 bg-[#F39C12] text-white font-sans font-semibold text-xs rounded-full shadow-lg animate-pulse-soft">
+          <div className="absolute top-3 right-3 px-3 py-1.5 bg-amber-500 text-white font-sans font-semibold text-xs rounded-full shadow-lg animate-pulse-soft">
             🔥 Plus que {product.stockQuantity}!
           </div>
         )}
@@ -197,9 +197,9 @@ export function MobileProductCard({
         {showCompatibility && product.isCompatible !== undefined && (
           <div className={`
             absolute bottom-3 left-3 right-3 px-4 py-2 rounded-lg shadow-lg
-            ${product.isCompatible 
-              ? 'bg-[#27AE60] text-white' 
-              : 'bg-[#C0392B] text-white'}
+            ${product.isCompatible
+              ? 'bg-green-600 text-white'
+              : 'bg-red-700 text-white'}
             font-sans font-semibold text-sm text-center
           `}>
             {product.isCompatible ? '✅ Compatible' : '⚠️ Non compatible'}
@@ -217,22 +217,22 @@ export function MobileProductCard({
       ======================================== */}
       <div className="flex-1 p-4 flex flex-col gap-3">
         {/* Marque */}
-        <p className="text-xs font-sans font-semibold text-[#9CA3AF] uppercase tracking-wide">
+        <p className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wide">
           {product.brand}
         </p>
         
         {/* Nom produit */}
-        <h3 className="text-lg font-heading font-bold text-[#1F2937] line-clamp-2">
+        <h3 className="text-lg font-heading font-bold text-gray-900 line-clamp-2">
           {product.name}
         </h3>
         
         {/* Prix */}
         <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-heading font-bold text-[#FF3B30]">
+          <span className="text-2xl font-heading font-bold text-red-500">
             {product.price.toFixed(2)} €
           </span>
           {product.originalPrice && (
-            <span className="text-sm font-sans text-[#9CA3AF] line-through">
+            <span className="text-sm font-sans text-gray-400 line-through">
               {product.originalPrice.toFixed(2)} €
             </span>
           )}
@@ -246,17 +246,17 @@ export function MobileProductCard({
                 {[...Array(5)].map((_, i) => (
                   <span
                     key={i}
-                    className={i < Math.floor(product.rating!) ? 'text-[#F39C12]' : 'text-[#D1D5DB]'}
+                    className={i < Math.floor(product.rating!) ? 'text-amber-500' : 'text-gray-300'}
                   >
                     ⭐
                   </span>
                 ))}
               </div>
-              <span className="text-sm font-sans text-[#6B7280]">
+              <span className="text-sm font-sans text-gray-500">
                 {product.rating.toFixed(1)}
               </span>
               {product.reviewCount && (
-                <span className="text-xs font-sans text-[#9CA3AF]">
+                <span className="text-xs font-sans text-gray-400">
                   ({product.reviewCount} avis)
                 </span>
               )}
@@ -267,9 +267,9 @@ export function MobileProductCard({
         {/* Référence OEM (progressive disclosure) */}
         {!progressive || isExpanded ? (
           product.oemRef && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F5F7FA] rounded-md">
-              <span className="text-xs font-sans text-[#9CA3AF]">Réf. OEM</span>
-              <span className="text-sm font-mono font-semibold text-[#0F4C81]">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-md">
+              <span className="text-xs font-sans text-gray-400">Réf. OEM</span>
+              <span className="text-sm font-mono font-semibold text-blue-700">
                 {product.oemRef}
               </span>
             </div>
@@ -280,7 +280,7 @@ export function MobileProductCard({
         {progressive && !isExpanded && (
           <button
             onClick={() => setIsExpanded(true)}
-            className="text-sm font-sans font-semibold text-[#0F4C81] hover:text-[#0D3F6B] transition-colors self-start"
+            className="text-sm font-sans font-semibold text-blue-700 hover:text-blue-800 transition-colors self-start"
           >
             Voir plus de détails →
           </button>
@@ -300,9 +300,9 @@ export function MobileProductCard({
               className={`
                 w-full min-h-[56px] px-6 py-4 rounded-lg
                 font-heading font-bold text-lg text-white
-                bg-gradient-to-r from-[#FF3B30] to-[#FF6B30]
-                hover:from-[#E63428] hover:to-[#E65B28]
-                active:from-[#CC2F24] active:to-[#CC4F24]
+                bg-gradient-to-r from-red-500 to-orange-500
+                hover:from-red-600 hover:to-orange-600
+                active:from-red-700 active:to-orange-700
                 disabled:opacity-50 disabled:cursor-not-allowed
                 shadow-lg hover:shadow-xl active:shadow-md
                 transition-all duration-300
@@ -330,10 +330,10 @@ export function MobileProductCard({
                 onClick={handleViewDetails}
                 className="
                   w-full min-h-[48px] px-6 py-3 rounded-lg
-                  font-sans font-semibold text-base text-[#0F4C81]
-                  bg-transparent border-2 border-[#0F4C81]
-                  hover:bg-[#0F4C81] hover:text-white
-                  active:bg-[#0D3F6B]
+                  font-sans font-semibold text-base text-blue-700
+                  bg-transparent border-2 border-blue-700
+                  hover:bg-blue-700 hover:text-white
+                  active:bg-blue-800
                   transition-all duration-200
                 "
               >
@@ -344,11 +344,11 @@ export function MobileProductCard({
         </ThumbZone>
       ) : (
         // Layout classique (non thumb-friendly)
-        <div className="p-4 border-t border-[#E5E7EB]">
+        <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleAddToCart}
             disabled={product.stockStatus === 'out-of-stock' || isAdding}
-            className="w-full px-6 py-3 bg-[#FF3B30] text-white font-heading font-bold rounded-lg hover:bg-[#E63428] active:bg-[#CC2F24] disabled:opacity-50 transition-colors"
+            className="w-full px-6 py-3 bg-red-500 text-white font-heading font-bold rounded-lg hover:bg-red-600 active:bg-red-700 disabled:opacity-50 transition-colors"
           >
             {isAdding ? 'Ajout...' : product.stockStatus === 'out-of-stock' ? 'Rupture' : 'Ajouter'}
           </button>
@@ -379,15 +379,15 @@ export function MobileCartSummary({
     <div
       className={`
         ${sticky ? 'fixed bottom-0 left-0 right-0 z-40' : ''}
-        bg-white border-t-2 border-[#E5E7EB] shadow-2xl
+        bg-white border-t-2 border-gray-200 shadow-2xl
       `}
     >
       <div className="max-w-screen-xl mx-auto p-4 space-y-3">
         {/* Progress livraison gratuite */}
         {remainingForFreeShipping > 0 && (
-          <div className="bg-[#FFF3E0] border-l-4 border-[#F39C12] px-3 py-2 rounded">
-            <p className="text-sm font-sans text-[#6B7280]">
-              Plus que <span className="font-bold text-[#F39C12]">{remainingForFreeShipping.toFixed(2)} €</span> pour la livraison gratuite! 🚚
+          <div className="bg-amber-50 border-l-4 border-amber-500 px-3 py-2 rounded">
+            <p className="text-sm font-sans text-gray-500">
+              Plus que <span className="font-bold text-amber-500">{remainingForFreeShipping.toFixed(2)} €</span> pour la livraison gratuite! 🚚
             </p>
           </div>
         )}
@@ -395,22 +395,22 @@ export function MobileCartSummary({
         {/* Totaux */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-sans text-[#9CA3AF]">
+            <span className="text-sm font-sans text-gray-400">
               {itemCount} article{itemCount > 1 ? 's' : ''}
             </span>
             {showSavings && savings > 0 && (
-              <span className="text-xs font-sans font-semibold text-[#27AE60]">
+              <span className="text-xs font-sans font-semibold text-green-600">
                 Économie: {savings.toFixed(2)} €
               </span>
             )}
           </div>
           
           <div className="text-right">
-            <p className="text-2xl font-heading font-bold text-[#1F2937]">
+            <p className="text-2xl font-heading font-bold text-gray-900">
               {grandTotal.toFixed(2)} €
             </p>
             {shipping > 0 && (
-              <p className="text-xs font-sans text-[#9CA3AF]">
+              <p className="text-xs font-sans text-gray-400">
                 (dont {shipping.toFixed(2)} € livraison)
               </p>
             )}
@@ -423,9 +423,9 @@ export function MobileCartSummary({
           className="
             w-full min-h-[64px] px-8 py-5 rounded-xl
             font-heading font-bold text-xl text-white
-            bg-gradient-to-r from-[#27AE60] to-[#2ECC71]
-            hover:from-[#229954] hover:to-[#28B463]
-            active:from-[#1E8449] active:to-[#239B56]
+            bg-gradient-to-r from-green-600 to-green-500
+            hover:from-green-700 hover:to-green-600
+            active:from-green-800 active:to-green-700
             shadow-2xl hover:shadow-3xl active:shadow-xl
             transition-all duration-300
             flex items-center justify-center gap-3
@@ -459,7 +459,7 @@ export function ThumbZone({
 
   const backgroundClasses = {
     white: 'bg-white',
-    neutral: 'bg-[#F5F7FA]',
+    neutral: 'bg-slate-50',
     transparent: 'bg-transparent',
   };
 
@@ -472,7 +472,7 @@ export function ThumbZone({
     : '';
 
   const borderClasses =
-    position === 'bottom' ? 'border-t border-[#E5E7EB]' : position === 'top' ? 'border-b border-[#E5E7EB]' : '';
+    position === 'bottom' ? 'border-t border-gray-200' : position === 'top' ? 'border-b border-gray-200' : '';
 
   return (
     <div
