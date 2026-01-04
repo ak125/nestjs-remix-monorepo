@@ -44,6 +44,10 @@
     font-family: var(--font-body);
     font-size: var(--font-size-base);
     line-height: var(--line-height-relaxed); /* 1.6 */
+    /* Évite CLS lors de l'ouverture de modals (scrollbar disparaît) */
+    scrollbar-gutter: stable;
+    /* Empêche le scroll horizontal sur mobile */
+    overflow-x: hidden;
   }
 
   /* Headings avec échelles fluides */
@@ -139,5 +143,137 @@
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-400;
+  }
+
+  /* === MOBILE-FIRST RESPONSIVE UTILITIES === */
+
+  /* Safe area (iPhone notch/Dynamic Island) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left, 0);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right, 0);
+  }
+  .p-safe {
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  }
+
+  /* Touch targets - WCAG AA minimum 44px, Google recommends 48px for e-commerce */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  .touch-target-lg {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Mobile-only / Desktop-only shortcuts */
+  .mobile-only {
+    @apply md:hidden;
+  }
+  .desktop-only {
+    @apply hidden md:block;
+  }
+  .tablet-up {
+    @apply hidden sm:block;
+  }
+  .desktop-up {
+    @apply hidden lg:block;
+  }
+
+  /* Responsive text that doesn't break layout */
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Hide scrollbar but allow scrolling (for horizontal scroll containers) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch manipulation - disable double-tap zoom for faster click response */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS zoom on input focus (requires font-size >= 16px) */
+  .no-zoom-input {
+    @apply text-base;
+    font-size: max(16px, 1rem);
+  }
+
+  /* Snap scrolling for carousels */
+  .snap-x-mandatory {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snap-start {
+    scroll-snap-align: start;
+  }
+  .snap-center {
+    scroll-snap-align: center;
+  }
+
+  /* === TOKENIZED SEMANTIC SPACING === */
+  /* Cohérence immédiate avec tokens fluides - utilisez ces classes au lieu de px-3 md:px-6 */
+
+  /* Page horizontal padding (responsive: 12px → 24px → 32px) */
+  .px-page {
+    padding-left: clamp(0.75rem, 3vw, 2rem);
+    padding-right: clamp(0.75rem, 3vw, 2rem);
+  }
+
+  /* Section vertical padding (responsive: 32px → 48px → 64px) */
+  .py-section {
+    padding-top: clamp(2rem, 5vw, 4rem);
+    padding-bottom: clamp(2rem, 5vw, 4rem);
+  }
+  .py-section-sm {
+    padding-top: clamp(1.5rem, 4vw, 2.5rem);
+    padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .py-section-lg {
+    padding-top: clamp(3rem, 7vw, 5rem);
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+  }
+
+  /* Gap between sections (responsive) */
+  .gap-section {
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .gap-section-sm {
+    gap: clamp(1rem, 2vw, 1.5rem);
+  }
+  .gap-section-lg {
+    gap: clamp(2rem, 5vw, 3rem);
+  }
+
+  /* Content block gap (for card grids, lists) */
+  .gap-content {
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+  }
+
+  /* Margin variants */
+  .mt-section {
+    margin-top: clamp(2rem, 5vw, 4rem);
+  }
+  .mb-section {
+    margin-bottom: clamp(2rem, 5vw, 4rem);
+  }
+  .my-section {
+    margin-top: clamp(2rem, 5vw, 4rem);
+    margin-bottom: clamp(2rem, 5vw, 4rem);
   }
 }

@@ -7,10 +7,12 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
 
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
 import { StarRating } from "../common/StarRating";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
 
 // Helper inline pour les images rack (remplace image.utils.ts)
@@ -260,11 +262,11 @@ export function PieceDetailModal({
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
                     {piece.nom}
                   </h2>
-                  <div className="flex items-baseline gap-2 text-lg">
-                    <span className="font-black text-gray-900 uppercase">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-bold text-gray-600 uppercase">
                       {piece.marque}
                     </span>
-                    <span className="font-bold text-blue-700 font-mono">
+                    <span className="text-base font-mono font-bold text-blue-700">
                       {piece.reference}
                     </span>
                   </div>
@@ -341,21 +343,56 @@ export function PieceDetailModal({
                 </div>
 
                 {/* Colonne droite - Données techniques */}
-                <div className="bg-gray-50 rounded-xl p-5">
+                {/* 📱 Mobile: Accordion collapsible */}
+                <div className="md:hidden">
+                  <Accordion type="single" collapsible className="bg-gray-50 rounded-xl">
+                    <AccordionItem value="specs" className="border-none">
+                      <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <ClipboardList className="w-5 h-5 text-blue-600" />
+                          <span className="text-lg font-bold text-gray-900">
+                            Données techniques
+                            {piece.criteresTechniques && piece.criteresTechniques.length > 0 && (
+                              <span className="ml-2 text-sm font-normal text-gray-500">
+                                ({piece.criteresTechniques.length})
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-5 pb-5">
+                        {piece.criteresTechniques && piece.criteresTechniques.length > 0 ? (
+                          <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            {piece.criteresTechniques
+                              .sort((a, b) => (a.level || 5) - (b.level || 5))
+                              .map((critere) => (
+                                <div
+                                  key={critere.id}
+                                  className="bg-white rounded-lg px-4 py-3 border border-gray-200"
+                                >
+                                  <div className="flex justify-between items-start gap-3">
+                                    <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                      {critere.name}
+                                    </span>
+                                    <span className="text-sm text-gray-900 font-medium text-right">
+                                      {critere.value} {critere.unit}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm">Aucune donnée technique disponible</p>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+                {/* 🖥️ Desktop: Always visible */}
+                <div className="hidden md:block bg-gray-50 rounded-xl p-5">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                      />
-                    </svg>
+                    <ClipboardList className="w-5 h-5 text-blue-600" />
                     Données techniques
                   </h3>
 
@@ -484,52 +521,115 @@ export function PieceDetailModal({
 
                   if (filteredOemEntries.length === 0) return null;
 
+                  const totalRefs = filteredOemEntries.reduce((acc, [, refs]) => acc + refs.length, 0);
+
                   return (
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border border-green-200">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <svg
-                          className="w-5 h-5 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                          />
-                        </svg>
-                        Ref. OEM {vehicleMarque || "Constructeurs"}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {filteredOemEntries.map(([marque, refs]) => (
-                          <div
-                            key={marque}
-                            className="bg-white rounded-lg p-3 border border-green-100"
-                          >
-                            <div className="font-bold text-gray-900 mb-2 uppercase text-sm">
-                              {marque}
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {refs.map((ref, idx) => (
-                                <span
-                                  key={idx}
-                                  className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded"
-                                >
-                                  {ref}
+                    <>
+                      {/* 📱 Mobile: Accordion collapsible */}
+                      <div className="md:hidden mb-6">
+                        <Accordion type="single" collapsible className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                          <AccordionItem value="oem" className="border-none">
+                            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                              <div className="flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-green-600" />
+                                <span className="text-lg font-bold text-gray-900">
+                                  Ref. OEM {vehicleMarque || "Constructeurs"}
+                                  <span className="ml-2 text-sm font-normal text-gray-500">
+                                    ({totalRefs})
+                                  </span>
                                 </span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-5 pb-5">
+                              <div className="space-y-3">
+                                {filteredOemEntries.map(([marque, refs]) => (
+                                  <div
+                                    key={marque}
+                                    className="bg-white rounded-lg p-3 border border-green-100"
+                                  >
+                                    <div className="font-bold text-gray-900 mb-2 uppercase text-sm">
+                                      {marque}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {refs.map((ref, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded"
+                                        >
+                                          {ref}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       </div>
-                    </div>
+
+                      {/* 🖥️ Desktop: Always visible */}
+                      <div className="hidden md:block bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border border-green-200">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <Shield className="w-5 h-5 text-green-600" />
+                          Ref. OEM {vehicleMarque || "Constructeurs"}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {filteredOemEntries.map(([marque, refs]) => (
+                            <div
+                              key={marque}
+                              className="bg-white rounded-lg p-3 border border-green-100"
+                            >
+                              <div className="font-bold text-gray-900 mb-2 uppercase text-sm">
+                                {marque}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {refs.map((ref, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded"
+                                  >
+                                    {ref}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
                   );
                 })()}
             </div>
           ) : null}
         </div>
+
+        {/* 📱 Mobile Sticky CTA with Price */}
+        {piece && (
+          <div className="md:hidden sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <button
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 touch-target-lg"
+            >
+              {addingToCart ? (
+                <>
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Ajout...</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Ajouter au panier</span>
+                  <span className="font-bold">· {piece.prix_ttc.toFixed(2)}€</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body,

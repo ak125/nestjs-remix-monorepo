@@ -92,7 +92,9 @@ module.exports = {
         }
       },
       spacing: {
-        ...tokens.spacing
+        ...tokens.spacing,
+        // Fluid spacing tokens (use clamp for responsive)
+        ...tokens.spacingFluid
       },
       fontFamily: {
         heading: tokens.typography.fontFamily.heading.split(', '),

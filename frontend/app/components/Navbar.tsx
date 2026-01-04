@@ -33,6 +33,20 @@ import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
+/**
+ * 🏷️ Quick Category Chip - Pour navigation rapide mobile
+ */
+function QuickCategoryChip({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      to={href}
+      className="inline-flex items-center px-3 py-1.5 bg-neutral-100 hover:bg-semantic-info/10 hover:text-semantic-info text-neutral-700 text-sm font-medium rounded-full transition-colors whitespace-nowrap"
+    >
+      {label}
+    </Link>
+  );
+}
+
 export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
   const _location = useLocation();
@@ -343,7 +357,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {/* Recherche - Mobile avec design amélioré */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="lg:hidden p-2.5 hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-semantic-info/20"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-semantic-info/20"
             aria-label="Rechercher"
           >
             <Search className="w-5 h-5 text-neutral-700 group-hover:text-semantic-info transition-colors group-hover:scale-110" />
@@ -352,7 +366,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {/* Panier avec animation premium */}
           <button
             onClick={toggleCart}
-            className="relative p-2.5 hover:bg-gradient-to-br hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-info/20"
+            className="relative min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-info/20"
             aria-label="Panier"
           >
             <ShoppingCart className="w-5 h-5 text-neutral-700 group-hover:text-semantic-info transition-all duration-300 group-hover:scale-110" />
@@ -374,7 +388,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {user && (
             <Link
               to="/notifications"
-              className="relative p-2.5 hover:bg-gradient-to-br hover:from-semantic-warning/10 hover:to-semantic-danger/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-warning/20"
+              className="relative min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-warning/10 hover:to-semantic-danger/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-warning/20"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-neutral-700 group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
@@ -413,6 +427,35 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         {/* Sidebar Panier - Version simplifiée sans contexte */}
         <CartSidebarSimple isOpen={isCartOpen} onClose={closeCart} />
       </nav>
+
+      {/* 🔍 Barre de recherche mobile STICKY + Quick Categories */}
+      <div className="header__mobile-search-sticky md:hidden sticky top-[57px] z-40 bg-white border-b shadow-sm">
+        {/* Search Bar - toujours visible */}
+        <div className="px-3 py-2">
+          <button
+            onClick={() => setShowSearch(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-neutral-500 bg-neutral-50 hover:bg-white rounded-xl transition-all duration-300 group border border-neutral-200/80 hover:border-semantic-info/80"
+            aria-label="Rechercher"
+          >
+            <Search className="w-4 h-4 text-neutral-400 group-hover:text-semantic-info" />
+            <span className="text-neutral-500 font-medium flex-1 text-left">
+              Rechercher une pièce...
+            </span>
+          </button>
+        </div>
+
+        {/* Quick Categories - scroll horizontal */}
+        <div className="px-3 pb-2 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 min-w-max">
+            <QuickCategoryChip href="/pieces/freinage" label="Freinage" />
+            <QuickCategoryChip href="/pieces/filtration" label="Filtration" />
+            <QuickCategoryChip href="/pieces/distribution" label="Distribution" />
+            <QuickCategoryChip href="/pieces/embrayage" label="Embrayage" />
+            <QuickCategoryChip href="/pieces/allumage" label="Allumage" />
+            <QuickCategoryChip href="/pieces/suspension" label="Suspension" />
+          </div>
+        </div>
+      </div>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}
       {showSearch && (

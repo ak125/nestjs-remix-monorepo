@@ -39,8 +39,8 @@ export default function ForgotPassword() {
   const error = searchParams.get("error");
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
           <CardTitle>Mot de passe oublié</CardTitle>
           <CardDescription>
@@ -78,13 +78,16 @@ export default function ForgotPassword() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" size="lg" className="w-full">
               Envoyer le lien de réinitialisation
             </Button>
           </Form>
 
           <div className="mt-4 text-center">
-            <Link to="/login" className="text-sm text-blue-600 hover:underline">
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center px-4 py-2 text-sm text-blue-600 hover:underline hover:bg-blue-50 rounded-lg transition-colors"
+            >
               Retour à la connexion
             </Link>
           </div>

@@ -238,6 +238,46 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     setActiveFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // 🆕 Supprimer un filtre individuel (pour les chips)
+  const removeFilter = useCallback((type: keyof PiecesFilters, value?: string) => {
+    setActiveFilters(prev => {
+      const updated = { ...prev };
+
+      switch (type) {
+        case 'brands':
+          // Supprimer une marque spécifique du tableau
+          if (value) {
+            updated.brands = prev.brands.filter(b => b !== value);
+          } else {
+            updated.brands = [];
+          }
+          break;
+        case 'priceRange':
+          updated.priceRange = 'all';
+          break;
+        case 'quality':
+          updated.quality = 'all';
+          break;
+        case 'position':
+          updated.position = 'all';
+          break;
+        case 'minNote':
+          updated.minNote = undefined;
+          break;
+        case 'availability':
+          updated.availability = 'all';
+          break;
+        case 'searchText':
+          updated.searchText = '';
+          break;
+        default:
+          break;
+      }
+
+      return updated;
+    });
+  }, []);
+
   return {
     // État
     activeFilters,
@@ -265,5 +305,6 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     toggleFavorite,
     clearAllSelections,
     updateFilters,
+    removeFilter,
   };
 }
