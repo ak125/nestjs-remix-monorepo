@@ -33,8 +33,11 @@ ENV TZ=Europe/Paris
 ENV NODE_ENV="production"
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+# Cache-busting: invalidate build layer on each commit
+ARG CACHEBUST=1
+
 # Build monorepo (backend + frontend)
-RUN npm run build
+RUN echo "Build cache bust: $CACHEBUST" && npm run build
 
 FROM base AS runner
 WORKDIR /app
