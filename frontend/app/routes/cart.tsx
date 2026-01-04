@@ -36,9 +36,9 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 
+import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
 import { trackViewCart } from "~/utils/analytics";
 import { getCart } from "../services/cart.server";
 
