@@ -61,8 +61,6 @@ interface NavbarMobileProps {
 export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const closeMenu = () => setIsOpen(false);
-
   // 🔗 Navigation items
   const dashboardLink = user
     ? (user.level ?? 0) >= 7

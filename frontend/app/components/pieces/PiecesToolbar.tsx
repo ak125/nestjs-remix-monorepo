@@ -16,7 +16,6 @@ import {
   ArrowDownAZ,
   ArrowDownUp,
   ArrowUpDown,
-  ChevronDown,
   ClipboardList,
   Euro,
   LayoutGrid,
@@ -61,8 +60,6 @@ export function PiecesToolbar({
   minPrice,
   selectedPiecesCount,
 }: PiecesToolbarProps) {
-  const currentSort = SORT_OPTIONS.find((o) => o.value === sortBy);
-
   return (
     <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10">
       {/* Layout Mobile: Compact vertical */}
