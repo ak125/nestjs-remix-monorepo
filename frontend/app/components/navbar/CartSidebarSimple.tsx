@@ -4,6 +4,12 @@
  * Affiche un résumé du panier + livraison gratuite
  * Utilise les données SSR du root loader (useRootCart)
  * Sans liste détaillée des articles (voir /cart pour ça)
+ *
+ * ✅ Migré vers Sheet (Radix) pour:
+ * - Scroll lock automatique
+ * - Focus trap automatique
+ * - Fermeture Escape automatique
+ * - Animations cohérentes
  */
 
 import { Badge } from "@fafa/ui";
@@ -12,6 +18,11 @@ import { ShoppingBag, X } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 import { useRootCart } from "../../root";
+import {
+  Sheet,
+  SheetContent,
+  SheetClose,
+} from "../ui/sheet";
 
 interface CartSidebarSimpleProps {
   isOpen: boolean;
@@ -37,20 +48,10 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
   const total = subtotal + consigneTotal;
 
   return (
-    <>
-      {/* Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-2xl z-50",
-          "transform transition-transform duration-300",
-          "flex flex-col",
-          isOpen ? "translate-x-0" : "translate-x-full",
-        )}
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="right"
+        className="w-full sm:w-[400px] p-0 flex flex-col"
       >
         {/* Header compact & dynamique */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm">
@@ -63,13 +64,14 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
               </span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Fermer le panier"
-            className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <SheetClose asChild>
+            <button
+              aria-label="Fermer le panier"
+              className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </SheetClose>
         </div>
 
         {/* Livraison gratuite - toujours visible */}
@@ -119,7 +121,7 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
         </div>
 
         {/* Contenu principal - Résumé ou panier vide */}
-        <div className="p-4">
+        <div className="p-4 flex-1 overflow-y-auto">
           {itemCount === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-gray-600">
               <ShoppingBag className="h-16 w-16 mb-4 opacity-50" />
@@ -173,27 +175,29 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
         {/* Footer - Boutons d'action */}
         <div className="border-t bg-white p-4 space-y-3 mt-auto">
           {itemCount > 0 && (
-            <Link
-              to="/cart"
-              rel="nofollow"
-              onClick={onClose}
-              className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              <span className="text-white font-bold text-lg">
-                📋 Voir mon panier
-              </span>
-            </Link>
+            <SheetClose asChild>
+              <Link
+                to="/cart"
+                rel="nofollow"
+                className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <span className="text-white font-bold text-lg">
+                  📋 Voir mon panier
+                </span>
+              </Link>
+            </SheetClose>
           )}
-          <Link
-            to="/"
-            onClick={onClose}
-            className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center block transition-colors"
-          >
-            🛍️ Continuer mes achats
-          </Link>
+          <SheetClose asChild>
+            <Link
+              to="/"
+              className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center block transition-colors"
+            >
+              🛍️ Continuer mes achats
+            </Link>
+          </SheetClose>
         </div>
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }
 
