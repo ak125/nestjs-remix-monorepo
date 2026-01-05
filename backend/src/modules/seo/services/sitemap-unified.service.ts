@@ -223,7 +223,7 @@ export class SitemapUnifiedService {
     try {
       const { data: gammes, error } = await this.supabase
         .from('pieces_gamme')
-        .select('pg_alias, pg_id')
+        .select('pg_alias, pg_id, pg_name_url')
         .eq('pg_display', '1')
         .order('pg_alias');
 
@@ -237,15 +237,29 @@ export class SitemapUnifiedService {
         return null;
       }
 
-      // 🔧 FIX: Filtrer les gammes sans pg_alias valide (évite /pieces/-xxx.html)
+      // 🔧 FIX: Utiliser pg_name_url comme fallback si pg_alias est vide
       const urls: SitemapUrl[] = gammes
-        .filter((g) => g.pg_alias && g.pg_alias.trim() !== '')
+        .map((g) => {
+          // Priorité: pg_alias > pg_name_url
+          const alias =
+            (g.pg_alias && g.pg_alias.trim()) ||
+            (g.pg_name_url && g.pg_name_url.trim());
+          return { pg_id: g.pg_id, alias };
+        })
+        .filter((g) => g.alias && g.alias.length > 0)
         .map((g) => ({
-          loc: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+          loc: `/pieces/${g.alias}-${g.pg_id}.html`,
           priority: '0.8',
           changefreq: 'weekly',
         }));
 
+      // Log pour debug
+      const skipped = gammes.length - urls.length;
+      if (skipped > 0) {
+        this.logger.warn(
+          `⚠️ ${skipped} catégories ignorées (pas d'alias valide)`,
+        );
+      }
       this.logger.log(`  → ${urls.length} catégories`);
 
       const filename = 'sitemap-categories.xml';
