@@ -401,9 +401,7 @@ export default function TestHomepageModern() {
                 {homeData.families.map((family, index) => {
                   const familyImage = hierarchyApi.getFamilyImage(family);
                   const familyColor = hierarchyApi.getFamilyColor(family);
-                  const isExpanded = homeData.expandedFamilies.has(
-                    family.mf_id,
-                  );
+                  const isExpanded = !!homeData.expandedFamilies[String(family.mf_id)];
                   const displayedGammes = isExpanded
                     ? family.gammes
                     : family.gammes.slice(0, 4);
