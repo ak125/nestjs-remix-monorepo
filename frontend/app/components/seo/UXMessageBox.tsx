@@ -1,6 +1,6 @@
 import { Info } from 'lucide-react';
-import { cn } from '~/lib/utils';
 import { pluralizePieceName } from '~/lib/seo-utils';
+import { cn } from '~/lib/utils';
 
 interface UXMessageBoxProps {
   gammeName?: string;

@@ -4,8 +4,8 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
-import { cn } from '~/lib/utils';
 import { pluralizePieceName } from '~/lib/seo-utils';
+import { cn } from '~/lib/utils';
 
 // Types matching backend PurchaseGuideData V2 (orientée client)
 export interface PurchaseGuideData {

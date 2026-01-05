@@ -1,6 +1,7 @@
-import { Badge } from '~/components/ui';
 import { Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
+
+import { Badge } from '~/components/ui';
 import { Button } from '~/components/ui/button';
 
 interface User {

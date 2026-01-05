@@ -19,7 +19,7 @@ interface TableOfContentsProps {
 }
 
 export default function TableOfContents({
-  gammeName = 'pièces',
+  gammeName: _gammeName = 'pièces',
   hasMotorizations = true,
   hasSymptoms = true,
   hasGuide = true,

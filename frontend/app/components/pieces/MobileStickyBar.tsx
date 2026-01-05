@@ -6,7 +6,7 @@ interface MobileStickyBarProps {
 }
 
 export default function MobileStickyBar({
-  gammeName = 'pièces',
+  gammeName: _gammeName = 'pièces',
   hasCompatibilities = true,
 }: MobileStickyBarProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {

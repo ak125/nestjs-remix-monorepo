@@ -1,8 +1,8 @@
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
+import { Badge } from "~/components/ui";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';

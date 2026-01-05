@@ -1,8 +1,8 @@
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { cn } from '~/lib/utils';
 import { pluralizePieceName } from '~/lib/seo-utils';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '~/lib/utils';
 
 interface FAQItem {
   question: string;

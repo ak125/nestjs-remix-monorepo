@@ -15,7 +15,6 @@
  * - Mobile-first responsive
  */
 
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate, useFetcher } from "@remix-run/react";
 import {
@@ -31,6 +30,7 @@ import {
   Package
 } from "lucide-react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { Badge } from "~/components/ui";
 
 // 🎯 Layout components
 import { MobileBottomBar, MobileBottomBarSpacer } from "../components/layout/MobileBottomBar";

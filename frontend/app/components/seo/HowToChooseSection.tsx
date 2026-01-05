@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { cn } from '~/lib/utils';
 import { pluralizePieceName } from '~/lib/seo-utils';
+import { cn } from '~/lib/utils';
 
 interface HowToChooseSectionProps {
   content?: string | null;

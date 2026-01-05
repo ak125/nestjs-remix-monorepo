@@ -1,4 +1,3 @@
-import { Alert, Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
@@ -19,6 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 
 interface User {

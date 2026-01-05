@@ -13,12 +13,11 @@
  * ✅ Raccourcis catégories (Cmd+1-6)
  */
 
-import { Badge } from '~/components/ui';
 import { useFetcher } from "@remix-run/react";
-import { 
-  Search, 
-  X, 
-  Clock, 
+import {
+  Search,
+  X,
+  Clock,
   Package,
   Users,
   ShoppingCart,
@@ -28,6 +27,8 @@ import {
   Command
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+
+import { Badge } from '~/components/ui';
 
 interface GlobalSearchProps {
   isOpen: boolean;

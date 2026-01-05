@@ -1,9 +1,9 @@
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
+import { Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 import { ModelSelector, type Model } from '../components/forms/ModelSelector';
 import { TypeSelector, type VehicleType } from '../components/forms/TypeSelector';

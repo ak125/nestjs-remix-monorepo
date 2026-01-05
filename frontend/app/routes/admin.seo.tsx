@@ -1,10 +1,10 @@
 // app/routes/admin.seo.tsx
-import { Alert, Badge } from '~/components/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Alert, Badge } from '~/components/ui';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";

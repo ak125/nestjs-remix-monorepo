@@ -8,10 +8,11 @@
  * - Intégration avec l'API RAG
  */
 
-import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Minimize2 } from "lucide-react";
-import ChatMessage, { type ChatMessageData } from "./ChatMessage";
+import { useState, useRef, useEffect } from "react";
+
 import ChatInput from "./ChatInput";
+import ChatMessage, { type ChatMessageData } from "./ChatMessage";
 
 interface ChatWidgetProps {
   apiUrl?: string;

@@ -1,9 +1,10 @@
-import { Badge } from '~/components/ui';
 // 🏭 BrandHero - Section héro moderne pour page constructeur
 // Design moderne avec informations marque et VehicleSelector intégré
 
 import { Link } from '@remix-run/react';
 import { Car, Home, ChevronRight } from 'lucide-react';
+
+import { Badge } from '~/components/ui';
 import { Alert } from '~/components/ui/alert';
 import VehicleSelector from '../vehicle/VehicleSelector';
 

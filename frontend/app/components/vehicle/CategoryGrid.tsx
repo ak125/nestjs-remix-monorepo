@@ -1,6 +1,6 @@
-import { Badge } from '~/components/ui';
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { Badge } from '~/components/ui';
 import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================

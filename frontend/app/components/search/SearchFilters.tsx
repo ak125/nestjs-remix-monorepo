@@ -4,13 +4,13 @@
  * 🎨 Features: Glassmorphism premium, logos marques avec fiabilité, grille de cartes
  */
 
+import { Package, DollarSign, Star, RotateCcw, Bookmark, Tag, Layers } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   Badge,
   FilterSection,
   ScrollArea
 } from '~/components/ui';
-import { Package, DollarSign, Star, RotateCcw, Bookmark, Tag, Layers } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 export interface FilterFacet {
   field: string;

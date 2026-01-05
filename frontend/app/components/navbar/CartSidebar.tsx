@@ -16,10 +16,11 @@
  * <CartSidebar isOpen={isOpen} onClose={onClose} />
  * ```
  */
-import { Badge } from "~/components/ui";
 import { Link } from "@remix-run/react";
 import { AlertCircle, ShoppingBag, X } from "lucide-react";
 import React from "react";
+
+import { Badge } from "~/components/ui";
 import { useCart, formatPrice, getProductImageUrl } from "../../hooks/useCart";
 import { cn } from "../../lib/utils";
 import { type CartItem } from "../../types/cart";

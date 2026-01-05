@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui';
 // app/routes/admin.suppliers.tsx
 // Interface de gestion des fournisseurs optimisée appliquant "vérifier existant et utiliser le meilleur"
 
@@ -15,6 +14,7 @@ import {
   FileText,
   Settings
 } from 'lucide-react';
+import { Alert } from '~/components/ui';
 import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 

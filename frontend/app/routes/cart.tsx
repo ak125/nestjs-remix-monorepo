@@ -10,7 +10,6 @@
  * - Barre de progression livraison gratuite (150€)
  */
 
-import { Alert, Badge } from "~/components/ui";
 import {
   json,
   type LoaderFunctionArgs,
@@ -37,6 +36,7 @@ import {
 import React, { useEffect } from "react";
 
 import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
+import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";

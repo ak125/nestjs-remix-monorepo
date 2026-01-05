@@ -1,9 +1,9 @@
-import { Alert, Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Alert, Badge } from "~/components/ui";
 
 export const meta: MetaFunction = () => {
   return [

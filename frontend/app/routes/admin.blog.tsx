@@ -4,10 +4,10 @@
  * @route /admin/blog-simple
  */
 
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Badge } from "~/components/ui";
 import { Alert } from '~/components/ui/alert';
 
 // Icons simplifiés

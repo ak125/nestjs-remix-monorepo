@@ -1,4 +1,3 @@
-import { Alert } from "~/components/ui";
 import {
   json,
   type LoaderFunctionArgs,
@@ -24,6 +23,7 @@ import { Error410 } from "~/components/errors/Error410";
 
 // UI Components
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Alert } from "~/components/ui";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
