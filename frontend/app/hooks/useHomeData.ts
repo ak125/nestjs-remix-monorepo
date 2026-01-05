@@ -16,13 +16,8 @@ export function useHomeData() {
     loaderData?.catalogData?.families || []
   );
   const [loadingCatalog, setLoadingCatalog] = useState(false);
-  const [expandedFamilies, setExpandedFamilies] = useState<Set<string | number>>(() => {
-    // Initialiser avec les données du loader pour éviter hydration mismatch SSR/Client
-    if (loaderData?.catalogData?.families) {
-      return new Set(loaderData.catalogData.families.map((f: FamilyWithGammes) => f.mf_id));
-    }
-    return new Set();
-  });
+  // Catégories repliées par défaut - Set vide
+  const [expandedFamilies, setExpandedFamilies] = useState<Set<string | number>>(new Set());
   
   // État pour les marques - Type simplifié pour éviter les erreurs de sérialisation JSON
   const [brands, setBrands] = useState<Array<{ 
@@ -37,8 +32,6 @@ export function useHomeData() {
   useEffect(() => {
     if (loaderData?.catalogData?.families && loaderData.catalogData.families.length > 0) {
       setFamilies(loaderData.catalogData.families);
-      // Sync l'expansion avec les données du serveur pour éviter hydration mismatch
-      setExpandedFamilies(new Set(loaderData.catalogData.families.map((f: FamilyWithGammes) => f.mf_id)));
       setLoadingCatalog(false);
     }
   }, [loaderData?.catalogData]);
