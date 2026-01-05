@@ -23,9 +23,8 @@ export default defineConfig({
 		rollupOptions: {
 			output: {
 				manualChunks: (id: string) => {
-					// Core React - cache long-terme
-					if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
-					if (id.includes('node_modules/react/') || id.includes('node_modules/scheduler')) return 'vendor-react';
+					// Core React - cache long-terme (React + ReactDOM MUST be in same chunk)
+					if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/scheduler')) return 'vendor-react';
 					// Remix framework
 					if (id.includes('@remix-run')) return 'vendor-remix';
 					// UI Components (Radix) - large mais stable
