@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Lightbulb, BookOpen, Search, Settings, RefreshCw } from 'lucide-react';
-import { HtmlContent } from '../seo/HtmlContent';
+import { useState, useMemo } from 'react';
+
 import { pluralizePieceName } from '~/lib/seo-utils';
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface ConseilItem {
   id: number;

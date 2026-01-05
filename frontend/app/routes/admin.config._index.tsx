@@ -2,7 +2,6 @@
  * 🔧 Configuration Admin - Version Simplifiée Compatible
  */
 
-import { Alert, Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
@@ -23,6 +22,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
 import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
+import { Alert, Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 
 // Types simplifiés pour les configurations

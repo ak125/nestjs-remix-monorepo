@@ -1,7 +1,7 @@
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 
 // Interfaces simplifiées pour éviter les problèmes d'import

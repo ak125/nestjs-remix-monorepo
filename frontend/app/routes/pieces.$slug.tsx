@@ -3,10 +3,11 @@ import { useLoaderData, useNavigation } from "@remix-run/react";
 import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { useEffect, lazy, Suspense } from "react";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import MobileStickyBar from "~/components/pieces/MobileStickyBar";
+import TableOfContents from "~/components/pieces/TableOfContents";
+import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 // 🆕 V2 UX Components
-import TableOfContents from "~/components/pieces/TableOfContents";
-import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
@@ -21,7 +22,6 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical";
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
-import { pluralizePieceName } from "~/lib/seo-utils";
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
 // Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)

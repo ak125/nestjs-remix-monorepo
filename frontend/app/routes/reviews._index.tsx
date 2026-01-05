@@ -2,7 +2,6 @@
  * Page Gestion des Avis Clients
  * Interface complète pour la modération et gestion des avis
  */
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
 import { 
@@ -18,6 +17,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 import { getReviewStats, getAllReviews, updateReviewStatus } from "../services/api/review.api";
 

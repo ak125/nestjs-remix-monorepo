@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui';
 // app/routes/admin.system-overview.tsx
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
@@ -17,6 +16,7 @@ import {
   MonitorSpeaker,
   Award
 } from 'lucide-react';
+import { Alert } from '~/components/ui';
 import { Badge } from '~/components/ui/badge';
 
 // Simuler les données système (en production, venir du backend)

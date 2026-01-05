@@ -2,7 +2,6 @@
  * Dashboard Admin - Page d'administration
  */
 
-import { Alert, Badge } from "~/components/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
@@ -35,6 +34,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from 'sonner';
+import { Alert, Badge } from "~/components/ui";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";

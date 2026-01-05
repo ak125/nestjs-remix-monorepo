@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
 import { Info, Settings, AlertTriangle, CheckCircle, Wrench, ChevronDown } from 'lucide-react';
-import { HtmlContent } from '../seo/HtmlContent';
+import { useMemo } from 'react';
+
 import { pluralizePieceName } from '~/lib/seo-utils';
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface CatalogueItem {
   id?: number;

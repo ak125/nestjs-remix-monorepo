@@ -17,11 +17,11 @@
  * - UI Components: components/orders/* (10 composants)
  */
 
-import { Alert } from '~/components/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Alert } from '~/components/ui';
 
 import { requireUser } from '../auth/unified.server';
 import { AdminBreadcrumb } from '../components/admin/AdminBreadcrumb';

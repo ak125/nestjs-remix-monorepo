@@ -1,7 +1,7 @@
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { useEffect, useState } from 'react'
+import { Badge } from "~/components/ui";
 import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from '../hooks/useAdvancedAnalyticsComplete'
 import { getMonitoringService } from '../services/monitoring'
 

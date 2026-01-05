@@ -64,7 +64,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [_lastScrollY, setLastScrollY] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);

@@ -5,10 +5,10 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
-import { Badge, Alert } from '~/components/ui';
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
+import { Badge, Alert } from '~/components/ui';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";

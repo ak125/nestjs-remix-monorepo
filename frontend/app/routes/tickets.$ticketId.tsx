@@ -2,9 +2,9 @@
  * Page de détail d'un ticket - Consultation et gestion
  * Remix Route Component pour voir et modifier un ticket spécifique
  */
-import { Badge, Alert } from '~/components/ui';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { Badge, Alert } from '~/components/ui';
 import { Button } from '~/components/ui/button';
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
 

@@ -1,6 +1,6 @@
-import { Badge, Alert } from '~/components/ui';
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
+import { Badge, Alert } from '~/components/ui';
 
 interface Product {
   piece_id: number;

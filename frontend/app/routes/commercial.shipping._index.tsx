@@ -2,7 +2,6 @@
  * 📦 Gestion des expéditions - Interface principale
  */
 
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
@@ -11,6 +10,7 @@ import {
   TrendingUp, Globe, RefreshCw
 } from "lucide-react";
 import { useState } from 'react';
+import { Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 
 // Types pour les expéditions

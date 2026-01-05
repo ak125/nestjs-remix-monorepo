@@ -2,7 +2,6 @@
  * 📦 Suivi des expéditions - Interface commerciale
  */
 
-import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
@@ -11,6 +10,7 @@ import {
   Navigation, Phone, Mail, AlertTriangle
 } from "lucide-react";
 import { useState, useEffect } from 'react';
+import { Badge } from "~/components/ui";
 import { Button } from '~/components/ui/button';
 
 // Types pour le suivi

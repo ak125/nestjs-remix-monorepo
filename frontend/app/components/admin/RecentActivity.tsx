@@ -1,10 +1,11 @@
-import { Badge } from '~/components/ui';
 /**
  * 🔄 Composant RecentActivity - Activité récente
  * Compatible avec l'architecture Remix existante
  */
 
 import { Link } from "@remix-run/react";
+
+import { Badge } from '~/components/ui';
 
 interface ActivityItem {
   id: string;

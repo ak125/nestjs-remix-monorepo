@@ -12,9 +12,10 @@
  * - Animations cohérentes
  */
 
-import { Badge } from "~/components/ui";
 import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
+
+import { Badge } from "~/components/ui";
 
 import { cn } from "../../lib/utils";
 import { useRootCart } from "../../root";

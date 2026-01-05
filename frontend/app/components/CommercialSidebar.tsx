@@ -1,19 +1,20 @@
-import { Badge } from '~/components/ui';
 import { Link, useLocation } from "@remix-run/react"
-import { 
-  Home, 
-  ShoppingCart, 
-  Package, 
+import {
+  Home,
+  ShoppingCart,
+  Package,
   Truck,
   Users,
-  BarChart3, 
-  Menu, 
+  BarChart3,
+  Menu,
   X,
   LogOut,
   TrendingUp,
   AlertTriangle,
 } from "lucide-react"
 import * as React from "react"
+
+import { Badge } from '~/components/ui';
 import { Button } from "./ui/button"
 
 // Fonction utilitaire pour combiner les classes CSS

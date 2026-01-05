@@ -5,8 +5,9 @@
  * Affichage comparatif côte à côte (max 4 pièces)
  */
 
-import { Badge } from '~/components/ui';
 import React from 'react';
+
+import { Badge } from '~/components/ui';
 import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesComparisonViewProps {

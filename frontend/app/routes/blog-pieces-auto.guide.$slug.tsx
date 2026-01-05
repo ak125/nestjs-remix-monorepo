@@ -1,4 +1,3 @@
-import { Alert } from "~/components/ui";
 /**
  * Route : /blog-pieces-auto/guide/:slug
  * Affiche le détail d'un guide d'achat
@@ -26,6 +25,7 @@ import {
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Alert } from "~/components/ui";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";

@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui';
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
@@ -14,6 +13,7 @@ import {
   Users,
   Calendar
 } from 'lucide-react';
+import { Alert } from '~/components/ui';
 import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 
