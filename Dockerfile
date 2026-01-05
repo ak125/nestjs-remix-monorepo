@@ -64,7 +64,6 @@ COPY --chown=remix-api:nodejs --from=installer /app/frontend/public ./frontend/p
 COPY --chown=remix-api:nodejs --from=installer /app/frontend/package.json ./frontend/package.json
 
 # Copier les packages internes nécessaires
-COPY --chown=remix-api:nodejs --from=installer /app/packages/ui ./packages/ui
 COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./packages/design-tokens
 COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
 
