@@ -6,6 +6,7 @@ import {
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Shield,
   Truck,
@@ -20,7 +21,6 @@ import HomeCertifications from "../components/home/HomeCertifications";
 import HomeFAQSection from "../components/home/HomeFAQSection";
 import HomeSearchCards from "../components/home/HomeSearchCards";
 import ReferenceSearchModal from "../components/home/ReferenceSearchModal";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
@@ -457,12 +457,38 @@ export default function TestHomepageModern() {
                             "Découvrez notre sélection complète"}
                         </p>
 
-                        {/* Liste des sous-catégories avec Accordion shadcn/ui */}
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="gammes" className="border-none">
-                            {/* 4 premières gammes toujours visibles */}
-                            <div className="space-y-2.5 mb-2">
-                              {family.gammes.slice(0, 4).map((gamme, idx) => {
+                        {/* 4 premières gammes toujours visibles */}
+                        <div className="space-y-2.5 mb-2">
+                          {family.gammes.slice(0, 4).map((gamme, idx) => {
+                            const categoryUrl =
+                              gamme.pg_id && gamme.pg_alias
+                                ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
+                                : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || "")}&gamme=${gamme.pg_id}`;
+
+                            return (
+                              <Link
+                                key={idx}
+                                to={categoryUrl}
+                                className="text-sm text-neutral-600 hover:text-semantic-info hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
+                              >
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-semantic-info group-hover/item:scale-125 transition-all" />
+                                <span className="line-clamp-1 font-medium">
+                                  {gamme.pg_name}
+                                </span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+
+                        {/* Gammes supplémentaires avec details/summary natif */}
+                        {family.gammes_count > 4 && (
+                          <details className="group">
+                            <summary className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                              <span>Voir toutes les pièces de {(family.mf_name_system || family.mf_name || "").toLowerCase()}</span>
+                              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="space-y-2.5 pt-2">
+                              {family.gammes.slice(4).map((gamme, idx) => {
                                 const categoryUrl =
                                   gamme.pg_id && gamme.pg_alias
                                     ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
@@ -482,38 +508,8 @@ export default function TestHomepageModern() {
                                 );
                               })}
                             </div>
-
-                            {/* Gammes supplémentaires (dépliables) */}
-                            {family.gammes_count > 4 && (
-                              <>
-                                <AccordionTrigger className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2 hover:no-underline">
-                                  <span>Voir toutes les pièces de {(family.mf_name_system || family.mf_name || "").toLowerCase()}</span>
-                                </AccordionTrigger>
-                                <AccordionContent className="space-y-2.5 pt-2">
-                                  {family.gammes.slice(4).map((gamme, idx) => {
-                                    const categoryUrl =
-                                      gamme.pg_id && gamme.pg_alias
-                                        ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
-                                        : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || "")}&gamme=${gamme.pg_id}`;
-
-                                    return (
-                                      <Link
-                                        key={idx}
-                                        to={categoryUrl}
-                                        className="text-sm text-neutral-600 hover:text-semantic-info hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
-                                      >
-                                        <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-semantic-info group-hover/item:scale-125 transition-all" />
-                                        <span className="line-clamp-1 font-medium">
-                                          {gamme.pg_name}
-                                        </span>
-                                      </Link>
-                                    );
-                                  })}
-                                </AccordionContent>
-                              </>
-                            )}
-                          </AccordionItem>
-                        </Accordion>
+                          </details>
+                        )}
                       </CardContent>
                     </Card>
                   );
