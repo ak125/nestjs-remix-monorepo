@@ -176,8 +176,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="h-full">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
