@@ -154,9 +154,13 @@ automecanik.com, www.automecanik.com {
         not path /api/catalog/batch-loader/*
     }
     handle @private {
+        # Headers anti-cache pour navigateur
         header Cache-Control "private, no-cache, no-store, must-revalidate"
         header Pragma "no-cache"
         header Expires "0"
+        # Headers anti-cache pour Cloudflare CDN
+        header CDN-Cache-Control "no-store"
+        header Cloudflare-CDN-Cache-Control "no-store"
 
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
