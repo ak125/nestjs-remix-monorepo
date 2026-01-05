@@ -19,39 +19,8 @@ export default defineConfig({
 		commonjsOptions: {
 			include: [/frontend/, /backend/, /node_modules/],
 		},
-		// 🚀 Optimisation chunking pour Lighthouse
-		rollupOptions: {
-			output: {
-				manualChunks: (id: string) => {
-					// Core React - cache long-terme (React + ReactDOM MUST be in same chunk)
-					if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/scheduler')) return 'vendor-react';
-					// Remix framework
-					if (id.includes('@remix-run')) return 'vendor-remix';
-					// UI Components (Radix) - large mais stable
-					if (id.includes('@radix-ui')) return 'vendor-radix';
-					// Icons - tree-shaken
-					if (id.includes('lucide-react')) return 'vendor-icons';
-					// Data fetching & state
-					if (id.includes('@tanstack')) return 'vendor-tanstack';
-					if (id.includes('zustand')) return 'vendor-state';
-					// Forms (Conform, Zod, react-hook-form)
-					if (id.includes('@conform-to') || id.includes('zod') || id.includes('react-hook-form') || id.includes('@hookform')) return 'vendor-forms';
-					// Charts (recharts) - lazy load sur dashboard
-					if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'vendor-charts';
-					// Rich text editor (Tiptap) - lazy load
-					if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor';
-					// Carousel
-					if (id.includes('embla-carousel')) return 'vendor-carousel';
-					// Utilities
-					if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) return 'vendor-utils';
-					// Toast
-					if (id.includes('sonner')) return 'vendor-toast';
-					// Autres node_modules
-					if (id.includes('node_modules')) return 'vendor-common';
-					return undefined;
-				},
-			},
-		},
+		// Note: manualChunks supprimé - causait des race conditions
+		// Vite/Rollup gère automatiquement l'ordre de chargement des chunks
 		chunkSizeWarningLimit: 500,
 	},
 	plugins: [
