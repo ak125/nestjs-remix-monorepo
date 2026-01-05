@@ -10,7 +10,7 @@
  * - Barre de progression livraison gratuite (150€)
  */
 
-import { Alert, Badge } from "@fafa/ui";
+import { Alert, Badge } from "~/components/ui";
 import {
   json,
   type LoaderFunctionArgs,

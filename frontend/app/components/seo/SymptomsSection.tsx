@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { cn } from '~/lib/utils';
+import { pluralizePieceName } from '~/lib/seo-utils';
 
 interface SymptomsSectionProps {
   symptoms?: string[] | null;
@@ -19,6 +20,7 @@ export function SymptomsSection({
   if (!symptoms || symptoms.length === 0) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
@@ -36,13 +38,13 @@ export function SymptomsSection({
                 id="symptoms-title"
                 className="text-xl text-orange-900"
               >
-                Symptômes de {pieceType} usée
+                Symptômes de {pluralType} usées
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-gray-700 mb-4">
-              Voici les signes qui indiquent qu'il est temps de remplacer votre {pieceType} :
+              Voici les signes qui indiquent qu'il est temps de remplacer vos {pluralType} :
             </p>
             <ul className="space-y-3">
               {symptoms.map((symptom, index) => (
@@ -61,8 +63,16 @@ export function SymptomsSection({
               <p className="text-orange-900 text-sm flex items-start gap-2">
                 <span className="text-lg">💡</span>
                 <span>
-                  Si vous constatez un ou plusieurs de ces symptômes, n'attendez pas pour remplacer votre {pieceType}.
-                  Une pièce usée peut compromettre votre sécurité et entraîner des réparations plus coûteuses.
+                  Si vous constatez un ou plusieurs de ces symptômes, n'attendez pas pour remplacer vos {pluralType}.
+                  Des pièces usées peuvent compromettre votre sécurité et entraîner des réparations plus coûteuses.
+                </span>
+              </p>
+            </div>
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <p className="text-blue-800 text-sm font-medium flex items-center gap-2">
+                <span>👉</span>
+                <span>
+                  Sélectionnez votre véhicule pour afficher uniquement les {pluralType} compatibles (avant/arrière).
                 </span>
               </p>
             </div>

@@ -1,10 +1,12 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
-import { CheckCircle2, Truck, Shield, Users, Car } from 'lucide-react';
+import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { useEffect, lazy, Suspense } from "react";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
-import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+// 🆕 V2 UX Components
+import TableOfContents from "~/components/pieces/TableOfContents";
+import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
@@ -14,15 +16,17 @@ import { PiecesRelatedArticles as _PiecesRelatedArticles } from "../components/p
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical";
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
+import { pluralizePieceName } from "~/lib/seo-utils";
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
 // Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)
 const PurchaseGuideSection = lazy(() => import("../components/seo/PurchaseGuideSection").then(m => ({ default: m.PurchaseGuideSection })));
+const QuickGuideSection = lazy(() => import("../components/pieces/QuickGuideSection").then(m => ({ default: m.default })));
 const MotorisationsSection = lazy(() => import("../components/pieces/MotorisationsSection").then(m => ({ default: m.default })));
 const CatalogueSection = lazy(() => import("../components/pieces/CatalogueSection").then(m => ({ default: m.default })));
 const EquipementiersSection = lazy(() => import("../components/pieces/EquipementiersSection").then(m => ({ default: m.default })));
@@ -33,6 +37,9 @@ const InformationsSection = lazy(() => import("../components/pieces/Informations
 const HowToChooseSection = lazy(() => import("../components/seo/HowToChooseSection").then(m => ({ default: m.HowToChooseSection })));
 const SymptomsSection = lazy(() => import("../components/seo/SymptomsSection").then(m => ({ default: m.SymptomsSection })));
 const FAQSection = lazy(() => import("../components/seo/FAQSection").then(m => ({ default: m.FAQSection })));
+
+// 🎯 Encart anti-doute / réassurance conversion
+const UXMessageBox = lazy(() => import("../components/seo/UXMessageBox").then(m => ({ default: m.UXMessageBox })));
 
 interface LoaderData {
   status: number;
@@ -575,7 +582,15 @@ export default function PiecesDetailPage() {
               </span>
             </h1>
           </div>
-          
+
+          {/* 🎯 Encart anti-doute / réassurance - lève le verrou mental avant sélection */}
+          <Suspense fallback={null}>
+            <UXMessageBox
+              gammeName={data.content?.pg_name}
+              className="mt-6 mb-4"
+            />
+          </Suspense>
+
           {/* Cadre glassmorphism contenant Image + VehicleSelector */}
           <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
             <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
@@ -583,10 +598,13 @@ export default function PiecesDetailPage() {
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
-                  {data.content?.pg_name 
-                    ? `Trouvez ${data.content.pg_name.toLowerCase().includes('plaquette') || data.content.pg_name.toLowerCase().includes('disque') ? 'vos' : 'votre'} ${data.content.pg_name.toLowerCase()} compatible${data.content.pg_name.toLowerCase().includes('plaquette') || data.content.pg_name.toLowerCase().includes('disque') ? 's' : ''} avec votre voiture`
-                    : "Trouvez la référence compatible avec votre véhicule"
-                  }
+                  {(() => {
+                    const name = data.content?.pg_name?.toLowerCase() || '';
+                    const pluralName = pluralizePieceName(name);
+                    return name
+                      ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
+                      : "Trouvez la référence compatible avec votre véhicule";
+                  })()}
                 </p>
               </div>
               
@@ -628,7 +646,7 @@ export default function PiecesDetailPage() {
                 
                 {/* VehicleSelector à droite */}
                 <div id="vehicle-selector" className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
-                  <VehicleSelectorV2 enableTypeMineSearch={true} />
+                  <VehicleSelector enableTypeMineSearch={true} />
                 </div>
               </div>
               
@@ -658,10 +676,25 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
-      {/* 💡 Guide d'achat V2 - Contenu orienté client (intro/risk/timing/arguments) */}
+      {/* 📑 Sommaire ancré - Navigation rapide vers toutes les sections */}
+      <div className="container mx-auto px-4 py-4">
+        <TableOfContents
+          gammeName={data.content?.pg_name}
+          hasMotorizations={!!data.motorisations?.items?.length}
+          hasSymptoms={!!data.purchaseGuideData?.symptoms?.length}
+          hasGuide={!!data.purchaseGuideData}
+          hasInformations={!!data.informations?.items?.length}
+          hasConseils={!!data.conseils?.items?.length}
+          hasEquipementiers={!!data.equipementiers?.items?.length}
+          hasFaq={!!data.purchaseGuideData?.faq?.length}
+          hasCatalogue={!!data.catalogueMameFamille?.items?.length}
+        />
+      </div>
+
+      {/* 💡 Guide d'achat V2 complet - Contenu orienté client (pour SEO longue traîne) */}
       {data.purchaseGuideData && (
         <Suspense fallback={
-          <div className="container mx-auto px-4 -mt-space-3 mb-space-6">
+          <div className="container mx-auto px-4 mb-space-6">
             <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
               <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
               <div className="h-64 bg-gray-100 rounded-2xl"></div>
@@ -672,9 +705,34 @@ export default function PiecesDetailPage() {
           <PurchaseGuideSection
             guide={data.purchaseGuideData}
             gammeName={data.content?.pg_name}
-            className="-mt-space-3 mb-space-6"
+            className="mb-space-6"
           />
         </Suspense>
+      )}
+
+      {/* 🚗 Motorisations compatibles - Position 3 (REMONTÉ après sélecteur) */}
+      <div className="container mx-auto px-4">
+        <section id="compatibilities">
+          <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-lg mb-8" />}>
+            <MotorisationsSection
+              motorisations={data.motorisations}
+              familleColor={familleColor}
+              familleName={data.content?.pg_name || 'pièces'}
+            />
+          </Suspense>
+        </section>
+      </div>
+
+      {/* ⚡ Guide rapide (4 cartes compactes) - Position 4 */}
+      {data.purchaseGuideData && (
+        <div className="container mx-auto px-4">
+          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-8" />}>
+            <QuickGuideSection
+              guide={data.purchaseGuideData}
+              gammeName={data.content?.pg_name}
+            />
+          </Suspense>
+        </div>
       )}
 
       {/* 📖 Comment choisir - Position 6 après Purchase Guide (intro/risk/timing/arguments) */}
@@ -713,65 +771,69 @@ export default function PiecesDetailPage() {
           )}
         </section>
 
-        {/* 🚀 LCP OPTIMIZATION: Sections below-fold lazy-loaded avec Suspense */}
+        {/* 🚀 Sections below-fold lazy-loaded avec IDs pour navigation ancres */}
 
-        {/* Motorisations - Lazy loaded */}
-        <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-lg" />}>
-          <MotorisationsSection
-            motorisations={data.motorisations}
-            familleColor={familleColor}
-            familleName={data.famille?.mf_name || 'pièces'}
-          />
-        </Suspense>
-
-        {/* 📖 Symptômes d'usure - Position 10 après Motorisations */}
+        {/* 📖 Symptômes d'usure - Position 5 */}
         {data.purchaseGuideData?.symptoms && data.purchaseGuideData.symptoms.length > 0 && (
-          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-            <SymptomsSection
-              symptoms={data.purchaseGuideData.symptoms}
-              gammeName={data.content?.pg_name || 'cette pièce'}
-            />
-          </Suspense>
+          <section id="symptoms">
+            <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+              <SymptomsSection
+                symptoms={data.purchaseGuideData.symptoms}
+                gammeName={data.content?.pg_name || 'cette pièce'}
+              />
+            </Suspense>
+          </section>
         )}
 
-        {/* Informations SEO - Lazy loaded */}
-        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
-          <InformationsSection
-            informations={data.informations}
-            catalogueFamille={data.catalogueMameFamille?.items}
-          />
-        </Suspense>
-
-        {/* Équipementiers - Lazy loaded */}
-        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-          <EquipementiersSection equipementiers={data.equipementiers} />
-        </Suspense>
-
-        {/* Conseils - Lazy loaded */}
-        <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
-          <ConseilsSection
-            conseils={data.conseils}
-            catalogueFamille={data.catalogueMameFamille?.items}
-            gammeName={data.content?.pg_name}
-          />
-        </Suspense>
-
-        {/* Catalogue Même Famille - Lazy loaded */}
-        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-          <CatalogueSection
-            catalogueMameFamille={data.catalogueMameFamille}
-            verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}
-          />
-        </Suspense>
-
-        {/* 📖 FAQ avec Schema.org - Lazy loaded (à la fin pour SEO longue traîne) */}
-        {data.purchaseGuideData?.faq && data.purchaseGuideData.faq.length > 0 && (
-          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-            <FAQSection
-              faq={data.purchaseGuideData.faq}
-              gammeName={data.content?.pg_name || 'cette pièce'}
+        {/* 📚 Informations essentielles - Position 6 */}
+        <section id="essentials">
+          <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+            <InformationsSection
+              informations={data.informations}
+              catalogueFamille={data.catalogueMameFamille?.items}
+              gammeName={data.content?.pg_name}
             />
           </Suspense>
+        </section>
+
+        {/* 💡 Conseils d'entretien - Position 7 */}
+        <section id="advice">
+          <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+            <ConseilsSection
+              conseils={data.conseils}
+              catalogueFamille={data.catalogueMameFamille?.items}
+              gammeName={data.content?.pg_name}
+            />
+          </Suspense>
+        </section>
+
+        {/* 🔧 Équipementiers - Position 8 */}
+        <section id="brands">
+          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+            <EquipementiersSection equipementiers={data.equipementiers} />
+          </Suspense>
+        </section>
+
+        {/* 📦 Catalogue Même Famille - Position 9 */}
+        <section id="family">
+          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+            <CatalogueSection
+              catalogueMameFamille={data.catalogueMameFamille}
+              verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}
+            />
+          </Suspense>
+        </section>
+
+        {/* 📖 FAQ avec Schema.org - Position 10 (fin pour SEO longue traîne) */}
+        {data.purchaseGuideData?.faq && data.purchaseGuideData.faq.length > 0 && (
+          <section id="faq">
+            <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+              <FAQSection
+                faq={data.purchaseGuideData.faq}
+                gammeName={data.content?.pg_name || 'cette pièce'}
+              />
+            </Suspense>
+          </section>
         )}
 
         {/* Bouton Scroll To Top */}
@@ -779,22 +841,14 @@ export default function PiecesDetailPage() {
 
       </div>
 
-      {/* Mobile Bottom Bar - CTA Choisir véhicule */}
-      <MobileBottomBarSpacer />
-      <MobileBottomBar>
-        <button
-          onClick={() => {
-            const selector = document.getElementById('vehicle-selector');
-            if (selector) {
-              selector.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }}
-          className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target"
-        >
-          <Car className="w-5 h-5" />
-          <span>Choisir véhicule</span>
-        </button>
-      </MobileBottomBar>
+      {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}
+      <MobileStickyBar
+        gammeName={data.content?.pg_name}
+        hasCompatibilities={!!data.motorisations?.items?.length}
+      />
+
+      {/* Spacer pour éviter que le contenu soit masqué par la sticky bar */}
+      <div className="h-20 md:hidden" />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";

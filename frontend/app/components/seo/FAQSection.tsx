@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { cn } from '~/lib/utils';
+import { pluralizePieceName } from '~/lib/seo-utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FAQItem {
@@ -24,6 +25,7 @@ export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
   if (!faq || faq.length === 0) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   // Schema.org FAQPage structured data
   const faqSchema = {
@@ -59,7 +61,7 @@ export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
                 ❓
               </span>
               <CardTitle id="faq-title" className="text-xl text-purple-900">
-                Questions fréquentes sur {pieceType}
+                Questions fréquentes sur les {pluralType}
               </CardTitle>
             </div>
           </CardHeader>

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { cn } from '~/lib/utils';
+import { pluralizePieceName } from '~/lib/seo-utils';
 
 interface HowToChooseSectionProps {
   content?: string | null;
@@ -19,6 +20,7 @@ export function HowToChooseSection({
   if (!content) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
@@ -36,7 +38,7 @@ export function HowToChooseSection({
                 id="how-to-choose-title"
                 className="text-xl text-indigo-900"
               >
-                Comment choisir la bonne {pieceType} ?
+                Comment choisir les bonnes {pluralType} ?
               </CardTitle>
             </div>
           </CardHeader>

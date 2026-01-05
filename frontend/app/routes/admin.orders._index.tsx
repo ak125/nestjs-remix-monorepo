@@ -17,7 +17,7 @@
  * - UI Components: components/orders/* (10 composants)
  */
 
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';

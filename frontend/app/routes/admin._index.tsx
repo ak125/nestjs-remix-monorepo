@@ -2,7 +2,7 @@
  * Dashboard Admin - Page d'administration
  */
 
-import { Alert, Badge } from "@fafa/ui";
+import { Alert, Badge } from "~/components/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 

@@ -23,7 +23,8 @@ export function DynamicMenu({
   className = '' 
 }: DynamicMenuProps) {
   const [menuSections, setMenuSections] = useState<any[]>([]);
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  // Use array instead of Set to avoid React hydration issues
+  const [collapsed, setCollapsed] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
@@ -56,7 +57,7 @@ export function DynamicMenu({
           const prefsResponse = await fetch(`/api/navigation/preferences/${userId}/${module}`);
           if (prefsResponse.ok) {
             const prefs: UserPreferences = await prefsResponse.json();
-            setCollapsed(new Set(prefs.collapsed_items || []));
+            setCollapsed(prefs.collapsed_items || []);
           }
         } catch (prefsError) {
           console.warn('Failed to load user preferences:', prefsError);
@@ -89,12 +90,9 @@ export function DynamicMenu({
   }, [loadMenu]);
 
   const toggleCollapse = async (itemId: number) => {
-    const newCollapsed = new Set(collapsed);
-    if (newCollapsed.has(itemId)) {
-      newCollapsed.delete(itemId);
-    } else {
-      newCollapsed.add(itemId);
-    }
+    const newCollapsed = collapsed.includes(itemId)
+      ? collapsed.filter(id => id !== itemId)
+      : [...collapsed, itemId];
     setCollapsed(newCollapsed);
 
     // Sauvegarder les préférences utilisateur
@@ -104,7 +102,7 @@ export function DynamicMenu({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            collapsed_items: Array.from(newCollapsed),
+            collapsed_items: newCollapsed,
           }),
         });
       } catch (error) {
@@ -115,7 +113,7 @@ export function DynamicMenu({
 
   const renderMenuItem = (item: MenuItem, level = 0, parentPath = '') => {
     const hasChildren = item.children && item.children.length > 0;
-    const isCollapsed = collapsed.has(item.id);
+    const isCollapsed = collapsed.includes(item.id);
     const itemPath = item.path || item.url || `${parentPath}/${item.title.toLowerCase()}`;
     const isActive = location.pathname === itemPath;
 

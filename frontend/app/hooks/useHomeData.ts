@@ -4,7 +4,7 @@
  */
 
 import { useLoaderData } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { type FamilyWithGammes } from '~/services/api/hierarchy.api';
 
@@ -16,7 +16,9 @@ export function useHomeData() {
     loaderData?.catalogData?.families || []
   );
   const [loadingCatalog, setLoadingCatalog] = useState(false);
-
+  // Use array instead of Set to avoid React hydration issues (Set doesn't serialize correctly during SSR)
+  const [expandedFamilies, setExpandedFamilies] = useState<(string | number)[]>([]);
+  
   // État pour les marques - Type simplifié pour éviter les erreurs de sérialisation JSON
   const [brands, setBrands] = useState<Array<{ 
     id: number; 
@@ -26,26 +28,22 @@ export function useHomeData() {
   }>>(loaderData?.brandsData || []);
   const [loadingBrands, setLoadingBrands] = useState(false);
 
-  // Sync avec les données SSR
-  useEffect(() => {
-    if (loaderData?.catalogData?.families && loaderData.catalogData.families.length > 0) {
-      setFamilies(loaderData.catalogData.families);
-      setLoadingCatalog(false);
-    }
-  }, [loaderData?.catalogData]);
-
-  useEffect(() => {
-    if (loaderData?.brandsData && loaderData.brandsData.length > 0) {
-      setBrands(loaderData.brandsData);
-      setLoadingBrands(false);
-    }
-  }, [loaderData?.brandsData]);
+  // Fonction pour toggle l'expansion d'une famille
+  const toggleFamilyExpansion = (familyId: string | number) => {
+    setExpandedFamilies(prev =>
+      prev.includes(familyId)
+        ? prev.filter(id => id !== familyId)
+        : [...prev, familyId]
+    );
+  };
 
   return {
     // Données du catalogue
     families,
     loadingCatalog,
-
+    expandedFamilies,
+    toggleFamilyExpansion,
+    
     // Données des marques
     brands,
     loadingBrands,

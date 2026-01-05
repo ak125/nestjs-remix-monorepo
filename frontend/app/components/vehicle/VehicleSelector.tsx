@@ -1,4 +1,4 @@
-// 📁 frontend/app/components/vehicle/VehicleSelectorV2.tsx
+// 📁 frontend/app/components/vehicle/VehicleSelector.tsx
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
 import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
@@ -9,7 +9,7 @@ import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
-interface VehicleSelectorV2Props {
+interface VehicleSelectorProps {
   // 🎨 Mode d'affichage
   mode?: 'compact' | 'full';
   
@@ -47,7 +47,7 @@ interface VehicleSelectorV2Props {
   context?: 'homepage' | 'detail' | 'pieces' | 'search';
 }
 
-export default function VehicleSelectorV2({
+export default function VehicleSelector({
   mode = 'full',
   showVinSearch: _showVinSearch = false,
   showRecommendation: _showRecommendation = false,
@@ -60,7 +60,7 @@ export default function VehicleSelectorV2({
   className = '',
   variant = 'default',
   context = 'homepage'
-}: VehicleSelectorV2Props) {
+}: VehicleSelectorProps) {
   
   // 📊 État unifié
   const [brands, setBrands] = useState<VehicleBrand[]>([]);

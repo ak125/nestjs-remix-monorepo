@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 import { Form, useFetcher } from '@remix-run/react';
 import { Save, X } from 'lucide-react';
 import { useEffect } from 'react';

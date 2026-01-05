@@ -24,7 +24,8 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
   const [menuItems, setMenuItems] = useState<MenuItemData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  // Use array instead of Set to avoid React hydration issues
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const loadMenu = useCallback(async () => {
     try {
@@ -70,20 +71,14 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
   }, [loadMenu]);
 
   const toggleCollapse = useCallback((itemId: string) => {
-    setExpandedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        next.add(itemId);
-      }
-      return next;
-    });
+    setExpandedItems(prev =>
+      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
+    );
   }, []);
 
   const renderMenuItem = useCallback((item: MenuItemData, depth: number = 0): React.ReactNode => {
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(String(item.id));
+    const isExpanded = expandedItems.includes(String(item.id));
     const paddingLeft = depth * 16 + 8;
 
     return (
