@@ -2,7 +2,7 @@
  * Page Gestion des Avis Clients
  * Interface complète pour la modération et gestion des avis
  */
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
 import { 

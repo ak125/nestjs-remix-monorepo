@@ -4,11 +4,11 @@
  * 🎨 Features: Glassmorphism premium, logos marques avec fiabilité, grille de cartes
  */
 
-import { 
-  Badge, 
-  FilterSection, 
-  ScrollArea 
-} from '@fafa/ui';
+import {
+  Badge,
+  FilterSection,
+  ScrollArea
+} from '~/components/ui';
 import { Package, DollarSign, Star, RotateCcw, Bookmark, Tag, Layers } from 'lucide-react';
 import { useState, useEffect } from 'react';
 

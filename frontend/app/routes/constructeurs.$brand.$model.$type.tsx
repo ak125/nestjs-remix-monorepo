@@ -627,7 +627,7 @@ export default function VehicleDetailPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-brand={vehicle.marque_alias?.toLowerCase()}>
       {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
       <nav
         className="bg-white border-b border-gray-200 py-3"
@@ -647,8 +647,7 @@ export default function VehicleDetailPage() {
               <a
                 href="/"
                 itemProp="item"
-                className="hover:underline"
-                style={{ color: brandPrimary }}
+                className="hover:underline text-brand"
               >
                 <span itemProp="name">Accueil</span>
               </a>
@@ -665,8 +664,7 @@ export default function VehicleDetailPage() {
               <a
                 href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
                 itemProp="item"
-                className="hover:underline"
-                style={{ color: brandPrimary }}
+                className="hover:underline text-brand"
               >
                 <span itemProp="name">{breadcrumb.brand}</span>
               </a>
@@ -844,7 +842,7 @@ export default function VehicleDetailPage() {
               <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
                 Trouvez la pièce exacte pour votre{" "}
-                <span className="font-bold" style={{ color: brandPrimary }}>
+                <span className="font-bold text-brand">
                   {vehicle.marque_name} {vehicle.modele_name}{" "}
                   {vehicle.type_name}
                 </span>{" "}
@@ -996,8 +994,7 @@ export default function VehicleDetailPage() {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div
-                    className="p-3 rounded-xl shadow-lg"
-                    style={{ backgroundColor: brandPrimary }}
+                    className="p-3 rounded-xl shadow-lg bg-brand"
                   >
                     <Award size={32} strokeWidth={2} className="text-white" />
                   </div>
@@ -1014,10 +1011,7 @@ export default function VehicleDetailPage() {
                 {/* Stats rapides */}
                 <div className="flex gap-4">
                   <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
-                    <div
-                      className="text-2xl font-bold"
-                      style={{ color: brandPrimary }}
-                    >
+                    <div className="text-2xl font-bold text-brand">
                       {popularParts.length}
                     </div>
                     <div className="text-xs text-gray-500">Best-sellers</div>
@@ -1059,8 +1053,7 @@ export default function VehicleDetailPage() {
                   {/* Badge "Populaire" */}
                   <div className="absolute top-3 right-3 z-10">
                     <div
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1"
-                      style={{ backgroundColor: brandPrimary }}
+                      className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1 bg-brand"
                     >
                       <CheckCircle size={12} />
                       <span>Compatible</span>
@@ -1117,8 +1110,7 @@ export default function VehicleDetailPage() {
                     {/* CTA moderne */}
                     <a
                       href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg group-hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ backgroundColor: brandPrimary }}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg group-hover:scale-[1.02] active:scale-[0.98] bg-brand"
                     >
                       <span>Voir les pièces</span>
                       <span className="group-hover:translate-x-1 transition-transform">
@@ -1152,11 +1144,8 @@ export default function VehicleDetailPage() {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${brandPrimary}20` }}
-                  >
-                    <Car size={20} style={{ color: brandPrimary }} />
+                  <div className="p-2 rounded-lg bg-brand-light">
+                    <Car size={20} className="text-brand" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase">
@@ -1168,11 +1157,8 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${brandPrimary}20` }}
-                  >
-                    <Fuel size={20} style={{ color: brandPrimary }} />
+                  <div className="p-2 rounded-lg bg-brand-light">
+                    <Fuel size={20} className="text-brand" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase">
@@ -1184,11 +1170,8 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${brandPrimary}20` }}
-                  >
-                    <Gauge size={20} style={{ color: brandPrimary }} />
+                  <div className="p-2 rounded-lg bg-brand-light">
+                    <Gauge size={20} className="text-brand" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase">
@@ -1200,11 +1183,8 @@ export default function VehicleDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${brandPrimary}20` }}
-                  >
-                    <Calendar size={20} style={{ color: brandPrimary }} />
+                  <div className="p-2 rounded-lg bg-brand-light">
+                    <Calendar size={20} className="text-brand" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase">
@@ -1220,11 +1200,8 @@ export default function VehicleDetailPage() {
                 {(vehicle.mine_codes_formatted ||
                   vehicle.cnit_codes_formatted) && (
                   <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <div
-                      className="p-2 rounded-lg"
-                      style={{ backgroundColor: `${brandPrimary}20` }}
-                    >
-                      <FileText size={20} style={{ color: brandPrimary }} />
+                    <div className="p-2 rounded-lg bg-brand-light">
+                      <FileText size={20} className="text-brand" />
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 uppercase">
@@ -1251,8 +1228,7 @@ export default function VehicleDetailPage() {
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: brandPrimary }}
+                  className="p-2 rounded-lg bg-brand"
                 >
                   <HeadphonesIcon size={24} className="text-white" />
                 </div>
@@ -1299,11 +1275,7 @@ export default function VehicleDetailPage() {
                       {item.question}
                     </span>
                     <div
-                      className="flex-shrink-0 p-1 rounded-full"
-                      style={{
-                        backgroundColor:
-                          openFaqIndex === index ? brandPrimary : "#e5e7eb",
-                      }}
+                      className={`flex-shrink-0 p-1 rounded-full ${openFaqIndex === index ? 'bg-brand' : 'bg-gray-200'}`}
                     >
                       {openFaqIndex === index ? (
                         <ChevronUp size={18} className="text-white" />
@@ -1315,8 +1287,7 @@ export default function VehicleDetailPage() {
                   {openFaqIndex === index && (
                     <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
                       <div
-                        className="pl-4 border-l-2"
-                        style={{ borderColor: brandPrimary }}
+                        className="pl-4 border-l-2 border-brand"
                       >
                         {item.answer}
                       </div>
@@ -1382,7 +1353,7 @@ export default function VehicleDetailPage() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl py-3 px-4 animate-in slide-in-from-bottom duration-300">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="hidden sm:flex items-center gap-3">
-              <Car size={24} style={{ color: brandPrimary }} />
+              <Car size={24} className="text-brand" />
               <div>
                 <div className="font-bold text-gray-900 text-sm">
                   {vehicle.marque_name} {vehicle.modele_name}
@@ -1395,16 +1366,14 @@ export default function VehicleDetailPage() {
             <div className="flex items-center gap-3 flex-1 sm:flex-none">
               <a
                 href="#catalogue"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg"
-                style={{ backgroundColor: brandPrimary }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg bg-brand"
               >
                 <Package size={18} />
                 <span>Voir le catalogue</span>
               </a>
               <a
                 href="/contact"
-                className="hidden md:flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold border-2 transition-all hover:bg-gray-50"
-                style={{ borderColor: brandPrimary, color: brandPrimary }}
+                className="hidden md:flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold border-2 transition-all hover:bg-gray-50 border-brand text-brand"
               >
                 <HeadphonesIcon size={18} />
                 <span>Assistance</span>

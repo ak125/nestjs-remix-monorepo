@@ -220,7 +220,7 @@ export function HeroSection({
           {/* VehicleSelector placeholder */}
           {showVehicleSelector && (
             <div className="mt-8 lg:mt-0">
-              {/* Le VehicleSelectorV2 sera injecté via children ou importé par la route */}
+              {/* Le VehicleSelector sera injecté via children ou importé par la route */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                 <p className="text-white/60 text-sm text-center">
                   Sélecteur de véhicule (injecter via children)

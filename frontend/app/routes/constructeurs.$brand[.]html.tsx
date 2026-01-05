@@ -21,7 +21,7 @@ import { PopularGammesSection } from "../components/constructeurs/PopularGammesS
 import { RelatedBrandsSection as _RelatedBrandsSection } from "../components/constructeurs/RelatedBrandsSection";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { VehicleImage, PartImage } from "../components/ui/ResponsiveImage";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { brandApi } from "../services/api/brand.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import {
@@ -240,9 +240,6 @@ export default function BrandCatalogPage() {
   const brandColor = brandColorsService.getBrandGradient(
     manufacturer.marque_alias,
   );
-  const brandPrimary = brandColorsService.getBrandPrimaryColor(
-    manufacturer.marque_alias,
-  );
 
   // 🖼️ Mapping pour les logos qui ont un nom différent de l'alias DB
   const getLogoAlias = (dbAlias: string): string => {
@@ -255,7 +252,7 @@ export default function BrandCatalogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-brand={manufacturer.marque_alias?.toLowerCase()}>
       {/* 🧭 Fil d'Ariane */}
       <nav
         className="bg-white border-b border-gray-200 py-3"
@@ -378,7 +375,7 @@ export default function BrandCatalogPage() {
 
                 {/* VehicleSelector à droite - animation retirée pour LCP */}
                 <div className="flex-1 w-full">
-                  <VehicleSelectorV2
+                  <VehicleSelector
                     mode="full"
                     variant="card"
                     context="pieces"
@@ -495,7 +492,6 @@ export default function BrandCatalogPage() {
                   <ApiPartCard
                     part={part}
                     brandAlias={manufacturer.marque_alias}
-                    brandPrimary={brandPrimary}
                   />
                 </div>
               ))}
@@ -556,7 +552,7 @@ export default function BrandCatalogPage() {
             >
               {apiVehicles.map((vehicle) => (
                 <div key={vehicle.cgc_type_id} role="listitem">
-                  <VehicleCard vehicle={vehicle} brandPrimary={brandPrimary} />
+                  <VehicleCard vehicle={vehicle} />
                 </div>
               ))}
             </div>
@@ -621,10 +617,8 @@ export default function BrandCatalogPage() {
 // 🚗 Composant Carte de véhicule API - Version améliorée avec SEO complet
 function VehicleCard({
   vehicle,
-  brandPrimary,
 }: {
   vehicle: PopularVehicle;
-  brandPrimary: string;
 }) {
   // 🔑 Gestion des valeurs nulles et formatage
   const yearRange =
@@ -686,8 +680,7 @@ function VehicleCard({
           {/* Badge puissance */}
           {vehicle.type_power_ps && (
             <span
-              className="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg"
-              style={{ backgroundColor: brandPrimary }}
+              className="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg bg-brand"
             >
               {vehicle.type_power_ps} ch
             </span>
@@ -725,8 +718,7 @@ function VehicleCard({
 
         {/* Motorisation */}
         <p
-          className="font-semibold text-sm md:text-base mb-2 line-clamp-1"
-          style={{ color: brandPrimary }}
+          className="font-semibold text-sm md:text-base mb-2 line-clamp-1 text-brand"
         >
           {vehicle.type_name}
         </p>
@@ -741,7 +733,7 @@ function VehicleCard({
         {/* Infos techniques */}
         <div className="flex items-center justify-between text-xs md:text-sm text-gray-500 mb-3 py-2 px-3 bg-gray-50 rounded-lg">
           <span className="flex items-center gap-1.5 font-medium">
-            <Zap className="w-3.5 h-3.5" style={{ color: brandPrimary }} />
+            <Zap className="w-3.5 h-3.5 text-brand" />
             {vehicle.type_power_ps || "?"} ch
           </span>
           <span className="font-medium">{yearRange}</span>
@@ -750,11 +742,7 @@ function VehicleCard({
         {/* CTA */}
         <div className="pt-2">
           <span
-            className="text-xs md:text-sm font-bold group-hover:underline flex items-center justify-center gap-1 py-2 px-4 rounded-lg transition-all"
-            style={{
-              backgroundColor: `${brandPrimary}15`,
-              color: brandPrimary,
-            }}
+            className="text-xs md:text-sm font-bold group-hover:underline flex items-center justify-center gap-1 py-2 px-4 rounded-lg transition-all bg-brand-light text-brand"
           >
             Voir les pièces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -769,11 +757,9 @@ function VehicleCard({
 function ApiPartCard({
   part,
   brandAlias: _brandAlias,
-  brandPrimary,
 }: {
   part: ApiPopularPart;
   brandAlias: string;
-  brandPrimary: string;
 }) {
   // 🔑 Contexte véhicule avec gestion des valeurs nulles/undefined
   const vehicleContext =
@@ -840,8 +826,7 @@ function ApiPartCard({
         {/* Footer avec CTA et badge puissance */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <span
-            className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1"
-            style={{ color: brandPrimary }}
+            className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1 text-brand"
           >
             Voir les pièces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -849,8 +834,7 @@ function ApiPartCard({
           {/* Badge motorisation - affiché uniquement si puissance disponible */}
           {part.type_power_ps ? (
             <span
-              className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: brandPrimary }}
+              className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full bg-brand"
             >
               {part.type_power_ps} ch
             </span>

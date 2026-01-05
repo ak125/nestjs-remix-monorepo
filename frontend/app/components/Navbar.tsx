@@ -120,7 +120,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [lastScrollY]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Setup une seule fois au mount - lastScrollY est lu via closure
 
   // Échap pour fermer la recherche
   useEffect(() => {

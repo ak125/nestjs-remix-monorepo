@@ -49,6 +49,9 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
       </div>
       
       <div className="p-6">
+        <p className="text-gray-700 mb-6 text-sm leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">
+          <span className="font-medium text-gray-900">Nous sélectionnons des équipementiers reconnus</span> pour garantir performance, sécurité et longévité, selon les standards d'origine.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {equipementiers.items.map((equipementier) => (
             <Link

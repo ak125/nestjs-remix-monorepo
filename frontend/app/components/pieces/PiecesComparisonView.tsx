@@ -5,7 +5,7 @@
  * Affichage comparatif côte à côte (max 4 pièces)
  */
 
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import React from 'react';
 import { type PieceData } from '../../types/pieces-route.types';
 

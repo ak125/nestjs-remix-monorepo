@@ -6,7 +6,6 @@ import {
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Shield,
   Truck,
@@ -23,7 +22,7 @@ import HomeSearchCards from "../components/home/HomeSearchCards";
 import ReferenceSearchModal from "../components/home/ReferenceSearchModal";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { useHomeData } from "../hooks/useHomeData";
 import { useNewsletterState } from "../hooks/useNewsletterState";
 import { useScrollBehavior } from "../hooks/useScrollBehavior";
@@ -292,7 +291,7 @@ export default function TestHomepageModern() {
 
           {/* 🚗 SÉLECTEUR DE VÉHICULE GÉANT - FOCUS ABSOLU */}
           <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-            <VehicleSelectorV2 enableTypeMineSearch={true} />
+            <VehicleSelector enableTypeMineSearch={true} />
           </div>
 
           {/* ✨ Trust badges - Micro-format inline */}
@@ -402,6 +401,12 @@ export default function TestHomepageModern() {
                 {homeData.families.map((family, index) => {
                   const familyImage = hierarchyApi.getFamilyImage(family);
                   const familyColor = hierarchyApi.getFamilyColor(family);
+                  const isExpanded = homeData.expandedFamilies.includes(
+                    family.mf_id,
+                  );
+                  const displayedGammes = isExpanded
+                    ? family.gammes
+                    : family.gammes.slice(0, 4);
                   // Générer un ID basé sur le nom de la famille pour le scroll navigation
                   const familySlug = (
                     family.mf_name_system ||
@@ -457,9 +462,10 @@ export default function TestHomepageModern() {
                             "Découvrez notre sélection complète"}
                         </p>
 
-                        {/* 4 premières gammes toujours visibles */}
-                        <div className="space-y-2.5 mb-2">
-                          {family.gammes.slice(0, 4).map((gamme, idx) => {
+                        {/* Liste des sous-catégories (4 ou toutes selon isExpanded) */}
+                        <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
+                          {displayedGammes.map((gamme, idx) => {
+                            // Générer l'URL avec fallback si pg_alias manquant
                             const categoryUrl =
                               gamme.pg_id && gamme.pg_alias
                                 ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
@@ -480,35 +486,32 @@ export default function TestHomepageModern() {
                           })}
                         </div>
 
-                        {/* Gammes supplémentaires avec details/summary natif + CSS order pour bouton en bas */}
+                        {/* Bouton voir tout/moins */}
                         {family.gammes_count > 4 && (
-                          <details className="group flex flex-col">
-                            <summary className="order-2 w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                              <span>Voir toutes les pièces de {(family.mf_name_system || family.mf_name || "").toLowerCase()}</span>
-                              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                            </summary>
-                            <div className="order-1 space-y-2.5 pb-2">
-                              {family.gammes.slice(4).map((gamme, idx) => {
-                                const categoryUrl =
-                                  gamme.pg_id && gamme.pg_alias
-                                    ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
-                                    : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || "")}&gamme=${gamme.pg_id}`;
-
-                                return (
-                                  <Link
-                                    key={idx}
-                                    to={categoryUrl}
-                                    className="text-sm text-neutral-600 hover:text-semantic-info hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
-                                  >
-                                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-semantic-info group-hover/item:scale-125 transition-all" />
-                                    <span className="line-clamp-1 font-medium">
-                                      {gamme.pg_name}
-                                    </span>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          </details>
+                          <Button
+                            variant="ghost"
+                            onClick={() =>
+                              homeData.toggleFamilyExpansion(family.mf_id)
+                            }
+                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2"
+                          >
+                            {isExpanded ? (
+                              <>
+                                Voir moins
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </>
+                            ) : (
+                              <>
+                                Pièces de{" "}
+                                {(
+                                  family.mf_name_system ||
+                                  family.mf_name ||
+                                  ""
+                                ).toLowerCase()}
+                                <ChevronRight className="h-4 w-4" />
+                              </>
+                            )}
+                          </Button>
                         )}
                       </CardContent>
                     </Card>

@@ -5,6 +5,7 @@ import {
   CardTitle,
 } from '~/components/ui/card';
 import { cn } from '~/lib/utils';
+import { pluralizePieceName } from '~/lib/seo-utils';
 
 // Types matching backend PurchaseGuideData V2 (orientée client)
 export interface PurchaseGuideData {
@@ -160,6 +161,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
   if (!risk.title && !risk.explanation) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'cette pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
@@ -171,7 +173,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
           id="risk-section-title"
           className="text-2xl font-bold text-gray-900 mb-6"
         >
-          Pourquoi ne jamais rouler avec {pieceType} usée ?
+          Pourquoi ne jamais rouler avec des {pluralType} usées ?
         </h2>
         <Card className="border-red-200 bg-red-50/50">
           <CardHeader className="pb-3">
@@ -241,6 +243,7 @@ export function TimingSection({ timing, gammeName, className }: TimingSectionPro
   if (!timing.title && !timing.years && !timing.km) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'cette pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
@@ -252,7 +255,7 @@ export function TimingSection({ timing, gammeName, className }: TimingSectionPro
           id="timing-section-title"
           className="text-2xl font-bold text-gray-900 mb-6"
         >
-          Quand faut-il changer {pieceType} ?
+          Quand faut-il changer les {pluralType} ?
         </h2>
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-3">
@@ -325,6 +328,7 @@ export function ArgumentsSection({
   if (!args || args.length === 0) return null;
 
   const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pluralType = pluralizePieceName(pieceType);
 
   const iconMap: Record<string, string> = {
     'check-circle': '✅',
@@ -343,7 +347,7 @@ export function ArgumentsSection({
           id="arguments-section-title"
           className="text-2xl font-bold text-gray-900 mb-6"
         >
-          Pourquoi acheter votre {pieceType} sur Automecanik ?
+          Pourquoi acheter vos {pluralType} sur Automecanik ?
         </h2>
         <Card className="border-green-200 bg-green-50/50">
           <CardHeader className="pb-3">

@@ -2,7 +2,7 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, useNavigation } from '@remix-run/react';
 import { Button } from '~/components/ui/button';

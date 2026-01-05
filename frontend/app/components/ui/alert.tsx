@@ -1,9 +1,14 @@
 import * as React from "react";
 import { cn } from "~/lib/utils";
 
+type AlertSize = 'sm' | 'md' | 'lg';
+
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'success' | 'warning' | 'error' | 'info' | string;
   intent?: string; // Alias pour variant
+  icon?: React.ReactNode;
+  title?: string;
+  size?: AlertSize;
 }
 
 const variantStyles = {
@@ -14,22 +19,40 @@ const variantStyles = {
   info: 'border-blue-200 bg-blue-50 text-blue-900',
 };
 
+const sizeStyles: Record<AlertSize, string> = {
+  sm: 'p-2 text-sm',
+  md: 'p-4',
+  lg: 'p-6 text-lg',
+};
+
 const Alert = React.forwardRef<
   HTMLDivElement,
   AlertProps
->(({ className, variant = 'default', intent, ...props }, ref) => {
+>(({ className, variant = 'default', intent, icon, title, size = 'md', children, ...props }, ref) => {
   const effectiveVariant = intent || variant;
   return (
     <div
       ref={ref}
       role="alert"
       className={cn(
-        "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+        "relative w-full rounded-lg border",
+        sizeStyles[size],
+        icon ? "pl-10" : "",
         variantStyles[effectiveVariant as keyof typeof variantStyles] || variantStyles.default,
         className
       )}
       {...props}
-    />
+    >
+      {icon && (
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 flex-shrink-0">
+          {icon}
+        </span>
+      )}
+      {title && (
+        <h5 className="mb-1 font-medium leading-none tracking-tight">{title}</h5>
+      )}
+      {children}
+    </div>
   );
 });
 Alert.displayName = "Alert";

@@ -27,7 +27,8 @@ interface CatalogueSectionProps {
 }
 
 export default function CatalogueSection({ catalogueMameFamille, verbSwitches = [] }: CatalogueSectionProps) {
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
+  // Use array instead of Set to avoid React hydration issues
+  const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>([]);
   
   if (!catalogueMameFamille?.items || catalogueMameFamille.items.length === 0) {
     return null;
@@ -66,15 +67,9 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
   const toggleDescription = (index: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setExpandedDescriptions(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+    setExpandedDescriptions(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
   };
 
   // Truncate description to ~120 chars
@@ -97,7 +92,7 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
       <div className="p-3 md:p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {uniqueItems.map((item, index) => {
-            const isExpanded = expandedDescriptions.has(index);
+            const isExpanded = expandedDescriptions.includes(index);
             const hasDescription = item.description && item.description.length > 0;
             const displayDescription = isExpanded 
               ? item.description 
