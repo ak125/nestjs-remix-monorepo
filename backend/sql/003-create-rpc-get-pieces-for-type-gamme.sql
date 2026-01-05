@@ -422,16 +422,10 @@ BEGIN
       END as filtre_side,
       COALESCE(sf.psf_sort::INTEGER, 999) as psf_sort,
       -- Qualité selon pm_oes
-      CASE 
+      CASE
         WHEN pm.pm_oes IN ('OES', 'O') THEN pm.pm_oes
         ELSE 'A'
       END as qualite,
-      -- URL pièce
-      '/piece/' || ap.piece_id || '/' || 
-        LOWER(REGEXP_REPLACE(
-          REGEXP_REPLACE(COALESCE(ap.piece_name, 'piece'), '[^a-zA-Z0-9àâäéèêëïîôùûüç\s-]', '', 'g'),
-          '\s+', '-', 'g'
-        )) || '.html' as url,
       -- ⭐ Flag accessoire pour tri (gamme principale en premier)
       ap.is_accessory
     FROM active_pieces ap
@@ -505,8 +499,7 @@ BEGIN
           'filtre_gamme', filtre_gamme,
           'filtre_side', filtre_side,
           'has_image', has_image,
-          'has_oem', has_oem,
-          'url', url
+          'has_oem', has_oem
         ) ORDER BY prix_ttc
       ) as pieces
     FROM sorted_pieces
@@ -644,8 +637,7 @@ BEGIN
           'filtre_gamme', filtre_gamme,
           'filtre_side', filtre_side,
           'has_image', has_image,
-          'has_oem', has_oem,
-          'url', url
+          'has_oem', has_oem
         )
       )
       FROM sorted_pieces

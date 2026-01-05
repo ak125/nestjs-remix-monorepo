@@ -275,10 +275,9 @@ export class SeoService extends SupabaseBaseService {
 
     if (sourceUrl.includes('/piece/')) {
       return {
-        type: 'redirect',
-        target_url: '/products',
-        status_code: 301,
-        reason: 'Redirection vers le catalogue produits',
+        type: 'gone',
+        status_code: 410,
+        reason: 'URL obsolète - page supprimée définitivement',
       };
     }
 
