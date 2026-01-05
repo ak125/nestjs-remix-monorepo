@@ -480,14 +480,14 @@ export default function TestHomepageModern() {
                           })}
                         </div>
 
-                        {/* Gammes supplémentaires avec details/summary natif */}
+                        {/* Gammes supplémentaires avec details/summary natif + CSS order pour bouton en bas */}
                         {family.gammes_count > 4 && (
-                          <details className="group">
-                            <summary className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          <details className="group flex flex-col">
+                            <summary className="order-2 w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                               <span>Voir toutes les pièces de {(family.mf_name_system || family.mf_name || "").toLowerCase()}</span>
                               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                             </summary>
-                            <div className="space-y-2.5 pt-2">
+                            <div className="order-1 space-y-2.5 pb-2">
                               {family.gammes.slice(4).map((gamme, idx) => {
                                 const categoryUrl =
                                   gamme.pg_id && gamme.pg_alias
