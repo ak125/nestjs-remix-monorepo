@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
-import { Car, ChevronRight, TrendingUp } from "lucide-react";
-import React from "react";
+import { Car, ChevronRight, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { pluralizePieceName } from "~/lib/seo-utils";
 
 interface MotorisationItem {
   title: string;
@@ -24,14 +25,26 @@ interface MotorisationsSectionProps {
   familleName?: string;
 }
 
+// Limite d'affichage par défaut (SEO: éviter dilution)
+const VISIBLE_LIMIT = 6;
+
 export default function MotorisationsSection({
   motorisations,
   familleColor = "from-blue-950 via-indigo-900 to-purple-900",
   familleName = "pièces",
 }: MotorisationsSectionProps) {
+  const [showAllVehicles, setShowAllVehicles] = useState(false);
+
   if (!motorisations?.items || motorisations.items.length === 0) {
     return null;
   }
+
+  // Limiter l'affichage pour éviter la dilution SEO
+  const vehiclesToDisplay = showAllVehicles
+    ? motorisations.items
+    : motorisations.items.slice(0, VISIBLE_LIMIT);
+  const hasMore = motorisations.items.length > VISIBLE_LIMIT;
+  const hiddenCount = motorisations.items.length - VISIBLE_LIMIT;
 
   return (
     <section className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden border border-gray-100">
@@ -58,7 +71,7 @@ export default function MotorisationsSection({
                 {motorisations.title}
               </h2>
               <p className="text-white/80 text-sm mt-1">
-                Trouvez les {familleName.toLowerCase()} adaptés à votre véhicule
+                Trouvez les {pluralizePieceName(familleName.toLowerCase())} adaptées à votre véhicule
               </p>
             </div>
           </div>
@@ -77,7 +90,7 @@ export default function MotorisationsSection({
       {/* Grid de cartes - responsive et optimisé */}
       <div className="p-6 md:p-8 bg-gradient-to-b from-gray-50/50 to-white">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-          {motorisations.items.map((motorisation, index) => (
+          {vehiclesToDisplay.map((motorisation, index) => (
             <Link
               key={index}
               to={motorisation.link}
@@ -140,11 +153,12 @@ export default function MotorisationsSection({
                       📅 {motorisation.periode}
                     </p>
 
-                    {/* Description améliorée - pas de troncature */}
+                    {/* Description propre - template SEO sans erreurs grammaticales */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                      {motorisation.description ||
-                        motorisation.advice ||
-                        `Trouvez les ${familleName.toLowerCase()} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Livraison rapide et garantie constructeur.`}
+                      {(() => {
+                        const plural = pluralizePieceName(familleName.toLowerCase());
+                        return plural.charAt(0).toUpperCase() + plural.slice(1);
+                      })()} compatibles avec votre {motorisation.marque_name} {motorisation.modele_name} {motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.
                     </p>
 
                     {/* CTA amélioré */}
@@ -160,6 +174,28 @@ export default function MotorisationsSection({
             </Link>
           ))}
         </div>
+
+        {/* Bouton "Voir plus" pour éviter scroll infini SEO */}
+        {hasMore && (
+          <div className="mt-8 text-center border-t border-gray-200 pt-6">
+            <button
+              onClick={() => setShowAllVehicles(!showAllVehicles)}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${familleColor} text-white font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+            >
+              {showAllVehicles ? (
+                <>
+                  <ChevronUp className="w-5 h-5" />
+                  <span>Masquer les véhicules</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-5 h-5" />
+                  <span>Voir les {hiddenCount} autres compatibilités</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

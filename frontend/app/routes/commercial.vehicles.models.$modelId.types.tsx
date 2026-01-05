@@ -5,7 +5,7 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
-import {  Badge, Alert } from '@fafa/ui';
+import { Badge, Alert } from '~/components/ui';
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";

@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 // app/routes/admin.system-overview.tsx
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"

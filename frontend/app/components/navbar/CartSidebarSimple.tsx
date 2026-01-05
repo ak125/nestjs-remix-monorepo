@@ -12,7 +12,7 @@
  * - Animations cohérentes
  */
 
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
 

@@ -37,7 +37,7 @@ import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesRecommendedSection } from "../components/pieces/PiecesRecommendedSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 
 // Hook custom
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
@@ -508,7 +508,7 @@ export default function PiecesVehicleRoute() {
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
         <div className="mb-6 sticky top-4 z-20 animate-in fade-in slide-in-from-top duration-500">
-          <VehicleSelectorV2
+          <VehicleSelector
             mode="compact"
             context="pieces"
             variant="card"

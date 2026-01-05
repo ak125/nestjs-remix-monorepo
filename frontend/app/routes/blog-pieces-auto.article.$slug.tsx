@@ -1,4 +1,4 @@
-import { Alert } from "@fafa/ui";
+import { Alert } from "~/components/ui";
 import {
   json,
   type LoaderFunctionArgs,

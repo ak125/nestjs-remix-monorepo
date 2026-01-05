@@ -1,4 +1,4 @@
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';

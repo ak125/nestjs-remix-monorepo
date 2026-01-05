@@ -1,4 +1,4 @@
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import { Link, useLocation } from "@remix-run/react"
 import { 
   Home, 

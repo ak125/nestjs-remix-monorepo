@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 import { json, redirect, type ActionFunction, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Form, useActionData, useNavigation } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";

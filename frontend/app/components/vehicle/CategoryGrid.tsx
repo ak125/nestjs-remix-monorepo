@@ -1,4 +1,4 @@
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import  { type VehicleData } from "~/types/vehicle.types";
@@ -279,17 +279,18 @@ export function CategoryGrid({
   showPartsCount = true 
 }: CategoryGridProps) {
   
-  const [_loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-  const [_imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  // Use arrays instead of Sets to avoid React hydration issues (Set doesn't serialize correctly during SSR)
+  const [_loadedImages, setLoadedImages] = useState<string[]>([]);
+  const [_imageErrors, setImageErrors] = useState<string[]>([]);
 
   // Gestion des événements d'images
   const handleImageLoad = useCallback((categoryId: string) => {
-    setLoadedImages(prev => new Set(prev).add(categoryId));
+    setLoadedImages(prev => prev.includes(categoryId) ? prev : [...prev, categoryId]);
     onImageLoad?.(categoryId);
   }, [onImageLoad]);
 
   const handleImageError = useCallback((categoryId: string, error: Error) => {
-    setImageErrors(prev => new Set(prev).add(categoryId));
+    setImageErrors(prev => prev.includes(categoryId) ? prev : [...prev, categoryId]);
     onImageError?.(categoryId, error);
     console.warn(`Image failed to load for category ${categoryId}:`, error);
   }, [onImageError]);
