@@ -1,4 +1,4 @@
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import { Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { Button } from '~/components/ui/button';

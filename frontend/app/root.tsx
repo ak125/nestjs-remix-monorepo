@@ -164,7 +164,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     window.addEventListener('cart:updated', handleCartUpdated);
     return () => window.removeEventListener('cart:updated', handleCartUpdated);
-  }, [revalidator]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Revalidator est stable - pas besoin de dépendance
 
 
   // DEBUG: Log pour voir si les données arrivent

@@ -1,4 +1,4 @@
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';

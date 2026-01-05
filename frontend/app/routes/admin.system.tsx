@@ -1,4 +1,4 @@
-import { Alert, Badge } from "@fafa/ui";
+import { Alert, Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";

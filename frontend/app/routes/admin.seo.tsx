@@ -1,5 +1,5 @@
 // app/routes/admin.seo.tsx
-import { Alert, Badge } from '@fafa/ui';
+import { Alert, Badge } from '~/components/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";

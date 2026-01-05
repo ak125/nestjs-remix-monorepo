@@ -1,4 +1,4 @@
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 /**
  * 🔄 Composant RecentActivity - Activité récente
  * Compatible avec l'architecture Remix existante

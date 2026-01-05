@@ -1,0 +1,329 @@
+/**
+ * Couleurs dynamiques par marque automobile
+ * Utilisation : data-brand="renault" sur le conteneur parent
+ *
+ * Variables disponibles :
+ * - --brand-primary: couleur principale de la marque
+ * - --brand-primary-light: version claire (pour backgrounds)
+ * - --brand-primary-dark: version foncée (pour hover)
+ */
+
+:root {
+  /* Valeurs par défaut (fallback) */
+  --brand-primary: var(--color-primary-600, #3b82f6);
+  --brand-primary-light: var(--color-primary-100, #dbeafe);
+  --brand-primary-dark: var(--color-primary-700, #1d4ed8);
+}
+
+/* Marques françaises */
+[data-brand="renault"] {
+  --brand-primary: #FFCC00;
+  --brand-primary-light: #FFF9E6;
+  --brand-primary-dark: #E6B800;
+}
+
+[data-brand="peugeot"] {
+  --brand-primary: #0032A0;
+  --brand-primary-light: #E6EBF5;
+  --brand-primary-dark: #002880;
+}
+
+[data-brand="citroen"] {
+  --brand-primary: #AC1926;
+  --brand-primary-light: #F9E8EA;
+  --brand-primary-dark: #8A141E;
+}
+
+[data-brand="ds"] {
+  --brand-primary: #1E1E1E;
+  --brand-primary-light: #E8E8E8;
+  --brand-primary-dark: #000000;
+}
+
+[data-brand="alpine"] {
+  --brand-primary: #0055A4;
+  --brand-primary-light: #E6EFF7;
+  --brand-primary-dark: #004483;
+}
+
+/* Marques allemandes */
+[data-brand="volkswagen"] {
+  --brand-primary: #001E50;
+  --brand-primary-light: #E6E9EF;
+  --brand-primary-dark: #001840;
+}
+
+[data-brand="bmw"] {
+  --brand-primary: #0066B1;
+  --brand-primary-light: #E6F0F8;
+  --brand-primary-dark: #00528E;
+}
+
+[data-brand="mercedes"],
+[data-brand="mercedes-benz"] {
+  --brand-primary: #00ADEF;
+  --brand-primary-light: #E6F7FD;
+  --brand-primary-dark: #008BBF;
+}
+
+[data-brand="audi"] {
+  --brand-primary: #BB0A30;
+  --brand-primary-light: #F8E7EB;
+  --brand-primary-dark: #960826;
+}
+
+[data-brand="porsche"] {
+  --brand-primary: #D5001C;
+  --brand-primary-light: #FAE6E9;
+  --brand-primary-dark: #AA0016;
+}
+
+[data-brand="opel"] {
+  --brand-primary: #F7E81C;
+  --brand-primary-light: #FEFCE8;
+  --brand-primary-dark: #C5BA16;
+}
+
+[data-brand="mini"] {
+  --brand-primary: #000000;
+  --brand-primary-light: #E6E6E6;
+  --brand-primary-dark: #000000;
+}
+
+/* Marques américaines */
+[data-brand="ford"] {
+  --brand-primary: #003478;
+  --brand-primary-light: #E6EAF1;
+  --brand-primary-dark: #002960;
+}
+
+[data-brand="chevrolet"] {
+  --brand-primary: #FFD100;
+  --brand-primary-light: #FFFAE6;
+  --brand-primary-dark: #CCA700;
+}
+
+[data-brand="jeep"] {
+  --brand-primary: #1E5631;
+  --brand-primary-light: #E8EFEA;
+  --brand-primary-dark: #184527;
+}
+
+[data-brand="tesla"] {
+  --brand-primary: #CC0000;
+  --brand-primary-light: #FAE6E6;
+  --brand-primary-dark: #A30000;
+}
+
+/* Marques japonaises */
+[data-brand="toyota"] {
+  --brand-primary: #EB0A1E;
+  --brand-primary-light: #FDE7E9;
+  --brand-primary-dark: #BC0818;
+}
+
+[data-brand="nissan"] {
+  --brand-primary: #C3002F;
+  --brand-primary-light: #F9E6EB;
+  --brand-primary-dark: #9C0026;
+}
+
+[data-brand="honda"] {
+  --brand-primary: #CC0000;
+  --brand-primary-light: #FAE6E6;
+  --brand-primary-dark: #A30000;
+}
+
+[data-brand="mazda"] {
+  --brand-primary: #910A30;
+  --brand-primary-light: #F4E7EB;
+  --brand-primary-dark: #740826;
+}
+
+[data-brand="subaru"] {
+  --brand-primary: #003B7E;
+  --brand-primary-light: #E6EBF2;
+  --brand-primary-dark: #002F65;
+}
+
+[data-brand="mitsubishi"] {
+  --brand-primary: #ED0006;
+  --brand-primary-light: #FDE6E7;
+  --brand-primary-dark: #BE0005;
+}
+
+[data-brand="suzuki"] {
+  --brand-primary: #003DA5;
+  --brand-primary-light: #E6ECF6;
+  --brand-primary-dark: #003184;
+}
+
+[data-brand="lexus"] {
+  --brand-primary: #000000;
+  --brand-primary-light: #E6E6E6;
+  --brand-primary-dark: #000000;
+}
+
+/* Marques coréennes */
+[data-brand="hyundai"] {
+  --brand-primary: #002C5F;
+  --brand-primary-light: #E6EAEF;
+  --brand-primary-dark: #00234C;
+}
+
+[data-brand="kia"] {
+  --brand-primary: #05141F;
+  --brand-primary-light: #E7E8E9;
+  --brand-primary-dark: #040F18;
+}
+
+/* Marques italiennes */
+[data-brand="fiat"] {
+  --brand-primary: #A30000;
+  --brand-primary-light: #F5E6E6;
+  --brand-primary-dark: #820000;
+}
+
+[data-brand="alfa-romeo"],
+[data-brand="alfa romeo"] {
+  --brand-primary: #981E32;
+  --brand-primary-light: #F4E8EB;
+  --brand-primary-dark: #7A1828;
+}
+
+[data-brand="ferrari"] {
+  --brand-primary: #DA291C;
+  --brand-primary-light: #FBEAE9;
+  --brand-primary-dark: #AE2116;
+}
+
+[data-brand="maserati"] {
+  --brand-primary: #003DA5;
+  --brand-primary-light: #E6ECF6;
+  --brand-primary-dark: #003184;
+}
+
+[data-brand="lancia"] {
+  --brand-primary: #00205B;
+  --brand-primary-light: #E6E9EF;
+  --brand-primary-dark: #001A49;
+}
+
+/* Marques britanniques */
+[data-brand="jaguar"] {
+  --brand-primary: #1A1A1A;
+  --brand-primary-light: #E8E8E8;
+  --brand-primary-dark: #000000;
+}
+
+[data-brand="land-rover"],
+[data-brand="land rover"] {
+  --brand-primary: #005A2B;
+  --brand-primary-light: #E6EFEA;
+  --brand-primary-dark: #004822;
+}
+
+[data-brand="bentley"] {
+  --brand-primary: #333333;
+  --brand-primary-light: #EBEBEB;
+  --brand-primary-dark: #1A1A1A;
+}
+
+[data-brand="rolls-royce"],
+[data-brand="rolls royce"] {
+  --brand-primary: #680021;
+  --brand-primary-light: #F0E6E9;
+  --brand-primary-dark: #53001A;
+}
+
+[data-brand="aston-martin"],
+[data-brand="aston martin"] {
+  --brand-primary: #005C3D;
+  --brand-primary-light: #E6EFEC;
+  --brand-primary-dark: #004A31;
+}
+
+/* Marques suédoises */
+[data-brand="volvo"] {
+  --brand-primary: #003057;
+  --brand-primary-light: #E6EAEF;
+  --brand-primary-dark: #002646;
+}
+
+/* Marques espagnoles */
+[data-brand="seat"] {
+  --brand-primary: #FF4A22;
+  --brand-primary-light: #FFECE8;
+  --brand-primary-dark: #CC3B1B;
+}
+
+[data-brand="cupra"] {
+  --brand-primary: #C07C5E;
+  --brand-primary-light: #F7F0ED;
+  --brand-primary-dark: #9A634B;
+}
+
+/* Marques tchèques */
+[data-brand="skoda"] {
+  --brand-primary: #4BA82E;
+  --brand-primary-light: #EDF6EA;
+  --brand-primary-dark: #3C8625;
+}
+
+/* Marques roumaines */
+[data-brand="dacia"] {
+  --brand-primary: #646B52;
+  --brand-primary-light: #F0F1EE;
+  --brand-primary-dark: #505642;
+}
+
+/* Classes utilitaires Tailwind pour utiliser les couleurs de marque */
+@layer utilities {
+  .text-brand {
+    color: var(--brand-primary);
+  }
+
+  .text-brand-light {
+    color: var(--brand-primary-light);
+  }
+
+  .text-brand-dark {
+    color: var(--brand-primary-dark);
+  }
+
+  .bg-brand {
+    background-color: var(--brand-primary);
+  }
+
+  .bg-brand-light {
+    background-color: var(--brand-primary-light);
+  }
+
+  .bg-brand-dark {
+    background-color: var(--brand-primary-dark);
+  }
+
+  .border-brand {
+    border-color: var(--brand-primary);
+  }
+
+  .border-brand-light {
+    border-color: var(--brand-primary-light);
+  }
+
+  .ring-brand {
+    --tw-ring-color: var(--brand-primary);
+  }
+
+  .hover\:bg-brand:hover {
+    background-color: var(--brand-primary);
+  }
+
+  .hover\:bg-brand-dark:hover {
+    background-color: var(--brand-primary-dark);
+  }
+
+  .hover\:text-brand:hover {
+    color: var(--brand-primary);
+  }
+}

@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 import { type LoaderFunctionArgs, redirect, json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { getOptionalUser } from "../auth/unified.server";

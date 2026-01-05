@@ -1,4 +1,4 @@
-import { Alert } from "@fafa/ui";
+import { Alert } from "~/components/ui";
 /**
  * Route : /blog-pieces-auto/guide/:slug
  * Affiche le détail d'un guide d'achat

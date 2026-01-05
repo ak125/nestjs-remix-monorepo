@@ -1,5 +1,5 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import React from 'react';
 import { Button } from '~/components/ui/button';
 

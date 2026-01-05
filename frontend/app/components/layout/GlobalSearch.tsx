@@ -13,7 +13,7 @@
  * ✅ Raccourcis catégories (Cmd+1-6)
  */
 
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 import { useFetcher } from "@remix-run/react";
 import { 
   Search, 

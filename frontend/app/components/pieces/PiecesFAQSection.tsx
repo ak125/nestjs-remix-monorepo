@@ -16,18 +16,13 @@ interface PiecesFAQSectionProps {
  * Section FAQ interactive avec accordéon
  */
 export function PiecesFAQSection({ items }: PiecesFAQSectionProps) {
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  // Use array instead of Set to avoid React hydration issues
+  const [openItems, setOpenItems] = useState<string[]>([]);
 
   const toggleItem = (id: string) => {
-    setOpenItems(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    setOpenItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   if (items.length === 0) return null;
@@ -50,7 +45,7 @@ export function PiecesFAQSection({ items }: PiecesFAQSectionProps) {
       {/* Liste FAQ */}
       <div className="divide-y divide-gray-200">
         {items.map((item, index) => {
-          const isOpen = openItems.has(item.id);
+          const isOpen = openItems.includes(item.id);
           
           return (
             <div 

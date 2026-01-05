@@ -42,7 +42,8 @@ export function CartIcon({ className = "" }: CartIconProps) {
     return () => {
       window.removeEventListener('cart:updated', handleCartUpdate);
     };
-  }, [fetcher]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Fetcher utilisé via closure - setup une seule fois au mount
 
   // Mettre à jour le compteur quand les données arrivent
   useEffect(() => {

@@ -15,7 +15,7 @@
  * - Mobile-first responsive
  */
 
-import { Badge } from "@fafa/ui";
+import { Badge } from "~/components/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate, useFetcher } from "@remix-run/react";
 import {

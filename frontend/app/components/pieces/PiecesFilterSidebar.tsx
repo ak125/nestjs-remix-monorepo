@@ -6,7 +6,7 @@
  * ✅ Support dark mode via tokens
  */
 
-import { Badge, FilterSection, ScrollArea } from "@fafa/ui";
+import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import React from "react";
 

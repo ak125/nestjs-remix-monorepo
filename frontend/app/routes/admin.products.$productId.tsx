@@ -1,4 +1,4 @@
-import {  Badge, Alert } from '@fafa/ui';
+import { Badge, Alert } from '~/components/ui';
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 

@@ -1,4 +1,4 @@
-import { Alert } from '@fafa/ui';
+import { Alert } from '~/components/ui';
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 

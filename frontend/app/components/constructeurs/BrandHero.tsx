@@ -1,11 +1,11 @@
-import { Badge } from '@fafa/ui';
+import { Badge } from '~/components/ui';
 // 🏭 BrandHero - Section héro moderne pour page constructeur
 // Design moderne avec informations marque et VehicleSelector intégré
 
 import { Link } from '@remix-run/react';
 import { Car, Home, ChevronRight } from 'lucide-react';
 import { Alert } from '~/components/ui/alert';
-import VehicleSelectorV2 from '../vehicle/VehicleSelectorV2';
+import VehicleSelector from '../vehicle/VehicleSelector';
 
 interface BrandHeroProps {
   brand: {
@@ -137,7 +137,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
             </Alert>
             
             {/* 🚗 VehicleSelector intégré */}
-            <VehicleSelectorV2 
+            <VehicleSelector
               context="homepage"
               mode="full"
               variant="card"
