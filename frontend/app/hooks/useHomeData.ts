@@ -16,9 +16,7 @@ export function useHomeData() {
     loaderData?.catalogData?.families || []
   );
   const [loadingCatalog, setLoadingCatalog] = useState(false);
-  // Catégories repliées par défaut - Record vide (plus fiable que Set avec React)
-  const [expandedFamilies, setExpandedFamilies] = useState<Record<string, boolean>>({});
-  
+
   // État pour les marques - Type simplifié pour éviter les erreurs de sérialisation JSON
   const [brands, setBrands] = useState<Array<{ 
     id: number; 
@@ -43,21 +41,11 @@ export function useHomeData() {
     }
   }, [loaderData?.brandsData]);
 
-  // Fonction pour toggle l'expansion d'une famille
-  const toggleFamilyExpansion = (familyId: string | number) => {
-    setExpandedFamilies(prev => ({
-      ...prev,
-      [String(familyId)]: !prev[String(familyId)]
-    }));
-  };
-
   return {
     // Données du catalogue
     families,
     loadingCatalog,
-    expandedFamilies,
-    toggleFamilyExpansion,
-    
+
     // Données des marques
     brands,
     loadingBrands,
