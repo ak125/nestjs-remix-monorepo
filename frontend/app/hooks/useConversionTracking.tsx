@@ -520,6 +520,7 @@ export function useABTest(testName: string, variants: string[]): string {
   // Use JSON.stringify for stable dependency comparison (avoid infinite loop)
   const variantsKey = JSON.stringify(variants);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- variantsKey is derived from variants, using variants directly causes infinite loop
   useEffect(() => {
     // Vérifier si variant déjà assigné
     const stored = sessionStorage.getItem(`ab_test_${testName}`);

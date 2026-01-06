@@ -357,7 +357,7 @@ export default function AdminDashboard() {
           <p className="text-sm text-gray-500">Dernière mise à jour</p>
           <p className="text-xs text-gray-400 flex items-center gap-1">
             <RefreshCw className="h-3 w-3" />
-            {lastUpdate.toLocaleTimeString('fr-FR')}
+            {lastUpdate?.toLocaleTimeString('fr-FR') || 'Chargement...'}
           </p>
         </div>
       </div>
