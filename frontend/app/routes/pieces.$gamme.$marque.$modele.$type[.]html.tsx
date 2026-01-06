@@ -737,6 +737,8 @@ export default function PiecesVehicleRoute() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  // SSR-safe: utiliser useLocation au lieu de window.location
+  const location = useLocation();
 
   // Log détaillé de l'erreur pour debug
   console.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
@@ -752,7 +754,7 @@ export function ErrorBoundary() {
       <Error503
         retryAfter={10}
         message="Notre service est temporairement surchargé."
-        url={typeof window !== "undefined" ? window.location.pathname : undefined}
+        url={location.pathname}
       />
     );
   }
@@ -767,9 +769,7 @@ export function ErrorBoundary() {
           <meta name="googlebot" content="noindex, nofollow" />
         </head>
         <Error410
-          url={
-            typeof window !== "undefined" ? window.location.pathname : undefined
-          }
+          url={location.pathname}
           isOldLink={false}
         />
       </>

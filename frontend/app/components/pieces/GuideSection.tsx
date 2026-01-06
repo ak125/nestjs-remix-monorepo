@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { ArrowRight, BookOpen, Calendar, Sparkles } from "lucide-react";
-import React from "react";
+import { useEffect, useState } from "react";
 
 import { HtmlContent } from "../seo/HtmlContent";
 
@@ -27,6 +27,18 @@ export default function GuideSection({
   familleColor = "from-emerald-600 to-emerald-700",
   familleName,
 }: GuideSectionProps) {
+  // SSR-safe: afficher le badge "Nouveau" uniquement après hydratation
+  const [isNew, setIsNew] = useState(false);
+
+  useEffect(() => {
+    if (guide?.date) {
+      const daysAgo = Math.floor(
+        (Date.now() - new Date(guide.date).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      setIsNew(daysAgo < 30);
+    }
+  }, [guide?.date]);
+
   if (!guide) {
     return null;
   }
@@ -114,19 +126,13 @@ export default function GuideSection({
                   </h3>
                 </div>
 
-                {/* Badge "Nouveau" si récent */}
-                {(() => {
-                  const daysAgo = Math.floor(
-                    (Date.now() - new Date(guide.date).getTime()) /
-                      (1000 * 60 * 60 * 24),
-                  );
-                  return daysAgo < 30 ? (
-                    <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Nouveau
-                    </div>
-                  ) : null;
-                })()}
+                {/* Badge "Nouveau" si récent - SSR-safe via useEffect */}
+                {isNew && (
+                  <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    Nouveau
+                  </div>
+                )}
               </div>
 
               {/* Informations et contenu */}
