@@ -67,9 +67,6 @@ export function PieceDetailModal({
   const { addToCart } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // Debug
-  console.log("🔍 PieceDetailModal render:", { pieceId, isOpen: !!pieceId });
-
   // Charger les détails de la pièce
   useEffect(() => {
     if (!pieceId) return;
