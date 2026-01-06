@@ -139,19 +139,28 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
   // ========================================
   // STATE
   // ========================================
-  const [session, setSession] = useState<ConversionSession>(() => {
-    const sessionId = customSessionId || generateSessionId();
-    return {
-      sessionId,
-      startedAt: Date.now(),
-      abVariant,
-      events: [],
-      converted: false,
-    };
+  // SSR-safe: Initialize with placeholder values, hydrate in useEffect
+  const [session, setSession] = useState<ConversionSession>({
+    sessionId: '',
+    startedAt: 0,
+    abVariant,
+    events: [],
+    converted: false,
   });
 
-  const sessionStartRef = useRef(Date.now());
+  const sessionStartRef = useRef(0);
   const currentFunnelStepRef = useRef<string | null>(null);
+
+  // SSR-safe: Hydrate session with client-side values
+  useEffect(() => {
+    const now = Date.now();
+    sessionStartRef.current = now;
+    setSession(prev => ({
+      ...prev,
+      sessionId: customSessionId || generateSessionId(),
+      startedAt: now,
+    }));
+  }, [customSessionId]);
 
   // ========================================
   // PERSISTANCE (LOCALSTORAGE)
@@ -505,20 +514,22 @@ function sendToProvider(
 // ============================================================================
 
 export function useABTest(testName: string, variants: string[]): string {
-  const [variant] = useState<string>(() => {
-    if (typeof window === 'undefined') return variants[0];
+  // SSR-safe: Always start with first variant, hydrate in useEffect
+  const [variant, setVariant] = useState<string>(variants[0]);
 
+  useEffect(() => {
     // Vérifier si variant déjà assigné
     const stored = sessionStorage.getItem(`ab_test_${testName}`);
     if (stored && variants.includes(stored)) {
-      return stored;
+      setVariant(stored);
+      return;
     }
 
     // Assigner aléatoirement
     const randomVariant = variants[Math.floor(Math.random() * variants.length)];
     sessionStorage.setItem(`ab_test_${testName}`, randomVariant);
-    return randomVariant;
-  });
+    setVariant(randomVariant);
+  }, [testName, variants]);
 
   return variant;
 }

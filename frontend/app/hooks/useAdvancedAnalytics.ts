@@ -56,7 +56,12 @@ interface PerformanceMetrics {
 
 export function useAdvancedAnalytics() {
   const location = useLocation()
-  const [sessionId] = useState(() => crypto.randomUUID())
+  // SSR-safe: Generate sessionId client-side only to avoid hydration mismatch
+  const [sessionId, setSessionId] = useState('')
+
+  useEffect(() => {
+    setSessionId(crypto.randomUUID())
+  }, [])
   const [insights, _setInsights] = useState<UserBehaviorInsights | null>(null)
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null)
   const [isOptimizationMode, setIsOptimizationMode] = useState(false)
