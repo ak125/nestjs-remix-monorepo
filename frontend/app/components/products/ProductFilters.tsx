@@ -39,10 +39,6 @@ export function ProductFilters({
   brands,
   activeFiltersCount,
 }: ProductFiltersProps) {
-  console.log('🎨 ProductFilters component loaded', { 
-    gammesCount: gammes.length, 
-    brandsCount: brands.length 
-  });
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -66,15 +62,6 @@ export function ProductFilters({
     setSearchValue(currentSearch);
   }, [currentGamme, currentBrand, currentSearch]);
 
-  // Debug: Log current filters
-  console.log('🔍 Current filters from URL:', {
-    currentSearch,
-    currentGamme,
-    currentBrand,
-    currentLowStock,
-    currentActiveOnly,
-  });
-
   // Fonction pour construire et naviguer vers la nouvelle URL
   const buildAndNavigate = (params: {
     gammeId?: string;
@@ -92,13 +79,11 @@ export function ProductFilters({
     if (params.lowStock) urlParams.set('lowStock', 'true');
     if (params.activeOnly) urlParams.set('activeOnly', 'true');
 
-    console.log('🔗 Auto-navigation:', urlParams.toString());
     navigate(`?${urlParams.toString()}`);
   };
 
   // Handler pour le changement de gamme
   const handleGammeChange = (gammeId: string) => {
-    console.log('🎯 Gamme changed:', gammeId);
     setSelectedGamme(gammeId);
     
     // Appliquer automatiquement
@@ -113,7 +98,6 @@ export function ProductFilters({
 
   // Handler pour le changement de marque
   const handleBrandChange = (brandId: string) => {
-    console.log('🎯 Brand changed:', brandId);
     setSelectedBrand(brandId);
     
     // Appliquer automatiquement
@@ -128,7 +112,6 @@ export function ProductFilters({
 
   // Handle apply filters - can be called from button or form submit
   const applyFilters = () => {
-    console.log('🚀 APPLY FILTERS CALLED!');
     
     // Get values from form elements by ID
     const searchInput = document.getElementById('search') as HTMLInputElement;
@@ -143,35 +126,21 @@ export function ProductFilters({
     const lowStock = lowStockCheckbox?.checked ? 'true' : '';
     const activeOnly = activeOnlyCheckbox?.checked ? 'true' : '';
     
-    console.log('📤 Values extracted:', {
-      search, gammeId, brandId, lowStock, activeOnly
-    });
-    
     const params = new URLSearchParams();
     params.set('page', '1');
-    
+
     if (search.trim()) params.set('search', search.trim());
-    if (gammeId) {
-      console.log('✅ Adding gammeId:', gammeId);
-      params.set('gammeId', gammeId);
-    }
-    if (brandId) {
-      console.log('✅ Adding brandId:', brandId);
-      params.set('brandId', brandId);
-    }
+    if (gammeId) params.set('gammeId', gammeId);
+    if (brandId) params.set('brandId', brandId);
     if (lowStock === 'true') params.set('lowStock', 'true');
     if (activeOnly === 'true') params.set('activeOnly', 'true');
-    
-    const newUrl = `?${params.toString()}`;
-    console.log('🔗 Navigating to:', newUrl);
-    
-    navigate(newUrl);
+
+    navigate(`?${params.toString()}`);
   };
 
   // Handle form submit
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('🚀 FORM SUBMIT TRIGGERED!');
     applyFilters();
   };
 
@@ -297,7 +266,6 @@ export function ProductFilters({
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium"
             onClick={(e) => {
               e.preventDefault();
-              console.log('🔘 Button clicked!');
               applyFilters();
             }}
           >
