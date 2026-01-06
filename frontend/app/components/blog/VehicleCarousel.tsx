@@ -121,14 +121,15 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
     ? gamme.charAt(0).toUpperCase() + gamme.slice(1).replace(/-/g, ' ')
     : 'cette pièce';
   
-  // Utiliser les vrais switches depuis la BDD ou fallback aléatoire
+  // Utiliser les vrais switches depuis la BDD ou fallback déterministe
+  // SSR-safe: sélection basée sur type_id (pas de Math.random() pour éviter mismatch hydratation)
   let seoContent = '';
   if (seoSwitches && seoSwitches.length > 0) {
-    // Utiliser un switch aléatoire depuis la base de données
-    const randomSwitch = seoSwitches[Math.floor(Math.random() * seoSwitches.length)];
-    seoContent = randomSwitch.sis_content;
+    // Sélection déterministe basée sur type_id
+    const selectedSwitch = seoSwitches[vehicle.type_id % seoSwitches.length];
+    seoContent = selectedSwitch.sis_content;
   } else {
-    // Fallback: générer aléatoirement (ancien système)
+    // Fallback: sélection déterministe basée sur type_id
     const actions = [
       `contrôler si usée`,
       `vérifier en cas de bruit`,
@@ -137,8 +138,8 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
       `contrôler si défaillant`,
       `vérifier si nécessaire`
     ];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    
+    const selectedAction = actions[vehicle.type_id % actions.length];
+
     const purposes = [
       `pour garantir la production de l'énergie électrique nécessaire`,
       `pour assurer le courant d'alimentation des composants électriques`,
@@ -146,9 +147,9 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
       `pour garantir le bon fonctionnement du système électrique`,
       `pour assurer une alimentation électrique stable`
     ];
-    const randomPurpose = purposes[Math.floor(Math.random() * purposes.length)];
-    
-    seoContent = `${randomAction} les ${pieceName} ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_power} ch, ${randomPurpose} du véhicule.`;
+    const selectedPurpose = purposes[vehicle.type_id % purposes.length];
+
+    seoContent = `${selectedAction} les ${pieceName} ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_power} ch, ${selectedPurpose} du véhicule.`;
   }
 
   return (

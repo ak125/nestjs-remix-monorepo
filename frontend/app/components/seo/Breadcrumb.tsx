@@ -35,9 +35,10 @@ export function Breadcrumb({
     : items;
 
   // Générer le JSON-LD Schema.org
+  // SSR-safe: URL hardcodée pour éviter mismatch hydratation
   const generateSchema = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    
+    const baseUrl = 'https://www.automecanik.com';
+
     return {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
