@@ -517,6 +517,9 @@ export function useABTest(testName: string, variants: string[]): string {
   // SSR-safe: Always start with first variant, hydrate in useEffect
   const [variant, setVariant] = useState<string>(variants[0]);
 
+  // Use JSON.stringify for stable dependency comparison (avoid infinite loop)
+  const variantsKey = JSON.stringify(variants);
+
   useEffect(() => {
     // Vérifier si variant déjà assigné
     const stored = sessionStorage.getItem(`ab_test_${testName}`);
@@ -529,7 +532,7 @@ export function useABTest(testName: string, variants: string[]): string {
     const randomVariant = variants[Math.floor(Math.random() * variants.length)];
     sessionStorage.setItem(`ab_test_${testName}`, randomVariant);
     setVariant(randomVariant);
-  }, [testName, variants]);
+  }, [testName, variantsKey]);
 
   return variant;
 }
