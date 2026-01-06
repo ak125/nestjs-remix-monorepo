@@ -1,24 +1,39 @@
-import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
-import { 
-  Links, 
-  Meta, 
-  Outlet, 
-  Scripts, 
-  ScrollRestoration, 
+import {
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
   useRouteLoaderData,
   useRouteError,
   isRouteErrorResponse,
   useRevalidator,
-  useLocation
+  useLocation,
 } from "@remix-run/react";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
-import { Error401, Error404, Error410, Error412, Error503, ErrorGeneric } from "./components/errors";
+import {
+  Error401,
+  Error404,
+  Error410,
+  Error412,
+  Error503,
+  ErrorGeneric,
+} from "./components/errors";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
-import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
+import {
+  NotificationContainer,
+  NotificationProvider,
+} from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
@@ -30,14 +45,20 @@ import { type CartData } from "./types/cart";
 // @ts-ignore
 
 // URL Google Fonts (non-bloquant via preload)
-const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap";
+const GOOGLE_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap";
 
 export const links: LinksFunction = () => [
   // 🚀 LCP Optimization: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
   // 🚀 LCP Optimization: Preload logo navbar (présent sur toutes les pages)
-  { rel: "preload", href: "/logo-navbar.webp", as: "image", type: "image/webp" },
+  {
+    rel: "preload",
+    href: "/logo-navbar.webp",
+    as: "image",
+    type: "image/webp",
+  },
 
   // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
@@ -51,8 +72,16 @@ export const links: LinksFunction = () => [
   { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
   { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
   { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
-  { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+  {
+    rel: "preconnect",
+    href: "https://fonts.googleapis.com",
+    crossOrigin: "anonymous",
+  },
+  {
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossOrigin: "anonymous",
+  },
 
   // Google Fonts - Chargement non-bloquant (stylesheet only, preload moved to homepage)
   { rel: "stylesheet", href: GOOGLE_FONTS_URL },
@@ -70,14 +99,21 @@ export const links: LinksFunction = () => [
 export const meta: MetaFunction = () => [
   { charset: "utf-8" },
   { title: "Automecanik - Pièces auto à prix pas cher" },
-  { name: "description", content: "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie." },
+  {
+    name: "description",
+    content:
+      "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
+  },
   { viewport: "width=device-width,initial-scale=1" },
   { name: "theme-color", content: "#2563eb" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
   { name: "twitter:card", content: "summary_large_image" },
-  { name: "twitter:image", content: "https://www.automecanik.com/logo-og.webp" },
+  {
+    name: "twitter:image",
+    content: "https://www.automecanik.com/logo-og.webp",
+  },
 ];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -85,14 +121,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const [user, cart] = await Promise.all([
     getOptionalUser({ context }),
     getCart(request).catch((err) => {
-      console.warn('⚠️ [root.loader] Erreur chargement panier:', err.message);
+      console.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
       return null;
-    })
+    }),
   ]);
-  
-  return json({ 
+
+  return json({
     user,
-    cart
+    cart,
   });
 };
 
@@ -101,11 +137,11 @@ export const useOptionalUser = () => {
 
   if (!data) {
     // Retourner null au lieu de lancer une erreur
-    console.warn('Root loader was not run - returning null user');
+    console.warn("Root loader was not run - returning null user");
     return null;
   }
   return data.user;
-}
+};
 
 /**
  * Hook pour accéder aux données du panier depuis le root loader
@@ -114,7 +150,7 @@ export const useOptionalUser = () => {
 export const useRootCart = () => {
   const data = useRouteLoaderData<typeof loader>("root");
   return data?.cart || null;
-}
+};
 
 declare module "@remix-run/node" {
   interface AppLoadContext {
@@ -126,50 +162,58 @@ declare module "@remix-run/node" {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData("root") as { user: any; cart: CartData | null } | undefined;
+  const data = useRouteLoaderData("root") as
+    | { user: any; cart: CartData | null }
+    | undefined;
   const _user = data?.user;
-  const cart = data?.cart;
+  const _cart = data?.cart;
   const revalidator = useRevalidator();
   const location = useLocation();
-  
+
   // 📊 Google Analytics - Tracking des navigations SPA (optimisé avec requestIdleCallback)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const trackPageView = () => {
       // Exclure les pages admin du tracking GA4 (évite pollution analytics)
-      if (location.pathname.startsWith('/admin')) return;
+      if (location.pathname.startsWith("/admin")) return;
 
-      if (typeof window.gtag === 'function') {
-        window.gtag('config', 'G-ZVG6K5R740', {
+      if (typeof window.gtag === "function") {
+        window.gtag("config", "G-ZVG6K5R740", {
           page_path: location.pathname + location.search,
           page_title: document.title,
-          page_location: window.location.href
+          page_location: window.location.href,
         });
       }
     };
 
     // Utiliser requestIdleCallback pour ne pas bloquer l'INP
-    if ('requestIdleCallback' in window) {
-      (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(trackPageView, { timeout: 1000 });
+    if ("requestIdleCallback" in window) {
+      (
+        window as Window & {
+          requestIdleCallback: (
+            cb: () => void,
+            opts?: { timeout: number },
+          ) => number;
+        }
+      ).requestIdleCallback(trackPageView, { timeout: 1000 });
     } else {
       // Fallback pour Safari
       setTimeout(trackPageView, 0);
     }
   }, [location.pathname, location.search]);
-  
+
   // 🔄 Synchronisation panier globale via événement
   useEffect(() => {
     const handleCartUpdated = () => {
-      console.log('🔄 [root] cart:updated → revalidate');
+      console.log("🔄 [root] cart:updated → revalidate");
       revalidator.revalidate();
     };
 
-    window.addEventListener('cart:updated', handleCartUpdated);
-    return () => window.removeEventListener('cart:updated', handleCartUpdated);
+    window.addEventListener("cart:updated", handleCartUpdated);
+    return () => window.removeEventListener("cart:updated", handleCartUpdated);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Revalidator est stable - pas besoin de dépendance
-
 
   return (
     <html lang="fr" className="h-full">
@@ -254,24 +298,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <VehicleProvider>
           <NotificationProvider>
             <div className="min-h-screen flex flex-col">
-                <Navbar logo={logo} />
-                <main className="flex-grow flex flex-col">
-                  <div className="flex-grow">
-                    {children}
-                  </div>
-                 </main>
+              <Navbar logo={logo} />
+              <main className="flex-grow flex flex-col">
+                <div className="flex-grow">{children}</div>
+              </main>
             </div>
             <Footer />
             <NotificationContainer />
           </NotificationProvider>
         </VehicleProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
-        <Toaster 
-          position="top-right"
-          expand={true}
-          richColors
-          closeButton
-        />
+        <Toaster position="top-right" expand={true} richColors closeButton />
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -1,11 +1,6 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card';
-import { pluralizePieceName } from '~/lib/seo-utils';
-import { cn } from '~/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { cn } from "~/lib/utils";
 
 // Types matching backend PurchaseGuideData V2 (orientée client)
 export interface PurchaseGuideData {
@@ -71,7 +66,7 @@ export function PurchaseGuideSection({
   if (!guide) return null;
 
   return (
-    <div className={cn('space-y-8', className)}>
+    <div className={cn("space-y-8", className)}>
       <IntroSection intro={guide.intro} gammeName={gammeName} />
       <RiskSection risk={guide.risk} gammeName={gammeName} />
       <TimingSection timing={guide.timing} gammeName={gammeName} />
@@ -85,7 +80,7 @@ export function PurchaseGuideSection({
 // ============================================================================
 
 interface IntroSectionProps {
-  intro: PurchaseGuideData['intro'];
+  intro: PurchaseGuideData["intro"];
   gammeName?: string;
   className?: string;
 }
@@ -94,14 +89,19 @@ interface IntroSectionProps {
  * Section 1: À quoi ça sert / Rôle et sécurité
  * H2: {Gamme} : rôle et sécurité
  */
-export function IntroSection({ intro, gammeName, className }: IntroSectionProps) {
+export function IntroSection({
+  intro,
+  gammeName,
+  className,
+}: IntroSectionProps) {
   if (!intro.title && !intro.role) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'cette pièce';
+  // pieceType reserved for future use
+  const _pieceType = gammeName?.toLowerCase() || "cette pièce";
 
   return (
     <section
-      className={cn('py-8', className)}
+      className={cn("py-8", className)}
       aria-labelledby="intro-section-title"
     >
       <div className="container mx-auto px-4">
@@ -118,13 +118,15 @@ export function IntroSection({ intro, gammeName, className }: IntroSectionProps)
                 🔧
               </span>
               <CardTitle className="text-xl text-blue-900">
-                {intro.title || 'À quoi ça sert ?'}
+                {intro.title || "À quoi ça sert ?"}
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {intro.role && (
-              <p className="text-gray-700 text-lg leading-relaxed">{intro.role}</p>
+              <p className="text-gray-700 text-lg leading-relaxed">
+                {intro.role}
+              </p>
             )}
 
             {intro.syncParts && intro.syncParts.length > 0 && (
@@ -132,7 +134,10 @@ export function IntroSection({ intro, gammeName, className }: IntroSectionProps)
                 <p className="text-sm text-gray-600 mb-2">Fonctionne avec :</p>
                 <ul className="space-y-2 ml-4">
                   {intro.syncParts.map((part, index) => (
-                    <li key={index} className="flex items-start gap-2 text-gray-700">
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-gray-700"
+                    >
                       <span className="text-blue-600 mt-1">•</span>
                       <span>{part}</span>
                     </li>
@@ -148,7 +153,7 @@ export function IntroSection({ intro, gammeName, className }: IntroSectionProps)
 }
 
 interface RiskSectionProps {
-  risk: PurchaseGuideData['risk'];
+  risk: PurchaseGuideData["risk"];
   gammeName?: string;
   className?: string;
 }
@@ -160,12 +165,12 @@ interface RiskSectionProps {
 export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
   if (!risk.title && !risk.explanation) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'cette pièce';
+  const pieceType = gammeName?.toLowerCase() || "cette pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
-      className={cn('py-8', className)}
+      className={cn("py-8", className)}
       aria-labelledby="risk-section-title"
     >
       <div className="container mx-auto px-4">
@@ -182,7 +187,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
                 ⚠️
               </span>
               <CardTitle className="text-xl text-red-900">
-                {risk.title || 'Pourquoi ne jamais attendre ?'}
+                {risk.title || "Pourquoi ne jamais attendre ?"}
               </CardTitle>
             </div>
           </CardHeader>
@@ -200,7 +205,10 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
                 </p>
                 <ul className="space-y-2 ml-4">
                   {risk.consequences.map((consequence, index) => (
-                    <li key={index} className="flex items-start gap-2 text-red-800">
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-red-800"
+                    >
                       <span className="text-red-600 mt-1">•</span>
                       <span>{consequence}</span>
                     </li>
@@ -211,7 +219,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
 
             {risk.costRange && (
               <p className="text-gray-700">
-                <span className="font-medium">Coût des réparations :</span>{' '}
+                <span className="font-medium">Coût des réparations :</span>{" "}
                 <span className="text-red-700 font-bold">{risk.costRange}</span>
               </p>
             )}
@@ -230,7 +238,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
 }
 
 interface TimingSectionProps {
-  timing: PurchaseGuideData['timing'];
+  timing: PurchaseGuideData["timing"];
   gammeName?: string;
   className?: string;
 }
@@ -239,15 +247,19 @@ interface TimingSectionProps {
  * Section 3: Quand changer
  * H2: Quand faut-il changer {gamme} ?
  */
-export function TimingSection({ timing, gammeName, className }: TimingSectionProps) {
+export function TimingSection({
+  timing,
+  gammeName,
+  className,
+}: TimingSectionProps) {
   if (!timing.title && !timing.years && !timing.km) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'cette pièce';
+  const pieceType = gammeName?.toLowerCase() || "cette pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
-      className={cn('py-8', className)}
+      className={cn("py-8", className)}
       aria-labelledby="timing-section-title"
     >
       <div className="container mx-auto px-4">
@@ -264,7 +276,7 @@ export function TimingSection({ timing, gammeName, className }: TimingSectionPro
                 ⏱️
               </span>
               <CardTitle className="text-xl text-amber-900">
-                {timing.title || 'Quand faut-il la changer ?'}
+                {timing.title || "Quand faut-il la changer ?"}
               </CardTitle>
             </div>
           </CardHeader>
@@ -288,7 +300,9 @@ export function TimingSection({ timing, gammeName, className }: TimingSectionPro
                 <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-amber-200">
                   <span className="text-2xl">🚗</span>
                   <div>
-                    <p className="text-sm text-gray-600">Intervalle kilométrage</p>
+                    <p className="text-sm text-gray-600">
+                      Intervalle kilométrage
+                    </p>
                     <p className="text-lg font-bold text-amber-900">
                       entre {timing.km}
                     </p>
@@ -311,7 +325,7 @@ export function TimingSection({ timing, gammeName, className }: TimingSectionPro
 }
 
 interface ArgumentsSectionProps {
-  arguments: PurchaseGuideData['arguments'];
+  arguments: PurchaseGuideData["arguments"];
   gammeName?: string;
   className?: string;
 }
@@ -327,19 +341,19 @@ export function ArgumentsSection({
 }: ArgumentsSectionProps) {
   if (!args || args.length === 0) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pieceType = gammeName?.toLowerCase() || "pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   const iconMap: Record<string, string> = {
-    'check-circle': '✅',
-    'shield-check': '🛡️',
-    'currency-euro': '💰',
-    cube: '📦',
+    "check-circle": "✅",
+    "shield-check": "🛡️",
+    "currency-euro": "💰",
+    cube: "📦",
   };
 
   return (
     <section
-      className={cn('py-8', className)}
+      className={cn("py-8", className)}
       aria-labelledby="arguments-section-title"
     >
       <div className="container mx-auto px-4">
@@ -368,10 +382,12 @@ export function ArgumentsSection({
                   className="flex items-start gap-3 p-4 bg-white rounded-lg border border-green-200"
                 >
                   <span className="text-2xl flex-shrink-0">
-                    {iconMap[arg.icon || ''] || '✅'}
+                    {iconMap[arg.icon || ""] || "✅"}
                   </span>
                   <div>
-                    <h4 className="font-bold text-green-900 mb-1">{arg.title}</h4>
+                    <h4 className="font-bold text-green-900 mb-1">
+                      {arg.title}
+                    </h4>
                     <p className="text-gray-700 text-sm leading-relaxed">
                       {arg.content}
                     </p>
