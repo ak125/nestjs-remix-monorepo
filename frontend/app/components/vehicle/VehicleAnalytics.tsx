@@ -66,6 +66,9 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
   }, [vehicle, userId]);
 
   const getSessionId = (): string => {
+    // SSR-safe: sessionStorage only available on client
+    if (typeof window === 'undefined') return '';
+
     let sessionId = sessionStorage.getItem('analytics_session_id');
     if (!sessionId) {
       sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

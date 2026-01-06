@@ -17,9 +17,15 @@ interface ABTest {
 }
 
 export function useAdvancedAnalyticsComplete() {
-  const [sessionId] = useState(() => crypto.randomUUID())
+  // SSR-safe: Generate sessionId client-side only to avoid hydration mismatch
+  const [sessionId, setSessionId] = useState('')
   const [activeTests, setActiveTests] = useState<Map<string, ABTest>>(new Map())
   const [events, setEvents] = useState<any[]>([])
+
+  // Initialize sessionId on client only
+  useEffect(() => {
+    setSessionId(crypto.randomUUID())
+  }, [])
 
   // Fonction pour démarrer un test A/B
   const startABTest = useCallback(async (testId: string, config: ABTestConfig) => {

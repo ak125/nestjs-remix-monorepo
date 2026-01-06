@@ -78,11 +78,6 @@ interface CartProviderProps {
 }
 
 export function CartProvider({ children, initialData }: CartProviderProps) {
-  // DEBUG: Log pour voir les données initiales
-  if (typeof window !== 'undefined') {
-    console.log('🛒 [CartProvider] initialData:', initialData ? `${initialData.items?.length || 0} items` : 'null');
-  }
-  
   const [items, setItems] = useState<CartItem[]>(initialData?.items || []);
   const [summary, setSummary] = useState<CartSummary>(initialData?.summary || defaultSummary);
   const [_isInitialized, setIsInitialized] = useState(!!initialData);

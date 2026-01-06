@@ -372,9 +372,6 @@ export default function PaymentPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
-  console.log('👤 User:', user?.email || 'unknown');
-
   // 📊 GA4: Tracker l'info paiement (une seule fois au montage)
   useEffect(() => {
     trackAddPaymentInfo(order.totalTTC || 0, 'card');

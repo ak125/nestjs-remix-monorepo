@@ -26,7 +26,7 @@ import {
   Bookmark,
   Tag
 } from 'lucide-react';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from 'sonner';
 
 // Components internes
@@ -282,7 +282,13 @@ export default function LegacyBlogArticle() {
   const { article, pg_alias, adjacentArticles, seoSwitches, conseil } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [startTime] = useState(Date.now());
+  // SSR-safe: Use ref for startTime to avoid hydration mismatch
+  const startTimeRef = useRef<number>(0);
+
+  // Initialize startTime on client only
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   // Calculer le temps de lecture (approximatif)
   const _readingTime = Math.ceil(
@@ -299,12 +305,12 @@ export default function LegacyBlogArticle() {
     // Track temps de lecture au départ
     return () => {
       clearTimeout(viewTimer);
-      const duration = Math.floor((Date.now() - startTime) / 1000);
+      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (duration > 5) {
         trackReadingTime(article.id, duration, article.title);
       }
     };
-  }, [article.id, article.title, startTime]);
+  }, [article.id, article.title]);
 
   // Gérer le bookmark avec tracking
   const handleBookmark = () => {
