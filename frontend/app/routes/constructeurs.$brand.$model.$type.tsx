@@ -572,14 +572,6 @@ export default function VehicleDetailPage() {
     new Set(),
   );
 
-  console.log("🚗 Page véhicule rendue avec logique PHP:", {
-    vehicle:
-      vehicle.marque_name + " " + vehicle.modele_name + " " + vehicle.type_name,
-    families: catalogFamilies.length,
-    popular: popularParts.length,
-    seoTitle: seo.title,
-  });
-
   // Récupérer le gradient de marque dynamique
   const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
   const brandPrimary = brandColorsService.getBrandPrimaryColor(
