@@ -29,6 +29,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { StockManagementService } from '../services/stock-management.service';
 import { WorkingStockService } from '../services/working-stock.service';
 import {
@@ -40,7 +41,7 @@ import {
 
 @ApiTags('Admin - Stock Management CONSOLIDÉ')
 @Controller('api/admin/stock')
-@UseGuards(AuthenticatedGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @ApiBearerAuth()
 export class StockController {
   private readonly logger = new Logger(StockController.name);

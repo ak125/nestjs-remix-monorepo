@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -18,7 +19,7 @@ import { ProductsService } from '../../products/products.service';
 
 @ApiTags('Admin Products')
 @Controller('api/admin/products')
-@UseGuards(AuthenticatedGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminProductsController {
   private readonly logger = new Logger(AdminProductsController.name);
 

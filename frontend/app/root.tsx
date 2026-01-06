@@ -137,6 +137,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return;
 
     const trackPageView = () => {
+      // Exclure les pages admin du tracking GA4 (évite pollution analytics)
+      if (location.pathname.startsWith('/admin')) return;
+
       if (typeof window.gtag === 'function') {
         window.gtag('config', 'G-ZVG6K5R740', {
           page_path: location.pathname + location.search,
