@@ -23,7 +23,8 @@
     "docs:install": "cd .spec/docs && npm install",
     "docs:dev": "cd .spec/docs && npm start",
     "docs:build": "cd .spec/docs && npm run build",
-    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'"
+    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -46,6 +47,7 @@
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.4.1",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
@@ -81,5 +83,15 @@
   },
   "overrides": {
     "path-to-regexp": "3.3.0"
+  },
+  "lint-staged": {
+    "frontend/app/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "backend/src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
