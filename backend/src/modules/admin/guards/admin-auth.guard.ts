@@ -13,8 +13,8 @@ export class AdminAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 
-    // TODO: Implémenter la vraie logique d'authentification admin
-    // Pour l'instant, on simule qu'on a un utilisateur admin connecté
+    // DEPRECATED: Ce guard est déprécié, utiliser AuthenticatedGuard + IsAdminGuard
+    // extractUserFromRequest() lance une exception pour bloquer toute utilisation
     const user = this.extractUserFromRequest();
 
     if (!user) {
@@ -42,14 +42,11 @@ export class AdminAuthGuard implements CanActivate {
   }
 
   private extractUserFromRequest(): any {
-    // TODO: Extraire l'utilisateur depuis le token JWT, session, etc.
-    // Pour l'instant, on simule un utilisateur admin
-    return {
-      id: 'admin-1',
-      email: 'admin@example.com',
-      roles: ['admin', 'manager'],
-      isAdmin: true,
-    };
+    // SECURITY: Ce guard est déprécié - utiliser IsAdminGuard + AuthenticatedGuard
+    // Ne jamais retourner de credentials hardcodés
+    throw new UnauthorizedException(
+      'AdminAuthGuard is deprecated. Use AuthenticatedGuard + IsAdminGuard instead.',
+    );
   }
 
   private isAdmin(user: any): boolean {
