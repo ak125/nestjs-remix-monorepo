@@ -288,8 +288,14 @@ export const loader: LoaderFunction = async () => {
 export default function AdminDashboard() {
   const { stats, apiErrors, hasErrors, criticalError } = useLoaderData<typeof loader>();
   const [realTimeStats, setRealTimeStats] = useState(stats);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  // SSR-safe: Initialize with null, set in useEffect to avoid hydration mismatch
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Initialize lastUpdate on client only
+  useEffect(() => {
+    setLastUpdate(new Date());
+  }, []);
 
   // Fonction helper pour formater les nombres en sécurité
   const formatNumber = (value: number | undefined, locale = 'fr-FR', options?: Intl.NumberFormatOptions) => {
