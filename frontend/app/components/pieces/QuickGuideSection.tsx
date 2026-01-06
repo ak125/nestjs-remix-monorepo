@@ -185,6 +185,8 @@ export default function QuickGuideSection({ guide, gammeName }: QuickGuideSectio
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-95"
               onClick={(e) => {
                 e.preventDefault();
+                // SSR-safe: document/window n'existent pas côté serveur
+                if (typeof document === 'undefined' || typeof window === 'undefined') return;
                 const element = document.getElementById('vehicle-selector');
                 if (element) {
                   const offset = 80;

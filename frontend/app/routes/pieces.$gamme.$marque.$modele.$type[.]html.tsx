@@ -740,13 +740,15 @@ export function ErrorBoundary() {
   // SSR-safe: utiliser useLocation au lieu de window.location
   const location = useLocation();
 
-  // Log détaillé de l'erreur pour debug
-  console.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
-  console.error("🚨 [ERROR BOUNDARY] Type:", typeof error);
-  console.error(
-    "🚨 [ERROR BOUNDARY] Stack:",
-    error instanceof Error ? error.stack : "N/A",
-  );
+  // SSR-safe: Log détaillé de l'erreur uniquement côté client
+  useEffect(() => {
+    console.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
+    console.error("🚨 [ERROR BOUNDARY] Type:", typeof error);
+    console.error(
+      "🚨 [ERROR BOUNDARY] Stack:",
+      error instanceof Error ? error.stack : "N/A",
+    );
+  }, [error]);
 
   // 🛡️ Gestion spécifique du 503 Service Unavailable (erreur réseau temporaire)
   if (isRouteErrorResponse(error) && error.status === 503) {

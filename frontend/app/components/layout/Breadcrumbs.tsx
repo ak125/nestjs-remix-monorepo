@@ -36,7 +36,8 @@ export function Breadcrumbs({
   enableSchema = true,
 }: BreadcrumbsProps) {
   // Utiliser les items fournis ou générer automatiquement
-  let breadcrumbItems = items.length > 0 ? items : generateFromPath();
+  // SSR-safe: ne pas appeler generateFromPath() côté serveur (window n'existe pas)
+  let breadcrumbItems = items.length > 0 ? items : (typeof window !== 'undefined' ? generateFromPath() : []);
 
   // S'assurer que "Accueil" est toujours le premier élément si showHome = true
   if (

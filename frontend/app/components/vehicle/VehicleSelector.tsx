@@ -86,18 +86,21 @@ export default function VehicleSelector({
 
   // 🚀 Chargement lazy des marques au premier focus (optimisation performance)
   useEffect(() => {
+    // SSR-safe: document n'existe pas côté serveur
+    if (typeof document === 'undefined') return;
+
     // Ne charge pas au montage, attendre interaction utilisateur
     const handleFocus = () => {
       if (brands.length === 0 && !loadingBrands) {
         loadBrands();
       }
     };
-    
+
     // Pré-charger si currentVehicle fourni
     if (_currentVehicle?.brand?.id) {
       loadBrands();
     }
-    
+
     // Écouter focus sur le select marque pour lazy load
     const brandSelect = document.getElementById('brand-v2') || document.getElementById('brand');
     brandSelect?.addEventListener('focus', handleFocus, { once: true });

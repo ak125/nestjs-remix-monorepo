@@ -11,6 +11,8 @@ export default function MobileStickyBar({
 }: MobileStickyBarProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
+    // SSR-safe: document/window n'existent pas côté serveur
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
     const element = document.getElementById(id);
     if (element) {
       const offset = 80;
