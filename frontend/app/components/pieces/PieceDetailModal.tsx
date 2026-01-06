@@ -81,13 +81,9 @@ export function PieceDetailModal({
       setError(null);
 
       try {
-        // Utiliser window.location pour construire l'URL backend
-        const backendUrl =
-          typeof window !== "undefined"
-            ? `${window.location.protocol}//${window.location.host}`
-            : "";
+        // SSR-safe: utiliser URL relative (fonctionne côté client sans window)
         const response = await fetch(
-          `${backendUrl}/api/catalog/pieces/${pieceId}`,
+          `/api/catalog/pieces/${pieceId}`,
           {
             credentials: "include",
           },
