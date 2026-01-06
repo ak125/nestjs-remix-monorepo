@@ -51,7 +51,10 @@ export interface SeoLinkData {
 
 /**
  * Check if a URL is internal (same domain or relative)
+ * SSR-safe: utilise domaine hardcodé pour éviter mismatch hydratation
  */
+const SITE_ORIGIN = 'https://www.automecanik.com';
+
 function isInternalLink(href: string | undefined): boolean {
   if (!href) return false;
 
@@ -60,18 +63,13 @@ function isInternalLink(href: string | undefined): boolean {
     return true;
   }
 
-  // Check for same domain
-  if (typeof window !== 'undefined') {
-    try {
-      const url = new URL(href, window.location.origin);
-      return url.origin === window.location.origin;
-    } catch {
-      return false;
-    }
+  // Check for same domain (SSR-safe: domaine hardcodé)
+  try {
+    const url = new URL(href, SITE_ORIGIN);
+    return url.origin === SITE_ORIGIN;
+  } catch {
+    return false;
   }
-
-  // Server-side: consider relative paths as internal
-  return href.startsWith('/');
 }
 
 /**

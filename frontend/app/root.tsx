@@ -171,11 +171,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []); // Revalidator est stable - pas besoin de dépendance
 
 
-  // DEBUG: Log pour voir si les données arrivent
-  if (typeof window !== 'undefined') {
-    console.log('🏠 [root.Layout] cart data:', cart ? `${cart.items?.length || 0} items` : 'null');
-  }
-  
   return (
     <html lang="fr" className="h-full">
       <head>
