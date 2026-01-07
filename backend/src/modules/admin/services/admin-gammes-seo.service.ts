@@ -94,6 +94,14 @@ export interface GammeSeoItem {
   // 🎯 Smart Action (calculé)
   smart_action: SmartActionType;
   smart_action_description: string;
+  // 🏷️ Badges v2 (from gamme_aggregates)
+  priority_score: number;
+  execution_status: string;
+  final_priority: string;
+  catalog_status: string;
+  vehicle_coverage: string;
+  content_depth: string;
+  content_words_total: number;
 }
 
 export interface GammeSeoPagination {
@@ -300,6 +308,22 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         throw familiesError;
       }
 
+      // 5. Get aggregates with badges v2 from gamme_aggregates
+      const { data: aggregates, error: aggregatesError } = await this.supabase
+        .from('gamme_aggregates')
+        .select(
+          'ga_pg_id, priority_score, execution_status, final_priority, catalog_status, vehicle_coverage, content_depth, content_words_total',
+        )
+        .in('ga_pg_id', pgIds);
+
+      if (aggregatesError) {
+        this.logger.warn(
+          'Warning fetching gamme_aggregates (non-blocking):',
+          aggregatesError,
+        );
+        // Non-blocking: continue without aggregates
+      }
+
       // Build lookup maps
       const seoMetricsMap = new Map(
         seoMetrics?.map((m: any) => [m.pg_id, m]) || [],
@@ -310,8 +334,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const pgToFamilyMap = new Map(
         liaisons.map((l: any) => [Number(l.mc_pg_id), l.mc_mf_id]),
       );
+      const aggregatesMap = new Map(
+        aggregates?.map((a: any) => [a.ga_pg_id, a]) || [],
+      );
 
-      // 5. Merge data (incluant Agent 2)
+      // 6. Merge data (incluant Agent 2 et badges v2)
       let result: GammeSeoItem[] = (gammes || []).map((g: any) => {
         const seo = seoMetricsMap.get(g.pg_id) || {};
         const familyId = pgToFamilyMap.get(g.pg_id);
@@ -389,6 +416,17 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           // 🎯 Smart Action (calculé)
           smart_action: smartActionResult.action,
           smart_action_description: smartActionResult.description,
+          // 🏷️ Badges v2 (from gamme_aggregates)
+          priority_score: aggregatesMap.get(g.pg_id)?.priority_score || 0,
+          execution_status:
+            aggregatesMap.get(g.pg_id)?.execution_status || 'FAIL',
+          final_priority: aggregatesMap.get(g.pg_id)?.final_priority || 'P3',
+          catalog_status: aggregatesMap.get(g.pg_id)?.catalog_status || 'EMPTY',
+          vehicle_coverage:
+            aggregatesMap.get(g.pg_id)?.vehicle_coverage || 'EMPTY',
+          content_depth: aggregatesMap.get(g.pg_id)?.content_depth || 'THIN',
+          content_words_total:
+            aggregatesMap.get(g.pg_id)?.content_words_total || 0,
         };
       });
 
