@@ -8,6 +8,7 @@ import {
   GammeRpcService,
   GammeResponseBuilderService,
   GammePageDataService,
+  PurchaseGuideDataService,
 } from './services';
 
 /**
@@ -27,7 +28,8 @@ import {
     GammeDataTransformerService,
     GammeRpcService,
     GammeResponseBuilderService,
-    GammePageDataService, // Service pour méthode classique
+    GammePageDataService,
+    PurchaseGuideDataService,
   ],
 })
 export class GammeRestModule {}

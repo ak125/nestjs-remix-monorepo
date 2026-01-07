@@ -128,33 +128,37 @@ export class BatchLoaderController {
         this.gammeService.gammeExists(parsedGammeId),
       ]);
 
-      // 🔒 Validation SEO: Vérifier que le type existe
+      // 🔒 SEO FIX: Retourner 410 Gone (au lieu de 404) pour ressources supprimées
+      // Permet à Google de désindexer plus rapidement les 13.1k URLs obsolètes
       if (!typeResult?.data || typeResult.data.length === 0) {
         this.logger.warn(
-          `🔒 SEO: Type inexistant typeId=${parsedTypeId} → 404`,
+          `🔒 SEO: Type supprimé typeId=${parsedTypeId} → 410 Gone`,
         );
         throw new HttpException(
-          'Type de véhicule inexistant',
-          HttpStatus.NOT_FOUND,
+          { message: 'Type de véhicule supprimé', code: 'GONE' },
+          HttpStatus.GONE,
         );
       }
 
-      // 🔒 Validation SEO: Vérifier que la gamme existe
+      // 🔒 SEO FIX: Retourner 410 Gone pour gamme supprimée
       if (!gammeExists) {
         this.logger.warn(
-          `🔒 SEO: Gamme inexistante gammeId=${parsedGammeId} → 404`,
+          `🔒 SEO: Gamme supprimée gammeId=${parsedGammeId} → 410 Gone`,
         );
         throw new HttpException(
-          'Gamme de pièces inexistante',
-          HttpStatus.NOT_FOUND,
+          { message: 'Gamme de pièces supprimée', code: 'GONE' },
+          HttpStatus.GONE,
         );
       }
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.warn(
-        `🔒 SEO: Erreur validation typeId=${parsedTypeId} ou gammeId=${parsedGammeId} → 404`,
+        `🔒 SEO: Erreur validation typeId=${parsedTypeId} ou gammeId=${parsedGammeId} → 410 Gone`,
       );
-      throw new HttpException('Ressource inexistante', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        { message: 'Ressource supprimée', code: 'GONE' },
+        HttpStatus.GONE,
+      );
     }
 
     // Réutiliser la logique existante
