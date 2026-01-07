@@ -5,7 +5,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
-import { decodeHtmlEntities } from '../../../utils/html-entities';
+import {
+  decodeHtmlEntities,
+  stripHtmlForMeta,
+} from '../../../utils/html-entities';
 
 /**
  * 🖼️ Génère une URL d'image optimisée via Supabase render/image
@@ -338,13 +341,15 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       }),
     );
 
-    // SEO déjà processé côté PostgreSQL - juste décoder les entités HTML
+    // SEO déjà processé côté PostgreSQL - décoder les entités HTML
+    // 🧹 PRÉVENTION SEO: stripHtmlForMeta sur description pour éviter HTML dans meta
     const seo = rpcResult.seo
       ? {
           success: true,
           h1: decodeHtmlEntities(rpcResult.seo.h1 || ''),
           content: decodeHtmlEntities(rpcResult.seo.content || ''),
-          description: decodeHtmlEntities(rpcResult.seo.description || ''),
+          // 🎯 Meta description: nettoyer HTML pour éviter indexation Google cassée
+          description: stripHtmlForMeta(rpcResult.seo.description || ''),
           title: decodeHtmlEntities(rpcResult.seo.title || ''),
           preview: decodeHtmlEntities(rpcResult.seo.preview || ''),
           keywords: null,

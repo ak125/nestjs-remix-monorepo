@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
+import { PurchaseGuideDataService } from './purchase-guide-data.service';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
+import { stripHtmlForMeta } from '../../../utils/html-entities';
 
 /**
  * Service de construction de la réponse finale
@@ -11,6 +13,7 @@ export class GammeResponseBuilderService {
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly rpcService: GammeRpcService,
+    private readonly purchaseGuideService: PurchaseGuideDataService,
   ) {}
 
   /**
@@ -51,12 +54,12 @@ export class GammeResponseBuilderService {
     const motorisationsBlogRaw = aggregatedData?.motorisations_blog || [];
 
     // Traitement SEO
+    // 🧹 PRÉVENTION SEO: stripHtmlForMeta sur description pour éviter HTML dans meta
     let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
     if (seoData) {
       pageTitle = this.transformer.contentCleaner(seoData.sg_title || '');
-      pageDescription = this.transformer.contentCleaner(
-        seoData.sg_descrip || '',
-      );
+      // 🎯 Meta description: nettoyer HTML pour éviter indexation Google cassée
+      pageDescription = stripHtmlForMeta(seoData.sg_descrip || '');
       pageKeywords = this.transformer.contentCleaner(seoData.sg_keywords || '');
       pageH1 = this.transformer.contentCleaner(seoData.sg_h1 || '');
       pageContent = this.transformer.contentCleaner(seoData.sg_content || '');
@@ -411,6 +414,10 @@ export class GammeResponseBuilderService {
         }
       : null;
 
+    // Récupérer les données du guide d'achat V2 (nouvelles sections)
+    const purchaseGuideData =
+      await this.purchaseGuideService.getPurchaseGuideV2(pgId);
+
     const totalTime = performance.now() - startTime;
 
     // URLs Supabase pour les images hero
@@ -487,6 +494,7 @@ export class GammeResponseBuilderService {
             }
           : null,
       guideAchat,
+      purchaseGuideData: purchaseGuideData || null,
       motorisationsBlog:
         motorisationsBlog.length > 0
           ? {
@@ -533,6 +541,7 @@ export class GammeResponseBuilderService {
         conseils_count: conseils.length,
         informations_count: informations.length,
         guide_available: guideAchat ? 1 : 0,
+        purchase_guide_v2_available: purchaseGuideData ? 1 : 0,
       },
     };
   }
