@@ -178,7 +178,8 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
           id="risk-section-title"
           className="text-2xl font-bold text-gray-900 mb-6"
         >
-          Pourquoi ne jamais rouler avec des {pluralType} usées ?
+          {risk.title ||
+            `Pourquoi ne jamais rouler avec des ${pluralType} usées ?`}
         </h2>
         <Card className="border-red-200 bg-red-50/50">
           <CardHeader className="pb-3">
@@ -187,7 +188,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
                 ⚠️
               </span>
               <CardTitle className="text-xl text-red-900">
-                {risk.title || "Pourquoi ne jamais attendre ?"}
+                Risques et conséquences
               </CardTitle>
             </div>
           </CardHeader>
