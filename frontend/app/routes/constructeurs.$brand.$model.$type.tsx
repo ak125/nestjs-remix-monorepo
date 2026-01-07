@@ -25,10 +25,14 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { ModelContentV1Display, type ModelContentV1Data } from "../components/model";
+import {
+  ModelContentV1Display,
+  type ModelContentV1Data,
+} from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
+import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -227,7 +231,9 @@ function transformRpcToLoaderData(
     cnit_codes: rpcData.cnit_codes || [],
     cnit_codes_formatted: (rpcData.cnit_codes || []).join(", "),
     power_formatted: v.type_power_ps ? `${v.type_power_ps} ch` : "",
-    cylinder_cm3: v.type_liter ? Math.round(parseFloat(v.type_liter) * 1000) : undefined,
+    cylinder_cm3: v.type_liter
+      ? Math.round(parseFloat(v.type_liter) * 1000)
+      : undefined,
     production_date_formatted: type_date,
   };
 
@@ -236,9 +242,24 @@ function transformRpcToLoaderData(
     const switches: Record<number, string[]> = {
       1: ["à prix discount", "pas cher", "à mini prix", "en promotion"],
       2: ["et équipements", "et accessoires", "neuves", "d'origine"],
-      10: ["Toutes les pièces auto", "Trouvez toutes les pièces", "Catalogue complet", "Pièces détachées"],
-      11: ["Toutes les références", "L'ensemble des pièces", "Toutes les gammes", "Tous les produits"],
-      12: ["nos fournisseurs certifiés", "nos partenaires agréés", "nos distributeurs", "nos fournisseurs"],
+      10: [
+        "Toutes les pièces auto",
+        "Trouvez toutes les pièces",
+        "Catalogue complet",
+        "Pièces détachées",
+      ],
+      11: [
+        "Toutes les références",
+        "L'ensemble des pièces",
+        "Toutes les gammes",
+        "Tous les produits",
+      ],
+      12: [
+        "nos fournisseurs certifiés",
+        "nos partenaires agréés",
+        "nos distributeurs",
+        "nos fournisseurs",
+      ],
     };
     const options = switches[alias] || [""];
     return options[typeId % options.length];
@@ -253,10 +274,16 @@ function transformRpcToLoaderData(
   let content2: string;
 
   if (seoCustom) {
-    seoTitle = seoCustom.mta_title || `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
+    seoTitle =
+      seoCustom.mta_title ||
+      `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
     seoDescription = seoCustom.mta_descrip || "";
-    seoKeywords = seoCustom.mta_keywords || `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
-    h1 = seoCustom.mta_h1 || `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
+    seoKeywords =
+      seoCustom.mta_keywords ||
+      `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
+    h1 =
+      seoCustom.mta_h1 ||
+      `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
     content = seoCustom.mta_content || "";
     content2 = "";
   } else {
@@ -275,13 +302,16 @@ function transformRpcToLoaderData(
   }
 
   // Canonical URL
-  const normalizedTypeAlias = v.type_alias && v.type_alias.trim() !== "" && v.type_alias !== "type"
-    ? v.type_alias
-    : type_id.toString();
+  const normalizedTypeAlias =
+    v.type_alias && v.type_alias.trim() !== "" && v.type_alias !== "type"
+      ? v.type_alias
+      : type_id.toString();
   const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${normalizedTypeAlias}-${vehicleData.type_id}.html`;
 
   // Catalogue (depuis RPC)
-  const catalogFamilies: CatalogFamily[] = (rpcData.catalog?.families || []).map((f: any) => ({
+  const catalogFamilies: CatalogFamily[] = (
+    rpcData.catalog?.families || []
+  ).map((f: any) => ({
     mf_id: parseInt(f.mf_id),
     mf_name: f.mf_name,
     mf_description: f.mf_description || `Système ${f.mf_name.toLowerCase()}`,
@@ -294,20 +324,26 @@ function transformRpcToLoaderData(
   }));
 
   // Pièces populaires (depuis RPC)
-  const generateSeoContent = (pgName: string, vd: VehicleData, tid: number): string => {
+  const generateSeoContent = (
+    pgName: string,
+    vd: VehicleData,
+    tid: number,
+  ): string => {
     const switches = ["Achetez", "Trouvez", "Commandez", "Choisissez"];
     const qualities = ["d'origine", "de qualité", "certifiées", "garanties"];
     return `${switches[tid % switches.length]} ${pgName} ${vd.marque_name_meta} ${vd.modele_name_meta} ${vd.type_name_meta}, ${qualities[(tid + 1) % qualities.length]} à prix bas.`;
   };
 
-  const popularParts: PopularPart[] = (rpcData.popular_parts || []).map((p: any, idx: number) => ({
-    cgc_pg_id: p.pg_id,
-    pg_alias: p.pg_alias,
-    pg_name: p.pg_name,
-    pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
-    pg_img: p.pg_img || "no.webp",
-    addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
-  }));
+  const popularParts: PopularPart[] = (rpcData.popular_parts || []).map(
+    (p: any, idx: number) => ({
+      cgc_pg_id: p.pg_id,
+      pg_alias: p.pg_alias,
+      pg_name: p.pg_name,
+      pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
+      pg_img: p.pg_img || "no.webp",
+      addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
+    }),
+  );
 
   // Validation SEO pour robots
   const seoValidation = rpcData.seo_validation || {};
@@ -326,7 +362,7 @@ function transformRpcToLoaderData(
     popularParts,
     seo: {
       title: seoTitle,
-      description: seoDescription,
+      description: stripHtmlForMeta(seoDescription),
       keywords: seoKeywords,
       h1,
       content,
@@ -338,8 +374,14 @@ function transformRpcToLoaderData(
       items: [
         { name: "Accueil", url: "/" },
         { name: "Constructeurs", url: "/constructeurs" },
-        { name: vehicleData.marque_name, url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html` },
-        { name: `${vehicleData.modele_name} ${vehicleData.type_name}`, url: "" },
+        {
+          name: vehicleData.marque_name,
+          url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html`,
+        },
+        {
+          name: `${vehicleData.modele_name} ${vehicleData.type_name}`,
+          url: "",
+        },
       ],
       brand: vehicleData.marque_name,
       model: vehicleData.modele_name,
@@ -459,7 +501,9 @@ function generateVehicleSchema(vehicle: any, breadcrumb: any) {
         model: vehicle.modele_name,
         vehicleConfiguration: vehicle.type_name,
         // 📅 Année modèle
-        ...(vehicle.type_year_from && { vehicleModelDate: vehicle.type_year_from }),
+        ...(vehicle.type_year_from && {
+          vehicleModelDate: vehicle.type_year_from,
+        }),
         // 🔧 Moteur
         vehicleEngine: {
           "@type": "EngineSpecification",
@@ -478,13 +522,15 @@ function generateVehicleSchema(vehicle: any, breadcrumb: any) {
         ...(vehicle.type_body && { bodyType: vehicle.type_body }),
         // 📅 Période de production
         ...(vehicle.type_year_from && {
-          additionalProperty: [{
-            "@type": "PropertyValue",
-            name: "Période de production",
-            value: vehicle.type_year_to
-              ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
-              : `depuis ${vehicle.type_year_from}`,
-          }],
+          additionalProperty: [
+            {
+              "@type": "PropertyValue",
+              name: "Période de production",
+              value: vehicle.type_year_to
+                ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
+                : `depuis ${vehicle.type_year_from}`,
+            },
+          ],
         }),
         url: canonicalUrl,
       },
@@ -493,10 +539,30 @@ function generateVehicleSchema(vehicle: any, breadcrumb: any) {
         "@type": "BreadcrumbList",
         "@id": `${canonicalUrl}#breadcrumb`,
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Accueil", item: `${baseUrl}/` },
-          { "@type": "ListItem", position: 2, name: "Constructeurs", item: `${baseUrl}/constructeurs` },
-          { "@type": "ListItem", position: 3, name: breadcrumb.brand, item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html` },
-          { "@type": "ListItem", position: 4, name: `${breadcrumb.model} ${breadcrumb.type}`, item: canonicalUrl },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Accueil",
+            item: `${baseUrl}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Constructeurs",
+            item: `${baseUrl}/constructeurs`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: breadcrumb.brand,
+            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
+          },
+          {
+            "@type": "ListItem",
+            position: 4,
+            name: `${breadcrumb.model} ${breadcrumb.type}`,
+            item: canonicalUrl,
+          },
         ],
       },
       // 3️⃣ Product avec AggregateOffer - Prix min/max des pièces pour SEO
@@ -565,7 +631,14 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
-  const { vehicle, catalogFamilies, popularParts, seo, breadcrumb, modelContentV1 } = data;
+  const {
+    vehicle,
+    catalogFamilies,
+    popularParts,
+    seo,
+    breadcrumb,
+    modelContentV1,
+  } = data;
 
   // État pour gérer l'expansion des familles (comme page index)
   const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
@@ -574,7 +647,7 @@ export default function VehicleDetailPage() {
 
   // Récupérer le gradient de marque dynamique
   const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
-  const brandPrimary = brandColorsService.getBrandPrimaryColor(
+  const _brandPrimary = brandColorsService.getBrandPrimaryColor(
     vehicle.marque_alias,
   );
 
@@ -619,7 +692,10 @@ export default function VehicleDetailPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50" data-brand={vehicle.marque_alias?.toLowerCase()}>
+    <div
+      className="min-h-screen bg-gray-50"
+      data-brand={vehicle.marque_alias?.toLowerCase()}
+    >
       {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
       <nav
         className="bg-white border-b border-gray-200 py-3"
@@ -985,9 +1061,7 @@ export default function VehicleDetailPage() {
             <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="p-3 rounded-xl shadow-lg bg-brand"
-                  >
+                  <div className="p-3 rounded-xl shadow-lg bg-brand">
                     <Award size={32} strokeWidth={2} className="text-white" />
                   </div>
                   <div>
@@ -1044,9 +1118,7 @@ export default function VehicleDetailPage() {
 
                   {/* Badge "Populaire" */}
                   <div className="absolute top-3 right-3 z-10">
-                    <div
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1 bg-brand"
-                    >
+                    <div className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1 bg-brand">
                       <CheckCircle size={12} />
                       <span>Compatible</span>
                     </div>
@@ -1068,6 +1140,7 @@ export default function VehicleDetailPage() {
                         }}
                       />
                     ) : null}
+                    {/* eslint-disable-next-line no-restricted-syntax -- Intentional hidden fallback */}
                     <div className="hidden flex-col items-center justify-center w-full h-36 text-gray-400">
                       <Package size={48} strokeWidth={1.5} />
                       <span className="text-xs mt-2 text-gray-500">
@@ -1219,9 +1292,7 @@ export default function VehicleDetailPage() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div
-                  className="p-2 rounded-lg bg-brand"
-                >
+                <div className="p-2 rounded-lg bg-brand">
                   <HeadphonesIcon size={24} className="text-white" />
                 </div>
                 <div>
@@ -1267,7 +1338,7 @@ export default function VehicleDetailPage() {
                       {item.question}
                     </span>
                     <div
-                      className={`flex-shrink-0 p-1 rounded-full ${openFaqIndex === index ? 'bg-brand' : 'bg-gray-200'}`}
+                      className={`flex-shrink-0 p-1 rounded-full ${openFaqIndex === index ? "bg-brand" : "bg-gray-200"}`}
                     >
                       {openFaqIndex === index ? (
                         <ChevronUp size={18} className="text-white" />
@@ -1278,9 +1349,7 @@ export default function VehicleDetailPage() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
-                      <div
-                        className="pl-4 border-l-2 border-brand"
-                      >
+                      <div className="pl-4 border-l-2 border-brand">
                         {item.answer}
                       </div>
                     </div>
