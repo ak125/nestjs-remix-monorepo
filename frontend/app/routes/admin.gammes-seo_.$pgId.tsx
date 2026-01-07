@@ -48,6 +48,8 @@ import {
   Trophy,
   BookOpen,
   Zap,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -513,6 +515,28 @@ export async function action({ request, params }: ActionFunctionArgs) {
             Cookie: cookieHeader,
             "Content-Type": "application/json",
           },
+        },
+      );
+      const result = await response.json();
+      return json(result);
+    }
+
+    // === TOGGLE INDEX/NOINDEX ===
+    if (intent === "toggleIndex") {
+      const newLevel = formData.get("newLevel") as string; // '1' = INDEX, '2' = NOINDEX
+      const response = await fetch(
+        `${backendUrl}/api/admin/gammes-seo/${pgId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: cookieHeader,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            pg_level: newLevel,
+            pg_relfollow: newLevel === "1" ? "1" : "0",
+            pg_sitemap: newLevel === "1" ? "1" : "0",
+          }),
         },
       );
       const result = await response.json();
@@ -1166,9 +1190,37 @@ export default function AdminGammeSeoDetail() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={isIndexed ? "default" : "secondary"}>
-            {isIndexed ? "INDEX" : "NOINDEX"}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge
+              className={
+                isIndexed ? "bg-green-600 text-white" : "bg-gray-400 text-white"
+              }
+            >
+              {isIndexed ? "INDEX" : "NOINDEX"}
+            </Badge>
+            <fetcher.Form method="post" className="inline">
+              <input type="hidden" name="intent" value="toggleIndex" />
+              <input
+                type="hidden"
+                name="newLevel"
+                value={isIndexed ? "2" : "1"}
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className={`h-7 px-2 ${isIndexed ? "hover:bg-gray-100 text-gray-500" : "hover:bg-green-100 text-green-600"}`}
+                title={isIndexed ? "Passer en NOINDEX" : "Passer en INDEX"}
+                disabled={fetcher.state !== "idle"}
+              >
+                {isIndexed ? (
+                  <ToggleRight className="h-4 w-4" />
+                ) : (
+                  <ToggleLeft className="h-4 w-4" />
+                )}
+              </Button>
+            </fetcher.Form>
+          </div>
           {isG1 && <Badge variant="default">G1</Badge>}
           {inSitemap && <Badge variant="outline">Sitemap</Badge>}
           {detail.stats.vLevel_v1_count > 0 && (
