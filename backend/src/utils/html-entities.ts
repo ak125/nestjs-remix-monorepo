@@ -175,6 +175,70 @@ export function hasHtmlEntities(text: string): boolean {
 }
 
 /**
+ * Supprime TOUTES les balises HTML pour les meta descriptions SEO
+ * Utilisé pour nettoyer le contenu avant de l'utiliser dans <meta name="description">
+ *
+ * 🎯 Miroir du frontend: seo-clean.utils.ts::stripHtmlForMeta()
+ *
+ * @param html - Contenu HTML brut (peut contenir <strong>, <span>, tags malformés)
+ * @param maxLength - Longueur max (défaut: 160 pour meta description)
+ * @returns Texte brut sans HTML, tronqué à maxLength caractères
+ *
+ * @example
+ * stripHtmlForMeta('&lt;strong&gt;Alternateur&lt;/strong&gt; pour...') // 'Alternateur pour...'
+ * stripHtmlForMeta('<span>Kit embrayage</span>') // 'Kit embrayage'
+ */
+export function stripHtmlForMeta(
+  html: string | null | undefined,
+  maxLength = 160,
+): string {
+  if (!html || typeof html !== 'string') {
+    return '';
+  }
+
+  let result = html;
+
+  // 1. Décoder les entités HTML AVANT de supprimer les tags
+  // Car le contenu peut contenir &lt;strong&gt; (HTML encodé)
+  result = result
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  // 2. Supprimer tous les tags HTML (y compris malformés comme <spanCalibri",...>)
+  result = result.replace(/<[^>]*>/g, '');
+
+  // 3. Supprimer les attributs style orphelins qui pourraient rester
+  // Pattern: Calibri","sans-serif"" (résidu de <span style="font-family:Calibri...">)
+  result = result.replace(/[A-Za-z-]+["',]+[^"']*["']+/g, '');
+
+  // 4. Décoder les entités HTML restantes (après strip des tags)
+  result = decodeHtmlEntities(result);
+
+  // 5. Normaliser les espaces multiples et trim
+  result = result.replace(/\s+/g, ' ').trim();
+
+  // 6. Tronquer à maxLength caractères avec ellipsis propre
+  if (result.length > maxLength) {
+    // Couper au dernier espace avant la limite pour éviter de couper un mot
+    const truncated = result.substring(0, maxLength - 3);
+    const lastSpace = truncated.lastIndexOf(' ');
+    if (lastSpace > maxLength - 30) {
+      result = truncated.substring(0, lastSpace) + '...';
+    } else {
+      result = truncated + '...';
+    }
+  }
+
+  return result;
+}
+
+/**
  * Nettoie un objet en décodant toutes ses propriétés textuelles
  *
  * @param obj - Objet à nettoyer
