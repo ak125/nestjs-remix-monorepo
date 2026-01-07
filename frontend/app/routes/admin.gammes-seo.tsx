@@ -605,8 +605,9 @@ export default function AdminGammesSeo() {
     }
   };
 
-  // G-Level badge color avec icône
-  const getGLevelBadge = (gLevel: string, pgTop: string) => {
+  // Badge Priorité unifié (G1/INDEX/NOINDEX) - remplace G-Level + Statut
+  const getPriorityBadge = (pgTop: string, pgLevel: string) => {
+    // G1 = prioritaire (toujours indexé)
     if (pgTop === "1") {
       return (
         <Badge className="bg-emerald-600 text-white font-bold px-3 py-1 shadow-sm">
@@ -615,28 +616,18 @@ export default function AdminGammesSeo() {
         </Badge>
       );
     }
-    if (gLevel === "G2" || (gLevel !== "G1" && gLevel !== "G3")) {
-      return (
-        <Badge className="bg-sky-600 text-white font-medium px-3 py-1">
-          G2
-        </Badge>
-      );
-    }
-    return <Badge className="bg-slate-400 text-white px-3 py-1">G3</Badge>;
-  };
-
-  // Status badge avec icône
-  const getStatusBadge = (pgLevel: string) => {
+    // INDEX = niveau principal (pg_level = 1)
     if (pgLevel === "1") {
       return (
-        <Badge className="bg-green-600 text-white font-medium px-2 py-1">
+        <Badge className="bg-sky-600 text-white font-medium px-3 py-1">
           <Eye className="h-3 w-3 mr-1 inline" />
           INDEX
         </Badge>
       );
     }
+    // NOINDEX = niveau accessoire (pg_level = 2)
     return (
-      <Badge className="bg-rose-600 text-white px-2 py-1">
+      <Badge className="bg-slate-400 text-white px-3 py-1">
         <EyeOff className="h-3 w-3 mr-1 inline" />
         NOINDEX
       </Badge>
@@ -1998,8 +1989,7 @@ export default function AdminGammesSeo() {
                   </th>
                   <th className="px-2 py-3 text-center">Intent</th>
                   <th className="px-2 py-3 text-center">Compétition</th>
-                  <th className="px-3 py-3 text-center">G-Level</th>
-                  <th className="px-3 py-3 text-center">Statut</th>
+                  <th className="px-3 py-3 text-center">Priorité</th>
                   <th className="px-3 py-3 text-left">Recommandation</th>
                   <th className="px-3 py-3 text-center">Action Smart</th>
                   {/* Badges v2 */}
@@ -2023,7 +2013,7 @@ export default function AdminGammesSeo() {
                       {/* En-tête de famille */}
                       {showFamilySeparator && (
                         <tr className="bg-blue-100 border-t-2 border-blue-300">
-                          <td colSpan={14} className="px-3 py-2">
+                          <td colSpan={13} className="px-3 py-2">
                             <span className="font-bold text-blue-800">
                               {gamme.family_name || "Sans famille"}
                             </span>
@@ -2102,13 +2092,7 @@ export default function AdminGammesSeo() {
                           )}
                         </td>
                         <td className="px-3 py-3 text-center">
-                          {getGLevelBadge(
-                            gamme.g_level_recommended,
-                            gamme.pg_top,
-                          )}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {getStatusBadge(gamme.pg_level)}
+                          {getPriorityBadge(gamme.pg_top, gamme.pg_level)}
                         </td>
                         <td className="px-3 py-3">
                           {getRecommendationBadge(gamme.action_recommended)}
