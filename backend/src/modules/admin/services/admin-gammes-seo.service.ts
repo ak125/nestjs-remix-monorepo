@@ -1761,6 +1761,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   /**
    * 📊 Récupère les agrégats pour une gamme
    * Retourne null si pas encore calculés
+   * v2: Inclut les 11 badges SEO
    */
   async getGammeAggregates(pgId: number): Promise<{
     products_total: number;
@@ -1789,6 +1790,24 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     priority_score: number;
     catalog_issues: string[];
     smart_actions: Array<{ action: string; priority: string }>;
+    // ===== Badges v2 (11 badges) =====
+    // Pilotage
+    index_policy: 'INDEX' | 'SOFT-INDEX' | 'NOINDEX';
+    final_priority: 'P1' | 'P1-PENDING' | 'P2' | 'P3' | 'SOFT-INDEX';
+    // Potentiel
+    potential_level: 'HIGH' | 'MID' | 'LOW';
+    demand_level: 'HIGH' | 'MID' | 'LOW';
+    difficulty_level: 'EASY' | 'MED' | 'HARD';
+    intent_type: 'BUY' | 'COMPARE' | 'INFO' | 'MIXED';
+    // Réalité Intra-Gamme
+    catalog_status: 'OK' | 'LOW' | 'EMPTY';
+    vehicle_coverage: 'COVERED' | 'PARTIAL' | 'EMPTY';
+    content_depth: 'RICH' | 'OK' | 'THIN';
+    freshness_status: 'FRESH' | 'STALE' | 'EXPIRED';
+    cluster_health: 'STRONG' | 'MISSING' | 'ISOLATED' | 'CANNIBAL';
+    topic_purity: 'PURE' | 'DILUTED';
+    // Exécutabilité
+    execution_status: 'PASS' | 'WARN' | 'FAIL';
   } | null> {
     try {
       const { data, error } = await this.supabase
@@ -1836,6 +1855,24 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         priority_score: data.priority_score || 0,
         catalog_issues: data.catalog_issues || [],
         smart_actions: data.smart_actions || [],
+        // ===== Badges v2 (11 badges) =====
+        // Pilotage
+        index_policy: data.index_policy || 'NOINDEX',
+        final_priority: data.final_priority || 'P3',
+        // Potentiel
+        potential_level: data.potential_level || 'LOW',
+        demand_level: data.demand_level || 'LOW',
+        difficulty_level: data.difficulty_level || 'MED',
+        intent_type: data.intent_type || 'COMPARE',
+        // Réalité Intra-Gamme
+        catalog_status: data.catalog_status || 'EMPTY',
+        vehicle_coverage: data.vehicle_coverage || 'EMPTY',
+        content_depth: data.content_depth || 'THIN',
+        freshness_status: data.freshness_status || 'EXPIRED',
+        cluster_health: data.cluster_health || 'ISOLATED',
+        topic_purity: data.topic_purity || 'PURE',
+        // Exécutabilité
+        execution_status: data.execution_status || 'FAIL',
       };
     } catch (error) {
       this.logger.error(`❌ Error in getGammeAggregates(${pgId}):`, error);

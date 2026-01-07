@@ -213,6 +213,24 @@ interface GammeDetail {
     priority_score?: number;
     catalog_issues?: string[];
     smart_actions?: Array<{ action: string; priority: string }>;
+    // 🏷️ Badges v2 (11 badges)
+    // Pilotage
+    index_policy?: "INDEX" | "SOFT-INDEX" | "NOINDEX";
+    final_priority?: "P1" | "P1-PENDING" | "P2" | "P3" | "SOFT-INDEX";
+    // Potentiel
+    potential_level?: "HIGH" | "MID" | "LOW";
+    demand_level?: "HIGH" | "MID" | "LOW";
+    difficulty_level?: "EASY" | "MED" | "HARD";
+    intent_type?: "BUY" | "COMPARE" | "INFO" | "MIXED";
+    // Réalité Intra-Gamme
+    catalog_status?: "OK" | "LOW" | "EMPTY";
+    vehicle_coverage?: "COVERED" | "PARTIAL" | "EMPTY";
+    content_depth?: "RICH" | "OK" | "THIN";
+    freshness_status?: "FRESH" | "STALE" | "EXPIRED";
+    cluster_health?: "STRONG" | "MISSING" | "ISOLATED" | "CANNIBAL";
+    topic_purity?: "PURE" | "DILUTED";
+    // Exécutabilité
+    execution_status?: "PASS" | "WARN" | "FAIL";
     // Champs existants (backward compatibility)
     articles_count: number;
     vehicles_level1_count: number;
@@ -1519,232 +1537,496 @@ export default function AdminGammeSeoDetail() {
           </Card>
         </div>
 
-        {/* Badges Phase 2 - SEO Dashboard */}
-        <div className="grid grid-cols-4 gap-4 mt-4">
-          {/* Badge 1: Index Policy */}
-          <Card className="border-l-4 border-l-blue-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">
-                    Index Policy
-                  </p>
+        {/* ===== BADGES SEO v2 - 11 BADGES ===== */}
+
+        {/* GROUPE A: Pilotage SEO (2 badges) */}
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Pilotage SEO
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Index Policy */}
+            {(() => {
+              const policy = detail.stats.index_policy ?? "NOINDEX";
+              const colors = {
+                INDEX: {
+                  border: "border-l-green-500",
+                  bg: "bg-green-100",
+                  text: "text-green-700",
+                  badge: "bg-green-600",
+                },
+                "SOFT-INDEX": {
+                  border: "border-l-yellow-500",
+                  bg: "bg-yellow-100",
+                  text: "text-yellow-700",
+                  badge: "bg-yellow-600",
+                },
+                NOINDEX: {
+                  border: "border-l-gray-400",
+                  bg: "bg-gray-100",
+                  text: "text-gray-500",
+                  badge: "bg-gray-500",
+                },
+              };
+              const c = colors[policy] || colors.NOINDEX;
+              return (
+                <Card className={`border-l-4 ${c.border}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
+                          Index Policy
+                        </p>
+                        <Badge className={`mt-1 ${c.badge}`}>{policy}</Badge>
+                      </div>
+                      <div className={`p-2 rounded-full ${c.bg}`}>
+                        <Search className={`h-5 w-5 ${c.text}`} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {/* Final Priority */}
+            {(() => {
+              const priority = detail.stats.final_priority ?? "P3";
+              const colors: Record<
+                string,
+                { border: string; bg: string; text: string; badge: string }
+              > = {
+                P1: {
+                  border: "border-l-red-500",
+                  bg: "bg-red-100",
+                  text: "text-red-700",
+                  badge: "bg-red-600",
+                },
+                "P1-PENDING": {
+                  border: "border-l-orange-500",
+                  bg: "bg-orange-100",
+                  text: "text-orange-700",
+                  badge: "bg-orange-500",
+                },
+                P2: {
+                  border: "border-l-blue-500",
+                  bg: "bg-blue-100",
+                  text: "text-blue-700",
+                  badge: "bg-blue-600",
+                },
+                P3: {
+                  border: "border-l-gray-400",
+                  bg: "bg-gray-100",
+                  text: "text-gray-500",
+                  badge: "bg-gray-500",
+                },
+                "SOFT-INDEX": {
+                  border: "border-l-yellow-500",
+                  bg: "bg-yellow-100",
+                  text: "text-yellow-700",
+                  badge: "bg-yellow-600",
+                },
+              };
+              const c = colors[priority] || colors.P3;
+              return (
+                <Card className={`border-l-4 ${c.border}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
+                          Priorité Finale
+                        </p>
+                        <Badge className={`mt-1 ${c.badge}`}>{priority}</Badge>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Score: {detail.stats.priority_score ?? 0}/100
+                        </p>
+                      </div>
+                      <div className={`p-2 rounded-full ${c.bg}`}>
+                        <TrendingUp className={`h-5 w-5 ${c.text}`} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* GROUPE B: Potentiel (4 badges) */}
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Potentiel SEO
+          </h3>
+          <div className="grid grid-cols-4 gap-3">
+            {/* Demand Level */}
+            {(() => {
+              const level = detail.stats.demand_level ?? "LOW";
+              const colors: Record<
+                string,
+                { bg: string; text: string; icon: string }
+              > = {
+                HIGH: {
+                  bg: "bg-green-50",
+                  text: "text-green-700",
+                  icon: "text-green-500",
+                },
+                MID: {
+                  bg: "bg-yellow-50",
+                  text: "text-yellow-700",
+                  icon: "text-yellow-500",
+                },
+                LOW: {
+                  bg: "bg-gray-50",
+                  text: "text-gray-600",
+                  icon: "text-gray-400",
+                },
+              };
+              const c = colors[level] || colors.LOW;
+              return (
+                <div className={`p-3 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-xs text-gray-500 mb-1">Demande</p>
                   <Badge
-                    variant={
-                      detail.gamme.pg_level === "1" ? "default" : "secondary"
-                    }
-                    className={`mt-1 ${detail.gamme.pg_level === "1" ? "bg-green-600" : "bg-gray-500"}`}
+                    variant="outline"
+                    className={`${c.text} border-current`}
                   >
-                    {detail.gamme.pg_level === "1" ? "INDEX" : "NOINDEX"}
+                    {level}
                   </Badge>
                 </div>
-                <div
-                  className={`p-2 rounded-full ${detail.gamme.pg_level === "1" ? "bg-green-100" : "bg-gray-100"}`}
-                >
-                  <Search
-                    className={`h-5 w-5 ${detail.gamme.pg_level === "1" ? "text-green-600" : "text-gray-400"}`}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              );
+            })()}
 
-          {/* Badge 2: Priority Score */}
-          {(() => {
-            const priorityScore = detail.stats.priority_score ?? 0;
-            return (
-              <Card
-                className={`border-l-4 ${
-                  priorityScore >= 80
+            {/* Difficulty */}
+            {(() => {
+              const level = detail.stats.difficulty_level ?? "MED";
+              const colors: Record<
+                string,
+                { bg: string; text: string; icon: string }
+              > = {
+                EASY: {
+                  bg: "bg-green-50",
+                  text: "text-green-700",
+                  icon: "text-green-500",
+                },
+                MED: {
+                  bg: "bg-yellow-50",
+                  text: "text-yellow-700",
+                  icon: "text-yellow-500",
+                },
+                HARD: {
+                  bg: "bg-red-50",
+                  text: "text-red-700",
+                  icon: "text-red-500",
+                },
+              };
+              const c = colors[level] || colors.MED;
+              return (
+                <div className={`p-3 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-xs text-gray-500 mb-1">Difficulté</p>
+                  <Badge
+                    variant="outline"
+                    className={`${c.text} border-current`}
+                  >
+                    {level}
+                  </Badge>
+                </div>
+              );
+            })()}
+
+            {/* Intent Type */}
+            {(() => {
+              const intent = detail.stats.intent_type ?? "COMPARE";
+              const colors: Record<string, { bg: string; text: string }> = {
+                BUY: { bg: "bg-green-50", text: "text-green-700" },
+                COMPARE: { bg: "bg-blue-50", text: "text-blue-700" },
+                INFO: { bg: "bg-purple-50", text: "text-purple-700" },
+                MIXED: { bg: "bg-gray-50", text: "text-gray-600" },
+              };
+              const c = colors[intent] || colors.COMPARE;
+              return (
+                <div className={`p-3 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-xs text-gray-500 mb-1">Intent</p>
+                  <Badge
+                    variant="outline"
+                    className={`${c.text} border-current`}
+                  >
+                    {intent}
+                  </Badge>
+                </div>
+              );
+            })()}
+
+            {/* Potential Level */}
+            {(() => {
+              const level = detail.stats.potential_level ?? "LOW";
+              const colors: Record<string, { bg: string; text: string }> = {
+                HIGH: { bg: "bg-green-50", text: "text-green-700" },
+                MID: { bg: "bg-yellow-50", text: "text-yellow-700" },
+                LOW: { bg: "bg-gray-50", text: "text-gray-600" },
+              };
+              const c = colors[level] || colors.LOW;
+              return (
+                <div className={`p-3 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-xs text-gray-500 mb-1">Potentiel</p>
+                  <Badge
+                    variant="outline"
+                    className={`${c.text} border-current`}
+                  >
+                    {level}
+                  </Badge>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* GROUPE C: Réalité Intra-Gamme (6 badges) */}
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Réalité Intra-Gamme
+          </h3>
+          <div className="grid grid-cols-6 gap-2">
+            {/* Catalog Status */}
+            {(() => {
+              const status = detail.stats.catalog_status ?? "EMPTY";
+              const colors: Record<string, { bg: string; text: string }> = {
+                OK: { bg: "bg-green-100", text: "text-green-700" },
+                LOW: { bg: "bg-yellow-100", text: "text-yellow-700" },
+                EMPTY: { bg: "bg-red-100", text: "text-red-700" },
+              };
+              const c = colors[status] || colors.EMPTY;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Catalogue</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Vehicle Coverage */}
+            {(() => {
+              const status = detail.stats.vehicle_coverage ?? "EMPTY";
+              const colors: Record<string, { bg: string; text: string }> = {
+                COVERED: { bg: "bg-green-100", text: "text-green-700" },
+                PARTIAL: { bg: "bg-yellow-100", text: "text-yellow-700" },
+                EMPTY: { bg: "bg-red-100", text: "text-red-700" },
+              };
+              const c = colors[status] || colors.EMPTY;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Véhicules</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Content Depth */}
+            {(() => {
+              const status = detail.stats.content_depth ?? "THIN";
+              const colors: Record<string, { bg: string; text: string }> = {
+                RICH: { bg: "bg-green-100", text: "text-green-700" },
+                OK: { bg: "bg-yellow-100", text: "text-yellow-700" },
+                THIN: { bg: "bg-red-100", text: "text-red-700" },
+              };
+              const c = colors[status] || colors.THIN;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Contenu</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Freshness */}
+            {(() => {
+              const status = detail.stats.freshness_status ?? "EXPIRED";
+              const colors: Record<string, { bg: string; text: string }> = {
+                FRESH: { bg: "bg-green-100", text: "text-green-700" },
+                STALE: { bg: "bg-yellow-100", text: "text-yellow-700" },
+                EXPIRED: { bg: "bg-red-100", text: "text-red-700" },
+              };
+              const c = colors[status] || colors.EXPIRED;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Fraîcheur</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Cluster Health */}
+            {(() => {
+              const status = detail.stats.cluster_health ?? "ISOLATED";
+              const colors: Record<string, { bg: string; text: string }> = {
+                STRONG: { bg: "bg-green-100", text: "text-green-700" },
+                MISSING: { bg: "bg-yellow-100", text: "text-yellow-700" },
+                ISOLATED: { bg: "bg-red-100", text: "text-red-700" },
+                CANNIBAL: { bg: "bg-purple-100", text: "text-purple-700" },
+              };
+              const c = colors[status] || colors.ISOLATED;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Cluster</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Topic Purity */}
+            {(() => {
+              const status = detail.stats.topic_purity ?? "PURE";
+              const colors: Record<string, { bg: string; text: string }> = {
+                PURE: { bg: "bg-green-100", text: "text-green-700" },
+                DILUTED: { bg: "bg-orange-100", text: "text-orange-700" },
+              };
+              const c = colors[status] || colors.PURE;
+              return (
+                <div className={`p-2 rounded-lg ${c.bg} text-center`}>
+                  <p className="text-[10px] text-gray-500 mb-0.5">Topic</p>
+                  <span className={`text-xs font-medium ${c.text}`}>
+                    {status}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* VERDICT: Execution Status + Smart Actions */}
+        <div className="mt-4">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Execution Status */}
+            {(() => {
+              const status = detail.stats.execution_status ?? "FAIL";
+              const colors: Record<
+                string,
+                { border: string; bg: string; text: string; badge: string }
+              > = {
+                PASS: {
+                  border: "border-l-green-500",
+                  bg: "bg-green-100",
+                  text: "text-green-700",
+                  badge: "bg-green-600",
+                },
+                WARN: {
+                  border: "border-l-yellow-500",
+                  bg: "bg-yellow-100",
+                  text: "text-yellow-700",
+                  badge: "bg-yellow-600",
+                },
+                FAIL: {
+                  border: "border-l-red-500",
+                  bg: "bg-red-100",
+                  text: "text-red-700",
+                  badge: "bg-red-600",
+                },
+              };
+              const c = colors[status] || colors.FAIL;
+              const issuesCount = detail.stats.catalog_issues?.length ?? 0;
+              return (
+                <Card className={`border-l-4 ${c.border}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
+                          Exécutabilité
+                        </p>
+                        <Badge className={`mt-1 ${c.badge}`}>{status}</Badge>
+                        {issuesCount > 0 && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            {issuesCount} issue{issuesCount > 1 ? "s" : ""}
+                          </p>
+                        )}
+                      </div>
+                      <div className={`p-2 rounded-full ${c.bg}`}>
+                        <CheckCircle2 className={`h-5 w-5 ${c.text}`} />
+                      </div>
+                    </div>
+                    {detail.stats.catalog_issues &&
+                      detail.stats.catalog_issues.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {detail.stats.catalog_issues.map(
+                            (issue: string, i: number) => (
+                              <span
+                                key={i}
+                                className="text-[10px] px-1.5 py-0.5 bg-red-50 text-red-700 rounded"
+                              >
+                                {issue.replace(/_/g, " ")}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {/* Smart Actions */}
+            <Card
+              className={`border-l-4 ${
+                !detail.stats.smart_actions ||
+                detail.stats.smart_actions.length === 0
+                  ? "border-l-green-500"
+                  : detail.stats.smart_actions.some(
+                        (a: { priority: string }) => a.priority === "CRITICAL",
+                      )
                     ? "border-l-red-500"
-                    : priorityScore >= 60
-                      ? "border-l-orange-500"
-                      : priorityScore >= 40
-                        ? "border-l-yellow-500"
-                        : priorityScore >= 20
-                          ? "border-l-blue-500"
-                          : "border-l-gray-400"
-                }`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide">
-                        Priorité SEO
-                      </p>
-                      <p className="text-3xl font-bold mt-1">{priorityScore}</p>
-                    </div>
-                    <div className="w-12 h-12 relative">
-                      <svg className="w-12 h-12 transform -rotate-90">
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="#e5e7eb"
-                          strokeWidth="4"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke={
-                            priorityScore >= 80
-                              ? "#ef4444"
-                              : priorityScore >= 60
-                                ? "#f97316"
-                                : priorityScore >= 40
-                                  ? "#eab308"
-                                  : priorityScore >= 20
-                                    ? "#3b82f6"
-                                    : "#9ca3af"
-                          }
-                          strokeWidth="4"
-                          strokeDasharray={`${priorityScore * 1.256} 125.6`}
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {priorityScore >= 80
-                      ? "Critique"
-                      : priorityScore >= 60
-                        ? "Haute"
-                        : priorityScore >= 40
-                          ? "Moyenne"
-                          : priorityScore >= 20
-                            ? "Basse"
-                            : "Minimale"}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })()}
-
-          {/* Badge 3: Catalog Reality */}
-          <Card
-            className={`border-l-4 ${
-              !detail.stats.catalog_issues ||
-              detail.stats.catalog_issues.length === 0
-                ? "border-l-green-500"
-                : detail.stats.catalog_issues.length <= 2
-                  ? "border-l-orange-500"
-                  : "border-l-red-500"
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">
-                    Catalogue
-                  </p>
-                  {!detail.stats.catalog_issues ||
-                  detail.stats.catalog_issues.length === 0 ? (
-                    <Badge className="mt-1 bg-green-600">OK</Badge>
-                  ) : (
-                    <Badge variant="destructive" className="mt-1">
-                      {detail.stats.catalog_issues.length} issue
-                      {detail.stats.catalog_issues.length > 1 ? "s" : ""}
-                    </Badge>
-                  )}
-                </div>
-                <div
-                  className={`p-2 rounded-full ${
-                    !detail.stats.catalog_issues ||
-                    detail.stats.catalog_issues.length === 0
-                      ? "bg-green-100"
-                      : "bg-red-100"
-                  }`}
-                >
-                  <CheckCircle2
-                    className={`h-5 w-5 ${
-                      !detail.stats.catalog_issues ||
-                      detail.stats.catalog_issues.length === 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  />
-                </div>
-              </div>
-              {detail.stats.catalog_issues &&
-                detail.stats.catalog_issues.length > 0 && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    {detail.stats.catalog_issues.map(
-                      (issue: string, i: number) => (
-                        <span
-                          key={i}
-                          className="inline-block mr-1 mb-1 px-1.5 py-0.5 bg-red-50 text-red-700 rounded"
-                        >
-                          {issue.replace(/_/g, " ")}
-                        </span>
-                      ),
+                    : "border-l-orange-500"
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">
+                      Actions Suggérées
+                    </p>
+                    {!detail.stats.smart_actions ||
+                    detail.stats.smart_actions.length === 0 ? (
+                      <Badge className="mt-1 bg-green-600">Aucune</Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="mt-1 border-orange-300 text-orange-700"
+                      >
+                        {detail.stats.smart_actions.length} action
+                        {detail.stats.smart_actions.length > 1 ? "s" : ""}
+                      </Badge>
                     )}
                   </div>
-                )}
-            </CardContent>
-          </Card>
-
-          {/* Badge 4: Smart Actions */}
-          <Card
-            className={`border-l-4 ${
-              !detail.stats.smart_actions ||
-              detail.stats.smart_actions.length === 0
-                ? "border-l-green-500"
-                : detail.stats.smart_actions.some(
-                      (a: { priority: string }) => a.priority === "CRITICAL",
-                    )
-                  ? "border-l-red-500"
-                  : detail.stats.smart_actions.some(
-                        (a: { priority: string }) => a.priority === "HIGH",
-                      )
-                    ? "border-l-orange-500"
-                    : "border-l-yellow-500"
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">
-                    Actions
-                  </p>
-                  {!detail.stats.smart_actions ||
-                  detail.stats.smart_actions.length === 0 ? (
-                    <Badge className="mt-1 bg-green-600">Aucune</Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="mt-1 border-orange-300 text-orange-700"
-                    >
-                      {detail.stats.smart_actions.length} action
-                      {detail.stats.smart_actions.length > 1 ? "s" : ""}
-                    </Badge>
-                  )}
-                </div>
-                <div
-                  className={`p-2 rounded-full ${
-                    !detail.stats.smart_actions ||
-                    detail.stats.smart_actions.length === 0
-                      ? "bg-green-100"
-                      : "bg-orange-100"
-                  }`}
-                >
-                  <Zap
-                    className={`h-5 w-5 ${
+                  <div
+                    className={`p-2 rounded-full ${
                       !detail.stats.smart_actions ||
                       detail.stats.smart_actions.length === 0
-                        ? "text-green-600"
-                        : "text-orange-600"
+                        ? "bg-green-100"
+                        : "bg-orange-100"
                     }`}
-                  />
+                  >
+                    <Zap
+                      className={`h-5 w-5 ${
+                        !detail.stats.smart_actions ||
+                        detail.stats.smart_actions.length === 0
+                          ? "text-green-600"
+                          : "text-orange-600"
+                      }`}
+                    />
+                  </div>
                 </div>
-              </div>
-              {detail.stats.smart_actions &&
-                detail.stats.smart_actions.length > 0 && (
-                  <div className="mt-2 space-y-1">
-                    {detail.stats.smart_actions
-                      .slice(0, 3)
-                      .map(
+                {detail.stats.smart_actions &&
+                  detail.stats.smart_actions.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {detail.stats.smart_actions.map(
                         (
                           action: { action: string; priority: string },
                           i: number,
@@ -1771,15 +2053,16 @@ export default function AdminGammeSeoDetail() {
                                       ? "bg-yellow-500"
                                       : "bg-gray-400"
                               }`}
-                            ></span>
+                            />
                             {action.action.replace(/_/g, " ")}
                           </div>
                         ),
                       )}
-                  </div>
-                )}
-            </CardContent>
-          </Card>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
