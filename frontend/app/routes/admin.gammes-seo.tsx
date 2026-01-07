@@ -36,7 +36,6 @@ import {
   Search,
   Settings,
   Star,
-  TrendingUp,
   XCircle,
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
@@ -631,384 +630,6 @@ export default function AdminGammesSeo() {
         <EyeOff className="h-3 w-3 mr-1 inline" />
         NOINDEX
       </Badge>
-    );
-  };
-
-  // Trends badge avec label et couleur améliorée
-  const getTrendsBadge = (trends: number) => {
-    if (trends >= 70) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-emerald-600 text-white font-bold px-3 py-1 shadow-md">
-            {trends}
-          </Badge>
-          <span className="text-[10px] text-emerald-700 font-semibold">
-            EXCELLENT
-          </span>
-        </div>
-      );
-    }
-    if (trends >= 50) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-green-500 text-white font-bold px-3 py-1">
-            {trends}
-          </Badge>
-          <span className="text-[10px] text-green-600 font-medium">
-            Très bon
-          </span>
-        </div>
-      );
-    }
-    if (trends >= 30) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-lime-500 text-white font-medium px-3 py-1">
-            {trends}
-          </Badge>
-          <span className="text-[10px] text-lime-600">Bon</span>
-        </div>
-      );
-    }
-    if (trends >= 20) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-amber-500 text-white px-3 py-1">{trends}</Badge>
-          <span className="text-[10px] text-amber-600">Moyen</span>
-        </div>
-      );
-    }
-    if (trends >= 10) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-orange-500 text-white px-3 py-1">{trends}</Badge>
-          <span className="text-[10px] text-orange-600">Faible</span>
-        </div>
-      );
-    }
-    if (trends >= 1) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-red-400 text-white px-3 py-1">{trends}</Badge>
-          <span className="text-[10px] text-red-500">Très faible</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-col items-center gap-0.5">
-        <Badge className="bg-gray-300 text-gray-600 px-3 py-1">{trends}</Badge>
-        <span className="text-[10px] text-gray-400">Nul</span>
-      </div>
-    );
-  };
-
-  // Appréciation globale (combinaison G-Level + Trends + Status)
-  const _getAppreciation = (gamme: GammeSeoItem) => {
-    const isG1 = gamme.pg_top === "1";
-    const isIndex = gamme.pg_level === "1";
-    const trends = gamme.trends_index;
-
-    // Score calculé
-    let score = 0;
-    if (isG1) score += 40;
-    else if (isIndex) score += 20;
-    if (trends >= 50) score += 40;
-    else if (trends >= 30) score += 30;
-    else if (trends >= 20) score += 20;
-    else if (trends >= 10) score += 10;
-    if (gamme.pg_sitemap === "1") score += 10;
-    if (gamme.pg_relfollow === "1") score += 10;
-
-    if (score >= 80) {
-      return (
-        <div className="flex items-center gap-1">
-          <div className="w-16 h-2 bg-emerald-500 rounded-full" />
-          <span className="text-xs text-emerald-600 font-bold">A+</span>
-        </div>
-      );
-    }
-    if (score >= 60) {
-      return (
-        <div className="flex items-center gap-1">
-          <div className="w-12 h-2 bg-green-500 rounded-full" />
-          <span className="text-xs text-green-600 font-medium">A</span>
-        </div>
-      );
-    }
-    if (score >= 40) {
-      return (
-        <div className="flex items-center gap-1">
-          <div className="w-10 h-2 bg-lime-500 rounded-full" />
-          <span className="text-xs text-lime-600">B</span>
-        </div>
-      );
-    }
-    if (score >= 25) {
-      return (
-        <div className="flex items-center gap-1">
-          <div className="w-8 h-2 bg-amber-500 rounded-full" />
-          <span className="text-xs text-amber-600">C</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1">
-        <div className="w-6 h-2 bg-red-400 rounded-full" />
-        <span className="text-xs text-red-500">D</span>
-      </div>
-    );
-  };
-
-  // Badge recommandation amélioré
-  const getRecommendationBadge = (action: string | null) => {
-    if (!action) return null;
-
-    const configs: Record<
-      string,
-      { bg: string; text: string; icon: React.ReactNode; label: string }
-    > = {
-      PROMOUVOIR_INDEX: {
-        bg: "bg-orange-100 border-2 border-orange-500",
-        text: "text-orange-700",
-        icon: <TrendingUp className="h-3 w-3" />,
-        label: "PROMOUVOIR INDEX",
-      },
-      PROMOUVOIR_G1: {
-        bg: "bg-blue-100 border-2 border-blue-500",
-        text: "text-blue-700",
-        icon: <Star className="h-3 w-3" />,
-        label: "PROMOUVOIR G1",
-      },
-      VERIFIER_G1: {
-        bg: "bg-yellow-100 border-2 border-yellow-500",
-        text: "text-yellow-700",
-        icon: <AlertTriangle className="h-3 w-3" />,
-        label: "VÉRIFIER G1",
-      },
-    };
-
-    const config = configs[action] || {
-      bg: "bg-gray-100 border border-gray-300",
-      text: "text-gray-600",
-      icon: null,
-      label: action.replace(/_/g, " "),
-    };
-
-    return (
-      <Badge
-        className={`${config.bg} ${config.text} font-medium px-2 py-1 flex items-center gap-1`}
-      >
-        {config.icon}
-        <span className="text-[10px]">{config.label}</span>
-      </Badge>
-    );
-  };
-
-  // Badge SEO Score (Agent 2) - Couleurs vibrantes avec gradient
-  const getSeoScoreBadge = (score: number) => {
-    if (score >= 90) {
-      return (
-        <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-3 py-1 shadow-sm">
-          {score}
-        </Badge>
-      );
-    }
-    if (score >= 75) {
-      return (
-        <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold px-3 py-1 shadow-sm">
-          {score}
-        </Badge>
-      );
-    }
-    if (score >= 60) {
-      return (
-        <Badge className="bg-gradient-to-r from-lime-500 to-green-500 text-white font-medium px-3 py-1">
-          {score}
-        </Badge>
-      );
-    }
-    if (score >= 45) {
-      return (
-        <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-3 py-1">
-          {score}
-        </Badge>
-      );
-    }
-    if (score >= 30) {
-      return (
-        <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1">
-          {score}
-        </Badge>
-      );
-    }
-    return (
-      <Badge className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-3 py-1">
-        {score}
-      </Badge>
-    );
-  };
-
-  // Badge Intent (Agent 2) - Couleurs vibrantes avec icônes
-  const getIntentBadge = (intent: string) => {
-    const configs: Record<string, { bg: string; label: string; icon: string }> =
-      {
-        TRANSACTIONAL: {
-          bg: "bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white shadow-sm",
-          label: "Achat",
-          icon: "💰",
-        },
-        COMMERCIAL_INVESTIGATION: {
-          bg: "bg-gradient-to-r from-violet-600 to-indigo-500 text-white",
-          label: "Comparatif",
-          icon: "🔍",
-        },
-        INFORMATIONAL: {
-          bg: "bg-gradient-to-r from-cyan-500 to-blue-500 text-white",
-          label: "Info",
-          icon: "📚",
-        },
-        NAVIGATIONAL: {
-          bg: "bg-slate-500 text-white",
-          label: "Nav",
-          icon: "🧭",
-        },
-        UNKNOWN: { bg: "bg-gray-300 text-gray-600", label: "?", icon: "❓" },
-      };
-    const config = configs[intent] || configs.UNKNOWN;
-    return (
-      <Badge className={`${config.bg} text-xs px-2 py-0.5 font-medium`}>
-        {config.icon} {config.label}
-      </Badge>
-    );
-  };
-
-  // Badge Competition (Agent 2) - Gradients avec icônes
-  const getCompetitionBadge = (level: string, difficulty: number) => {
-    if (level === "EASY" || difficulty < 30) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-gradient-to-r from-emerald-400 to-green-500 text-white text-xs px-2 py-0.5 font-medium shadow-sm">
-            ✓ Facile
-          </Badge>
-          <span className="text-[10px] text-emerald-600 font-medium">
-            {difficulty}
-          </span>
-        </div>
-      );
-    }
-    if (level === "MEDIUM" || difficulty < 60) {
-      return (
-        <div className="flex flex-col items-center gap-0.5">
-          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs px-2 py-0.5 font-medium">
-            ⚡ Moyen
-          </Badge>
-          <span className="text-[10px] text-amber-600 font-medium">
-            {difficulty}
-          </span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-col items-center gap-0.5">
-        <Badge className="bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs px-2 py-0.5 font-medium shadow-sm">
-          🔥 Difficile
-        </Badge>
-        <span className="text-[10px] text-red-600 font-medium">
-          {difficulty}
-        </span>
-      </div>
-    );
-  };
-
-  // 🎯 Smart Action Badge - Combinaison Trends × SEO Score (avec seuils dynamiques)
-  const getSmartActionBadge = (gamme: GammeSeoItem) => {
-    const trends = gamme.trends_index || 0;
-    const seoScore = gamme.seo_score || 0;
-    const th = editThresholds;
-
-    // Matrice de décision Trends × SEO Score avec seuils configurables
-    if (trends >= th.trends_high && seoScore >= th.seo_excellent) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Page dédiée prioritaire - Fort volume + forte valeur commerciale"
-        >
-          <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-2 py-0.5 font-bold shadow-md">
-            🚀 INDEX+G1
-          </Badge>
-        </div>
-      );
-    }
-    if (trends >= th.trends_high && seoScore >= th.seo_good) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Page dédiée standard - Fort volume"
-        >
-          <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5 font-medium shadow-sm">
-            📈 INDEX
-          </Badge>
-        </div>
-      );
-    }
-    if (trends >= th.trends_high && seoScore < th.seo_good) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Fort volume mais faible valeur commerciale - À vérifier"
-        >
-          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-0.5 font-medium">
-            🔍 Investiguer
-          </Badge>
-        </div>
-      );
-    }
-    if (trends >= th.trends_medium && seoScore >= th.seo_excellent) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Potentiel élevé - Surveiller l'évolution des tendances"
-        >
-          <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs px-2 py-0.5 font-medium">
-            ⭐ Observer
-          </Badge>
-        </div>
-      );
-    }
-    if (trends < th.trends_medium && seoScore >= th.seo_excellent) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Forte valeur mais faible volume - Intégrer dans page parente"
-        >
-          <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-xs px-2 py-0.5 font-medium">
-            🔗 Parent
-          </Badge>
-        </div>
-      );
-    }
-    if (trends >= th.trends_medium && seoScore >= th.seo_good) {
-      return (
-        <div
-          className="flex flex-col items-center gap-0.5"
-          title="Potentiel moyen - Décision manuelle requise"
-        >
-          <Badge className="bg-gradient-to-r from-slate-400 to-slate-500 text-white text-xs px-2 py-0.5">
-            📊 Évaluer
-          </Badge>
-        </div>
-      );
-    }
-    // Default: NOINDEX
-    return (
-      <div
-        className="flex flex-col items-center gap-0.5"
-        title="Faible volume + faible valeur - Garder NOINDEX"
-      >
-        <Badge className="bg-gray-400 text-white text-xs px-2 py-0.5">
-          ❌ NOINDEX
-        </Badge>
-      </div>
     );
   };
 
@@ -1968,34 +1589,11 @@ export default function AdminGammesSeo() {
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </th>
-                  <th
-                    className="px-3 py-3 text-center cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("trends_index")}
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      Trends
-                      <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
-                  <th
-                    className="px-3 py-3 text-center cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("seo_score")}
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      SEO
-                      <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
-                  <th className="px-2 py-3 text-center">Intent</th>
-                  <th className="px-2 py-3 text-center">Compétition</th>
+                  {/* Interface simplifiée: 4 colonnes essentielles */}
                   <th className="px-3 py-3 text-center">Priorité</th>
-                  <th className="px-3 py-3 text-left">Recommandation</th>
-                  <th className="px-3 py-3 text-center">Action Smart</th>
-                  {/* Badges v2 */}
-                  <th className="px-2 py-3 text-center">Priority</th>
                   <th className="px-2 py-3 text-center">Execution</th>
                   <th className="px-2 py-3 text-center">Content</th>
+                  <th className="px-2 py-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -2013,7 +1611,7 @@ export default function AdminGammesSeo() {
                       {/* En-tête de famille */}
                       {showFamilySeparator && (
                         <tr className="bg-blue-100 border-t-2 border-blue-300">
-                          <td colSpan={13} className="px-3 py-2">
+                          <td colSpan={7} className="px-3 py-2">
                             <span className="font-bold text-blue-800">
                               {gamme.family_name || "Sans famille"}
                             </span>
@@ -2030,27 +1628,19 @@ export default function AdminGammesSeo() {
                           </td>
                         </tr>
                       )}
-                      {/* Ligne de gamme - Highlighting basé sur Smart Action */}
+                      {/* Ligne de gamme - Highlighting basé sur Execution status */}
                       <tr
-                        className={`hover:bg-gray-100 transition-colors ${(() => {
-                          const smartAction = getSmartActionType(gamme);
-                          switch (smartAction) {
-                            case "INDEX_G1":
-                              return "bg-emerald-50 border-l-4 border-l-emerald-500";
-                            case "INDEX":
-                              return "bg-green-50 border-l-4 border-l-green-400";
-                            case "INVESTIGUER":
-                              return "bg-amber-50 border-l-4 border-l-amber-400";
-                            case "OBSERVER":
-                              return "bg-blue-50 border-l-4 border-l-blue-400";
-                            case "PARENT":
-                              return "bg-violet-50 border-l-4 border-l-violet-400";
-                            case "EVALUER":
-                              return "bg-slate-50 border-l-2 border-l-slate-300";
-                            default:
-                              return "";
-                          }
-                        })()}`}
+                        className={`hover:bg-gray-100 transition-colors ${
+                          gamme.pg_top === "1"
+                            ? "bg-emerald-50 border-l-4 border-l-emerald-500"
+                            : gamme.execution_status === "PASS"
+                              ? "bg-green-50 border-l-4 border-l-green-400"
+                              : gamme.execution_status === "WARN"
+                                ? "bg-amber-50 border-l-4 border-l-amber-400"
+                                : gamme.execution_status === "FAIL"
+                                  ? "bg-red-50 border-l-4 border-l-red-400"
+                                  : ""
+                        }`}
                       >
                         <td className="px-2 py-3">
                           <Checkbox
@@ -2076,47 +1666,11 @@ export default function AdminGammesSeo() {
                         <td className="px-3 py-3 text-gray-600">
                           {gamme.family_name || "-"}
                         </td>
-                        <td className="px-3 py-3 text-center">
-                          {getTrendsBadge(gamme.trends_index)}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {getSeoScoreBadge(gamme.seo_score || 0)}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {getIntentBadge(gamme.search_intent || "UNKNOWN")}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {getCompetitionBadge(
-                            gamme.competition_level || "UNKNOWN",
-                            gamme.competition_difficulty || 0,
-                          )}
-                        </td>
+                        {/* Priorité: G1/INDEX/NOINDEX */}
                         <td className="px-3 py-3 text-center">
                           {getPriorityBadge(gamme.pg_top, gamme.pg_level)}
                         </td>
-                        <td className="px-3 py-3">
-                          {getRecommendationBadge(gamme.action_recommended)}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {getSmartActionBadge(gamme)}
-                        </td>
-                        {/* Badges v2 */}
-                        <td className="px-2 py-3 text-center">
-                          <Badge
-                            variant="outline"
-                            className={
-                              (gamme.priority_score || 0) >= 80
-                                ? "bg-red-100 text-red-700 border-red-300"
-                                : (gamme.priority_score || 0) >= 60
-                                  ? "bg-orange-100 text-orange-700 border-orange-300"
-                                  : (gamme.priority_score || 0) >= 40
-                                    ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-                                    : "bg-gray-100 text-gray-600"
-                            }
-                          >
-                            {gamme.priority_score || 0}
-                          </Badge>
-                        </td>
+                        {/* Execution: PASS/WARN/FAIL */}
                         <td className="px-2 py-3 text-center">
                           <Badge
                             variant={
@@ -2137,6 +1691,7 @@ export default function AdminGammesSeo() {
                             {gamme.execution_status || "FAIL"}
                           </Badge>
                         </td>
+                        {/* Content: RICH/OK/THIN */}
                         <td className="px-2 py-3 text-center">
                           <Badge
                             variant="outline"
@@ -2150,6 +1705,15 @@ export default function AdminGammesSeo() {
                           >
                             {gamme.content_depth || "THIN"}
                           </Badge>
+                        </td>
+                        {/* Actions: lien vers détail */}
+                        <td className="px-2 py-3 text-center">
+                          <Link
+                            to={`/admin/gammes-seo/${gamme.pg_id}`}
+                            className="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Link>
                         </td>
                       </tr>
                     </React.Fragment>
