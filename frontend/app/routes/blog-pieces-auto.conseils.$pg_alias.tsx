@@ -25,7 +25,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-// Components internes
+// Utils
 import { Badge } from "../components/ui/badge";
 import {
   Card,
@@ -34,6 +34,8 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
+
+// Components internes
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
