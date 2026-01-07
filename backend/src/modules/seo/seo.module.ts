@@ -64,6 +64,9 @@ import { SeoLinkTrackingService } from './seo-link-tracking.service';
 // 🔗 Service Maillage Interne Centralisé
 import { InternalLinkingService } from './internal-linking.service';
 
+// 🛡️ Service Validation SEO Guides d'Achat
+import { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
+
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
 
@@ -151,6 +154,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap Véhicule-Pièces
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
+    PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -181,6 +185,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap exporté
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
+    PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat exporté
   ],
 })
 export class SeoModule {
