@@ -1010,41 +1010,103 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     stats: any;
   }> {
     try {
-      this.logger.log(`📋 getGammeDetail(${pgId})`);
+      this.logger.log(`📋 getGammeDetail(${pgId}) - OPTIMIZED`);
+      const pgIdStr = pgId.toString();
 
-      // 1. Gamme de base (pieces_gamme)
-      const { data: gamme, error: gammeError } = await this.supabase
-        .from('pieces_gamme')
-        .select(
-          'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img',
-        )
-        .eq('pg_id', pgId.toString())
-        .single();
+      // 🚀 OPTIMISATION: Paralléliser toutes les requêtes indépendantes
+      const [
+        gammeResult,
+        seoResult,
+        conseilsResult,
+        rawSwitchesResult,
+        rawFamilySwitchesResult,
+        articlesResult,
+        rawVehiclesResult,
+        vLevelResult,
+        productsCountResult,
+        aggregates,
+      ] = await Promise.all([
+        // 1. Gamme de base
+        this.supabase
+          .from('pieces_gamme')
+          .select(
+            'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img',
+          )
+          .eq('pg_id', pgIdStr)
+          .single(),
+        // 2. SEO
+        this.supabase
+          .from('seo_gamme')
+          .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
+          .eq('sg_pg_id', pgIdStr)
+          .single(),
+        // 3. Conseils
+        this.supabase
+          .from('seo_gamme_conseil')
+          .select('sgc_id, sgc_title, sgc_content')
+          .eq('sgc_pg_id', pgIdStr)
+          .order('sgc_id', { ascending: true }),
+        // 4. Item Switches
+        this.supabase
+          .from('__seo_item_switch')
+          .select('sis_id, sis_alias, sis_content')
+          .eq('sis_pg_id', pgIdStr)
+          .order('sis_alias', { ascending: true }),
+        // 5. Family Switches
+        this.supabase
+          .from('__seo_family_gamme_car_switch')
+          .select('sfgcs_id, sfgcs_alias, sfgcs_content')
+          .eq('sfgcs_pg_id', pgIdStr)
+          .order('sfgcs_alias', { ascending: true }),
+        // 6. Articles
+        this.supabase
+          .from('__blog_advice')
+          .select(
+            'ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update',
+          )
+          .eq('ba_pg_id', pgIdStr)
+          .order('ba_create', { ascending: false })
+          .limit(20),
+        // 7. Véhicules
+        this.supabase
+          .from('__cross_gamme_car')
+          .select(
+            'cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level',
+          )
+          .eq('cgc_pg_id', pgIdStr)
+          .limit(500),
+        // 8. V-Level
+        this.supabase
+          .from('gamme_seo_metrics')
+          .select(
+            'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
+          )
+          .eq('gamme_id', pgIdStr)
+          .order('v_level', { ascending: true })
+          .order('rank', { ascending: true }),
+        // 9. Products count
+        this.supabase
+          .from('pieces')
+          .select('*', { count: 'exact', head: true })
+          .eq('pg_id', pgIdStr),
+        // 10. Agrégats
+        this.getGammeAggregates(pgId),
+      ]);
+
+      // Extraire les données
+      const { data: gamme, error: gammeError } = gammeResult;
+      const { data: seo } = seoResult;
+      const { data: conseils } = conseilsResult;
+      const { data: rawSwitches } = rawSwitchesResult;
+      const { data: rawFamilySwitches } = rawFamilySwitchesResult;
+      const { data: articles } = articlesResult;
+      const { data: rawVehicles } = rawVehiclesResult;
+      const { data: vLevelData } = vLevelResult;
+      const { count: productsCount } = productsCountResult;
 
       if (gammeError || !gamme) {
         throw new Error(`Gamme ${pgId} non trouvée`);
       }
-
-      // 2. SEO (seo_gamme)
-      const { data: seo } = await this.supabase
-        .from('seo_gamme')
-        .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
-        .eq('sg_pg_id', pgId.toString())
-        .single();
-
-      // 3. Conseils (seo_gamme_conseil)
-      const { data: conseils } = await this.supabase
-        .from('seo_gamme_conseil')
-        .select('sgc_id, sgc_title, sgc_content')
-        .eq('sgc_pg_id', pgId.toString())
-        .order('sgc_id', { ascending: true });
-
-      // 4. Item Switches (__seo_item_switch) - GROUPÉS par alias
-      const { data: rawSwitches } = await this.supabase
-        .from('__seo_item_switch')
-        .select('sis_id, sis_alias, sis_content')
-        .eq('sis_pg_id', pgId.toString())
-        .order('sis_alias', { ascending: true });
 
       // Grouper Item Switches par alias - TOUTES les variations
       const switchGroups = Object.entries(
@@ -1065,19 +1127,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       ).map(([alias, variations]) => ({
         alias,
         count: variations.length,
-        variations, // TOUTES les variations (pas de slice)
+        variations,
         sample:
           variations[0]?.content.substring(0, 50) +
           (variations[0]?.content.length > 50 ? '...' : ''),
       }));
-
-      // 5. Family Switches (__seo_family_gamme_car_switch) - alias 1-16
-      // Note: Colonnes avec suffixe 's' (sfgcs_*) selon le type SeoFamilyGammeCarSwitch
-      const { data: rawFamilySwitches } = await this.supabase
-        .from('__seo_family_gamme_car_switch')
-        .select('sfgcs_id, sfgcs_alias, sfgcs_content')
-        .eq('sfgcs_pg_id', pgId.toString())
-        .order('sfgcs_alias', { ascending: true });
 
       // Grouper Family Switches par alias - TOUTES les variations
       const familySwitchGroups = Object.entries(
@@ -1098,28 +1152,20 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       ).map(([alias, variations]) => ({
         alias,
         count: variations.length,
-        variations, // TOUTES les variations
+        variations,
         sample:
           variations[0]?.content.substring(0, 50) +
           (variations[0]?.content.length > 50 ? '...' : ''),
       }));
 
-      // 6. Articles blog liés (table __blog_advice)
-      const { data: articles } = await this.supabase
-        .from('__blog_advice')
-        .select(
-          'ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update',
-        )
-        .eq('ba_pg_id', pgId.toString())
-        .order('ba_create', { ascending: false })
-        .limit(20);
-
-      // 7. Véhicules compatibles - TOUS les niveaux (__cross_gamme_car) avec noms
-      const { data: rawVehicles } = await this.supabase
-        .from('__cross_gamme_car')
-        .select('cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level')
-        .eq('cgc_pg_id', pgId.toString())
-        .limit(500); // Plus de véhicules pour couvrir tous les niveaux
+      // Grouper par V-Level
+      const vLevelGrouped = {
+        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
+        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
+        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
+        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
+        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
+      };
 
       // Type pour véhicule enrichi
       type EnrichedVehicle = {
@@ -1233,31 +1279,6 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const vehiclesLevel2 = allVehicles.filter((v) => v.level === '2');
       const vehiclesLevel5 = allVehicles.filter((v) => v.level === '5');
 
-      // 8. V-Level (gamme_seo_metrics pour v_level) - Récupérer TOUS les niveaux
-      const { data: vLevelData } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select(
-          'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
-        )
-        .eq('gamme_id', pgId.toString())
-        .order('v_level', { ascending: true })
-        .order('rank', { ascending: true });
-
-      // Grouper par V-Level
-      const vLevelGrouped = {
-        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
-        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
-        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
-        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
-        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
-      };
-
-      // 9. Stats (table pieces)
-      const { count: productsCount } = await this.supabase
-        .from('pieces')
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_id', pgId.toString());
-
       return {
         gamme,
         seo: seo || {
@@ -1283,13 +1304,30 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         },
         vLevel: vLevelGrouped,
         stats: {
-          products_count: productsCount || 0,
+          // 🎯 VALEURS "VÉRITÉ" (agrégats - ce que le front voit)
+          products_count: aggregates?.products_total ?? productsCount ?? 0,
+          vehicles_count: aggregates?.vehicles_total ?? allVehicles.length,
+          content_words: aggregates?.content_words_total ?? 0,
+          vlevel_counts: aggregates?.vlevel_counts ?? {
+            V1: vLevelGrouped.v1.length,
+            V2: vLevelGrouped.v2.length,
+            V3: vLevelGrouped.v3.length,
+            V4: vLevelGrouped.v4.length,
+            V5: vLevelGrouped.v5.length,
+          },
+
+          // 🏷️ PHASE 2 BADGES
+          priority_score: aggregates?.priority_score ?? 0,
+          catalog_issues: aggregates?.catalog_issues ?? [],
+          smart_actions: aggregates?.smart_actions ?? [],
+
+          // Champs existants (backward compatibility)
           articles_count: (articles || []).length,
           vehicles_level1_count: vehiclesLevel1.length,
           vehicles_level2_count: vehiclesLevel2.length,
           vehicles_level5_count: vehiclesLevel5.length,
           vehicles_total_count: allVehicles.length,
-          // Stats V-Level
+          // Stats V-Level (existants)
           vLevel_v1_count: vLevelGrouped.v1.length,
           vLevel_v2_count: vLevelGrouped.v2.length,
           vLevel_v3_count: vLevelGrouped.v3.length,
@@ -1315,6 +1353,29 @@ export class AdminGammesSeoService extends SupabaseBaseService {
             articles && articles.length > 0
               ? articles[0].ba_update || articles[0].ba_create
               : null,
+
+          // 🔍 DEBUG: Valeurs brutes pour diagnostic
+          _debug: aggregates
+            ? {
+                products_direct: aggregates.products_direct,
+                products_via_vehicles: aggregates.products_via_vehicles,
+                products_via_family: aggregates.products_via_family,
+                seo_content_raw_words: aggregates.seo_content_raw_words,
+                content_breakdown: aggregates.content_breakdown,
+                aggregates_computed_at: aggregates.computed_at,
+                source_updated_at: aggregates.source_updated_at,
+              }
+            : {
+                products_direct: productsCount || 0,
+                products_via_vehicles: 0,
+                products_via_family: 0,
+                seo_content_raw_words: 0,
+                content_breakdown: null,
+                aggregates_computed_at: null,
+                source_updated_at: null,
+                _note:
+                  'Agrégats non encore calculés - exécuter refresh_gamme_aggregates',
+              },
         },
       };
     } catch (error) {
@@ -1644,6 +1705,141 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('❌ Error in getVLevelGlobalStats():', error);
       throw error;
+    }
+  }
+
+  // ============================================================================
+  // 🎯 PHASE 1 BADGES SEO V2: Méthodes pour les agrégats
+  // ============================================================================
+
+  /**
+   * 🔄 Refresh les agrégats pour une ou toutes les gammes
+   * Appelle la RPC refresh_gamme_aggregates
+   */
+  async refreshAggregates(pgId?: number): Promise<{
+    success: boolean;
+    refreshed: number;
+    results: Array<{
+      pg_id: number;
+      products_total: number;
+      vehicles_total: number;
+      content_words_total: number;
+      status: string;
+    }>;
+  }> {
+    try {
+      this.logger.log(
+        `🔄 refreshAggregates(${pgId ? `pg_id=${pgId}` : 'all gammes'})`,
+      );
+
+      const { data, error } = await this.supabase.rpc(
+        'refresh_gamme_aggregates',
+        {
+          p_pg_id: pgId || null,
+        },
+      );
+
+      if (error) {
+        this.logger.error('❌ Error calling refresh_gamme_aggregates:', error);
+        throw error;
+      }
+
+      const results = data || [];
+      this.logger.log(`✅ Aggregates refreshed: ${results.length} gammes`);
+
+      return {
+        success: true,
+        refreshed: results.length,
+        results,
+      };
+    } catch (error) {
+      this.logger.error('❌ Error in refreshAggregates():', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Récupère les agrégats pour une gamme
+   * Retourne null si pas encore calculés
+   */
+  async getGammeAggregates(pgId: number): Promise<{
+    products_total: number;
+    vehicles_total: number;
+    content_words_total: number;
+    products_direct: number;
+    products_via_vehicles: number;
+    products_via_family: number;
+    vlevel_counts: {
+      V1: number;
+      V2: number;
+      V3: number;
+      V4: number;
+      V5: number;
+    };
+    seo_content_raw_words: number;
+    content_breakdown: {
+      seo: number;
+      conseil: number;
+      switches: number;
+      purchaseGuide: number;
+    };
+    computed_at: string | null;
+    source_updated_at: string | null;
+    // Phase 2 Badges
+    priority_score: number;
+    catalog_issues: string[];
+    smart_actions: Array<{ action: string; priority: string }>;
+  } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('gamme_aggregates')
+        .select('*')
+        .eq('ga_pg_id', pgId)
+        .single();
+
+      if (error) {
+        // Table might not exist yet or no data
+        if (error.code === 'PGRST116') {
+          return null; // No row found
+        }
+        this.logger.warn(
+          `⚠️ Error fetching aggregates for pg_id=${pgId}:`,
+          error,
+        );
+        return null;
+      }
+
+      return {
+        products_total: data.products_total || 0,
+        vehicles_total: data.vehicles_total || 0,
+        content_words_total: data.content_words_total || 0,
+        products_direct: data.products_direct || 0,
+        products_via_vehicles: data.products_via_vehicles || 0,
+        products_via_family: data.products_via_family || 0,
+        vlevel_counts: data.vlevel_counts || {
+          V1: 0,
+          V2: 0,
+          V3: 0,
+          V4: 0,
+          V5: 0,
+        },
+        seo_content_raw_words: data.seo_content_raw_words || 0,
+        content_breakdown: data.content_breakdown || {
+          seo: 0,
+          conseil: 0,
+          switches: 0,
+          purchaseGuide: 0,
+        },
+        computed_at: data.computed_at,
+        source_updated_at: data.source_updated_at,
+        // Phase 2 Badges
+        priority_score: data.priority_score || 0,
+        catalog_issues: data.catalog_issues || [],
+        smart_actions: data.smart_actions || [],
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error in getGammeAggregates(${pgId}):`, error);
+      return null;
     }
   }
 }

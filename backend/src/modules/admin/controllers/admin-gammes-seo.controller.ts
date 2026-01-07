@@ -16,6 +16,10 @@
  * - POST /api/admin/gammes-seo/thresholds/reset → Réinitialiser seuils
  * - GET  /api/admin/gammes-seo/audit            → Historique des actions
  * - GET  /api/admin/gammes-seo/audit/stats      → Stats audit
+ *
+ * 🎯 PHASE 1 BADGES SEO V2:
+ * - POST /api/admin/gammes-seo/refresh-aggregates      → Rafraîchir tous les agrégats
+ * - POST /api/admin/gammes-seo/:pgId/refresh-aggregates → Rafraîchir agrégats d'une gamme
  */
 
 import {
@@ -717,6 +721,98 @@ export class AdminGammesSeoController {
         {
           success: false,
           message: 'Erreur lors de la récupération des stats V-Level',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============================================================================
+  // 🎯 PHASE 1 BADGES SEO V2: Endpoints pour les agrégats
+  // ============================================================================
+
+  /**
+   * 🔄 POST /api/admin/gammes-seo/refresh-aggregates
+   * Rafraîchit les agrégats pour toutes les gammes
+   */
+  @Post('refresh-aggregates')
+  async refreshAllAggregates() {
+    try {
+      this.logger.log('🔄 POST /api/admin/gammes-seo/refresh-aggregates');
+
+      const result = await this.gammesSeoService.refreshAggregates();
+
+      return {
+        success: true,
+        data: {
+          refreshed: result.refreshed,
+          summary: {
+            total: result.refreshed,
+            withProducts: result.results.filter((r) => r.products_total > 0).length,
+            withVehicles: result.results.filter((r) => r.vehicles_total > 0).length,
+            withContent: result.results.filter((r) => r.content_words_total > 0).length,
+          },
+        },
+        message: `${result.refreshed} gammes rafraîchies`,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error refreshing aggregates:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors du rafraîchissement des agrégats',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔄 POST /api/admin/gammes-seo/:pgId/refresh-aggregates
+   * Rafraîchit les agrégats pour une gamme spécifique
+   */
+  @Post(':pgId/refresh-aggregates')
+  async refreshGammeAggregates(@Param('pgId', ParseIntPipe) pgId: number) {
+    try {
+      this.logger.log(`🔄 POST /api/admin/gammes-seo/${pgId}/refresh-aggregates`);
+
+      const result = await this.gammesSeoService.refreshAggregates(pgId);
+
+      if (result.refreshed === 0) {
+        throw new HttpException(
+          {
+            success: false,
+            message: `Gamme ${pgId} non trouvée ou inactive`,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const gammeResult = result.results[0];
+
+      return {
+        success: true,
+        data: {
+          pg_id: pgId,
+          products_total: gammeResult?.products_total || 0,
+          vehicles_total: gammeResult?.vehicles_total || 0,
+          content_words_total: gammeResult?.content_words_total || 0,
+        },
+        message: `Agrégats rafraîchis pour la gamme ${pgId}`,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(`❌ Error refreshing aggregates for gamme ${pgId}:`, error);
+      throw new HttpException(
+        {
+          success: false,
+          message: `Erreur lors du rafraîchissement des agrégats pour la gamme ${pgId}`,
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
