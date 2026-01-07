@@ -1359,6 +1359,25 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           catalog_issues: aggregates?.catalog_issues ?? [],
           smart_actions: aggregates?.smart_actions ?? [],
 
+          // ===== Badges v2 (11 badges) =====
+          // Pilotage
+          index_policy: aggregates?.index_policy ?? 'NOINDEX',
+          final_priority: aggregates?.final_priority ?? 'P3',
+          // Potentiel
+          potential_level: aggregates?.potential_level ?? 'LOW',
+          demand_level: aggregates?.demand_level ?? 'LOW',
+          difficulty_level: aggregates?.difficulty_level ?? 'MED',
+          intent_type: aggregates?.intent_type ?? 'COMPARE',
+          // Réalité Intra-Gamme
+          catalog_status: aggregates?.catalog_status ?? 'EMPTY',
+          vehicle_coverage: aggregates?.vehicle_coverage ?? 'EMPTY',
+          content_depth: aggregates?.content_depth ?? 'THIN',
+          freshness_status: aggregates?.freshness_status ?? 'EXPIRED',
+          cluster_health: aggregates?.cluster_health ?? 'ISOLATED',
+          topic_purity: aggregates?.topic_purity ?? 'PURE',
+          // Exécutabilité
+          execution_status: aggregates?.execution_status ?? 'FAIL',
+
           // Champs existants (backward compatibility)
           articles_count: (articles || []).length,
           vehicles_level1_count: vehiclesLevel1.length,

@@ -140,14 +140,14 @@ BEGIN
       LEAST((COALESCE(seo.cnt_seo_words, 0) + COALESCE(conseil.cnt_conseil_words, 0) + COALESCE(guide.cnt_guide_words, 0)) / 100, 15)
     ))::INTEGER as priority_score,
 
-    -- ===== Catalog Issues (Array) =====
-    ARRAY_REMOVE(ARRAY[
+    -- ===== Catalog Issues (JSONB Array) =====
+    to_jsonb(ARRAY_REMOVE(ARRAY[
       CASE WHEN COALESCE(prod.cnt_products, 0) = 0 THEN 'NO_PRODUCTS' END,
       CASE WHEN COALESCE(veh.cnt_vehicles, 0) = 0 AND pg.pg_level = '1' THEN 'NO_VEHICLES' END,
       CASE WHEN (COALESCE(seo.cnt_seo_words, 0) + COALESCE(conseil.cnt_conseil_words, 0) + COALESCE(guide.cnt_guide_words, 0)) < 300 THEN 'CONTENT_THIN' END,
       CASE WHEN pg.pg_display = '1' AND COALESCE(prod.cnt_products, 0) = 0 THEN 'EMPTY_PAGE' END,
       CASE WHEN COALESCE(guide.cnt_guide_words, 0) = 0 AND pg.pg_top = '1' THEN 'NO_PURCHASE_GUIDE' END
-    ], NULL) as catalog_issues,
+    ], NULL)) as catalog_issues,
 
     -- ===== Smart Actions (JSONB Array) =====
     (
@@ -301,11 +301,11 @@ BEGIN
   ) vlevel ON vlevel.gamme_id = pg.pg_id
 
   -- SEO words (pas de colonne last_update dans __seo_gamme)
+  -- Note: pas de GROUP BY car une seule ligne par sg_pg_id
   LEFT JOIN (
     SELECT sg_pg_id::INTEGER as gamme_id,
       COALESCE(array_length(regexp_split_to_array(COALESCE(sg_content, ''), '\s+'), 1), 0) as cnt_seo_words
     FROM __seo_gamme
-    GROUP BY sg_pg_id
   ) seo ON seo.gamme_id = pg.pg_id
 
   -- Conseil words (pas de colonne timestamp dans __seo_gamme_conseil)
@@ -355,7 +355,7 @@ BEGIN
     computed_at = NOW(),
     source_updated_at = EXCLUDED.source_updated_at;
 
-  -- Return summary
+  -- Return summary (avec casts explicites VARCHAR → TEXT)
   RETURN QUERY
   SELECT
     ga.ga_pg_id,
@@ -363,8 +363,8 @@ BEGIN
     ga.vehicles_total,
     ga.content_words_total,
     ga.priority_score,
-    ga.final_priority,
-    ga.execution_status,
+    ga.final_priority::TEXT,      -- VARCHAR(15) → TEXT
+    ga.execution_status::TEXT,    -- VARCHAR(10) → TEXT
     'OK'::TEXT
   FROM gamme_aggregates ga
   WHERE p_pg_id IS NULL OR ga.ga_pg_id = p_pg_id;
