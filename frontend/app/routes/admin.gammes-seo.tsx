@@ -1046,10 +1046,11 @@ export default function AdminGammesSeo() {
               <strong className="text-gray-700 block mb-2">Actions:</strong>
               <div className="space-y-1 text-xs text-gray-600">
                 <div>
-                  • <strong>INDEX</strong>: pg_level=1
+                  • <strong>INDEX</strong>: pg_relfollow=1{" "}
+                  <span className="text-green-600">(→ sitemap auto)</span>
                 </div>
                 <div>
-                  • <strong>NOINDEX</strong>: pg_level=2
+                  • <strong>NOINDEX</strong>: pg_relfollow=0
                 </div>
                 <div>
                   • <strong>G1</strong>: pg_top=1
@@ -1058,79 +1059,235 @@ export default function AdminGammesSeo() {
             </div>
           </div>
 
-          {/* Actions Intelligentes - Matrice Trends × SEO Score (avec seuils dynamiques) */}
+          {/* Matrice de Décision - Croisement des critères */}
           <div className="mt-4 pt-4 border-t border-slate-300">
             <strong className="text-gray-700 block mb-3">
-              🎯 Actions Intelligentes (Trends × SEO Score):
+              📊 Matrice de Décision (Croisement des critères):
             </strong>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-2 py-0.5 font-bold">
-                  🚀 INDEX+G1
-                </Badge>
-                <span className="text-gray-600">
-                  Trends≥{editThresholds.trends_high} & SEO≥
-                  {editThresholds.seo_excellent}
-                </span>
+
+            {/* Tableau de décision avec explications */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-200">
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      Trends
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      SEO
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      Intent
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      Compét.
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-center">
+                      Action
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      Explication
+                    </th>
+                    <th className="border border-slate-300 px-2 py-1 text-left">
+                      À faire
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-emerald-50 hover:bg-emerald-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.trends_high}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.seo_excellent}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">💰</td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-emerald-600 text-white text-xs">
+                        🚀 INDEX+G1
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Fort volume + excellent SEO + transactionnel
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-emerald-700 font-medium">
+                      Créer page, optimiser contenu, priorité haute
+                    </td>
+                  </tr>
+                  <tr className="bg-green-50 hover:bg-green-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.trends_high}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.seo_good}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">💰/🔍</td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;60
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-green-600 text-white text-xs">
+                        📈 INDEX
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Bon volume + SEO correct + compétition gérable
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-green-700 font-medium">
+                      Créer page, inclure sitemap
+                    </td>
+                  </tr>
+                  <tr className="bg-amber-50 hover:bg-amber-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.trends_high}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;{editThresholds.seo_good}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-amber-500 text-white text-xs">
+                        🔍 Investiguer
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Demande forte mais page pas optimisée
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-amber-700 font-medium">
+                      Analyser SERP, améliorer contenu, retester
+                    </td>
+                  </tr>
+                  <tr className="bg-blue-50 hover:bg-blue-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      {editThresholds.trends_medium}-
+                      {editThresholds.trends_high - 1}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.seo_excellent}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;30
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-blue-500 text-white text-xs">
+                        ⭐ Observer
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      SEO excellent mais volume moyen
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-blue-700 font-medium">
+                      Créer page, surveiller évolution trends
+                    </td>
+                  </tr>
+                  <tr className="bg-violet-50 hover:bg-violet-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;{editThresholds.trends_medium}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      ≥{editThresholds.seo_excellent}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-violet-500 text-white text-xs">
+                        🔗 Parent
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Bon SEO mais trop faible volume
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-violet-700 font-medium">
+                      NE PAS créer page, enrichir page parente
+                    </td>
+                  </tr>
+                  <tr className="bg-slate-50 hover:bg-slate-100">
+                    <td className="border border-slate-300 px-2 py-1">
+                      {editThresholds.trends_medium}-
+                      {editThresholds.trends_high - 1}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      {editThresholds.seo_good}-
+                      {editThresholds.seo_excellent - 1}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1">Any</td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-slate-500 text-white text-xs">
+                        📊 Évaluer
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Métriques moyennes
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-700 font-medium">
+                      Analyser au cas par cas, décider manuellement
+                    </td>
+                  </tr>
+                  <tr className="bg-gray-100 hover:bg-gray-200">
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;{editThresholds.trends_medium}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      &lt;{editThresholds.seo_good}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1">📚</td>
+                    <td className="border border-slate-300 px-2 py-1">
+                      &gt;60
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-center">
+                      <Badge className="bg-gray-400 text-white text-xs">
+                        ❌ NOINDEX
+                      </Badge>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-600">
+                      Faible potentiel commercial
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-gray-500 font-medium">
+                      Ne pas indexer, économiser crawl budget
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Légende des actions */}
+            <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div className="p-2 bg-emerald-100 rounded border border-emerald-300">
+                <strong>🚀 INDEX+G1:</strong> Priorité max, fort potentiel
+                commercial
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
-                  📈 INDEX
-                </Badge>
-                <span className="text-gray-600">
-                  Trends≥{editThresholds.trends_high} & SEO≥
-                  {editThresholds.seo_good}
-                </span>
+              <div className="p-2 bg-green-100 rounded border border-green-300">
+                <strong>📈 INDEX:</strong> Bon potentiel, inclure dans sitemap
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-0.5">
-                  🔍 Investiguer
-                </Badge>
-                <span className="text-gray-600">
-                  Trends≥{editThresholds.trends_high} & SEO&lt;
-                  {editThresholds.seo_good}
-                </span>
+              <div className="p-2 bg-amber-100 rounded border border-amber-300">
+                <strong>🔍 Investiguer:</strong> Demande forte mais SEO faible
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs px-2 py-0.5">
-                  ⭐ Observer
-                </Badge>
-                <span className="text-gray-600">
-                  Trends {editThresholds.trends_medium}-
-                  {editThresholds.trends_high - 1} & SEO≥
-                  {editThresholds.seo_excellent}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-xs px-2 py-0.5">
-                  🔗 Parent
-                </Badge>
-                <span className="text-gray-600">
-                  Trends&lt;{editThresholds.trends_medium} & SEO≥
-                  {editThresholds.seo_excellent}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-slate-400 to-slate-500 text-white text-xs px-2 py-0.5">
-                  📊 Évaluer
-                </Badge>
-                <span className="text-gray-600">
-                  Trends {editThresholds.trends_medium}-
-                  {editThresholds.trends_high - 1} & SEO{" "}
-                  {editThresholds.seo_good}-{editThresholds.seo_excellent - 1}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gray-400 text-white text-xs px-2 py-0.5">
-                  ❌ NOINDEX
-                </Badge>
-                <span className="text-gray-600">Faible potentiel</span>
+              <div className="p-2 bg-violet-100 rounded border border-violet-300">
+                <strong>🔗 Parent:</strong> Enrichir page parente au lieu de
+                créer
               </div>
             </div>
-            <div className="mt-2 text-xs text-gray-500 italic">
-              💡 "🔗 Parent" = Ne pas créer de page dédiée, enrichir la page
-              parente avec ces mots-clés (ex: "Vis de disque" → ajouter à
-              "Disque de frein")
+
+            {/* Notes importantes */}
+            <div className="mt-3 space-y-2">
+              <div className="p-2 bg-green-50 border border-green-200 rounded text-xs">
+                <strong className="text-green-800">✅ INDEX = Sitemap:</strong>
+                <span className="text-green-700 ml-1">
+                  Toute catégorie INDEX (
+                  <code className="bg-green-100 px-1 rounded">
+                    pg_relfollow=1
+                  </code>
+                  ) est automatiquement incluse dans le sitemap.
+                </span>
+              </div>
+              <div className="text-xs text-gray-500 italic">
+                💡 "🔗 Parent" = Ne pas créer de page dédiée, enrichir la page
+                parente (ex: "Vis de disque" → ajouter à "Disque de frein")
+              </div>
             </div>
           </div>
         </CardContent>
@@ -1589,8 +1746,10 @@ export default function AdminGammesSeo() {
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </th>
-                  {/* Interface simplifiée: 4 colonnes essentielles */}
+                  {/* Interface simplifiée: 6 colonnes essentielles */}
                   <th className="px-3 py-3 text-center">Priorité</th>
+                  <th className="px-2 py-3 text-center">Sitemap</th>
+                  <th className="px-2 py-3 text-center">Smart Action</th>
                   <th className="px-2 py-3 text-center">Execution</th>
                   <th className="px-2 py-3 text-center">Content</th>
                   <th className="px-2 py-3 text-center">Actions</th>
@@ -1611,7 +1770,7 @@ export default function AdminGammesSeo() {
                       {/* En-tête de famille */}
                       {showFamilySeparator && (
                         <tr className="bg-blue-100 border-t-2 border-blue-300">
-                          <td colSpan={7} className="px-3 py-2">
+                          <td colSpan={9} className="px-3 py-2">
                             <span className="font-bold text-blue-800">
                               {gamme.family_name || "Sans famille"}
                             </span>
@@ -1669,6 +1828,76 @@ export default function AdminGammesSeo() {
                         {/* Priorité: G1/INDEX/NOINDEX */}
                         <td className="px-3 py-3 text-center">
                           {getPriorityBadge(gamme.pg_top, gamme.pg_level)}
+                        </td>
+                        {/* Sitemap: basé sur INDEX (pg_relfollow) */}
+                        <td className="px-2 py-3 text-center">
+                          {gamme.pg_relfollow === "1" ? (
+                            <Badge className="bg-green-500 text-white text-xs">
+                              ✓ Auto
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-gray-400 text-xs"
+                            >
+                              ✗ Exclu
+                            </Badge>
+                          )}
+                        </td>
+                        {/* Smart Action: recommandation matrice décision */}
+                        <td className="px-2 py-3 text-center">
+                          {(() => {
+                            const action = getSmartActionType(gamme);
+                            const actionConfig: Record<
+                              string,
+                              { emoji: string; label: string; color: string }
+                            > = {
+                              INDEX_G1: {
+                                emoji: "🚀",
+                                label: "INDEX+G1",
+                                color: "bg-emerald-600",
+                              },
+                              INDEX: {
+                                emoji: "📈",
+                                label: "INDEX",
+                                color: "bg-green-600",
+                              },
+                              INVESTIGUER: {
+                                emoji: "🔍",
+                                label: "Investiguer",
+                                color: "bg-amber-500",
+                              },
+                              OBSERVER: {
+                                emoji: "⭐",
+                                label: "Observer",
+                                color: "bg-blue-500",
+                              },
+                              PARENT: {
+                                emoji: "🔗",
+                                label: "Parent",
+                                color: "bg-violet-500",
+                              },
+                              EVALUER: {
+                                emoji: "📊",
+                                label: "Évaluer",
+                                color: "bg-slate-500",
+                              },
+                              NOINDEX: {
+                                emoji: "❌",
+                                label: "NOINDEX",
+                                color: "bg-gray-400",
+                              },
+                            };
+                            const config =
+                              actionConfig[action] || actionConfig.NOINDEX;
+                            return (
+                              <Badge
+                                className={`${config.color} text-white text-xs`}
+                              >
+                                {config.emoji} {config.label}
+                              </Badge>
+                            );
+                          })()}
                         </td>
                         {/* Execution: PASS/WARN/FAIL */}
                         <td className="px-2 py-3 text-center">

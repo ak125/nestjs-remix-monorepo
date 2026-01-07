@@ -266,20 +266,19 @@ export class SitemapUnifiedService {
 
   /**
    * 📂 Génère sitemap-categories.xml (Gammes/Catégories de pièces)
-   * V8: Filtre par pg_relfollow='1' et pg_sitemap='1' pour n'inclure que les catégories INDEX
+   * V9: INDEX = Sitemap (toute catégorie INDEX va automatiquement dans le sitemap)
    */
   private async generateCategoriesSitemap(
     dir: string,
   ): Promise<SitemapFileResult | null> {
     try {
-      // 🔧 FIX V8: Filtrer par statut SEO INDEX + inclusion sitemap
-      // pg_relfollow='1' = INDEX, pg_sitemap='1' = inclure dans sitemap
+      // 🔧 FIX V9: INDEX = Sitemap (simplification)
+      // Toute catégorie INDEX (pg_relfollow='1') est incluse dans le sitemap
       const { data: gammes, error } = await this.supabase
         .from('pieces_gamme')
         .select('pg_alias, pg_id')
         .eq('pg_display', '1')
-        .eq('pg_relfollow', '1') // INDEX uniquement (pas NOINDEX)
-        .eq('pg_sitemap', '1') // Inclus dans sitemap
+        .eq('pg_relfollow', '1') // INDEX = dans sitemap
         .neq('pg_alias', '') // Exclure les pg_alias vides
         .order('pg_alias');
 
