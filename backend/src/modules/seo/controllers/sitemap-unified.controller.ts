@@ -24,23 +24,33 @@ export class SitemapUnifiedController {
   /**
    * POST /api/sitemap/generate-all
    *
-   * Génère tous les sitemaps (5 thématiques + index)
+   * Génère tous les sitemaps (7 thématiques + index)
+   * V7: Avec validation optionnelle des URLs pièces
    *
    * @param outputDir - Répertoire de sortie (défaut: /srv/sitemaps)
-   * @returns Résultat avec liste des fichiers générés
+   * @param skipValidation - 'true' pour désactiver la validation (plus rapide)
+   * @returns Résultat avec liste des fichiers générés + stats validation
    */
   @Post('generate-all')
-  async generateAll(@Query('outputDir') outputDir?: string): Promise<{
+  async generateAll(
+    @Query('outputDir') outputDir?: string,
+    @Query('skipValidation') skipValidation?: string,
+  ): Promise<{
     success: boolean;
     message: string;
     data?: AllSitemapsResult;
   }> {
     try {
       const dir = outputDir || '/srv/sitemaps';
+      const skip = skipValidation === 'true';
 
-      this.logger.log(`🚀 Starting unified sitemap generation to ${dir}`);
+      this.logger.log(
+        `🚀 Starting unified sitemap generation to ${dir} (validation: ${skip ? 'OFF' : 'ON'})`,
+      );
 
-      const result = await this.sitemapUnifiedService.generateAllSitemaps(dir);
+      const result = await this.sitemapUnifiedService.generateAllSitemaps(dir, {
+        skipValidation: skip,
+      });
 
       if (result.success) {
         return {
