@@ -1,0 +1,86 @@
+{
+  "famille": "Embrayage",
+  "audit_date": "2026-01-06T19:21:14.432602",
+  "total_gammes": 6,
+  "total_issues": 2,
+  "gammes_ok": 4,
+  "gammes_to_fix": 2,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": [
+      {
+        "symptom": "difficulté à passer les vitess...",
+        "used_by": [
+          "ID 48",
+          "ID 620",
+          "ID 479"
+        ],
+        "count": 3,
+        "fix": "Symptôme trop générique, spécifier par pièce"
+      }
+    ]
+  },
+  "gammes": [
+    {
+      "id": "48",
+      "name": "La butée d'embrayage",
+      "current_cost": "20 à 80 € (butée) / incluse dans kit embrayage complet",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "234",
+      "name": "L'émetteur d'embrayage",
+      "current_cost": "40 à 150 € (émetteur) / 100 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "479",
+      "name": "Le kit d'embrayage",
+      "current_cost": "150 à 500 € (kit 3 pièces) / 400 à 1 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "478",
+      "name": "Le câble d'embrayage",
+      "current_cost": "15 à 60 € (câble) / 50 à 120 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "620",
+      "name": "Le récepteur d'embrayage",
+      "current_cost": "30 à 150 € (récepteur) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories auditif, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "577",
+      "name": "Le volant moteur",
+      "current_cost": "150 à 600 € (volant bimasse) / 400 à 1 000 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "❌ Fourchette coût générique: '150 à 600 € (volant bimasse) / 400 à 1 000 € avec ...'"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

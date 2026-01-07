@@ -45,6 +45,7 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
 import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
 import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // 🧠 NOUVEAU - Knowledge Graph + Reasoning Engine v2.8.0 !
+import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 RAG PROXY - NestJS proxy vers service RAG Python !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -146,6 +147,9 @@ import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.
 
     // 🧠 KNOWLEDGE GRAPH & REASONING ENGINE
     KnowledgeGraphModule, // 🧠 ACTIVÉ - Knowledge Graph + Reasoning Engine v2.8.0 !
+
+    // 🤖 RAG PROXY - Service RAG Python
+    RagProxyModule, // 🤖 ACTIVÉ - Proxy NestJS vers service RAG Python (port 8000) !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

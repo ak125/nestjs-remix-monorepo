@@ -50,21 +50,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from(TABLES.pieces)
-        .select(
-          `
-          *,
-          pieces_gamme:pieces_gamme!inner(
-            gamme_id,
-            gamme_name,
-            gamme_description
-          ),
-          pieces_marque:pieces_marque!inner(
-            marque_id,
-            marque_name,
-            marque_logo
-          )
-        `,
-        )
+        .select('*')
         .limit(filters?.limit || 50);
 
       if (filters?.search) {
@@ -945,7 +931,7 @@ export class ProductsService extends SupabaseBaseService {
           piece_ref,
           piece_stock,
           pieces_price!left(pri_vente_ttc, pri_consigne_ttc),
-          pieces_marque!left(marque_id, marque_name)
+          pieces_marque!left(pm_id, pm_name)
         `,
         )
         .or(`piece_name.ilike.${searchTerm},piece_ref.ilike.${searchTerm}`)
@@ -962,7 +948,7 @@ export class ProductsService extends SupabaseBaseService {
           piece_id: piece.piece_id,
           name: piece.piece_name || 'Produit sans nom',
           reference: piece.piece_ref,
-          marque_name: piece.pieces_marque?.marque_name,
+          marque_name: piece.pieces_marque?.pm_name,
           price_ttc: piece.pieces_price?.pri_vente_ttc
             ? parseFloat(piece.pieces_price.pri_vente_ttc)
             : undefined,

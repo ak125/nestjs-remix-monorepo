@@ -1,0 +1,208 @@
+{
+  "famille": "Eclairage",
+  "audit_date": "2026-01-06T22:39:32.274028",
+  "total_gammes": 5,
+  "total_issues": 25,
+  "gammes_ok": 0,
+  "gammes_to_fix": 5,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "809: Le/La Commande d'éclairage",
+          "807: Le/La Contacteur feu de recul",
+          "290: Le/La Feu arrière",
+          "259: Le/La Feu avant",
+          "62: Le/La Feu clignotant"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "809: Le/La Commande d'éclairage",
+          "807: Le/La Contacteur feu de recul",
+          "290: Le/La Feu arrière",
+          "259: Le/La Feu avant",
+          "62: Le/La Feu clignotant"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 809",
+          "ID 807"
+        ],
+        "field": "intro_role",
+        "similarity": "62%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 809",
+          "ID 290"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 809",
+          "ID 259"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 809",
+          "ID 62"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 807",
+          "ID 290"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 807",
+          "ID 259"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 807",
+          "ID 62"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 290",
+          "ID 259"
+        ],
+        "field": "intro_role",
+        "similarity": "82%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 290",
+          "ID 62"
+        ],
+        "field": "intro_role",
+        "similarity": "82%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 259",
+          "ID 62"
+        ],
+        "field": "intro_role",
+        "similarity": "82%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "809",
+      "name": "Le/La Commande d'éclairage",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "807",
+      "name": "Le/La Contacteur feu de recul",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "290",
+      "name": "Le/La Feu arrière",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "259",
+      "name": "Le/La Feu avant",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "62",
+      "name": "Le/La Feu clignotant",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

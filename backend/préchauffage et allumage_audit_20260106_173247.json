@@ -1,0 +1,150 @@
+{
+  "famille": "Préchauffage et allumage",
+  "audit_date": "2026-01-06T17:32:47.347053",
+  "total_gammes": 5,
+  "total_issues": 10,
+  "gammes_ok": 0,
+  "gammes_to_fix": 5,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "changer par jeu complet...",
+        "gammes": [
+          "243: La bougie de préchauffage",
+          "686: La bougie d'allumage"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 243",
+          "ID 686"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 243",
+          "ID 1750"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 686",
+          "ID 689"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 686",
+          "ID 685"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 689",
+          "ID 685"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer les bougies...",
+        "used_by": [
+          "ID 243",
+          "ID 686"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec les bougies...",
+        "used_by": [
+          "ID 243",
+          "ID 686"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "243",
+      "name": "La bougie de préchauffage",
+      "current_cost": "8 à 40 € (pièce) / 80 à 200 € pour 4 bougies avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "686",
+      "name": "La bougie d'allumage",
+      "current_cost": "8 à 30 € (pièce) / 40 à 120 € pour 4 bougies avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "689",
+      "name": "La bobine d'allumage",
+      "current_cost": "25 à 120 € (pièce) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1750",
+      "name": "Le boîtier de préchauffage",
+      "current_cost": "40 à 150 € (boîtier) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "685",
+      "name": "Le faisceau d'allumage",
+      "current_cost": "30 à 120 € (jeu complet) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

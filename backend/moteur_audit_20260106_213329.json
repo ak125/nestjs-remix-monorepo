@@ -1,0 +1,408 @@
+{
+  "famille": "Moteur",
+  "audit_date": "2026-01-06T21:33:29.601437",
+  "total_gammes": 9,
+  "total_issues": 44,
+  "gammes_ok": 0,
+  "gammes_to_fix": 9,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "1 000 à 5 000 €...",
+        "gammes": [
+          "3874: Le/La Bagues d'étanchéité mote",
+          "592: Le/La Carter d'huile",
+          "321: Le/La Joint de cache culbuteur",
+          "40: Le/La Joint de collecteur",
+          "318: Le/La Joint de culasse",
+          "1216: Le/La Poussoir de soupape",
+          "1269: Le/La Soupape d'admission",
+          "1270: Le/La Soupape d'échappement",
+          "1533: Le/La Vis de culasse"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "3874: Le/La Bagues d'étanchéité mote",
+          "592: Le/La Carter d'huile",
+          "321: Le/La Joint de cache culbuteur",
+          "40: Le/La Joint de collecteur",
+          "318: Le/La Joint de culasse",
+          "1216: Le/La Poussoir de soupape",
+          "1269: Le/La Soupape d'admission",
+          "1270: Le/La Soupape d'échappement",
+          "1533: Le/La Vis de culasse"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "3874: Le/La Bagues d'étanchéité mote",
+          "592: Le/La Carter d'huile",
+          "321: Le/La Joint de cache culbuteur",
+          "40: Le/La Joint de collecteur",
+          "318: Le/La Joint de culasse",
+          "1216: Le/La Poussoir de soupape",
+          "1269: Le/La Soupape d'admission",
+          "1270: Le/La Soupape d'échappement",
+          "1533: Le/La Vis de culasse"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 592",
+          "ID 40"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 592",
+          "ID 318"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 592",
+          "ID 1216"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 592",
+          "ID 1269"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 592",
+          "ID 1270"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 592",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 321",
+          "ID 40"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 321",
+          "ID 318"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 40",
+          "ID 318"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 40",
+          "ID 1216"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 40",
+          "ID 1269"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 40",
+          "ID 1270"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 40",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 318",
+          "ID 1216"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 318",
+          "ID 1269"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 318",
+          "ID 1270"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 318",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1216",
+          "ID 1269"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1216",
+          "ID 1270"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1216",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1269",
+          "ID 1270"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1269",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1270",
+          "ID 1533"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "3874",
+      "name": "Le/La Bagues d'étanchéité moteur",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "592",
+      "name": "Le/La Carter d'huile",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "321",
+      "name": "Le/La Joint de cache culbuteurs",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "40",
+      "name": "Le/La Joint de collecteur",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "318",
+      "name": "Le/La Joint de culasse",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1216",
+      "name": "Le/La Poussoir de soupape",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1269",
+      "name": "Le/La Soupape d'admission",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1270",
+      "name": "Le/La Soupape d'échappement",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1533",
+      "name": "Le/La Vis de culasse",
+      "current_cost": "1 000 à 5 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

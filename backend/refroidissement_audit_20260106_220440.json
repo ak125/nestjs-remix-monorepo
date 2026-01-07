@@ -1,0 +1,109 @@
+{
+  "famille": "Refroidissement",
+  "audit_date": "2026-01-06T22:04:40.568500",
+  "total_gammes": 7,
+  "total_issues": 0,
+  "gammes_ok": 7,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer le radiateur...",
+        "used_by": [
+          "ID 467",
+          "ID 470"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec le radiateur...",
+        "used_by": [
+          "ID 467",
+          "ID 470"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": [
+      {
+        "symptom": "odeur de liquide de refroidiss...",
+        "used_by": [
+          "ID 830",
+          "ID 470",
+          "ID 1260",
+          "ID 316"
+        ],
+        "count": 4,
+        "fix": "Symptôme trop générique, spécifier par pièce"
+      }
+    ]
+  },
+  "gammes": [
+    {
+      "id": "830",
+      "name": "La sonde de température moteur",
+      "current_cost": "10 à 40 € (sonde) / 40 à 90 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "467",
+      "name": "Le radiateur de chauffage",
+      "current_cost": "50 à 200 € (radiateur) / 300 à 800 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "470",
+      "name": "Le radiateur de refroidissement",
+      "current_cost": "100 à 400 € (radiateur) / 200 à 600 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1260",
+      "name": "La pompe à eau",
+      "current_cost": "40 à 150 € (pompe) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "475",
+      "name": "La durite de refroidissement",
+      "current_cost": "15 à 80 € (durite) / 50 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "508",
+      "name": "Le ventilateur de refroidissement",
+      "current_cost": "80 à 300 € (motoventilateur) / 150 à 450 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "316",
+      "name": "Le thermostat",
+      "current_cost": "15 à 60 € (thermostat) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

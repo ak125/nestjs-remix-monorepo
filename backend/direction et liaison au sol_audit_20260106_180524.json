@@ -1,0 +1,120 @@
+{
+  "famille": "Direction et liaison au sol",
+  "audit_date": "2026-01-06T18:05:24.164913",
+  "total_gammes": 10,
+  "total_issues": 1,
+  "gammes_ok": 9,
+  "gammes_to_fix": 1,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": [
+      {
+        "symptom": "contrôle technique refusé pour...",
+        "used_by": [
+          "ID 191",
+          "ID 285",
+          "ID 2066"
+        ],
+        "count": 3,
+        "fix": "Symptôme trop générique, spécifier par pièce"
+      }
+    ]
+  },
+  "gammes": [
+    {
+      "id": "1211",
+      "name": "La colonne de direction",
+      "current_cost": "200 à 500 € (colonne) / 400 à 800 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "286",
+      "name": "La crémaillère de direction",
+      "current_cost": "250 à 800 € (pièce) / 500 à 1 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "655",
+      "name": "Le roulement de roue",
+      "current_cost": "40 à 150 € (pièce) / 120 à 300 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "191",
+      "name": "Le soufflet de direction",
+      "current_cost": "15 à 50 € (pièce) / 80 à 180 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "12",
+      "name": "La pompe de direction assistée",
+      "current_cost": "150 à 450 € (pièce) / 300 à 700 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "273",
+      "name": "Le bras de suspension",
+      "current_cost": "60 à 200 € (pièce) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "285",
+      "name": "La barre de direction",
+      "current_cost": "80 à 250 € (pièce) / 180 à 450 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "2066",
+      "name": "La rotule de direction",
+      "current_cost": "25 à 80 € (pièce) / 80 à 180 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3230",
+      "name": "La biellette de barre stabilisatrice",
+      "current_cost": "15 à 60 € (pièce) / 60 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "2462",
+      "name": "La rotule de suspension",
+      "current_cost": "30 à 100 € (pièce) / 100 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Pas de FAQ 'Diagnostic express'"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

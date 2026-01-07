@@ -1,0 +1,78 @@
+{
+  "famille": "Accessoires",
+  "audit_date": "2026-01-07T01:49:23.623062",
+  "total_gammes": 5,
+  "total_issues": 3,
+  "gammes_ok": 2,
+  "gammes_to_fix": 3,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "quelle erreur éviter ?...",
+        "used_by": [
+          "ID 1561",
+          "ID 50",
+          "ID 751"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1561",
+      "name": "Le lève-vitre électrique",
+      "current_cost": "80 à 250 € (mécanisme complet) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "298",
+      "name": "Les balais d'essuie-glace",
+      "current_cost": "15 à 50 € (paire) / pose incluse",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "39",
+      "name": "L'attelage",
+      "current_cost": "150 à 500 € (attelage complet) / 250 à 700 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories comportement, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "50",
+      "name": "Le rétroviseur extérieur",
+      "current_cost": "50 à 200 € (coque complète) / 20 à 80 € (miroir seul)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, auditif, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "751",
+      "name": "La commande d'essuie-glace",
+      "current_cost": "40 à 150 € (commodo) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, auditif, olfactif"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "famille": "Système électrique",
+  "audit_date": "2026-01-06T19:38:03.960035",
+  "total_gammes": 3,
+  "total_issues": 13,
+  "gammes_ok": 0,
+  "gammes_to_fix": 3,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "200 à 800 €...",
+        "gammes": [
+          "1367: Le/La Neiman",
+          "2: Le/La Démarreur",
+          "4: Le/La Alternateur"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "1367: Le/La Neiman",
+          "2: Le/La Démarreur",
+          "4: Le/La Alternateur"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "1367: Le/La Neiman",
+          "2: Le/La Démarreur",
+          "4: Le/La Alternateur"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 1367",
+          "ID 2"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1367",
+          "ID 4"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2",
+          "ID 4"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1367",
+      "name": "Le/La Neiman",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2",
+      "name": "Le/La Démarreur",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "4",
+      "name": "Le/La Alternateur",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

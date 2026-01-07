@@ -1,0 +1,35 @@
+{
+  "famille": "Support moteur",
+  "audit_date": "2026-01-06T18:43:41.489495",
+  "total_gammes": 2,
+  "total_issues": 0,
+  "gammes_ok": 2,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "247",
+      "name": "Le support moteur",
+      "current_cost": "40 à 150 € (pièce) / 100 à 300 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "249",
+      "name": "Le support de boîte de vitesses",
+      "current_cost": "30 à 120 € (pièce) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

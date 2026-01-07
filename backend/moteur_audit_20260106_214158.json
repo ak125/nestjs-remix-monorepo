@@ -1,0 +1,142 @@
+{
+  "famille": "Moteur",
+  "audit_date": "2026-01-06T21:41:58.852939",
+  "total_gammes": 9,
+  "total_issues": 0,
+  "gammes_ok": 9,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "comment savoir si le joint de...",
+        "used_by": [
+          "ID 40",
+          "ID 321",
+          "ID 318"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "tous les combien changer le joint...",
+        "used_by": [
+          "ID 40",
+          "ID 321",
+          "ID 318"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec le joint...",
+        "used_by": [
+          "ID 40",
+          "ID 321",
+          "ID 318"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "tous les combien changer les soupapes...",
+        "used_by": [
+          "ID 1269",
+          "ID 1270"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec les soupapes...",
+        "used_by": [
+          "ID 1269",
+          "ID 1270"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "40",
+      "name": "Le joint de collecteur",
+      "current_cost": "20 à 80 € (joint) / 100 à 300 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1216",
+      "name": "Le poussoir de soupape",
+      "current_cost": "10 à 40 € (poussoir) / 200 à 500 € avec pose (jeu)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "592",
+      "name": "Le carter d'huile",
+      "current_cost": "50 à 200 € (carter) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1533",
+      "name": "Les vis de culasse",
+      "current_cost": "30 à 100 € (jeu de vis) / inclus dans repose culasse",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3874",
+      "name": "Les bagues d'étanchéité",
+      "current_cost": "10 à 50 € (bague) / 100 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "321",
+      "name": "Le joint de cache culbuteurs",
+      "current_cost": "15 à 60 € (joint) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "318",
+      "name": "Le joint de culasse",
+      "current_cost": "50 à 200 € (joint) / 500 à 1500 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1269",
+      "name": "La soupape d'admission",
+      "current_cost": "15 à 50 € (soupape) / 300 à 800 € avec pose (jeu)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1270",
+      "name": "La soupape d'échappement",
+      "current_cost": "20 à 60 € (soupape) / 300 à 800 € avec pose (jeu)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

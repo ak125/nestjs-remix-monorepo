@@ -1,0 +1,71 @@
+{
+  "famille": "Système d'alimentation",
+  "audit_date": "2026-01-06T21:31:25.038125",
+  "total_gammes": 6,
+  "total_issues": 0,
+  "gammes_ok": 6,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "458",
+      "name": "La pompe à carburant",
+      "current_cost": "100 à 350 € (essence) / 200 à 600 € (diesel HP)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3894",
+      "name": "Le joint d'injecteur",
+      "current_cost": "5 à 20 € (joint) / 30 à 80 € pose par injecteur",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3927",
+      "name": "Le débitmètre d'air",
+      "current_cost": "80 à 250 € (débitmètre) / 150 à 350 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "158",
+      "name": "Le boîtier papillon",
+      "current_cost": "150 à 400 € (boîtier complet) / 250 à 600 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3902",
+      "name": "L'injecteur",
+      "current_cost": "50 à 300 € (essence) / 150 à 500 € (diesel)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1145",
+      "name": "La vanne EGR",
+      "current_cost": "100 à 400 € (vanne) / 200 à 600 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

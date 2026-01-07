@@ -1,0 +1,236 @@
+{
+  "famille": "Freinage",
+  "audit_date": "2026-01-05T23:06:07.074380",
+  "total_gammes": 15,
+  "total_issues": 11,
+  "gammes_ok": 10,
+  "gammes_to_fix": 5,
+  "gammes": [
+    {
+      "id": "402",
+      "name": "Les plaquettes de frein",
+      "current_cost": "20 à 120 € (pièces) / 80 à 250 € avec pose (selon véhicule)",
+      "current_symptoms_count": 8,
+      "current_faq_count": 7,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "82",
+      "name": "Les disques de frein",
+      "current_cost": "60 à 250 € (paire de disques) / 180 à 450 € avec pose (selon diamètre et véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 6,
+      "issues": [
+        "⚠️ Pas de FAQ 'Diagnostic express'"
+      ],
+      "needs_correction": true,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": "",
+      "ai_suggestions": {
+        "error": "API Anthropic non disponible. Installez: pip install anthropic"
+      }
+    },
+    {
+      "id": "124",
+      "name": "Les câbles de frein à main",
+      "current_cost": "15 à 60 € (pièce) / 120 à 300 € avec pose (selon accès + réglage)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "78",
+      "name": "Les étriers de frein",
+      "current_cost": "80 à 350 € (reconditionné) / 200 à 700 € (neuf) — 250 à 700 € avec pose (selon véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 6,
+      "issues": [
+        "⚠️ Pas de FAQ 'Diagnostic express'"
+      ],
+      "needs_correction": true,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": "",
+      "ai_suggestions": {
+        "error": "API Anthropic non disponible. Installez: pip install anthropic"
+      }
+    },
+    {
+      "id": "70",
+      "name": "Les mâchoires de frein",
+      "current_cost": "20 à 60 € (paire) / 80 à 180 € avec pose (selon véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "123",
+      "name": "Les tambours de frein",
+      "current_cost": "40 à 160 € (paire) / 180 à 400 € avec pose (souvent avec mâchoires)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "83",
+      "name": "Les flexibles de frein",
+      "current_cost": "10 à 45 € (pièce) / 80 à 200 € avec pose (purge incluse)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "74",
+      "name": "Les servo-freins",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 5,
+      "current_faq_count": 3,
+      "issues": [
+        "❌ Fourchette coût générique: '150 à 600 €'",
+        "❌ FAQ insuffisantes: 3/5",
+        "⚠️ Pas de FAQ 'Erreur fréquente'",
+        "⚠️ Pas de FAQ 'Diagnostic express'"
+      ],
+      "needs_correction": true,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": "",
+      "ai_suggestions": {
+        "error": "API Anthropic non disponible. Installez: pip install anthropic"
+      }
+    },
+    {
+      "id": "73",
+      "name": "Les répartiteurs de freinage",
+      "current_cost": "80 à 300 € (pièce) / 200 à 500 € avec pose (selon accès + purge)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "3859",
+      "name": "Les kits freins arrière",
+      "current_cost": "40 à 150 € (kit complet) / 150 à 350 € avec pose (selon contenu du kit)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "806",
+      "name": "Les interrupteurs de feux de frein",
+      "current_cost": "10 à 35 € (pièce) / 40 à 120 € avec pose (selon accès et véhicule)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "54",
+      "name": "Les vis de disque",
+      "current_cost": "2 à 15 € (jeu de vis) / souvent inclus avec le montage disques",
+      "current_symptoms_count": 4,
+      "current_faq_count": 5,
+      "issues": [
+        "❌ Symptômes insuffisants: 4/5"
+      ],
+      "needs_correction": true,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": "",
+      "ai_suggestions": {
+        "error": "API Anthropic non disponible. Installez: pip install anthropic"
+      }
+    },
+    {
+      "id": "415",
+      "name": "Les agrégats ABS",
+      "current_cost": "250 à 900 € (reconditionné) / 800 à 2 500 € (neuf) + pose/programmation possible",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "412",
+      "name": "Les capteurs ABS",
+      "current_cost": "25 à 120 € (pièce) / 80 à 220 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": ""
+    },
+    {
+      "id": "111",
+      "name": "Le/La Ampoule feu stop",
+      "current_cost": "30 à 200 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Pas de FAQ 'Erreur fréquente'",
+        "⚠️ Pas de FAQ 'Diagnostic express'"
+      ],
+      "needs_correction": true,
+      "new_cost": "",
+      "symptoms_to_add": [],
+      "faq_to_add": [],
+      "a_retenir": "",
+      "ai_suggestions": {
+        "error": "API Anthropic non disponible. Installez: pip install anthropic"
+      }
+    }
+  ]
+}

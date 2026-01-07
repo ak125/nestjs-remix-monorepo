@@ -1,0 +1,142 @@
+{
+  "meta": {
+    "generated_at": "2026-01-07",
+    "type": "BMAD RAG Config Review",
+    "version": "1.0"
+  },
+  "architecture": {
+    "nestjs_proxy": {
+      "module": "RagProxyModule",
+      "controller": "RagProxyController",
+      "service": "RagProxyService",
+      "port": 3000,
+      "routes": [
+        "POST /api/rag/chat",
+        "POST /api/rag/search",
+        "GET /api/rag/health"
+      ],
+      "status": "WIRED"
+    },
+    "python_service": {
+      "framework": "FastAPI",
+      "port": 8000,
+      "location": "/opt/automecanik/rag/",
+      "status": "READY"
+    },
+    "vector_db": {
+      "type": "Weaviate",
+      "port": 8080,
+      "status": "NOT_RUNNING"
+    }
+  },
+  "embeddings": {
+    "model": "all-MiniLM-L6-v2",
+    "dimension": 384,
+    "provider": "sentence-transformers",
+    "cost": 0
+  },
+  "retrieval": {
+    "top_k": 5,
+    "alpha": 0.7,
+    "min_score_threshold": 0.70,
+    "min_results_required": 3,
+    "method": "hybrid_bm25_vector"
+  },
+  "llm": {
+    "model": "claude-3-5-sonnet-20241022",
+    "max_tokens": 1024,
+    "temperature": 0.3,
+    "provider": "anthropic"
+  },
+  "security": {
+    "kill_switch": {
+      "env_var": "AI_PROD_WRITE",
+      "default": false,
+      "prod_override": "BLOCKED"
+    },
+    "namespace_guard": {
+      "type": "HARDCODED",
+      "prod_namespace": "knowledge:faq",
+      "allowed_prod": [
+        "knowledge:vehicle",
+        "knowledge:diagnostic",
+        "knowledge:faq",
+        "knowledge:guide",
+        "knowledge:policy"
+      ],
+      "forbidden_prod": [
+        "internal:*",
+        "dev:*"
+      ]
+    },
+    "rate_limiting": {
+      "requests_per_minute": 60,
+      "requests_per_hour": 3600
+    },
+    "validation": {
+      "pii_detection": true,
+      "injection_detection": true,
+      "max_request_size": 1048576
+    }
+  },
+  "corpus": {
+    "location": "/opt/automecanik/rag/knowledge/",
+    "total_documents": 15,
+    "categories": {
+      "diagnostic": 3,
+      "faq": 4,
+      "guides": 2,
+      "policies": 3,
+      "vehicle": 2
+    },
+    "format": "markdown_frontmatter"
+  },
+  "truth_levels": {
+    "L1": {
+      "name": "Faits verifies",
+      "weight": 1.0
+    },
+    "L2": {
+      "name": "Regles metier",
+      "weight": 0.9
+    },
+    "L3": {
+      "name": "Hypotheses",
+      "weight": 0.6
+    },
+    "L4": {
+      "name": "Heuristiques",
+      "weight": 0.4
+    }
+  },
+  "mixing_rules": {
+    "L1_L2": "allowed",
+    "L1_L3": "warning",
+    "L1_L4": "forbidden",
+    "L2_L3": "warning",
+    "L2_L4": "warning",
+    "L3_L4": "forbidden"
+  },
+  "env_vars": {
+    "required": [
+      "RAG_SERVICE_URL",
+      "RAG_API_KEY"
+    ],
+    "optional": [
+      "ANTHROPIC_API_KEY",
+      "WEAVIATE_URL",
+      "REDIS_URL"
+    ],
+    "current_values": {
+      "RAG_SERVICE_URL": "http://localhost:8000",
+      "RAG_API_KEY": "[CONFIGURED]"
+    }
+  },
+  "status": {
+    "wiring": "FIXED",
+    "env_vars": "CONFIGURED",
+    "python_service": "NOT_RUNNING",
+    "weaviate": "NOT_RUNNING",
+    "golden_tests": "NOT_CREATED"
+  }
+}

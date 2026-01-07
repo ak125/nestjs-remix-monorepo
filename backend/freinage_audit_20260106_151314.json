@@ -1,0 +1,247 @@
+{
+  "famille": "Freinage",
+  "audit_date": "2026-01-06T15:13:14.015595",
+  "total_gammes": 14,
+  "total_issues": 19,
+  "gammes_ok": 3,
+  "gammes_to_fix": 11,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "changez par essieu...",
+        "gammes": [
+          "402: Les plaquettes de frein",
+          "70: Les mâchoires de frein"
+        ]
+      },
+      {
+        "value": "changez par paire...",
+        "gammes": [
+          "82: Les disques de frein",
+          "123: Les tambours de frein",
+          "277: Les cylindres de roue"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "quelles sont les erreurs fréquentes à...",
+        "used_by": [
+          "ID 402",
+          "ID 82",
+          "ID 124",
+          "ID 78",
+          "ID 70",
+          "ID 83",
+          "ID 123",
+          "ID 258",
+          "ID 415",
+          "ID 407",
+          "ID 3859",
+          "ID 277",
+          "ID 412",
+          "ID 806"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "comment faire un diagnostic rapide ?...",
+        "used_by": [
+          "ID 402",
+          "ID 82",
+          "ID 124",
+          "ID 78",
+          "ID 70",
+          "ID 83",
+          "ID 123",
+          "ID 258",
+          "ID 415",
+          "ID 3859",
+          "ID 277",
+          "ID 412",
+          "ID 806"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle est la durée de vie...",
+        "used_by": [
+          "ID 78",
+          "ID 70"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "faut-il purger après remplacement ?...",
+        "used_by": [
+          "ID 78",
+          "ID 258"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "402",
+      "name": "Les plaquettes de frein",
+      "current_cost": "20 à 120 € (pièces) / 80 à 250 € avec pose (selon véhicule)",
+      "current_symptoms_count": 8,
+      "current_faq_count": 7,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "82",
+      "name": "Les disques de frein",
+      "current_cost": "60 à 250 € (paire de disques) / 180 à 450 € avec pose (selon diamètre et véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 7,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "78",
+      "name": "Les étriers de frein",
+      "current_cost": "80 à 350 € (reconditionné) / 200 à 700 € (neuf) — 250 à 700 € avec pose (selon véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 7,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "124",
+      "name": "Les câbles de frein à main",
+      "current_cost": "15 à 60 € (pièce) / 120 à 300 € avec pose (selon accès + réglage)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, timing, diy",
+        "⚠️ Symptômes incomplets: manque catégories visuel, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "70",
+      "name": "Les mâchoires de frein",
+      "current_cost": "20 à 60 € (paire) / 80 à 180 € avec pose (selon véhicule)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories comportement, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "83",
+      "name": "Les flexibles de frein",
+      "current_cost": "10 à 45 € (pièce) / 80 à 200 € avec pose (purge incluse)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, diagnostic, diy",
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "123",
+      "name": "Les tambours de frein",
+      "current_cost": "40 à 160 € (paire) / 180 à 400 € avec pose (souvent avec mâchoires)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "258",
+      "name": "Les maîtres-cylindres",
+      "current_cost": "80 à 350 € (pièce) / 250 à 600 € avec pose (purge incluse)",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, timing, diy",
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "415",
+      "name": "Les agrégats ABS",
+      "current_cost": "250 à 900 € (reconditionné) / 800 à 2 500 € (neuf) + pose/programmation possible",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, diagnostic, timing",
+        "⚠️ Symptômes incomplets: manque catégories comportement, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "407",
+      "name": "Les témoins d'usure",
+      "current_cost": "5 à 30 € (pièce) / 20 à 80 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Pas de FAQ 'Diagnostic express'",
+        "⚠️ FAQ pauvre en diversité: manque diagnostic, timing, diy",
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3859",
+      "name": "Les kits freins arrière",
+      "current_cost": "40 à 150 € (kit complet) / 150 à 350 € avec pose (selon contenu du kit)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories comportement, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "277",
+      "name": "Les cylindres de roue",
+      "current_cost": "15 à 50 € (pièce) / 80 à 200 € avec pose (purge incluse)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque diagnostic, timing, diy",
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "412",
+      "name": "Les capteurs ABS",
+      "current_cost": "25 à 120 € (pièce) / 80 à 220 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, diagnostic, timing",
+        "⚠️ Symptômes incomplets: manque catégories auditif, olfactif, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "806",
+      "name": "Les interrupteurs de feux de frein",
+      "current_cost": "10 à 35 € (pièce) / 40 à 120 € avec pose (selon accès et véhicule)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, auditif, comportement"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

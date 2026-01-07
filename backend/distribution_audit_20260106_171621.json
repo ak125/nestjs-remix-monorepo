@@ -1,0 +1,581 @@
+{
+  "famille": "Distribution",
+  "audit_date": "2026-01-06T17:16:21.841782",
+  "total_gammes": 10,
+  "total_issues": 3,
+  "gammes_ok": 7,
+  "gammes_to_fix": 3,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "1067: La poulie d'arbre à came",
+          "3213: La poulie vilebrequin",
+          "1108: La poulie d'alternateur"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "1067: La poulie d'arbre à came",
+          "3213: La poulie vilebrequin",
+          "1108: La poulie d'alternateur"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 1389"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 3213"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 307"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 1108"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 306"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "61%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1067",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "61%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 3213"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 307"
+        ],
+        "field": "intro_role",
+        "similarity": "93%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 1108"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 306"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "93%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "61%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1389",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "61%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 307"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 1108"
+        ],
+        "field": "intro_role",
+        "similarity": "86%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 306"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3213",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 1108"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 306"
+        ],
+        "field": "intro_role",
+        "similarity": "86%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "86%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 307",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1108",
+          "ID 306"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1108",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1108",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1108",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1108",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 306",
+          "ID 10"
+        ],
+        "field": "intro_role",
+        "similarity": "86%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 306",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "86%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 306",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 306",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 10",
+          "ID 1123"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 10",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "87%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 10",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "87%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1123",
+          "ID 310"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1123",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "65%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 310",
+          "ID 312"
+        ],
+        "field": "intro_role",
+        "similarity": "88%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer la poulie...",
+        "used_by": [
+          "ID 1067",
+          "ID 3213",
+          "ID 1108"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec la poulie...",
+        "used_by": [
+          "ID 1067",
+          "ID 3213",
+          "ID 1108"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelles sont les erreurs fréquentes à...",
+        "used_by": [
+          "ID 307",
+          "ID 306",
+          "ID 10",
+          "ID 1123",
+          "ID 310"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "comment faire un diagnostic rapide ?...",
+        "used_by": [
+          "ID 307",
+          "ID 306",
+          "ID 10",
+          "ID 1123",
+          "ID 310"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1389",
+      "name": "Le kit de chaîne de distribution",
+      "current_cost": "300 à 800 € (kit complet) / 1 200 à 2 500 € avec pose (selon motorisation)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "307",
+      "name": "Le kit de distribution",
+      "current_cost": "100 à 350 € (kit avec pompe) / 500 à 1 200 € avec pose (selon motorisation)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "306",
+      "name": "La courroie de distribution",
+      "current_cost": "30 à 100 € (courroie seule) / 400 à 1 000 € avec pose (selon motorisation)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "10",
+      "name": "La courroie d'accessoire",
+      "current_cost": "15 à 50 € (courroie seule) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1123",
+      "name": "La chaîne de distribution",
+      "current_cost": "150 à 400 € (chaîne seule) / 800 à 2 000 € avec pose (selon motorisation)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "310",
+      "name": "Le galet tendeur d'accessoire",
+      "current_cost": "20 à 60 € (galet) / 80 à 180 € avec pose",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "312",
+      "name": "Le galet enrouleur d'accessoire",
+      "current_cost": "15 à 45 € (galet) / 70 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1067",
+      "name": "La poulie d'arbre à came",
+      "current_cost": "40 à 150 € (poulie) / incluse dans kit distribution",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "❌ Arg4 titre générique: 'Kit complet recommandé'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3213",
+      "name": "La poulie vilebrequin",
+      "current_cost": "50 à 200 € (poulie) / 200 à 500 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "❌ Arg4 titre générique: 'Kit complet recommandé'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1108",
+      "name": "La poulie d'alternateur",
+      "current_cost": "30 à 120 € (poulie) / 150 à 350 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "❌ Arg4 titre générique: 'Kit complet recommandé'"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

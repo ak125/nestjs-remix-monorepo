@@ -1,0 +1,44 @@
+{
+  "famille": "Système électrique",
+  "audit_date": "2026-01-06T19:54:17.476419",
+  "total_gammes": 3,
+  "total_issues": 0,
+  "gammes_ok": 3,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1367",
+      "name": "Le neiman",
+      "current_cost": "80 à 250 € (neuf) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "2",
+      "name": "Le démarreur",
+      "current_cost": "150 à 400 € (neuf) / 80 à 200 € (échange standard)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "4",
+      "name": "L'alternateur",
+      "current_cost": "200 à 500 € (neuf) / 100 à 250 € (échange standard)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

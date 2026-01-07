@@ -1,0 +1,79 @@
+{
+  "famille": "Eclairage",
+  "audit_date": "2026-01-07T02:10:15.850089",
+  "total_gammes": 5,
+  "total_issues": 3,
+  "gammes_ok": 2,
+  "gammes_to_fix": 3,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": [
+      {
+        "symptom": "contrôle technique refusé pour...",
+        "used_by": [
+          "ID 62",
+          "ID 259",
+          "ID 290"
+        ],
+        "count": 3,
+        "fix": "Symptôme trop générique, spécifier par pièce"
+      }
+    ]
+  },
+  "gammes": [
+    {
+      "id": "62",
+      "name": "Le répétiteur de clignotant",
+      "current_cost": "10 à 50 € (répétiteur) / 20 à 80 € avec pose",
+      "current_symptoms_count": 9,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "809",
+      "name": "La commande d'éclairage",
+      "current_cost": "40 à 200 € (commodo) / 80 à 300 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "259",
+      "name": "Le phare avant",
+      "current_cost": "80 à 400 € (phare standard) / 200 à 800 € (xénon/LED)",
+      "current_symptoms_count": 9,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, auditif, comportement"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "290",
+      "name": "Le feu arrière",
+      "current_cost": "50 à 250 € (bloc complet) / 80 à 350 € avec pose",
+      "current_symptoms_count": 9,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, olfactif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "807",
+      "name": "Le contacteur de feu de recul",
+      "current_cost": "10 à 40 € (contacteur) / 30 à 80 € avec pose",
+      "current_symptoms_count": 9,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, preventif"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "famille": "Filtres",
+  "audit_date": "2026-01-06T13:50:18.601764",
+  "total_gammes": 5,
+  "total_issues": 30,
+  "gammes_ok": 0,
+  "gammes_to_fix": 5,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "500 à 2 000 €...",
+        "gammes": [
+          "416: Le/La Filtre de boîte auto",
+          "424: Le/La Filtre d'habitacle",
+          "7: Le/La Filtre à huile",
+          "8: Le/La Filtre à air",
+          "9: Le/La Filtre à carburant"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "416: Le/La Filtre de boîte auto",
+          "424: Le/La Filtre d'habitacle",
+          "7: Le/La Filtre à huile",
+          "8: Le/La Filtre à air",
+          "9: Le/La Filtre à carburant"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "416: Le/La Filtre de boîte auto",
+          "424: Le/La Filtre d'habitacle",
+          "7: Le/La Filtre à huile",
+          "8: Le/La Filtre à air",
+          "9: Le/La Filtre à carburant"
+        ]
+      }
+    ]
+  },
+  "gammes": [
+    {
+      "id": "416",
+      "name": "Le/La Filtre de boîte auto",
+      "current_cost": "500 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '500 à 2 000 €...'",
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "424",
+      "name": "Le/La Filtre d'habitacle",
+      "current_cost": "500 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '500 à 2 000 €...'",
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "7",
+      "name": "Le/La Filtre à huile",
+      "current_cost": "500 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '500 à 2 000 €...'",
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "8",
+      "name": "Le/La Filtre à air",
+      "current_cost": "500 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '500 à 2 000 €...'",
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "9",
+      "name": "Le/La Filtre à carburant",
+      "current_cost": "500 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '500 à 2 000 €...'",
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

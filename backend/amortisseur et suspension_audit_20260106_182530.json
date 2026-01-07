@@ -1,0 +1,53 @@
+{
+  "famille": "Amortisseur et suspension",
+  "audit_date": "2026-01-06T18:25:30.916072",
+  "total_gammes": 4,
+  "total_issues": 0,
+  "gammes_ok": 4,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1182",
+      "name": "La butée élastique d'amortisseur",
+      "current_cost": "15 à 50 € (pièce) / inclus dans kit coupelle",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "854",
+      "name": "L'amortisseur",
+      "current_cost": "60 à 200 € (pièce) / 150 à 400 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1632",
+      "name": "Le kit de butée de suspension",
+      "current_cost": "30 à 100 € (kit) / 80 à 180 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "188",
+      "name": "Le ressort de suspension",
+      "current_cost": "50 à 150 € (pièce) / 150 à 350 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

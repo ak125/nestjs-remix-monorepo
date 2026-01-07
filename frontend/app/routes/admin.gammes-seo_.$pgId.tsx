@@ -47,6 +47,7 @@ import {
   RefreshCw,
   Trophy,
   BookOpen,
+  Zap,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -69,12 +70,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 
 // Types
@@ -94,10 +90,15 @@ interface VLevelItem {
 
 // Freshness status helper
 const getFreshnessStatus = (lastUpdated: string | null) => {
-  if (!lastUpdated) return { status: "unknown", color: "gray", text: "Inconnu", icon: "❓" };
-  const days = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24));
-  if (days <= 7) return { status: "fresh", color: "green", text: "Frais", icon: "✅" };
-  if (days <= 30) return { status: "stale", color: "yellow", text: "Périmé", icon: "⚠️" };
+  if (!lastUpdated)
+    return { status: "unknown", color: "gray", text: "Inconnu", icon: "❓" };
+  const days = Math.floor(
+    (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24),
+  );
+  if (days <= 7)
+    return { status: "fresh", color: "green", text: "Frais", icon: "✅" };
+  if (days <= 30)
+    return { status: "stale", color: "yellow", text: "Périmé", icon: "⚠️" };
   return { status: "old", color: "red", text: "Ancien", icon: "🔴" };
 };
 
@@ -197,7 +198,22 @@ interface GammeDetail {
     v5: VLevelItem[];
   };
   stats: {
+    // 🎯 Valeurs "vérité" (agrégats)
     products_count: number;
+    vehicles_count?: number;
+    content_words?: number;
+    vlevel_counts?: {
+      V1: number;
+      V2: number;
+      V3: number;
+      V4: number;
+      V5: number;
+    };
+    // 🏷️ Phase 2 Badges
+    priority_score?: number;
+    catalog_issues?: string[];
+    smart_actions?: Array<{ action: string; priority: string }>;
+    // Champs existants (backward compatibility)
     articles_count: number;
     vehicles_level1_count: number;
     vehicles_level2_count: number;
@@ -211,6 +227,22 @@ interface GammeDetail {
     vLevel_total_count: number;
     vLevel_last_updated: string | null;
     last_article_date: string | null;
+    // 🔍 Debug (valeurs brutes)
+    _debug?: {
+      products_direct: number;
+      products_via_vehicles: number;
+      products_via_family: number;
+      seo_content_raw_words: number;
+      content_breakdown?: {
+        seo: number;
+        conseil: number;
+        switches: number;
+        purchaseGuide: number;
+      } | null;
+      aggregates_computed_at: string | null;
+      source_updated_at: string | null;
+      _note?: string;
+    };
   };
   purchaseGuide: PurchaseGuideData | null;
 }
@@ -249,7 +281,7 @@ interface PurchaseGuideData {
   step3: {
     title: string;
     content: string;
-    alerts: Array<{ type: 'danger' | 'warning' | 'info'; text: string }>;
+    alerts: Array<{ type: "danger" | "warning" | "info"; text: string }>;
     relatedGammes?: Array<{ pgId: number; pgName: string; pgAlias: string }>;
   };
   createdAt?: string;
@@ -273,7 +305,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         Cookie: cookieHeader,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -317,7 +349,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(seoData),
-        }
+        },
       );
 
       const result = await response.json();
@@ -337,7 +369,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ content }),
-        }
+        },
       );
 
       const result = await response.json();
@@ -357,7 +389,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(guideData),
-        }
+        },
       );
 
       const result = await response.json();
@@ -376,7 +408,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ content }),
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -394,7 +426,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ content }),
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -410,7 +442,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             Cookie: cookieHeader,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -429,7 +461,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ pmId: parseInt(pmId, 10), content }),
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -447,7 +479,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ content }),
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -463,7 +495,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             Cookie: cookieHeader,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const result = await response.json();
       return json(result);
@@ -496,8 +528,12 @@ export default function AdminGammeSeoDetail() {
   });
 
   // State for expandable switches
-  const [expandedSwitches, setExpandedSwitches] = useState<Set<string>>(new Set());
-  const [showAllVariations, setShowAllVariations] = useState<Set<string>>(new Set());
+  const [expandedSwitches, setExpandedSwitches] = useState<Set<string>>(
+    new Set(),
+  );
+  const [showAllVariations, setShowAllVariations] = useState<Set<string>>(
+    new Set(),
+  );
   const MAX_VISIBLE_VARIATIONS = 5;
 
   // State for article edit modal
@@ -512,12 +548,17 @@ export default function AdminGammeSeoDetail() {
   });
   const [isEditSaving, setIsEditSaving] = useState(false);
   const [vehicleSearch, setVehicleSearch] = useState("");
-  const [energyFilter, setEnergyFilter] = useState<"all" | "diesel" | "essence">("all");
+  const [energyFilter, setEnergyFilter] = useState<
+    "all" | "diesel" | "essence"
+  >("all");
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
 
   // State pour édition Family Switches
-  const [editingSwitch, setEditingSwitch] = useState<{ id: number; content: string } | null>(null);
+  const [editingSwitch, setEditingSwitch] = useState<{
+    id: number;
+    content: string;
+  } | null>(null);
   const [newSwitchAlias, setNewSwitchAlias] = useState<number | null>(null);
   const [newSwitchContent, setNewSwitchContent] = useState("");
   const [switchSaving, setSwitchSaving] = useState(false);
@@ -536,21 +577,40 @@ export default function AdminGammeSeoDetail() {
   } | null>(null);
 
   // State for Purchase Guide form
-  const getDefaultGuideForm = (): Omit<PurchaseGuideData, 'id' | 'pgId' | 'createdAt' | 'updatedAt'> => ({
+  const getDefaultGuideForm = (): Omit<
+    PurchaseGuideData,
+    "id" | "pgId" | "createdAt" | "updatedAt"
+  > => ({
     step1: {
       title: `Identifiez votre ${detail.gamme.pg_name.toLowerCase()}`,
-      content: '',
-      highlight: '',
+      content: "",
+      highlight: "",
       bullets: [],
     },
     step2: {
-      economique: { subtitle: 'Usage standard', description: '', specs: [], priceRange: '' },
-      qualitePlus: { subtitle: 'Équipement d\'origine', description: '', specs: [], priceRange: '', badge: 'Le plus choisi' },
-      premium: { subtitle: 'Haute performance', description: '', specs: [], priceRange: '' },
+      economique: {
+        subtitle: "Usage standard",
+        description: "",
+        specs: [],
+        priceRange: "",
+      },
+      qualitePlus: {
+        subtitle: "Équipement d'origine",
+        description: "",
+        specs: [],
+        priceRange: "",
+        badge: "Le plus choisi",
+      },
+      premium: {
+        subtitle: "Haute performance",
+        description: "",
+        specs: [],
+        priceRange: "",
+      },
     },
     step3: {
-      title: 'Sécurité et conseils',
-      content: '',
+      title: "Sécurité et conseils",
+      content: "",
       alerts: [],
       relatedGammes: [],
     },
@@ -570,9 +630,9 @@ export default function AdminGammeSeoDetail() {
 
   // Helper to update nested guide form state
   const updateGuideForm = (path: string, value: any) => {
-    setGuideForm(prev => {
+    setGuideForm((prev) => {
       const newForm = JSON.parse(JSON.stringify(prev));
-      const parts = path.split('.');
+      const parts = path.split(".");
       let current = newForm;
       for (let i = 0; i < parts.length - 1; i++) {
         current = current[parts[i]];
@@ -587,9 +647,9 @@ export default function AdminGammeSeoDetail() {
     setGuideSaving(true);
     try {
       const formData = new FormData();
-      formData.append('intent', 'updatePurchaseGuide');
-      formData.append('guideData', JSON.stringify(guideForm));
-      fetcher.submit(formData, { method: 'post' });
+      formData.append("intent", "updatePurchaseGuide");
+      formData.append("guideData", JSON.stringify(guideForm));
+      fetcher.submit(formData, { method: "post" });
     } finally {
       setGuideSaving(false);
     }
@@ -614,11 +674,14 @@ export default function AdminGammeSeoDetail() {
   const handleCreateSwitch = async (alias: number, content: string) => {
     setSwitchSaving(true);
     try {
-      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alias, content }),
-      });
+      const response = await fetch(
+        `/api/admin/gammes-seo/${detail.gamme.pg_id}/switches`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alias, content }),
+        },
+      );
       const result = await response.json();
       if (result.success) {
         setNewSwitchAlias(null);
@@ -637,11 +700,14 @@ export default function AdminGammeSeoDetail() {
   const handleUpdateSwitch = async (id: number, content: string) => {
     setSwitchSaving(true);
     try {
-      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
+      const response = await fetch(
+        `/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        },
+      );
       const result = await response.json();
       if (result.success) {
         setEditingSwitch(null);
@@ -660,9 +726,12 @@ export default function AdminGammeSeoDetail() {
     if (!confirm("Supprimer ce switch ?")) return;
     setSwitchSaving(true);
     try {
-      const response = await fetch(`/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/admin/gammes-seo/${detail.gamme.pg_id}/switches/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       const result = await response.json();
       if (result.success) {
         window.location.reload();
@@ -728,7 +797,7 @@ export default function AdminGammeSeoDetail() {
         {
           method: "POST",
           credentials: "include",
-        }
+        },
       );
       if (res.ok) {
         // Rafraîchir la page pour voir les nouvelles données
@@ -768,7 +837,7 @@ export default function AdminGammeSeoDetail() {
   // Fonction d'export CSV pour les véhicules
   const exportVehiclesToCSV = (
     vehicles: typeof detail.vehicles.level1,
-    filename: string
+    filename: string,
   ) => {
     const headers = [
       "Marque",
@@ -803,18 +872,20 @@ export default function AdminGammeSeoDetail() {
       .filter((v) =>
         `${v.marque_name} ${v.modele_name} ${v.type_name}`
           .toLowerCase()
-          .includes(vehicleSearch.toLowerCase())
+          .includes(vehicleSearch.toLowerCase()),
       )
       .sort(
-        (a, b) => parseInt(b.year_from || "0") - parseInt(a.year_from || "0")
+        (a, b) => parseInt(b.year_from || "0") - parseInt(a.year_from || "0"),
       );
   };
 
   // Fonction pour la couleur du badge selon le carburant
   const getFuelBadgeClass = (fuel: string) => {
     const fuelLower = fuel?.toLowerCase() || "";
-    if (fuelLower.includes("diesel")) return "bg-blue-100 text-blue-800 border-blue-200";
-    if (fuelLower.includes("essence")) return "bg-green-100 text-green-800 border-green-200";
+    if (fuelLower.includes("diesel"))
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    if (fuelLower.includes("essence"))
+      return "bg-green-100 text-green-800 border-green-200";
     if (fuelLower.includes("hybrid") || fuelLower.includes("électrique"))
       return "bg-purple-100 text-purple-800 border-purple-200";
     return "";
@@ -829,7 +900,11 @@ export default function AdminGammeSeoDetail() {
   };
 
   // Fonction pour le status des compteurs de caractères
-  const getCharCountStatus = (current: number, optimal: number, max: number) => {
+  const getCharCountStatus = (
+    current: number,
+    optimal: number,
+    max: number,
+  ) => {
     if (current === 0) return "Vide";
     if (current <= optimal) return "Optimal";
     if (current <= max) return "Acceptable";
@@ -874,7 +949,7 @@ export default function AdminGammeSeoDetail() {
   const inSitemap = detail.gamme.pg_sitemap === "1";
 
   // Open edit modal for an article
-  const openEditModal = (article: typeof detail.articles[0]) => {
+  const openEditModal = (article: (typeof detail.articles)[0]) => {
     setEditingArticle({
       ba_id: article.ba_id,
       ba_title: article.ba_title,
@@ -935,8 +1010,14 @@ export default function AdminGammeSeoDetail() {
   }) => {
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-    const dieselItems = items.filter((v) => v.energy?.toLowerCase() === "diesel");
-    const essenceItems = items.filter((v) => v.energy?.toLowerCase() === "essence" || v.energy?.toLowerCase() === "petrol");
+    const dieselItems = items.filter(
+      (v) => v.energy?.toLowerCase() === "diesel",
+    );
+    const essenceItems = items.filter(
+      (v) =>
+        v.energy?.toLowerCase() === "essence" ||
+        v.energy?.toLowerCase() === "petrol",
+    );
 
     return (
       <Card className={colorClass}>
@@ -949,7 +1030,9 @@ export default function AdminGammeSeoDetail() {
               <span className="text-xl">{icon}</span>
               <div>
                 <CardTitle className="text-base">{title}</CardTitle>
-                <CardDescription className="text-xs">{description}</CardDescription>
+                <CardDescription className="text-xs">
+                  {description}
+                </CardDescription>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1069,9 +1152,7 @@ export default function AdminGammeSeoDetail() {
             {isIndexed ? "INDEX" : "NOINDEX"}
           </Badge>
           {isG1 && <Badge variant="default">G1</Badge>}
-          {inSitemap && (
-            <Badge variant="outline">Sitemap</Badge>
-          )}
+          {inSitemap && <Badge variant="outline">Sitemap</Badge>}
           {detail.stats.vLevel_v1_count > 0 && (
             <Badge className="bg-amber-100 text-amber-800 border-amber-300">
               <Trophy className="h-3 w-3 mr-1" />
@@ -1079,7 +1160,11 @@ export default function AdminGammeSeoDetail() {
             </Badge>
           )}
           <Link to="/admin/v-level-status">
-            <Button variant="outline" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            >
               <BarChart3 className="h-4 w-4 mr-1" />
               V-Level
               <ArrowRight className="h-4 w-4 ml-1" />
@@ -1098,158 +1183,604 @@ export default function AdminGammeSeoDetail() {
         </div>
       </div>
 
-      {/* Stats Cards - Améliorées avec progress bars */}
-      <div className="mb-6 grid grid-cols-4 gap-4">
-        {/* Produits */}
-        <Card className={detail.stats.products_count > 0 ? "border-green-200" : "border-orange-200"}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm text-gray-500">Produits</p>
-                <p className="text-2xl font-bold">{detail.stats.products_count}</p>
-              </div>
-              <div className={`p-2 rounded-full ${detail.stats.products_count > 0 ? "bg-green-100" : "bg-orange-100"}`}>
-                <Package className={`h-6 w-6 ${detail.stats.products_count > 0 ? "text-green-600" : "text-orange-600"}`} />
-              </div>
-            </div>
-            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${detail.stats.products_count > 50 ? "bg-green-500" : detail.stats.products_count > 0 ? "bg-yellow-500" : "bg-gray-300"}`}
-                style={{ width: `${Math.min((detail.stats.products_count / 100) * 100, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              {detail.stats.products_count > 50 ? "Bien fourni" : detail.stats.products_count > 0 ? "À enrichir" : "Aucun produit"}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Stats Cards - Améliorées avec progress bars + Phase 1 Badges v2 */}
+      <div className="mb-6">
+        {/* Header avec bouton Refresh */}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium text-gray-500">
+            Statistiques agrégées
+          </h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                const response = await fetch(
+                  `/api/admin/gammes-seo/${detail.gamme.pg_id}/refresh-aggregates`,
+                  {
+                    method: "POST",
+                    credentials: "include",
+                  },
+                );
+                if (response.ok) {
+                  window.location.reload();
+                }
+              } catch (e) {
+                console.error("Error refreshing aggregates:", e);
+              }
+            }}
+            className="text-xs"
+          >
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Rafraîchir stats
+          </Button>
+        </div>
 
-        {/* Articles */}
-        <Card className={detail.stats.articles_count > 0 ? "border-blue-200" : "border-gray-200"}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm text-gray-500">Articles</p>
-                <p className="text-2xl font-bold">{detail.stats.articles_count}</p>
-              </div>
-              <div className={`p-2 rounded-full ${detail.stats.articles_count > 0 ? "bg-blue-100" : "bg-gray-100"}`}>
-                <FileText className={`h-6 w-6 ${detail.stats.articles_count > 0 ? "text-blue-600" : "text-gray-400"}`} />
-              </div>
-            </div>
-            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${detail.stats.articles_count >= 3 ? "bg-green-500" : detail.stats.articles_count > 0 ? "bg-blue-500" : "bg-gray-300"}`}
-                style={{ width: `${Math.min((detail.stats.articles_count / 5) * 100, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              {detail.stats.articles_count >= 3 ? "Contenu riche" : detail.stats.articles_count > 0 ? `${3 - detail.stats.articles_count} article(s) de plus recommandé(s)` : "Aucun article"}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Motorisations V-Level */}
-        <Card className={detail.stats.vLevel_total_count > 0 ? "border-purple-200" : "border-gray-200"}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm text-gray-500">Motorisations V-Level</p>
-                <p className="text-2xl font-bold">{detail.stats.vLevel_total_count}</p>
-              </div>
-              <div className={`p-2 rounded-full ${detail.stats.vLevel_total_count > 0 ? "bg-purple-100" : "bg-gray-100"}`}>
-                <TrendingUp className={`h-6 w-6 ${detail.stats.vLevel_total_count > 0 ? "text-purple-600" : "text-gray-400"}`} />
-              </div>
-            </div>
-            {/* Mini bars par V-Level */}
-            <div className="flex gap-0.5 mb-1">
-              {[
-                { key: 'v1', count: detail.stats.vLevel_v1_count, color: 'bg-amber-500' },
-                { key: 'v2', count: detail.stats.vLevel_v2_count, color: 'bg-green-500' },
-                { key: 'v3', count: detail.stats.vLevel_v3_count, color: 'bg-blue-500' },
-                { key: 'v4', count: detail.stats.vLevel_v4_count, color: 'bg-gray-400' },
-                { key: 'v5', count: detail.stats.vLevel_v5_count, color: 'bg-orange-500' },
-              ].map(({ key, count, color }) => (
-                <div key={key} className="flex-1">
-                  <div
-                    className={`h-1.5 ${color} rounded-sm`}
-                    style={{
-                      width: `${Math.max((count / Math.max(detail.stats.vLevel_total_count, 1)) * 100, count > 0 ? 10 : 0)}%`
-                    }}
+        <div className="grid grid-cols-5 gap-4">
+          {/* Produits - avec debug breakdown */}
+          <Card
+            className={
+              detail.stats.products_count > 0
+                ? "border-green-200"
+                : "border-orange-200"
+            }
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">Produits</p>
+                  <p className="text-2xl font-bold">
+                    {detail.stats.products_count}
+                  </p>
+                  {/* Debug breakdown si disponible */}
+                  {detail.stats._debug &&
+                    detail.stats._debug.products_direct !==
+                      detail.stats.products_count && (
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Direct: {detail.stats._debug.products_direct} | Via véh:{" "}
+                        {detail.stats._debug.products_via_vehicles}
+                      </p>
+                    )}
+                </div>
+                <div
+                  className={`p-2 rounded-full ${detail.stats.products_count > 0 ? "bg-green-100" : "bg-orange-100"}`}
+                >
+                  <Package
+                    className={`h-6 w-6 ${detail.stats.products_count > 0 ? "text-green-600" : "text-orange-600"}`}
                   />
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-between text-xs text-gray-400 flex-wrap gap-1">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                V1: {detail.stats.vLevel_v1_count}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                V2: {detail.stats.vLevel_v2_count}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                V3: {detail.stats.vLevel_v3_count}
-              </span>
-            </div>
-            {/* Indicateur fraîcheur des données */}
-            {(() => {
-              const freshness = getFreshnessStatus(detail.stats.vLevel_last_updated);
-              return (
-                <div className={`mt-2 pt-2 border-t text-xs flex items-center justify-between ${
-                  freshness.status === "old" ? "text-red-600 bg-red-50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg" :
-                  freshness.status === "stale" ? "text-yellow-700" : "text-gray-500"
-                }`}>
-                  <span>
-                    {freshness.icon} MAJ: {detail.stats.vLevel_last_updated
-                      ? new Date(detail.stats.vLevel_last_updated).toLocaleDateString("fr-FR")
-                      : "Jamais"}
-                  </span>
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                    freshness.status === "fresh" ? "bg-green-100 text-green-700" :
-                    freshness.status === "stale" ? "bg-yellow-100 text-yellow-700" :
-                    freshness.status === "old" ? "bg-red-100 text-red-700" :
-                    "bg-gray-100 text-gray-600"
-                  }`}>
-                    {freshness.text}
-                  </span>
-                </div>
-              );
-            })()}
-          </CardContent>
-        </Card>
-
-        {/* Dernier article */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm text-gray-500">Dernier article</p>
-                <p className="text-lg font-medium">
-                  {detail.stats.last_article_date
-                    ? new Date(detail.stats.last_article_date).toLocaleDateString("fr-FR")
-                    : "Aucun"}
-                </p>
               </div>
-              <div className="p-2 rounded-full bg-gray-100">
-                <Calendar className="h-6 w-6 text-gray-600" />
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${detail.stats.products_count > 50 ? "bg-green-500" : detail.stats.products_count > 0 ? "bg-yellow-500" : "bg-gray-300"}`}
+                  style={{
+                    width: `${Math.min((detail.stats.products_count / 100) * 100, 100)}%`,
+                  }}
+                />
               </div>
-            </div>
-            {detail.stats.last_article_date && (
-              <p className="text-xs text-gray-400">
-                {(() => {
-                  const days = Math.floor((Date.now() - new Date(detail.stats.last_article_date).getTime()) / (1000 * 60 * 60 * 24));
-                  if (days === 0) return "Aujourd'hui";
-                  if (days === 1) return "Hier";
-                  if (days < 30) return `Il y a ${days} jours`;
-                  if (days < 365) return `Il y a ${Math.floor(days / 30)} mois`;
-                  return `Il y a ${Math.floor(days / 365)} an(s)`;
-                })()}
+              <p className="text-xs text-gray-400 mt-1">
+                {detail.stats.products_count > 50
+                  ? "Bien fourni"
+                  : detail.stats.products_count > 0
+                    ? "À enrichir"
+                    : "Aucun produit"}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Contenu (mots) - NOUVEAU */}
+          <Card
+            className={
+              (detail.stats.content_words || 0) > 500
+                ? "border-indigo-200"
+                : "border-gray-200"
+            }
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">Contenu</p>
+                  <p className="text-2xl font-bold">
+                    {detail.stats.content_words || 0}
+                  </p>
+                  {/* Breakdown par source */}
+                  {detail.stats._debug?.content_breakdown && (
+                    <p className="text-[10px] text-gray-400 mt-0.5">
+                      SEO: {detail.stats._debug.content_breakdown.seo} | Guide:{" "}
+                      {detail.stats._debug.content_breakdown.purchaseGuide}
+                    </p>
+                  )}
+                </div>
+                <div
+                  className={`p-2 rounded-full ${(detail.stats.content_words || 0) > 500 ? "bg-indigo-100" : "bg-gray-100"}`}
+                >
+                  <FileText
+                    className={`h-6 w-6 ${(detail.stats.content_words || 0) > 500 ? "text-indigo-600" : "text-gray-400"}`}
+                  />
+                </div>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${(detail.stats.content_words || 0) > 1000 ? "bg-green-500" : (detail.stats.content_words || 0) > 500 ? "bg-indigo-500" : "bg-gray-300"}`}
+                  style={{
+                    width: `${Math.min(((detail.stats.content_words || 0) / 2000) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {(detail.stats.content_words || 0) > 1000
+                  ? "Riche"
+                  : (detail.stats.content_words || 0) > 500
+                    ? "Correct"
+                    : (detail.stats.content_words || 0) > 0
+                      ? "Léger"
+                      : "Vide"}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Articles */}
+          <Card
+            className={
+              detail.stats.articles_count > 0
+                ? "border-blue-200"
+                : "border-gray-200"
+            }
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">Articles</p>
+                  <p className="text-2xl font-bold">
+                    {detail.stats.articles_count}
+                  </p>
+                </div>
+                <div
+                  className={`p-2 rounded-full ${detail.stats.articles_count > 0 ? "bg-blue-100" : "bg-gray-100"}`}
+                >
+                  <FileText
+                    className={`h-6 w-6 ${detail.stats.articles_count > 0 ? "text-blue-600" : "text-gray-400"}`}
+                  />
+                </div>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${detail.stats.articles_count >= 3 ? "bg-green-500" : detail.stats.articles_count > 0 ? "bg-blue-500" : "bg-gray-300"}`}
+                  style={{
+                    width: `${Math.min((detail.stats.articles_count / 5) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {detail.stats.articles_count >= 3
+                  ? "Contenu riche"
+                  : detail.stats.articles_count > 0
+                    ? `${3 - detail.stats.articles_count} article(s) de plus recommandé(s)`
+                    : "Aucun article"}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Motorisations V-Level */}
+          <Card
+            className={
+              detail.stats.vLevel_total_count > 0
+                ? "border-purple-200"
+                : "border-gray-200"
+            }
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">Motorisations V-Level</p>
+                  <p className="text-2xl font-bold">
+                    {detail.stats.vLevel_total_count}
+                  </p>
+                </div>
+                <div
+                  className={`p-2 rounded-full ${detail.stats.vLevel_total_count > 0 ? "bg-purple-100" : "bg-gray-100"}`}
+                >
+                  <TrendingUp
+                    className={`h-6 w-6 ${detail.stats.vLevel_total_count > 0 ? "text-purple-600" : "text-gray-400"}`}
+                  />
+                </div>
+              </div>
+              {/* Mini bars par V-Level */}
+              <div className="flex gap-0.5 mb-1">
+                {[
+                  {
+                    key: "v1",
+                    count: detail.stats.vLevel_v1_count,
+                    color: "bg-amber-500",
+                  },
+                  {
+                    key: "v2",
+                    count: detail.stats.vLevel_v2_count,
+                    color: "bg-green-500",
+                  },
+                  {
+                    key: "v3",
+                    count: detail.stats.vLevel_v3_count,
+                    color: "bg-blue-500",
+                  },
+                  {
+                    key: "v4",
+                    count: detail.stats.vLevel_v4_count,
+                    color: "bg-gray-400",
+                  },
+                  {
+                    key: "v5",
+                    count: detail.stats.vLevel_v5_count,
+                    color: "bg-orange-500",
+                  },
+                ].map(({ key, count, color }) => (
+                  <div key={key} className="flex-1">
+                    <div
+                      className={`h-1.5 ${color} rounded-sm`}
+                      style={{
+                        width: `${Math.max((count / Math.max(detail.stats.vLevel_total_count, 1)) * 100, count > 0 ? 10 : 0)}%`,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 flex-wrap gap-1">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  V1: {detail.stats.vLevel_v1_count}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  V2: {detail.stats.vLevel_v2_count}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                  V3: {detail.stats.vLevel_v3_count}
+                </span>
+              </div>
+              {/* Indicateur fraîcheur des données */}
+              {(() => {
+                const freshness = getFreshnessStatus(
+                  detail.stats.vLevel_last_updated,
+                );
+                return (
+                  <div
+                    className={`mt-2 pt-2 border-t text-xs flex items-center justify-between ${
+                      freshness.status === "old"
+                        ? "text-red-600 bg-red-50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg"
+                        : freshness.status === "stale"
+                          ? "text-yellow-700"
+                          : "text-gray-500"
+                    }`}
+                  >
+                    <span>
+                      {freshness.icon} MAJ:{" "}
+                      {detail.stats.vLevel_last_updated
+                        ? new Date(
+                            detail.stats.vLevel_last_updated,
+                          ).toLocaleDateString("fr-FR")
+                        : "Jamais"}
+                    </span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                        freshness.status === "fresh"
+                          ? "bg-green-100 text-green-700"
+                          : freshness.status === "stale"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : freshness.status === "old"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {freshness.text}
+                    </span>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* Dernier article */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">Dernier article</p>
+                  <p className="text-lg font-medium">
+                    {detail.stats.last_article_date
+                      ? new Date(
+                          detail.stats.last_article_date,
+                        ).toLocaleDateString("fr-FR")
+                      : "Aucun"}
+                  </p>
+                </div>
+                <div className="p-2 rounded-full bg-gray-100">
+                  <Calendar className="h-6 w-6 text-gray-600" />
+                </div>
+              </div>
+              {detail.stats.last_article_date && (
+                <p className="text-xs text-gray-400">
+                  {(() => {
+                    const days = Math.floor(
+                      (Date.now() -
+                        new Date(detail.stats.last_article_date).getTime()) /
+                        (1000 * 60 * 60 * 24),
+                    );
+                    if (days === 0) return "Aujourd'hui";
+                    if (days === 1) return "Hier";
+                    if (days < 30) return `Il y a ${days} jours`;
+                    if (days < 365)
+                      return `Il y a ${Math.floor(days / 30)} mois`;
+                    return `Il y a ${Math.floor(days / 365)} an(s)`;
+                  })()}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Badges Phase 2 - SEO Dashboard */}
+        <div className="grid grid-cols-4 gap-4 mt-4">
+          {/* Badge 1: Index Policy */}
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Index Policy
+                  </p>
+                  <Badge
+                    variant={
+                      detail.gamme.pg_level === "1" ? "default" : "secondary"
+                    }
+                    className={`mt-1 ${detail.gamme.pg_level === "1" ? "bg-green-600" : "bg-gray-500"}`}
+                  >
+                    {detail.gamme.pg_level === "1" ? "INDEX" : "NOINDEX"}
+                  </Badge>
+                </div>
+                <div
+                  className={`p-2 rounded-full ${detail.gamme.pg_level === "1" ? "bg-green-100" : "bg-gray-100"}`}
+                >
+                  <Search
+                    className={`h-5 w-5 ${detail.gamme.pg_level === "1" ? "text-green-600" : "text-gray-400"}`}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Badge 2: Priority Score */}
+          {(() => {
+            const priorityScore = detail.stats.priority_score ?? 0;
+            return (
+              <Card
+                className={`border-l-4 ${
+                  priorityScore >= 80
+                    ? "border-l-red-500"
+                    : priorityScore >= 60
+                      ? "border-l-orange-500"
+                      : priorityScore >= 40
+                        ? "border-l-yellow-500"
+                        : priorityScore >= 20
+                          ? "border-l-blue-500"
+                          : "border-l-gray-400"
+                }`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">
+                        Priorité SEO
+                      </p>
+                      <p className="text-3xl font-bold mt-1">{priorityScore}</p>
+                    </div>
+                    <div className="w-12 h-12 relative">
+                      <svg className="w-12 h-12 transform -rotate-90">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="4"
+                        />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke={
+                            priorityScore >= 80
+                              ? "#ef4444"
+                              : priorityScore >= 60
+                                ? "#f97316"
+                                : priorityScore >= 40
+                                  ? "#eab308"
+                                  : priorityScore >= 20
+                                    ? "#3b82f6"
+                                    : "#9ca3af"
+                          }
+                          strokeWidth="4"
+                          strokeDasharray={`${priorityScore * 1.256} 125.6`}
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {priorityScore >= 80
+                      ? "Critique"
+                      : priorityScore >= 60
+                        ? "Haute"
+                        : priorityScore >= 40
+                          ? "Moyenne"
+                          : priorityScore >= 20
+                            ? "Basse"
+                            : "Minimale"}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* Badge 3: Catalog Reality */}
+          <Card
+            className={`border-l-4 ${
+              !detail.stats.catalog_issues ||
+              detail.stats.catalog_issues.length === 0
+                ? "border-l-green-500"
+                : detail.stats.catalog_issues.length <= 2
+                  ? "border-l-orange-500"
+                  : "border-l-red-500"
+            }`}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Catalogue
+                  </p>
+                  {!detail.stats.catalog_issues ||
+                  detail.stats.catalog_issues.length === 0 ? (
+                    <Badge className="mt-1 bg-green-600">OK</Badge>
+                  ) : (
+                    <Badge variant="destructive" className="mt-1">
+                      {detail.stats.catalog_issues.length} issue
+                      {detail.stats.catalog_issues.length > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                </div>
+                <div
+                  className={`p-2 rounded-full ${
+                    !detail.stats.catalog_issues ||
+                    detail.stats.catalog_issues.length === 0
+                      ? "bg-green-100"
+                      : "bg-red-100"
+                  }`}
+                >
+                  <CheckCircle2
+                    className={`h-5 w-5 ${
+                      !detail.stats.catalog_issues ||
+                      detail.stats.catalog_issues.length === 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  />
+                </div>
+              </div>
+              {detail.stats.catalog_issues &&
+                detail.stats.catalog_issues.length > 0 && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    {detail.stats.catalog_issues.map(
+                      (issue: string, i: number) => (
+                        <span
+                          key={i}
+                          className="inline-block mr-1 mb-1 px-1.5 py-0.5 bg-red-50 text-red-700 rounded"
+                        >
+                          {issue.replace(/_/g, " ")}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                )}
+            </CardContent>
+          </Card>
+
+          {/* Badge 4: Smart Actions */}
+          <Card
+            className={`border-l-4 ${
+              !detail.stats.smart_actions ||
+              detail.stats.smart_actions.length === 0
+                ? "border-l-green-500"
+                : detail.stats.smart_actions.some(
+                      (a: { priority: string }) => a.priority === "CRITICAL",
+                    )
+                  ? "border-l-red-500"
+                  : detail.stats.smart_actions.some(
+                        (a: { priority: string }) => a.priority === "HIGH",
+                      )
+                    ? "border-l-orange-500"
+                    : "border-l-yellow-500"
+            }`}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Actions
+                  </p>
+                  {!detail.stats.smart_actions ||
+                  detail.stats.smart_actions.length === 0 ? (
+                    <Badge className="mt-1 bg-green-600">Aucune</Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="mt-1 border-orange-300 text-orange-700"
+                    >
+                      {detail.stats.smart_actions.length} action
+                      {detail.stats.smart_actions.length > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                </div>
+                <div
+                  className={`p-2 rounded-full ${
+                    !detail.stats.smart_actions ||
+                    detail.stats.smart_actions.length === 0
+                      ? "bg-green-100"
+                      : "bg-orange-100"
+                  }`}
+                >
+                  <Zap
+                    className={`h-5 w-5 ${
+                      !detail.stats.smart_actions ||
+                      detail.stats.smart_actions.length === 0
+                        ? "text-green-600"
+                        : "text-orange-600"
+                    }`}
+                  />
+                </div>
+              </div>
+              {detail.stats.smart_actions &&
+                detail.stats.smart_actions.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {detail.stats.smart_actions
+                      .slice(0, 3)
+                      .map(
+                        (
+                          action: { action: string; priority: string },
+                          i: number,
+                        ) => (
+                          <div
+                            key={i}
+                            className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                              action.priority === "CRITICAL"
+                                ? "bg-red-50 text-red-700"
+                                : action.priority === "HIGH"
+                                  ? "bg-orange-50 text-orange-700"
+                                  : action.priority === "MEDIUM"
+                                    ? "bg-yellow-50 text-yellow-700"
+                                    : "bg-gray-50 text-gray-600"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                action.priority === "CRITICAL"
+                                  ? "bg-red-500"
+                                  : action.priority === "HIGH"
+                                    ? "bg-orange-500"
+                                    : action.priority === "MEDIUM"
+                                      ? "bg-yellow-500"
+                                      : "bg-gray-400"
+                              }`}
+                            ></span>
+                            {action.action.replace(/_/g, " ")}
+                          </div>
+                        ),
+                      )}
+                  </div>
+                )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -1263,7 +1794,10 @@ export default function AdminGammeSeoDetail() {
             <FileText className="h-4 w-4" />
             Informations
           </TabsTrigger>
-          <TabsTrigger value="equipementiers" className="flex items-center gap-2">
+          <TabsTrigger
+            value="equipementiers"
+            className="flex items-center gap-2"
+          >
             <Package className="h-4 w-4" />
             Équipementiers
           </TabsTrigger>
@@ -1313,17 +1847,25 @@ export default function AdminGammeSeoDetail() {
                     <span className="text-xs font-bold text-orange-600">A</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-700">automecanik.com</span>
-                    <span className="text-sm text-gray-500"> › pieces › {detail.gamme.pg_alias}</span>
+                    <span className="text-sm text-gray-700">
+                      automecanik.com
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {" "}
+                      › pieces › {detail.gamme.pg_alias}
+                    </span>
                   </div>
                 </div>
                 {/* Title */}
                 <h3 className="text-xl text-blue-800 hover:underline cursor-pointer mb-1 leading-tight">
-                  {seoForm.sg_title || detail.gamme.pg_name || "Titre de la page"}
+                  {seoForm.sg_title ||
+                    detail.gamme.pg_name ||
+                    "Titre de la page"}
                 </h3>
                 {/* Description */}
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  {seoForm.sg_descrip || "Ajoutez une meta description pour voir l'aperçu..."}
+                  {seoForm.sg_descrip ||
+                    "Ajoutez une meta description pour voir l'aperçu..."}
                 </p>
               </div>
             </CardContent>
@@ -1342,14 +1884,19 @@ export default function AdminGammeSeoDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sg_title" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="sg_title"
+                      className="flex items-center gap-2"
+                    >
                       Meta Title
-                      {seoForm.sg_title.length > 0 && seoForm.sg_title.length <= 60 && (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      )}
-                      {seoForm.sg_title.length > 60 && seoForm.sg_title.length <= 70 && (
-                        <AlertCircle className="h-4 w-4 text-yellow-500" />
-                      )}
+                      {seoForm.sg_title.length > 0 &&
+                        seoForm.sg_title.length <= 60 && (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        )}
+                      {seoForm.sg_title.length > 60 &&
+                        seoForm.sg_title.length <= 70 && (
+                          <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        )}
                       {seoForm.sg_title.length > 70 && (
                         <XCircle className="h-4 w-4 text-red-500" />
                       )}
@@ -1362,24 +1909,35 @@ export default function AdminGammeSeoDetail() {
                         setSeoForm({ ...seoForm, sg_title: e.target.value })
                       }
                       placeholder="Titre SEO"
-                      className={seoForm.sg_title.length > 70 ? "border-red-300" : ""}
+                      className={
+                        seoForm.sg_title.length > 70 ? "border-red-300" : ""
+                      }
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all ${
-                              seoForm.sg_title.length <= 60 ? "bg-green-500" :
-                              seoForm.sg_title.length <= 70 ? "bg-yellow-500" : "bg-red-500"
+                              seoForm.sg_title.length <= 60
+                                ? "bg-green-500"
+                                : seoForm.sg_title.length <= 70
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
                             }`}
-                            style={{ width: `${Math.min((seoForm.sg_title.length / 70) * 100, 100)}%` }}
+                            style={{
+                              width: `${Math.min((seoForm.sg_title.length / 70) * 100, 100)}%`,
+                            }}
                           />
                         </div>
-                        <span className={`text-xs font-medium ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}>
+                        <span
+                          className={`text-xs font-medium ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}
+                        >
                           {getCharCountStatus(seoForm.sg_title.length, 60, 70)}
                         </span>
                       </div>
-                      <span className={`text-xs ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}>
+                      <span
+                        className={`text-xs ${getCharCountClass(seoForm.sg_title.length, 60, 70)}`}
+                      >
                         {seoForm.sg_title.length}/60 caractères
                       </span>
                     </div>
@@ -1402,14 +1960,19 @@ export default function AdminGammeSeoDetail() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sg_descrip" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="sg_descrip"
+                    className="flex items-center gap-2"
+                  >
                     Meta Description
-                    {seoForm.sg_descrip.length > 0 && seoForm.sg_descrip.length <= 160 && (
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    )}
-                    {seoForm.sg_descrip.length > 160 && seoForm.sg_descrip.length <= 180 && (
-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
-                    )}
+                    {seoForm.sg_descrip.length > 0 &&
+                      seoForm.sg_descrip.length <= 160 && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
+                    {seoForm.sg_descrip.length > 160 &&
+                      seoForm.sg_descrip.length <= 180 && (
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      )}
                     {seoForm.sg_descrip.length > 180 && (
                       <XCircle className="h-4 w-4 text-red-500" />
                     )}
@@ -1423,24 +1986,39 @@ export default function AdminGammeSeoDetail() {
                     }
                     placeholder="Description SEO"
                     rows={3}
-                    className={seoForm.sg_descrip.length > 180 ? "border-red-300" : ""}
+                    className={
+                      seoForm.sg_descrip.length > 180 ? "border-red-300" : ""
+                    }
                   />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all ${
-                            seoForm.sg_descrip.length <= 160 ? "bg-green-500" :
-                            seoForm.sg_descrip.length <= 180 ? "bg-yellow-500" : "bg-red-500"
+                            seoForm.sg_descrip.length <= 160
+                              ? "bg-green-500"
+                              : seoForm.sg_descrip.length <= 180
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
                           }`}
-                          style={{ width: `${Math.min((seoForm.sg_descrip.length / 180) * 100, 100)}%` }}
+                          style={{
+                            width: `${Math.min((seoForm.sg_descrip.length / 180) * 100, 100)}%`,
+                          }}
                         />
                       </div>
-                      <span className={`text-xs font-medium ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}>
-                        {getCharCountStatus(seoForm.sg_descrip.length, 160, 180)}
+                      <span
+                        className={`text-xs font-medium ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}
+                      >
+                        {getCharCountStatus(
+                          seoForm.sg_descrip.length,
+                          160,
+                          180,
+                        )}
                       </span>
                     </div>
-                    <span className={`text-xs ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}>
+                    <span
+                      className={`text-xs ${getCharCountClass(seoForm.sg_descrip.length, 160, 180)}`}
+                    >
                       {seoForm.sg_descrip.length}/160 caractères
                     </span>
                   </div>
@@ -1469,7 +2047,10 @@ export default function AdminGammeSeoDetail() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sg_content" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="sg_content"
+                    className="flex items-center gap-2"
+                  >
                     Contenu
                     <span className="text-xs text-gray-400 font-normal">
                       ({seoForm.sg_content.length} caractères)
@@ -1488,7 +2069,10 @@ export default function AdminGammeSeoDetail() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={fetcher.state === "submitting"}>
+                  <Button
+                    type="submit"
+                    disabled={fetcher.state === "submitting"}
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     {fetcher.state === "submitting"
                       ? "Sauvegarde..."
@@ -1501,260 +2085,357 @@ export default function AdminGammeSeoDetail() {
               {detail.switchGroups && detail.switchGroups.length > 0 && (
                 <div className="mt-8 border-t pt-6">
                   <h3 className="mb-4 text-lg font-medium">
-                    Item Switches <code className="text-xs bg-gray-100 px-2 py-1 rounded">#Switch_1#, #Switch_2#, #Switch_3#</code>
+                    Item Switches{" "}
+                    <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      #Switch_1#, #Switch_2#, #Switch_3#
+                    </code>
                   </h3>
                   <p className="text-sm text-gray-500 mb-4">
-                    Switches d'items (alias 1-3). Cliquez pour voir les variations.
+                    Switches d'items (alias 1-3). Cliquez pour voir les
+                    variations.
                   </p>
                   <div className="space-y-3">
                     {[...detail.switchGroups]
                       .sort((a, b) => parseInt(a.alias) - parseInt(b.alias))
                       .map((group) => {
-                      const isOpen = expandedSwitches.has(group.alias);
-                      return (
-                        <div
-                          key={group.alias}
-                          className="bg-gray-50 rounded-lg border"
-                        >
-                          {/* Header cliquable */}
-                          <button
-                            type="button"
-                            onClick={() => toggleSwitch(group.alias)}
-                            className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors rounded-t-lg"
+                        const isOpen = expandedSwitches.has(group.alias);
+                        return (
+                          <div
+                            key={group.alias}
+                            className="bg-gray-50 rounded-lg border"
                           >
-                            <div className="flex items-center gap-3">
-                              <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                {group.usedInTemplate ? '✓' : '!'}
-                              </span>
-                              <span className="font-medium text-gray-900">
-                                #{group.alias} - {group.name || `Alias ${group.alias}`}
-                              </span>
-                              <code className="text-xs bg-gray-200 px-1 rounded">{group.placeholder || `#Switch_${group.alias}#`}</code>
-                              <Badge variant="secondary">{group.count} variations</Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500 max-w-xs truncate">
-                                {group.sample || "(vide)"}
-                              </span>
-                              {isOpen ? (
-                                <ChevronUp className="h-4 w-4 text-gray-500" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 text-gray-500" />
-                              )}
-                            </div>
-                          </button>
-
-                          {/* Contenu dépliable avec limite de 5 */}
-                          {isOpen && (() => {
-                            const switchKey = `item_${group.alias}`;
-                            const showAll = showAllVariations.has(switchKey);
-                            const visibleVariations = showAll
-                              ? group.variations
-                              : group.variations.slice(0, MAX_VISIBLE_VARIATIONS);
-                            const hiddenCount = group.variations.length - MAX_VISIBLE_VARIATIONS;
-
-                            return (
-                              <div className="border-t p-4 space-y-2">
-                                {visibleVariations.map((variation, idx) => (
-                                  <div
-                                    key={variation.sis_id}
-                                    className="flex items-center gap-2 p-2 bg-white rounded border text-sm"
-                                  >
-                                    <span className="text-gray-400 w-6">#{idx + 1}</span>
-                                    <span className="flex-1 text-gray-700">
-                                      {variation.content || "(vide)"}
-                                    </span>
-                                  </div>
-                                ))}
-                                {hiddenCount > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleShowAllVariations(switchKey)}
-                                    className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                                  >
-                                    {showAll
-                                      ? "▲ Réduire"
-                                      : `▼ Voir les ${hiddenCount} autres variations`}
-                                  </button>
+                            {/* Header cliquable */}
+                            <button
+                              type="button"
+                              onClick={() => toggleSwitch(group.alias)}
+                              className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors rounded-t-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                                >
+                                  {group.usedInTemplate ? "✓" : "!"}
+                                </span>
+                                <span className="font-medium text-gray-900">
+                                  #{group.alias} -{" "}
+                                  {group.name || `Alias ${group.alias}`}
+                                </span>
+                                <code className="text-xs bg-gray-200 px-1 rounded">
+                                  {group.placeholder ||
+                                    `#Switch_${group.alias}#`}
+                                </code>
+                                <Badge variant="secondary">
+                                  {group.count} variations
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 max-w-xs truncate">
+                                  {group.sample || "(vide)"}
+                                </span>
+                                {isOpen ? (
+                                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-gray-500" />
                                 )}
                               </div>
-                            );
-                          })()}
-                        </div>
-                      );
-                    })}
+                            </button>
+
+                            {/* Contenu dépliable avec limite de 5 */}
+                            {isOpen &&
+                              (() => {
+                                const switchKey = `item_${group.alias}`;
+                                const showAll =
+                                  showAllVariations.has(switchKey);
+                                const visibleVariations = showAll
+                                  ? group.variations
+                                  : group.variations.slice(
+                                      0,
+                                      MAX_VISIBLE_VARIATIONS,
+                                    );
+                                const hiddenCount =
+                                  group.variations.length -
+                                  MAX_VISIBLE_VARIATIONS;
+
+                                return (
+                                  <div className="border-t p-4 space-y-2">
+                                    {visibleVariations.map((variation, idx) => (
+                                      <div
+                                        key={variation.sis_id}
+                                        className="flex items-center gap-2 p-2 bg-white rounded border text-sm"
+                                      >
+                                        <span className="text-gray-400 w-6">
+                                          #{idx + 1}
+                                        </span>
+                                        <span className="flex-1 text-gray-700">
+                                          {variation.content || "(vide)"}
+                                        </span>
+                                      </div>
+                                    ))}
+                                    {hiddenCount > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          toggleShowAllVariations(switchKey)
+                                        }
+                                        className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                      >
+                                        {showAll
+                                          ? "▲ Réduire"
+                                          : `▼ Voir les ${hiddenCount} autres variations`}
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               )}
 
               {/* Family Switches - Vue groupée par alias avec dépliable */}
-              {detail.familySwitchGroups && detail.familySwitchGroups.length > 0 && (
-                <div className="mt-8 border-t pt-6">
-                  <h3 className="mb-4 text-lg font-medium">
-                    Family Switches <code className="text-xs bg-gray-100 px-2 py-1 rounded">#FamilySwitch_11# ... #FamilySwitch_16#</code>
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Switches de famille (alias 11-16). Cliquez pour voir les variations.
-                  </p>
-                  <div className="space-y-3">
-                    {[...detail.familySwitchGroups]
-                      .sort((a, b) => parseInt(a.alias) - parseInt(b.alias))
-                      .map((group) => {
-                      const isOpen = expandedSwitches.has(`family_${group.alias}`);
-                      return (
-                        <div
-                          key={`family_${group.alias}`}
-                          className="bg-blue-50 rounded-lg border border-blue-200"
-                        >
-                          {/* Header cliquable */}
-                          <button
-                            type="button"
-                            onClick={() => toggleSwitch(`family_${group.alias}`)}
-                            className="w-full p-4 flex items-center justify-between hover:bg-blue-100 transition-colors rounded-t-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                {group.usedInTemplate ? '✓' : '!'}
-                              </span>
-                              <span className="font-medium text-blue-900">
-                                #{group.alias} - {group.name || `Alias ${group.alias}`}
-                              </span>
-                              <code className="text-xs bg-blue-200 px-1 rounded">{group.placeholder || `#FamilySwitch_${group.alias}#`}</code>
-                              <Badge variant="secondary">{group.count} variations</Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-blue-700 max-w-xs truncate">
-                                {group.sample || "(vide)"}
-                              </span>
-                              {isOpen ? (
-                                <ChevronUp className="h-4 w-4 text-blue-500" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 text-blue-500" />
-                              )}
-                            </div>
-                          </button>
+              {detail.familySwitchGroups &&
+                detail.familySwitchGroups.length > 0 && (
+                  <div className="mt-8 border-t pt-6">
+                    <h3 className="mb-4 text-lg font-medium">
+                      Family Switches{" "}
+                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        #FamilySwitch_11# ... #FamilySwitch_16#
+                      </code>
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Switches de famille (alias 11-16). Cliquez pour voir les
+                      variations.
+                    </p>
+                    <div className="space-y-3">
+                      {[...detail.familySwitchGroups]
+                        .sort((a, b) => parseInt(a.alias) - parseInt(b.alias))
+                        .map((group) => {
+                          const isOpen = expandedSwitches.has(
+                            `family_${group.alias}`,
+                          );
+                          return (
+                            <div
+                              key={`family_${group.alias}`}
+                              className="bg-blue-50 rounded-lg border border-blue-200"
+                            >
+                              {/* Header cliquable */}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  toggleSwitch(`family_${group.alias}`)
+                                }
+                                className="w-full p-4 flex items-center justify-between hover:bg-blue-100 transition-colors rounded-t-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${group.usedInTemplate ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                                  >
+                                    {group.usedInTemplate ? "✓" : "!"}
+                                  </span>
+                                  <span className="font-medium text-blue-900">
+                                    #{group.alias} -{" "}
+                                    {group.name || `Alias ${group.alias}`}
+                                  </span>
+                                  <code className="text-xs bg-blue-200 px-1 rounded">
+                                    {group.placeholder ||
+                                      `#FamilySwitch_${group.alias}#`}
+                                  </code>
+                                  <Badge variant="secondary">
+                                    {group.count} variations
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-blue-700 max-w-xs truncate">
+                                    {group.sample || "(vide)"}
+                                  </span>
+                                  {isOpen ? (
+                                    <ChevronUp className="h-4 w-4 text-blue-500" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 text-blue-500" />
+                                  )}
+                                </div>
+                              </button>
 
-                          {/* Contenu dépliable avec limite de 5 */}
-                          {isOpen && (() => {
-                            const switchKey = `family_${group.alias}`;
-                            const showAll = showAllVariations.has(switchKey);
-                            const visibleVariations = showAll
-                              ? group.variations
-                              : group.variations.slice(0, MAX_VISIBLE_VARIATIONS);
-                            const hiddenCount = group.variations.length - MAX_VISIBLE_VARIATIONS;
+                              {/* Contenu dépliable avec limite de 5 */}
+                              {isOpen &&
+                                (() => {
+                                  const switchKey = `family_${group.alias}`;
+                                  const showAll =
+                                    showAllVariations.has(switchKey);
+                                  const visibleVariations = showAll
+                                    ? group.variations
+                                    : group.variations.slice(
+                                        0,
+                                        MAX_VISIBLE_VARIATIONS,
+                                      );
+                                  const hiddenCount =
+                                    group.variations.length -
+                                    MAX_VISIBLE_VARIATIONS;
 
-                            return (
-                              <div className="border-t border-blue-200 p-4 space-y-2">
-                                {visibleVariations.map((variation, idx) => (
-                                  <div
-                                    key={variation.id}
-                                    className="flex items-center gap-2 p-2 bg-white rounded border text-sm group"
-                                  >
-                                    <span className="text-blue-400 w-6">#{idx + 1}</span>
-                                    {editingSwitch?.id === variation.id ? (
-                                      <>
-                                        <input
-                                          type="text"
-                                          value={editingSwitch.content}
-                                          onChange={(e) => setEditingSwitch({ ...editingSwitch, content: e.target.value })}
-                                          className="flex-1 px-2 py-1 border rounded text-sm"
-                                          autoFocus
-                                        />
+                                  return (
+                                    <div className="border-t border-blue-200 p-4 space-y-2">
+                                      {visibleVariations.map(
+                                        (variation, idx) => (
+                                          <div
+                                            key={variation.id}
+                                            className="flex items-center gap-2 p-2 bg-white rounded border text-sm group"
+                                          >
+                                            <span className="text-blue-400 w-6">
+                                              #{idx + 1}
+                                            </span>
+                                            {editingSwitch?.id ===
+                                            variation.id ? (
+                                              <>
+                                                <input
+                                                  type="text"
+                                                  value={editingSwitch.content}
+                                                  onChange={(e) =>
+                                                    setEditingSwitch({
+                                                      ...editingSwitch,
+                                                      content: e.target.value,
+                                                    })
+                                                  }
+                                                  className="flex-1 px-2 py-1 border rounded text-sm"
+                                                  autoFocus
+                                                />
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    handleUpdateSwitch(
+                                                      variation.id,
+                                                      editingSwitch.content,
+                                                    )
+                                                  }
+                                                  disabled={switchSaving}
+                                                  className="text-green-600 hover:text-green-800 px-2"
+                                                >
+                                                  ✓
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    setEditingSwitch(null)
+                                                  }
+                                                  className="text-gray-500 hover:text-gray-700 px-2"
+                                                >
+                                                  ✕
+                                                </button>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <span className="flex-1 text-gray-700">
+                                                  {variation.content ||
+                                                    "(vide)"}
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    setEditingSwitch({
+                                                      id: variation.id,
+                                                      content:
+                                                        variation.content,
+                                                    })
+                                                  }
+                                                  className="opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 px-2 transition-opacity"
+                                                >
+                                                  ✏️
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    handleDeleteSwitch(
+                                                      variation.id,
+                                                    )
+                                                  }
+                                                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 px-2 transition-opacity"
+                                                >
+                                                  🗑️
+                                                </button>
+                                              </>
+                                            )}
+                                          </div>
+                                        ),
+                                      )}
+                                      {hiddenCount > 0 && (
                                         <button
                                           type="button"
-                                          onClick={() => handleUpdateSwitch(variation.id, editingSwitch.content)}
-                                          disabled={switchSaving}
-                                          className="text-green-600 hover:text-green-800 px-2"
+                                          onClick={() =>
+                                            toggleShowAllVariations(switchKey)
+                                          }
+                                          className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
                                         >
-                                          ✓
+                                          {showAll
+                                            ? "▲ Réduire"
+                                            : `▼ Voir les ${hiddenCount} autres variations`}
                                         </button>
+                                      )}
+                                      {/* Bouton Ajouter */}
+                                      {newSwitchAlias ===
+                                      parseInt(group.alias) ? (
+                                        <div className="flex items-center gap-2 mt-3 p-2 bg-green-50 rounded border border-green-200">
+                                          <input
+                                            type="text"
+                                            value={newSwitchContent}
+                                            onChange={(e) =>
+                                              setNewSwitchContent(
+                                                e.target.value,
+                                              )
+                                            }
+                                            placeholder="Nouveau contenu..."
+                                            className="flex-1 px-2 py-1 border rounded text-sm"
+                                            autoFocus
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleCreateSwitch(
+                                                parseInt(group.alias),
+                                                newSwitchContent,
+                                              )
+                                            }
+                                            disabled={
+                                              switchSaving ||
+                                              !newSwitchContent.trim()
+                                            }
+                                            className="text-green-600 hover:text-green-800 px-2 disabled:opacity-50"
+                                          >
+                                            ✓ Créer
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setNewSwitchAlias(null);
+                                              setNewSwitchContent("");
+                                            }}
+                                            className="text-gray-500 hover:text-gray-700 px-2"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      ) : (
                                         <button
                                           type="button"
-                                          onClick={() => setEditingSwitch(null)}
-                                          className="text-gray-500 hover:text-gray-700 px-2"
+                                          onClick={() =>
+                                            setNewSwitchAlias(
+                                              parseInt(group.alias),
+                                            )
+                                          }
+                                          className="w-full py-2 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors border border-dashed border-green-300 mt-2"
                                         >
-                                          ✕
+                                          ➕ Ajouter une variation
                                         </button>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span className="flex-1 text-gray-700">
-                                          {variation.content || "(vide)"}
-                                        </span>
-                                        <button
-                                          type="button"
-                                          onClick={() => setEditingSwitch({ id: variation.id, content: variation.content })}
-                                          className="opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 px-2 transition-opacity"
-                                        >
-                                          ✏️
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeleteSwitch(variation.id)}
-                                          className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 px-2 transition-opacity"
-                                        >
-                                          🗑️
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                ))}
-                                {hiddenCount > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleShowAllVariations(switchKey)}
-                                    className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
-                                  >
-                                    {showAll
-                                      ? "▲ Réduire"
-                                      : `▼ Voir les ${hiddenCount} autres variations`}
-                                  </button>
-                                )}
-                                {/* Bouton Ajouter */}
-                                {newSwitchAlias === parseInt(group.alias) ? (
-                                  <div className="flex items-center gap-2 mt-3 p-2 bg-green-50 rounded border border-green-200">
-                                    <input
-                                      type="text"
-                                      value={newSwitchContent}
-                                      onChange={(e) => setNewSwitchContent(e.target.value)}
-                                      placeholder="Nouveau contenu..."
-                                      className="flex-1 px-2 py-1 border rounded text-sm"
-                                      autoFocus
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCreateSwitch(parseInt(group.alias), newSwitchContent)}
-                                      disabled={switchSaving || !newSwitchContent.trim()}
-                                      className="text-green-600 hover:text-green-800 px-2 disabled:opacity-50"
-                                    >
-                                      ✓ Créer
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => { setNewSwitchAlias(null); setNewSwitchContent(""); }}
-                                      className="text-gray-500 hover:text-gray-700 px-2"
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => setNewSwitchAlias(parseInt(group.alias))}
-                                    className="w-full py-2 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors border border-dashed border-green-300 mt-2"
-                                  >
-                                    ➕ Ajouter une variation
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      );
-                    })}
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                            </div>
+                          );
+                        })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1779,7 +2460,7 @@ export default function AdminGammeSeoDetail() {
                   if (content && content.trim()) {
                     fetcher.submit(
                       { intent: "addInformation", content: content.trim() },
-                      { method: "post" }
+                      { method: "post" },
                     );
                   }
                 }}
@@ -1791,14 +2472,18 @@ export default function AdminGammeSeoDetail() {
             <CardContent>
               <div className="space-y-3">
                 <p className="text-sm text-gray-500 mb-4">
-                  Ces informations apparaissent dans la section "Informations" de la page gamme publique.
-                  Elles sont automatiquement enrichies avec des liens vers les gammes connexes.
+                  Ces informations apparaissent dans la section "Informations"
+                  de la page gamme publique. Elles sont automatiquement
+                  enrichies avec des liens vers les gammes connexes.
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg border">
                   <p className="text-center text-gray-500 py-4">
                     Chargement des informations via l'API...
                     <br />
-                    <span className="text-xs">Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}/informations</span>
+                    <span className="text-xs">
+                      Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}
+                      /informations
+                    </span>
                   </p>
                 </div>
               </div>
@@ -1822,7 +2507,9 @@ export default function AdminGammeSeoDetail() {
               <Button
                 size="sm"
                 onClick={() => {
-                  alert("Fonctionnalité à implémenter: sélection de marque via dropdown");
+                  alert(
+                    "Fonctionnalité à implémenter: sélection de marque via dropdown",
+                  );
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -1832,14 +2519,18 @@ export default function AdminGammeSeoDetail() {
             <CardContent>
               <div className="space-y-3">
                 <p className="text-sm text-gray-500 mb-4">
-                  Ces descriptions personnalisées s'affichent pour chaque équipementier sur la page gamme.
-                  Exemple: "Les plaquettes de frein BOSCH pour votre véhicule..."
+                  Ces descriptions personnalisées s'affichent pour chaque
+                  équipementier sur la page gamme. Exemple: "Les plaquettes de
+                  frein BOSCH pour votre véhicule..."
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg border">
                   <p className="text-center text-gray-500 py-4">
                     Chargement des équipementiers via l'API...
                     <br />
-                    <span className="text-xs">Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}/equipementiers</span>
+                    <span className="text-xs">
+                      Endpoint: GET /api/admin/gammes-seo/{detail.gamme.pg_id}
+                      /equipementiers
+                    </span>
                   </p>
                 </div>
               </div>
@@ -1885,7 +2576,7 @@ export default function AdminGammeSeoDetail() {
                           <span>
                             Maj:{" "}
                             {new Date(article.ba_update).toLocaleDateString(
-                              "fr-FR"
+                              "fr-FR",
                             )}
                           </span>
                         </div>
@@ -1932,7 +2623,11 @@ export default function AdminGammeSeoDetail() {
               </div>
               <div className="flex gap-2">
                 <span className="text-sm text-gray-500">
-                  Total: {detail.vehicles.level1.length + detail.vehicles.level2.length + detail.vehicles.level5.length} véhicules
+                  Total:{" "}
+                  {detail.vehicles.level1.length +
+                    detail.vehicles.level2.length +
+                    detail.vehicles.level5.length}{" "}
+                  véhicules
                 </span>
               </div>
             </div>
@@ -1943,7 +2638,9 @@ export default function AdminGammeSeoDetail() {
                 <div>
                   <CardTitle>Niveau 1 - Vedettes</CardTitle>
                   <CardDescription>
-                    Véhicules affichés en grille sur la page gamme ({filterAndSortVehicles(detail.vehicles.level1).length} véhicules)
+                    Véhicules affichés en grille sur la page gamme (
+                    {filterAndSortVehicles(detail.vehicles.level1).length}{" "}
+                    véhicules)
                   </CardDescription>
                 </div>
                 {detail.vehicles.level1.length > 0 && (
@@ -1953,7 +2650,7 @@ export default function AdminGammeSeoDetail() {
                     onClick={() =>
                       exportVehiclesToCSV(
                         filterAndSortVehicles(detail.vehicles.level1),
-                        `vehicules-niveau1-${detail.gamme.pg_alias}.csv`
+                        `vehicules-niveau1-${detail.gamme.pg_alias}.csv`,
                       )
                     }
                   >
@@ -1965,7 +2662,9 @@ export default function AdminGammeSeoDetail() {
               <CardContent>
                 {filterAndSortVehicles(detail.vehicles.level1).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule vedette"}
+                    {vehicleSearch
+                      ? "Aucun véhicule trouvé"
+                      : "Aucun véhicule vedette"}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -1977,7 +2676,9 @@ export default function AdminGammeSeoDetail() {
                       >
                         {v.marque_name} {v.modele_name} {v.type_name}
                         {v.power_ps && ` ${v.power_ps}ch`}
-                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
+                        {v.year_from &&
+                          v.year_to &&
+                          ` (${v.year_from}-${v.year_to})`}
                       </Badge>
                     ))}
                   </div>
@@ -1991,7 +2692,9 @@ export default function AdminGammeSeoDetail() {
                 <div>
                   <CardTitle>Niveau 2 - Secondaires</CardTitle>
                   <CardDescription>
-                    Véhicules secondaires associés à cette gamme ({filterAndSortVehicles(detail.vehicles.level2).length} véhicules)
+                    Véhicules secondaires associés à cette gamme (
+                    {filterAndSortVehicles(detail.vehicles.level2).length}{" "}
+                    véhicules)
                   </CardDescription>
                 </div>
                 {detail.vehicles.level2.length > 0 && (
@@ -2001,7 +2704,7 @@ export default function AdminGammeSeoDetail() {
                     onClick={() =>
                       exportVehiclesToCSV(
                         filterAndSortVehicles(detail.vehicles.level2),
-                        `vehicules-niveau2-${detail.gamme.pg_alias}.csv`
+                        `vehicules-niveau2-${detail.gamme.pg_alias}.csv`,
                       )
                     }
                   >
@@ -2013,7 +2716,9 @@ export default function AdminGammeSeoDetail() {
               <CardContent>
                 {filterAndSortVehicles(detail.vehicles.level2).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule secondaire"}
+                    {vehicleSearch
+                      ? "Aucun véhicule trouvé"
+                      : "Aucun véhicule secondaire"}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -2025,7 +2730,9 @@ export default function AdminGammeSeoDetail() {
                       >
                         {v.marque_name} {v.modele_name} {v.type_name}
                         {v.power_ps && ` ${v.power_ps}ch`}
-                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
+                        {v.year_from &&
+                          v.year_to &&
+                          ` (${v.year_from}-${v.year_to})`}
                       </Badge>
                     ))}
                   </div>
@@ -2039,7 +2746,9 @@ export default function AdminGammeSeoDetail() {
                 <div>
                   <CardTitle>Niveau 5 - Blog</CardTitle>
                   <CardDescription>
-                    Véhicules cités dans les articles blog ({filterAndSortVehicles(detail.vehicles.level5).length} véhicules)
+                    Véhicules cités dans les articles blog (
+                    {filterAndSortVehicles(detail.vehicles.level5).length}{" "}
+                    véhicules)
                   </CardDescription>
                 </div>
                 {detail.vehicles.level5.length > 0 && (
@@ -2049,7 +2758,7 @@ export default function AdminGammeSeoDetail() {
                     onClick={() =>
                       exportVehiclesToCSV(
                         filterAndSortVehicles(detail.vehicles.level5),
-                        `vehicules-niveau5-${detail.gamme.pg_alias}.csv`
+                        `vehicules-niveau5-${detail.gamme.pg_alias}.csv`,
                       )
                     }
                   >
@@ -2061,7 +2770,9 @@ export default function AdminGammeSeoDetail() {
               <CardContent>
                 {filterAndSortVehicles(detail.vehicles.level5).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    {vehicleSearch ? "Aucun véhicule trouvé" : "Aucun véhicule blog"}
+                    {vehicleSearch
+                      ? "Aucun véhicule trouvé"
+                      : "Aucun véhicule blog"}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -2073,7 +2784,9 @@ export default function AdminGammeSeoDetail() {
                       >
                         {v.marque_name} {v.modele_name} {v.type_name}
                         {v.power_ps && ` ${v.power_ps}ch`}
-                        {v.year_from && v.year_to && ` (${v.year_from}-${v.year_to})`}
+                        {v.year_from &&
+                          v.year_to &&
+                          ` (${v.year_from}-${v.year_to})`}
                       </Badge>
                     ))}
                   </div>
@@ -2088,14 +2801,18 @@ export default function AdminGammeSeoDetail() {
           <div className="space-y-4">
             {/* Warning si données périmées */}
             {(() => {
-              const freshness = getFreshnessStatus(detail.stats.vLevel_last_updated);
+              const freshness = getFreshnessStatus(
+                detail.stats.vLevel_last_updated,
+              );
               if (freshness.status === "stale" || freshness.status === "old") {
                 return (
-                  <div className={`p-3 rounded-lg flex items-center gap-3 ${
-                    freshness.status === "old"
-                      ? "bg-red-50 border border-red-200 text-red-800"
-                      : "bg-yellow-50 border border-yellow-200 text-yellow-800"
-                  }`}>
+                  <div
+                    className={`p-3 rounded-lg flex items-center gap-3 ${
+                      freshness.status === "old"
+                        ? "bg-red-50 border border-red-200 text-red-800"
+                        : "bg-yellow-50 border border-yellow-200 text-yellow-800"
+                    }`}
+                  >
                     <span className="text-xl">{freshness.icon}</span>
                     <div className="flex-1">
                       <p className="font-medium">
@@ -2104,8 +2821,11 @@ export default function AdminGammeSeoDetail() {
                           : "Données V-Level à mettre à jour"}
                       </p>
                       <p className="text-sm opacity-80">
-                        Dernière mise à jour: {detail.stats.vLevel_last_updated
-                          ? new Date(detail.stats.vLevel_last_updated).toLocaleDateString("fr-FR")
+                        Dernière mise à jour:{" "}
+                        {detail.stats.vLevel_last_updated
+                          ? new Date(
+                              detail.stats.vLevel_last_updated,
+                            ).toLocaleDateString("fr-FR")
                           : "Jamais"}
                         {freshness.status === "old"
                           ? " (> 30 jours). Les classements peuvent être obsolètes."
@@ -2119,7 +2839,8 @@ export default function AdminGammeSeoDetail() {
             })()}
 
             {/* Warning violation V2 (doublons) */}
-            {(v2Violations.diesel.length > 0 || v2Violations.essence.length > 0) && (
+            {(v2Violations.diesel.length > 0 ||
+              v2Violations.essence.length > 0) && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 flex items-center gap-3">
                 <AlertCircle className="h-5 w-5 flex-shrink-0" />
                 <div>
@@ -2128,12 +2849,14 @@ export default function AdminGammeSeoDetail() {
                     V2 doit être UNIQUE par gamme+énergie. Doublons détectés:
                     {v2Violations.diesel.length > 0 && (
                       <span className="ml-1">
-                        <span className="font-medium">Diesel:</span> {v2Violations.diesel.join(", ")}
+                        <span className="font-medium">Diesel:</span>{" "}
+                        {v2Violations.diesel.join(", ")}
                       </span>
                     )}
                     {v2Violations.essence.length > 0 && (
                       <span className="ml-1">
-                        <span className="font-medium">Essence:</span> {v2Violations.essence.join(", ")}
+                        <span className="font-medium">Essence:</span>{" "}
+                        {v2Violations.essence.join(", ")}
                       </span>
                     )}
                   </p>
@@ -2145,29 +2868,37 @@ export default function AdminGammeSeoDetail() {
             <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
               {/* Filtres Diesel/Essence */}
               <div className="flex gap-2">
-              <Button
-                variant={energyFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setEnergyFilter("all")}
-              >
-                Tous
-              </Button>
-              <Button
-                variant={energyFilter === "diesel" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setEnergyFilter("diesel")}
-                className={energyFilter === "diesel" ? "" : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"}
-              >
-                Diesel
-              </Button>
-              <Button
-                variant={energyFilter === "essence" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setEnergyFilter("essence")}
-                className={energyFilter === "essence" ? "" : "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"}
-              >
-                Essence
-              </Button>
+                <Button
+                  variant={energyFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEnergyFilter("all")}
+                >
+                  Tous
+                </Button>
+                <Button
+                  variant={energyFilter === "diesel" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEnergyFilter("diesel")}
+                  className={
+                    energyFilter === "diesel"
+                      ? ""
+                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                  }
+                >
+                  Diesel
+                </Button>
+                <Button
+                  variant={energyFilter === "essence" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEnergyFilter("essence")}
+                  className={
+                    energyFilter === "essence"
+                      ? ""
+                      : "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                  }
+                >
+                  Essence
+                </Button>
               </div>
 
               {/* Boutons d'action */}
@@ -2203,7 +2934,13 @@ export default function AdminGammeSeoDetail() {
 
             {/* Résultats de validation V1 */}
             {validationResult && (
-              <Card className={validationResult.valid ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+              <Card
+                className={
+                  validationResult.valid
+                    ? "border-green-200 bg-green-50"
+                    : "border-red-200 bg-red-50"
+                }
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     {validationResult.valid ? (
@@ -2214,7 +2951,9 @@ export default function AdminGammeSeoDetail() {
                     ) : (
                       <>
                         <AlertCircle className="h-5 w-5 text-red-600" />
-                        <span className="text-red-800">Violations V1 detectees</span>
+                        <span className="text-red-800">
+                          Violations V1 detectees
+                        </span>
                       </>
                     )}
                   </CardTitle>
@@ -2222,16 +2961,22 @@ export default function AdminGammeSeoDetail() {
                 <CardContent>
                   <div className="text-sm space-y-2">
                     <p>
-                      <span className="font-medium">Gammes G1:</span> {validationResult.g1_count} |
-                      <span className="font-medium ml-2">V1 valides:</span> {validationResult.summary.valid_v1}/{validationResult.summary.total_v1}
+                      <span className="font-medium">Gammes G1:</span>{" "}
+                      {validationResult.g1_count} |
+                      <span className="font-medium ml-2">V1 valides:</span>{" "}
+                      {validationResult.summary.valid_v1}/
+                      {validationResult.summary.total_v1}
                     </p>
                     {validationResult.violations.length > 0 && (
                       <div className="mt-2">
-                        <p className="font-medium text-red-800 mb-1">Violations (V1 avec {"<"}30% G1):</p>
+                        <p className="font-medium text-red-800 mb-1">
+                          Violations (V1 avec {"<"}30% G1):
+                        </p>
                         <ul className="list-disc pl-5 space-y-1">
                           {validationResult.violations.map((v, idx) => (
                             <li key={idx} className="text-red-700">
-                              {v.model_name} ({v.energy}) - {v.percentage}% ({v.v2_count}/{v.g1_total} G1)
+                              {v.model_name} ({v.energy}) - {v.percentage}% (
+                              {v.v2_count}/{v.g1_total} G1)
                             </li>
                           ))}
                         </ul>
@@ -2328,10 +3073,7 @@ export default function AdminGammeSeoDetail() {
               ) : (
                 <div className="space-y-4">
                   {detail.conseils.map((conseil) => (
-                    <div
-                      key={conseil.sgc_id}
-                      className="rounded-lg border p-4"
-                    >
+                    <div key={conseil.sgc_id} className="rounded-lg border p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium">{conseil.sgc_title}</h4>
@@ -2360,18 +3102,28 @@ export default function AdminGammeSeoDetail() {
         <TabsContent value="guide">
           <div className="space-y-6">
             {/* Header avec status */}
-            <Card className={detail.purchaseGuide ? "border-green-200" : "border-orange-200"}>
+            <Card
+              className={
+                detail.purchaseGuide ? "border-green-200" : "border-orange-200"
+              }
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${detail.purchaseGuide ? "bg-green-100" : "bg-orange-100"}`}>
-                      <BookOpen className={`h-5 w-5 ${detail.purchaseGuide ? "text-green-600" : "text-orange-600"}`} />
+                    <div
+                      className={`p-2 rounded-lg ${detail.purchaseGuide ? "bg-green-100" : "bg-orange-100"}`}
+                    >
+                      <BookOpen
+                        className={`h-5 w-5 ${detail.purchaseGuide ? "text-green-600" : "text-orange-600"}`}
+                      />
                     </div>
                     <div>
-                      <CardTitle>Guide d'achat - {detail.gamme.pg_name}</CardTitle>
+                      <CardTitle>
+                        Guide d'achat - {detail.gamme.pg_name}
+                      </CardTitle>
                       <CardDescription>
                         {detail.purchaseGuide
-                          ? `Derniere mise a jour: ${new Date(detail.purchaseGuide.updatedAt || '').toLocaleDateString('fr-FR')}`
+                          ? `Derniere mise a jour: ${new Date(detail.purchaseGuide.updatedAt || "").toLocaleDateString("fr-FR")}`
                           : "Aucun guide configure - Remplissez les champs ci-dessous"}
                       </CardDescription>
                     </div>
@@ -2388,10 +3140,16 @@ export default function AdminGammeSeoDetail() {
             <Card>
               <CardHeader className="bg-blue-50 border-b">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                    1
+                  </div>
                   <div>
-                    <CardTitle className="text-lg">Compatibilite et identification</CardTitle>
-                    <CardDescription>Comment identifier la bonne piece</CardDescription>
+                    <CardTitle className="text-lg">
+                      Compatibilite et identification
+                    </CardTitle>
+                    <CardDescription>
+                      Comment identifier la bonne piece
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -2402,16 +3160,22 @@ export default function AdminGammeSeoDetail() {
                     <Input
                       id="step1_title"
                       value={guideForm.step1.title}
-                      onChange={(e) => updateGuideForm('step1.title', e.target.value)}
+                      onChange={(e) =>
+                        updateGuideForm("step1.title", e.target.value)
+                      }
                       placeholder={`Identifiez votre ${detail.gamme.pg_name.toLowerCase()}`}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="step1_highlight">Point cle (mise en avant)</Label>
+                    <Label htmlFor="step1_highlight">
+                      Point cle (mise en avant)
+                    </Label>
                     <Input
                       id="step1_highlight"
                       value={guideForm.step1.highlight}
-                      onChange={(e) => updateGuideForm('step1.highlight', e.target.value)}
+                      onChange={(e) =>
+                        updateGuideForm("step1.highlight", e.target.value)
+                      }
                       placeholder="Ex: Verifiez la reference OEM sur votre piece actuelle"
                     />
                   </div>
@@ -2421,7 +3185,9 @@ export default function AdminGammeSeoDetail() {
                   <Textarea
                     id="step1_content"
                     value={guideForm.step1.content}
-                    onChange={(e) => updateGuideForm('step1.content', e.target.value)}
+                    onChange={(e) =>
+                      updateGuideForm("step1.content", e.target.value)
+                    }
                     placeholder="Expliquez comment identifier la bonne piece pour son vehicule..."
                     rows={3}
                   />
@@ -2429,12 +3195,19 @@ export default function AdminGammeSeoDetail() {
                 <div className="space-y-2">
                   <Label>Points cles (un par ligne)</Label>
                   <Textarea
-                    value={(guideForm.step1.bullets || []).join('\n')}
-                    onChange={(e) => updateGuideForm('step1.bullets', e.target.value.split('\n').filter(b => b.trim()))}
+                    value={(guideForm.step1.bullets || []).join("\n")}
+                    onChange={(e) =>
+                      updateGuideForm(
+                        "step1.bullets",
+                        e.target.value.split("\n").filter((b) => b.trim()),
+                      )
+                    }
                     placeholder="Selectionnez votre vehicule dans notre selecteur&#10;Verifiez la reference OEM&#10;Comparez avec la piece d'origine"
                     rows={4}
                   />
-                  <p className="text-xs text-gray-500">Chaque ligne devient un point de la liste</p>
+                  <p className="text-xs text-gray-500">
+                    Chaque ligne devient un point de la liste
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -2443,10 +3216,14 @@ export default function AdminGammeSeoDetail() {
             <Card>
               <CardHeader className="bg-green-50 border-b">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                    2
+                  </div>
                   <div>
                     <CardTitle className="text-lg">Gammes de prix</CardTitle>
-                    <CardDescription>Les 3 niveaux de qualite proposes</CardDescription>
+                    <CardDescription>
+                      Les 3 niveaux de qualite proposes
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -2463,7 +3240,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Sous-titre</Label>
                         <Input
                           value={guideForm.step2.economique.subtitle}
-                          onChange={(e) => updateGuideForm('step2.economique.subtitle', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.economique.subtitle",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Usage standard"
                           className="h-8 text-sm"
                         />
@@ -2472,7 +3254,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Description</Label>
                         <Textarea
                           value={guideForm.step2.economique.description}
-                          onChange={(e) => updateGuideForm('step2.economique.description', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.economique.description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Description de cette gamme..."
                           rows={2}
                           className="text-sm"
@@ -2481,8 +3268,17 @@ export default function AdminGammeSeoDetail() {
                       <div className="space-y-1">
                         <Label className="text-xs">Specs (une par ligne)</Label>
                         <Textarea
-                          value={(guideForm.step2.economique.specs || []).join('\n')}
-                          onChange={(e) => updateGuideForm('step2.economique.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          value={(guideForm.step2.economique.specs || []).join(
+                            "\n",
+                          )}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.economique.specs",
+                              e.target.value
+                                .split("\n")
+                                .filter((s) => s.trim()),
+                            )
+                          }
                           placeholder="Type : Aftermarket&#10;Garantie : 1 an"
                           rows={3}
                           className="text-sm"
@@ -2492,7 +3288,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Prix</Label>
                         <Input
                           value={guideForm.step2.economique.priceRange}
-                          onChange={(e) => updateGuideForm('step2.economique.priceRange', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.economique.priceRange",
+                              e.target.value,
+                            )
+                          }
                           placeholder="A partir de 29€"
                           className="h-8 text-sm"
                         />
@@ -2507,8 +3308,11 @@ export default function AdminGammeSeoDetail() {
                         <span className="text-2xl">🥈</span>
                         <h4 className="font-semibold">Qualite+</h4>
                       </div>
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                        {guideForm.step2.qualitePlus.badge || 'Le plus choisi'}
+                      <Badge
+                        variant="secondary"
+                        className="bg-blue-100 text-blue-700"
+                      >
+                        {guideForm.step2.qualitePlus.badge || "Le plus choisi"}
                       </Badge>
                     </div>
                     <div className="space-y-3">
@@ -2516,7 +3320,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Sous-titre</Label>
                         <Input
                           value={guideForm.step2.qualitePlus.subtitle}
-                          onChange={(e) => updateGuideForm('step2.qualitePlus.subtitle', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.qualitePlus.subtitle",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Equipement d'origine"
                           className="h-8 text-sm"
                         />
@@ -2525,7 +3334,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Description</Label>
                         <Textarea
                           value={guideForm.step2.qualitePlus.description}
-                          onChange={(e) => updateGuideForm('step2.qualitePlus.description', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.qualitePlus.description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Description de cette gamme..."
                           rows={2}
                           className="text-sm"
@@ -2534,8 +3348,17 @@ export default function AdminGammeSeoDetail() {
                       <div className="space-y-1">
                         <Label className="text-xs">Specs (une par ligne)</Label>
                         <Textarea
-                          value={(guideForm.step2.qualitePlus.specs || []).join('\n')}
-                          onChange={(e) => updateGuideForm('step2.qualitePlus.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          value={(guideForm.step2.qualitePlus.specs || []).join(
+                            "\n",
+                          )}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.qualitePlus.specs",
+                              e.target.value
+                                .split("\n")
+                                .filter((s) => s.trim()),
+                            )
+                          }
                           placeholder="Type : Qualite OE&#10;Garantie : 2 ans"
                           rows={3}
                           className="text-sm"
@@ -2545,7 +3368,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Prix</Label>
                         <Input
                           value={guideForm.step2.qualitePlus.priceRange}
-                          onChange={(e) => updateGuideForm('step2.qualitePlus.priceRange', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.qualitePlus.priceRange",
+                              e.target.value,
+                            )
+                          }
                           placeholder="A partir de 59€"
                           className="h-8 text-sm"
                         />
@@ -2564,7 +3392,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Sous-titre</Label>
                         <Input
                           value={guideForm.step2.premium.subtitle}
-                          onChange={(e) => updateGuideForm('step2.premium.subtitle', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.premium.subtitle",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Haute performance"
                           className="h-8 text-sm"
                         />
@@ -2573,7 +3406,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Description</Label>
                         <Textarea
                           value={guideForm.step2.premium.description}
-                          onChange={(e) => updateGuideForm('step2.premium.description', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.premium.description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Description de cette gamme..."
                           rows={2}
                           className="text-sm"
@@ -2582,8 +3420,17 @@ export default function AdminGammeSeoDetail() {
                       <div className="space-y-1">
                         <Label className="text-xs">Specs (une par ligne)</Label>
                         <Textarea
-                          value={(guideForm.step2.premium.specs || []).join('\n')}
-                          onChange={(e) => updateGuideForm('step2.premium.specs', e.target.value.split('\n').filter(s => s.trim()))}
+                          value={(guideForm.step2.premium.specs || []).join(
+                            "\n",
+                          )}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.premium.specs",
+                              e.target.value
+                                .split("\n")
+                                .filter((s) => s.trim()),
+                            )
+                          }
                           placeholder="Type : Premium OEM&#10;Garantie : 3 ans"
                           rows={3}
                           className="text-sm"
@@ -2593,7 +3440,12 @@ export default function AdminGammeSeoDetail() {
                         <Label className="text-xs">Prix</Label>
                         <Input
                           value={guideForm.step2.premium.priceRange}
-                          onChange={(e) => updateGuideForm('step2.premium.priceRange', e.target.value)}
+                          onChange={(e) =>
+                            updateGuideForm(
+                              "step2.premium.priceRange",
+                              e.target.value,
+                            )
+                          }
                           placeholder="A partir de 99€"
                           className="h-8 text-sm"
                         />
@@ -2608,10 +3460,16 @@ export default function AdminGammeSeoDetail() {
             <Card>
               <CardHeader className="bg-red-50 border-b">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                    3
+                  </div>
                   <div>
-                    <CardTitle className="text-lg">Securite et conseils</CardTitle>
-                    <CardDescription>Alertes et precautions pour l'installation</CardDescription>
+                    <CardTitle className="text-lg">
+                      Securite et conseils
+                    </CardTitle>
+                    <CardDescription>
+                      Alertes et precautions pour l'installation
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -2622,7 +3480,9 @@ export default function AdminGammeSeoDetail() {
                     <Input
                       id="step3_title"
                       value={guideForm.step3.title}
-                      onChange={(e) => updateGuideForm('step3.title', e.target.value)}
+                      onChange={(e) =>
+                        updateGuideForm("step3.title", e.target.value)
+                      }
                       placeholder="Securite et conseils"
                     />
                   </div>
@@ -2632,7 +3492,9 @@ export default function AdminGammeSeoDetail() {
                   <Textarea
                     id="step3_content"
                     value={guideForm.step3.content}
-                    onChange={(e) => updateGuideForm('step3.content', e.target.value)}
+                    onChange={(e) =>
+                      updateGuideForm("step3.content", e.target.value)
+                    }
                     placeholder="Conseils de securite et d'installation..."
                     rows={3}
                   />
@@ -2643,17 +3505,30 @@ export default function AdminGammeSeoDetail() {
                   <Label>Alertes de securite</Label>
                   <div className="space-y-2">
                     {(guideForm.step3.alerts || []).map((alert, idx) => (
-                      <div key={idx} className={`flex items-center gap-2 p-2 rounded-lg border ${
-                        alert.type === 'danger' ? 'bg-red-50 border-red-200' :
-                        alert.type === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-                        'bg-blue-50 border-blue-200'
-                      }`}>
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-2 p-2 rounded-lg border ${
+                          alert.type === "danger"
+                            ? "bg-red-50 border-red-200"
+                            : alert.type === "warning"
+                              ? "bg-yellow-50 border-yellow-200"
+                              : "bg-blue-50 border-blue-200"
+                        }`}
+                      >
                         <select
                           value={alert.type}
                           onChange={(e) => {
-                            const newAlerts = [...(guideForm.step3.alerts || [])];
-                            newAlerts[idx] = { ...newAlerts[idx], type: e.target.value as 'danger' | 'warning' | 'info' };
-                            updateGuideForm('step3.alerts', newAlerts);
+                            const newAlerts = [
+                              ...(guideForm.step3.alerts || []),
+                            ];
+                            newAlerts[idx] = {
+                              ...newAlerts[idx],
+                              type: e.target.value as
+                                | "danger"
+                                | "warning"
+                                | "info",
+                            };
+                            updateGuideForm("step3.alerts", newAlerts);
                           }}
                           className="h-8 text-sm rounded border px-2"
                         >
@@ -2664,9 +3539,14 @@ export default function AdminGammeSeoDetail() {
                         <Input
                           value={alert.text}
                           onChange={(e) => {
-                            const newAlerts = [...(guideForm.step3.alerts || [])];
-                            newAlerts[idx] = { ...newAlerts[idx], text: e.target.value };
-                            updateGuideForm('step3.alerts', newAlerts);
+                            const newAlerts = [
+                              ...(guideForm.step3.alerts || []),
+                            ];
+                            newAlerts[idx] = {
+                              ...newAlerts[idx],
+                              text: e.target.value,
+                            };
+                            updateGuideForm("step3.alerts", newAlerts);
                           }}
                           className="flex-1 h-8 text-sm"
                           placeholder="Texte de l'alerte..."
@@ -2675,8 +3555,10 @@ export default function AdminGammeSeoDetail() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            const newAlerts = (guideForm.step3.alerts || []).filter((_, i) => i !== idx);
-                            updateGuideForm('step3.alerts', newAlerts);
+                            const newAlerts = (
+                              guideForm.step3.alerts || []
+                            ).filter((_, i) => i !== idx);
+                            updateGuideForm("step3.alerts", newAlerts);
                           }}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -2687,8 +3569,11 @@ export default function AdminGammeSeoDetail() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newAlerts = [...(guideForm.step3.alerts || []), { type: 'info' as const, text: '' }];
-                        updateGuideForm('step3.alerts', newAlerts);
+                        const newAlerts = [
+                          ...(guideForm.step3.alerts || []),
+                          { type: "info" as const, text: "" },
+                        ];
+                        updateGuideForm("step3.alerts", newAlerts);
                       }}
                     >
                       <Plus className="h-4 w-4 mr-2" />
@@ -2701,9 +3586,15 @@ export default function AdminGammeSeoDetail() {
 
             {/* Bouton de sauvegarde en bas */}
             <div className="flex justify-end">
-              <Button onClick={savePurchaseGuide} disabled={guideSaving} size="lg">
+              <Button
+                onClick={savePurchaseGuide}
+                disabled={guideSaving}
+                size="lg"
+              >
                 <Save className="mr-2 h-5 w-5" />
-                {guideSaving ? "Sauvegarde en cours..." : "Sauvegarder le guide d'achat"}
+                {guideSaving
+                  ? "Sauvegarde en cours..."
+                  : "Sauvegarder le guide d'achat"}
               </Button>
             </div>
           </div>
