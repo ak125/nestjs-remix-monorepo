@@ -615,10 +615,10 @@ export default function AdminGammesSeo() {
         </Badge>
       );
     }
-    // INDEX = niveau principal (pg_level = 1)
+    // INDEX = niveau principal (pg_level = 1) - VERT pour cohérence visuelle
     if (pgLevel === "1") {
       return (
-        <Badge className="bg-sky-600 text-white font-medium px-3 py-1">
+        <Badge className="bg-green-600 text-white font-medium px-3 py-1">
           <Eye className="h-3 w-3 mr-1 inline" />
           INDEX
         </Badge>
@@ -935,12 +935,12 @@ export default function AdminGammesSeo() {
                   <span className="text-xs text-gray-600">Prioritaire</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-sky-600 text-white">G2</Badge>
-                  <span className="text-xs text-gray-600">INDEX</span>
+                  <Badge className="bg-green-600 text-white">INDEX</Badge>
+                  <span className="text-xs text-gray-600">Indexé</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-slate-400 text-white">G3</Badge>
-                  <span className="text-xs text-gray-600">NOINDEX</span>
+                  <Badge className="bg-slate-400 text-white">NOINDEX</Badge>
+                  <span className="text-xs text-gray-600">Non indexé</span>
                 </div>
               </div>
             </div>
