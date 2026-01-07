@@ -22,11 +22,12 @@
  * - Support 700k+ URLs
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SitemapVehiclePiecesValidator } from './sitemap-vehicle-pieces-validator.service';
 
 /**
  * Résultat d'un fichier sitemap généré
@@ -47,6 +48,19 @@ export interface AllSitemapsResult {
   totalUrls: number;
   duration: number;
   errors: string[];
+  validation?: {
+    enabled: boolean;
+    totalChecked: number;
+    excluded: number;
+    exclusionRate: string;
+  };
+}
+
+/**
+ * Options de génération
+ */
+export interface GenerateSitemapOptions {
+  skipValidation?: boolean;
 }
 
 /**
@@ -81,7 +95,13 @@ export class SitemapUnifiedService {
   private readonly BASE_URL = 'https://www.automecanik.com';
   private readonly MAX_URLS_PER_SITEMAP = 50000;
 
-  constructor(private configService: ConfigService) {
+  // Stats de validation pour le rapport
+  private validationStats = { totalChecked: 0, excluded: 0 };
+
+  constructor(
+    private configService: ConfigService,
+    @Optional() private readonly validator?: SitemapVehiclePiecesValidator,
+  ) {
     // Initialiser le client Supabase
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>(
@@ -95,15 +115,26 @@ export class SitemapUnifiedService {
     }
 
     this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
-    this.logger.log('🗺️ SitemapUnifiedService initialized');
+    this.logger.log(
+      `🗺️ SitemapUnifiedService initialized ${this.validator ? '(with URL validation)' : '(without validation)'}`,
+    );
   }
 
   /**
    * 🚀 MÉTHODE PRINCIPALE - Génère TOUS les sitemaps (7 types)
    * V6: Fusion vehicules (constructeurs+modeles+types → sitemap-vehicules.xml)
+   * V7: Ajout validation URLs pièces (exclut type_id/gamme_id supprimés)
    */
-  async generateAllSitemaps(outputDir: string): Promise<AllSitemapsResult> {
+  async generateAllSitemaps(
+    outputDir: string,
+    options: GenerateSitemapOptions = {},
+  ): Promise<AllSitemapsResult> {
     const startTime = Date.now();
+    const skipValidation = options.skipValidation ?? false;
+
+    // Reset validation stats
+    this.validationStats = { totalChecked: 0, excluded: 0 };
+
     const result: AllSitemapsResult = {
       success: true,
       files: [],
@@ -112,8 +143,9 @@ export class SitemapUnifiedService {
       errors: [],
     };
 
+    const validationEnabled = !skipValidation && !!this.validator;
     this.logger.log(
-      `🚀 Starting unified sitemap V6 generation to ${outputDir}`,
+      `🚀 Starting unified sitemap V7 generation to ${outputDir} (validation: ${validationEnabled ? 'ON' : 'OFF'})`,
     );
 
     // Créer le répertoire si nécessaire
@@ -138,9 +170,11 @@ export class SitemapUnifiedService {
       const vehicules = await this.generateVehiculesSitemap(outputDir);
       if (vehicules) result.files.push(vehicules);
 
-      // 4. Pièces (~714k URLs, shardé avec pagination)
+      // 4. Pièces (~714k URLs, shardé avec pagination + validation optionnelle)
       this.logger.log('📦 [4/7] Generating sitemap-pieces-*.xml...');
-      const pieces = await this.generatePiecesSitemaps(outputDir);
+      const pieces = await this.generatePiecesSitemaps(outputDir, {
+        skipValidation,
+      });
       result.files.push(...pieces);
 
       // 5. Blog (~109 URLs)
@@ -159,6 +193,22 @@ export class SitemapUnifiedService {
 
       result.totalUrls = result.files.reduce((sum, f) => sum + f.urlCount, 0);
       result.duration = Date.now() - startTime;
+
+      // Ajouter stats de validation si activée
+      if (validationEnabled && this.validationStats.totalChecked > 0) {
+        const exclusionRate =
+          (this.validationStats.excluded / this.validationStats.totalChecked) *
+          100;
+        result.validation = {
+          enabled: true,
+          totalChecked: this.validationStats.totalChecked,
+          excluded: this.validationStats.excluded,
+          exclusionRate: `${exclusionRate.toFixed(2)}%`,
+        };
+        this.logger.log(
+          `🛡️ Validation: ${this.validationStats.excluded}/${this.validationStats.totalChecked} URLs exclues (${exclusionRate.toFixed(2)}%)`,
+        );
+      }
 
       this.logger.log(
         `✅ All sitemaps generated: ${result.files.length} files, ${result.totalUrls} URLs in ${result.duration}ms`,
@@ -358,12 +408,15 @@ export class SitemapUnifiedService {
 
   /**
    * 📦 Génère sitemap-pieces-*.xml (shardé par 50k URLs)
+   * V7: Avec validation optionnelle des URLs (exclut type_id/gamme_id supprimés)
    * Utilise pagination pour contourner la limite Supabase 1000 lignes
    */
   private async generatePiecesSitemaps(
     dir: string,
+    options: { skipValidation?: boolean } = {},
   ): Promise<SitemapFileResult[]> {
     const results: SitemapFileResult[] = [];
+    const shouldValidate = !options.skipValidation && !!this.validator;
 
     try {
       // Compter le total d'abord
@@ -379,7 +432,7 @@ export class SitemapUnifiedService {
       const totalCount = count || 0;
       const totalShards = Math.ceil(totalCount / this.MAX_URLS_PER_SITEMAP);
       this.logger.log(
-        `  → ${totalCount} URLs total, ${totalShards} shards à générer`,
+        `  → ${totalCount} URLs total, ${totalShards} shards à générer ${shouldValidate ? '(avec validation)' : '(sans validation)'}`,
       );
 
       // Type pour les pièces
@@ -421,11 +474,46 @@ export class SitemapUnifiedService {
           continue;
         }
 
-        const urls: SitemapUrl[] = pieces.map((p) => ({
-          loc: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
-          priority: '0.6',
-          changefreq: 'weekly',
-        }));
+        let urls: SitemapUrl[];
+
+        // 🛡️ V7: Validation optionnelle des URLs
+        if (shouldValidate && this.validator) {
+          // Préparer les URLs candidates pour validation
+          const candidates = pieces.map((p) => ({
+            typeId: parseInt(p.map_type_id, 10),
+            gammeId: parseInt(p.map_pg_id, 10),
+            url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+          }));
+
+          // Filtrer avec le validator (batch processing avec cache)
+          const validUrls =
+            await this.validator.filterUrlsForSitemap(candidates);
+
+          // Mise à jour stats de validation
+          const excluded = candidates.length - validUrls.length;
+          this.validationStats.totalChecked += candidates.length;
+          this.validationStats.excluded += excluded;
+
+          if (excluded > 0) {
+            this.logger.warn(
+              `  🔒 Shard ${shard + 1}: ${excluded}/${candidates.length} URLs exclues (invalides)`,
+            );
+          }
+
+          // Convertir en format SitemapUrl
+          urls = validUrls.map((v) => ({
+            loc: v.url,
+            priority: '0.6',
+            changefreq: 'weekly',
+          }));
+        } else {
+          // Sans validation - comportement original
+          urls = pieces.map((p) => ({
+            loc: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+            priority: '0.6',
+            changefreq: 'weekly',
+          }));
+        }
 
         const filename = `sitemap-pieces-${shard + 1}.xml`;
         const filepath = path.join(dir, filename);
