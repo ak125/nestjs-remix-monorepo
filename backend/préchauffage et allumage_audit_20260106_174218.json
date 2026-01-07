@@ -1,0 +1,89 @@
+{
+  "famille": "Préchauffage et allumage",
+  "audit_date": "2026-01-06T17:42:18.455418",
+  "total_gammes": 5,
+  "total_issues": 0,
+  "gammes_ok": 5,
+  "gammes_to_fix": 0,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "changer par jeu complet...",
+        "gammes": [
+          "243: La bougie de préchauffage",
+          "686: La bougie d'allumage"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer les bougies...",
+        "used_by": [
+          "ID 243",
+          "ID 686"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec les bougies...",
+        "used_by": [
+          "ID 243",
+          "ID 686"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "243",
+      "name": "La bougie de préchauffage",
+      "current_cost": "8 à 40 € (pièce) / 80 à 200 € pour 4 bougies avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "686",
+      "name": "La bougie d'allumage",
+      "current_cost": "8 à 30 € (pièce) / 40 à 120 € pour 4 bougies avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "689",
+      "name": "La bobine d'allumage",
+      "current_cost": "25 à 120 € (pièce) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1750",
+      "name": "Le boîtier de préchauffage",
+      "current_cost": "40 à 150 € (boîtier) / 80 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "685",
+      "name": "Le faisceau d'allumage",
+      "current_cost": "30 à 120 € (jeu complet) / 80 à 200 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

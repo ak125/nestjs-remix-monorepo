@@ -1,0 +1,277 @@
+{
+  "famille": "Embrayage",
+  "audit_date": "2026-01-06T19:03:59.821866",
+  "total_gammes": 6,
+  "total_issues": 24,
+  "gammes_ok": 0,
+  "gammes_to_fix": 6,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "800 à 2 000 €...",
+        "gammes": [
+          "48: Le/La Butée d'embrayage",
+          "478: Le/La Câble d'embrayage",
+          "234: Le/La Emetteur d'embrayage",
+          "479: Le/La Kit d'embrayage",
+          "620: Le/La Récepteur d'embrayage",
+          "577: Le/La Volant moteur"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "48: Le/La Butée d'embrayage",
+          "478: Le/La Câble d'embrayage",
+          "234: Le/La Emetteur d'embrayage",
+          "479: Le/La Kit d'embrayage",
+          "620: Le/La Récepteur d'embrayage",
+          "577: Le/La Volant moteur"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "48: Le/La Butée d'embrayage",
+          "478: Le/La Câble d'embrayage",
+          "234: Le/La Emetteur d'embrayage",
+          "479: Le/La Kit d'embrayage",
+          "620: Le/La Récepteur d'embrayage",
+          "577: Le/La Volant moteur"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 48",
+          "ID 478"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 48",
+          "ID 234"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 48",
+          "ID 479"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 48",
+          "ID 620"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 48",
+          "ID 577"
+        ],
+        "field": "intro_role",
+        "similarity": "77%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 478",
+          "ID 234"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 478",
+          "ID 479"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 478",
+          "ID 620"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 478",
+          "ID 577"
+        ],
+        "field": "intro_role",
+        "similarity": "77%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 234",
+          "ID 479"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 234",
+          "ID 620"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 234",
+          "ID 577"
+        ],
+        "field": "intro_role",
+        "similarity": "77%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 479",
+          "ID 620"
+        ],
+        "field": "intro_role",
+        "similarity": "85%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 479",
+          "ID 577"
+        ],
+        "field": "intro_role",
+        "similarity": "77%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 620",
+          "ID 577"
+        ],
+        "field": "intro_role",
+        "similarity": "77%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "48",
+      "name": "Le/La Butée d'embrayage",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "478",
+      "name": "Le/La Câble d'embrayage",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "234",
+      "name": "Le/La Emetteur d'embrayage",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "479",
+      "name": "Le/La Kit d'embrayage",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "620",
+      "name": "Le/La Récepteur d'embrayage",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "577",
+      "name": "Le/La Volant moteur",
+      "current_cost": "800 à 2 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

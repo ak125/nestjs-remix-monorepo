@@ -1,0 +1,124 @@
+{
+  "famille": "Echappement",
+  "audit_date": "2026-01-06T22:39:44.797861",
+  "total_gammes": 3,
+  "total_issues": 18,
+  "gammes_ok": 0,
+  "gammes_to_fix": 3,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "150 à 600 €...",
+        "gammes": [
+          "1256: Le/La FAP",
+          "3922: Le/La Sonde lambda",
+          "429: Le/La Catalyseur"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "1256: Le/La FAP",
+          "3922: Le/La Sonde lambda",
+          "429: Le/La Catalyseur"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "1256: Le/La FAP",
+          "3922: Le/La Sonde lambda",
+          "429: Le/La Catalyseur"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 1256",
+          "ID 3922"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1256",
+          "ID 429"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3922",
+          "ID 429"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1256",
+      "name": "Le/La FAP",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3922",
+      "name": "Le/La Sonde lambda",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "429",
+      "name": "Le/La Catalyseur",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

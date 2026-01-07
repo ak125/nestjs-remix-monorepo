@@ -1,0 +1,37 @@
+{
+  "famille": "Transmission",
+  "audit_date": "2026-01-06T19:30:41.882101",
+  "total_gammes": 2,
+  "total_issues": 1,
+  "gammes_ok": 1,
+  "gammes_to_fix": 1,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "13",
+      "name": "Le cardan",
+      "current_cost": "100 à 350 € (cardan complet) / 200 à 500 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "193",
+      "name": "Le soufflet de cardan",
+      "current_cost": "15 à 50 € (soufflet) / 80 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories comportement, olfactif, preventif"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

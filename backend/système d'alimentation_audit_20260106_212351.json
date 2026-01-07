@@ -1,0 +1,279 @@
+{
+  "famille": "Système d'alimentation",
+  "audit_date": "2026-01-06T21:23:51.724122",
+  "total_gammes": 6,
+  "total_issues": 26,
+  "gammes_ok": 0,
+  "gammes_to_fix": 6,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "200 à 800 €...",
+        "gammes": [
+          "158: Le/La Boîtier papillon",
+          "3927: Le/La Débitmètre d'air",
+          "3902: Le/La Injecteur",
+          "3894: Le/La Joint d'injecteur",
+          "458: Le/La Pompe à carburant",
+          "1145: Le/La Vanne EGR"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "158: Le/La Boîtier papillon",
+          "3927: Le/La Débitmètre d'air",
+          "3902: Le/La Injecteur",
+          "3894: Le/La Joint d'injecteur",
+          "458: Le/La Pompe à carburant",
+          "1145: Le/La Vanne EGR"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "158: Le/La Boîtier papillon",
+          "3927: Le/La Débitmètre d'air",
+          "3902: Le/La Injecteur",
+          "3894: Le/La Joint d'injecteur",
+          "458: Le/La Pompe à carburant",
+          "1145: Le/La Vanne EGR"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 158",
+          "ID 3927"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 158",
+          "ID 3902"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 158",
+          "ID 3894"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 158",
+          "ID 458"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 158",
+          "ID 1145"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3927",
+          "ID 3902"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3927",
+          "ID 3894"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3927",
+          "ID 458"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3927",
+          "ID 1145"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3902",
+          "ID 3894"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3902",
+          "ID 458"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3902",
+          "ID 1145"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3894",
+          "ID 458"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3894",
+          "ID 1145"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 458",
+          "ID 1145"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "158",
+      "name": "Le/La Boîtier papillon",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3927",
+      "name": "Le/La Débitmètre d'air",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3902",
+      "name": "Le/La Injecteur",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3894",
+      "name": "Le/La Joint d'injecteur",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "458",
+      "name": "Le/La Pompe à carburant",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1145",
+      "name": "Le/La Vanne EGR",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

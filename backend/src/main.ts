@@ -141,6 +141,10 @@ async function bootstrap() {
                 "'self'",
                 'ws:',
                 'wss:',
+                // DEV: autoriser Vite HMR ping (http non-websocket)
+                ...(process.env.NODE_ENV !== 'production'
+                  ? ['http://127.0.0.1:24678', 'http://localhost:24678']
+                  : []),
                 'https://www.google-analytics.com', // Envoi données GA
                 'https://analytics.google.com', // GA4 endpoint
                 'https://region1.google-analytics.com', // GA4 régional

@@ -1,0 +1,506 @@
+{
+  "famille": "Direction et liaison au sol",
+  "audit_date": "2026-01-06T17:49:29.763106",
+  "total_gammes": 10,
+  "total_issues": 48,
+  "gammes_ok": 0,
+  "gammes_to_fix": 10,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "200 à 600 €...",
+        "gammes": [
+          "285: Le/La Barre de direction",
+          "3230: Le/La Biellette de barre stabi",
+          "273: Le/La Bras de suspension",
+          "1211: Le/La Colonne de direction",
+          "286: Le/La Crémaillière de directio",
+          "12: Le/La Pompe de direction assis",
+          "2066: Le/La Rotule de direction",
+          "2462: Le/La Rotule de suspension",
+          "655: Le/La Roulement de roue",
+          "191: Le/La Soufflet de direction"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "285: Le/La Barre de direction",
+          "3230: Le/La Biellette de barre stabi",
+          "273: Le/La Bras de suspension",
+          "1211: Le/La Colonne de direction",
+          "286: Le/La Crémaillière de directio",
+          "12: Le/La Pompe de direction assis",
+          "2066: Le/La Rotule de direction",
+          "2462: Le/La Rotule de suspension",
+          "655: Le/La Roulement de roue",
+          "191: Le/La Soufflet de direction"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "285: Le/La Barre de direction",
+          "3230: Le/La Biellette de barre stabi",
+          "273: Le/La Bras de suspension",
+          "1211: Le/La Colonne de direction",
+          "286: Le/La Crémaillière de directio",
+          "12: Le/La Pompe de direction assis",
+          "2066: Le/La Rotule de direction",
+          "2462: Le/La Rotule de suspension",
+          "655: Le/La Roulement de roue",
+          "191: Le/La Soufflet de direction"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 285",
+          "ID 3230"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 273"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 1211"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 286"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 12"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 2066"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 2462"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 655"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 285",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 273",
+          "ID 1211"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 273",
+          "ID 286"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 273",
+          "ID 2066"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 273",
+          "ID 2462"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 273",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 286"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 12"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 2066"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 2462"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 655"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1211",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 286",
+          "ID 12"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 286",
+          "ID 2066"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 286",
+          "ID 2462"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 286",
+          "ID 655"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 286",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 12",
+          "ID 2066"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 12",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2066",
+          "ID 2462"
+        ],
+        "field": "intro_role",
+        "similarity": "88%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2066",
+          "ID 655"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2066",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2462",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 655",
+          "ID 191"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "285",
+      "name": "Le/La Barre de direction",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3230",
+      "name": "Le/La Biellette de barre stabilisatrice",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "273",
+      "name": "Le/La Bras de suspension",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1211",
+      "name": "Le/La Colonne de direction",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "286",
+      "name": "Le/La Crémaillière de direction",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "12",
+      "name": "Le/La Pompe de direction assistée",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2066",
+      "name": "Le/La Rotule de direction",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2462",
+      "name": "Le/La Rotule de suspension",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "655",
+      "name": "Le/La Roulement de roue",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "191",
+      "name": "Le/La Soufflet de direction",
+      "current_cost": "200 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

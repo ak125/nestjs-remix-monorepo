@@ -1,0 +1,68 @@
+{
+  "famille": "Filtration",
+  "audit_date": "2026-01-06T14:37:40.794603",
+  "total_gammes": 5,
+  "total_issues": 7,
+  "gammes_ok": 0,
+  "gammes_to_fix": 5,
+  "duplicates": {},
+  "gammes": [
+    {
+      "id": "416",
+      "name": "Le filtre de boîte automatique",
+      "current_cost": "20 à 80 € (filtre) / 150 à 400 € avec vidange ATF",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Pas de FAQ 'Erreur fréquente'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "424",
+      "name": "Le filtre d'habitacle",
+      "current_cost": "10 à 35 € (filtre) / 20 à 60 € avec main d'œuvre",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Timing km générique: '15 000 à 30 000 km'",
+        "⚠️ Pas de FAQ 'Erreur fréquente'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "7",
+      "name": "Le filtre à huile",
+      "current_cost": "8 à 25 € (filtre seul) / 80 à 150 € avec vidange complète",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Terme 'pistons' hors contexte pour Filtration",
+        "⚠️ Pas de FAQ 'Erreur fréquente'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "8",
+      "name": "Le filtre à air",
+      "current_cost": "10 à 40 € (filtre) / 15 à 60 € avec main d'œuvre",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Pas de FAQ 'Erreur fréquente'"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "9",
+      "name": "Le filtre à carburant",
+      "current_cost": "15 à 60 € (filtre) / 40 à 120 € avec main d'œuvre",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Pas de FAQ 'Erreur fréquente'"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

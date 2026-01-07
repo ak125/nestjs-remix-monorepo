@@ -1,0 +1,91 @@
+{
+  "famille": "Filtres",
+  "audit_date": "2026-01-06T17:04:07.178705",
+  "total_gammes": 5,
+  "total_issues": 0,
+  "gammes_ok": 5,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer le filtre...",
+        "used_by": [
+          "ID 416",
+          "ID 424",
+          "ID 7",
+          "ID 8"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec le filtre...",
+        "used_by": [
+          "ID 416",
+          "ID 424",
+          "ID 7",
+          "ID 8"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "comment savoir si mon filtre à...",
+        "used_by": [
+          "ID 7",
+          "ID 8"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "416",
+      "name": "Le filtre de boîte automatique",
+      "current_cost": "20 à 80 € (filtre) / 150 à 400 € avec vidange ATF",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "424",
+      "name": "Le filtre d'habitacle",
+      "current_cost": "10 à 35 € (filtre) / 20 à 60 € avec main d'œuvre",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "7",
+      "name": "Le filtre à huile",
+      "current_cost": "8 à 25 € (filtre seul) / 80 à 150 € avec vidange complète",
+      "current_symptoms_count": 5,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "8",
+      "name": "Le filtre à air",
+      "current_cost": "10 à 40 € (filtre) / 15 à 60 € avec main d'œuvre",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "9",
+      "name": "Le filtre à carburant",
+      "current_cost": "15 à 60 € (filtre) / 40 à 120 € avec main d'œuvre",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

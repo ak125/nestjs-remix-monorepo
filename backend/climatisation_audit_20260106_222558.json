@@ -1,0 +1,93 @@
+{
+  "famille": "Climatisation",
+  "audit_date": "2026-01-06T22:25:58.200538",
+  "total_gammes": 8,
+  "total_issues": 2,
+  "gammes_ok": 6,
+  "gammes_to_fix": 2,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "471",
+      "name": "L'évaporateur de climatisation",
+      "current_cost": "200 à 500 € (évaporateur) / 500 à 1000 € avec pose et recharge",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "447",
+      "name": "Le compresseur de climatisation",
+      "current_cost": "300 à 800 € (compresseur) / 500 à 1200 € avec pose et recharge",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "851",
+      "name": "La bouteille déshydratante",
+      "current_cost": "30 à 80 € (déshydrateur) / 80 à 180 € avec pose et recharge",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1385",
+      "name": "La commande de ventilation",
+      "current_cost": "80 à 300 € (commande) / 150 à 450 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "2669",
+      "name": "Le pulseur d'air",
+      "current_cost": "50 à 200 € (pulseur) / 100 à 350 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "183",
+      "name": "Le détendeur de climatisation",
+      "current_cost": "50 à 150 € (détendeur) / 150 à 350 € avec pose et recharge",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "448",
+      "name": "Le condenseur de climatisation",
+      "current_cost": "150 à 400 € (condenseur) / 300 à 600 € avec pose et recharge",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories visuel, comportement, preventif"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2054",
+      "name": "Le capteur de température de climatisation",
+      "current_cost": "20 à 60 € (capteur) / 50 à 120 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ Symptômes incomplets: manque catégories auditif, comportement, preventif"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

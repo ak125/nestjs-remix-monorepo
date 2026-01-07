@@ -1,0 +1,143 @@
+{
+  "famille": "Capteurs",
+  "audit_date": "2026-01-06T21:19:13.463741",
+  "total_gammes": 10,
+  "total_issues": 0,
+  "gammes_ok": 10,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [
+      {
+        "question": "tous les combien changer le capteur...",
+        "used_by": [
+          "ID 3947",
+          "ID 1289",
+          "ID 817",
+          "ID 3921",
+          "ID 3939",
+          "ID 4813",
+          "ID 4175"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "quelle erreur éviter avec le capteur...",
+        "used_by": [
+          "ID 3947",
+          "ID 1289",
+          "ID 817",
+          "ID 3921",
+          "ID 3939",
+          "ID 4813",
+          "ID 4175"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      },
+      {
+        "question": "comment savoir si mon capteur de...",
+        "used_by": [
+          "ID 1289",
+          "ID 817",
+          "ID 3921"
+        ],
+        "fix": "Personnaliser la question par gamme"
+      }
+    ],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "830",
+      "name": "La sonde de température moteur",
+      "current_cost": "10 à 40 € (sonde) / 40 à 90 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3947",
+      "name": "Le capteur MAP",
+      "current_cost": "25 à 80 € (capteur) / 60 à 140 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1289",
+      "name": "Le capteur de niveau d'huile",
+      "current_cost": "20 à 60 € (capteur) / 50 à 120 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "817",
+      "name": "Le capteur de pression de carburant",
+      "current_cost": "40 à 150 € (capteur) / 100 à 250 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3921",
+      "name": "Le capteur de cognement",
+      "current_cost": "30 à 100 € (capteur) / 80 à 180 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "3939",
+      "name": "Le capteur IAT",
+      "current_cost": "15 à 50 € (capteur) / 40 à 100 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "4813",
+      "name": "Le capteur PMH",
+      "current_cost": "25 à 80 € (capteur) / 70 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "4175",
+      "name": "Le capteur combiné huile",
+      "current_cost": "40 à 120 € (capteur) / 80 à 180 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "805",
+      "name": "Le pressostat d'huile",
+      "current_cost": "10 à 40 € (pressostat) / 40 à 90 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1298",
+      "name": "La vanne de ralenti",
+      "current_cost": "30 à 100 € (vanne) / 70 à 160 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

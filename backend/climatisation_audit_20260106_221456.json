@@ -1,0 +1,280 @@
+{
+  "famille": "Climatisation",
+  "audit_date": "2026-01-06T22:14:56.971283",
+  "total_gammes": 8,
+  "total_issues": 35,
+  "gammes_ok": 0,
+  "gammes_to_fix": 8,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "200 à 800 €...",
+        "gammes": [
+          "851: Le/La Bouteille déshydratante",
+          "2054: Le/La Capteur température de c",
+          "447: Le/La Compresseur de climatisa",
+          "448: Le/La Condenseur de climatisat",
+          "471: Le/La Evaporateur de climatisa"
+        ]
+      },
+      {
+        "value": "1 500 à 4 000 €...",
+        "gammes": [
+          "1385: Le/La Commande de ventilation",
+          "2669: Le/La Pulseur d'air d'habitacl"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "851: Le/La Bouteille déshydratante",
+          "2054: Le/La Capteur température de c",
+          "447: Le/La Compresseur de climatisa",
+          "448: Le/La Condenseur de climatisat",
+          "471: Le/La Evaporateur de climatisa",
+          "1385: Le/La Commande de ventilation",
+          "2669: Le/La Pulseur d'air d'habitacl"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "851: Le/La Bouteille déshydratante",
+          "2054: Le/La Capteur température de c",
+          "447: Le/La Compresseur de climatisa",
+          "448: Le/La Condenseur de climatisat",
+          "471: Le/La Evaporateur de climatisa",
+          "1385: Le/La Commande de ventilation",
+          "2669: Le/La Pulseur d'air d'habitacl"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 2054",
+          "ID 447"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2054",
+          "ID 448"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2054",
+          "ID 471"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 2054",
+          "ID 183"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 447",
+          "ID 448"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 447",
+          "ID 471"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 447",
+          "ID 183"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 448",
+          "ID 471"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 448",
+          "ID 183"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 471",
+          "ID 183"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1385",
+          "ID 2669"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "851",
+      "name": "Le/La Bouteille déshydratante",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2054",
+      "name": "Le/La Capteur température de climatisation",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "447",
+      "name": "Le/La Compresseur de climatisation",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "448",
+      "name": "Le/La Condenseur de climatisation",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "471",
+      "name": "Le/La Evaporateur de climatisation",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1385",
+      "name": "Le/La Commande de ventilation",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "2669",
+      "name": "Le/La Pulseur d'air d'habitacle",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "183",
+      "name": "Le détendeur de climatisation",
+      "current_cost": "40 à 150 € (pièce) / 150 à 350 € avec pose (recharge incluse)",
+      "current_symptoms_count": 7,
+      "current_faq_count": 5,
+      "issues": [
+        "⚠️ FAQ pauvre en diversité: manque comparatif, timing, diy",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

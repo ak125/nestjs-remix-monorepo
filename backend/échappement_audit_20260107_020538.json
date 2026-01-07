@@ -1,0 +1,62 @@
+{
+  "famille": "Échappement",
+  "audit_date": "2026-01-07T02:05:38.075754",
+  "total_gammes": 5,
+  "total_issues": 0,
+  "gammes_ok": 5,
+  "gammes_to_fix": 0,
+  "duplicates": {},
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "4272",
+      "name": "Le capteur de pression des gaz d'échappement",
+      "current_cost": "80 à 200 € (capteur) / 120 à 280 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "17",
+      "name": "Le tube d'échappement",
+      "current_cost": "50 à 200 € (tube) / 100 à 350 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "138",
+      "name": "Le joint d'échappement",
+      "current_cost": "5 à 30 € (joint) / 50 à 150 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1543",
+      "name": "Le collecteur d'échappement",
+      "current_cost": "150 à 500 € (collecteur) / 300 à 800 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "1270",
+      "name": "La soupape d'échappement",
+      "current_cost": "20 à 60 € (soupape) / 300 à 800 € avec pose (jeu)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    }
+  ]
+}

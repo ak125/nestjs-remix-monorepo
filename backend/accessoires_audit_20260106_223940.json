@@ -1,0 +1,208 @@
+{
+  "famille": "Accessoires",
+  "audit_date": "2026-01-06T22:39:40.691480",
+  "total_gammes": 5,
+  "total_issues": 25,
+  "gammes_ok": 0,
+  "gammes_to_fix": 5,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "39: Le/La Attelage",
+          "298: Le/La Balais d'essuie-glace",
+          "751: Le/La Commande d'essuie-glace",
+          "1561: Le/La Lève-vitre",
+          "50: Le/La Rétroviseur  extérieur"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "39: Le/La Attelage",
+          "298: Le/La Balais d'essuie-glace",
+          "751: Le/La Commande d'essuie-glace",
+          "1561: Le/La Lève-vitre",
+          "50: Le/La Rétroviseur  extérieur"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 39",
+          "ID 298"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 39",
+          "ID 751"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 39",
+          "ID 1561"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 39",
+          "ID 50"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 298",
+          "ID 751"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 298",
+          "ID 1561"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 298",
+          "ID 50"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 751",
+          "ID 1561"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 751",
+          "ID 50"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1561",
+          "ID 50"
+        ],
+        "field": "intro_role",
+        "similarity": "70%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "39",
+      "name": "Le/La Attelage",
+      "current_cost": "50 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "298",
+      "name": "Le/La Balais d'essuie-glace",
+      "current_cost": "50 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "751",
+      "name": "Le/La Commande d'essuie-glace",
+      "current_cost": "50 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1561",
+      "name": "Le/La Lève-vitre",
+      "current_cost": "50 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "50",
+      "name": "Le/La Rétroviseur  extérieur",
+      "current_cost": "50 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

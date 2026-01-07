@@ -1,0 +1,165 @@
+{
+  "famille": "Échappement",
+  "audit_date": "2026-01-07T01:44:48.405605",
+  "total_gammes": 6,
+  "total_issues": 26,
+  "gammes_ok": 1,
+  "gammes_to_fix": 5,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "150 à 600 €...",
+        "gammes": [
+          "1543: Le/La Collecteur d'échappement",
+          "138: Le/La Joint d'échappement",
+          "17: Le/La Tube d'échappement"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "4272: Le/La Capteur pression de gaz ",
+          "1543: Le/La Collecteur d'échappement",
+          "138: Le/La Joint d'échappement",
+          "17: Le/La Tube d'échappement",
+          "1137: Le/La Soupape réaspiration des"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "4272: Le/La Capteur pression de gaz ",
+          "1543: Le/La Collecteur d'échappement",
+          "138: Le/La Joint d'échappement",
+          "17: Le/La Tube d'échappement",
+          "1137: Le/La Soupape réaspiration des"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 1543",
+          "ID 138"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1543",
+          "ID 17"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 138",
+          "ID 17"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1270",
+      "name": "La soupape d'échappement",
+      "current_cost": "20 à 60 € (soupape) / 300 à 800 € avec pose (jeu)",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "4272",
+      "name": "Le/La Capteur pression de gaz d'échappement",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1543",
+      "name": "Le/La Collecteur d'échappement",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "138",
+      "name": "Le/La Joint d'échappement",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "17",
+      "name": "Le/La Tube d'échappement",
+      "current_cost": "150 à 600 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Fourchette coût générique: '150 à 600 €...'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1137",
+      "name": "Le/La Soupape réaspiration des gaz d'échappement",
+      "current_cost": "200 à 800 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

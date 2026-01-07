@@ -1,0 +1,393 @@
+{
+  "famille": "Capteurs",
+  "audit_date": "2026-01-06T18:35:05.857454",
+  "total_gammes": 10,
+  "total_issues": 42,
+  "gammes_ok": 0,
+  "gammes_to_fix": 10,
+  "duplicates": {
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "3921: Le/La Capteur de cognement",
+          "4813: Le/La Capteur impulsion",
+          "1289: Le/La Capteur niveau d'huile m",
+          "817: Le/La Capteur pression de carb",
+          "3947: Le/La Capteur pression du tuya",
+          "4175: Le/La Capteur pression et temp",
+          "3939: Le/La Capteur température d'ai",
+          "805: Le/La Pressostat d'huile",
+          "1298: Le/La Valve de réglage du rale",
+          "830: Le/La Sonde de refroidissement"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "3921: Le/La Capteur de cognement",
+          "4813: Le/La Capteur impulsion",
+          "1289: Le/La Capteur niveau d'huile m",
+          "817: Le/La Capteur pression de carb",
+          "3947: Le/La Capteur pression du tuya",
+          "4175: Le/La Capteur pression et temp",
+          "3939: Le/La Capteur température d'ai",
+          "805: Le/La Pressostat d'huile",
+          "1298: Le/La Valve de réglage du rale",
+          "830: Le/La Sonde de refroidissement"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 4813"
+        ],
+        "field": "intro_role",
+        "similarity": "80%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 1289"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 817"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 3947"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 4175"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 3939"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3921",
+          "ID 805"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 1289"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 817"
+        ],
+        "field": "intro_role",
+        "similarity": "73%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 3947"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 4175"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 3939"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4813",
+          "ID 805"
+        ],
+        "field": "intro_role",
+        "similarity": "64%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1289",
+          "ID 817"
+        ],
+        "field": "intro_role",
+        "similarity": "62%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1289",
+          "ID 4175"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1289",
+          "ID 805"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 817",
+          "ID 3947"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 817",
+          "ID 4175"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 817",
+          "ID 3939"
+        ],
+        "field": "intro_role",
+        "similarity": "62%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 3947",
+          "ID 4175"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4175",
+          "ID 3939"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 4175",
+          "ID 805"
+        ],
+        "field": "intro_role",
+        "similarity": "67%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "3921",
+      "name": "Le/La Capteur de cognement",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "4813",
+      "name": "Le/La Capteur impulsion",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1289",
+      "name": "Le/La Capteur niveau d'huile moteur",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "817",
+      "name": "Le/La Capteur pression de carburant",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3947",
+      "name": "Le/La Capteur pression du tuyau d'admission",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "4175",
+      "name": "Le/La Capteur pression et température d'huile",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "3939",
+      "name": "Le/La Capteur température d'air admission",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "805",
+      "name": "Le/La Pressostat d'huile",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1298",
+      "name": "Le/La Valve de réglage du ralenti",
+      "current_cost": "80 à 300 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "830",
+      "name": "Le/La Sonde de refroidissement",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

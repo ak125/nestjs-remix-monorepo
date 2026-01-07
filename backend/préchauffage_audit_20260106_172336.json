@@ -1,0 +1,87 @@
+{
+  "famille": "Préchauffage",
+  "audit_date": "2026-01-06T17:23:36.914801",
+  "total_gammes": 2,
+  "total_issues": 12,
+  "gammes_ok": 0,
+  "gammes_to_fix": 2,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "100 à 400 €...",
+        "gammes": [
+          "1750: Le/La Boîtier de préchauffage",
+          "243: Le/La Bougie de préchauffage"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "1750: Le/La Boîtier de préchauffage",
+          "243: Le/La Bougie de préchauffage"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "1750: Le/La Boîtier de préchauffage",
+          "243: Le/La Bougie de préchauffage"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 1750",
+          "ID 243"
+        ],
+        "field": "intro_role",
+        "similarity": "78%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "1750",
+      "name": "Le/La Boîtier de préchauffage",
+      "current_cost": "100 à 400 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "243",
+      "name": "Le/La Bougie de préchauffage",
+      "current_cost": "100 à 400 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "⚠️ Timing km générique: '30 000 à 60 000 km'",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

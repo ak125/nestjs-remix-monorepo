@@ -1,0 +1,84 @@
+{
+  "famille": "Support moteur",
+  "audit_date": "2026-01-06T18:36:17.134097",
+  "total_gammes": 2,
+  "total_issues": 9,
+  "gammes_ok": 0,
+  "gammes_to_fix": 2,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "150 à 400 €...",
+        "gammes": [
+          "247: Le/La Support moteur",
+          "249: Le/La Support de boîte vitesse"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "247: Le/La Support moteur",
+          "249: Le/La Support de boîte vitesse"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "247: Le/La Support moteur",
+          "249: Le/La Support de boîte vitesse"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 247",
+          "ID 249"
+        ],
+        "field": "intro_role",
+        "similarity": "82%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "247",
+      "name": "Le/La Support moteur",
+      "current_cost": "150 à 400 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5",
+        "⚠️ Intro trop courte (<100 caractères)"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "249",
+      "name": "Le/La Support de boîte vitesse",
+      "current_cost": "150 à 400 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

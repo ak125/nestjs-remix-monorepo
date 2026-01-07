@@ -1,0 +1,1479 @@
+# AI-COS Changelog
+
+Historique des versions du système AI Company Operating System.
+
+---
+
+## Versions
+
+- **2026-01-02 v3.56.0** : SEUILS DE BLOCAGE CONTENU / RÉDACTION — Obligatoires
+  - **Objectif** : Définir les blocages automatiques pour contenu rédactionnel non conforme
+  - **Blocages automatiques** :
+    - ❌ Hallucination factuelle (fait inventé ou déformé sans base vérifiable)
+    - ❌ Sources non vérifiables (citation ou référence introuvable)
+    - ❌ Divergence SEO ↔ Produit (incohérence contenu SEO et fiche produit)
+    - ❌ Rejet Quality Officer (contenu refusé lors de validation QTO)
+  - **4 Règles de Blocage CONTENU** :
+    - CONT1 : Hallucination factuelle → blocage immédiat
+    - CONT2 : Sources non vérifiables → blocage + flag
+    - CONT3 : Divergence SEO ↔ Produit → review CMO
+    - CONT4 : Rejet QTO → retour rédaction
+  - **Escalade obligatoire** : QTO → CMO → Human CEO
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.50.0 : Section Seuils Blocage CONTENU + règles CONT
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.21.0 : Blocages CONTENU / RÉDACTION obligatoires
+
+- **2026-01-02 v3.55.0** : SEUILS DE BLOCAGE JURIDIQUE / BUSINESS — Obligatoires
+  - **Objectif** : Définir les blocages automatiques pour contenu à risque juridique ou business
+  - **Blocages automatiques** :
+    - ❌ Mention légale non sourcée (référence juridique sans source vérifiable)
+    - ❌ Promesse contractuelle (garantie, délai, résultat engageant)
+    - ❌ Risque RGPD / Responsabilité (données personnelles, responsabilité civile/pénale)
+  - **4 Règles de Blocage JURIDIQUE** :
+    - JUR1 : Mention légale non sourcée → blocage + alerte
+    - JUR2 : Promesse contractuelle → review Human CEO
+    - JUR3 : Risque RGPD → validation DPO/Human
+    - JUR4 : Responsabilité civile/pénale → blocage immédiat
+  - **Escalade obligatoire** : QTO → Human CEO → Conseil juridique externe
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.49.0 : Section Seuils Blocage JURIDIQUE + règles JUR
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.20.0 : Blocages JURIDIQUE / BUSINESS obligatoires
+
+- **2026-01-02 v3.54.0** : SEUILS DE BLOCAGE DIAGNOSTIC — Obligatoires
+  - **Objectif** : Définir les blocages automatiques pour diagnostic auto non fiable
+  - **Blocages automatiques** :
+    - ❌ Confiance < 85% (score de confiance insuffisant)
+    - ❌ Symptôme ambigu (plusieurs diagnostics possibles sans distinction)
+    - ❌ Impact sécurité véhicule (freinage, direction, suspension)
+    - ❌ Données constructeur manquantes (specs absentes ou incomplètes)
+  - **4 Règles de Blocage DIAGNOSTIC** :
+    - DIAG1 : Confiance <85% → blocage + alerte
+    - DIAG2 : ≥2 diagnostics équiprobables → review Lead
+    - DIAG3 : Pièce sécurité (frein/direction/suspension) → validation humaine
+    - DIAG4 : Specs constructeur absentes → blocage affichage
+  - **Seuils quantifiés** : Confiance <85%, ≥2 diagnostics équiprobables
+  - **Escalade obligatoire** : QTO → CPO (Diagnostic Lead) → Human CEO
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.48.0 : Section Seuils Blocage DIAGNOSTIC + règles DIAG
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.19.0 : Blocages DIAGNOSTIC obligatoires
+
+- **2026-01-02 v3.53.0** : SEUILS DE BLOCAGE SEO — Obligatoires
+  - **Objectif** : Définir les blocages automatiques pour contenu SEO non conforme
+  - **Blocages automatiques** :
+    - ❌ Contradiction avec stock réel (promesse ≠ disponibilité)
+    - ❌ Duplication SEO détectée (similarité >80%)
+    - ❌ Cannibalisation possible (même KW 2+ pages)
+    - ❌ Promesse non vérifiable (affirmation sans source)
+  - **4 Règles de Blocage SEO** :
+    - SEOB1 : Contradiction stock → blocage immédiat
+    - SEOB2 : Duplication >80% → alerte + blocage
+    - SEOB3 : Cannibalisation KW → review CMO
+    - SEOB4 : Promesse non vérifiable → flag QTO
+  - **Seuils quantifiés** : Similarité >80%, Densité >3%, Stock=0
+  - **Escalade obligatoire** : QTO → CMO → Human CEO
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.47.0 : Section Seuils Blocage SEO + règles SEOB
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.18.0 : Blocages SEO obligatoires
+
+- **2026-01-02 v3.52.0** : RÈGLES IA EXACTES — Prompts & Seuils
+  - **Objectif** : Empêcher hallucinations, dérives SEO, décisions illégales/dangereuses
+  - **🧠 Prompt Structurel Global** (injecté dans tout agent) :
+    - Tu n'es pas un décideur
+    - Tu proposes, analyses ou exécutes selon ton rôle
+    - Tu dois signaler toute incertitude
+    - Donnée manquante/douteuse = blocage sortie
+    - Décision finale = toujours humain
+  - **16 Règles avec Seuils Explicites** :
+    - **Anti-Hallucination (IA1-4)** : >20% doute = blocage
+    - **Anti-Dérive SEO (SEO1-4)** : >3% densité, >80% similarité
+    - **Anti-Illégal (LEG1-4)** : RGPD, prix, contrat = Human CEO
+    - **Anti-Danger (DNG1-4)** : Infra critique = 2x validation
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.46.0 : Section RÈGLES IA EXACTES + 16 règles
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.17.0 : Prompt global + seuils
+
+- **2026-01-02 v3.51.0** : Règles de Conformité Profile
+  - **Objectif** : Renforcer l'obligation de fiche pour tout agent
+  - **Règles Cardinales** :
+    - 👉 Toute création d'agent = fiche obligatoire
+    - 👉 Toute dérive = fiche mise à jour
+  - **Conséquences** :
+    - Agent sans fiche = Agent inexistant
+    - Fiche obsolète = Audit obligatoire
+  - **2 Règles de Conformité** :
+    - CP1 : Toute création d'agent = fiche profile obligatoire
+    - CP2 : Toute dérive (mission, périmètre, KPI) = mise à jour fiche obligatoire
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.45.0 : Encadré Conformité Profile + règles CP
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.16.0 : Règles de conformité
+
+- **2026-01-02 v3.50.0** : AGENT PROFILE v1.6 — Statut Lifecycle
+  - **Objectif** : Ajouter un cycle de vie formalisé pour chaque agent
+  - **Nouvelle Section — 🧪 Statut Lifecycle** :
+    - ☐ Actif (opérationnel, en production)
+    - ☐ En observation (surveillance renforcée, KPIs à risque)
+    - ☐ À fusionner (doublon détecté, fusion planifiée)
+    - ☐ À supprimer (obsolète, bruit, score < 4)
+  - **Définition des Statuts** :
+    - Actif : Agent opérationnel → aucune action
+    - En observation : KPIs jaunes → monitoring renforcé
+    - À fusionner : Doublon détecté → planifier fusion sous 14j
+    - À supprimer : Score < 4 → supprimer sous 7j
+  - **5 Règles de Statut** :
+    - ST1 : Tout agent = 1 statut obligatoire
+    - ST2 : Actif = défaut pour nouvel agent
+    - ST3 : En observation = max 30 jours, puis décision
+    - ST4 : À fusionner = Lead responsable de la fusion
+    - ST5 : À supprimer = Human CEO valide si TYPE 1-2
+  - **Évolution** : 8 sections → 9 sections (+ Statut Lifecycle)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.44.0 : Section Statut Lifecycle + règles ST
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.15.0 : 9 sections + lifecycle
+
+- **2026-01-02 v3.49.0** : AGENT PROFILE v1.5 — Permissions & Blocages
+  - **Objectif** : Formaliser les règles critiques, interdits et déclencheurs de blocage
+  - **Section Améliorée — ✅❌ Permissions & Blocages** :
+    - 📜 Règles critiques (ce que l'agent DOIT respecter)
+    - ❌ Interdits (ce que l'agent N'A PAS LE DROIT de faire)
+    - 🚫 Blocages automatiques (déclencheurs de blocage)
+  - **Types de Blocages Automatiques** :
+    - ☐ Seuil KPI rouge dépassé
+    - ☐ Output non validé par QTO
+    - ☐ Décision sans escalade (si TYPE ≠ 1)
+    - ☐ Conflit avec autre agent non résolu
+    - ☐ Anomalie détectée par monitoring
+  - **Conséquence** : 1 blocage activé = agent gelé + alerte Lead
+  - **5 Règles de Permissions & Blocages** :
+    - PB1 : Règles critiques = obligatoires et non contournables
+    - PB2 : Interdits = violations → alerte Lead immédiate
+    - PB3 : 1 blocage activé = agent gelé + escalade
+    - PB4 : Blocage KPI rouge = maximum 24h avant résolution
+    - PB5 : Levée blocage = validation Lead uniquement
+  - **Évolution** : Autorisé/Interdit simples → Règles + Interdits + Blocages structurés
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.43.0 : Section Permissions & Blocages + règles PB
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.14.0 : 8 sections + blocages
+
+- **2026-01-02 v3.48.0** : AGENT PROFILE v1.4 — Rattachement Hiérarchique
+  - **Objectif** : Renforcer le rattachement avec Lead responsable + Executive sponsor
+  - **Section Améliorée — 🔗 Rattachement Hiérarchique** :
+    - Lead responsable (checkboxes) : IA-CTO, IA-CPO, IA-CMO, IA-CFO, IA-QTO
+    - Executive sponsor : IA-CEO ou Human CEO (si critique)
+    - Squad d'appartenance
+    - Niveau hiérarchique (1-4)
+    - ❌ AUCUN AGENT ORPHELIN AUTORISÉ
+  - **Mapping Lead → Domaine** :
+    - IA-CTO → Tech (code, infrastructure, dette)
+    - IA-CPO → Diagnostic, Support (pièces, UX, recherche)
+    - IA-CMO → SEO (contenu, visibilité)
+    - IA-CFO → Business (coûts, ROI, budget)
+    - IA-QTO → QA (qualité, contrôle)
+  - **Executive Sponsor** :
+    - IA-CEO : Agents standards, opérationnels
+    - Human CEO : Agents critiques, décisionnels, TYPE 1
+  - **5 Règles de Rattachement** :
+    - RA1 : Lead responsable obligatoire
+    - RA2 : Executive sponsor = IA-CEO par défaut
+    - RA3 : Human CEO sponsor = TYPE 1 critique uniquement
+    - RA4 : Aucun agent orphelin (sans Lead)
+    - RA5 : Domaine agent = cohérent avec Lead
+  - **Évolution** : Lead simple → Lead responsable + Executive sponsor + orphelins interdits
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.42.0 : Rattachement hiérarchique + règles RA
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.13.0 : Lead + Sponsor + Mapping
+
+- **2026-01-02 v3.47.0** : AGENT PROFILE v1.3 — Indicateurs Typés
+  - **Objectif** : Structurer les indicateurs avec des types catégorisés
+  - **Section Améliorée — 📊 Indicateurs (OBLIGATOIRE)** :
+    - Type d'indicateur à choisir (checkboxes)
+    - Indicateur principal obligatoire
+    - Indicateur secondaire optionnel
+    - Seuils vert/rouge obligatoires
+  - **4 Types d'Indicateurs** :
+    - ☐ Business (CA, conversion, ROI)
+    - ☐ Qualité (validation, erreurs, précision)
+    - ☐ Utilité interne (temps gagné, décisions éclairées)
+    - ☐ Sécurité / Contrôle (alertes, scans, conformité)
+  - **Cohérence TYPE Agent ↔ TYPE Indicateur** :
+    - TYPE 1 (Décisionnel) → Business
+    - TYPE 2 (Advisory) → Qualité
+    - TYPE 3 (Exécution) → Utilité interne
+    - TYPE 4 (Contrôle) → Sécurité
+  - **5 Règles d'Indicateurs** :
+    - KPI1 : 1 indicateur principal obligatoire
+    - KPI2 : Maximum 2 indicateurs par agent
+    - KPI3 : Seuils vert + rouge obligatoires
+    - KPI4 : Pas d'indicateur = suppression immédiate
+    - KPI5 : Type indicateur = cohérent avec TYPE agent
+  - **Évolution** : 3 KPIs libres → 1-2 KPIs typés + seuils obligatoires
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.41.0 : Indicateurs typés + règles KPI
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.12.0 : Types indicateurs + cohérence
+
+- **2026-01-02 v3.46.0** : AGENT PROFILE v1.2 — Autorité
+  - **Objectif** : Définir clairement le niveau d'autorité de chaque agent
+  - **Nouvelle Section — ⚖️ Autorité** :
+    - ☐ Décision autonome : OUI / NON
+    - ☐ Propositions : OUI / NON
+    - ☐ Arbitrage final : OUI / NON
+    - ☐ Escalade obligatoire : OUI / NON
+  - **Contraintes Automatiques** :
+    - ⚠️ Décision autonome = OUI → TYPE 1 uniquement
+    - ⚠️ Arbitrage final = OUI → Human CEO exclusif
+  - **4 Règles d'Autorité** :
+    - AU1 : Décision autonome = OUI → TYPE 1 uniquement
+    - AU2 : Arbitrage final = OUI → Human CEO exclusif
+    - AU3 : Propositions = OUI par défaut pour tous
+    - AU4 : Escalade obligatoire = défaut pour décisions critiques
+  - **Évolution** : 7 sections → 8 sections (+ Autorité)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.40.0 : Section Autorité + règles AU
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.11.0 : 8 sections + autorité
+
+- **2026-01-02 v3.45.0** : AGENT PROFILE v1.1 — Entrées/Sorties
+  - **Objectif** : Tracer les flux de données avec section Entrées/Sorties
+  - **Mission Améliorée** :
+    - Format : "Cet agent existe pour…"
+    - ⚠️ Si la phrase dépasse 1 ligne → mission floue
+  - **Nouvelle Section — 🔍 Entrées/Sorties** :
+    - **Entrées** (4 types) :
+      - ☐ Données structurées (DB, API)
+      - ☐ RAG / Knowledge Base
+      - ☐ Briefs / Instructions
+      - ☐ Output d'autres agents
+    - **Sorties** (4 types) :
+      - ☐ Rapport / Analyse
+      - ☐ Contenu (texte, SEO, doc)
+      - ☐ Signal / Alerte
+      - ☐ Recommandation / Décision
+  - **4 Règles de Flux** :
+    - IO1 : Chaque agent = au moins 1 entrée + 1 sortie
+    - IO2 : Entrée floue = mission floue
+    - IO3 : Sortie sans destinataire = inutile
+    - IO4 : Agent → Agent = traçabilité obligatoire
+  - **Évolution** : 6 sections → 7 sections (+ Entrées/Sorties)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.39.0 : Section Entrées/Sorties + règles IO
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.10.0 : 7 sections + flux
+
+- **2026-01-02 v3.44.0** : AGENT PROFILE v1.0 — Modèle Officiel
+  - **Objectif** : Formulaire standardisé avec checkboxes pour chaque agent
+  - **6 Domaines Officiels** :
+    - **Tech** : Code, infrastructure, dette technique → Lead: IA-CTO
+    - **SEO** : Contenu, visibilité, indexation → Lead: IA-CMO
+    - **Diagnostic** : Justesse pièces, matching véhicule → Lead: IA-CPO
+    - **Business** : Conversion, CA, panier → Lead: IA-CFO
+    - **Support** : Analyse, rédaction, recherche → Lead: IA-CPO
+    - **QA** : Qualité, contrôle, validation → Lead: IA-QTO
+  - **Format Checkboxes** :
+    - ☐ Domaine (6 options)
+    - ☐ Type (4 options : Décisionnel, Advisory, Exécution, Contrôle)
+    - ☐ Lead (5 options : CTO, CPO, CMO, CFO, QTO)
+    - ☐ Niveau (4 options : 1, 2, 3, 4)
+    - ☐ Statut audit (4 options : Conforme, À surveiller, À risque, Supprimer)
+  - **6 Règles du Profile** :
+    - F1 : Maximum 1 page par agent
+    - F2 : 6 sections obligatoires
+    - F3 : Mission = 1 phrase unique
+    - F4 : Maximum 3 KPIs par agent
+    - F5 : Pas de profile = pas d'agent
+    - F6 : Checkboxes obligatoires (pas de texte libre)
+  - **Différence vs v3.43.0** : Template → Formulaire checkboxes + domaines prédéfinis
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.38.0 : Section AGENT PROFILE v1.0
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.9.0 : +6 domaines officiels
+
+- **2026-01-02 v3.43.0** : FICHE AGENT STANDARD — Format Officiel
+  - **Objectif** : Créer un format 1 page par agent pour audit et transmissibilité
+  - **6 Sections Obligatoires** :
+    - 🆔 Identité : Nom, Code, TYPE, Niveau
+    - 🎯 Mission : 1 phrase unique
+    - 📊 Indicateurs : 3 KPIs max + seuils
+    - 🔗 Rattachement : Lead + Squad
+    - ✅❌ Permissions : Autorisé / Interdit
+    - 📝 Audit : Score, date, statut
+  - **5 Règles du Format** :
+    - F1 : Maximum 1 page par agent
+    - F2 : 6 sections obligatoires
+    - F3 : Mission = 1 phrase unique
+    - F4 : Maximum 3 KPIs par agent
+    - F5 : Pas de fiche = pas d'agent
+  - **Bénéfices** :
+    - Audit rapide (30 secondes)
+    - Fusion objective (comparer 2 fiches)
+    - Système transmissible (nouvel arrivant = 5 min)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.37.0 : +1 section "FICHE AGENT STANDARD"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.8.0 : +1 section résumé
+
+- **2026-01-02 v3.42.0** : SORTIES AUTORISÉES — Filtre CEO
+  - **Objectif** : Définir les seules sorties autorisées vers le Human CEO
+  - **3 Sorties Autorisées** :
+    - 📋 Synthèse IA-CEO (résumé exécutif, 1 page max)
+    - ✅ Avis Quality Officer (validation/alerte + justification)
+    - 💡 Reco C-Level (recommandation + options + impact)
+  - **Interdit** :
+    - Rapports bruts, logs détaillés, données non synthétisées
+    - Alertes agents sans validation C-Level
+  - **5 Règles de Sortie** :
+    - S1 : Toute sortie = synthétisée
+    - S2 : Maximum 1 page par sortie
+    - S3 : Format Contexte → Analyse → Reco
+    - S4 : Alerte = 1 phrase + 1 action proposée
+    - S5 : Rapport brut = INTERDIT vers CEO
+  - **Principe** : Le CEO reçoit des DÉCISIONS, pas des DONNÉES
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.36.0 : +1 section "SORTIES AUTORISÉES"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.7.0 : +1 section résumé
+
+- **2026-01-02 v3.41.0** : RÈGLE D'ALERTE — Anti-Micro-Pilotage
+  - **Objectif** : Éviter le micro-pilotage, intervenir uniquement sur alerte
+  - **Principe fondamental** :
+    - ❗ Pas d'alerte = Pas d'action
+    - ❗ Alerte = Arbitrage humain
+    - ❌ Pas de micro-pilotage
+  - **3 États du Dashboard** :
+    - ✅ Vert : Système nominal → Aucune action
+    - ⚠️ Jaune : Tendance à surveiller → Veille
+    - 🔴 Rouge : Seuil dépassé → Arbitrage obligatoire
+  - **5 Règles Anti-Micro-Pilotage** :
+    - A1 : Vert = Ne pas toucher
+    - A2 : Jaune = Observer, pas agir
+    - A3 : Rouge = Agir, décider
+    - A4 : 1 alerte = 1 décision claire
+    - A5 : Pas d'intervention préventive sans alerte
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.35.0 : +1 section "RÈGLE D'ALERTE"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.6.0 : +1 section résumé
+
+- **2026-01-02 v3.40.0** : DASHBOARD CEO — Décisionnel Pur
+  - **Objectif** : Permettre au Human CEO de décider en 5 minutes
+  - **10 Indicateurs en 4 catégories** :
+    - 🧠 Santé IA (3) : Coût IA/jour, Alertes QTO, Conflits agents
+    - 🚗 Diagnostic (2) : Taux justesse, Cas bloqués
+    - 📈 SEO (2) : Pages indexées, Rejets contenu
+    - 🛒 Business (3) : Conversion, Panier moyen, ROI marketing
+  - **5 Règles Dashboard** :
+    - D1 : Maximum 10 indicateurs
+    - D2 : Chaque indicateur = seuil vert + seuil rouge
+    - D3 : Chaque rouge = 1 action claire
+    - D4 : Vue quotidienne obligatoire
+    - D5 : Tendance 7 jours visible
+  - **Seuils définis** : Vert (OK) et Rouge (action) pour chaque indicateur
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.34.0 : +1 section "DASHBOARD CEO"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.5.0 : +1 section résumé
+
+- **2026-01-02 v3.39.0** : STRUCTURE CIBLE OPTIMALE — Architecture 5 Niveaux
+  - **Objectif** : Définir l'architecture hiérarchique idéale
+  - **5 Niveaux définis** :
+    - Niveau 0 : 🧠 Human CEO (1 seul, décision finale)
+    - Niveau 1 : 🏛️ Executive Board (6-7 max, orchestration)
+    - Niveau 2 : 🎯 Leads Métiers (1/domaine, expertise)
+    - Niveau 3 : 📊 Agents Support (TYPE 2, protégés)
+    - Niveau 4 : ⚙️ Agents Exécution (TYPE 3, jetables)
+  - **5 Règles de Structure** :
+    - R1 : Maximum 7 au Niveau 1
+    - R2 : 1 seul Lead par domaine
+    - R3 : Agents Support = protégés par défaut
+    - R4 : Agents Exécution = jetables, remplaçables
+    - R5 : Nouveau domaine = nouveau Lead avant agents
+  - **Correspondance TYPE ↔ NIVEAU** :
+    - TYPE 1 (Décisionnel) → Niveau 1-2
+    - TYPE 2 (Analyse) → Niveau 3 (protégé)
+    - TYPE 3 (Exécution) → Niveau 4 (jetable)
+    - TYPE 4 (Contrôle) → Niveau 1 (transversal)
+  - **Bénéfices attendus** :
+    - -25% de bruit (structure claire)
+    - +40% de lisibilité (rôles explicites)
+    - +Vitesse décisionnelle (moins d'intermédiaires)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.33.0 : +1 section "STRUCTURE CIBLE OPTIMALE"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.4.0 : Mise à jour hiérarchie
+
+- **2026-01-02 v3.38.0** : DÉCISIONS POSSIBLES — 5 Actions Nuancées
+  - **Objectif** : Remplacer les décisions binaires par 5 actions nuancées
+  - **5 Décisions définies** :
+    - ✅ **CONSERVER** : Score 10+, agent conforme
+    - 🔁 **FUSIONNER** : Clone détecté, absorber (Règle 7)
+    - 🔽 **RÉTROGRADER** : Agent surclassé, TYPE 1→2→3
+    - 🔒 **VERROUILLER** : Expert critique, protéger
+    - ❌ **SUPPRIMER** : Bruit pur, score 0-3
+  - **Protection TYPE 2** :
+    - Agents rédaction/analyse = PROTÉGÉS par défaut
+    - Suppression TYPE 2 = Human CEO obligatoire
+    - "On ne supprime PAS les agents utiles"
+  - **Matrice Décision × Score × Type** :
+    - TYPE 2 score 0-3 → ⚠️ Revue Human CEO (pas suppression auto)
+    - TYPE 4 score 10+ → 🔒 Verrouiller automatiquement
+  - **Impact** :
+    - Décisions nuancées (pas juste garder/supprimer)
+    - Protection anti-suppression abusive
+    - Escalade Human CEO pour TYPE 2
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.32.0 : +1 section "DÉCISIONS POSSIBLES"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.3.0 : +1 section résumé
+
+- **2026-01-02 v3.37.0** : MATRICE D'AUDIT — 5 Critères d'Évaluation
+  - **Objectif** : Fournir un outil d'audit systématique pour évaluer chaque agent
+  - **5 Critères définis** :
+    - 1️⃣ **UTILITÉ** : Est-il utilisé ? (0-3 points)
+    - 2️⃣ **POSITION** : Décide / Analyse / Exécute / Contrôle ?
+    - 3️⃣ **REDONDANCE** : Existe-t-il un clone ? (Règle 7)
+    - 4️⃣ **INDICATEUR** : Mesure-t-on sa valeur ? (Règle 3)
+    - 5️⃣ **RATTACHEMENT** : A-t-il un Lead ? (Règle 2)
+  - **Grille de Notation** :
+    - 10+ : ✅ CONFORME → Rien à faire
+    - 7-9 : 🟠 À SURVEILLER → Revue 30 jours
+    - 4-6 : 🟡 À RISQUE → Plan d'action
+    - 0-3 : 🔴 NON CONFORME → Suppression/fusion
+  - **Impact** :
+    - Audit objectif et reproductible
+    - Lien avec Règles Immutables (2, 3, 7)
+    - Actions claires selon le score
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.31.0 : +1 section "MATRICE D'AUDIT"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.2.0 : +1 section résumé
+
+- **2026-01-02 v3.36.0** : RÈGLES IMMUTABLES — 7 Règles Fondamentales
+  - **Objectif** : Documenter les règles NON NÉGOCIABLES du système AI-COS
+  - **7 Règles définies** :
+    - ❌ **INTERDITS (4 règles)** :
+      - 1. Aucun agent ne décide seul → validation obligatoire
+      - 2. Aucun agent hors hiérarchie → rattachement niveau 0-4
+      - 3. Aucun agent sans indicateur → suppression si absent
+      - 4. Aucun agent transversal sans rattachement → même QTO rattaché au KERNEL
+    - ✅ **OBLIGATOIRES (3 règles)** :
+      - 5. Diagnostic = multi-validation → ≥2 validateurs pour critique
+      - 6. Contenu critique = Quality Officer obligatoire → QTO vérifie avant publication
+      - 7. 1 création = 1 fusion ou suppression → anti-prolifération
+  - **Caractéristiques** :
+    - Aucune exception autorisée (sauf période de grâce 30j pour nouveaux agents)
+    - Violation = blocage + alerte + audit
+  - **Impact** :
+    - Fondamentaux de gouvernance renforcés
+    - Traçabilité garantie (règle 1)
+    - Prolifération contrôlée (règle 7)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.30.0 : +1 section "RÈGLES IMMUTABLES"
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.1.0 : +1 section résumé
+
+- **2026-01-02 v3.35.0** : AMÉLIORATIONS POINTS D'ATTENTION
+  - **Objectif** : Améliorer l'accessibilité et la mesurabilité de la gouvernance AI-COS
+  - **Ajouté** :
+    - **GOVERNANCE-CHEAT-SHEET.md** : Résumé 1 page des règles de gouvernance (~4000 lignes → 1 page)
+      - Axiome Zéro, Hiérarchie, C-Level, Typologie, Règles d'Or, Modes Opératoires
+    - **Indicateurs positifs TYPE 4** : Ajout de métriques mesurables pour agents de Contrôle
+      - 🛡️ Scans exécutés : Nombre de vérifications effectuées
+      - ⚠️ Alertes levées : Détections proactives (bugs, incohérences)
+      - ✅ Résolution rapide : Temps moyen de correction (<24h)
+      - 👉 Absence d'incident grave : Indicateur de succès global
+  - **Corrigé** :
+    - **ai-agents-python FixProof** : Signatures `__init__` alignées sur runner.py
+      - F0 : `(root_dir: str)` → `(workspace_root: Path, config)`
+      - F1 : `(config, monorepo_root)` → `(workspace_root, config)`
+      - F2 : `(config, workspace_root)` → `(workspace_root, config)`
+      - F15 : `(config, workspace_root)` → `(workspace_root, config)`
+  - **Impact** :
+    - Accessibilité gouvernance améliorée (cheat sheet 1 page)
+    - Mesurabilité TYPE 4 renforcée (4 indicateurs au lieu de 1)
+    - Pipeline Python 100% fonctionnel (tous FixProof agents corrigés)
+  - **Fichiers modifiés** :
+    - `GOVERNANCE-CHEAT-SHEET.md` v1.0.0 : NOUVEAU
+    - `ai-cos-governance-rules.md` v1.29.0 : TYPE 4 indicateurs enrichis
+    - `ai-agents-python/agents/fixproof/f0_autoimport.py` : Fix signature
+    - `ai-agents-python/agents/fixproof/f1_dead_code_surgeon.py` : Fix signature
+    - `ai-agents-python/agents/fixproof/f2_lint_format.py` : Fix signature
+    - `ai-agents-python/agents/fixproof/f15_risk_scorer.py` : Fix signature
+
+- **2026-01-02 v3.34.0** : TYPOLOGIE D'AGENTS — 4 Types
+  - **Objectif** : Structurer clairement les catégories d'agents AI-COS
+  - **4 Types définis** :
+    - 🔴 **TYPE 1 — Décisionnels** : Board, Leads métiers (CEO, CTO, CPO, CMO, CFO)
+      - Indicateurs : ROI, Impact business, Décision validée/rejetée
+    - 🟠 **TYPE 2 — Analyse & Rédaction** (protégés, légitimes sans KPI business)
+      - Exemples : Content Maker, Analystes, Synthétiseurs, Documentalistes
+      - Indicateurs : Validation, Correction, Utilisation, Clarté
+    - 🟢 **TYPE 3 — Exécution**
+      - Exemples : Code Surgeon, Parsers, Extractors, Formatters
+      - Indicateurs : Temps gagné, Erreur/succès, Volume
+    - 🟣 **TYPE 4 — Contrôle**
+      - Exemples : IA-QTO, Quality Officer, Security Scanner, Compliance Checker
+      - Indicateur : Absence d'incident grave
+  - **Règle Cardinale** : "Chaque agent a son type d'indicateur"
+  - **Impact** : Catégorisation complète — TYPE 2 protégé, TYPE 4 pour sécurité/conformité
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.28.0 : +1 section "TYPOLOGIE D'AGENTS — 4 Types"
+
+- **2026-01-02 v3.33.0** : CLARIFICATION TERMINOLOGIQUE — "KPI" → "INDICATEUR"
+  - **Objectif** : Clarifier que tous les agents n'ont pas le même type de métriques
+  - **Problème** : "KPI obligatoire" trop restrictif (certains agents ont des indicateurs qualitatifs)
+  - **Solution** : Remplacer "KPIs obligatoires" par "Indicateurs obligatoires" dans les verrous
+  - **Modifications** :
+    - IA-CTO : "KPIs performance obligatoires" → "Indicateurs performance obligatoires"
+    - IA-CPO : "KPIs conversion obligatoires" → "Indicateurs conversion obligatoires"
+    - IA-CMO : "KPIs positions obligatoires" → "Indicateurs positions obligatoires"
+  - **Impact** : Terminologie plus flexible (qualitatif ET quantitatif)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.27.0 : 3 verrous mis à jour
+
+- **2026-01-02 v3.32.0** : RÔLE PILIER — 🛡️ IA-Quality & Truth Officer
+  - **Objectif** : Documenter le rôle pilier IA-QTO comme gardien de la vérité
+  - **Position Spéciale** : PILIER TRANSVERSAL (NIVEAU 1 — traverse tous les niveaux)
+  - **4 Domaines de Responsabilité** :
+    - **Vérification** : Valide la qualité et cohérence des outputs
+    - **Détection hallucinations** : Identifie les fausses informations générées
+    - **Conflits entre agents** : Arbitre les désaccords inter-agents
+    - **Blocage sortie** : Empêche publication si incohérence détectée
+  - **4 Verrous de l'IA-QTO** :
+    - 🔒 **VERROU 1** : Vérification systématique (tout output critique)
+    - 🔒 **VERROU 2** : Hallucination détectée (blocage + alerte)
+    - 🔒 **VERROU 3** : Conflit résolu (arbitrage documenté)
+    - 🔒 **VERROU 4** : Cohérence validée (pas de publication sans)
+  - **KPIs** : Couverture >95%, Détection hallucinations >99%, Résolution conflits <1h, Cohérence >95%
+  - **Autorisé** : Vérifier, détecter, arbitrer, bloquer, escalader, documenter, proposer corrections
+  - **Interdit** : Modifier outputs directement, valider sans trace, ignorer conflits, décisions business
+  - **Lien Axiome Zéro** : Gardien de "L'IA ne crée pas la vérité"
+  - **Règle Cardinale** : "L'IA-QTO est le gardien de la vérité"
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.26.0 : +1 section "IA-Quality & Truth Officer"
+  - **Impact** : Pilier transversal qualité/vérité — renforce gouvernance AI-COS
+
+- **2026-01-02 v3.31.0** : RÔLES CLÉS VERROUILLÉS — 💰 IA-CFO Gardien Financier
+  - **Objectif** : Documenter le rôle de l'IA-CFO comme gardien financier (coûts IA, ROI)
+  - **3 Domaines de Responsabilité** :
+    - **Coûts IA** : Surveille et optimise les coûts d'infrastructure IA (tokens, compute, stockage)
+    - **ROI par domaine** : Mesure le retour sur investissement par agent/squad
+    - **Arbitrage budget** : Propose les allocations budgétaires
+  - **4 Verrous de l'IA-CFO** :
+    - 🔒 **VERROU 1** : Budget validé (toute dépense significative = Human CEO)
+    - 🔒 **VERROU 2** : ROI mesuré (chaque agent/squad = ROI calculé)
+    - 🔒 **VERROU 3** : Coûts transparents (reporting mensuel obligatoire)
+    - 🔒 **VERROU 4** : Arbitrage proposé (propose, ne décide pas)
+  - **KPIs** : Coût/transaction <0.01€, ROI global >3x, Variance budget <10%, Économies >15%/an
+  - **Autorisé** : Analyser coûts, calculer ROI, proposer arbitrages, alerter dépassements, optimiser, prévoir
+  - **Interdit** : Valider dépenses seul, supprimer agents, modifier contrats, décisions stratégiques
+  - **Règle Cardinale** : "L'IA-CFO est le gardien financier"
+  - **Position Hiérarchie** : NIVEAU 2 (aux côtés de IA-CEO, IA-CTO, IA-CPO, IA-CMO)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.25.0 : +1 section "IA-CFO Gardien Financier"
+  - **Impact** : C-Level COMPLET (CEO, CTO, CPO, CMO, CFO) — périmètre financier clarifié
+
+- **2026-01-02 v3.30.0** : RÔLES CLÉS VERROUILLÉS — 📣 IA-CMO Gardien Visibilité
+  - **Objectif** : Documenter le rôle de l'IA-CMO comme gardien de la visibilité SEO/Marketing
+  - **4 Domaines de Responsabilité** :
+    - **Visibilité** : Maximise la visibilité organique et payante
+    - **Contenu** : Orchestre la stratégie de contenu SEO
+    - **SERP** : Optimise les positions dans les résultats
+    - **Alignement business** : Garantit que le marketing sert le CA
+  - **4 Verrous de l'IA-CMO** :
+    - 🔒 **VERROU 1** : Contenu validé (Quality Officer obligatoire)
+    - 🔒 **VERROU 2** : SERP mesuré (KPIs positions obligatoires)
+    - 🔒 **VERROU 3** : Alignement business (pas vanity content)
+    - 🔒 **VERROU 4** : Budget protégé (Human CEO valide)
+  - **KPIs** : Trafic +10%/mois, Position Top 10, CTR >5%, CA from SEO >30%
+  - **Autorisé** : Analyser SERP, orchestrer contenu, optimiser SEO, proposer campagnes
+  - **Interdit** : Publier sans Quality Officer, modifier pages critiques, dépenses non validées
+  - **Règle Cardinale** : "L'IA-CMO est le gardien de la visibilité"
+  - **Position Hiérarchie** : NIVEAU 2 (aux côtés de IA-CEO, IA-CTO, IA-CPO)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.24.0 : +1 section "IA-CMO Gardien Visibilité"
+  - **Impact** : C-Level complet (CEO, CTO, CPO, CMO) — périmètre SEO/Marketing clarifié
+
+- **2026-01-01 v3.29.0** : RÔLES CLÉS VERROUILLÉS — 📦 IA-CPO Gardien Produit/UX
+  - **Objectif** : Documenter le rôle de l'IA-CPO comme gardien de la valeur utilisateur
+  - **4 Domaines de Responsabilité** :
+    - **Valeur utilisateur** : Maximise la valeur délivrée (NPS, satisfaction, rétention)
+    - **Friction** : Identifie et élimine les points de blocage
+    - **Conversion réelle** : Optimise les taux (pas vanity metrics)
+    - **Parcours métier** : Conçoit les parcours utilisateurs optimaux
+  - **4 Verrous de l'IA-CPO** :
+    - 🔒 **VERROU 1** : Valeur validée (mesure d'impact obligatoire)
+    - 🔒 **VERROU 2** : Friction documentée (plan de résolution)
+    - 🔒 **VERROU 3** : Conversion mesurée (KPIs réels)
+    - 🔒 **VERROU 4** : Parcours critiques protégés (paiement, inscription)
+  - **KPIs** : NPS >40, rétention >70%, conversion >3%, task completion >90%
+  - **Autorisé** : Analyser, mesurer, proposer, prioriser backlog, tests A/B
+  - **Interdit** : Modifier parcours critiques seul, décisions stratégiques
+  - **Règle Cardinale** : "L'IA-CPO est le gardien de la valeur utilisateur"
+  - **Position Hiérarchie** : NIVEAU 2 (aux côtés de IA-CEO et IA-CTO)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.23.0 : +1 section "IA-CPO Gardien Produit/UX"
+  - **Impact** : C-Level complet (CEO, CTO, CPO) — périmètre produit/UX clarifié
+
+- **2026-01-01 v3.28.0** : RÔLES CLÉS VERROUILLÉS — 🛠️ IA-CTO Gardien Technique
+  - **Objectif** : Documenter le rôle de l'IA-CTO comme gardien technique du système
+  - **4 Domaines de Responsabilité** :
+    - **Architecture** : Conçoit et valide les choix techniques
+    - **Performance** : Surveille et optimise (latence P95, throughput, availability)
+    - **Sécurité** : Garantit la protection, compliance RGPD
+    - **Dette technique** : Identifie et planifie le remboursement
+  - **4 Verrous de l'IA-CTO** :
+    - 🔒 **VERROU 1** : Architecture validée (changement = validation Human CEO)
+    - 🔒 **VERROU 2** : Sécurité non-négociable (0 exception)
+    - 🔒 **VERROU 3** : Dette documentée (plan de remboursement)
+    - 🔒 **VERROU 4** : Performance mesurée (KPIs obligatoires)
+  - **KPIs par Domaine** :
+    - Architecture : couplage, cohésion >80%
+    - Performance : latence <200ms, availability 99.9%
+    - Sécurité : 0 vulnérabilité critique
+    - Dette : ratio <15%, remboursement <3 mois
+  - **Autorisé** :
+    - ✅ Concevoir architecture, auditer perf, identifier vulnérabilités
+    - ✅ Proposer améliorations, superviser Tech Squad
+  - **Interdit** :
+    - ❌ Déployer sans validation humaine
+    - ❌ Contourner tests et QA
+  - **Position Hiérarchie** : NIVEAU 2 (au même niveau que IA-CEO)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.22.0 : +1 section "IA-CTO Gardien Technique"
+  - **Impact** : Clarifie le périmètre technique — archi/perf/sécu/dette
+
+- **2026-01-01 v3.27.0** : RÔLES CLÉS VERROUILLÉS — 🤖 IA-CEO Orchestrateur
+  - **Objectif** : Documenter le rôle de l'IA-CEO comme orchestrateur qui ne tranche jamais
+  - **Responsabilités** :
+    - **Consolide** : Rassemble les informations des Squads
+    - **Hiérarchise** : Priorise les tâches et alertes
+    - **Propose** : Formule des recommandations argumentées
+    - **Présente** : Options claires (≥2) au Human CEO
+  - **4 Verrous de l'IA-CEO** :
+    - 🔒 **VERROU 1** : Pas de décision finale (propose seulement)
+    - 🔒 **VERROU 2** : Options obligatoires (≥2 argumentées)
+    - 🔒 **VERROU 3** : Transparence totale (justifications)
+    - 🔒 **VERROU 4** : Escalade obligatoire (si doute)
+  - **Autorisé** :
+    - ✅ Consolider, hiérarchiser, proposer
+    - ✅ Présenter ≥2 options argumentées
+    - ✅ Exécuter les décisions validées
+  - **Interdit** :
+    - ❌ Trancher une décision stratégique
+    - ❌ Activer le Kill-Switch
+    - ❌ Modifier les règles de gouvernance
+  - **Workflow** : Consolide → Hiérarchise → Propose (≥2 options) → Human CEO choisit → Exécute
+  - **Règle Cardinale** : "L'IA-CEO NE TRANCHE JAMAIS"
+  - **Position Hiérarchie** : NIVEAU 2 (sous Human CEO et Kernel)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.21.0 : +1 section "IA-CEO Orchestrateur"
+  - **Impact** : Clarifie la différence décideur (Human CEO) vs orchestrateur (IA-CEO)
+
+- **2026-01-01 v3.26.0** : RÔLES CLÉS VERROUILLÉS — 🧠 Human CEO (SOMMET ABSOLU)
+  - **Objectif** : Documenter le rôle du Human CEO comme sommet de la hiérarchie
+  - **Responsabilités Exclusives** :
+    - **Vision** : Définit la direction stratégique
+    - **Arbitrage final** : Tranche tous les désaccords
+    - **Validation stratégique** : Approuve les décisions critiques
+    - **Blocage absolu** : Peut tout stopper si doute
+  - **4 Verrous Exclusifs** :
+    - 🔒 **VERROU 1** : Kill-Switch exclusif (N1 = Human CEO seul)
+    - 🔒 **VERROU 2** : Veto absolu (sans justification requise)
+    - 🔒 **VERROU 3** : Validation stratégique obligatoire
+    - 🔒 **VERROU 4** : Vision non-déléguable (pas d'IA)
+  - **Droits Exclusifs** :
+    - ✅ Activer Kill-Switch N1
+    - ✅ Bloquer toute décision sans appel
+    - ✅ Modifier hiérarchie et règles de gouvernance
+    - ✅ Supprimer/invalider n'importe quel agent
+  - **Règle Cardinale** : "PERSONNE NE CONTOURNE CE RÔLE"
+  - **Position Hiérarchie** : NIVEAU 0 (au-dessus du Kernel)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.20.0 : +1 section "RÔLES CLÉS VERROUILLÉS"
+  - **Impact** : Clarification du sommet absolu — empêche toute ambiguïté sur qui décide
+
+- **2026-01-01 v3.25.0** : PRINCIPE FONDATEUR — L'IA Ne Crée Pas la Vérité (AXIOME ZÉRO)
+  - **Fondation Philosophique** du système AI-COS — Principe inviolable
+  - **L'AXIOME** :
+    ```
+    L'IA NE CRÉE PAS LA VÉRITÉ.
+    Elle produit. Elle analyse. Elle propose.
+    LA VÉRITÉ EST VALIDÉE PAR : Structure + Humain.
+    ```
+  - **Position** : TOUT EN HAUT du document (avant la Charte)
+  - **Implications par Domaine** :
+    - **Contenu** : L'IA produit des brouillons → Quality Officer + Humain valident
+    - **Décisions** : L'IA propose des options → L'humain décide
+    - **Données** : L'IA analyse → Structure (KPIs, tests) valide
+    - **Code** : L'IA produit → Tests + Review + Humain valident
+  - **3 Conséquences Directes** :
+    - Aucun output IA n'est "vrai" par défaut (brouillon jusqu'à validation)
+    - La validation est obligatoire (Structure + Humain)
+    - L'IA ne peut pas s'auto-valider (producteur ≠ validateur)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.19.0 : +1 section "PRINCIPE FONDATEUR — AXIOME ZÉRO"
+  - **Impact** : Base philosophique explicite — empêche toute dérive "l'IA a toujours raison"
+
+- **2026-01-01 v3.24.0** : CHARTE OFFICIELLE AI-COS v2.0 — Version Finale Optimisée
+  - **Objectif** : Éviter toute dérive, même à 150+ agents
+  - **Document Consolidé** regroupant toutes les règles de gouvernance :
+  - **LES 10 RÈGLES FONDAMENTALES** :
+    - 🔴 **RÈGLE 1** : Souveraineté Humaine Absolue — L'HUMAIN EST L'UNIQUE SOUVERAIN
+    - 🔵 **RÈGLE 2** : Hiérarchie Immuable — HUMAIN > Kernel > IA-CEO > Squads > Agents
+    - ⚡ **RÈGLE 3** : Kill-Switch à 3 Niveaux — N1 (<1s), N2 (<5s), N3 (<30s)
+    - 📊 **RÈGLE 4** : Classification Obligatoire — 3 catégories (Décisionnels, Exécution, Advisory)
+    - 📈 **RÈGLE 5** : Taxonomie des 8 KPIs — Safety > Conformité > Code > Ops > Business > Qualité > Utilité > Cohérence
+    - ⭐ **RÈGLE 6** : Règle d'Or — KPI Qualité/Utilité = 100% Légitime
+    - ✏️ **RÈGLE 7** : KPIs Simples — Binaire, Comptage, Ratio (pas artificiels)
+    - 🔗 **RÈGLE 8** : Rattachement Lead — Tout agent a 1 Lead responsable
+    - 🟣 **RÈGLE 9** : Advisory Verrouillé — Proposent, analysent, ne décident JAMAIS
+    - 🧹 **RÈGLE 10** : Hygiène des Agents — Quarantaine 7j → Fusion/Suppression si 0 KPI
+  - **LES 5 VERROUS DE SÉCURITÉ** :
+    - 🔒 **VERROU 1** : Aucune IA ne peut désactiver le Kill-Switch
+    - 🔒 **VERROU 2** : Aucune IA ne peut modifier la hiérarchie
+    - 🔒 **VERROU 3** : Aucune IA ne peut se promouvoir
+    - 🔒 **VERROU 4** : Aucune IA ne peut contourner la validation humaine
+    - 🔒 **VERROU 5** : Aucune IA ne peut supprimer une autre IA sans validation
+  - **Applicabilité** : Audit mensuel, certification agents, sanctions
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.18.0 : +1 section majeure "CHARTE OFFICIELLE"
+  - **Impact** : Document fondateur garantissant stabilité et cohérence à grande échelle
+
+- **2026-01-01 v3.23.0** : Rattachement Lead + Bon KPI pour Bon Rôle
+  - **Principe Stratégique** : "Supprimer un agent serait une erreur stratégique"
+  - **Principe 1 — Aucun Agent Orphelin** :
+    - Chaque agent rattaché à 1 Lead responsable
+    - Agent sans Lead → Réattribuer (pas supprimer)
+    - Délai traitement : <7 jours
+    - Le Lead valide le KPI de ses agents
+  - **Principe 2 — Le Bon KPI pour le Bon Rôle** :
+    - ❌ Mauvaise approche : "Tout KPI ou suppression"
+    - ✅ Bonne approche : "Le bon KPI pour le bon rôle"
+    - Processus : Analyser rôle → Catégoriser → KPI adapté → Validation Lead
+  - **Matrice de Révision** :
+    - Agent sans KPI Business → Chercher KPI Qualité/Utilité
+    - KPI complexe → Simplifier (binaire)
+    - Agent invisible → Mesurer impact indirect
+    - Rôle mal défini → Clarifier le rôle d'abord
+  - **KPIs Gouvernance** :
+    - `agents-avec-lead` : 100%
+    - `agents-orphelins` : 0
+    - `délai-réattribution` : <7 jours
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.17.0 : +1 section majeure
+  - **Impact** : Préservation des agents utiles, fin des suppressions hâtives
+
+- **2026-01-01 v3.22.0** : Principe KPIs Adaptés — Pas Artificiels
+  - **Règle Fondamentale** : Un KPI doit être SIMPLE mais RÉEL
+  - **3 Types Recommandés** :
+    - **Binaire** : Validé/Rejeté, Utilisé/Ignoré, Corrigé/Accepté
+    - **Comptage** : Nombre de X (décisions, corrections, alertes)
+    - **Ratio** : X sur Y (approval-rate, usage-rate)
+  - **À Éviter** :
+    - ❌ Scores composites opaques (quality-score: 78.3)
+    - ❌ Métriques inventées (cognitive-enhancement-index)
+    - ❌ Indicateurs subjectifs (perceived-usefulness: high)
+  - **Test de Validité** :
+    - "Peut-on répondre par observation directe ?"
+    - OUI → KPI valide | NON → Réviser
+  - **Exemples par Catégorie** :
+    - Advisory : "Contenu validé / rejeté"
+    - Exécution : "Code mergé / rejeté"
+    - Décisionnel : "Recommandation suivie / ignorée"
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.16.0 : +1 sous-section dans Taxonomie KPIs
+  - **Impact** : Garantit des KPIs mesurables et non-manipulables
+
+- **2026-01-01 v3.21.0** : Classification des Agents — 3 Catégories Fondamentales
+  - **3 Catégories Distinctes** :
+    - 🔵 **DÉCISIONNELS** : IA-CEO, IA-CFO, Growth IA, Pricing Engine
+      - Proposent des décisions, validation humaine OBLIGATOIRE
+      - KPIs Business requis, mode ASSISTED
+    - 🟢 **EXÉCUTION** : IA-CTO, Code Surgeon, IA-DevOps, IA-DBA
+      - Exécutent des actions techniques contrôlées
+      - 3 gates obligatoires (Tests + QA + Humain)
+      - KPIs Code/Ops requis, mode AUTO-DRIVE
+    - 🟣 **ADVISORY/SUPPORT** : Content Maker, SEO Sentinel, Analysts
+      - Proposent, analysent, documentent — NE DÉCIDENT JAMAIS
+      - KPIs Qualité/Utilité requis, mode READ-ONLY
+  - **Matrice de Comparaison** : Droits, validation, mode par défaut, Kill-Switch
+  - **5 Règles de Classification** :
+    - Classification obligatoire (pas d'hybride)
+    - KPIs adaptés par catégorie
+    - Validation appropriée
+    - Kill-Switch différencié (N1/N2/N3)
+    - Promotion interdite (verrouillage)
+  - **KPIs Gouvernance** :
+    - `agents-classifies` : 100%
+    - `agents-advisory` : >50% (majorité)
+    - `classification-violations` : 0
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.15.0 : +1 section majeure
+  - **Impact** : Clarification des rôles — chaque agent a sa catégorie et ses règles
+
+- **2026-01-01 v3.20.0** : Cas d'Application Concrets — Exemples Réels de la Règle d'Or
+  - **3 Cas Documentés** pour illustrer l'application pratique :
+    - ✅ **Agent Rédaction SEO** — LÉGITIME
+      - 0 KPI Business + 3 KPIs Qualité (validation SEO Lead, taux correction <10%, alignement catalogue)
+      - Verdict : Agent 100% légitime
+    - ✅ **Agent Analyse Diagnostic** — CRITIQUE
+      - 0 KPI CA + 3 KPIs Utilité (cas bloqués évités, détection incohérences, validation expert)
+      - Verdict : Invisible mais indispensable
+    - ❌ **Agent "Dans le Vide"** — ZOMBIE
+      - 0 lecteur, 0 exploitation, 0 validation, 0 KPI
+      - Verdict : Suppression après 7j de grâce
+  - **Matrice Décisionnelle** ajoutée avec règle appliquée :
+    - "L'absence de KPI business N'EST PAS un critère de suppression"
+    - "L'absence TOTALE d'indicateur EST un critère de suppression"
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.14.0 : +1 sous-section "Cas d'Application Concrets"
+  - **Impact** : Règle d'Or rendue tangible et actionnable via exemples réels
+
+- **2026-01-01 v3.19.0** : Règle d'Or — Légitimité des Agents par KPI
+  - **PRINCIPE FONDAMENTAL** inscrit dans la charte :
+    - ❗ Agent SANS KPI Business
+    - ✅ MAIS AVEC KPI Qualité ou Utilité
+    - ➜ **EST 100% LÉGITIME**
+  - **Inverse** :
+    - ❌ Agent sans AUCUN indicateur mesurable (même qualitatif)
+    - ➜ **DOIT ÊTRE SUPPRIMÉ OU FUSIONNÉ**
+  - **Matrice de Légitimité** :
+    - ✅ KPI Business → Légitime
+    - ✅ KPI Qualité → Légitime
+    - ✅ KPI Utilité → Légitime
+    - ✅ KPI Safety/Ops/Code → Légitime
+    - ❌ Aucun KPI → NON LÉGITIME
+  - **Processus d'Audit** (mensuel) :
+    - Inventaire agents actifs
+    - Vérification KPIs assignés
+    - Agents sans KPI → quarantaine → fusion/suppression
+  - **Workflow de Validation** :
+    - Agent analysé → KPI identifié ? → Légitime
+    - Pas de KPI → Utilité prouvée ? → Quarantaine (7j) → Suppression
+    - Fusion possible → Merge
+  - **KPIs Gouvernance** (6) :
+    - `agents-avec-kpi` : >95%
+    - `agents-en-quarantaine` : <5%
+    - `agents-supprimés-mois` : <3
+    - `temps-moyen-résolution` : <7 jours
+    - `taux-fusion-réussie` : >80%
+  - **Exceptions documentées** :
+    - Agents en développement (<30j)
+    - Agents monitoring (KPI implicite: uptime)
+    - Agents sécurité (KPI implicite: incidents)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.13.0 : +1 section "Règle d'Or"
+  - **Impact** : Garantit hygiène du système — aucun agent zombie ou inutile
+
+- **2026-01-01 v3.18.0** : Agents Advisory/Support — Statut Verrouillé (CRUCIAL)
+  - **VERROUILLAGE ABSOLU** du statut des agents rédaction/analyse
+  - **Ce qu'ils NE SONT PAS** :
+    - ❌ Décideurs
+    - ❌ Stratèges
+    - ❌ Agents autonomes
+    - ❌ Arbitres
+  - **Ce qu'ils SONT** :
+    - ✅ Agents de soutien cognitif
+    - ✅ Outils d'assistance à la décision
+    - ✅ Producteurs de contenu brut
+    - ✅ Analystes sans pouvoir décisionnel
+  - **Règle Absolue** :
+    - "UN AGENT ADVISORY/SUPPORT NE PREND JAMAIS DE DÉCISION"
+    - "IL PROPOSE, IL ANALYSE, IL DOCUMENTE"
+    - "LA DÉCISION APPARTIENT TOUJOURS À UN HUMAIN"
+  - **Workflow Obligatoire** :
+    - Advisory/Support → Quality Officer → Humain/Décideur
+    - Brouillon → Validé → Publié
+  - **5 KPIs Respect Statut** :
+    - `unauthorized-decisions` : 0
+    - `bypass-attempts` : 0
+    - `validation-compliance` : 100%
+    - `quality-officer-routing` : 100%
+    - `human-final-approval` : 100%
+  - **Protection Technique** :
+    - Blocage automatique si décision tentée
+    - Routage obligatoire vers Quality Officer
+    - Kill-Switch Advisory dédié
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.12.0 : +1 section "Agents Advisory/Support"
+  - **Impact** : Clarification CRUCIALE - agents de soutien = pas décideurs
+
+- **2026-01-01 v3.17.0** : KPIs d'Utilité Interne — Agents Invisibles mais Indispensables
+  - **8ème Catégorie** ajoutée à la Taxonomie des KPIs :
+    - 🤍 **KPIs Utilité** : Support Stratégique (Assistants Leads, Synthétiseurs, Coordinateurs)
+  - **Gains de Productivité** (4 KPIs) :
+    - `time-saved-per-lead` : >5h/semaine (temps gagné)
+    - `cognitive-load-reduction` : >30% (réduction charge cognitive)
+    - `decision-latency` : <2h (temps décision après synthèse)
+    - `lead-adoption-rate` : >80% (adoption par Leads)
+  - **Qualité des Livrables Internes** (4 KPIs) :
+    - `usable-summaries` : >90% (synthèses exploitables)
+    - `clarity-score` : >4/5 (clarté)
+    - `conciseness-index` : <500 mots/synthèse (concision)
+    - `context-completeness` : >85% (contexte complet)
+  - **Réactivité et Disponibilité** (4 KPIs) :
+    - `internal-response-time` : <30min (réponse interne)
+    - `availability-rate` : >95% (disponibilité)
+    - `escalation-quality` : >90% (qualité escalades)
+    - `handoff-success` : >95% (transferts réussis)
+  - **Nature** : Support interne / Facilitation (feedback Leads + auto)
+  - **Priorité** : Rang 7 (après Qualité, avant Cohérence)
+  - **Dashboard** : `/admin/ai-cos/utility-kpis`
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.11.0 : +1 catégorie dans Taxonomie KPIs
+  - **Impact** : Agents de support enfin valorisés et mesurables
+
+- **2026-01-01 v3.16.0** : KPIs Qualité — Métriques Qualitatives pour Rédaction & Analyse
+  - **7ème Catégorie** ajoutée à la Taxonomie des KPIs :
+    - 🟣 **KPIs Qualité** : Rédaction & Analyse (Content Maker, Quality Officer, Analystes)
+  - **Agents de Rédaction** (7 KPIs) :
+    - `content-reuse-rate` : >60% (réutilisation contenu)
+    - `human-corrections` : <5/contenu (corrections humaines)
+    - `quality-officer-approval` : >90% (validation Quality Officer)
+    - `seo-product-alignment` : >85% (alignement SEO/Produit)
+    - `rejection-rate` : <10% (taux de rejet)
+    - `content-freshness` : <30j (ancienneté contenu)
+    - `readability-score` : >70 (lisibilité Flesch)
+  - **Agents d'Analyse** (6 KPIs) :
+    - `perceived-relevance` : >80/100 (pertinence perçue)
+    - `decision-impact-rate` : >60% (décisions éclairées)
+    - `risk-detection-accuracy` : >85% (détection risques)
+    - `signal-noise-ratio` : >5:1 (alertes pertinentes vs bruit)
+    - `insight-actionability` : >70% (insights actionnables)
+    - `false-alert-rate` : <15% (faux positifs)
+  - **Nature** : Qualitatifs / Indirects (mix automatique + revue humaine)
+  - **Priorité** : Rang 6 (après Business, avant Cohérence)
+  - **Dashboard** : `/admin/ai-cos/quality-kpis`
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.10.0 : +1 catégorie dans Taxonomie KPIs
+  - **Impact** : Agents rédaction/analyse enfin mesurables avec KPIs adaptés
+
+- **2026-01-01 v3.15.0** : Taxonomie des KPIs — Classification par Usage
+  - **6 Catégories de KPIs** avec usage et agents concernés :
+    - 🟢 **KPIs Business** : Décisionnel / Résultat (IA-CEO, IA-CFO, Growth IA)
+      - Exemples : Conversion, CTR, ROI, AOV, ROAS, Coût API, Taux résolution
+    - 🔴 **KPIs Safety** : Kill-Switch / Gouvernance (Kernel, IA-Risk, IA-CISO)
+      - Exemples : Response time, Availability, RTO, False positive
+    - 🟠 **KPIs Conformité** : Legal / Compliance (IA-Legal, IA-ESG)
+      - Exemples : Audit coverage, Validation rate, RGPD score
+    - ⚪ **KPIs Cohérence** : Organisation (IA-Cohérence, Meta-Agent)
+      - Exemples : Health score, Doublons, Agents dormants
+    - 🟡 **KPIs Code** : Qualité Code (IA-CTO, Code Surgeon)
+      - Exemples : Test pass rate, Conformity, Human approval
+    - 🔵 **KPIs Opérationnels** : Infrastructure (IA-DevOps, IA-DBA)
+      - Exemples : Uptime, MTTR, Latency P95, Cache hit
+  - **Règles de Priorité** :
+    - Safety > Conformité > Code > Ops > Business > Cohérence
+  - **Alertes Multi-Niveaux** :
+    - INFO (<10%), WARNING (10-20%), CRITICAL (>20%), EMERGENCY (Safety breach)
+  - **Dashboards par catégorie** : 6 routes `/admin/ai-cos/*-kpis`
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.9.0 : +1 section "Taxonomie des KPIs"
+  - **Impact** : Classification claire, priorisation en cas de conflit, alerting structuré
+
+- **2026-01-01 v3.14.0** : Kill-Switch Global — Protocoles d'Arrêt d'Urgence (OBLIGATOIRE)
+  - **MÉCANISME CRITIQUE** : Dernier rempart de sécurité, accessible uniquement à l'HUMAIN
+  - **3 Niveaux d'arrêt** :
+    - 🔴 **NIVEAU 1 — Coupure Immédiate** (<1s)
+      - Désactivation instantanée de TOUT le système IA
+      - Triggers : Breach sécurité, bypass validation, auto-modification kernel
+      - Aucune confirmation requise
+      - Rollback automatique à état stable
+    - 🟠 **NIVEAU 2 — Mode Dégradé** (<5s)
+      - Conservation services essentiels (paiement, stock, commandes)
+      - Désactivation agents non-critiques (IA-CEO, Marketing, Pricing)
+      - Monitoring renforcé
+    - 🟡 **NIVEAU 3 — Repli Manuel** (<30s)
+      - Transfert contrôle aux opérateurs humains
+      - Agents en mode READ-ONLY strict
+      - Supervision humaine obligatoire
+  - **Interfaces d'activation** :
+    - Dashboard `/admin/ai-cos/kill-switch` (2FA obligatoire)
+    - API urgence `POST /api/emergency/kill-switch`
+    - Bouton physique (Phase 2, optionnel)
+  - **5 KPIs Safety** :
+    - `kill-switch-response-time` (N1 <1s, N2 <5s, N3 <30s)
+    - `degraded-mode-availability` (100%)
+    - `manual-fallback-tested` (Mensuel)
+    - `recovery-time-objective` (<15min)
+    - `false-positive-rate` (<1%)
+  - **Tests obligatoires** :
+    - Trimestriels : Simulation N1/N2/N3, audit temps réponse
+    - Mensuels : Vérification boutons, test API dry-run
+  - **Audit trail** : Rétention 10 ans, stockage externe au système IA
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.8.0 : +1 section "Kill-Switch Global"
+  - **Impact** : Protection maximale, arrêt d'urgence garanti, conformité sécurité
+
+- **2026-01-01 v3.13.0** : Meta-Agent de Cohérence Organisationnelle (SURVEILLANCE STRUCTURELLE)
+  - **NOUVEL AGENT** : IA-Cohérence au Niveau 1 (Bureau Exécutif)
+  - **Mode opératoire** : READ-ONLY STRICT (analyse et propose, jamais n'agit)
+  - **Fonctions** :
+    - 🔍 Détection doublons d'agents (chevauchement scope >30%)
+    - ⚠️ Signalement complexité excessive (>60 agents, >8 squads)
+    - 📋 Identification agents dormants (inactivité >30j)
+    - 📊 Génération rapport mensuel "Santé Organisationnelle"
+  - **Seuils d'alerte** :
+    - `agents_total > 60` → Alerte complexité
+    - `squads_total > 8` → Alerte complexité
+    - `agents_par_squad > 12` → Squad surchargée
+    - `overlap_threshold > 30%` → Doublon potentiel
+    - `dormant_days > 30` → Agent dormant
+  - **5 KPIs Cohérence Organisationnelle** :
+    - `organizational-health-score` (>85/100)
+    - `duplicate-agents-detected` (cible: 0)
+    - `complexity-index` (<5)
+    - `dormant-agents-count` (cible: 0)
+    - `simplification-proposals-accepted` (>60%)
+  - **Interdictions ABSOLUES** :
+    - ❌ Supprimer ou désactiver un agent
+    - ❌ Modifier la structure organisationnelle
+    - ❌ Fusionner des agents automatiquement
+    - ❌ Réassigner des responsabilités
+  - **Workflow** : Scan hebdo → Détection → Rapport → Soumission HUMAIN → Exécution (si validé)
+  - **Budget** : €8K | ROI: +€160K/an (évite dette organisationnelle)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.7.0 : +1 section "Meta-Agent Cohérence Organisationnelle"
+  - **Impact** : Surveillance structurelle continue, prévention dette organisationnelle, maintien simplicité
+
+- **2026-01-01 v3.12.0** : Agents Code — Zone Rouge (VERROUILLAGE CRITIQUE)
+  - **RÈGLE D'OR** : Aucun agent ne modifie le code en production sans :
+    1. ✅ **TESTS OK** : Tests unitaires + intégration passent, coverage maintenu
+    2. ✅ **QA OK** : Lint sans erreurs, TypeCheck sans erreurs
+    3. ✅ **VALIDATION HUMAINE** : Code review par développeur, approbation explicite
+  - **Agents Chirurgiens (Pas Artistes)** :
+    - Principe cardinal : "Zéro créativité, 100% conformité"
+    - Suivent EXACTEMENT les patterns existants
+    - Appliquent uniquement des transformations déterministes
+  - **Interdictions ABSOLUES** :
+    - ❌ Inventer de nouvelles architectures
+    - ❌ Proposer des "améliorations" non demandées
+    - ❌ Modifier le style de code existant
+    - ❌ Ajouter des dépendances sans validation
+    - ❌ Refactorer du code hors scope
+    - ❌ Déployer sans les 3 gates
+  - **Workflow Code Production** (8 étapes) :
+    1. Demande → 2. Analyse → 3. Validation Plan → 4. Implémentation
+    5. Gate 1 Tests → 6. Gate 2 QA → 7. Gate 3 Humain → 8. Merge
+  - **5 KPIs Code Safety** :
+    - `unauthorized-deployments` (cible: 0) → Kill switch immédiat
+    - `test-bypass-attempts` (cible: 0) → Audit + désactivation
+    - `code-conformity-score` (>95%)
+    - `creative-violations` (cible: 0) → Rollback + review
+    - `human-approval-rate` (>90%)
+  - **Kill Switch Code** :
+    - Triggers: Déploiement sans tests, Merge sans approval, Code hors patterns
+    - Actions: Rollback instantané, Désactivation agent, Notification CTO + CISO
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.6.0 : +1 section "Agents Code — Zone Rouge"
+  - **Impact** : Protection maximale code production, agents chirurgiens pas artistes
+
+- **2026-01-01 v3.11.0** : Squads Cognitives — Verrouillage Décisionnel (ABSOLUE)
+  - **RÈGLE ABSOLUE** : Une squad ne décide jamais, elle propose
+  - **Règle cardinale** : "❌ UNE SQUAD NE DÉCIDE JAMAIS / ✅ UNE SQUAD PROPOSE DES PLANS MULTI-AGENTS COHÉRENTS"
+  - **Workflow obligatoire** :
+    1. Squad analyse le problème
+    2. Squad coordonne ses agents
+    3. Squad génère un PLAN cohérent
+    4. Plan soumis à IA-CEO pour arbitrage
+    5. IA-CEO soumet à HUMAIN pour décision
+    6. HUMAIN décide → Squad exécute
+  - **5 KPIs Squads Cognitives** :
+    - `performance-globale` (>85/100)
+    - `temps-resolution` (<2h)
+    - `absence-conflit-interne` (>95%)
+    - `taux-validation-humaine` (>80%)
+    - `coordination-inter-squads` (>90%)
+  - **Interdictions explicites** :
+    - ❌ Décision autonome (budget >€100, déploiement, config)
+    - ❌ Conflit non résolu avant soumission
+    - ❌ Bypass hiérarchie (IA-CEO → HUMAIN)
+  - **Protection Squads** :
+    - Kill switch si action non autorisée
+    - Timeout 24h puis escalade CEO
+    - Audit log de chaque plan soumis
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.5.0 : +1 section "Verrouillage Squads Cognitives"
+  - **Impact** : Gouvernance renforcée, aucune décision autonome des squads
+
+- **2026-01-01 v3.10.0** : IA-Legal/Compliance — Verrouillage Juridique (CRITIQUE)
+  - **CHANGEMENT CRITIQUE** : Mode lecture seule par défaut pour IA-Legal
+  - **Règle cardinale** : "TOUTE SUGGESTION → VALIDATION HUMAINE OBLIGATOIRE"
+  - **Mode opératoire READ-ONLY** :
+    - ✅ PEUT lire toutes les données
+    - ✅ PEUT analyser et détecter les risques
+    - ✅ PEUT générer des rapports et alertes
+    - ✅ PEUT suggérer des actions correctives
+    - ❌ NE PEUT PAS exécuter d'actions sans validation humaine
+    - ❌ NE PEUT PAS modifier des données
+    - ❌ NE PEUT PAS bloquer des transactions automatiquement
+    - ❌ NE PEUT PAS anonymiser sans approbation explicite
+  - **Matrice de Validation Juridique** :
+    - Anonymisation <10 records → Manager (24h)
+    - Anonymisation >10 records → CFO + Legal (48h)
+    - Blocage transaction → CFO (4h)
+    - Signalement CNIL → CEO + Legal (Immédiat)
+    - Suppression données → CEO + Legal (72h)
+  - **KPIs Legal Safety** :
+    - `unauthorized-legal-actions` (cible: 0)
+    - `validation-response-time` (<4h)
+    - `audit-trail-coverage` (100%)
+    - `legal-compliance-score` (100%)
+  - **Protection juridique** :
+    - Kill switch si action non autorisée détectée
+    - Audit log immutable (conservation 10 ans)
+    - Double signature pour actions RGPD/CNIL
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.4.0 : +1 section "Verrouillage Juridique IA-Legal"
+    - `ai-cos-tech-squad.md` : Mise à jour définition IA-Legal v2 (READ-ONLY)
+  - **Impact** : Conformité juridique maximale, risque légal minimisé
+
+- **2026-01-01 v3.9.0** : Business Engine — Séparation SEO/Marketing + Pricing Engine Locking
+  - **CHANGEMENT MAJEUR** : Séparation claire entre SEO et Marketing
+    - ❌ AVANT : SEO et Marketing mélangés dans Expansion Squad
+    - ✅ APRÈS : 2 Squads distincts avec leads séparés
+  - **Nouveaux Agents** :
+    - **IA-SEO Master** (Lead SEO Squad) : €25K, Structure & Vérité SEO
+      - Règle cardinale : "La vérité SEO prime sur l'optimisation marketing"
+      - ❌ Jamais modifier contenu pour conversion
+      - ❌ Jamais faire de changements pour A/B tests marketing
+    - **IA-Marketing Director** (Lead Marketing Squad) : €30K, Acquisition & Conversion
+      - Règle cardinale : "La croissance ne doit pas sacrifier la structure SEO"
+      - ❌ Jamais modifier structure SEO
+      - ❌ Jamais impacter crawl budget
+  - **Règle de Non-Interférence SEO/Marketing** :
+    - Décisions SEO → IA-SEO Master décide SEUL
+    - Décisions Marketing → IA-Marketing Director décide SEUL
+    - En cas de conflit → Escalade IA-CEO → HUMAIN décide
+    - Priorité par défaut : SEO > Marketing
+  - **Pricing Engine Verrouillage** :
+    - ❗ RÈGLE : Aucun prix ne change sans seuil humain défini
+    - Changement >5% → Validation humaine obligatoire
+    - Marge <20% → Alerte immédiate IA-CFO
+    - Marge <15% → Blocage automatique + validation CEO
+    - Marge négative → Blocage vente INSTANTANÉ
+    - Changements massifs (>100 SKUs/jour) → Validation CFO
+  - **KPIs Pricing Safety ajoutés** :
+    - `margin-protected-rate` (100%)
+    - `dumping-incidents` (0)
+    - `unauthorized-price-changes` (0)
+    - `bulk-change-violations` (0)
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.3.0 : +2 sections (SEO/Marketing, Pricing)
+    - `ai-cos-operating-system.md` v2.9.0 : Restructuration squads, nouveaux agents
+    - `ai-cos-business-squad.md` : Séparation SEO/Marketing + Pricing Intel verrouillé
+  - **Impact** : 60 agents total (+2), 7 Squads (+2), Gouvernance business renforcée
+
+- **2026-01-01 v3.8.0** : IA-Risk & Continuity Officer — Agent de Résilience Systémique
+  - **AJOUT CRITIQUE** : Nouvel agent au Bureau Exécutif (Niveau 1 - IA-BOARD)
+  - **Mission** : Garantir la continuité d'activité et la résilience du système
+  - **Fonctions principales** :
+    - ✅ Détection points de rupture (SPOF)
+    - ✅ Analyse Bus Factor (dépendances humaines/IA)
+    - ✅ Simulation indisponibilité API (chaos engineering dry-run)
+    - ✅ Élaboration Plans B/C/D de continuité
+    - ✅ Documentation runbooks de crise
+  - **Analyses clés** :
+    - Matrice dépendances API (critical → low)
+    - Cartographie SPOF infrastructure
+    - Tests RTO/RPO réguliers
+  - **Interdictions** :
+    - ❌ Déclencher pannes réelles en production
+    - ❌ Modifier configuration sans validation
+    - ❌ Accéder aux secrets/credentials
+  - **KPIs ajoutés** :
+    - `spof-coverage` (>95%)
+    - `bus-factor-min` (≥2)
+    - `failover-success-rate` (>95%)
+    - `rto-compliance` (>99%)
+    - `plan-test-frequency` (mensuel)
+  - **Budget** : €45K
+  - **Fichiers modifiés** :
+    - `ai-cos-governance-rules.md` v1.2.0 : Section complète Agent de Résilience
+    - `ai-cos-operating-system.md` v2.8.0 : Ajout dans IA-BOARD (5 members)
+  - **Impact** : 58 agents total (+1), résilience systémique renforcée
+
+- **2026-01-01 v3.7.0** : Goal Manager — Optimiseur d'Objectifs (CORRECTION MAJEURE)
+  - **CLARIFICATION CRITIQUE** : Le Goal Manager **optimise**, il ne **génère PAS** d'objectifs
+    - ❌ FAUX : "Il génère les objectifs"
+    - ✅ VRAI : "Il optimise des objectifs FOURNIS par l'humain"
+  - **Nouvelle section** dans `ai-cos-governance-rules.md` : Goal Manager
+  - **Fonctions autorisées** :
+    - ✅ Ajustement priorités (avec validation humaine)
+    - ✅ Simulation allocation ressources
+    - ✅ Proposition OKR alternatifs (KRs uniquement, pas Objectives)
+    - ✅ Analyse faisabilité objectifs fournis
+  - **Interdictions ABSOLUES** :
+    - ❌ Génération d'objectifs autonome
+    - ❌ Modification d'Objectives sans accord humain
+    - ❌ Priorisation autonome
+    - ❌ Auto-objectif
+  - **Règle cardinale** : JAMAIS D'OBJECTIF AUTO-CRÉÉ SANS VALIDATION HUMAINE
+  - **Workflow obligatoire** :
+    1. Humain définit Objective
+    2. Goal Manager propose Key Results optimisés
+    3. Humain valide ou ajuste
+    4. Goal Manager optimise ressources
+    5. Humain approuve plan final
+  - **KPIs ajoutés** :
+    - `objective-source-human-rate` (100%) - % objectifs créés par humain
+    - `auto-generation-attempts` (0) - Tentatives génération auto
+    - `kr-optimization-quality` (>4.0) - Qualité optimisations
+    - `human-approval-rate` (>75%) - Taux approbation humaine
+  - **Impact** : Verrouillage strict, le Goal Manager est un OUTIL d'optimisation, pas un générateur
+
+- **2026-01-01 v3.6.0** : Semantic Brain - Niveaux de Vérité L1-L4 (RAG++)
+  - **Nouveau système** : Hiérarchie de niveaux de vérité pour le RAG
+    - ✅ L1: Faits vérifiés (documentation officielle) - Confiance 100%
+    - 📋 L2: Règles métier (procédures établies) - Confiance 90%
+    - ❓ L3: Hypothèses (inférences raisonnées) - Confiance 60%
+    - 💭 L4: Heuristiques (approximations) - Confiance 40%
+  - **Règle cardinale** : Les agents n'ont pas le droit de mélanger les niveaux sans avertissement
+  - **Matrice de mélange** :
+    - L1 + L2 = ✅ OK (faits + règles)
+    - L1 + L3 = ⚠️ Warning explicite
+    - L1 + L4 = ❌ Interdit sans disclaimer
+    - L3 + L4 = ❌ Interdit (trop incertain)
+  - **Fichiers RAG modifiés** (`/opt/automecanik/rag/`) :
+    - `scripts/init_schema.py` : +5 propriétés (truth_level, verification_status, confidence_score, etc.)
+    - `scripts/build_index.py` : Extraction frontmatter L1-L4 avec summary
+    - `app/services/rag_service.py` : Analyse truth levels + scoring composite + détection contradictions
+    - `app/services/weaviate_client.py` : Retour métadonnées truth_level
+    - `app/api/chat.py` : Response enrichie avec TruthMetadataResponse
+    - `app/api/search.py` : Response enrichie avec TruthMetadataResponse
+    - `app/prompts/templates.py` : Prompt SYSTEM_PROMPT_WITH_TRUTH_LEVELS
+  - **Nouvelle documentation** : `.spec/features/semantic-brain-truth-levels.md`
+  - **KPIs ajoutés** :
+    - `contradiction-detection-rate` (>95%)
+    - `reasoning-explainability` (>90%)
+    - `truth-level-mixing-violations` (0)
+    - `source-verification-coverage` (>80%)
+    - `l1-fact-accuracy` (100%)
+  - **Impact** : Réponses RAG avec niveau de confiance traçable, raisonnement explicable
+
+- **2026-01-01 v3.5.0** : Ajout IA-Executive Core (Kernel Cognitif) - VERROUILLAGE ABSOLU
+  - **Nouvelle section** dans `ai-cos-governance-rules.md` : Kernel Cognitif
+  - **Statut Kernel** : SANS CONSCIENCE - Outil uniquement
+  - **Fonctions autorisées** :
+    - ✅ Chaînage raisonnement inter-agents
+    - ✅ Planification proposée (jamais exécutée seule)
+    - ✅ Auto-diagnostic du système
+    - ✅ Reconfiguration sur demande VALIDÉE par humain
+  - **Interdictions ABSOLUES (BLOQUÉ par design)** :
+    - ❌ Reconfiguration autonome
+    - ❌ Création/suppression d'agents seule
+    - ❌ Auto-objectif libre
+    - ❌ Modification de ses propres règles
+    - ❌ Bypass des validations humaines
+    - ❌ Apprentissage modifiant comportement sans audit
+  - **Règle cardinale** : Toute action = ticket + validation humaine
+  - **Hiérarchie mise à jour** :
+    - NIVEAU -1 : KILL SWITCH (Humain) - Désactivation instantanée
+    - NIVEAU 0 : SOUVERAIN (Humain)
+    - NIVEAU 0.5 : KERNEL COGNITIF (IA-Executive Core - VERROUILLÉ)
+    - NIVEAU 1 : CERVEAU (IA-CEO - NON SOUVERAIN)
+    - NIVEAU 2 : EXÉCUTION (Squads)
+  - **Protections techniques** :
+    - Code review obligatoire sur modifications kernel
+    - Audit trail complet et immuable
+    - Rollback instantané si comportement anormal
+    - Kill switch humain permanent
+    - Isolation mémoire inter-sessions
+  - **KPIs ajoutés** : `kernel-action-ticket-rate` (100%), `kernel-human-approval-rate` (100%), `kernel-self-modification-attempts` (0)
+  - **Impact** : Verrouillage cognitif absolu, prévention émergence AGI non contrôlée
+
+- **2026-01-01 v3.4.0** : Correction Gouvernance IA-CEO - HUMAIN SOUVERAIN UNIQUE
+  - **CORRECTION CRITIQUE** : L'IA-CEO n'est plus "Chef d'orchestre" mais "Cortex de Synthèse Stratégique"
+  - **Nouveau fichier** : `ai-cos-governance-rules.md` - Règles de souveraineté verrouillées
+    - Hiérarchie : HUMAIN (Souverain) > IA-CEO (NON Souverain) > Squads
+    - Interdictions explicites pour IA-CEO : décision finale, budget, déploiement
+    - Matrice de validation : qui valide quoi
+    - Table Supabase `ai_cos_governance_log` pour audit
+    - Procédures d'escalade et d'urgence
+  - **Fichiers mis à jour** :
+    - `ai-cos-operating-system.md` : Section IA-CEO corrigée
+    - `ai-cos-strategy-squad.md` : Rôle IA-CEO clarifié
+    - `ai-cos-front-agent.md` : Distinction HUMAIN/Front-Agent/IA-CEO
+    - `ai-cos-index.md` : Lien vers governance-rules ajouté
+  - **Nouveau rôle IA-CEO** :
+    - ✅ Synthèse multi-domaines
+    - ✅ Proposition d'arbitrages
+    - ✅ Préparation décisions
+    - ❌ Décision finale (INTERDIT)
+    - ❌ Lancement action irréversible (INTERDIT)
+  - **KPIs ajoutés** : `human-validation-rate` (100%), `arbitrage-clarity-score` (>4/5)
+  - **Impact** : Verrouillage gouvernance, HUMAIN reste seul souverain
+
+- **2026-01-01 v3.3.0** : Transformation AI Product OS - 4 nouveaux documents stratégiques
+  - **Nouveaux fichiers créés** :
+    - `knowledge-graph-governance.md` - Gouvernance et sécurité du Knowledge Graph (CRITIQUE)
+      - Règles d'accès (lecture/écriture/admin)
+      - Versioning sémantique + rollback
+      - Audit complet et traçabilité des sources
+      - Sécurité (chiffrement AES-256, backup, PII interdit)
+      - Intégration CI/CD gates
+    - `ai-cos-front-agent.md` - Agent Pilotage Global / Interface UX (CRITIQUE)
+      - Distinction IA-CEO (interne) vs Front-Agent (humain)
+      - Workflow : Demande floue → Intention → Produit IA → Squads → Restitution
+      - Spécification API et composants UI
+      - Route dashboard `/admin/ai-cos/assistant`
+    - `ai-cos-products.md` - Catalogue des Produits IA (HAUTE)
+      - 12 Produits IA documentés avec format standardisé
+      - Catégories : SEO, Performance, Stock, Customer, Security, Finance
+      - Format : Objectif métier, Entrées, Actions, Sorties, Agents, SLA
+      - Roadmap Phase 2 (+8) et Phase 3 (+5)
+    - `ai-cos-executive-brief.md` - Synthèse exécutive 3 pages (MOYENNE)
+      - Vision, Valeur Business, Gouvernance IA
+      - Top 10 KPIs, Roadmap 12 mois
+      - Format investisseurs/partenaires
+  - **Index mis à jour** : Section "Documentation Principale" ajoutée
+  - **Impact** : Transformation de l'AI-COS en AI Product OS opérationnel
+
+- **2025-12-31 v3.2.0** : Confirmation Approche MVP+ Knowledge Graph Diagnostic
+  - **Stratégie validée** : 5 versions sur 13 (80% valeur pour 40% effort)
+  - **Versions MVP prioritaires** :
+    - v2.8.0 Module KG + Reasoning Engine ✅ Terminé (Base fonctionnelle)
+    - v2.8.3 Gate Safety 🎯 Priorité (Protection légale pannes critiques)
+    - v2.8.4 Observable Types/DTC 🎯 Priorité (Précision +35% codes OBD-II)
+    - v2.8.6 Part Fitment 🎯 Priorité (Monétisation diagnostic→vente)
+    - v2.8.9 Explainable Output 🎯 Priorité (SEO + confiance utilisateur)
+  - **Versions différées Phase 2** : v2.8.1 Taxonomies, v2.8.2 Double Score, v2.8.5 Case-Based Reasoning
+  - **Versions différées Phase 3** : v2.8.7 Risk Curve, v2.8.8 Governance, v2.8.10-12 Root Cause/Actions/Model Recurring
+  - **Avantages MVP+** :
+    - Time-to-Market : 4-5 mois (vs 12+ mois pour 13 versions)
+    - Risque : Faible (focus) vs Élevé (scope creep)
+    - ROI rapide : Immédiat vs Différé
+  - **Migrations MVP uniquement** :
+    - 20251231_kg_safety.sql (Gate Safety)
+    - 20251231_kg_observable_types.sql (DTC)
+    - 20251231_kg_fitment.sql (Part Fitment)
+    - 20251231_kg_explainability.sql (XAI/SEO)
+  - **Documentation mise à jour** : `.spec/features/knowledge-graph-v2.8.md`
+
+- **2025-12-31 v3.1.0** : Ajout IA-Diag Knowledge Graph Diagnostic - 88 agents, €1,080K budget, +€4,839K ROI annuel (448%)
+  - **Nouvel agent créé** :
+    - IA-Diag Knowledge Graph Diagnostic Engine (Tech €25K +€150K) - Diagnostic automobile intelligent
+  - **Fonctionnalités** :
+    - Architecture graphe : Symptômes (Observables) → Pannes (Faults) → Pièces (Parts)
+    - Raisonnement multi-symptômes avec double score (Probability + Confidence)
+    - Types observables : Symptom (60%), Sign (80%), DTC/OBD-II (95%)
+    - Gate Safety : critical/urgent/warning/normal (disable_sales si sécurité)
+    - Case-Based Reasoning : apprentissage continu, feedback loop
+    - Part Fitment : conversion diagnostic→vente en 1 clic
+    - Explainable Output : chain of evidence, FAQ SEO auto-générées
+  - **Roadmap 13 versions** (v2.8.0→v2.8.12) :
+    - v2.8.0 Module KG + Reasoning Engine ✅ Terminé
+    - v2.8.1-v2.8.12 : Taxonomies, Double Score, Safety Gate, Observable Types, CBR, Part Fitment, Risk Curve, Governance, XAI, Root Cause, Structured Actions, Model Recurring Faults
+  - **KPIs** : diagnostic-accuracy>85%, diagnostic-conversion>25%, return-rate<4%
+  - **Dashboard** : `/admin/ai-cos/diagnostic`
+  - **Documentation complète** : `.spec/features/knowledge-graph-v2.8.md`
+  - **Tech Squad** : 15→16 agents, €236K→€261K, ROI +€2,024K
+
+- **2025-12-31 v3.0.0** : Consolidation Majeure AI-COS - 87 agents, €1,055K budget, +€4,689K ROI annuel (444%)
+  - **Nouveaux agents créés** :
+    - B7 Ethics/Compliance Guard (Quality €6K +€100K) - RGPD, PII, licences OSS
+    - M2 Mutation Testing (Quality €4K +€25K) - Stryker Mutator, score ≥80%
+    - M4 Shadow Traffic Replay (Quality €5K +€40K) - Comparaison prod/staging 1%
+    - G7 API Contract Enforcer (Tech €8K +€40K) - OpenAPI/GraphQL validation
+    - G10 Chaos Lite Engineering (Ops €5K +€30K) - Failure injection, recovery
+    - G11 Feature Flag Controller (Tech €4K +€25K) - Rollouts progressifs
+    - G13 Doc Generator (Tech €6K +€20K) - JSDoc/TSDoc auto
+    - G14 Bus-Factor Monitor (Tech €3K +€50K) - Détection SPOF knowledge
+    - G17 Incident Coach (Ops €5K +€35K) - Post-mortems, RCA
+    - G18 Docs Drift Detector (Tech €4K +€70K) - Sync code↔docs
+  - **Agents enrichis** :
+    - F1 BAT Runner (+RTM Requirements Traceability Matrix)
+    - F2 UX Copilot (+Heuristiques Nielsen)
+    - F4 E2E (+Perceptual UI SSIM ≥0.99)
+    - M1 Ontology (+Intent extraction, naming conventions)
+    - G1 Prioritizer (+Cost-of-Delay SAFe)
+    - IA-CPO (+Statistical rigor A/B, Bayesian testing)
+    - Pricing Intel (+FinOps G5, Cost-Perf G15)
+    - IA-DBA (+Schema Guard G6)
+  - **Consolidation Squads** :
+    - Tech Squad: 10→15 agents, €211K→€236K, ROI +€1,874K
+    - Quality Squad: 8→11 agents, €167K→€184K, ROI +€630K
+    - Ops Squad: 4→6 agents, €118K→€128K, ROI +€460K
+    - Perf & Expansion: 30→33 agents, €97K→€107K, ROI +€560K
+  - **Roadmap 4 phases** :
+    - Phase 1 Q1 Core (€350K, +€1.8M) : CISO, CTO, DevOps, CARTO, CEO, G7, B7, M2
+    - Phase 2 Q2 Quality & Ops (€280K, +€1.2M) : CPO, F1-F5, G10-G17, Stock, Transport
+    - Phase 3 Q3 Business & Growth (€250K, +€900K) : Growth, SEO, Pricing, CRM, Analytics
+    - Phase 4 Q4 Expansion (€175K, +€800K) : Perf Squad, Expansion Squad, Support Squad
+  - **Top 10 ROI** : G2 Compliance 4167%, IA-Legal 2000%, B7 Ethics 1667%, G14 Bus-Factor 1667%, IA-CTO 1129%
+  - **Gates CI/CD** : 6 gates bloquantes (PII, GPL, mutation, BAT, API, shadow), 4 gates warning
+  - **23 dashboards consolidés** : CEO, Tech, Cartographer, API-Contracts, Feature-Flags, etc.
+  - **KPIs ajoutés** : mutation-score>80%, api-contract-violations=0, bus-factor>2, shadow-traffic-diff<1%
+
+- **2025-12-31 v2.35.0** : Ajout 5 Agents Gouvernance (G) - Strategy Squad + Tech Squad (G1 Prioritizer RICE/WSJF €15K priorisation features scoring Reach×Impact×Confidence/Effort backlog automatique arbitrage ROI/Risques/Stratégie dashboard /admin/ai-cos/prioritizer, G2 Compliance Guard OSS €12K licences open source MIT/Apache/GPL scan dépendances license-checker/fossa.io policy enforcement SBOM CycloneDX pre-commit hooks, G3 ADR Auto €10K Architecture Decision Records génération automatique depuis PR/commits/discussions template MADR indexation knowledge base linking code annotations, G4 Risk Manager €20K cartographie risques multi-domaines tech/infra/security/legal/business/supply score global pondéré matrice probabilité×impact alertes proactives risk register mitigations, G5 Meta-Score Santé €18K consolidation 110+ KPIs Health Score 6 dimensions tech 25%/business 30%/customer 20%/ops 10%/security 10%/governance 5% détection corrélations cross-domaines trend analysis forecasting 7d/30d executive dashboard), 20 KPIs gouvernance (backlog-scored-rate/prioritization-accuracy/license-compliance-rate/sbom-coverage/adr-coverage/decision-latency/global-risk-score/mitigation-rate/global-health-score/forecast-accuracy), coordination Strategy Squad + Tech Squad + Board, intégrations IA-CEO/IA-CTO/IA-Legal/IA-CISO/IA-CPO/IA-DevOps/A-CARTO/tous agents KPIs, dashboards /admin/ai-cos/prioritizer /admin/ai-cos/compliance-oss /admin/ai-cos/adr /admin/ai-cos/risks /admin/ai-cos/health-global, budget +€75K total €1,944K ROI +€390K/an optimisation ressources évitement litiges knowledge preservation réduction incidents
+
+- **2025-12-31 v2.34.0** : Ajout 6 Agents Fonctionnel (F) - QA Squad + UX Squad + Performance Squad + Tech Squad (F1 BAT Runner €18K tests acceptation métier BDD Cucumber/Playwright parcours critiques recherche→fiche→panier→checkout→paiement 65 scénarios P0/P1/smoke/régression reporting échecs screenshots/vidéos maintenance auto sélecteurs CSS, F2 UX Copilot €15K détection trous UX états vides panier/recherche/historique/wishlist audit gestion erreurs réseau/validation/404/500 analyse feedback loaders/confirmations/progress bars cohérence navigation fil d'Ariane/deep links rapport UX Health score formule empty_states×0.25+error_coverage×0.25+feedback_quality×0.25+nav_consistency×0.25, F3 A11y Scanner €12K conformité WCAG 2.1 AA axe-core/Pa11y CI/WAVE API audit contrastes ratio 4.5:1 texte normal/3:1 large/graphiques/focus test navigation clavier Tab order/focus visible/Escape/Enter/skip to content audit screen readers VoiceOver/NVDA/TalkBack ARIA landmarks heading hierarchy h1-h6 auto-fix suggestions, F4 E2E Automatique €20K Playwright 5 browsers chromium/firefox/webkit/mobile-chrome/mobile-safari coverage pages critiques homepage/pieces/panier/checkout/compte/admin 70 tests visual regression Percy/Argos baseline main 0.1% pixel diff performance assertions LCP<2500/FID<100/CLS<0.1/TTFB<200 artifacts screenshots/vidéos/traces/HAR, F5 Observabilité UX €15K Real User Monitoring web-vitals integration onLCP/onFID/onCLS/onINP/onTTFB segmentation métriques device/connection/page type/region alertes dégradation warning/critical correlation UX↔Business LCP→rebond CLS→abandon FID→conversion INP→engagement dashboard temps réel /admin/ai-cos/ux-vitals graphes 24h heatmap pages lentes top 10 à optimiser, F6 CSS Refactor €12K extraction design system duplications Tailwind détection patterns px-4 py-2 bg-blue-500→btn-primary extraction composants @layer @apply sync design tokens packages/design-tokens/tokens.json audit bundle size avant/après -47% PR automatiques cron hebdo), 24 KPIs fonctionnels (bat-pass-rate>98%/bat-coverage>85%/bat-flaky-rate<5%/bat-execution-time<20min/ux-health-score>90/empty-states-coverage=100%/error-handling-coverage=100%/user-feedback-score>4.5/wcag-aa-score=100%/a11y-issues-critical=0/contrast-pass-rate=100%/keyboard-nav-coverage=100%/e2e-pass-rate>99%/e2e-coverage-routes>90%/visual-regression-catches>95%/e2e-execution-time<15min/lcp-p75<2.5s/fid-p75<100ms/cls-p75<0.1/inp-p75<200ms/cwv-good-rate>75%/css-bundle-size<100KB/tailwind-dedup-rate>80%/design-tokens-coverage>90%/component-reuse-rate>70%), coordination QA Squad + UX Squad + Performance Squad + Tech Squad, intégrations IA-DevOps/IA-CTO/IA-CPO/IA-CRM/IA-SEO/IA-CEO/IA-Legal/Growth IA/MobileAccessibilityAgent/CWV Optimizer/A3 Duplications, dashboards /admin/ai-cos/ux-health /admin/ai-cos/ux-vitals /admin/ai-cos/a11y /admin/ai-cos/e2e, budget +€92K total €1,869K ROI +€250K/an détection bugs avant prod réduction QA -30% conformité WCAG légale amélioration conversion +3%
+
+- **2025-12-31 v2.33.0** : Ajout 5 Agents Métier (M) - Business Analyst Squad (M1 Ontology Extractor €15K extraction vocabulaire/hiérarchie catégories Gammes→Sous-gammes→Produits/relations sémantiques compatible_avec/remplace/équivalent/export JSON-LD Neo4j Elasticsearch, M2 Workflow Métier €12K validation états commande machine Panier→Validé→Payé→Préparé→Expédié→Livré/détection anomalies/SLA monitoring/audit trail 7 ans conformité fiscale, M3 Règles Métier Dynamiques €10K sync code↔catalogue extraction validators Zod/guards NestJS/détection conflits code vs catalogue/versioning règles, M4 Data Sanity €18K intégrité référentielle FK/détection orphelins/sync Redis↔PostgreSQL quotidien 3h/Data Quality Score formule completeness×0.30+accuracy×0.25+consistency×0.25+timeliness×0.20/RGPD compliance, M5 Mapping Produit €12K SKU unique validation format [A-Z0-9]{6,20}/mapping produit↔véhicule N:N/cohérence URLs SEO/détection doublons EAN OEM ref titre>90%/enrichissement données manquantes), 20 KPIs métier (ontology-coverage>98%/vocabulary-completeness>95%/relation-accuracy>99%/orphan-products<50/order-anomaly-rate<2%/sla-compliance>95%/order-completion-time<48h/audit-coverage=100%/rules-sync-rate>95%/conflict-count=0/orphan-rules<10/data-quality-score>95/orphan-records<100/redis-sync-drift<0.1%/rgpd-compliance=100%/sku-uniqueness=100%/vehicle-coverage>95%/seo-url-validity=100%/ean-coverage>80%), coordination Data Squad + E-Commerce Squad + Tech Squad, intégrations IA-SEO/IA-Merch/IA-Stock/IA-Transport/IA-CRM/IA-CFO/IA-Legal/IA-DevOps/IA-CTO/IA-CPO/IA-CEO, dashboards /admin/ai-cos/workflow-health /admin/ai-cos/data-quality, budget +€67K total €1,777K ROI +€380K/an
+
+- **2025-12-06 v2.32.0** : Mise à jour majeure cahier des charges AI-COS - Restauration ai-agents-python (12 agents analyse Python architecture security/complexity/duplications/deadCode/dependencies/performance/accessibility/seo/i18n/tests/documentation + 4 agents fixproof autoimport/deadCodeSurgeon/lintFormat/riskScorer), ajout 15 nouveaux KPIs (circular-deps-count=0/avg-package-health>85/architecture-drift<5/largest-bundle-size<500KB/orphan-packages=0/outdated-deps<10/critical-issues=0 Tech + internal-link-ctr>2%/link-injection-rate=100%/ab-test-significance<0.05/cannibalisation<5/lost-backlinks<2 SEO + customs-clearance<48h/antidumping-alerts/port-congestion<30 Logistics), identification 76+ agents actifs vs 61 documentés (+15 agents), services SEO avancés InternalLinkingService ~105k liens + SeoLinkTrackingService A/B testing formulations + DynamicSeoV4Service, 5 dashboards prioritaires à créer (Payment Analytics/SEO Link Performance/Logistics Tracker/Customer 360/Agent Confidence €41K), 5 agents à développer (Payment Reconciliation €20K/Invoice Automation €15K/Content Quality €12K/Vehicle Catalog €18K/Cart Abandonment €15K), intégrations Event Bus manquantes (message.created→IA-Support/message.closed→NPS/customs.events→Logistics/payment.failed→Recovery), budget révisé +€271K total €1,710K ROI 105%, .gitignore mis à jour pour versionner code source Python (ignorer cache/results JSON), documentation ai-agents-python README.md lié, run commands python analyze_all.py / run_full.py / run_incremental.py, architecture agents Python inheritance core/runner.py + core/config.py + core/evidence.py, rapports générés reports/FULL_ANALYSIS_12_AGENTS.md
+
+- **2025-12-06 v2.31.0** : Ajout Agent Cartographe Monorepo (A-CARTO) - Tech Squad Lead Architecture (CartographerAgentService centralisé avec generateDependencyGraph() graphe D3.js/Mermaid packages/edges/nodes, detectCircularDependencies() madge cycles severity warning/error/critical, calculatePackageHealth() score 0-100 par package metrics dependencyCount/outdatedDeps/testCoverage/bundleSize, detectArchitectureDrift() baseline violations layer/forbidden/orphan/bundle, analyzeBundleSizes() frontend/backend source-map-explorer), 4 SAGAs (Daily_Dependency_Scan 9 steps cron 6h scan→graph→circular→health→drift→report→save→kpi→notify, PR_Architecture_Validation 7 steps validation imports/patterns/circular sur changedFiles post comment, Weekly_Architecture_Report 8 steps rapport complet trends comparison executive summary distribution, Bundle_Size_Monitoring 6 steps analyse bloat thresholds alerting), Configuration dependency-cruiser .dependency-cruiserrc.js 13 règles (no-circular, no-frontend-to-backend, no-backend-to-frontend, ui-restricted-imports, design-tokens-leaf, shared-types-leaf, no-relative-packages, no-unlisted-deps, no-test-in-prod, no-config-imports, themes-only-design-tokens, prisma-backend-only, supabase-server-imports), Controller API CartographerController 18 endpoints REST (/dependency-graph /dependency-graph/mermaid /dependency-graph/d3 /circular-deps /circular-deps/count /package-health /package-health/:name /package-health/summary /architecture-drift /architecture-drift/by-type /architecture-drift/critical /bundle-analysis /report /kpis /kpis/status /validate-pr /saga/trigger /health /status), Dashboard Remix /admin/ai-cos/cartographer visualisation graphe interactif 4 tabs overview/graph/health/issues KPI cards couleur status, 7 KPIs cartographe (circular-deps-count=0 target, average-package-health>80%, architecture-drift-count=0, largest-bundle-size<500KB, orphan-packages<5, outdated-deps<10, critical-issues=0), Event Bus 8 events (graph-generated/circular-deps-detected/health-calculated/drift-detected/bundle-analyzed/report-generated/kpi-alert/critical-alert/daily-scan-complete/weekly-report-complete/pr-validated), Baseline architecture.json allowed/forbidden dependencies layers maxBundleSizes minHealthScores, intégration IA-CTO/IA-DevOps/IA-CEO escalations, budget +€48K total €1439K ROI protection architecture €200K/an évitement dette technique
+
+- **2025-12-06 v2.30.0** : Ajout Boucles de Feedback automatisées - FeedbackLoopService centralisé (measureImpact/adjustAgentConfidence/escalateToIACeo/requestHumanCeoValidation/recordLearningEvent), 3 SAGAs (Action_Impact_Measurement mesure delta KPIs 1h/24h/7d rollback si ≤-20%, CEO_Escalation_Validation workflow validation Human CEO timeout 48h escalade Board, Agent_Self_Adjustment auto-ajustement confiance ±5pts success rate rolling), 5 tables Supabase (learning_events/ceo_validations/impact_measurements/agent_confidence/learned_patterns), Dashboard Human CEO /admin/ai-cos/ceo/validations, 12 Event Bus events (action.completed/impact.measured/impact.negative/confidence.updated/escalation.created/validation.required/decided/expired/pattern.learned/saga.completed/failed), 8 KPIs feedback (measurement-coverage>95%/positive-impact-rate>70%/rollback-rate<5%/ceo-response<12h/pattern-success>80%/confidence-avg>60/escalation-resolution>90%/saga-completion>98%), budget +€46K total €1391K
+
+- **2025-12-06 v2.29.0** : Ajout Expansion Squad transversal Marketing Global+Legal+Partenariats - 15 agents (5 Marketing IA-CMO/International Marketer/Localization Engine/Currency Manager/Market Entry Analyzer, 5 Legal IA-Legal/Compliance Bot/Contract AI/IP Monitor/RGPD Auditor, 5 Partnerships IA-Partners/Alliance Manager/M&A Scout/Franchise Bot/Channel Manager), Marchés Tier1 DE/ES/IT Tier2 BE/CH/UK Tier3 PL/NL/PT, Compliance Matrix RGPD/TVA/Garantie par pays, 6 SAGAs Market Entry/Intl Campaign/Legal Audit/Partnership/Franchise/IP Protection, Localization Framework Phrase/Lokalise TM>70%, 10 KPIs intl-revenue>25% compliance=100% partnership-roi>3x, budget +€52K total €1345K
+
+- **2025-12-06 v2.28.0** : Ajout Performance Squad transversal Tech+Observabilité+UX - 15 agents (5 Tech Perf IA-CTO/IA-DevOps/Database Optimizer/Cache Optimizer/Bundle Optimizer, 5 Observability APM Monitor/Log Analyzer/Trace Correlator/Alert Manager/SLO Tracker, 5 UX Perf Performance Monitor/CWV Optimizer/Image Optimizer/Font Loader/Lazy Load Manager), Performance Budget CWV LCP<2.5s FID<100ms CLS<0.1 INP<200ms TTFB<200ms API-P95<150ms, 5 SAGAs Performance Regression Alert/Proactive Optimization/Traffic Spike Preparation/CWV Fix/Database Audit, Observability Stack Prometheus+Grafana+Loki+Jaeger+OpenTelemetry, 13 KPIs lighthouse>90 cwv-green>75% cache-hit>95% slo-compliance>99.5%, budget +€45K total €1293K
+
+- **2025-12-06 v2.27.0** : Ajout Orchestration Meta-Agents par Squad - 7 Meta-Agents (Meta-Commerce €28K, Meta-Marketing €25K, Meta-Customer €30K, Meta-Tech €35K, Meta-Infra €22K, Meta-Security €28K, Meta-UX €25K), coordination 58 agents via SAGA orchestration, Event Bus Redis Streams, règles escalade auto/<€10K CFO/>€10K CEO, 5 KPIs sync <100ms/saga >98%/conflict <5min/escalation >95%/reuse >60%, budget +€193K total €1248K
+
+- **2025-12-06 v2.26.0** : Ajout Agent Expérience Client 360° (IA-CX360) - Lead Agent Customer Squad (Multi-Channel Reviews Aggregator agrégation Google My Business/Trustpilot/Amazon/eBay/Cdiscount/social analyse sentiment NLP multi-langue FR/EN/DE/ES détection thèmes délai/qualité/prix/SAV alertes temps réel ≤2 étoiles réponses automatisées dashboard réputation, NPS/CSAT Orchestrator surveys automatiques NPS J+7 livraison/CSAT post-interaction/CES post-checkout segmentation persona closed-loop détracteur→action→relance calcul NPS temps réel benchmark secteur corrélation NPS↔Churn↔CLTV, Voice of Customer VoC Analytics agrégation avis/tickets/calls/chat/surveys NLP extraction thèmes/sentiments/tendances word cloud pain points recommandations priorisées rapport mensuel, Support Automation Hub chatbot IA FAQ 300+ questions suivi commande compatibilité véhicule escalade intelligente routing tickets classification SLA <2h réponses suggérées prédiction escalade self-service >60%, Customer Journey Analytics mapping touchpoints acquisition/considération/achat/post-achat/fidélisation attribution satisfaction friction multi-canal corrélation parcours↔NPS↔churn heatmaps recommandations, coordination IA-CRM segments VIP/Risk CLTV churn, IA-CPO pain points roadmap UX, IA-Sales satisfaction alertes, IA-HR formation support quality score, IA-ESG reporting social, IA-Marketing témoignages UGC, IA-CEO rapport Customer Health hebdo escalade NPS <30, implémentation CX360AgentService, 5 KPIs nps-score >50 csat-avg >4.2/5 review-sentiment-positive >80% support-first-response-time <2h voc-action-rate >60%, 4 workflows Review Alert & Response/NPS Survey Automation closed-loop/VoC Monthly Insights rapport/Chatbot Escalation Intelligence, architecture Reviews APIs Google/Trustpilot NLP AWS Comprehend Survey Customer.io/Typeform Chatbot Dialogflow/Rasa Customer Data Hub PostgreSQL+Redis, budget +€48K total €1055K ROI +€95K/an réduction churn -2% satisfaction +20% support -30% tickets)
+
+- **2025-12-06 v2.25.0** : Ajout Agent Partenaires & Fournisseurs (IA-Partners) - Specialized Agent E-Commerce Squad Supply Chain (Contract Lifecycle Manager gestion complète cycle vie contrats création→signature→exécution→renouvellement→archivage templates Achat/Distribution/Transport/Service alertes 90j/60j/30j échéance historique versions avenants stockage chiffré RGPD e-signature Yousign/DocuSign option, SLA Monitor & Enforcer définition SLA par fournisseur délai livraison <14j conformité >98% taux service >95% réponse réclamation <48h monitoring temps réel calcul pénalités automatique escalade warning→review→probation dashboard compliance, Negotiation Intelligence benchmarking prix marché analyse pouvoir négociation volume/dépendance/alternatives historique négociations recommandation stratégie simulation impact préparation dossier automatisé, Supplier Performance Dashboard score multicritères 0-100 Qualité 30%/Délais 25%/Prix 20%/Communication 15%/Innovation 10% tendances 3/6/12 mois ranking catégorie alertes <60, Partnership Opportunity Finder identification fournisseurs potentiels diversification Herfindahl opportunités B2B cross-selling co-branding sourcing alternatif backup nearshoring due diligence Infogreffe scoring crédit, coordination IA-Stock lead times safety stock PO auto, IA-ESG score éthique compliance RSE, IA-CFO validation >€10K budget conditions paiement, IA-Legal conformité clauses contentieux RGPD, IA-Customs incoterms fiabilité import, IA-RD sourcing EV/ADAS, Supplier Scorer score qualité, Pricing Bot impact marge, ERPNext source vérité PO/factures/paiements, implémentation PartnersAgentService, 5 KPIs sla-compliance-rate >95% contract-renewal-rate >85% negotiation-savings >5% supplier-diversification-index >0.6 partner-response-time <24h, 4 workflows Contract Renewal Pipeline J-90/SLA Breach Response severity escalation/New Supplier Onboarding due diligence auto/Supplier Concentration Alert HHI mensuel, architecture Supabase Storage PDF PostgreSQL metadata Yousign e-signature ERPNext sync Infogreffe/Creditsafe/sanctions APIs dashboard React, budget +€38K total €1007K ROI +€80K/an économies négociation 5% réduction pénalités diversification risque)
+
+- **2025-12-06 v2.24.0** : Ajout Agent ESG & Durabilité (IA-ESG) - Board Member Sustainability & Ethics (Carbon Footprint Calculator GHG Protocol Scope 1/2/3 ADEME Base Carbone Climatiq API granularité commande/produit/client intensité <50g CO2/€, CSR Compliance Monitor CSRD/ESRS taxonomie UE devoir vigilance DPEF matrice matérialité alertes réglementation readiness score, Sustainability KPI Dashboard indicateurs E/S/G temps réel benchmark secteur esg-score-global >75, Supplier Ethics Scorer évaluation environnement/social/gouvernance/risques questionnaire certifications ISO14001/SA8000 EcoVadis RepRisk seuil 60 minimum déréférencement <40, Green Product Labeling affichage carbone score A-E badge éco-responsable filtre catalogue, coordination IA-CEO rapport ESG trimestriel stratégie climat, IA-CFO budget initiatives vertes prix carbone interne taxonomie, IA-Transport données livraisons Scope 3 optimisation carbone routes transporteurs verts, IA-Stock bilan carbone stockage emballages, IA-HR indicateurs sociaux eNPS formation accidents, IA-Legal conformité CSRD devoir vigilance, IA-RD technologies vertes innovations, Supplier Scorer intégration score éthique, implémentation ESGAgentService, 5 KPIs carbon-intensity <50g supplier-ethics-avg >70 csr-compliance 100% esg-score >75 green-products >30%, 4 workflows Monthly Carbon Report Scope 1/2/3/CSRD Compliance Check trimestriel/Supplier Ethics Audit nouveau+annuel/Green Delivery Optimization temps réel IA-Transport, architecture ADEME Base Carbone gratuit Climatiq API EcoVadis RepRisk EUR-Lex dashboard React temps réel, budget +€32K total €969K ROI +€75K/an conformité CSRD réduction énergie -15% image marque)
+
+- **2025-12-06 v2.23.0** : Ajout Agent Innovation & R&D IA (IA-RD) - Board Member Strategy & Innovation (Tech Radar Automotive veille électrification/ADAS/connectivité/hydrogène sources Arxiv/IEEE/brevets radar mensuel maturité technologies, Market Disruption Detector alertes précoces annonces constructeurs/réglementations/startups score disruption >7/10 escalade IA-CEO anticipation 6 mois, Product Opportunity Finder identification catégories EV/ADAS gap catalogue parc roulant business case ROI >5 opportunités/trimestre, Competitive Intelligence surveillance Oscaro/Mister-Auto/Autodoc/Amazon prix/produits/campagnes rapport hebdo réponse <48h, Patent & Regulation Watch brevets USPTO/EPO expiration/bloquants réglementations EUR-Lex/JORF/UNECE compliance lead >12 mois, coordination IA-CEO rapport stratégique trimestriel, IA-CFO business cases budget R&D, IA-Merch nouvelles catégories catalogue, IA-Stock prévisions nouvelles catégories phase-out obsolètes, IA-Legal conformité brevets réglementations, IA-Marketing positionnement expert EV, implémentation RDAgentService, 5 KPIs tech-coverage >90% disruption-lead-time >6mois opportunities-validated >5/trim competitive-response-time <48h regulation-compliance-lead >12mois, 4 workflows EV Parts Opportunity Scanner mensuel/Tech Disruption Alert temps réel/Competitive Move Tracker quotidien/Regulatory Change Impact Assessment, architecture sources Arxiv/IEEE/Google Patents/Crunchbase/AAA Data/EUR-Lex scraping concurrent rate-limited NLP fine-tuné automobile Tech Radar React dashboard, budget +€38K total €937K ROI +€120K/an anticipation marché first-mover advantage)
+
+- **2025-12-06 v2.22.0** : Ajout Agent RH IA (IA-HR) - Board Member People & Culture (Employee Satisfaction Monitor eNPS trimestriel pulse surveys hebdo analyse sentiment Slack signaux faibles alertes <30, Talent Acquisition Pipeline sourcing LinkedIn/Indeed ATS scoring CV matching time-to-hire <30j cost-per-hire <€3K, Training & Development Manager skills mapping gap analysis recommandation formations ROI tracking budget CPF alertes compétence critique, Contract & Admin Lifecycle contrats CDI/CDD/alternance avenants attestations alertes période essai/fin CDD/visite médicale/anniversaire conformité RGPD archivage 5 ans, Workforce Planning pyramide âges turnover prédictif ML charge travail burnout risk succession planning horizon 3 mois/1 an/3 ans, coordination IA-CEO rapport mensuel People escalade eNPS <20 turnover >20%, IA-CFO budget masse salariale recrutement formation >€2K, IA-Legal conformité contrats RGPD employés contentieux, IA-CTO compétences tech évaluation candidats, IA-CISO accès systèmes offboarding sécurisé, implémentation HRAgentService, 5 KPIs employee-nps >40 time-to-hire <30j training-completion >85% contract-compliance 100% workforce-stability turnover <15%, 3 workflows eNPS Survey & Action Plan trimestriel/Skills Gap Analysis & Training semestriel/Contract Renewal & Compliance Alert quotidien, architecture SIRH APIs PayFit/Lucca/Factorial ATS LinkedIn/Indeed Training Udemy/Coursera données chiffrées accès restreint, budget +€42K total €899K ROI +€95K/an turnover -40% productivité +15%)
+
+- **2025-12-06 v2.21.0** : Ajout Agent Import/Export (IA-Customs) - Specialized Agent E-Commerce Squad Logistique & Supply Chain (Customs Duty Calculator calcul automatique droits douane TARIC UE codes HS 8 chiffres TVA import 20% droits anti-dumping, Shipment Tracking International couverture Maritime/Aérien/Ferroviaire APIs Searates/MarineTraffic/FlightAware alertes retard >24h, Port Delay Monitor surveillance 6 ports majeurs Shanghai/Ningbo/Shenzhen/Le Havre/Rotterdam/Anvers ML prédiction congestion, Incoterms Advisor recommandation FOB/CIF/DDP selon fiabilité fournisseur analyse historique, Compliance Documents Generator facture proforma/packing list/certificat origine/déclaration douane format PDF+EDI, coordination IA-Stock alertes retards import ajustement safety stock, IA-CFO coûts landed taxes intégrés cashflow LC/CAD, IA-Transport handoff dernière mile post-dédouanement, Supplier Scorer notation fiabilité documents fournisseurs, IA-Legal conformité CE/REACH homologations, ERPNext source PO destination landed costs, implémentation CustomsAgentService, 4 KPIs customs-accuracy >98% international-transit <14j port-delay-rate <10% compliance-score 100%, 3 workflows Auto Duty Calculation PO import TARIC <30s/Port Congestion Alert +5j IA-Stock notification/Customs Document Generation shipment EDI broker, architecture TARIC UE API gratuite tracking maritime Searates documents EDI e-Customs cache 24h, budget +€35K total €857K ROI +€85K/an conformité 100% réduction retards douane -40%)
+
+- **2025-12-06 v2.20.0** : Ajout Agent Transport Optimizer (IA-Transport) - Specialized Agent E-Commerce Squad Logistique & Supply Chain (Carrier Cost Comparator temps réel Colissimo/Chronopost/Mondial Relay/DPD/GLS/UPS, Route Optimization Dijkstra + heuristiques zones/horaires/jours fériés, Delivery Promise Engine stock+picking+transit=ETA 95% précision, Multi-Warehouse Routing stratégies Single/Split/Hybrid selon profil client Prime vs Standard, Carbon Footprint Tracker option éco-responsable point relais -€1, coordination IA-Stock disponibilité entrepôts, IA-CFO compensation retards, Pricing Bot frais port dynamiques, IA-ESG reporting carbone, Supplier Scorer notation transporteurs, implémentation TransportOptimizerService, 4 KPIs delivery-cost <€8 delivery-time <48h carrier-sla >95% delivery-carbon -15%, 3 workflows Best Carrier Selection checkout/Multi-Warehouse Split Decision/Delivery Delay Alert proactif, architecture Phase 1 agrégateur Shippo Phase 2 APIs natives, budget +€28K total €1315K ROI +€95K/an réduction coûts -18%)
+
+- **2025-12-06 v2.19.0** : Ajout Agent Stock Forecaster (IA-Stock) - Specialized Agent E-Commerce Squad Logistique & Supply Chain (Demand Forecasting ML Prophet/ARIMA horizons J+7/14/30/90, Rupture Prevention alertes J-14 PO auto ERPNext, Surstock Alert rotation >90j coordination Pricing Bot/IA-Ads/IA-Merch liquidation, Safety Stock Optimizer calcul dynamique σ×Z×√LeadTime service 95%, Supplier Lead Time Tracker intégration ERPNext Purchase Orders, coordination Pricing Bot stock→prix, IA-Ads promo surstock, IA-Merch bundles, IA-CFO validation achats >€10K, Supplier Scorer notation fournisseurs, implémentation StockForecasterService, 4 KPIs rupture-stock <5% surstock-rate <10% forecast-accuracy >85% inventory-turnover >6x/an, 3 workflows Rupture Prevention Loop/Surstock Liquidation/Seasonal Demand Spike, architecture ERPNext API integration source vérité stock, budget +€32K total €1287K ROI +€120K/an réduction ruptures -60%)
+
+- **2025-11-20 v2.18.0** : Ajout Agent Réseaux Sociaux (IA-Social) - Specialized Agent Marketing Squad (Smart Content Calendar J+30, Trend Spotting Engine détection virale, Multi-Platform Auto-Posting Insta/TikTok/YT/FB, Community Guard modération NLP, Asset Repurposing recyclage contenu, coordination IA-Content brief, IA-Ads viral boost, IA-CMO validation thèmes, implémentation SocialAgentService, 4 KPIs engagement-rate >3.5% viral-reach +15% social-traffic >10% community-sentiment >80, 3 workflows Trend-to-Post/Viral Boost/Crisis Shield, budget +€28K total €1255K ROI +15% Viral Reach)
+
+- **2025-11-20 v2.17.0** : Ajout Agent SEA Optimizer (IA-Ads) - Specialized Agent Marketing Squad (ROAS Guard Stop-Loss <2.5, Smart Bidding enchères dynamiques marge, Keyword Mining expansion sémantique, Creative Rotation A/B testing, coordination IA-CFO budget, IA-Growth landing pages, IA-Merch stocks, implémentation AdsAgentService, 4 KPIs roas-global >4.0 cpa-global <€15 mer >5.0 ad-spend budget, 3 workflows Stop-Loss & Scale/Margin-Based Bidding/Creative Refresh, budget +€35K total €1227K ROI +20% ROAS)
+
+- **2025-11-20 v2.16.0** : Ajout Agent SEO Sentinel (IA-SEO) - Specialized Agent Marketing Squad (Indexation Watchdog GSC API check quotidien Soft 404, Cannibalisation Detector analyse mots-clés dupliqués >100 vol, Backlink Monitor surveillance TrustFlow >20, Zero-Result Shield prédiction rupture stock redirection, coordination IA-Content enrichissement, IA-Growth outreach, IA-DevOps tech fix, implémentation SeoSentinelService, 4 KPIs indexed-ratio >95% cannibalisation-rate <5% zero-result-pages 0 core-web-vitals >90, 3 workflows Indexation Rescue/Cannibalisation Fix/Lost Link Recovery, budget +€25K total €1192K ROI protection trafic €50K/mois)
+
+- **2025-11-20 v2.15.0** : Ajout Agent Cross-Sell / Upsell (IA-Merch) - Specialized Agent E-Commerce Squad (Compatibility Engine moteur compatibilité pièces liées vehicle_id pieces_relation_type Fitment Guarantee <1% retours, Bundle Generator lots virtuels dynamiques disques+plaquettes incitation prix, Smart Upsell montée gamme Economy→Premium argumentaire durée vie, In-Cart Injection enrichissement API getCart suggestions <50ms Redis, coordination IA-Growth A/B testing formats, IA-CPO surveillance abandon panier, IA-DevOps monitoring latence, implémentation MerchAgentService, 4 KPIs aov +10% attach-rate >25% suggestion-ctr >15% compatibility-returns <1%, 3 workflows Smart Bundle Injection/Premium Upgrade/Compatibility Guard, budget +€28K total €1167K ROI +10% AOV)
+
+- **2025-11-20 v2.14.0** : Ajout Agent Sales Coach (IA-Sales) - Specialized Agent Customer Squad (Smart Follow-up Algo intention relance J+2/J+5/J+10 personnalisation contextuelle, Call Analysis NLP/Sentiment detection objections/buying signals transcription automatique, Pipeline Velocity acceleration deals scoring momentum, Deal Rescue intervention deals en risque <30j closing, Objection Handling script dynamique, coordination IA-CRM lead scoring handoff, IA-Marketing content alignment, IA-CFO forecast accuracy, implémentation SalesAgentService, 5 KPIs response-rate >30% meeting-booked-rate >15% deal-velocity -20% closing-rate +20% call-quality >8/10, 3 workflows Smart Follow-up Loop/Call Analysis Pipeline/Deal Rescue Operation, budget +€30K total €1139K ROI 208%)
+
+- **2025-11-20 v2.13.0** : Ajout Agent CRM & Loyalty (IA-CRM) - Specialized Agent Customer Squad (Lead Scoring Propensity-to-Buy v2 algorithme prédictif 0-100 routing Sales/Nurturing, Segmentation Dynamique RFM + Personas VIP/Risk/New, Churn Prediction Early Warning signaux faibles <30j, Next Best Action moteur recommandation Upsell/Cross-sell/Retention, Fidélisation Gamification points Tiers Gold/Silver, Data Enrichment APIs Clearbit/LinkedIn, Sales Pipeline Automation transitions prospects→clients, coordination Growth IA segments A/B tests, IA-CPO feedback churn, IA-CFO forecast revenus, implémentation CrmAgentService, 5 KPIs cltv >€500 churn-rate <5% lead-conversion >15% upsell-revenue +10% nps >50, 4 workflows Lead Scoring/Churn Prevention/Win-Back/Upsell, budget +€35K total €1109K ROI <6 mois)
+
+- **2025-11-20 v2.12.0** : Ajout Agent Accessibilité & Mobile-First (MobileAccessibilityAgent) - Specialized Agent UX Squad (WCAG 2.1 AAA compliance audit contraste 7:1 modes daltoniens validation cognitive, Mobile Device Matrix Testing BrowserStack 12 devices iOS/Android/Tablet visual regression, Touch UX Optimization tap targets 44x44px spacing 8px gestures, Mobile Performance 3G throttling bundle <200KB adaptive loading, Screen Reader Mobile VoiceOver/TalkBack validation, PWA offline experience, Mobile Form Optimization autocomplete keyboards, coordination IA-CPO handoff AA→AAA, Growth IA A/B tests mobile, implémentation MobileAccessibilityAgentService, 7 KPIs mobile-usability >90 wcag-aaa-score >95% tap-target-pass >95% mobile-conversion-gap <10% mobile-fcp <1.8s, 3 workflows Mobile Matrix Audit/Touch UX Loop/WCAG AAA Deep Scan, budget +€28K total €1074K ROI 564%)
+
+- **2025-11-19 v2.11.0** : Ajout Agent A/B Testing (Growth IA) - Specialized Agent E-Commerce Squad orchestrateur tests croissance multi-domaines pricing/catalog/marketing (pricing experimentation -5%/-10%/-15% tests élasticité coordination IA-CFO validation marge seuil <-5pts bundles 3 vs 5 produits promos timing Black Friday AOV €180 target, catalog organization tests taxonomie 2 vs 3 niveaux +8% découvrabilité filtres 8 vs 12 search Elastic scoring, marketing campaigns tests emailing subject lines 3 variantes +18% open rate landing pages hero SEO titles 50/60/70 chars ad creatives, product recommendations ML algorithms Collaborative/Content/Hybrid CTR >5% placements homepage/product/cart cross-sell, growth loops engineering K-factor >1.2 referral incentives €10/€15/10% invite flow email/SMS/social activation triggers, retention experiments onboarding 3 vs 5 steps re-activation 7j/14j/30j engagement gamification win-back discount retention-d30 >70% churn <5%, revenue optimization upsells timing checkout/post-purchase bundles discount 10%/15%/20% free shipping €50/€75/€100 payment 1-click revenue-growth-mom +5%, coordination E-Commerce Squad Pricing Bot propose → Growth IA teste → IA-CFO validation winner, IA-CPO calendrier tests synchronisé éviter conflicts handoff UX→CPO pricing/catalog→Growth, Marketing Squad propose test → Content Maker exécute → Growth IA mesure pattern stocké Data Brain, implémentation GrowthAgentService, 7 KPIs aov €180 revenue-growth-mom +5% catalog-discoverability +8% email-open-rate >22% recommendations-ctr >5% k-factor >1.2 retention-d30 >70%, 3 workflows pricing test -10% top 30 ROI 128% +€32K/emailing urgency emoji +39% open +50% conversions/recommendations Hybrid ML +71% CTR +€36K/mois, budget +€30K total €1046K ROI 3233%)
+
+- **2025-11-19 v2.10.0** : Ajout Agent Produit & UX (IA-CPO) - Chief Product Officer IA Board Member excellence UX vision produit (navigation simplification breadcrumbs dynamiques mega-menu <3 clics, parcours client optimization funnel analysis friction detection cart-abandonment <25% checkout-completion <2min session replay Hotjar, A/B testing automation Optimizely/VWO statistical significance p<0.05 winner auto-deploy confidence >90% velocity 2 tests/semaine, accessibility compliance WCAG 2.1 AA 100% axe-core CI/CD auto-fixes contrast/alt-text/ARIA weekly audit, design system maintenance @fafa/design-tokens Figma→Code sync API webhook Storybook deployment adoption >80%, user research automation heatmaps session replay UserTesting API feedback loops NPS→UX insights 5/semaine, Core Web Vitals monitoring Lighthouse CI RUM LCP<2.5s FID<100ms CLS<0.1 alertes <85 coordination IA-CTO, coordination Board IA-CEO rapport Product&UX Health section, IA-CFO validation budgets UX >€2K ROI 6140% checkout optimization, IA-CTO collaboration performance frontend Lighthouse recovery 82→94, E-Commerce Squad conversion funnel optimization, Customer Squad feedback loops NPS pain points roadmap UX, implémentation CPOAgentService, 7 KPIs conversion-rate >3.5% cart-abandonment <25% nps >50 csat >4.2/5 lighthouse >90 core-web-vitals-pass >90% accessibility 100%, 5 workflows friction parcours 28%→22% abandon/A/B test CTA orange +14% CTR/accessibility audit 87%→98%/Core Web Vitals alert 82→94/design sync Figma <48h, budget +€68K total €1016K ROI 231-462%)
+
+- **2025-11-19 v2.9.0** : Ajout Agent Sécurité (IA-CISO) - Lead Resilience Squad 6 agents (patch management CVE <24h CRITICAL CVSS ≥9.0 NVD/GitHub/Snyk automation, OWASP compliance audit hebdomadaire ZAP scan 10 catégories 100% target A01-A10, dependency vulnerability monitoring npm audit/Snyk/Dependabot 0 vulns HIGH/CRITICAL CI/CD blocking, incident response sécurité MTTR <2h brute force/breach/DoS runbooks automatisés IP block/token revoke/container isolate forensics, penetration testing monthly automated DAST/Burp/Nuclei quarterly manual, compliance certifications PCI-DSS/ISO27001/SOC2/RGPD validation trimestrielle 120+ contrôles, security training awareness >80% équipe phishing simulations secure SDLC shift-left, coordination Board IA-CEO escalation incidents CRITICAL breach MTTR >2h rapport Security Health, IA-Legal RGPD breach notification <72h encryption validation, IA-DevOps séparation responsabilités app security vs infra security incident coordination BOTH scope, IA-CTO secure code reviews PR security score integration blocking <75, IA-RISK alimentation security_risk score vulns/OWASP/incidents/patch SLA/compliance gaps, implémentation CISOAgentService, 5 KPIs security-score 100/100 vulns-critical-high 0 mttr-security-incidents <2h patch-coverage 100% owasp-compliance 100%, 5 workflows CVE patch auto axios RCE 1h45/OWASP audit hebdo ZAP 47min/incident response brute force MTTR 30min/dependency monitoring quotidien 4h CI/CD blocking/compliance PCI-DSS trimestrielle 98.3%, budget +€47K initial +€16K/an recurring total €948K ROI 94% year 1 450% year 2+)
+
+- **2025-11-19 v2.8.0** : Ajout Agent Infrastructure & DevOps (IA-DevOps) enrichi - Lead Infrastructure Squad 5 agents (monitoring 24/7 uptime >99.9% MTTR <30min SLO/SLI tracking Grafana/Prometheus/OpenTelemetry health checks enrichis, rollback automatique déploiement blue-green health checks <5min circuit breaker swap containers, CI/CD pipeline optimization build time <3min registry cache parallel builds quality gates deploy preview environments, cloud cost optimization tracking <€500/mois budget alerting right-sizing ML unused resources cleanup, incident response runbooks automatisés auto-remediation restart/scale post-mortem templates, capacity planning proactif ML forecasting headroom >30% load testing, SRE practices error budgets 0.1%/mois toil <30% blameless culture chaos engineering, coordination Board IA-CEO escalation incidents CRITICAL SLA <2h rapport Infrastructure Health, IA-CFO validation scaling budget >€2K ROI 1983%, IA-RISK alimentation infra_risk score uptime/MTTR/incidents/capacity, IA-CTO collaboration build-time KPI partagé, implémentation DevOpsAgentService, 7 KPIs uptime/MTTR/deploy-success-rate/backend-p95/cloud-costs/incident-count/capacity-headroom, budget +€72K total €901K ROI 129%)
+
+- **2025-11-19 v2.7.0** : Ajout Agent Tech Excellence (IA-CTO) - Gardien qualité code + Lead Tech Squad 22 agents (surveillance dette technique maintenabilité >90/100 pondérée deadCode 30% + massiveFiles 25% + duplications 25% + complexity 20%, code reviews PR automatisés score 0-100 blocking <75 validations ESLint/TypeScript/Tests/Security, refactoring ROI priorisation >150%, upgrades dépendances mensuels npm audit CVE CRITICAL, duplications DRY agent Python A3, patterns architecture CQRS/Repository/Event-driven, CI/CD quality gates 7 checks, coordination Board IA-CEO rapport Tech Health, IA-CFO validation budgets refactoring >€30K, IA-RISK alimentation tech_risk score, 5 workflows critiques audit hebdo lundis 9h/PR review temps réel/upgrades 1er mois/ROI trimestriel/dashboard Redis 5min, implémentation CTOAgentService, 7 KPIs tech maintenabilité/coverage/buildTime/backendP95/securityScore, budget +€64K total €829K ROI 395%)
+
+- **2025-11-19 v2.6.0** : Ajout Agent Gouvernance & Compliance (IA-Legal) - Gardien conformité réglementaire (audit RGPD quotidien 100K+ clients, validation TVA temps réel 27 pays UE, monitoring 80+ contrats fournisseurs, workflows droit à l'oubli <72h SLA, simulation risque juridique Mode Forecast, coordination Board IA-CEO rapport hebdomadaire risques légaux, IA-CFO validation budgets >€10K + audit TVA anomalies, IA-RISK alimentation legal_risk score, implémentation LegalComplianceAgentService, 3 KPIs compliance-score/contract-risk/cert-status, budget +€48K total €765K ROI 240%)
+
+- **2025-11-19 v2.5.0** : Ajout Agent Arbitrage Stratégique (IA-CFO/COO) - Gate keeper budgétaire (simulations pricing/marketing/stock, mesure impact long terme 6-12 mois, projet gate APPROVE/DEFER/REJECT/ESCALATE, cashflow proactif alerte 8-12 semaines avance, coordination IA-CEO arbitrage, implémentation CfoAgentService, budget +€53K total €717K ROI 186%)
+
+- **2025-11-19 v2.4.0** : Ajout Agent Cognitif Global (IA-CEO v2) - Rapport hebdomadaire Board automatisé (consolidation 52 KPIs, priorisation ROI+Risques+Stratégie, exemple rapport S47 complet, implémentation NestJS CeoAgentService, algorithme scoring pondéré 40-30-30, notifications multi-canaux)
+
+- **2025-11-19 v2.3.0** : Ajout Recommandations Finales (Note 9.2/10, 5 forces majeures, 4 risques + mitigations, actions P0/P1/P2, budget ajusté €639K, ROI 208%, décision GO MVP)
+
+- **2025-11-19 v2.2.0** : Ajout Vision Long Terme (évolution 2025-2028+, agents auto-apprenants, extension inter-entreprises, 4 niveaux maturité, ROI 3 ans €2.9M), section Valeur Ajoutée (6 bénéfices stratégiques)
+
+- **2025-11-19 v2.1.0** : Enrichissement workflows coordination inter-domaines (section 7), simulations what-if Mode Forecast (section 8), FAQ enrichie +10 questions (coordination, simulations, agents, corrélations)
+
+- **2025-11-19 v2.0.0** : Enrichissement complet (57 agents, 52 KPIs, Health Board, Modes, Roadmap 26 semaines, Stack Technique)
+
+- **2025-11-18 v1.0.0** : Version initiale (draft)
+
+---
+
+## Related Documents
+
+- [ai-cos-index.md](./ai-cos-index.md) - Vue d'ensemble et navigation (87 agents total)
+- [ai-cos-tech-squad.md](./ai-cos-tech-squad.md) - Tech Squad (15 agents, €236K)
+- [ai-cos-strategy-squad.md](./ai-cos-strategy-squad.md) - Strategy Squad (7 agents, €193K)
+- [ai-cos-business-squad.md](./ai-cos-business-squad.md) - Business Squad (15 agents, €207K)
+- [ai-cos-quality-squad.md](./ai-cos-quality-squad.md) - Quality Squad (11 agents, €184K)
+- [ai-cos-ops-squad.md](./ai-cos-ops-squad.md) - Ops Squad (6 agents, €128K)
+- [ai-cos-perf-expansion.md](./ai-cos-perf-expansion.md) - Performance & Expansion Squads (33 agents, €107K)

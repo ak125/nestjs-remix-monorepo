@@ -29,37 +29,20 @@ export class CatalogFamilyService extends SupabaseBaseService {
   }
 
   /**
-   * Récupère les données depuis Supabase (logique interne)
+   * Récupère les données depuis Supabase (logique simplifiée sans FK)
    */
   private async fetchCatalogFamiliesPhpLogic(): Promise<CatalogFamiliesResponse> {
     try {
-      this.logger.log(
-        'Récupération des familles de catalogue (logique PHP)...',
-      );
+      this.logger.log('Récupération des familles de catalogue...');
 
-      // Récupérer les familles avec la même logique que le PHP
+      // Récupérer directement les familles actives
       const { data: familiesData, error: familiesError } = await this.supabase
-        .from(TABLES.pieces_gamme)
+        .from('catalog_family')
         .select(
-          `
-          catalog_gamme!inner(
-            mc_mf_id,
-            mc_sort,
-            catalog_family!inner(
-              mf_id,
-              mf_name,
-              mf_name_system,
-              mf_description,
-              mf_pic,
-              mf_display,
-              mf_sort
-            )
-          )
-        `,
+          'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_display, mf_sort',
         )
-        .eq('pg_display', 1)
-        .eq('pg_level', 1)
-        .eq('catalog_gamme.catalog_family.mf_display', 1);
+        .eq('mf_display', '1')
+        .order('mf_sort', { ascending: true });
 
       if (familiesError) {
         this.logger.error('Erreur récupération familles:', familiesError);
@@ -68,31 +51,19 @@ export class CatalogFamilyService extends SupabaseBaseService {
         );
       }
 
-      // Extraire les familles uniques (logique DISTINCT du PHP)
-      const uniqueFamilies = new Map<number, CatalogFamily>();
+      const families: CatalogFamily[] = (familiesData || []).map((f: any) => ({
+        mf_id: parseInt(f.mf_id, 10),
+        mf_name: f.mf_name_system || f.mf_name,
+        mf_name_system: f.mf_name_system,
+        mf_description: f.mf_description,
+        mf_pic: f.mf_pic,
+        mf_display: f.mf_display,
+        mf_sort: parseInt(f.mf_sort, 10),
+      }));
 
-      familiesData?.forEach((item: any) => {
-        const family = item.catalog_gamme?.[0]?.catalog_family?.[0];
-        if (family && !uniqueFamilies.has(family.mf_id)) {
-          uniqueFamilies.set(family.mf_id, {
-            mf_id: family.mf_id,
-            mf_name: family.mf_name_system || family.mf_name,
-            mf_name_system: family.mf_name_system,
-            mf_description: family.mf_description,
-            mf_pic: family.mf_pic,
-            mf_display: family.mf_display,
-            mf_sort: family.mf_sort,
-          });
-        }
-      });
-
-      // Trier les familles par mf_sort
-      const families = Array.from(uniqueFamilies.values()).sort(
-        (a, b) => a.mf_sort - b.mf_sort,
-      );
       this.logger.log(`${families.length} familles trouvées`);
 
-      // Pour chaque famille, récupérer ses gammes (reproduction de la boucle PHP)
+      // Pour chaque famille, récupérer ses gammes
       const familiesWithGammes: CatalogFamilyWithGammes[] = [];
 
       for (const family of families) {
@@ -123,26 +94,31 @@ export class CatalogFamilyService extends SupabaseBaseService {
 
   private async getGammesForFamily(mf_id: number): Promise<CatalogGamme[]> {
     try {
+      // Récupérer les IDs de gammes liées à cette famille via catalog_gamme
+      const { data: linkData, error: linkError } = await this.supabase
+        .from('catalog_gamme')
+        .select('mc_pg_id, mc_sort')
+        .eq('mc_mf_id', mf_id.toString())
+        .order('mc_sort', { ascending: true });
+
+      if (linkError || !linkData?.length) {
+        return [];
+      }
+
+      const pgIds = linkData.map((l: any) => l.mc_pg_id);
+      const sortMap = new Map(
+        linkData.map((l: any) => [l.mc_pg_id, parseInt(l.mc_sort, 10)]),
+      );
+
+      // Récupérer les gammes correspondantes
       const { data: gammesData, error: gammesError } = await this.supabase
         .from(TABLES.pieces_gamme)
         .select(
-          `
-          pg_id,
-          pg_alias,
-          pg_name,
-          pg_name_url,
-          pg_name_meta,
-          pg_pic,
-          pg_img,
-          catalog_gamme!inner(
-            mc_sort
-          )
-        `,
+          'pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_pic, pg_img',
         )
-        .eq('pg_display', 1)
-        .eq('pg_level', 1)
-        .eq('catalog_gamme.mc_mf_id', mf_id)
-        .order('catalog_gamme.mc_sort', { ascending: true });
+        .in('pg_id', pgIds)
+        .eq('pg_display', '1')
+        .eq('pg_level', '1');
 
       if (gammesError) {
         this.logger.error(
@@ -152,8 +128,8 @@ export class CatalogFamilyService extends SupabaseBaseService {
         return [];
       }
 
-      const gammes: CatalogGamme[] =
-        gammesData?.map((item: any) => ({
+      const gammes: CatalogGamme[] = (gammesData || [])
+        .map((item: any) => ({
           pg_id: item.pg_id,
           pg_alias: item.pg_alias,
           pg_name: item.pg_name,
@@ -161,8 +137,9 @@ export class CatalogFamilyService extends SupabaseBaseService {
           pg_name_meta: item.pg_name_meta,
           pg_pic: item.pg_pic,
           pg_img: item.pg_img,
-          mc_sort: item.catalog_gamme?.[0]?.mc_sort,
-        })) || [];
+          mc_sort: sortMap.get(item.pg_id) || 0,
+        }))
+        .sort((a, b) => a.mc_sort - b.mc_sort);
 
       return gammes;
     } catch (error) {

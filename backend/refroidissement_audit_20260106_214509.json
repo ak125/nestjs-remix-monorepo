@@ -1,0 +1,286 @@
+{
+  "famille": "Refroidissement",
+  "audit_date": "2026-01-06T21:45:09.321187",
+  "total_gammes": 7,
+  "total_issues": 24,
+  "gammes_ok": 1,
+  "gammes_to_fix": 6,
+  "duplicates": {
+    "risk_cost_range": [
+      {
+        "value": "1 500 à 4 000 €...",
+        "gammes": [
+          "475: Le/La Durite de refroidissemen",
+          "1260: Le/La Pompe à eau",
+          "467: Le/La Radiateur de chauffage",
+          "470: Le/La Radiateur de refroidisse",
+          "316: Le/La Thermostat",
+          "508: Le/La Ventilateur de refroidis"
+        ]
+      }
+    ],
+    "arg4_title": [
+      {
+        "value": "kit complet recommandé...",
+        "gammes": [
+          "475: Le/La Durite de refroidissemen",
+          "1260: Le/La Pompe à eau",
+          "467: Le/La Radiateur de chauffage",
+          "470: Le/La Radiateur de refroidisse",
+          "316: Le/La Thermostat",
+          "508: Le/La Ventilateur de refroidis"
+        ]
+      }
+    ],
+    "arg4_content": [
+      {
+        "value": "nous conseillons le kit complet quand c'est pertinent : tout...",
+        "gammes": [
+          "475: Le/La Durite de refroidissemen",
+          "1260: Le/La Pompe à eau",
+          "467: Le/La Radiateur de chauffage",
+          "470: Le/La Radiateur de refroidisse",
+          "316: Le/La Thermostat",
+          "508: Le/La Ventilateur de refroidis"
+        ]
+      }
+    ]
+  },
+  "cannibalization": {
+    "title_cannibalization": [],
+    "content_cannibalization": [
+      {
+        "gammes": [
+          "ID 475",
+          "ID 1260"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 475",
+          "ID 467"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 475",
+          "ID 470"
+        ],
+        "field": "intro_role",
+        "similarity": "83%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 475",
+          "ID 316"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 475",
+          "ID 508"
+        ],
+        "field": "intro_role",
+        "similarity": "83%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1260",
+          "ID 467"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1260",
+          "ID 470"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1260",
+          "ID 316"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 1260",
+          "ID 508"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 467",
+          "ID 470"
+        ],
+        "field": "intro_role",
+        "similarity": "83%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 467",
+          "ID 316"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 467",
+          "ID 508"
+        ],
+        "field": "intro_role",
+        "similarity": "69%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 470",
+          "ID 316"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 470",
+          "ID 508"
+        ],
+        "field": "intro_role",
+        "similarity": "83%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      },
+      {
+        "gammes": [
+          "ID 316",
+          "ID 508"
+        ],
+        "field": "intro_role",
+        "similarity": "75%",
+        "fix": "Réécrire le contenu avec des angles différents"
+      }
+    ],
+    "faq_duplicates": [],
+    "symptom_duplicates": []
+  },
+  "gammes": [
+    {
+      "id": "830",
+      "name": "La sonde de température moteur",
+      "current_cost": "10 à 40 € (sonde) / 40 à 90 € avec pose",
+      "current_symptoms_count": 6,
+      "current_faq_count": 5,
+      "issues": [],
+      "needs_correction": false
+    },
+    {
+      "id": "475",
+      "name": "Le/La Durite de refroidissement",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "1260",
+      "name": "Le/La Pompe à eau",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "467",
+      "name": "Le/La Radiateur de chauffage",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "470",
+      "name": "Le/La Radiateur de refroidissement",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "316",
+      "name": "Le/La Thermostat",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    },
+    {
+      "id": "508",
+      "name": "Le/La Ventilateur de refroidissement",
+      "current_cost": "1 500 à 4 000 €",
+      "current_symptoms_count": 0,
+      "current_faq_count": 0,
+      "issues": [
+        "❌ Titre générique 'Le/La' à corriger",
+        "❌ Arg4 titre générique: 'Kit complet recommandé'",
+        "❌ Symptômes insuffisants: 0/5",
+        "❌ FAQ insuffisantes: 0/5"
+      ],
+      "needs_correction": true
+    }
+  ]
+}

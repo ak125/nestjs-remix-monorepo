@@ -8,8 +8,20 @@ This is a production-ready NestJS + Remix monorepo for an automotive parts e-com
 
 **Key Stats:**
 - 4M+ products, 59k+ users, 9k+ categories
-- 47/47 tests passing (100% coverage for payments module)
 - Production deployment with Docker + Caddy reverse proxy
+- Database: Supabase (PostgreSQL) - pas de Prisma
+
+## Source of Truth (00-canon)
+
+Les fichiers canoniques définissent la vérité du projet. Toujours consulter ces fichiers en priorité.
+
+| Fichier | Contenu |
+|---------|---------|
+| `.spec/00-canon/repo-map.md` | Structure monorepo (40 modules, 158 routes, 9 packages) |
+| `.spec/00-canon/architecture.md` | Architecture technique NestJS/Remix/Supabase/Redis |
+| `.spec/00-canon/rules.md` | 7 règles non-négociables du projet |
+
+**RAG Knowledge:** Le corpus RAG est dans `/opt/automecanik/rag/knowledge/` (14 docs validés avec truth_level L1/L2).
 
 ## Common Commands
 
@@ -44,27 +56,18 @@ cd frontend && npm run build
 cd backend && npm run prebuild  # removes dist/ and tsconfig.tsbuildinfo
 ```
 
-### Testing
+### Testing (curl)
 ```bash
-# Run all tests (Jest + Vitest)
-npm test
+# Test API endpoints avec curl
+curl http://localhost:3000/health
+curl http://localhost:3000/api/catalog/families
+curl -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d '{"email":"test@test.com","password":"xxx"}'
 
-# Backend unit tests (Jest)
-cd backend && npm test
+# Test avec jq pour formater JSON
+curl -s http://localhost:3000/api/catalog/families | jq '.data[:3]'
 
-# Frontend tests (Vitest)
-cd frontend && npm test
-cd frontend && npm run test:ui          # UI mode
-cd frontend && npm run test:coverage    # with coverage
-
-# Frontend E2E tests (Playwright)
-cd frontend && npm run test:a11y        # Accessibility tests
-cd frontend && npm run test:visual      # Visual regression
-cd frontend && npm run test:contrast    # WCAG contrast checks
-
-# Run single test file
-cd backend && npm test -- payments.service.spec.ts
-cd frontend && npm test -- components/Button.test.tsx
+# Test endpoint avec cookie session
+curl -b cookies.txt -c cookies.txt http://localhost:3000/api/user/profile
 ```
 
 ### Linting & Type Checking
@@ -142,11 +145,11 @@ PaymentsModule
 2. Services - Business logic orchestration
 3. Data Services - Direct Supabase queries
 
-**Database Access:**
-- Uses Supabase SDK directly (no Prisma for production data)
-- Pattern: `supabase.from('table').select().eq()`
-- RPC functions for complex queries: `supabase.rpc('function_name', params)`
-- Base service: `SupabaseBaseService` provides common patterns
+**Database Access (Supabase uniquement, PAS de Prisma):**
+- Supabase SDK directement : `supabase.from('table').select().eq()`
+- RPC functions pour requêtes complexes : `supabase.rpc('function_name', params)`
+- Base service : `SupabaseBaseService` avec patterns réutilisables
+- Migrations SQL dans `backend/supabase/migrations/`
 
 **Session Management:**
 - Redis + express-session (30-day TTL)
@@ -187,6 +190,35 @@ app/routes/
 ├── panier.*/                     # Cart pages
 ├── pieces.*.tsx                  # Product catalog routes
 └── api.*.ts                      # API routes (handled by Remix)
+```
+
+### UI Components Convention
+
+**IMPORTANT: Use shadcn/ui + Tailwind CSS**
+- Always use `shadcn/ui` components from `~/components/ui/` (not raw HTML or custom components)
+- Style with Tailwind CSS utility classes only
+- Icons: Use `lucide-react` (already installed)
+- Do NOT import `React` unless using class components or specific React APIs (hooks don't need it)
+
+**Component imports:**
+```typescript
+// ✅ Correct - use shadcn/ui
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Badge } from '~/components/ui/badge';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+// ❌ Wrong - don't import React for functional components
+import React from 'react';  // Not needed with modern JSX transform
+```
+
+**Styling:**
+```typescript
+// ✅ Correct - Tailwind classes
+<div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
+
+// ❌ Wrong - inline styles or CSS modules
+<div style={{ display: 'flex' }}>
 ```
 
 ### Payment Integration (Critical)
@@ -236,24 +268,22 @@ app/routes/
 
 ### Testing Strategy
 
-**Backend (Jest):**
-- Unit tests: `*.spec.ts` files next to source
-- Config: `backend/jest.config.js`
-- Run single test: `npm test -- filename.spec.ts`
+**API Testing (curl):**
+- Tester les endpoints directement avec curl
+- Utiliser jq pour parser les réponses JSON
+- Scripts de test dans `backend/scripts/` si nécessaire
 
-**Frontend (Vitest):**
-- Component tests with React Testing Library
-- Storybook integration for visual testing
-- Run: `npm test` or `npm run test:ui`
+**Tests manuels recommandés:**
+```bash
+# Health check
+curl http://localhost:3000/health
 
-**E2E (Playwright):**
-- Tests in `frontend/tests/`
-- Browsers: Chromium, Firefox, WebKit
-- Accessibility (Axe Core), visual regression, contrast checks
+# API catalog
+curl -s http://localhost:3000/api/catalog/families | jq '.data | length'
 
-**Coverage Target:**
-- Backend: 47/47 tests passing (payments module)
-- Frontend: Component coverage via Vitest
+# Vérifier SEO
+curl -s "http://localhost:3000/pieces/freinage" | grep -o '<title>[^<]*</title>'
+```
 
 ## Development Workflow
 
@@ -269,7 +299,7 @@ app/routes/
 - Edit files in `backend/src/`
 - TypeScript compiler watches and rebuilds (`dev:compile`)
 - Nodemon restarts server on dist changes (`dev:watch`)
-- Add tests in `*.spec.ts` files
+- Tester avec curl après modifications
 
 **Frontend:**
 - Edit files in `frontend/app/`
@@ -284,19 +314,16 @@ app/routes/
 
 ### Git Workflow & Déploiement
 
-**IMPORTANT : `main` = production automatique**
+**⚠️ RÈGLE ABSOLUE : Push sur `main` = VALIDATION MANUELLE OBLIGATOIRE**
 
-1. **Ne JAMAIS merger directement sur `main`** sans approbation explicite
-2. Workflow recommandé :
-   ```
-   feature/xxx → develop (test) → main (prod)
-   ```
-3. Étapes :
-   - Créer branche feature depuis `main`
-   - Faire les changements et tester localement
-   - Créer PR vers `develop` ou branche de test
-   - Attendre validation de l'utilisateur
-   - Merger vers `main` uniquement après approbation
+1. **Ne JAMAIS push sur `main`** sans approbation explicite de l'utilisateur
+2. `main` = production automatique (déploiement immédiat)
+3. Workflow :
+   - Travailler sur branche feature ou directement
+   - Tester localement avec curl
+   - **DEMANDER VALIDATION** avant tout push sur main
+   - Attendre confirmation explicite ("ok push", "go", "valide")
+   - Seulement après : `git push origin main`
 
 ### Séparation Documentation / Production
 

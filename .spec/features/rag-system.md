@@ -3,8 +3,16 @@
 > **Principe fondateur :**
 > *« Le RAG est une base de connaissance gouvernee, pas un outil autonome. »*
 
-> **Version:** 2.0 | **Sections:** 1-13 | **Annexes:** A-J
-> **Date:** 2025-12-27 | **Statut:** Document restructure
+> **Version:** 2.1 | **Sections:** 1-13 | **Annexes:** A-J
+> **Date:** 2026-01-07 | **Statut:** Mise a jour embeddings (OpenAI → sentence-transformers)
+>
+> **Changelog v2.1 (2026-01-07):**
+> - Migration embeddings: OpenAI → sentence-transformers (100% gratuit)
+> - Dimension: 1536 → 384 (all-MiniLM-L6-v2)
+> - Vectorizer Weaviate: text2vec-openai → none (embeddings generes par Python)
+> - Cout embeddings: ~$80 → $0
+> - Ajout: Truth Levels L1-L4, Quarantine Mode
+> - Namespaces: prod:chatbot → knowledge:faq
 
 ---
 
@@ -43,11 +51,14 @@
 | 3.10 | API Endpoints | Routes RAG |
 | 3.11 | Flux Agent avec RAG | Workflow complet |
 | 3.12 | Alimenter le RAG | Quoi indexer |
-| 3.13 | Namespaces Weaviate | **`dev:*` vs `prod:chatbot`** |
+| 3.13 | Namespaces Weaviate | **`knowledge:*` vs `internal:*`** (v2.1) |
 | 3.14 | Routine d'Update | Reindexation |
 | 3.15 | Configuration AutoMecanik | Workflow existant |
 | 3.16 | Astuces RAG Avancees | Gating, Chunking, Citations |
 | 3.17 | Separation RAG / API Backend | Architecture hybride, LLM tools |
+| 3.18 | Truth Levels (v2.1) | Semantic Brain L1-L4, poids confiance |
+| 3.19 | Quarantine Mode (v2.1) | Validation au demarrage, fail-fast |
+| 3.20 | Regles d'Or (v2.1) | LangGraph, Wiki.js, Minio, Embeddings, Securite |
 
 ### Section 13 - Detail
 
@@ -90,7 +101,7 @@ Developper un **service RAG independant** (Retrieval-Augmented Generation) pour 
 - **Framework**: Python FastAPI
 - **RAG Framework**: LangGraph
 - **LLM**: Anthropic Claude (Claude 3.5 Sonnet)
-- **Embeddings**: OpenAI text-embedding-3-small
+- **Embeddings**: sentence-transformers all-MiniLM-L6-v2 (384 dim, 100% gratuit)
 - **Vector Store**: Weaviate (self-hosted, open source)
 - **Cache**: Redis
 - **Stockage**: Minio (S3-compatible, self-hosted)
@@ -734,7 +745,7 @@ WEAVIATE_SCHEMA = {
         {
             "class": "Prod_Chatbot",
             "description": "Corpus metier unique promu depuis /knowledge/",
-            "vectorizer": "text2vec-openai",
+            "vectorizer": "none",  # Embeddings generes par Python (sentence-transformers)
             "properties": [
                 {"name": "content", "dataType": ["text"]},
                 {"name": "title", "dataType": ["text"]},
@@ -751,7 +762,7 @@ WEAVIATE_SCHEMA = {
         {
             "class": "Dev_Full",
             "description": "Index complet DEV (knowledge inclus + code + audits)",
-            "vectorizer": "text2vec-openai",
+            "vectorizer": "none",  # Embeddings generes par Python (sentence-transformers)
             "properties": [
                 {"name": "content", "dataType": ["text"]},
                 {"name": "title", "dataType": ["text"]},
@@ -1048,6 +1059,21 @@ dumps/
 | **PROD** | Prod_Kpi, Prod_Logs, Prod_Products (4M) | ~2GB embeddings | ~$400 |
 
 ### 3.13 Architecture des Index RAG (Corpus Metier Unique)
+
+> **Note v2.1 - Migration Namespaces:**
+> Le code utilise desormais le format `knowledge:*` au lieu de `prod:*`:
+> - `prod:chatbot` → `knowledge:faq` (PROD chatbot)
+> - `dev:full` → `internal:*` (code, audits, configs)
+>
+> **Mapping actuel (namespace_guard.py):**
+> | Ancien | Nouveau | Usage |
+> |--------|---------|-------|
+> | `prod:chatbot` | `knowledge:faq` | PROD chatbot client |
+> | `prod:seo` | `knowledge:seo` | Pages SEO |
+> | `dev:code` | `internal:code` | Code source (DEV) |
+> | `dev:audits` | `internal:audits` | Rapports (DEV) |
+>
+> Les references `prod:chatbot` ci-dessous sont conservees pour historique.
 
 #### Principe Fondamental : Corpus Metier Unique, Promu vers PROD
 
@@ -1639,6 +1665,168 @@ const RAG_TOOLS = [
 - [ ] Tester le flux hybride end-to-end
 - [ ] Documenter les limites de chaque source
 
+### 3.18 Truth Levels (Semantic Brain L1-L4) - v2.1
+
+> **Note v2.1**: Section ajoutee pour documenter le systeme de niveaux de confiance.
+
+#### Principe
+
+Chaque document indexe a un **truth_level** indiquant son niveau de fiabilite :
+
+| Level | Nom | Poids | Description |
+|-------|-----|-------|-------------|
+| **L1** | Faits verifies | 1.0 | Donnees officielles, specs constructeur |
+| **L2** | Regles metier | 0.9 | Politiques internes, procedures validees |
+| **L3** | Hypotheses | 0.6 | Estimations, connaissances non verifiees |
+| **L4** | Heuristiques | 0.4 | Experience terrain, best practices |
+
+#### Schema Weaviate
+
+```python
+# Properties ajoutees aux collections
+{"name": "truth_level", "dataType": ["text"]},           # L1, L2, L3, L4
+{"name": "verification_status", "dataType": ["text"]},   # verified, unverified, pending
+{"name": "confidence_score", "dataType": ["number"]},    # 0.0 - 1.0
+{"name": "last_verified_date", "dataType": ["date"]},
+{"name": "verified_by", "dataType": ["text"]},           # human, auto, claude
+```
+
+#### Gating par Truth Level
+
+```python
+# config.py
+gating:
+  max_level_mixing: ["L1", "L2"]  # PROD: L1+L2 only
+  refuse_if_only_L3_L4: true      # Refuse si pas de L1/L2
+```
+
+#### Exemple de Reponse
+
+```json
+{
+  "response": "Les plaquettes doivent etre changees tous les 30-40k km.",
+  "sources": [
+    {"title": "Guide freinage", "truth_level": "L1", "score": 0.92},
+    {"title": "FAQ support", "truth_level": "L2", "score": 0.85}
+  ],
+  "confidence": "high"
+}
+```
+
+### 3.19 Quarantine Mode - v2.1
+
+> **Note v2.1**: Section ajoutee pour documenter le mode de demarrage securise.
+
+#### Principe
+
+Le **Quarantine Mode** empeche le RAG de repondre tant que les validations au demarrage n'ont pas passe.
+
+#### Configuration (rag_config.yml)
+
+```yaml
+mode: quarantine  # quarantine | active
+
+quarantine:
+  enabled: true
+  fail_fast: true  # Exit si validation echoue
+  checks:
+    - weaviate_connection
+    - embedding_dimension_match
+    - corpus_not_empty
+  on_failure: exit  # exit | warn | disable_rag
+```
+
+#### Checks au Demarrage
+
+| Check | Description | Comportement echec |
+|-------|-------------|--------------------|
+| `weaviate_connection` | Weaviate est accessible | Exit |
+| `embedding_dimension_match` | Dimension = 384 (all-MiniLM-L6-v2) | Exit |
+| `corpus_not_empty` | Au moins 1 document dans l'index | Exit |
+
+#### Logs Quarantine
+
+```
+=== RAG SERVICE IN QUARANTINE MODE ===
+Real responses DISABLED until validation passes
+[CHECK] weaviate_connection: OK
+[CHECK] embedding_dimension_match: OK (384 = 384)
+[CHECK] corpus_not_empty: OK (15 documents)
+=== QUARANTINE PASSED - SERVICE ACTIVE ===
+```
+
+### 3.20 Regles d'Or - Composants RAG (v2.1)
+
+> **Note v2.1**: Section ajoutee pour documenter les regles d'or de chaque composant.
+
+#### 3.20.1 LangGraph - Pipeline RAG (Annexe G)
+
+| Regle d'Or | Description |
+|------------|-------------|
+| **Etats types** | `StateGraph` avec `TypedDict` - validation a chaque noeud |
+| **Routing conditionnel** | Aretes conditionnelles multi-branches (pas chaine lineaire) |
+| **Retry natif** | Backtracking integre vs callbacks complexes |
+| **Extensible** | "Ajouter un noeud = 2 lignes de code" |
+| **Streaming SSE** | Reponses progressives via Server-Sent Events |
+
+**Noeuds recommandes:** `classify`, `search_products`, `search_knowledge`, `search_dumps`, `generate`
+
+#### 3.20.2 Wiki.js - Documentation (Annexe B)
+
+| Regle d'Or | Description |
+|------------|-------------|
+| **Backup Git auto** | Commit automatique, historique complet |
+| **Markdown natif** | Compatible IA, indexable directement |
+| **Assets sur Minio** | Images/PDF sur S3-compatible |
+| **Interval 5min** | Auto-commit toutes les 5 minutes |
+
+#### 3.20.3 Minio - Storage S3 (Annexe A)
+
+| Regle d'Or | Description |
+|------------|-------------|
+| **Buckets organises** | `sql/`, `docs/`, `embeddings/`, `exports/` |
+| **Object Lock WORM** | Retention GOVERNANCE 30j sur dumps critiques |
+| **Versionning ALL** | Actif sur TOUS les buckets |
+| **Lifecycle 90j** | Auto-suppression exports temporaires |
+| **Presigned URLs** | Liens expirables pour telechargement |
+
+```bash
+# Commandes mc essentielles
+mc retention set --default GOVERNANCE 30d minio/sql
+mc version enable minio/sql
+mc ilm add minio/exports --expiry-days 90
+```
+
+#### 3.20.4 Embeddings sentence-transformers
+
+| Regle d'Or | Description |
+|------------|-------------|
+| **Model** | `all-MiniLM-L6-v2` (100% gratuit, local) |
+| **Dimension** | 384 (DOIT matcher schema Weaviate) |
+| **Vectorizer** | `none` - Weaviate recoit, ne genere pas |
+| **Batch processing** | 1000 chunks/batch, evite rate limits |
+| **Cout** | $0 vs ~$80/mois OpenAI |
+
+#### 3.20.5 Securite Critique (Regles ABSOLUES)
+
+| Regle ABSOLUE | Description |
+|---------------|-------------|
+| **RAG = lecture seule PROD** | Service ne modifie JAMAIS les donnees |
+| **Namespaces HARDCODES** | `Object.freeze(["knowledge:faq"])` - jamais env var |
+| **Build ≠ Runtime** | Build Plane jamais PROD, Runtime jamais ecriture |
+| **Chatbot ne pilote RIEN** | Seul AI Orchestrator (DEV/CI) pilote RAG |
+| **Kill Switch** | `ai_prod_write: false` - JAMAIS true en PROD |
+
+#### Tableau Recapitulatif
+
+| Composant | Regle 1 | Regle 2 | Regle 3 |
+|-----------|---------|---------|---------|
+| **LangGraph** | StateGraph type | Routing conditionnel | Retry natif |
+| **Wiki.js** | Backup Git auto | Markdown natif | Assets Minio |
+| **Minio** | Buckets organises | Object Lock WORM | Versionning ALL |
+| **Embeddings** | all-MiniLM-L6-v2 | Dimension=384 | Vectorizer=none |
+| **Securite** | RAG lecture seule | Namespaces hardcodes | Build≠Runtime |
+
 ---
 
 ## 4. Integration Anthropic Claude
@@ -1654,9 +1842,11 @@ export default registerAs('rag', () => ({
         maxTokens: 1024,
         temperature: 0.3,
     },
-    openai: {
-        apiKey: process.env.OPENAI_API_KEY,
-        embeddingsModel: 'text-embedding-3-small',
+    embeddings: {
+        // Note v2.1: OpenAI remplace par sentence-transformers (local, gratuit)
+        model: 'all-MiniLM-L6-v2',
+        dimension: 384,
+        provider: 'sentence-transformers',
     },
     minio: {
         endpoint: process.env.MINIO_ENDPOINT,
@@ -1695,7 +1885,7 @@ MINIO_ENDPOINT=minio.automecanik.com
 MINIO_ACCESS_KEY=your-access-key
 MINIO_SECRET_KEY=your-secret-key
 ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
+# Note v2.1: OPENAI_API_KEY n'est plus necessaire (embeddings locaux)
 RAG_MODEL=claude-3-5-sonnet-20241022
 ```
 
@@ -1703,11 +1893,14 @@ RAG_MODEL=claude-3-5-sonnet-20241022
 
 | Option | Modele | Dimensions | Cout | Recommandation |
 |--------|--------|------------|------|----------------|
-| Anthropic | voyage-3 | 1024 | $$$ | Phase 2 |
-| OpenAI | text-embedding-3-small | 1536 | $$ | MVP ✓ |
-| Open Source | all-MiniLM-L6-v2 | 384 | Gratuit | Budget |
+| Anthropic | voyage-3 | 1024 | $$$ | Non retenu |
+| OpenAI | text-embedding-3-small | 1536 | $$ | Non retenu |
+| **Open Source** | **all-MiniLM-L6-v2** | **384** | **Gratuit** | **MVP** |
 
-**MVP**: Utiliser OpenAI embeddings (compatibles, economiques) + Claude pour generation.
+**CHOIX MVP**: sentence-transformers all-MiniLM-L6-v2 (100% gratuit, local, performant).
+- Dimension: 384 (doit matcher schema Weaviate)
+- Provider: sentence-transformers (Python)
+- Vectorizer Weaviate: `none` (embeddings generes par le service Python)
 
 ### 4.4 Prompt System
 
@@ -1858,7 +2051,7 @@ jobs:
 CHATBOT_SCHEMA = {
     "class": "Prod_Chatbot",
     "description": "Knowledge base pour chatbot PROD",
-    "vectorizer": "text2vec-openai",
+    "vectorizer": "none",  # Embeddings generes par Python (sentence-transformers)
     "properties": [
         {"name": "content", "dataType": ["text"]},
         {"name": "source_type", "dataType": ["text"]},  # faq, doc, runbook, seo
@@ -2902,7 +3095,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install weaviate-client openai tiktoken
+        run: pip install weaviate-client sentence-transformers
 
       - name: Validate sources (security check)
         run: python scripts/validate_chatbot_sources.py
@@ -3275,7 +3468,7 @@ export class AccountChatService {
 
 4. Stockage Weaviate
    └── Classe Prod_Products (graph natif)
-   └── Auto-vectorisation via text2vec-openai
+   └── Embeddings pre-generes par Python (sentence-transformers)
 
 5. Index HNSW
    └── Recherche hybride (BM25 + vectorielle)
@@ -3303,13 +3496,14 @@ async indexProducts() {
 | Composant | Volume | Cout Mensuel |
 |-----------|--------|--------------|
 | Claude API (generation) | 50k requetes | ~$150 |
-| Embeddings (OpenAI) | 4M produits (initial) | ~$80 (one-time) |
-| Embeddings (incremental) | 10k/mois | ~$2/mois |
+| **Embeddings (sentence-transformers)** | 4M produits | **$0** (local, gratuit) |
 | **Weaviate** | Self-hosted Docker | **$0** (gratuit) |
 | **Minio** | Self-hosted Docker | **$0** (gratuit) |
 | **Wiki.js** | Self-hosted Docker | **$0** (gratuit) |
 | **Redis** | Self-hosted Docker | **$0** (gratuit) |
-| **Total MVP** | - | **~$150-180/mois** |
+| **Total MVP** | - | **~$150/mois** (Claude uniquement) |
+
+> **Note v2.1**: Migration vers sentence-transformers = economie ~$80-100/mois sur embeddings.
 
 ### 7.2 Optimisations
 
@@ -3680,7 +3874,7 @@ weaviate:
 **Weaviate Vector Database (self-hosted)**
 - [ ] Deployer Weaviate en Docker
 - [ ] Configurer le schema (Prod_Products, Knowledge, Dev_Code, etc.)
-- [ ] Configurer text2vec-openai module
+- [x] Configurer vectorizer: none (embeddings externes)
 - [ ] Tester la recherche hybride
 - [ ] Configurer persistence (volume Docker)
 
@@ -3707,7 +3901,7 @@ weaviate:
 
 - [ ] WeaviateService (client Python weaviate-client)
 - [ ] MinioService (upload/download S3-compatible)
-- [ ] EmbeddingsService (via Weaviate text2vec-openai)
+- [x] EmbeddingsService (sentence-transformers all-MiniLM-L6-v2, local)
 - [ ] RetrievalService (recherche hybride Weaviate)
 - [ ] LLMService (Claude API)
 - [ ] WikiService (API GraphQL Wiki.js)
@@ -5058,7 +5252,7 @@ Avantages :
 {
     "class": "DumpIndex",
     "description": "Index des dumps SQL (resumes IA uniquement)",
-    "vectorizer": "text2vec-openai",
+    "vectorizer": "none",  # Embeddings generes par Python (sentence-transformers)
     "properties": [
         {"name": "dumpDate", "dataType": ["date"]},
         {"name": "databaseName", "dataType": ["text"]},
@@ -5130,9 +5324,8 @@ services:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
       PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
-      DEFAULT_VECTORIZER_MODULE: "text2vec-openai"
-      ENABLE_MODULES: "text2vec-openai,generative-openai"
-      OPENAI_APIKEY: ${OPENAI_API_KEY}
+      DEFAULT_VECTORIZER_MODULE: "none"  # Embeddings generes par Python (sentence-transformers)
+      # Note v2.1: Plus besoin de modules OpenAI, embeddings externes
       CLUSTER_HOSTNAME: "node1"
     volumes:
       - weaviate-data:/var/lib/weaviate
