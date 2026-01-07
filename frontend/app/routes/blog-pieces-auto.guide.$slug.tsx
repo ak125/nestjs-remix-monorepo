@@ -22,13 +22,14 @@ import {
 } from "lucide-react";
 
 // UI Components
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
+import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
 // Types
 interface GuideSection {
@@ -74,13 +75,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   );
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
+  const cleanExcerpt = stripHtmlForMeta(guide.excerpt);
   const result: any[] = [
     { title: `${cleanTitle} - Guide d'Achat Pièces Auto` },
-    { name: "description", content: guide.excerpt },
+    { name: "description", content: cleanExcerpt },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: "robots", content: "index, follow" },
     { property: "og:title", content: cleanTitle },
-    { property: "og:description", content: guide.excerpt },
+    { property: "og:description", content: cleanExcerpt },
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
     { property: "article:published_time", content: guide.publishedAt },

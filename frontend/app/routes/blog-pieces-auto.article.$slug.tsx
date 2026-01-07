@@ -3,7 +3,13 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   ArrowLeft,
   Calendar,
@@ -28,6 +34,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
 // Types
 interface BlogArticle {
@@ -85,7 +92,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   const article = data.article;
   const title = article.seo_data?.meta_title || article.h1 || article.title;
-  const description = article.seo_data?.meta_description || article.excerpt;
+  const description = stripHtmlForMeta(
+    article.seo_data?.meta_description || article.excerpt,
+  );
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
 
   // 📰 Schema TechArticle - Rich snippets pour articles techniques auto
@@ -114,9 +123,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       },
     },
     // Catégorie et mots-clés
-    articleSection: article.type === "advice" ? "Conseils Auto" :
-                    article.type === "guide" ? "Guides Techniques" :
-                    article.type === "constructeur" ? "Constructeurs" : "Glossaire",
+    articleSection:
+      article.type === "advice"
+        ? "Conseils Auto"
+        : article.type === "guide"
+          ? "Guides Techniques"
+          : article.type === "constructeur"
+            ? "Constructeurs"
+            : "Glossaire",
     keywords: article.keywords.join(", "),
     // Temps de lecture estimé
     ...(article.readingTime && { timeRequired: `PT${article.readingTime}M` }),
@@ -178,24 +192,35 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // 🎯 Détection des URLs legacy "entretien-..." qui n'existent plus (78k URLs GSC)
   // Ces URLs ont été générées pour le sitemap mais le contenu n'a jamais été créé
   // Retourner 410 Gone pour que Google les retire de l'index
-  const isLegacyEntretienUrl = slug.startsWith('entretien-') &&
-    /-(ampoule|filtre|plaquette|courroie|frein|huile|bougie|batterie|essuie|disque|tambour|roulement|rotule|triangle|biellette|silentbloc|cardan|soufflet|cremaillere|direction|suspension|amortisseur|ressort|barre|stabilisateur|joint|culasse|soupape|segment|piston|bielle|vilebrequin|arbre|came|distribution|pompe|injecteur|turbo|echappement|catalyseur|sonde|capteur|thermostat|radiateur|ventilateur|durite|liquide|antigel|lave|glace|retroviseur|phare|clignotant|feu|stop|recul|antibrouillard|klaxon|avertisseur|demarreur|alternateur|bobine|allumage|faisceau|relais|fusible|contacteur|commodo|interrupteur|bouton|poignee|serrure|barillet|cle|telecommande|antenne|autoradio|haut|parleur|vitre|leve|moteur|mecanisme|regulateur|charniere|compas|verin|hayon|coffre|capot|portiere|aile|pare|choc|calandre|grille|enjoliveur|jante|roue|pneu|valve|ecrou|goujon|cache|enjoliveur)/i.test(slug);
+  const isLegacyEntretienUrl =
+    slug.startsWith("entretien-") &&
+    /-(ampoule|filtre|plaquette|courroie|frein|huile|bougie|batterie|essuie|disque|tambour|roulement|rotule|triangle|biellette|silentbloc|cardan|soufflet|cremaillere|direction|suspension|amortisseur|ressort|barre|stabilisateur|joint|culasse|soupape|segment|piston|bielle|vilebrequin|arbre|came|distribution|pompe|injecteur|turbo|echappement|catalyseur|sonde|capteur|thermostat|radiateur|ventilateur|durite|liquide|antigel|lave|glace|retroviseur|phare|clignotant|feu|stop|recul|antibrouillard|klaxon|avertisseur|demarreur|alternateur|bobine|allumage|faisceau|relais|fusible|contacteur|commodo|interrupteur|bouton|poignee|serrure|barillet|cle|telecommande|antenne|autoradio|haut|parleur|vitre|leve|moteur|mecanisme|regulateur|charniere|compas|verin|hayon|coffre|capot|portiere|aile|pare|choc|calandre|grille|enjoliveur|jante|roue|pneu|valve|ecrou|goujon|cache|enjoliveur)/i.test(
+      slug,
+    );
 
   if (isLegacyEntretienUrl) {
     // Retourner 410 Gone - Signal à Google que le contenu est définitivement supprimé
     throw new Response(
       JSON.stringify({
-        error: 'Content Permanently Removed',
-        code: 'CONTENT_GONE',
-        message: 'Ce contenu n\'est plus disponible sur notre site.',
-        suggestion: 'Utilisez notre recherche pour trouver des guides similaires.',
-        searchUrl: '/search?q=' + encodeURIComponent(slug.replace(/entretien-/i, '').replace(/-/g, ' ').slice(0, 50))
+        error: "Content Permanently Removed",
+        code: "CONTENT_GONE",
+        message: "Ce contenu n'est plus disponible sur notre site.",
+        suggestion:
+          "Utilisez notre recherche pour trouver des guides similaires.",
+        searchUrl:
+          "/search?q=" +
+          encodeURIComponent(
+            slug
+              .replace(/entretien-/i, "")
+              .replace(/-/g, " ")
+              .slice(0, 50),
+          ),
       }),
       {
         status: 410,
-        statusText: 'Gone',
-        headers: { 'Content-Type': 'application/json' }
-      }
+        statusText: "Gone",
+        headers: { "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -580,7 +605,7 @@ export function ErrorBoundary() {
       // Extraire les données JSON si disponibles
       let errorData: { searchUrl?: string; message?: string } = {};
       try {
-        if (typeof error.data === 'string') {
+        if (typeof error.data === "string") {
           errorData = JSON.parse(error.data);
         } else if (error.data) {
           errorData = error.data;
@@ -591,7 +616,7 @@ export function ErrorBoundary() {
 
       return (
         <Error410
-          url={typeof window !== 'undefined' ? window.location.href : undefined}
+          url={typeof window !== "undefined" ? window.location.href : undefined}
           isOldLink={true}
           redirectTo={errorData.searchUrl}
         />
@@ -602,7 +627,7 @@ export function ErrorBoundary() {
     if (error.status === 404) {
       return (
         <Error404
-          url={typeof window !== 'undefined' ? window.location.href : undefined}
+          url={typeof window !== "undefined" ? window.location.href : undefined}
         />
       );
     }
