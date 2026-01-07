@@ -1,12 +1,16 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useNavigation } from "@remix-run/react";
-import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  useNavigation,
+  useLocation,
+  useNavigate,
+} from "@remix-run/react";
+import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
 import { useEffect, lazy, Suspense } from "react";
-import { ScrollToTop } from "~/components/blog/ScrollToTop";
-import MobileStickyBar from "~/components/pieces/MobileStickyBar";
-import TableOfContents from "~/components/pieces/TableOfContents";
-import { pluralizePieceName } from "~/lib/seo-utils";
-import { fetchGammePageData } from "~/services/api/gamme-api.service";
 // 🆕 V2 UX Components
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
@@ -20,26 +24,81 @@ import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical";
-import { generateGammeMeta } from "../utils/seo/meta-generators";
-import { getVehicleFromCookie, buildBreadcrumbWithVehicle, type VehicleCookie } from "../utils/vehicle-cookie";
+// Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
+import { normalizeAlias } from "../utils/url-builder.utils";
+import {
+  getVehicleFromCookie,
+  buildBreadcrumbWithVehicle,
+  storeVehicleClient,
+  type VehicleCookie,
+} from "../utils/vehicle-cookie";
+import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import MobileStickyBar from "~/components/pieces/MobileStickyBar";
+import TableOfContents from "~/components/pieces/TableOfContents";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
 // Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)
-const PurchaseGuideSection = lazy(() => import("../components/seo/PurchaseGuideSection").then(m => ({ default: m.PurchaseGuideSection })));
-const QuickGuideSection = lazy(() => import("../components/pieces/QuickGuideSection").then(m => ({ default: m.default })));
-const MotorisationsSection = lazy(() => import("../components/pieces/MotorisationsSection").then(m => ({ default: m.default })));
-const CatalogueSection = lazy(() => import("../components/pieces/CatalogueSection").then(m => ({ default: m.default })));
-const EquipementiersSection = lazy(() => import("../components/pieces/EquipementiersSection").then(m => ({ default: m.default })));
-const ConseilsSection = lazy(() => import("../components/pieces/ConseilsSection").then(m => ({ default: m.default })));
-const InformationsSection = lazy(() => import("../components/pieces/InformationsSection").then(m => ({ default: m.default })));
+const PurchaseGuideSection = lazy(() =>
+  import("../components/seo/PurchaseGuideSection").then((m) => ({
+    default: m.PurchaseGuideSection,
+  })),
+);
+const QuickGuideSection = lazy(() =>
+  import("../components/pieces/QuickGuideSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const MotorisationsSection = lazy(() =>
+  import("../components/pieces/MotorisationsSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const CatalogueSection = lazy(() =>
+  import("../components/pieces/CatalogueSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const EquipementiersSection = lazy(() =>
+  import("../components/pieces/EquipementiersSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const ConseilsSection = lazy(() =>
+  import("../components/pieces/ConseilsSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const InformationsSection = lazy(() =>
+  import("../components/pieces/InformationsSection").then((m) => ({
+    default: m.default,
+  })),
+);
 
 // 📖 Nouvelles sections SEO V2 (howToChoose, symptoms, FAQ)
-const HowToChooseSection = lazy(() => import("../components/seo/HowToChooseSection").then(m => ({ default: m.HowToChooseSection })));
-const SymptomsSection = lazy(() => import("../components/seo/SymptomsSection").then(m => ({ default: m.SymptomsSection })));
-const FAQSection = lazy(() => import("../components/seo/FAQSection").then(m => ({ default: m.FAQSection })));
+const HowToChooseSection = lazy(() =>
+  import("../components/seo/HowToChooseSection").then((m) => ({
+    default: m.HowToChooseSection,
+  })),
+);
+const SymptomsSection = lazy(() =>
+  import("../components/seo/SymptomsSection").then((m) => ({
+    default: m.SymptomsSection,
+  })),
+);
+const FAQSection = lazy(() =>
+  import("../components/seo/FAQSection").then((m) => ({
+    default: m.FAQSection,
+  })),
+);
 
 // 🎯 Encart anti-doute / réassurance conversion
-const UXMessageBox = lazy(() => import("../components/seo/UXMessageBox").then(m => ({ default: m.UXMessageBox })));
+const UXMessageBox = lazy(() =>
+  import("../components/seo/UXMessageBox").then((m) => ({
+    default: m.UXMessageBox,
+  })),
+);
 
 interface LoaderData {
   status: number;
@@ -195,92 +254,133 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO (LCP optimization)
-    const API_URL = process.env.API_URL || 'http://localhost:3000';
+    const API_URL = process.env.API_URL || "http://localhost:3000";
 
     const [selectedVehicle, apiData, switchesResponse] = await Promise.all([
       // 🚗 Récupérer véhicule depuis cookie (parallélisé)
       getVehicleFromCookie(request.headers.get("Cookie")),
       fetchGammePageData(gammeId, { signal: controller.signal }),
-      fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, { signal: controller.signal })
-        .then(res => res.ok ? res.json() : { data: [] })
-        .catch(() => ({ data: [] }))
+      fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
+        signal: controller.signal,
+      })
+        .then((res) => (res.ok ? res.json() : { data: [] }))
+        .catch(() => ({ data: [] })),
     ]).finally(() => clearTimeout(timeoutId));
 
-    console.log('🚗 Véhicule depuis cookie:', selectedVehicle ?
-      `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}` :
-      'Aucun véhicule sélectionné'
+    console.log(
+      "🚗 Véhicule depuis cookie:",
+      selectedVehicle
+        ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
+        : "Aucun véhicule sélectionné",
     );
 
     // 🔗 Mapper les switches SEO pour ancres variées
     const rawSwitches = switchesResponse?.data || [];
     const verbSwitches = rawSwitches
-      .filter((s: any) => s.sis_alias?.startsWith('verb_') || s.sis_alias?.includes('action'))
+      .filter(
+        (s: any) =>
+          s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
+      )
       .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
     const nounSwitches = rawSwitches
-      .filter((s: any) => s.sis_alias?.startsWith('noun_') || !s.sis_alias?.startsWith('verb_'))
+      .filter(
+        (s: any) =>
+          s.sis_alias?.startsWith("noun_") || !s.sis_alias?.startsWith("verb_"),
+      )
       .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
 
-    const seoSwitches = rawSwitches.length > 0 ? {
-      verbs: verbSwitches.length > 0 ? verbSwitches : rawSwitches.map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
-      nouns: nounSwitches,
-      verbCount: verbSwitches.length || rawSwitches.length,
-      nounCount: nounSwitches.length,
-    } : undefined;
+    const seoSwitches =
+      rawSwitches.length > 0
+        ? {
+            verbs:
+              verbSwitches.length > 0
+                ? verbSwitches
+                : rawSwitches.map((s: any) => ({
+                    id: s.sis_id,
+                    content: s.sis_content,
+                  })),
+            nouns: nounSwitches,
+            verbCount: verbSwitches.length || rawSwitches.length,
+            nounCount: nounSwitches.length,
+          }
+        : undefined;
 
-    console.log(`🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`);
+    console.log(
+      `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
+    );
 
     // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-    const heroData = apiData.hero as { h1: string; content: string; image: string; wall: string; famille_info?: any; pg_name?: string; pg_alias?: string } | undefined;
+    const heroData = apiData.hero as
+      | {
+          h1: string;
+          content: string;
+          image: string;
+          wall: string;
+          famille_info?: any;
+          pg_name?: string;
+          pg_alias?: string;
+        }
+      | undefined;
     // Note: API returns different shapes than LoaderData, using type assertion for compatibility
     const data = {
       ...apiData,
       status: 200,
-      content: heroData ? {
-        h1: heroData.h1,
-        content: heroData.content,
-        pg_name: heroData.pg_name || heroData.famille_info?.mf_name || '',
-        pg_alias: heroData.pg_alias || '',
-        pg_pic: heroData.image,
-        pg_wall: heroData.wall,
-      } : undefined,
+      content: heroData
+        ? {
+            h1: heroData.h1,
+            content: heroData.content,
+            pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
+            pg_alias: heroData.pg_alias || "",
+            pg_pic: heroData.image,
+            pg_wall: heroData.wall,
+          }
+        : undefined,
       famille: apiData.hero?.famille_info,
-      guide: apiData.guideAchat ? {
-        ...apiData.guideAchat,
-        date: apiData.guideAchat.updated,
-      } : undefined,
+      guide: apiData.guideAchat
+        ? {
+            ...apiData.guideAchat,
+            date: apiData.guideAchat.updated,
+          }
+        : undefined,
     } as unknown as LoaderData;
-    
+
     // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
     const baseBreadcrumb = [
       { label: "Accueil", href: "/" },
-      { label: data.content?.pg_name || "Pièce", current: true }
+      { label: data.content?.pg_name || "Pièce", current: true },
     ];
 
     // 🍞 Ajouter véhicule au breadcrumb si disponible
     const breadcrumbItems = buildBreadcrumbWithVehicle(
       baseBreadcrumb,
-      selectedVehicle
+      selectedVehicle,
     );
 
-    console.log('🍞 Breadcrumb généré:', breadcrumbItems.map(i => i.label).join(' → '));
+    console.log(
+      "🍞 Breadcrumb généré:",
+      breadcrumbItems.map((i) => i.label).join(" → "),
+    );
 
     // Retourner data avec breadcrumb mis à jour, véhicule et switches SEO
-    return json({
-      ...data,
-      breadcrumbs: { items: breadcrumbItems },
-      selectedVehicle,
-      seoSwitches
-    }, {
-      headers: {
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-      }
-    });
+    return json(
+      {
+        ...data,
+        breadcrumbs: { items: breadcrumbItems },
+        selectedVehicle,
+        seoSwitches,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
       throw error;
     }
-    console.error('Erreur lors du chargement des données:', error);
+    console.error("Erreur lors du chargement des données:", error);
     throw new Response("Internal Server Error", { status: 500 });
   }
 }
@@ -295,76 +395,106 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   // Construire l'URL canonique
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
-  const searchParams = new URL(location.pathname + location.search, 'https://www.automecanik.com').searchParams;
-  const paramsObj: Record<string, string> = {};
-  searchParams.forEach((value, key) => {
-    paramsObj[key] = value;
-  });
 
-  // Générer les meta tags optimisés pour CTR
-  const metaTags = generateGammeMeta({
-    name: data.content?.pg_name || data.meta?.title || "Pièces Auto",
-    count: data.motorisations?.items.length || 0,
-    minPrice: undefined,
-    vehicleBrand: paramsObj.marque,
-    vehicleModel: paramsObj.modele,
-    onSale: false,
-  });
+  // ✅ Utiliser les données SEO du backend (priorité absolue)
+  // Les titres/descriptions viennent de __seo_gamme_car via l'API RPC
+  const title = data.meta?.title || data.content?.pg_name || "Pièces Auto";
+  const description =
+    data.meta?.description ||
+    `${data.content?.pg_name || "Pièces"} de qualité au meilleur prix.`;
+  const keywords =
+    data.meta?.keywords || data.content?.pg_name?.toLowerCase() || "";
 
   // 📊 Schema @graph pour page catégorie/recherche - CollectionPage + ItemList
   // Note: Pas de schéma Product car c'est une page de recherche sans prix affichés
   // Les pages avec prix (véhicule+gamme) utilisent pieces.$gamme.$marque.$modele.$type[.]html.tsx
-  const gammeSchema = data.content?.pg_name ? {
-    "@context": "https://schema.org",
-    "@graph": [
-      // 1️⃣ CollectionPage - La page catalogue de cette gamme
-      {
-        "@type": "CollectionPage",
-        "@id": canonicalUrl,
-        name: data.content.pg_name,
-        description: metaTags.description,
-        url: canonicalUrl,
-        mainEntity: { "@id": `${canonicalUrl}#list` },
-        ...(data.content.pg_pic && { image: data.content.pg_pic }),
-        // Breadcrumb pour navigation
-        breadcrumb: {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.automecanik.com" },
-            { "@type": "ListItem", position: 2, name: "Pièces Auto", item: "https://www.automecanik.com/pieces" },
-            { "@type": "ListItem", position: 3, name: data.content.pg_name, item: canonicalUrl },
-          ],
-        },
-      },
-      // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles (liens vers pages produits)
-      {
-        "@type": "ItemList",
-        "@id": `${canonicalUrl}#list`,
-        name: `${data.content.pg_name} - Véhicules compatibles`,
-        numberOfItems: data.motorisations?.items?.length || 0,
-        itemListElement: (data.motorisations?.items || []).slice(0, 15).map((item, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
-          url: item.link ? `https://www.automecanik.com${item.link}` : canonicalUrl,
-        })),
-      },
-    ],
-  } : null;
+  const gammeSchema = data.content?.pg_name
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          // 1️⃣ CollectionPage - La page catalogue de cette gamme
+          {
+            "@type": "CollectionPage",
+            "@id": canonicalUrl,
+            name: data.content.pg_name,
+            description: description,
+            url: canonicalUrl,
+            mainEntity: { "@id": `${canonicalUrl}#list` },
+            ...(data.content.pg_pic && { image: data.content.pg_pic }),
+            // Breadcrumb pour navigation
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Accueil",
+                  item: "https://www.automecanik.com",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Pièces Auto",
+                  item: "https://www.automecanik.com/pieces",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: data.content.pg_name,
+                  item: canonicalUrl,
+                },
+              ],
+            },
+          },
+          // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles (liens vers pages produits)
+          {
+            "@type": "ItemList",
+            "@id": `${canonicalUrl}#list`,
+            name: `${data.content.pg_name} - Véhicules compatibles`,
+            numberOfItems: data.motorisations?.items?.length || 0,
+            itemListElement: (data.motorisations?.items || [])
+              .slice(0, 15)
+              .map((item, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
+                url: item.link
+                  ? `https://www.automecanik.com${item.link}`
+                  : canonicalUrl,
+              })),
+          },
+        ],
+      }
+    : null;
 
   // Construire le tableau de meta tags Remix
-  const result: Array<{ title?: string; name?: string; content?: string; "script:ld+json"?: any; tagName?: string; rel?: string; href?: string }> = [];
+  const result: Array<{
+    title?: string;
+    name?: string;
+    content?: string;
+    property?: string;
+    "script:ld+json"?: any;
+    tagName?: string;
+    rel?: string;
+    href?: string;
+  }> = [];
 
   // Title
-  result.push({ title: metaTags.title });
+  result.push({ title });
 
   // Description
-  result.push({ name: "description", content: metaTags.description });
+  result.push({ name: "description", content: description });
 
   // Keywords
-  if (metaTags.keywords && metaTags.keywords.length > 0) {
-    result.push({ name: "keywords", content: metaTags.keywords.join(", ") });
+  if (keywords) {
+    result.push({ name: "keywords", content: keywords });
   }
+
+  // Open Graph
+  result.push({ property: "og:title", content: title });
+  result.push({ property: "og:description", content: description });
+  result.push({ property: "og:url", content: canonicalUrl });
+  result.push({ property: "og:type", content: "website" });
 
   // Canonical
   result.push({ tagName: "link", rel: "canonical", href: canonicalUrl });
@@ -401,73 +531,90 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   return result;
 };
 
-export function headers({ loaderHeaders: _loaderHeaders }: { loaderHeaders: Headers }) {
+export function headers({
+  loaderHeaders: _loaderHeaders,
+}: {
+  loaderHeaders: Headers;
+}) {
   return {
-    'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
   };
 }
 
 export default function PiecesDetailPage() {
   const data = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
 
   useEffect(() => {
     if (isLoading) {
-      console.log('⏳ Chargement des données en cours...');
+      console.log("⏳ Chargement des données en cours...");
     }
   }, [isLoading]);
 
   if (!data || data.status !== 200) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-4">Page non trouvée</h1>
-        <p className="text-neutral-600">Désolé, cette page n'existe pas.</p>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-neutral-900 mb-4">
+            Page non trouvée
+          </h1>
+          <p className="text-neutral-600">Désolé, cette page n'existe pas.</p>
+        </div>
       </div>
-    </div>;
+    );
   }
 
   // Construire les breadcrumbs depuis l'API (déjà avec véhicule si présent)
-  const breadcrumbs: BreadcrumbItem[] = data.breadcrumbs?.items.map(item => ({
+  const breadcrumbs: BreadcrumbItem[] = data.breadcrumbs?.items.map((item) => ({
     label: item.label,
     href: item.href || "",
-    current: item.current
+    current: item.current,
   })) || [
     { label: "Accueil", href: "/" },
-    { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
+    {
+      label: data.content?.pg_name || "Pièce",
+      href: data.meta?.canonical || "",
+    },
   ];
 
   // 🎨 Récupérer la couleur de la famille pour le hero
-  const familleColor = data.famille ? hierarchyApi.getFamilyColor({
-    mf_id: data.famille.mf_id,
-    mf_name: data.famille.mf_name,
-    mf_pic: data.famille.mf_pic,
-  } as any) : 'from-primary-950 via-primary-900 to-secondary-900'; // Fallback avec design tokens
+  const familleColor = data.famille
+    ? hierarchyApi.getFamilyColor({
+        mf_id: data.famille.mf_id,
+        mf_name: data.famille.mf_name,
+        mf_pic: data.famille.mf_pic,
+      } as any)
+    : "from-primary-950 via-primary-900 to-secondary-900"; // Fallback avec design tokens
 
   // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)
-  const itemListData = data.motorisations?.items && data.motorisations.items.length > 0 ? {
-    name: `${data.content?.pg_name || 'Pièces'} - Véhicules compatibles`,
-    description: `Liste des ${data.motorisations.items.length} véhicules compatibles avec ${data.content?.pg_name || 'cette pièce'}`,
-    items: data.motorisations.items.slice(0, 50).map((item, index) => ({
-      name: `${item.title} - ${item.marque_name} ${item.modele_name}`,
-      url: item.link,
-      description: item.description,
-      position: index + 1
-    }))
-  } : undefined;
+  const itemListData =
+    data.motorisations?.items && data.motorisations.items.length > 0
+      ? {
+          name: `${data.content?.pg_name || "Pièces"} - Véhicules compatibles`,
+          description: `Liste des ${data.motorisations.items.length} véhicules compatibles avec ${data.content?.pg_name || "cette pièce"}`,
+          items: data.motorisations.items.slice(0, 50).map((item, index) => ({
+            name: `${item.title} - ${item.marque_name} ${item.modele_name}`,
+            url: item.link,
+            description: item.description,
+            position: index + 1,
+          })),
+        }
+      : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-      
       {/* ⏳ Indicateur de chargement global */}
       {isLoading && (
         <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-semantic-info animate-pulse">
           <div className="h-full bg-gradient-to-r from-semantic-info via-secondary-500 to-semantic-info bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite]"></div>
         </div>
       )}
-      
+
       {/* SEO avec schemas JSON-LD enrichis */}
       <SEOHelmet
         seo={{
@@ -483,14 +630,14 @@ export default function PiecesDetailPage() {
             contactPoint: {
               telephone: "+33-1-XX-XX-XX-XX",
               contactType: "Service Client",
-              email: "contact@automecanik.com"
+              email: "contact@automecanik.com",
             },
             sameAs: [
               "https://www.facebook.com/automecanik",
-              "https://twitter.com/automecanik"
-            ]
+              "https://twitter.com/automecanik",
+            ],
           },
-          itemList: itemListData
+          itemList: itemListData,
         }}
       />
 
@@ -500,7 +647,7 @@ export default function PiecesDetailPage() {
       </div>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
-      <section 
+      <section
         className={`relative overflow-hidden bg-gradient-to-br ${familleColor} text-white py-12 md:py-16 lg:py-20`}
         aria-label="Sélection véhicule"
       >
@@ -517,7 +664,7 @@ export default function PiecesDetailPage() {
               decoding="async"
               fetchPriority="high"
               onError={(e) => {
-                e.currentTarget.src = '/images/placeholder-hero.webp';
+                e.currentTarget.src = "/images/placeholder-hero.webp";
                 e.currentTarget.onerror = null;
               }}
             />
@@ -525,59 +672,71 @@ export default function PiecesDetailPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-transparent"></div>
           </div>
         )}
-        
+
         {/* Effet mesh gradient adaptatif */}
-        <div 
+        <div
           className="absolute inset-0 z-[1] opacity-20"
           style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-                             radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`
+                             radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`,
           }}
           aria-hidden="true"
         />
-        <div 
-          className="absolute inset-0 z-[1] opacity-[0.07]" 
+        <div
+          className="absolute inset-0 z-[1] opacity-[0.07]"
           style={{
             backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px),
                              linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)`,
-            backgroundSize: '3rem 3rem'
+            backgroundSize: "3rem 3rem",
           }}
           aria-hidden="true"
         />
-        
+
         {/* Formes décoratives organiques - animations retirées pour LCP */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl z-[1]" aria-hidden="true"></div>
-        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]" aria-hidden="true"></div>
-        
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl z-[1]"
+          aria-hidden="true"
+        ></div>
+        <div
+          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
+          aria-hidden="true"
+        ></div>
+
         <div className="relative z-10 container mx-auto px-4 max-w-7xl">
-          
           {/* Badges contextuels en haut */}
           <div className="flex flex-wrap justify-center items-center gap-3 mb-6 md:mb-8 animate-in fade-in duration-700">
             {data.famille && (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
-                <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}></div>
-                <span className="text-white/95 font-semibold text-sm tracking-wide">{data.famille.mf_name}</span>
+                <div
+                  className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}
+                ></div>
+                <span className="text-white/95 font-semibold text-sm tracking-wide">
+                  {data.famille.mf_name}
+                </span>
               </div>
             )}
-            {data.famille?.mf_name.toLowerCase().includes('frein') && (
+            {data.famille?.mf_name.toLowerCase().includes("frein") && (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
                 <Shield className="w-4 h-4 text-red-300" />
-                <span className="text-white/95 text-sm font-semibold">Votre sécurité est notre priorité</span>
+                <span className="text-white/95 text-sm font-semibold">
+                  Votre sécurité est notre priorité
+                </span>
               </div>
             )}
           </div>
-          
+
           {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
           <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
                 {(() => {
                   // Priorité: h1Override > h1 existant > fallback
-                  const rawH1 = data.purchaseGuideData?.h1Override
-                    || data.content?.h1
-                    || `${data.content?.pg_name || "Pièces auto"} pas cher`;
+                  const rawH1 =
+                    data.purchaseGuideData?.h1Override ||
+                    data.content?.h1 ||
+                    `${data.content?.pg_name || "Pièces auto"} pas cher`;
                   // Nettoyer les balises HTML (<b>, </b>, etc.)
-                  return rawH1.replace(/<[^>]*>/g, '');
+                  return rawH1.replace(/<[^>]*>/g, "");
                 })()}
               </span>
             </h1>
@@ -594,12 +753,11 @@ export default function PiecesDetailPage() {
           {/* Cadre glassmorphism contenant Image + VehicleSelector */}
           <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
             <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
-              
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
                   {(() => {
-                    const name = data.content?.pg_name?.toLowerCase() || '';
+                    const name = data.content?.pg_name?.toLowerCase() || "";
                     const pluralName = pluralizePieceName(name);
                     return name
                       ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
@@ -607,10 +765,9 @@ export default function PiecesDetailPage() {
                   })()}
                 </p>
               </div>
-              
+
               {/* Layout horizontal : Image + VehicleSelector côte à côte */}
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-                
                 {/* Image produit à gauche */}
                 <div className="flex-shrink-0 w-full lg:w-80">
                   <div className="relative group">
@@ -618,12 +775,15 @@ export default function PiecesDetailPage() {
                     <div className="absolute inset-0 -z-10">
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
                     </div>
-                    
+
                     {/* Container image */}
                     <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
                       <div className="w-full aspect-square flex items-center justify-center">
                         <img
-                          src={data.content?.pg_pic || '/images/placeholder-product.webp'}
+                          src={
+                            data.content?.pg_pic ||
+                            "/images/placeholder-product.webp"
+                          }
                           alt={data.content?.pg_name || "Pièce auto"}
                           width={400}
                           height={400}
@@ -632,47 +792,100 @@ export default function PiecesDetailPage() {
                           decoding="async"
                           fetchPriority="high"
                           onError={(e) => {
-                            e.currentTarget.src = '/images/placeholder-product.webp';
+                            e.currentTarget.src =
+                              "/images/placeholder-product.webp";
                             e.currentTarget.onerror = null;
                           }}
                         />
                       </div>
                     </div>
-                    
+
                     {/* Particule décorative - animation retirée pour LCP */}
-                    <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl" aria-hidden="true"></div>
+                    <div
+                      className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl"
+                      aria-hidden="true"
+                    ></div>
                   </div>
                 </div>
-                
+
                 {/* VehicleSelector à droite */}
-                <div id="vehicle-selector" className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
-                  <VehicleSelector enableTypeMineSearch={true} />
+                <div
+                  id="vehicle-selector"
+                  className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400"
+                >
+                  <VehicleSelector
+                    enableTypeMineSearch={true}
+                    context="pieces"
+                    redirectOnSelect={false}
+                    onVehicleSelect={(vehicle) => {
+                      // Construire les slugs avec format alias-id
+                      const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
+                      const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
+                      const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
+
+                      // Gamme depuis l'URL actuelle
+                      const gammeSlug =
+                        location.pathname
+                          .split("/")
+                          .pop()
+                          ?.replace(".html", "") || "";
+
+                      // Sauvegarder le véhicule en cookie pour persistance
+                      storeVehicleClient({
+                        marque_id: vehicle.brand.marque_id,
+                        marque_name: vehicle.brand.marque_name,
+                        marque_alias:
+                          vehicle.brand.marque_alias ||
+                          normalizeAlias(vehicle.brand.marque_name),
+                        modele_id: vehicle.model.modele_id,
+                        modele_name: vehicle.model.modele_name,
+                        modele_alias:
+                          vehicle.model.modele_alias ||
+                          normalizeAlias(vehicle.model.modele_name),
+                        type_id: vehicle.type.type_id,
+                        type_name: vehicle.type.type_name,
+                        type_alias:
+                          vehicle.type.type_alias ||
+                          normalizeAlias(vehicle.type.type_name),
+                      });
+
+                      // Navigation fluide avec Remix
+                      const url = `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+                      navigate(url);
+                    }}
+                  />
                 </div>
               </div>
-              
             </div>
           </div>
-          
+
           {/* Trust badges premium - Grid responsive pour mobile - Design Tokens */}
           <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-space-3 md:gap-space-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <CheckCircle2 className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">50 000+ pièces</span>
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+                50 000+ pièces
+              </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Livraison 24-48h</span>
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+                Livraison 24-48h
+              </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Paiement sécurisé</span>
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+                Paiement sécurisé
+              </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Users className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Experts gratuits</span>
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+                Experts gratuits
+              </span>
             </div>
           </div>
-          
         </div>
       </section>
 
@@ -693,15 +906,17 @@ export default function PiecesDetailPage() {
 
       {/* 💡 Guide d'achat V2 complet - Contenu orienté client (pour SEO longue traîne) */}
       {data.purchaseGuideData && (
-        <Suspense fallback={
-          <div className="container mx-auto px-4 mb-space-6">
-            <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
-              <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
-              <div className="h-64 bg-gray-100 rounded-2xl"></div>
-              <div className="h-96 bg-gray-100 rounded-2xl"></div>
+        <Suspense
+          fallback={
+            <div className="container mx-auto px-4 mb-space-6">
+              <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+                <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
+                <div className="h-64 bg-gray-100 rounded-2xl"></div>
+                <div className="h-96 bg-gray-100 rounded-2xl"></div>
+              </div>
             </div>
-          </div>
-        }>
+          }
+        >
           <PurchaseGuideSection
             guide={data.purchaseGuideData}
             gammeName={data.content?.pg_name}
@@ -713,11 +928,15 @@ export default function PiecesDetailPage() {
       {/* 🚗 Motorisations compatibles - Position 3 (REMONTÉ après sélecteur) */}
       <div className="container mx-auto px-4">
         <section id="compatibilities">
-          <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-lg mb-8" />}>
+          <Suspense
+            fallback={
+              <div className="h-96 bg-gray-50 animate-pulse rounded-lg mb-8" />
+            }
+          >
             <MotorisationsSection
               motorisations={data.motorisations}
               familleColor={familleColor}
-              familleName={data.content?.pg_name || 'pièces'}
+              familleName={data.content?.pg_name || "pièces"}
             />
           </Suspense>
         </section>
@@ -726,7 +945,11 @@ export default function PiecesDetailPage() {
       {/* ⚡ Guide rapide (4 cartes compactes) - Position 4 */}
       {data.purchaseGuideData && (
         <div className="container mx-auto px-4">
-          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-8" />}>
+          <Suspense
+            fallback={
+              <div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-8" />
+            }
+          >
             <QuickGuideSection
               guide={data.purchaseGuideData}
               gammeName={data.content?.pg_name}
@@ -737,10 +960,14 @@ export default function PiecesDetailPage() {
 
       {/* 📖 Comment choisir - Position 6 après Purchase Guide (intro/risk/timing/arguments) */}
       {data.purchaseGuideData?.howToChoose && (
-        <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+        <Suspense
+          fallback={
+            <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+          }
+        >
           <HowToChooseSection
             content={data.purchaseGuideData.howToChoose}
-            gammeName={data.content?.pg_name || 'cette pièce'}
+            gammeName={data.content?.pg_name || "cette pièce"}
           />
         </Suspense>
       )}
@@ -748,7 +975,7 @@ export default function PiecesDetailPage() {
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
         <div className="container mx-auto px-4 mt-4">
-          <VehicleFilterBadge 
+          <VehicleFilterBadge
             vehicle={data.selectedVehicle}
             showDetails={true}
           />
@@ -756,13 +983,12 @@ export default function PiecesDetailPage() {
       )}
 
       <div className="container mx-auto px-4 py-8">
-        
         {/* Contenu principal de la gamme */}
         <section className="bg-white rounded-xl shadow-lg mb-6 md:mb-8 overflow-hidden">
           {/* Contenu SEO */}
           {data.content?.content && (
             <div className="p-4 md:p-6 lg:p-8">
-              <HtmlContent 
+              <HtmlContent
                 html={data.content.content}
                 trackLinks={true}
                 className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
@@ -774,20 +1000,29 @@ export default function PiecesDetailPage() {
         {/* 🚀 Sections below-fold lazy-loaded avec IDs pour navigation ancres */}
 
         {/* 📖 Symptômes d'usure - Position 5 */}
-        {data.purchaseGuideData?.symptoms && data.purchaseGuideData.symptoms.length > 0 && (
-          <section id="symptoms">
-            <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-              <SymptomsSection
-                symptoms={data.purchaseGuideData.symptoms}
-                gammeName={data.content?.pg_name || 'cette pièce'}
-              />
-            </Suspense>
-          </section>
-        )}
+        {data.purchaseGuideData?.symptoms &&
+          data.purchaseGuideData.symptoms.length > 0 && (
+            <section id="symptoms">
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+                }
+              >
+                <SymptomsSection
+                  symptoms={data.purchaseGuideData.symptoms}
+                  gammeName={data.content?.pg_name || "cette pièce"}
+                />
+              </Suspense>
+            </section>
+          )}
 
         {/* 📚 Informations essentielles - Position 6 */}
         <section id="essentials">
-          <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+          <Suspense
+            fallback={
+              <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
             <InformationsSection
               informations={data.informations}
               catalogueFamille={data.catalogueMameFamille?.items}
@@ -798,7 +1033,11 @@ export default function PiecesDetailPage() {
 
         {/* 💡 Conseils d'entretien - Position 7 */}
         <section id="advice">
-          <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg" />}>
+          <Suspense
+            fallback={
+              <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
             <ConseilsSection
               conseils={data.conseils}
               catalogueFamille={data.catalogueMameFamille?.items}
@@ -809,36 +1048,51 @@ export default function PiecesDetailPage() {
 
         {/* 🔧 Équipementiers - Position 8 */}
         <section id="brands">
-          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+          <Suspense
+            fallback={
+              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
             <EquipementiersSection equipementiers={data.equipementiers} />
           </Suspense>
         </section>
 
         {/* 📦 Catalogue Même Famille - Position 9 */}
         <section id="family">
-          <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
+          <Suspense
+            fallback={
+              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
             <CatalogueSection
               catalogueMameFamille={data.catalogueMameFamille}
-              verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}
+              verbSwitches={data.seoSwitches?.verbs?.map((v) => ({
+                id: v.id,
+                content: v.content,
+              }))}
             />
           </Suspense>
         </section>
 
         {/* 📖 FAQ avec Schema.org - Position 10 (fin pour SEO longue traîne) */}
-        {data.purchaseGuideData?.faq && data.purchaseGuideData.faq.length > 0 && (
-          <section id="faq">
-            <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-lg" />}>
-              <FAQSection
-                faq={data.purchaseGuideData.faq}
-                gammeName={data.content?.pg_name || 'cette pièce'}
-              />
-            </Suspense>
-          </section>
-        )}
+        {data.purchaseGuideData?.faq &&
+          data.purchaseGuideData.faq.length > 0 && (
+            <section id="faq">
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+                }
+              >
+                <FAQSection
+                  faq={data.purchaseGuideData.faq}
+                  gammeName={data.content?.pg_name || "cette pièce"}
+                />
+              </Suspense>
+            </section>
+          )}
 
         {/* Bouton Scroll To Top */}
         <ScrollToTop />
-
       </div>
 
       {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}

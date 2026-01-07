@@ -40,7 +40,7 @@ import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesRecommendedSection } from "../components/pieces/PiecesRecommendedSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
+// VehicleSelector supprimé - remplacé par badge véhicule avec lien "Changer"
 
 // Hook custom
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
@@ -580,28 +580,39 @@ export default function PiecesVehicleRoute() {
 
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
+        {/* 🚗 Badge véhicule actuel avec lien pour changer */}
         <div className="mb-6 sticky top-4 z-20 animate-in fade-in slide-in-from-top duration-500">
-          <VehicleSelector
-            mode="compact"
-            context="pieces"
-            variant="card"
-            redirectOnSelect={false}
-            onVehicleSelect={(vehicle) => {
-              console.log("🔄 Véhicule sélectionné:", vehicle);
-              // Construire URL avec format alias-id
-              const brandSlug = `${vehicle.brand.marque_alias || vehicle.brand.marque_name.toLowerCase()}-${vehicle.brand.marque_id}`;
-              const modelSlug = `${vehicle.model.modele_alias || vehicle.model.modele_name.toLowerCase()}-${vehicle.model.modele_id}`;
-              const typeSlug = `${vehicle.type.type_alias || vehicle.type.type_name.toLowerCase()}-${vehicle.type.type_id}`;
-              const url = `/pieces/${data.gamme.alias}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
-              window.location.href = url;
-            }}
-            currentVehicle={{
-              brand: { id: data.vehicle.marqueId, name: data.vehicle.marque },
-              model: { id: data.vehicle.modeleId, name: data.vehicle.modele },
-              type: { id: data.vehicle.typeId, name: data.vehicle.type },
-            }}
-          />
+          <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-blue-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">
+                    Véhicule sélectionné
+                  </div>
+                  <div className="font-semibold text-gray-900">
+                    {data.vehicle.marque} {data.vehicle.modele}{" "}
+                    {data.vehicle.type}
+                  </div>
+                </div>
+              </div>
+              <a
+                href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
+                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Changer
+              </a>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
