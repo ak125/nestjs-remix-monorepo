@@ -45,8 +45,8 @@ export interface AuditHistoryFilters {
   offset?: number;
 }
 
-// Nom de la table d'audit (utilise ___xtr_msg avec un préfixe pour éviter de créer une nouvelle table)
-const AUDIT_MSG_PREFIX = 'GAMME_SEO_AUDIT';
+// Table dédiée pour l'audit SEO (plus performante que ___xtr_msg avec LIKE)
+const AUDIT_TABLE = 'gamme_seo_audit';
 
 @Injectable()
 export class GammeSeoAuditService extends SupabaseBaseService {
@@ -70,26 +70,20 @@ export class GammeSeoAuditService extends SupabaseBaseService {
         `📝 Logging action: ${params.actionType} by ${params.adminEmail}`,
       );
 
-      // Utilise la table ___xtr_msg avec un format structuré
+      // Insert direct dans la table dédiée gamme_seo_audit
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(AUDIT_TABLE)
         .insert({
-          msg_cst_id: params.adminId,
-          msg_date: new Date().toISOString(),
-          msg_subject: `${AUDIT_MSG_PREFIX}:${params.actionType}`,
-          msg_content: JSON.stringify({
-            admin_email: params.adminEmail,
-            action_type: params.actionType,
-            entity_type: params.entityType,
-            entity_ids: params.entityIds || null,
-            old_values: params.oldValues || null,
-            new_values: params.newValues || null,
-            impact_summary: params.impactSummary,
-          }),
-          msg_open: '1',
-          msg_close: '0',
+          admin_id: params.adminId,
+          admin_email: params.adminEmail,
+          action_type: params.actionType,
+          entity_type: params.entityType,
+          entity_ids: params.entityIds || null,
+          old_values: params.oldValues || null,
+          new_values: params.newValues || null,
+          impact_summary: params.impactSummary,
         })
-        .select('msg_id')
+        .select('id')
         .single();
 
       if (error) {
@@ -97,8 +91,8 @@ export class GammeSeoAuditService extends SupabaseBaseService {
         return { success: false };
       }
 
-      this.logger.log(`✅ Audit logged with ID: ${data?.msg_id}`);
-      return { success: true, auditId: data?.msg_id };
+      this.logger.log(`✅ Audit logged with ID: ${data?.id}`);
+      return { success: true, auditId: data?.id };
     } catch (error) {
       this.logger.error('❌ Error in logAction:', error);
       return { success: false };
@@ -118,30 +112,27 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       const limit = filters.limit || 50;
       const offset = filters.offset || 0;
 
-      // Build query
+      // Query directe sur table dédiée (sans LIKE, beaucoup plus rapide)
       let query = this.supabase
-        .from('___xtr_msg')
-        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content', {
-          count: 'exact',
-        })
-        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`)
-        .order('msg_date', { ascending: false });
+        .from(AUDIT_TABLE)
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
 
-      // Apply filters
+      // Apply filters directement sur les colonnes
       if (filters.actionType) {
-        query = query.eq(
-          'msg_subject',
-          `${AUDIT_MSG_PREFIX}:${filters.actionType}`,
-        );
+        query = query.eq('action_type', filters.actionType);
+      }
+      if (filters.entityType) {
+        query = query.eq('entity_type', filters.entityType);
       }
       if (filters.adminId) {
-        query = query.eq('msg_cst_id', filters.adminId);
+        query = query.eq('admin_id', filters.adminId);
       }
       if (filters.dateFrom) {
-        query = query.gte('msg_date', filters.dateFrom);
+        query = query.gte('created_at', filters.dateFrom);
       }
       if (filters.dateTo) {
-        query = query.lte('msg_date', filters.dateTo);
+        query = query.lte('created_at', filters.dateTo);
       }
 
       // Pagination
@@ -154,40 +145,19 @@ export class GammeSeoAuditService extends SupabaseBaseService {
         throw error;
       }
 
-      // Parse results
-      const entries: GammeSeoAuditEntry[] = (data || [])
-        .map((row: any) => {
-          let content: any = {};
-          try {
-            content = JSON.parse(row.msg_content || '{}');
-          } catch {
-            content = {};
-          }
-
-          // Filter by entityType if specified
-          if (
-            filters.entityType &&
-            content.entity_type !== filters.entityType
-          ) {
-            return null;
-          }
-
-          return {
-            id: row.msg_id,
-            admin_id: row.msg_cst_id,
-            admin_email: content.admin_email || 'unknown',
-            action_type:
-              content.action_type ||
-              row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, ''),
-            entity_type: content.entity_type || 'unknown',
-            entity_ids: content.entity_ids || null,
-            old_values: content.old_values || null,
-            new_values: content.new_values || null,
-            impact_summary: content.impact_summary || '',
-            created_at: row.msg_date,
-          };
-        })
-        .filter(Boolean);
+      // Map directement les colonnes (plus de parsing JSON)
+      const entries: GammeSeoAuditEntry[] = (data || []).map((row: any) => ({
+        id: row.id,
+        admin_id: row.admin_id,
+        admin_email: row.admin_email || 'unknown',
+        action_type: row.action_type,
+        entity_type: row.entity_type || 'gamme',
+        entity_ids: row.entity_ids || null,
+        old_values: row.old_values || null,
+        new_values: row.new_values || null,
+        impact_summary: row.impact_summary || '',
+        created_at: row.created_at,
+      }));
 
       this.logger.log(`✅ Found ${entries.length} audit entries`);
       return {
@@ -215,12 +185,11 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      // Get all audit entries
+      // Query directe sur table dédiée
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
-        .select('msg_id, msg_cst_id, msg_date, msg_subject, msg_content')
-        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`)
-        .gte('msg_date', lastWeek.toISOString());
+        .from(AUDIT_TABLE)
+        .select('id, admin_id, admin_email, action_type, created_at')
+        .gte('created_at', lastWeek.toISOString());
 
       if (error) throw error;
 
@@ -228,25 +197,19 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
       // Calculate stats
       const actionsLast24h = entries.filter(
-        (e: any) => new Date(e.msg_date) >= yesterday,
+        (e: any) => new Date(e.created_at) >= yesterday,
       ).length;
       const actionsByType: Record<string, number> = {};
       const adminCounts: Record<string, number> = {};
 
       entries.forEach((row: any) => {
-        // Count by action type
-        const actionType =
-          row.msg_subject?.replace(`${AUDIT_MSG_PREFIX}:`, '') || 'UNKNOWN';
+        // Count by action type (colonne directe, pas de parsing)
+        const actionType = row.action_type || 'UNKNOWN';
         actionsByType[actionType] = (actionsByType[actionType] || 0) + 1;
 
-        // Count by admin
-        try {
-          const content = JSON.parse(row.msg_content || '{}');
-          const email = content.admin_email || 'unknown';
-          adminCounts[email] = (adminCounts[email] || 0) + 1;
-        } catch {
-          // Ignore parse errors
-        }
+        // Count by admin (colonne directe)
+        const email = row.admin_email || 'unknown';
+        adminCounts[email] = (adminCounts[email] || 0) + 1;
       });
 
       // Top admins
@@ -257,9 +220,8 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
       // Get total count
       const { count: totalCount } = await this.supabase
-        .from('___xtr_msg')
-        .select('msg_id', { count: 'exact', head: true })
-        .like('msg_subject', `${AUDIT_MSG_PREFIX}:%`);
+        .from(AUDIT_TABLE)
+        .select('id', { count: 'exact', head: true });
 
       return {
         totalActions: totalCount || 0,
