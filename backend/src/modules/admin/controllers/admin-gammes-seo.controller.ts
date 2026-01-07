@@ -749,9 +749,12 @@ export class AdminGammesSeoController {
           refreshed: result.refreshed,
           summary: {
             total: result.refreshed,
-            withProducts: result.results.filter((r) => r.products_total > 0).length,
-            withVehicles: result.results.filter((r) => r.vehicles_total > 0).length,
-            withContent: result.results.filter((r) => r.content_words_total > 0).length,
+            withProducts: result.results.filter((r) => r.products_total > 0)
+              .length,
+            withVehicles: result.results.filter((r) => r.vehicles_total > 0)
+              .length,
+            withContent: result.results.filter((r) => r.content_words_total > 0)
+              .length,
           },
         },
         message: `${result.refreshed} gammes rafraîchies`,
@@ -777,7 +780,9 @@ export class AdminGammesSeoController {
   @Post(':pgId/refresh-aggregates')
   async refreshGammeAggregates(@Param('pgId', ParseIntPipe) pgId: number) {
     try {
-      this.logger.log(`🔄 POST /api/admin/gammes-seo/${pgId}/refresh-aggregates`);
+      this.logger.log(
+        `🔄 POST /api/admin/gammes-seo/${pgId}/refresh-aggregates`,
+      );
 
       const result = await this.gammesSeoService.refreshAggregates(pgId);
 
@@ -808,7 +813,10 @@ export class AdminGammesSeoController {
       if (error instanceof HttpException) {
         throw error;
       }
-      this.logger.error(`❌ Error refreshing aggregates for gamme ${pgId}:`, error);
+      this.logger.error(
+        `❌ Error refreshing aggregates for gamme ${pgId}:`,
+        error,
+      );
       throw new HttpException(
         {
           success: false,
