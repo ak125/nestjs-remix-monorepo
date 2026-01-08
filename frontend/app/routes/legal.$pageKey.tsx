@@ -239,10 +239,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
     // Schema.org JSON-LD
     {
-      "script:ld+json": JSON.stringify(schemaWebPage),
+      "script:ld+json": schemaWebPage,
     },
     {
-      "script:ld+json": JSON.stringify(schemaBreadcrumb),
+      "script:ld+json": schemaBreadcrumb,
     },
   ];
 };
@@ -264,7 +264,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         `${API_URL}/api/support/legal/ariane/${dbAlias}`,
         {
           headers: { Accept: "application/json" },
-        }
+        },
       );
 
       if (response.ok) {
@@ -286,7 +286,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     } catch (error) {
       console.warn(
         `Failed to fetch legal page from API for ${pageKey}:`,
-        error
+        error,
       );
     }
   }
@@ -328,9 +328,7 @@ export default function LegalPage() {
             <span className="mx-2">/</span>
             <span className="text-white">{page.breadcrumb || page.title}</span>
           </nav>
-          <h1 className="text-3xl md:text-4xl font-bold">
-            {page.title}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{page.title}</h1>
         </div>
       </div>
 
@@ -361,7 +359,10 @@ export default function LegalPage() {
               <span className="text-2xl">📱</span>
               <div>
                 <p className="text-sm text-gray-500">Téléphone</p>
-                <a href="tel:+33177695892" className="font-semibold text-blue-600 hover:underline">
+                <a
+                  href="tel:+33177695892"
+                  className="font-semibold text-blue-600 hover:underline"
+                >
                   01 77 69 58 92
                 </a>
               </div>
@@ -370,7 +371,10 @@ export default function LegalPage() {
               <span className="text-2xl">✉️</span>
               <div>
                 <p className="text-sm text-gray-500">Email</p>
-                <a href="mailto:contact@automecanik.com" className="font-semibold text-blue-600 hover:underline">
+                <a
+                  href="mailto:contact@automecanik.com"
+                  className="font-semibold text-blue-600 hover:underline"
+                >
                   contact@automecanik.com
                 </a>
               </div>
@@ -406,7 +410,9 @@ export default function LegalPage() {
                     className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all text-sm"
                   >
                     <span>{legalPage.icon}</span>
-                    <span className="font-medium text-gray-700">{legalPage.title}</span>
+                    <span className="font-medium text-gray-700">
+                      {legalPage.title}
+                    </span>
                   </Link>
                 ))}
             </div>
@@ -427,7 +433,9 @@ export default function LegalPage() {
                     className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-all text-sm"
                   >
                     <span>{helpPage.icon}</span>
-                    <span className="font-medium text-gray-700">{helpPage.title}</span>
+                    <span className="font-medium text-gray-700">
+                      {helpPage.title}
+                    </span>
                   </Link>
                 ))}
             </div>
@@ -448,7 +456,9 @@ export default function LegalPage() {
                     className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-all text-sm"
                   >
                     <span>{infoPage.icon}</span>
-                    <span className="font-medium text-gray-700">{infoPage.title}</span>
+                    <span className="font-medium text-gray-700">
+                      {infoPage.title}
+                    </span>
                   </Link>
                 ))}
             </div>
