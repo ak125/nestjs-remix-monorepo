@@ -423,8 +423,9 @@ export class SitemapUnifiedService {
 
     try {
       // 🎯 V8: Récupérer la liste des pg_id INDEX (aligné avec sitemap-categories)
+      // Note: pg_display, pg_relfollow, pg_sitemap sont dans pieces_gamme, pas catalog_gamme
       const { data: indexGammes, error: gammeError } = await this.supabase
-        .from('catalog_gamme')
+        .from('pieces_gamme')
         .select('pg_id')
         .eq('pg_display', '1')
         .eq('pg_relfollow', '1')
