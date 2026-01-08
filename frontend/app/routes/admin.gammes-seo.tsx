@@ -329,6 +329,32 @@ export async function action({ request }: ActionFunctionArgs) {
         });
       }
 
+      case "regenerate-sitemap": {
+        const response = await fetch(
+          `${backendUrl}/api/sitemap/generate-all?skipValidation=true`,
+          {
+            method: "POST",
+            headers: {
+              Cookie: cookieHeader,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        const result = await response.json();
+        if (result.success) {
+          return json({
+            success: true,
+            message: `Sitemap régénéré: ${result.data?.totalUrls || 0} URLs dans ${result.data?.files?.length || 0} fichiers`,
+            sitemapData: result.data,
+          });
+        }
+        return json({
+          success: false,
+          message: result.message || "Erreur lors de la régénération",
+        });
+      }
+
       default:
         return json({ success: false, message: "Action inconnue" });
     }
@@ -367,6 +393,12 @@ export default function AdminGammesSeo() {
   const [isSavingThresholds, setIsSavingThresholds] = useState(false);
   const [showThresholdsPanel, setShowThresholdsPanel] = useState(false);
   const [showAuditPanel, setShowAuditPanel] = useState(false);
+  const [isRegeneratingSitemap, setIsRegeneratingSitemap] = useState(false);
+  const [lastSitemapResult, setLastSitemapResult] = useState<{
+    totalUrls: number;
+    files: number;
+    timestamp: string;
+  } | null>(null);
 
   // Sync thresholds when data changes
   useEffect(() => {
@@ -434,6 +466,42 @@ export default function AdminGammesSeo() {
       toast.error("Erreur réseau");
     } finally {
       setIsSavingThresholds(false);
+    }
+  };
+
+  // Handler pour régénérer le sitemap
+  const handleRegenerateSitemap = async () => {
+    const confirmed = window.confirm(
+      "Régénérer tous les sitemaps ? Cette opération peut prendre 30-60 secondes.",
+    );
+    if (!confirmed) return;
+
+    setIsRegeneratingSitemap(true);
+    try {
+      const formData = new FormData();
+      formData.append("_action", "regenerate-sitemap");
+
+      const response = await fetch("/admin/gammes-seo", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setLastSitemapResult({
+          totalUrls: result.sitemapData?.totalUrls || 0,
+          files: result.sitemapData?.files?.length || 0,
+          timestamp: new Date().toLocaleString("fr-FR"),
+        });
+        toast.success(result.message);
+      } else {
+        toast.error(result.message || "Erreur lors de la régénération");
+      }
+    } catch {
+      toast.error("Erreur réseau lors de la régénération");
+    } finally {
+      setIsRegeneratingSitemap(false);
     }
   };
 
@@ -1372,6 +1440,53 @@ export default function AdminGammesSeo() {
           </Card>
         </div>
       )}
+
+      {/* Sitemap Regeneration Card */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2">
+              🗺️ Sitemap
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerateSitemap}
+              disabled={isRegeneratingSitemap}
+              className="text-blue-600 border-blue-300 hover:bg-blue-100"
+            >
+              {isRegeneratingSitemap ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Génération...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Régénérer
+                </>
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {lastSitemapResult ? (
+            <div className="text-sm text-blue-700">
+              <div className="font-medium">
+                {lastSitemapResult.totalUrls.toLocaleString()} URLs
+              </div>
+              <div className="text-xs text-blue-500">
+                {lastSitemapResult.files} fichiers •{" "}
+                {lastSitemapResult.timestamp}
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-blue-500">
+              Cliquez pour régénérer les sitemaps
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Smart Actions KPIs - Click to filter */}
       <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
