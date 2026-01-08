@@ -411,6 +411,7 @@ export class SitemapUnifiedService {
   /**
    * 📦 Génère sitemap-pieces-*.xml (shardé par 50k URLs)
    * V7: Avec validation optionnelle des URLs (exclut type_id/gamme_id supprimés)
+   * V8: Filtre par gammes INDEX uniquement (aligné avec sitemap-categories)
    * Utilise pagination pour contourner la limite Supabase 1000 lignes
    */
   private async generatePiecesSitemaps(
@@ -421,10 +422,33 @@ export class SitemapUnifiedService {
     const shouldValidate = !options.skipValidation && !!this.validator;
 
     try {
-      // Compter le total d'abord
+      // 🎯 V8: Récupérer la liste des pg_id INDEX (aligné avec sitemap-categories)
+      const { data: indexGammes, error: gammeError } = await this.supabase
+        .from('catalog_gamme')
+        .select('pg_id')
+        .eq('pg_display', '1')
+        .eq('pg_relfollow', '1')
+        .eq('pg_sitemap', '1');
+
+      if (gammeError) {
+        this.logger.error(
+          `❌ Error fetching INDEX gammes: ${gammeError.message}`,
+        );
+        return results;
+      }
+
+      const indexPgIds = new Set(
+        (indexGammes || []).map((g) => String(g.pg_id)),
+      );
+      this.logger.log(
+        `  🎯 ${indexPgIds.size} gammes INDEX à inclure dans sitemap-pieces`,
+      );
+
+      // 🛡️ V8: Compter AVEC le filtre map_has_item > 5 (corrige bug count précédent)
       const { count, error: countError } = await this.supabase
         .from('__sitemap_p_link')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .gt('map_has_item', 5);
 
       if (countError) {
         this.logger.error(`❌ Error counting pieces: ${countError.message}`);
@@ -434,7 +458,7 @@ export class SitemapUnifiedService {
       const totalCount = count || 0;
       const totalShards = Math.ceil(totalCount / this.MAX_URLS_PER_SITEMAP);
       this.logger.log(
-        `  → ${totalCount} URLs total, ${totalShards} shards à générer ${shouldValidate ? '(avec validation)' : '(sans validation)'}`,
+        `  → ${totalCount} URLs (map_has_item>5), ${totalShards} shards à générer ${shouldValidate ? '(avec validation)' : '(sans validation)'}`,
       );
 
       // Type pour les pièces
@@ -463,7 +487,7 @@ export class SitemapUnifiedService {
 
         // 🛡️ Utiliser pagination avec filtre map_has_item > 5
         // Exclut les pages thin content (≤5 produits) aligné avec noindex frontend
-        const pieces = await this.fetchWithPagination<PieceType>(
+        const allPieces = await this.fetchWithPagination<PieceType>(
           '__sitemap_p_link',
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
           shardLimit,
@@ -471,8 +495,22 @@ export class SitemapUnifiedService {
           { column: 'map_has_item', operator: 'gt', value: 5 },
         );
 
-        if (!pieces || pieces.length === 0) {
+        if (!allPieces || allPieces.length === 0) {
           this.logger.warn(`  ⚠️ No pieces found for shard ${shard + 1}`);
+          continue;
+        }
+
+        // 🎯 V8: Filtrer uniquement les pièces des gammes INDEX
+        const pieces = allPieces.filter((p) => indexPgIds.has(p.map_pg_id));
+        const excludedNoindex = allPieces.length - pieces.length;
+        if (excludedNoindex > 0) {
+          this.logger.log(
+            `  🎯 Shard ${shard + 1}: ${excludedNoindex} URLs exclues (gammes NOINDEX)`,
+          );
+        }
+
+        if (pieces.length === 0) {
+          this.logger.warn(`  ⚠️ No INDEX pieces found for shard ${shard + 1}`);
           continue;
         }
 
