@@ -12,16 +12,20 @@
 # - Ping Google: notification après génération
 
 # 1. Génération delta quotidienne (3h) - URLs modifiées uniquement
-0 3 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/generate >> /logs/sitemap-delta.log 2>&1
+# DÉSACTIVÉ 2026-01-08: Utilise maintenant génération manuelle via API
+# 0 3 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/generate >> /logs/sitemap-delta.log 2>&1
 
 # 2. Streaming complet hebdomadaire (dimanche 2h) - Regénération totale
-0 2 * * 0 curl -s -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=all" >> /logs/sitemap-streaming.log 2>&1
+# DÉSACTIVÉ 2026-01-08: Utilise maintenant génération manuelle via API
+# 0 2 * * 0 curl -s -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=all" >> /logs/sitemap-streaming.log 2>&1
 
 # 3. Cleanup deltas expirés (4h) - Nettoie Redis
-0 4 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/cleanup >> /logs/sitemap-cleanup.log 2>&1
+# DÉSACTIVÉ 2026-01-08: Plus nécessaire avec génération manuelle
+# 0 4 * * * curl -s -X POST http://localhost:3000/sitemap-v2/delta/cleanup >> /logs/sitemap-cleanup.log 2>&1
 
 # 4. Ping Google après génération (3h15)
-15 3 * * * curl -s "https://www.google.com/ping?sitemap=https://www.automecanik.com/sitemap.xml"
+# DÉSACTIVÉ 2026-01-08: Ping manuel après génération
+# 15 3 * * * curl -s "https://www.google.com/ping?sitemap=https://www.automecanik.com/sitemap.xml"
 
 # =====================================================
 # 📊 SEO LINK TRACKING (Maillage interne)
