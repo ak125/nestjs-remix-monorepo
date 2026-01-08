@@ -502,7 +502,10 @@ export class SitemapUnifiedService {
         }
 
         // 🎯 V8: Filtrer uniquement les pièces des gammes INDEX
-        const pieces = allPieces.filter((p) => indexPgIds.has(p.map_pg_id));
+        // Note: map_pg_id est un integer, indexPgIds contient des strings
+        const pieces = allPieces.filter((p) =>
+          indexPgIds.has(String(p.map_pg_id)),
+        );
         const excludedNoindex = allPieces.length - pieces.length;
         if (excludedNoindex > 0) {
           this.logger.log(
