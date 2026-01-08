@@ -422,14 +422,14 @@ export class SitemapUnifiedService {
     const shouldValidate = !options.skipValidation && !!this.validator;
 
     try {
-      // 🎯 V8: Récupérer la liste des pg_id INDEX (aligné avec sitemap-categories)
-      // Note: pg_display, pg_relfollow, pg_sitemap sont dans pieces_gamme, pas catalog_gamme
+      // 🎯 V8: Récupérer la liste des pg_id INDEX (EXACTEMENT aligné avec sitemap-categories)
+      // Utilise les mêmes filtres que generateCategoriesSitemap: pg_display='1' AND pg_relfollow='1'
+      // Principe: INDEX = Sitemap (toute gamme INDEX est automatiquement dans le sitemap)
       const { data: indexGammes, error: gammeError } = await this.supabase
         .from('pieces_gamme')
         .select('pg_id')
         .eq('pg_display', '1')
-        .eq('pg_relfollow', '1')
-        .eq('pg_sitemap', '1');
+        .eq('pg_relfollow', '1');
 
       if (gammeError) {
         this.logger.error(
