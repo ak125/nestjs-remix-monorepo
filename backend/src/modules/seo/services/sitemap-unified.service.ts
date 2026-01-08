@@ -1,25 +1,23 @@
 /**
- * 🗺️ SERVICE UNIFIÉ DE GÉNÉRATION SITEMAPS SEO V6 2026
+ * 🗺️ SERVICE UNIFIÉ DE GÉNÉRATION SITEMAPS SEO V9 2026
  *
  * Architecture thématique (7 types de sitemaps):
  * 1. sitemap-racine.xml      - Homepage uniquement (1 URL)
- * 2. sitemap-categories.xml  - Catégories/Gammes pièces (~1000 URLs)
- * 3. sitemap-vehicules.xml   - Marques+Modèles+Motorisations fusionnés (~12.8k URLs)
- * 4. sitemap-pieces-*.xml    - Fiches pièces shardées (~714k URLs)
+ * 2. sitemap-categories.xml  - Catégories INDEX (~123 URLs)
+ * 3. sitemap-vehicules.xml   - Marques+Modèles+Motorisations (~13.8k URLs)
+ * 4. sitemap-pieces-*.xml    - Fiches pièces shardées (~321k URLs)
  * 5. sitemap-blog.xml        - Articles blog (~109 URLs)
  * 6. sitemap-pages.xml       - Pages institutionnelles (~9 URLs)
  * 7. sitemap.xml             - Index principal
  *
- * V6 Changements:
- * - Fusion constructeurs+modeles+types → sitemap-vehicules.xml
- * - Utilise vue SQL __sitemap_vehicules (hiérarchie marque→modèle→motorisation)
+ * Principe V9: INDEX = Sitemap
+ * - Toute gamme avec pg_relfollow='1' (INDEX) est incluse
+ * - Alignement automatique categories ↔ pieces
  *
  * Avantages SEO:
- * - Google comprend la hiérarchie véhicules en 1 fichier
- * - Crawl budget optimisé (+30% efficacité)
- * - Diagnostic facile dans Search Console
- * - Pagination pour contourner limite Supabase 1000 lignes
- * - Support 700k+ URLs
+ * - Cohérence garantie (même source de vérité)
+ * - Pas d'URLs NOINDEX soumises à Google
+ * - Support 400k+ URLs avec pagination
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
@@ -98,6 +96,9 @@ export class SitemapUnifiedService {
   // Stats de validation pour le rapport
   private validationStats = { totalChecked: 0, excluded: 0 };
 
+  // Cache des pg_id INDEX (évite double requête DB)
+  private indexPgIdsCache: Set<string> | null = null;
+
   constructor(
     private configService: ConfigService,
     @Optional() private readonly validator?: SitemapVehiclePiecesValidator,
@@ -132,8 +133,9 @@ export class SitemapUnifiedService {
     const startTime = Date.now();
     const skipValidation = options.skipValidation ?? false;
 
-    // Reset validation stats
+    // Reset caches et stats
     this.validationStats = { totalChecked: 0, excluded: 0 };
+    this.indexPgIdsCache = null;
 
     const result: AllSitemapsResult = {
       success: true,
@@ -220,6 +222,35 @@ export class SitemapUnifiedService {
     }
 
     return result;
+  }
+
+  /**
+   * 🎯 Récupère les pg_id des gammes INDEX (avec cache)
+   * Utilisé par generateCategoriesSitemap et generatePiecesSitemaps
+   */
+  private async getIndexGammeIds(): Promise<Set<string>> {
+    // Retourner le cache si disponible
+    if (this.indexPgIdsCache) {
+      return this.indexPgIdsCache;
+    }
+
+    const { data: indexGammes, error } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_display', '1')
+      .eq('pg_relfollow', '1');
+
+    if (error) {
+      this.logger.error(`❌ Error fetching INDEX gammes: ${error.message}`);
+      return new Set();
+    }
+
+    this.indexPgIdsCache = new Set(
+      (indexGammes || []).map((g) => String(g.pg_id)),
+    );
+    this.logger.log(`  🎯 ${this.indexPgIdsCache.size} gammes INDEX en cache`);
+
+    return this.indexPgIdsCache;
   }
 
   /**
@@ -410,9 +441,7 @@ export class SitemapUnifiedService {
 
   /**
    * 📦 Génère sitemap-pieces-*.xml (shardé par 50k URLs)
-   * V7: Avec validation optionnelle des URLs (exclut type_id/gamme_id supprimés)
-   * V8: Filtre par gammes INDEX uniquement (aligné avec sitemap-categories)
-   * Utilise pagination pour contourner la limite Supabase 1000 lignes
+   * V9: Filtre par gammes INDEX via cache partagé
    */
   private async generatePiecesSitemaps(
     dir: string,
@@ -422,30 +451,14 @@ export class SitemapUnifiedService {
     const shouldValidate = !options.skipValidation && !!this.validator;
 
     try {
-      // 🎯 V8: Récupérer la liste des pg_id INDEX (EXACTEMENT aligné avec sitemap-categories)
-      // Utilise les mêmes filtres que generateCategoriesSitemap: pg_display='1' AND pg_relfollow='1'
-      // Principe: INDEX = Sitemap (toute gamme INDEX est automatiquement dans le sitemap)
-      const { data: indexGammes, error: gammeError } = await this.supabase
-        .from('pieces_gamme')
-        .select('pg_id')
-        .eq('pg_display', '1')
-        .eq('pg_relfollow', '1');
-
-      if (gammeError) {
-        this.logger.error(
-          `❌ Error fetching INDEX gammes: ${gammeError.message}`,
-        );
+      // 🎯 V9: Utiliser le cache des gammes INDEX
+      const indexPgIds = await this.getIndexGammeIds();
+      if (indexPgIds.size === 0) {
+        this.logger.warn('⚠️ Aucune gamme INDEX trouvée');
         return results;
       }
 
-      const indexPgIds = new Set(
-        (indexGammes || []).map((g) => String(g.pg_id)),
-      );
-      this.logger.log(
-        `  🎯 ${indexPgIds.size} gammes INDEX à inclure dans sitemap-pieces`,
-      );
-
-      // 🛡️ V8: Compter AVEC le filtre map_has_item > 5 (corrige bug count précédent)
+      // Compter avec filtre map_has_item > 5 (exclut thin content)
       const { count, error: countError } = await this.supabase
         .from('__sitemap_p_link')
         .select('*', { count: 'exact', head: true })
@@ -486,8 +499,7 @@ export class SitemapUnifiedService {
           `  📥 Shard ${shard + 1}/${totalShards}: fetching ${shardLimit} URLs from offset ${shardOffset}...`,
         );
 
-        // 🛡️ Utiliser pagination avec filtre map_has_item > 5
-        // Exclut les pages thin content (≤5 produits) aligné avec noindex frontend
+        // Pagination avec filtre thin content (≤5 produits = NOINDEX)
         const allPieces = await this.fetchWithPagination<PieceType>(
           '__sitemap_p_link',
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
@@ -501,8 +513,7 @@ export class SitemapUnifiedService {
           continue;
         }
 
-        // 🎯 V8: Filtrer uniquement les pièces des gammes INDEX
-        // Note: map_pg_id est un integer, indexPgIds contient des strings
+        // Filtrer par gammes INDEX (conversion string pour comparaison)
         const pieces = allPieces.filter((p) =>
           indexPgIds.has(String(p.map_pg_id)),
         );
@@ -520,7 +531,7 @@ export class SitemapUnifiedService {
 
         let urls: SitemapUrl[];
 
-        // 🛡️ V7: Validation optionnelle des URLs
+        // Validation optionnelle des URLs (exclut combinaisons invalides)
         if (shouldValidate && this.validator) {
           // Préparer les URLs candidates pour validation
           const candidates = pieces.map((p) => ({
