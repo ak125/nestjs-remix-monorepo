@@ -3,17 +3,20 @@
  * Composant extrait de routes/orders._index.tsx
  */
 
-import { Search, X } from 'lucide-react';
-import React from 'react';
+import { Search, X } from "lucide-react";
 
-import { type OrdersFiltersProps } from '../../types/orders.types';
+import { type OrdersFiltersProps } from "../../types/orders.types";
 
-export function OrdersFilters({ filters, onFilterChange, onReset }: OrdersFiltersProps) {
+export function OrdersFilters({
+  filters,
+  onFilterChange,
+  onReset,
+}: OrdersFiltersProps) {
   const hasActiveFilters =
-    filters.search !== '' ||
-    filters.orderStatus !== 'all' ||
-    filters.paymentStatus !== 'all' ||
-    filters.dateRange !== 'all';
+    filters.search !== "" ||
+    filters.orderStatus !== "all" ||
+    filters.paymentStatus !== "all" ||
+    filters.dateRange !== "all";
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">

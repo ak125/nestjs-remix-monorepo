@@ -1,65 +1,77 @@
-import { cn } from '~/lib/utils';
-import { Avatar, AvatarImage, AvatarFallback } from './avatar';
+import { type CSSProperties } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
+import { cn } from "~/lib/utils";
 
-type BrandType = 'constructeur' | 'equipementier';
+type BrandType = "constructeur" | "equipementier";
 
 interface BrandLogoProps {
   logoPath: string | null;
   brandName: string;
   type?: BrandType;
   className?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
 }
 
 const sizeClasses = {
-  xs: 'h-5 w-5',
-  sm: 'h-6 w-6',
-  md: 'h-8 w-8',
-  lg: 'h-10 w-10',
-  xl: 'h-12 w-12',
+  xs: "h-5 w-5",
+  sm: "h-6 w-6",
+  md: "h-8 w-8",
+  lg: "h-10 w-10",
+  xl: "h-12 w-12",
 };
 
 const textSizeClasses = {
-  xs: 'text-[8px]',
-  sm: 'text-[9px]',
-  md: 'text-[10px]',
-  lg: 'text-xs',
-  xl: 'text-sm',
+  xs: "text-[8px]",
+  sm: "text-[9px]",
+  md: "text-[10px]",
+  lg: "text-xs",
+  xl: "text-sm",
 };
 
 // URL Supabase pour les logos
-const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
 
 /**
  * Logo de marque avec Avatar Shadcn UI
  * Supporte constructeurs automobiles et équipementiers
  */
-export const BrandLogo: React.FC<BrandLogoProps> = ({
+export function BrandLogo({
   logoPath,
   brandName,
-  type = 'constructeur',
-  className = '',
-  size = 'md',
-}) => {
+  type = "constructeur",
+  className = "",
+  size = "md",
+}: BrandLogoProps) {
   // Déterminer le dossier selon le type
-  const folder = type === 'equipementier'
-    ? 'equipementiers-automobiles'
-    : 'constructeurs-automobiles/marques-logos';
+  const folder =
+    type === "equipementier"
+      ? "equipementiers-automobiles"
+      : "constructeurs-automobiles/marques-logos";
 
   // Extraire le nom de fichier si logoPath contient un chemin complet
   const extractFilename = (path: string | null): string => {
-    if (!path) return `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+    if (!path) return `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`;
     // Si c'est déjà une URL complète, extraire juste le basename
-    const parts = path.split('/');
-    return parts[parts.length - 1] || `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+    const parts = path.split("/");
+    return (
+      parts[parts.length - 1] ||
+      `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`
+    );
   };
 
   const filename = extractFilename(logoPath);
 
   // Calculer la taille en pixels pour l'URL
-  const pixelSize = typeof size === 'number' ? size : {
-    xs: 20, sm: 24, md: 32, lg: 40, xl: 48
-  }[size];
+  const pixelSize =
+    typeof size === "number"
+      ? size
+      : {
+          xs: 20,
+          sm: 24,
+          md: 32,
+          lg: 40,
+          xl: 48,
+        }[size];
 
   // URL Supabase render API avec transformation
   const logoUrl = `${SUPABASE_URL}/storage/v1/render/image/public/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`;
@@ -68,13 +80,26 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const initials = brandName.substring(0, 2).toUpperCase();
 
   // Classes de taille
-  const sizeClass = typeof size === 'number' ? '' : sizeClasses[size];
-  const textClass = typeof size === 'number' ? 'text-xs' : textSizeClasses[size];
+  const sizeClass = typeof size === "number" ? "" : sizeClasses[size];
+  const textClass =
+    typeof size === "number" ? "text-xs" : textSizeClasses[size];
+
+  // Pour les tailles numériques, utiliser CSS custom properties avec Tailwind
+  const customSizeStyle =
+    typeof size === "number"
+      ? ({ "--brand-size": `${size}px` } as CSSProperties)
+      : undefined;
 
   return (
     <Avatar
-      className={cn(sizeClass, 'flex-shrink-0', className)}
-      style={typeof size === 'number' ? { width: size, height: size } : undefined}
+      className={cn(
+        sizeClass,
+        "flex-shrink-0",
+        typeof size === "number" &&
+          "w-[var(--brand-size)] h-[var(--brand-size)]",
+        className,
+      )}
+      style={customSizeStyle}
     >
       <AvatarImage
         src={logoUrl}
@@ -82,11 +107,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         className="object-contain p-0.5"
       />
       <AvatarFallback
-        className={cn('bg-slate-100 text-slate-600 font-bold', textClass)}
+        className={cn("bg-slate-100 text-slate-600 font-bold", textClass)}
         delayMs={100}
       >
         {initials}
       </AvatarFallback>
     </Avatar>
   );
-};
+}

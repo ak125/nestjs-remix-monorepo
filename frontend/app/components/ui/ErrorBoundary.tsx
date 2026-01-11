@@ -1,4 +1,5 @@
-import React, { type ErrorInfo, type ReactNode , Component } from "react";
+import { type ErrorInfo, type ReactNode, Component } from "react";
+import { Button } from "~/components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -24,18 +25,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
-    
+
     // Appel du callback d'erreur si fourni
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
 
     // Tracking analytics pour les erreurs
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'exception', {
+    if (typeof gtag !== "undefined") {
+      gtag("event", "exception", {
         description: error.message,
         fatal: false,
-        custom_parameter_component_stack: errorInfo.componentStack
+        custom_parameter_component_stack: errorInfo.componentStack,
       });
     }
 
@@ -79,7 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Détails de l'erreur
               </h3>
-              
+
               {this.state.error && (
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 mb-2">Message :</p>
@@ -89,29 +90,31 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
               )}
 
-              {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Stack trace :</p>
-                  <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto max-h-32 text-gray-700">
-                    {this.state.errorInfo.componentStack}
-                  </pre>
-                </div>
-              )}
+              {process.env.NODE_ENV === "development" &&
+                this.state.errorInfo && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2">Stack trace :</p>
+                    <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto max-h-32 text-gray-700">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </div>
+                )}
 
               <div className="flex space-x-3">
-                <button
+                <Button
+                  className="flex-1"
                   onClick={() => window.location.reload()}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
                   Recharger la page
-                </button>
-                
-                <button
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  className="flex-1"
                   onClick={() => window.history.back()}
-                  className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                 >
                   Retour
-                </button>
+                </Button>
               </div>
 
               <div className="mt-4 text-center">
@@ -132,7 +135,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-sm text-gray-600 mb-4">
                 Aidez-nous à améliorer l'expérience en signalant cette erreur.
               </p>
-              <button
+              <Button
+                variant="destructive"
+                className="w-full"
                 onClick={() => {
                   const errorReport = {
                     message: this.state.error?.message,
@@ -140,22 +145,21 @@ export class ErrorBoundary extends Component<Props, State> {
                     componentStack: this.state.errorInfo?.componentStack,
                     url: window.location.href,
                     userAgent: navigator.userAgent,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                   };
-                  
+
                   // Envoi du rapport d'erreur à l'API
-                  fetch('/api/error-reports', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(errorReport)
+                  fetch("/api/error-reports", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(errorReport),
                   }).catch(console.error);
-                  
-                  alert('Rapport d\'erreur envoyé. Merci !');
+
+                  alert("Rapport d'erreur envoyé. Merci !");
                 }}
-                className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
               >
                 Envoyer le rapport d'erreur
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -170,12 +174,12 @@ export class ErrorBoundary extends Component<Props, State> {
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: ErrorInfo) => {
     console.error("Error caught by useErrorHandler:", error, errorInfo);
-    
+
     // Analytics
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'exception', {
+    if (typeof gtag !== "undefined") {
+      gtag("event", "exception", {
         description: error.message,
-        fatal: false
+        fatal: false,
       });
     }
   };

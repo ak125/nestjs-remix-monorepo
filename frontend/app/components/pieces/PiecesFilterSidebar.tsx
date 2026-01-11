@@ -7,12 +7,11 @@
  */
 
 import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
-import React from "react";
-
-import { Badge, FilterSection, ScrollArea } from "~/components/ui";
+import { memo } from "react";
 
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
+import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 
 export interface FilterOptionData {
   id: number | string;
@@ -51,10 +50,10 @@ interface PiecesFilterSidebarProps {
 }
 
 /**
- * 🎛️ Sidebar Filtres avec React.memo pour optimisation
+ * 🎛️ Sidebar Filtres avec memo pour optimisation
  * Re-render uniquement si les props changent
  */
-export const PiecesFilterSidebar = React.memo(function PiecesFilterSidebar({
+export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
   activeFilters,
   setActiveFilters,
   uniqueBrands,

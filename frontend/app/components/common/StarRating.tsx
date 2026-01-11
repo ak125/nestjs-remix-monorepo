@@ -3,13 +3,11 @@
  * Utilisé pour noter la qualité des pièces/marques
  */
 
-import React from 'react';
-
 interface StarRatingProps {
   /** Note sur 5 (peut être décimale ex: 4.5) */
   rating: number;
   /** Taille des étoiles */
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   /** Afficher le nombre après les étoiles */
   showNumber?: boolean;
   /** Couleur personnalisée */
@@ -20,14 +18,14 @@ interface StarRatingProps {
 
 export function StarRating({
   rating,
-  size = 'md',
+  size = "md",
   showNumber = false,
-  color = '#fbbf24',
-  className = '',
+  color = "#fbbf24",
+  className = "",
 }: StarRatingProps) {
   // Normaliser entre 0 et 5
   const normalizedRating = Math.max(0, Math.min(5, rating));
-  
+
   // Calcul des étoiles pleines, demi-étoiles, vides
   const fullStars = Math.floor(normalizedRating);
   const hasHalfStar = normalizedRating % 1 >= 0.5;
@@ -35,9 +33,9 @@ export function StarRating({
 
   // Tailles selon prop
   const sizeClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
+    sm: "w-3 h-3",
+    md: "w-4 h-4",
+    lg: "w-5 h-5",
   };
 
   const sizeClass = sizeClasses[size];
@@ -105,11 +103,6 @@ export function StarRating({
 /** Composant compact pour afficher juste les étoiles avec le nombre */
 export function CompactStarRating({ rating }: { rating: number }) {
   return (
-    <StarRating
-      rating={rating}
-      size="sm"
-      showNumber
-      className="inline-flex"
-    />
+    <StarRating rating={rating} size="sm" showNumber className="inline-flex" />
   );
 }

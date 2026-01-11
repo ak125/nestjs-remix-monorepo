@@ -1,13 +1,11 @@
 /**
  * 🍞 Composant Fil d'Ariane (Breadcrumb)
- * 
+ *
  * ✅ Optimisé SEO avec Schema.org
  * ✅ Support JSON-LD + Microdonnées
  * ✅ Responsive et accessible
  * ✅ Personnalisable (couleurs, tailles)
  */
-
-import React from 'react';
 
 export interface BreadcrumbItem {
   label: string;
@@ -17,7 +15,7 @@ export interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
-  theme?: 'light' | 'dark';
+  theme?: "light" | "dark";
   className?: string;
   separator?: string;
   showHome?: boolean;
@@ -25,43 +23,38 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({
   items,
-  theme = 'light',
-  className = '',
-  separator = '→',
-  showHome = true
+  theme = "light",
+  className = "",
+  separator = "→",
+  showHome = true,
 }: BreadcrumbProps) {
-  const breadcrumbItems = showHome 
-    ? [{ label: 'Accueil', href: '/' }, ...items]
+  const breadcrumbItems = showHome
+    ? [{ label: "Accueil", href: "/" }, ...items]
     : items;
 
   // Générer le JSON-LD Schema.org
   // SSR-safe: URL hardcodée pour éviter mismatch hydratation
   const generateSchema = () => {
-    const baseUrl = 'https://www.automecanik.com';
+    const baseUrl = "https://www.automecanik.com";
 
     return {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
-      "itemListElement": breadcrumbItems.map((item, index) => ({
+      itemListElement: breadcrumbItems.map((item, index) => ({
         "@type": "ListItem",
-        "position": index + 1,
-        "name": item.label,
-        ...(item.href && { "item": `${baseUrl}${item.href}` })
-      }))
+        position: index + 1,
+        name: item.label,
+        ...(item.href && { item: `${baseUrl}${item.href}` }),
+      })),
     };
   };
 
-  const textColorClass = theme === 'dark' 
-    ? 'text-blue-200' 
-    : 'text-gray-600';
-  
-  const activeColorClass = theme === 'dark'
-    ? 'text-white'
-    : 'text-gray-900';
+  const textColorClass = theme === "dark" ? "text-blue-200" : "text-gray-600";
 
-  const hoverColorClass = theme === 'dark'
-    ? 'hover:text-white'
-    : 'hover:text-blue-600';
+  const activeColorClass = theme === "dark" ? "text-white" : "text-gray-900";
+
+  const hoverColorClass =
+    theme === "dark" ? "hover:text-white" : "hover:text-blue-600";
 
   return (
     <>
@@ -96,12 +89,15 @@ export function Breadcrumb({
                   <span itemProp="name">{item.label}</span>
                 </a>
               ) : (
-                <span itemProp="name" className={item.active ? activeColorClass : ''}>
+                <span
+                  itemProp="name"
+                  className={item.active ? activeColorClass : ""}
+                >
                   {item.label}
                 </span>
               )}
               <meta itemProp="position" content={String(index + 1)} />
-              
+
               {index < breadcrumbItems.length - 1 && (
                 <span className="text-gray-500" aria-hidden="true">
                   {separator}
@@ -119,19 +115,19 @@ export function Breadcrumb({
  * 🎯 Hook pour générer automatiquement le breadcrumb depuis l'URL
  */
 export function useBreadcrumbFromPath(pathname: string): BreadcrumbItem[] {
-  const segments = pathname.split('/').filter(Boolean);
-  
+  const segments = pathname.split("/").filter(Boolean);
+
   return segments.map((segment, index) => {
-    const path = '/' + segments.slice(0, index + 1).join('/');
+    const path = "/" + segments.slice(0, index + 1).join("/");
     const label = segment
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
     return {
       label,
       href: index < segments.length - 1 ? path : undefined,
-      active: index === segments.length - 1
+      active: index === segments.length - 1,
     };
   });
 }
