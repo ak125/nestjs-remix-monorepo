@@ -325,6 +325,28 @@ curl -s "http://localhost:3000/pieces/freinage" | grep -o '<title>[^<]*</title>'
    - Attendre confirmation explicite ("ok push", "go", "valide")
    - Seulement après : `git push origin main`
 
+### Commits par Session (CRITIQUE)
+
+> ⚠️ **RÈGLE ABSOLUE** : Ne committer QUE les fichiers de la session en cours !
+
+**Avant chaque commit, vérifier :**
+```bash
+# 1. Lister les fichiers modifiés
+git status
+
+# 2. Vérifier ce qui sera poussé
+git diff --name-only origin/main
+
+# 3. Exclure les modules non testés
+git reset HEAD backend/src/modules/<module-non-testé>/
+```
+
+**Modules en Développement (INTERDIT en prod) :**
+
+| Module | Status | Raison |
+|--------|--------|--------|
+| `backend/src/modules/rm/` | ⚠️ DEV | Import @monorepo/shared-types non résolu en Docker |
+
 ### Séparation Documentation / Production
 
 **Règle : Documentation sur `develop` uniquement**
@@ -438,6 +460,32 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => [
 6. **Turbo Cache:** If builds seem stale, clear Turbo cache: `npm run clean-turbo-cache`.
 
 7. **Memory Limits:** Backend build uses `--max-old-space-size=4096`. Increase if build fails with OOM.
+
+## Incidents et Post-Mortems
+
+### 2026-01-11 : Crash Production (Module rm/)
+
+**Cause :** Push du module `rm/` qui importe `@monorepo/shared-types` non lié dans Docker.
+
+**Symptôme :**
+```
+Error: Cannot find module '@monorepo/shared-types'
+Require stack:
+- /app/backend/dist/modules/rm/services/rm-listing.service.js
+```
+
+**Impact :** Site down ~15 minutes (Cloudflare 521)
+
+**Résolution :**
+```bash
+git reset --hard 9b4d7ddd
+git push --force origin main
+# Empty commit pour déclencher rebuild
+git commit --allow-empty -m "chore: trigger rebuild"
+git push origin main
+```
+
+**Leçon :** Toujours vérifier que les imports sont résolus dans le build Docker avant push.
 
 ## Key Files to Reference
 
