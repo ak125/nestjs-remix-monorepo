@@ -1,13 +1,13 @@
 /**
  * FAQAccordion - Composant pour afficher une FAQ avec sections pliables
- * 
+ *
  * @features
  * - Questions/réponses organisées par catégories
  * - Recherche pour filtrer les questions
  * - Mode single (une seule question ouverte à la fois)
  * - Animations fluides d'ouverture/fermeture
  * - Icônes ChevronDown avec rotation
- * 
+ *
  * @example
  * <FAQAccordion
  *   categories={[
@@ -22,14 +22,15 @@
  * />
  */
 
-import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { Search } from "lucide-react";
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '../ui/accordion';
+} from "../ui/accordion";
+import { Input } from "../ui/input";
 
 export interface FAQQuestion {
   question: string;
@@ -57,11 +58,11 @@ interface FAQAccordionProps {
 export function FAQAccordion({
   categories,
   searchable = true,
-  searchPlaceholder = 'Rechercher une question...',
+  searchPlaceholder = "Rechercher une question...",
   singleMode = true,
-  className = '',
+  className = "",
 }: FAQAccordionProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filtrer les questions selon la recherche
   const filteredCategories = categories
@@ -70,14 +71,14 @@ export function FAQAccordion({
       questions: category.questions.filter(
         (q) =>
           q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          q.answer.toLowerCase().includes(searchQuery.toLowerCase())
+          q.answer.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
     }))
     .filter((category) => category.questions.length > 0);
 
   const totalQuestions = filteredCategories.reduce(
     (acc, cat) => acc + cat.questions.length,
-    0
+    0,
   );
 
   return (
@@ -85,17 +86,17 @@ export function FAQAccordion({
       {/* Barre de recherche */}
       {searchable && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          <input
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 z-10" />
+          <Input
             type="text"
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="pl-10 pr-20"
           />
           {searchQuery && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
-              {totalQuestions} résultat{totalQuestions > 1 ? 's' : ''}
+              {totalQuestions} résultat{totalQuestions > 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -131,7 +132,7 @@ export function FAQAccordion({
 
           {/* Questions de la catégorie */}
           <Accordion
-            type={singleMode ? 'single' : 'multiple'}
+            type={singleMode ? "single" : "multiple"}
             collapsible
             className="space-y-2"
           >
@@ -171,16 +172,16 @@ export function FAQAccordion({
             <span className="text-gray-600">
               <span className="font-semibold text-gray-900">
                 {categories.length}
-              </span>{' '}
-              catégorie{categories.length > 1 ? 's' : ''} •{' '}
+              </span>{" "}
+              catégorie{categories.length > 1 ? "s" : ""} •{" "}
               <span className="font-semibold text-gray-900">
                 {categories.reduce((acc, cat) => acc + cat.questions.length, 0)}
-              </span>{' '}
+              </span>{" "}
               question
               {categories.reduce((acc, cat) => acc + cat.questions.length, 0) >
               1
-                ? 's'
-                : ''}
+                ? "s"
+                : ""}
             </span>
             <span className="text-xs text-gray-500">
               Utilisez ⌘F pour rechercher
