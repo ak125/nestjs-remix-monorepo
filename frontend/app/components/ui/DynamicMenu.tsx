@@ -6,6 +6,7 @@ import {
   type ReactNode,
   type CSSProperties,
 } from "react";
+import { Button } from "~/components/ui/button";
 
 interface MenuItemData {
   id: string | number;
@@ -105,21 +106,21 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
 
       return (
         <div key={item.id} className="w-full">
-          <button
+          <Button
+            variant="ghost"
             onClick={() =>
               hasChildren ? toggleCollapse(String(item.id)) : undefined
             }
             className={`
-            w-full flex items-center justify-between pr-3 py-2 rounded-lg text-sm
-            pl-[var(--menu-pl)]
-            transition-colors duration-200
-            ${
-              item.isActive
-                ? "bg-primary/15 text-blue-700 font-medium"
-                : "text-gray-700 hover:bg-gray-100"
-            }
-            ${hasChildren ? "cursor-pointer" : item.url ? "cursor-pointer" : "cursor-default"}
-          `}
+              w-full justify-between pr-3 py-2 h-auto text-sm
+              pl-[var(--menu-pl)]
+              ${
+                item.isActive
+                  ? "bg-primary/15 text-blue-700 font-medium"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+              ${hasChildren ? "cursor-pointer" : item.url ? "cursor-pointer" : "cursor-default"}
+            `}
             style={menuItemStyle}
           >
             <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -162,7 +163,7 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
                 )}
               </div>
             )}
-          </button>
+          </Button>
 
           {hasChildren && isExpanded && (
             <div className="mt-1 space-y-1">
@@ -192,12 +193,14 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
       >
         <p className="text-red-800 text-sm font-medium">Erreur de chargement</p>
         <p className="text-red-600 text-xs mt-1">{error}</p>
-        <button
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={loadMenu}
-          className="mt-2 px-3 py-1 bg-destructive/20 text-destructive rounded text-xs hover:bg-destructive/30 transition-colors"
+          className="mt-2"
         >
           Réessayer
-        </button>
+        </Button>
       </div>
     );
   }
