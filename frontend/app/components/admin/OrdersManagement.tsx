@@ -1,4 +1,4 @@
-import { useFetcher } from '@remix-run/react';
+import { useFetcher } from "@remix-run/react";
 import {
   ShoppingCart,
   CheckCircle,
@@ -10,33 +10,13 @@ import {
   Download,
   Plus,
   Filter,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-// UI minimal
-const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border bg-white ${className || ''}`}>{children}</div>
-);
-const CardHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={`border-b p-4 ${className || ''}`}>{children}</div>
-);
-const CardTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <h2 className={`text-xl font-semibold ${className || ''}`}>{children}</h2>
-);
-const CardContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-4 ${className || ''}`}>{children}</div>
-);
-const Badge = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <span className={`inline-block rounded px-2 py-1 text-xs font-medium ${className || ''}`}>{children}</span>
-);
-const Button = ({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button className={`inline-flex items-center rounded border px-3 py-2 text-sm ${className || ''}`} {...props}>
-    {children}
-  </button>
-);
-const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input {...props} className={`rounded border px-3 py-2 text-sm ${props.className || ''}`} />
-);
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Select, SelectItem } from "~/components/ui/select";
 
 type Order = {
   id: string | number;
@@ -44,7 +24,7 @@ type Order = {
   customer?: { name?: string; email?: string } | null;
   transactionId?: string | null;
   total?: number;
-  status?: 'PAID' | 'PENDING' | string;
+  status?: "PAID" | "PENDING" | string;
   paymentMethod?: string | null;
   date: string | Date;
 };
@@ -81,7 +61,9 @@ export default function OrdersManagement({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Gestion des Commandes</h1>
-          <p className="text-gray-600">Gérez toutes les commandes et transactions de votre plateforme</p>
+          <p className="text-gray-600">
+            Gérez toutes les commandes et transactions de votre plateforme
+          </p>
         </div>
         <div className="flex gap-2">
           <Button>
@@ -100,7 +82,9 @@ export default function OrdersManagement({
               <div>
                 <p className="text-sm text-gray-600">Total Commandes</p>
                 <p className="text-2xl font-bold">{stats.total || 0}</p>
-                <p className="mt-1 text-xs text-gray-500">Depuis la base de données</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Depuis la base de données
+                </p>
               </div>
               <ShoppingCart className="h-8 w-8 text-blue-500" />
             </div>
@@ -113,7 +97,9 @@ export default function OrdersManagement({
               <div>
                 <p className="text-sm text-gray-600">Commandes Payées</p>
                 <p className="text-2xl font-bold">{stats.paid || 0}</p>
-                <p className="mt-1 text-xs text-gray-500">Transactions confirmées</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Transactions confirmées
+                </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
@@ -139,15 +125,17 @@ export default function OrdersManagement({
               <div>
                 <p className="text-sm text-gray-600">Chiffre d'Affaires</p>
                 <p className="text-2xl font-bold">
-                  {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
-                    stats.revenue || 0,
-                  )}
+                  {new Intl.NumberFormat("fr-FR", {
+                    style: "currency",
+                    currency: "EUR",
+                  }).format(stats.revenue || 0)}
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
-                  Panier moyen:{' '}
-                  {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
-                    stats.averageCart || 0,
-                  )}
+                  Panier moyen:{" "}
+                  {new Intl.NumberFormat("fr-FR", {
+                    style: "currency",
+                    currency: "EUR",
+                  }).format(stats.averageCart || 0)}
                 </p>
               </div>
               <Euro className="h-8 w-8 text-indigo-500" />
@@ -160,14 +148,21 @@ export default function OrdersManagement({
         <CardContent className="p-4">
           <div className="flex gap-4">
             <div className="flex-1">
-              <Input placeholder="Rechercher une commande..." className="w-full" />
+              <Input
+                placeholder="Rechercher une commande..."
+                className="w-full"
+              />
             </div>
-            <select className="w-[180px] rounded border px-3 py-2 text-sm" defaultValue="all">
-              <option value="all">Tous les statuts</option>
-              <option value="paid">Payées</option>
-              <option value="pending">En attente</option>
-              <option value="cancelled">Annulées</option>
-            </select>
+            <Select
+              className="w-[180px]"
+              defaultValue="all"
+              placeholder="Tous les statuts"
+            >
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="paid">Payées</SelectItem>
+              <SelectItem value="pending">En attente</SelectItem>
+              <SelectItem value="cancelled">Annulées</SelectItem>
+            </Select>
             <Button>
               <Filter className="mr-2 h-4 w-4" /> Plus de filtres
             </Button>
@@ -179,7 +174,8 @@ export default function OrdersManagement({
         <CardHeader>
           <CardTitle>Liste des Commandes</CardTitle>
           <p className="text-sm text-gray-600">
-            Toutes les commandes depuis la base de données - {orders.length} commandes affichées
+            Toutes les commandes depuis la base de données - {orders.length}{" "}
+            commandes affichées
           </p>
         </CardHeader>
         <CardContent>
@@ -187,45 +183,56 @@ export default function OrdersManagement({
             <div className="py-12 text-center">
               <ShoppingCart className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <p className="text-gray-500">Aucune commande trouvée</p>
-              <p className="mt-2 text-sm text-gray-400">Les commandes apparaîtront ici une fois créées</p>
+              <p className="mt-2 text-sm text-gray-400">
+                Les commandes apparaîtront ici une fois créées
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
-                <div key={order.id} className="rounded-lg border p-4 transition-colors hover:bg-gray-50">
+                <div
+                  key={order.id}
+                  className="rounded-lg border p-4 transition-colors hover:bg-gray-50"
+                >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="text-lg font-semibold">{order.orderNumber}</p>
+                      <p className="text-lg font-semibold">
+                        {order.orderNumber}
+                      </p>
                       <p className="text-sm text-gray-600">
                         <User className="mr-1 inline h-3 w-3" />
-                        {order.customer?.name || 'Client inconnu'}
+                        {order.customer?.name || "Client inconnu"}
                       </p>
                       <p className="text-sm text-gray-600">
                         <Mail className="mr-1 inline h-3 w-3" />
-                        {order.customer?.email || 'Email non disponible'}
+                        {order.customer?.email || "Email non disponible"}
                       </p>
                       {order.transactionId && (
-                        <p className="text-xs text-gray-500">TX: {order.transactionId.substring(0, 15)}...</p>
+                        <p className="text-xs text-gray-500">
+                          TX: {order.transactionId.substring(0, 15)}...
+                        </p>
                       )}
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
-                          order.total || 0,
-                        )}
+                        {new Intl.NumberFormat("fr-FR", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(order.total || 0)}
                       </p>
                       <Badge
                         className={
-                          order.status === 'PAID'
-                            ? 'success' : 'warning'
+                          order.status === "PAID" ? "success" : "warning"
                         }
                       >
-                        {order.status === 'PAID' ? 'Payée' : 'En attente'}
+                        {order.status === "PAID" ? "Payée" : "En attente"}
                       </Badge>
-                      <p className="text-xs text-gray-500">{order.paymentMethod || 'N/A'}</p>
+                      <p className="text-xs text-gray-500">
+                        {order.paymentMethod || "N/A"}
+                      </p>
                       <p className="text-xs text-gray-500">
                         <Calendar className="mr-1 inline h-3 w-3" />
-                        {new Date(order.date).toLocaleDateString('fr-FR')}
+                        {new Date(order.date).toLocaleDateString("fr-FR")}
                       </p>
                     </div>
                   </div>
@@ -241,7 +248,9 @@ export default function OrdersManagement({
       </Card>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">Page {currentPage} sur {totalPages}</p>
+        <p className="text-sm text-gray-600">
+          Page {currentPage} sur {totalPages}
+        </p>
         <div className="flex gap-2">
           <Button disabled={currentPage <= 1}>Précédent</Button>
           <Button disabled={currentPage >= totalPages}>Suivant</Button>
