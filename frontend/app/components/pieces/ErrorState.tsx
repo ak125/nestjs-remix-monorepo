@@ -1,28 +1,26 @@
-import React from 'react';
-
 interface ErrorStateProps {
   title?: string;
   message?: string;
   onRetry?: () => void;
-  variant?: 'error' | 'warning' | 'info';
+  variant?: "error" | "warning" | "info";
 }
 
-export default function ErrorState({ 
+export default function ErrorState({
   title = "Une erreur s'est produite",
   message = "Nous n'avons pas pu charger ces données. Veuillez réessayer.",
   onRetry,
-  variant = 'error'
+  variant = "error",
 }: ErrorStateProps) {
   const variantClasses = {
-    error: 'bg-destructive/5 border-red-200 text-red-800',
-    warning: 'bg-warning/5 border-yellow-200 text-yellow-800',
-    info: 'bg-primary/5 border-blue-200 text-blue-800'
+    error: "bg-destructive/5 border-red-200 text-red-800",
+    warning: "bg-warning/5 border-yellow-200 text-yellow-800",
+    info: "bg-primary/5 border-blue-200 text-blue-800",
   };
 
   const iconClasses = {
-    error: '⚠️',
-    warning: '⚠️',
-    info: 'ℹ️'
+    error: "⚠️",
+    warning: "⚠️",
+    info: "ℹ️",
   };
 
   return (

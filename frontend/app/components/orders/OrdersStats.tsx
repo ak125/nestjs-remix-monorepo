@@ -3,11 +3,10 @@
  * Composant extrait de routes/orders._index.tsx
  */
 
-import { CheckCircle, Clock, DollarSign, Package } from 'lucide-react';
-import React from 'react';
+import { CheckCircle, Clock, DollarSign, Package } from "lucide-react";
 
-import { type OrdersStatsProps } from '../../types/orders.types';
-import { formatPrice } from '../../utils/orders.utils';
+import { type OrdersStatsProps } from "../../types/orders.types";
+import { formatPrice } from "../../utils/orders.utils";
 
 export function OrdersStats({ stats }: OrdersStatsProps) {
   return (
@@ -32,7 +31,9 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
           </div>
           <span className="text-sm font-medium text-gray-500">CA Total</span>
         </div>
-        <p className="text-2xl font-bold text-gray-900">{formatPrice(stats.totalRevenue)}</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {formatPrice(stats.totalRevenue)}
+        </p>
         <p className="text-sm text-green-600 mt-1">
           +{formatPrice(stats.monthRevenue)} ce mois
         </p>
@@ -44,9 +45,13 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
           <div className="p-3 bg-muted rounded-lg">
             <CheckCircle className="w-6 h-6 text-purple-600" />
           </div>
-          <span className="text-sm font-medium text-gray-500">Panier moyen</span>
+          <span className="text-sm font-medium text-gray-500">
+            Panier moyen
+          </span>
         </div>
-        <p className="text-2xl font-bold text-gray-900">{formatPrice(stats.averageBasket)}</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {formatPrice(stats.averageBasket)}
+        </p>
         <p className="text-sm text-gray-600 mt-1">Par commande</p>
       </div>
 
@@ -58,8 +63,12 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
           </div>
           <span className="text-sm font-medium text-gray-500">Impayés</span>
         </div>
-        <p className="text-2xl font-bold text-red-600">{formatPrice(stats.unpaidAmount)}</p>
-        <p className="text-sm text-gray-600 mt-1">{stats.pendingOrders} en attente</p>
+        <p className="text-2xl font-bold text-red-600">
+          {formatPrice(stats.unpaidAmount)}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">
+          {stats.pendingOrders} en attente
+        </p>
       </div>
     </div>
   );

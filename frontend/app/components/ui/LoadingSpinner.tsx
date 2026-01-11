@@ -1,5 +1,3 @@
-import React from "react";
-
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
@@ -8,52 +6,55 @@ interface LoadingSpinnerProps {
   fullScreen?: boolean;
 }
 
-export function LoadingSpinner({ 
-  size = "md", 
-  className = "", 
+export function LoadingSpinner({
+  size = "md",
+  className = "",
   text = "Chargement...",
   variant = "primary",
-  fullScreen = false
+  fullScreen = false,
 }: LoadingSpinnerProps) {
-  
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-8 h-8",
     lg: "w-12 h-12",
-    xl: "w-16 h-16"
+    xl: "w-16 h-16",
   };
 
   const variantClasses = {
     primary: "text-blue-600",
     secondary: "text-gray-600",
-    white: "text-white"
+    white: "text-white",
   };
 
   const textSizeClasses = {
     sm: "text-sm",
     md: "text-base",
     lg: "text-lg",
-    xl: "text-xl"
+    xl: "text-xl",
   };
 
   const spinner = (
     <div className={`flex flex-col items-center justify-center ${className}`}>
       {/* Spinner animé */}
-      <div className={`
+      <div
+        className={`
         animate-spin rounded-full border-2 border-gray-300 border-t-current
         ${sizeClasses[size]}
         ${variantClasses[variant]}
-      `}>
+      `}
+      >
         <span className="sr-only">Chargement...</span>
       </div>
-      
+
       {/* Texte de chargement */}
       {text && (
-        <p className={`
+        <p
+          className={`
           mt-3 font-medium
           ${textSizeClasses[size]}
           ${variantClasses[variant]}
-        `}>
+        `}
+        >
           {text}
         </p>
       )}
@@ -72,7 +73,11 @@ export function LoadingSpinner({
 }
 
 // Composant spécialisé pour le chargement de page
-export function PageLoadingSpinner({ message = "Chargement de la page..." }: { message?: string }) {
+export function PageLoadingSpinner({
+  message = "Chargement de la page...",
+}: {
+  message?: string;
+}) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -87,12 +92,12 @@ export function PageLoadingSpinner({ message = "Chargement de la page..." }: { m
 }
 
 // Composant pour le chargement de contenu
-export function ContentLoadingSpinner({ 
-  rows = 3, 
-  className = "" 
-}: { 
-  rows?: number; 
-  className?: string; 
+export function ContentLoadingSpinner({
+  rows = 3,
+  className = "",
+}: {
+  rows?: number;
+  className?: string;
 }) {
   return (
     <div className={`animate-pulse space-y-4 ${className}`}>

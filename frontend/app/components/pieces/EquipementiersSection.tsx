@@ -1,5 +1,4 @@
-import { Link } from '@remix-run/react';
-import React from 'react';
+import { Link } from "@remix-run/react";
 
 interface EquipementierItem {
   pm_id: number;
@@ -24,15 +23,17 @@ interface EquipementiersSectionProps {
 function getEquipementierUrl(pmName: string): string {
   const slug = pmName
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
-    .replace(/[^a-z0-9]+/g, '-') // Remplacer les caractères spéciaux par des tirets
-    .replace(/-+/g, '-') // Éviter les doubles tirets
-    .replace(/^-|-$/g, ''); // Enlever les tirets au début/fin
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
+    .replace(/[^a-z0-9]+/g, "-") // Remplacer les caractères spéciaux par des tirets
+    .replace(/-+/g, "-") // Éviter les doubles tirets
+    .replace(/^-|-$/g, ""); // Enlever les tirets au début/fin
   return `/pieces-${slug}.html`;
 }
 
-export default function EquipementiersSection({ equipementiers }: EquipementiersSectionProps) {
+export default function EquipementiersSection({
+  equipementiers,
+}: EquipementiersSectionProps) {
   if (!equipementiers?.items || equipementiers.items.length === 0) {
     return null;
   }
@@ -47,10 +48,14 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
           </span>
         </h2>
       </div>
-      
+
       <div className="p-6">
         <p className="text-gray-700 mb-6 text-sm leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <span className="font-medium text-gray-900">Nous sélectionnons des équipementiers reconnus</span> pour garantir performance, sécurité et longévité, selon les standards d'origine.
+          <span className="font-medium text-gray-900">
+            Nous sélectionnons des équipementiers reconnus
+          </span>{" "}
+          pour garantir performance, sécurité et longévité, selon les standards
+          d'origine.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {equipementiers.items.map((equipementier) => (
@@ -70,31 +75,51 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
-                      e.currentTarget.src = '/images/default-brand.jpg';
+                      e.currentTarget.src = "/images/default-brand.jpg";
                     }}
                   />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
                     {equipementier.pm_name}
                   </h3>
-                  
+
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {equipementier.description}
                   </p>
-                  
+
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-xs text-orange-600 font-medium flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       Marque de confiance
                     </span>
                     <span className="text-xs text-gray-400 group-hover:text-orange-500 transition-colors flex items-center">
                       Voir les pièces
-                      <svg className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <svg
+                        className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
                       </svg>
                     </span>
                   </div>

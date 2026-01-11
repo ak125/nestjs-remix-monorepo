@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface PerformanceIndicatorProps {
   performance?: {
     total_time_ms: number;
@@ -13,15 +11,18 @@ interface PerformanceIndicatorProps {
   };
 }
 
-export default function PerformanceIndicator({ performance }: PerformanceIndicatorProps) {
+export default function PerformanceIndicator({
+  performance,
+}: PerformanceIndicatorProps) {
   if (!performance) return null;
 
-  const totalSections = performance.motorisations_count + 
-                       performance.catalogue_famille_count + 
-                       performance.equipementiers_count + 
-                       performance.conseils_count + 
-                       performance.informations_count + 
-                       performance.guide_available;
+  const totalSections =
+    performance.motorisations_count +
+    performance.catalogue_famille_count +
+    performance.equipementiers_count +
+    performance.conseils_count +
+    performance.informations_count +
+    performance.guide_available;
 
   const formatTime = (ms: number) => {
     if (ms < 1000) return `${Math.round(ms)}ms`;
@@ -42,29 +43,38 @@ export default function PerformanceIndicator({ performance }: PerformanceIndicat
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
           ⚡ API Complète - Performances optimisées
-          <span className={`px-2 py-1 rounded-full text-white text-xs font-medium ${speedBadge.color}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-white text-xs font-medium ${speedBadge.color}`}
+          >
             {speedBadge.text}
           </span>
         </h3>
         <div className="text-right">
-          <div className="text-2xl font-bold text-blue-600">{formatTime(performance.total_time_ms)}</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {formatTime(performance.total_time_ms)}
+          </div>
           <div className="text-xs text-gray-500">Temps de réponse</div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">{performance.motorisations_count}</div>
+          <div className="text-2xl font-bold text-green-600">
+            {performance.motorisations_count}
+          </div>
           <div className="text-xs text-gray-600">Motorisations</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">{performance.catalogue_famille_count}</div>
+          <div className="text-2xl font-bold text-purple-600">
+            {performance.catalogue_famille_count}
+          </div>
           <div className="text-xs text-gray-600">Pièces similaires</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-orange-600">
-            {performance.parallel_time_ms < performance.total_time_ms ? 
-              `${Math.round(performance.total_time_ms / performance.parallel_time_ms)}x` : '1x'}
+            {performance.parallel_time_ms < performance.total_time_ms
+              ? `${Math.round(performance.total_time_ms / performance.parallel_time_ms)}x`
+              : "1x"}
           </div>
           <div className="text-xs text-gray-600">Plus rapide</div>
         </div>
@@ -75,10 +85,12 @@ export default function PerformanceIndicator({ performance }: PerformanceIndicat
           <div className="text-xs text-gray-600">Fonctionnalités</div>
         </div>
       </div>
-      
+
       <div className="mt-3 pt-3 border-t border-blue-200">
         <div className="flex items-center justify-between text-xs text-gray-600">
-          <span>Requêtes parallèles: {formatTime(performance.parallel_time_ms)}</span>
+          <span>
+            Requêtes parallèles: {formatTime(performance.parallel_time_ms)}
+          </span>
           <span>{totalSections} sections chargées</span>
         </div>
       </div>

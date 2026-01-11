@@ -3,19 +3,26 @@
  * Composant extrait de routes/orders._index.tsx
  */
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React from 'react';
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { type OrdersTableProps } from '../../types/orders.types';
-import { formatDate, formatOrderId, formatPrice, getPaymentBadgeColor, getPaymentLabel, getStatusBadgeColor, getStatusLabel } from '../../utils/orders.utils';
-import { OrderActions } from './OrderActions';
+import { type OrdersTableProps } from "../../types/orders.types";
+import {
+  formatDate,
+  formatOrderId,
+  formatPrice,
+  getPaymentBadgeColor,
+  getPaymentLabel,
+  getStatusBadgeColor,
+  getStatusLabel,
+} from "../../utils/orders.utils";
+import { OrderActions } from "./OrderActions";
 
-export function OrdersTable({ 
-  orders, 
-  permissions, 
-  currentPage, 
-  totalPages, 
-  onPageChange, 
+export function OrdersTable({
+  orders,
+  permissions,
+  currentPage,
+  totalPages,
+  onPageChange,
   onViewOrder,
   onEditOrder,
   onMarkPaid,
@@ -69,7 +76,10 @@ export function OrdersTable({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.map((order) => (
-                <tr key={order.ord_id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={order.ord_id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   {/* ID */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -79,13 +89,19 @@ export function OrdersTable({
 
                   {/* Client */}
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">{order.customerName || 'N/A'}</div>
-                    <div className="text-sm text-gray-500">{order.customerEmail || order.customer?.cst_mail || ''}</div>
+                    <div className="text-sm text-gray-900">
+                      {order.customerName || "N/A"}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {order.customerEmail || order.customer?.cst_mail || ""}
+                    </div>
                   </td>
 
                   {/* Date */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(order.ord_date)}</div>
+                    <div className="text-sm text-gray-900">
+                      {formatDate(order.ord_date)}
+                    </div>
                   </td>
 
                   {/* Montant */}
@@ -97,14 +113,18 @@ export function OrdersTable({
 
                   {/* Statut */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadgeColor(order.ord_ords_id)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadgeColor(order.ord_ords_id)}`}
+                    >
                       {getStatusLabel(order.ord_ords_id)}
                     </span>
                   </td>
 
                   {/* Paiement */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getPaymentBadgeColor(order.ord_is_pay)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full border ${getPaymentBadgeColor(order.ord_is_pay)}`}
+                    >
                       {getPaymentLabel(order.ord_is_pay)}
                     </span>
                   </td>
