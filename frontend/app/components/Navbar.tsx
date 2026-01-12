@@ -458,15 +458,30 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         {/* Quick Categories - scroll horizontal */}
         <div className="px-3 pb-2 overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 min-w-max">
-            <QuickCategoryChip href="/pieces/freinage" label="Freinage" />
-            <QuickCategoryChip href="/pieces/filtration" label="Filtration" />
             <QuickCategoryChip
-              href="/pieces/distribution"
+              href="/pieces/catalogue?category=freinage"
+              label="Freinage"
+            />
+            <QuickCategoryChip
+              href="/pieces/catalogue?category=moteur"
+              label="Filtration"
+            />
+            <QuickCategoryChip
+              href="/pieces/catalogue?category=moteur"
               label="Distribution"
             />
-            <QuickCategoryChip href="/pieces/embrayage" label="Embrayage" />
-            <QuickCategoryChip href="/pieces/allumage" label="Allumage" />
-            <QuickCategoryChip href="/pieces/suspension" label="Suspension" />
+            <QuickCategoryChip
+              href="/pieces/catalogue?category=embrayage"
+              label="Embrayage"
+            />
+            <QuickCategoryChip
+              href="/pieces/catalogue?category=electrique"
+              label="Allumage"
+            />
+            <QuickCategoryChip
+              href="/pieces/catalogue?category=suspension"
+              label="Suspension"
+            />
           </div>
         </div>
       </div>
