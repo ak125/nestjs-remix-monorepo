@@ -21,7 +21,7 @@ import {
  *
  * Paradigme:
  * - API retourne toujours HTTP 200
- * - Le vrai code (200/404/410/412) est dans response.httpStatus
+ * - Le statut métier (200/404/410) est dans response.httpStatus
  */
 @Injectable()
 export class SubstitutionService extends SupabaseBaseService {
@@ -167,7 +167,7 @@ export class SubstitutionService extends SupabaseBaseService {
       );
     }
 
-    // CASE 3: Véhicule incomplet → 412 Lock A (vehicle)
+    // CASE 3: Véhicule incomplet → 200 avec Lock (page SEO enrichie)
     // V3: Inclut compatibleGammes dans le résultat
     if (!intent.typeId && intent.gammeId) {
       const lock = this.buildLock('vehicle', intent, data);
@@ -175,7 +175,7 @@ export class SubstitutionService extends SupabaseBaseService {
 
       return this.buildResult(
         'vehicle_incomplete',
-        412,
+        200,
         'Sélectionnez votre véhicule pour voir les pièces compatibles',
         {
           lock,
@@ -213,7 +213,7 @@ export class SubstitutionService extends SupabaseBaseService {
   }
 
   /**
-   * Construit un SubstitutionLock pour le cas 412
+   * Construit un SubstitutionLock pour les pages avec contexte manquant
    * "Dis-moi ce que tu as, et je te dirai ce que tu peux acheter"
    */
   private buildLock(
@@ -322,8 +322,7 @@ export class SubstitutionService extends SupabaseBaseService {
     message: string,
     extras: Partial<SubstitutionResult> = {},
   ): SubstitutionResult {
-    const robots =
-      httpStatus === 200 || httpStatus === 412 ? 'index, follow' : 'noindex';
+    const robots = httpStatus === 200 ? 'index, follow' : 'noindex';
 
     return {
       type,

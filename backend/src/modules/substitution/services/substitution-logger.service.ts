@@ -7,7 +7,7 @@ import { SubstitutionLogEntry, LockType } from '../types/substitution.types';
  * SubstitutionLoggerService - Analytics du Moteur de Substitution
  *
  * Logging asynchrone pour ne pas bloquer les réponses.
- * Tracking: funnel 412, conversions, A/B testing.
+ * Tracking: pages enrichies (locks), conversions, A/B testing.
  */
 @Injectable()
 export class SubstitutionLoggerService extends SupabaseBaseService {
@@ -130,6 +130,7 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
 
   /**
    * Obtenir les stats quotidiennes
+   * Note: status_412 conservé pour données historiques (avant migration SEO)
    */
   async getDailyStats(days: number = 30): Promise<{
     daily: Array<{
@@ -137,7 +138,7 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
       status_200: number;
       status_404: number;
       status_410: number;
-      status_412: number;
+      status_412: number; // Legacy: historique avant migration SEO
     }>;
   }> {
     try {
