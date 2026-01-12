@@ -1,5 +1,18 @@
-import { json, redirect, type ActionFunction, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type LoaderFunction,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
 
 import { requireUser } from "../auth/unified.server";
@@ -16,11 +29,16 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
-  { title: 'Paramètres du compte | AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/settings" },
+  { title: "Paramètres du compte | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/account/settings",
+  },
 ];
 
 export const loader: LoaderFunction = async ({ context }) => {
@@ -75,7 +93,7 @@ export const action: ActionFunction = async ({ request, context }) => {
           success: false,
           error: "Veuillez taper SUPPRIMER pour confirmer",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,14 +114,18 @@ export default function AccountSettings() {
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Mon Compte", href: "/account" },
-        { label: "Paramètres" }
-      ]} />
-      
+      <PublicBreadcrumb
+        items={[
+          { label: "Mon Compte", href: "/account" },
+          { label: "Paramètres" },
+        ]}
+      />
+
       <div>
         <h1 className="text-2xl font-bold">Paramètres du compte</h1>
-        <p className="text-gray-600">Gérez vos préférences et votre confidentialité</p>
+        <p className="text-gray-600">
+          Gérez vos préférences et votre confidentialité
+        </p>
       </div>
 
       {/* Messages */}
@@ -213,7 +235,9 @@ export default function AccountSettings() {
             </div>
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Enregistrement..." : "Enregistrer les préférences"}
+              {isSubmitting
+                ? "Enregistrement..."
+                : "Enregistrer les préférences"}
             </Button>
           </Form>
         </CardContent>
@@ -318,8 +342,9 @@ export default function AccountSettings() {
           <Form method="post">
             <input type="hidden" name="_action" value="exportData" />
             <p className="text-sm text-gray-600 mb-4">
-              Vous recevrez un email avec un lien de téléchargement contenant toutes
-              vos données personnelles (commandes, adresses, préférences).
+              Vous recevrez un email avec un lien de téléchargement contenant
+              toutes vos données personnelles (commandes, adresses,
+              préférences).
             </p>
             <Button type="submit" variant="outline" disabled={isSubmitting}>
               <Download className="h-4 w-4 mr-2" />
@@ -342,17 +367,20 @@ export default function AccountSettings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Alert intent="error"><p className="text-sm text-red-800 font-medium mb-2">
+            <Alert intent="error">
+              <p className="text-sm text-red-800 font-medium mb-2">
                 ⚠️ Suppression du compte
               </p>
               <p className="text-sm text-red-700">
-                Cette action est définitive. Toutes vos données seront supprimées et
-                vous ne pourrez plus accéder à votre compte ni à vos commandes.
-              </p></Alert>
+                Cette action est définitive. Toutes vos données seront
+                supprimées et vous ne pourrez plus accéder à votre compte ni à
+                vos commandes.
+              </p>
+            </Alert>
 
             <Form method="post" className="space-y-4">
               <input type="hidden" name="_action" value="deleteAccount" />
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmation">
                   Tapez <strong>SUPPRIMER</strong> pour confirmer
@@ -365,7 +393,11 @@ export default function AccountSettings() {
                 />
               </div>
 
-              <Button type="submit" variant="destructive" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={isSubmitting}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Supprimer définitivement mon compte
               </Button>
@@ -375,4 +407,17 @@ export default function AccountSettings() {
       </Card>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

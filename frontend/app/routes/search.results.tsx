@@ -2,25 +2,43 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import { SearchBar } from "../components/search/SearchBar";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
-import { Button } from '~/components/ui/button';
-import { SearchBar } from '../components/search/SearchBar';
-import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
+import { Button } from "~/components/ui/button";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour pages de recherche
  */
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const query = data?.query || '';
+  const query = data?.query || "";
   const total = data?.totalCount || 0;
 
   return [
-    { title: query ? `Recherche: ${query} | ${total} résultats` : 'Résultats de recherche' },
-    { name: 'description', content: `Résultats de recherche pour "${query}"` },
-    { name: 'robots', content: 'noindex, nofollow' }, // Pages recherche non indexées
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search/results" },
+    {
+      title: query
+        ? `Recherche: ${query} | ${total} résultats`
+        : "Résultats de recherche",
+    },
+    { name: "description", content: `Résultats de recherche pour "${query}"` },
+    { name: "robots", content: "noindex, nofollow" }, // Pages recherche non indexées
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://www.automecanik.com/search/results",
+    },
   ];
 };
 
@@ -39,19 +57,19 @@ interface SearchResultsData {
   results: SearchResult[];
   totalCount: number;
   searchTime: number;
-  version: 'v7' | 'v8';
+  version: "v7" | "v8";
   suggestions?: string[];
 }
 
 // Loader pour récupérer les résultats
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const query = url.searchParams.get('q') || '';
-  const version = (url.searchParams.get('version') as 'v7' | 'v8') || 'v8';
-  
+  const query = url.searchParams.get("q") || "";
+  const version = (url.searchParams.get("version") as "v7" | "v8") || "v8";
+
   if (!query) {
     return json<SearchResultsData>({
-      query: '',
+      query: "",
       results: [],
       totalCount: 0,
       searchTime: 0,
@@ -63,32 +81,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Simulation d'appel API (en réalité, ceci ferait appel au SearchService backend)
   const mockResults: SearchResult[] = [
     {
-      id: '1',
-      title: 'Filtre à huile - Référence: WL7129',
-      description: 'Filtre à huile compatible véhicules essence et diesel. Haute qualité OEM.',
-      category: 'Filtration',
+      id: "1",
+      title: "Filtre à huile - Référence: WL7129",
+      description:
+        "Filtre à huile compatible véhicules essence et diesel. Haute qualité OEM.",
+      category: "Filtration",
       price: 12.99,
       relevanceScore: 95,
     },
     {
-      id: '2', 
-      title: 'Plaquettes de frein avant - Référence: BP1234',
-      description: 'Plaquettes de frein céramique haute performance pour freinage optimal.',
-      category: 'Freinage',
-      price: 45.50,
+      id: "2",
+      title: "Plaquettes de frein avant - Référence: BP1234",
+      description:
+        "Plaquettes de frein céramique haute performance pour freinage optimal.",
+      category: "Freinage",
+      price: 45.5,
       relevanceScore: 87,
     },
     {
-      id: '3',
-      title: 'Amortisseur arrière - Référence: SHOCK789',
-      description: 'Amortisseur hydraulique haute résistance, garantie 1 an.',
-      category: 'Suspension',
+      id: "3",
+      title: "Amortisseur arrière - Référence: SHOCK789",
+      description: "Amortisseur hydraulique haute résistance, garantie 1 an.",
+      category: "Suspension",
       price: 89.99,
       relevanceScore: 82,
     },
-  ].filter(result => 
-    result.title.toLowerCase().includes(query.toLowerCase()) ||
-    result.description.toLowerCase().includes(query.toLowerCase())
+  ].filter(
+    (result) =>
+      result.title.toLowerCase().includes(query.toLowerCase()) ||
+      result.description.toLowerCase().includes(query.toLowerCase()),
   );
 
   return json<SearchResultsData>({
@@ -97,31 +118,33 @@ export async function loader({ request }: LoaderFunctionArgs) {
     totalCount: mockResults.length,
     searchTime: Math.random() * 100 + 50, // 50-150ms simulé
     version,
-    suggestions: query.length > 2 ? [
-      `${query} compatible`,
-      `${query} original`,
-      `${query} haute qualité`,
-    ] : [],
+    suggestions:
+      query.length > 2
+        ? [`${query} compatible`, `${query} original`, `${query} haute qualité`]
+        : [],
   });
 }
 
 export default function SearchResults() {
-  const { query, results, totalCount, searchTime, version, suggestions } = useLoaderData<typeof loader>();
+  const { query, results, totalCount, searchTime, version, suggestions } =
+    useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const isLoading = navigation.state === 'loading';
+  const isLoading = navigation.state === "loading";
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b pt-4">
         <div className="max-w-7xl mx-auto px-4">
-          <PublicBreadcrumb items={[
-            { label: "Recherche", href: "/search" },
-            { label: query || "Résultats" }
-          ]} />
+          <PublicBreadcrumb
+            items={[
+              { label: "Recherche", href: "/search" },
+              { label: query || "Résultats" },
+            ]}
+          />
         </div>
       </div>
-      
+
       {/* Header avec barre de recherche */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -152,7 +175,7 @@ export default function SearchResults() {
                   </span>
                 </p>
               </div>
-              
+
               {isLoading && (
                 <div className="flex items-center text-blue-600">
                   <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
@@ -188,20 +211,24 @@ export default function SearchResults() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Filtres</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700 mb-2">Catégorie</h4>
                   <div className="space-y-2">
-                    {['Filtration', 'Freinage', 'Suspension', 'Moteur'].map(category => (
-                      <label key={category} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-blue-600 mr-2"
-                        />
-                        <span className="text-sm text-gray-600">{category}</span>
-                      </label>
-                    ))}
+                    {["Filtration", "Freinage", "Suspension", "Moteur"].map(
+                      (category) => (
+                        <label key={category} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-blue-600 mr-2"
+                          />
+                          <span className="text-sm text-gray-600">
+                            {category}
+                          </span>
+                        </label>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -209,17 +236,19 @@ export default function SearchResults() {
                   <h4 className="font-medium text-gray-700 mb-2">Prix</h4>
                   <div className="space-y-2">
                     {[
-                      { label: 'Moins de 20€', value: '0-20' },
-                      { label: '20€ - 50€', value: '20-50' },
-                      { label: '50€ - 100€', value: '50-100' },
-                      { label: 'Plus de 100€', value: '100+' },
-                    ].map(range => (
+                      { label: "Moins de 20€", value: "0-20" },
+                      { label: "20€ - 50€", value: "20-50" },
+                      { label: "50€ - 100€", value: "50-100" },
+                      { label: "Plus de 100€", value: "100+" },
+                    ].map((range) => (
                       <label key={range.value} className="flex items-center">
                         <input
                           type="checkbox"
                           className="rounded border-gray-300 text-blue-600 mr-2"
                         />
-                        <span className="text-sm text-gray-600">{range.label}</span>
+                        <span className="text-sm text-gray-600">
+                          {range.label}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -250,14 +279,21 @@ export default function SearchResults() {
                             Score: {result.relevanceScore}%
                           </Badge>
                         </div>
-                        <p className="text-gray-600 mb-3">{result.description}</p>
-                        
+                        <p className="text-gray-600 mb-3">
+                          {result.description}
+                        </p>
+
                         {result.price && (
                           <div className="flex items-center justify-between">
                             <span className="text-2xl font-bold text-green-600">
                               {result.price.toFixed(2)}€
                             </span>
-                            <Button className="px-4 py-2  rounded-lg" variant="blue">\n  Ajouter au panier\n</Button>
+                            <Button
+                              className="px-4 py-2  rounded-lg"
+                              variant="blue"
+                            >
+                              \n Ajouter au panier\n
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -300,4 +336,17 @@ export default function SearchResults() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

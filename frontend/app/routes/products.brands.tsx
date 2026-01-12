@@ -1,35 +1,46 @@
 /**
  * 🏷️ PRODUCTS BRANDS - UNIFIED MANAGEMENT
- * 
+ *
  * Gestion unifiée des marques de produits
  * Remplace commercial.products.brands.tsx
- * 
+ *
  * Features:
  * - Role-based access (Commercial/Pro)
  * - Progressive Enhancement ready
  * - Component library integration
  * - Unified API communication
- * 
+ *
  * Routes:
  * - /products/brands (base interface)
  * - /products/brands?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
-import { ArrowLeft, Tag, Car, TrendingUp, Search, Filter } from 'lucide-react';
-import { requireUser } from '../auth/unified.server';
-import { ProductsQuickActions } from '../components/products/ProductsQuickActions';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import { ArrowLeft, Tag, Car, TrendingUp, Search, Filter } from "lucide-react";
+import { requireUser } from "../auth/unified.server";
+import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Error404 } from "~/components/errors/Error404";
 
 interface Brand {
   marque_id: number;
   marque_name: string;
-  products_count?: number;  // Enhanced data
-  last_updated?: string;    // Enhanced data
-  is_featured?: boolean;    // Pro feature
+  products_count?: number; // Enhanced data
+  last_updated?: string; // Enhanced data
+  is_featured?: boolean; // Pro feature
 }
 
 interface BrandsData {
@@ -37,12 +48,12 @@ interface BrandsData {
     id: string;
     name: string;
     level: number;
-    role: 'pro' | 'commercial';
+    role: "pro" | "commercial";
   };
   brands: Brand[];
   stats: {
     total: number;
-    featured?: number;  // Pro feature
+    featured?: number; // Pro feature
     active: number;
   };
   enhanced: boolean;
@@ -51,53 +62,58 @@ interface BrandsData {
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
-  
+
   // Determine user role and check access
   const userLevel = user.level || 0;
-  const userName = user.name || 'Utilisateur';
-  const userRole = userLevel >= 4 ? 'pro' : userLevel >= 3 ? 'commercial' : null;
-  
+  const userName = user.name || "Utilisateur";
+  const userRole =
+    userLevel >= 4 ? "pro" : userLevel >= 3 ? "commercial" : null;
+
   if (!userRole) {
-    throw new Response('Accès refusé - Compte professionnel ou commercial requis', { status: 403 });
+    throw new Response(
+      "Accès refusé - Compte professionnel ou commercial requis",
+      { status: 403 },
+    );
   }
 
   // Check for enhanced mode
   const url = new URL(request.url);
-  const enhanced = url.searchParams.get('enhanced') === 'true';
-  
+  const enhanced = url.searchParams.get("enhanced") === "true";
+
   const baseUrl = process.env.API_URL || "http://localhost:3000";
 
   try {
     // Unified API call for brands
     const response = await fetch(`${baseUrl}/api/vehicles/brands`, {
-      headers: { 
-        'internal-call': 'true',
-        'user-role': userRole,
-        'enhanced-mode': enhanced.toString()
-      }
+      headers: {
+        "internal-call": "true",
+        "user-role": userRole,
+        "enhanced-mode": enhanced.toString(),
+      },
     });
-    
+
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
     }
 
     const brandsData = await response.json();
-    const brands: Brand[] = brandsData.data?.map((brand: any) => ({
-      marque_id: brand.marque_id,
-      marque_name: brand.marque_name,
-      ...(enhanced && {
-        products_count: brand.products_count || 0,
-        last_updated: brand.last_updated,
-        is_featured: brand.is_featured || false
-      })
-    })) || [];
+    const brands: Brand[] =
+      brandsData.data?.map((brand: any) => ({
+        marque_id: brand.marque_id,
+        marque_name: brand.marque_name,
+        ...(enhanced && {
+          products_count: brand.products_count || 0,
+          last_updated: brand.last_updated,
+          is_featured: brand.is_featured || false,
+        }),
+      })) || [];
 
     const stats = {
       total: brands.length,
-      active: brands.filter(brand => brand.marque_name).length,
-      ...(userRole === 'pro' && {
-        featured: brands.filter(brand => brand.is_featured).length
-      })
+      active: brands.filter((brand) => brand.marque_name).length,
+      ...(userRole === "pro" && {
+        featured: brands.filter((brand) => brand.is_featured).length,
+      }),
     };
 
     return json<BrandsData>({
@@ -105,26 +121,25 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       brands,
       stats,
-      enhanced
+      enhanced,
     });
-
   } catch (error) {
-    console.error('Brands loading error:', error);
+    console.error("Brands loading error:", error);
     return json<BrandsData>({
       user: {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       brands: [],
       stats: { total: 0, active: 0 },
       enhanced,
-      error: 'Erreur lors du chargement des marques'
+      error: "Erreur lors du chargement des marques",
     });
   }
 }
@@ -149,10 +164,12 @@ export default function ProductsBrands() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="text-center">
           <Tag className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Erreur de chargement</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Erreur de chargement
+          </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={handleRefresh} variant="outline">
             Réessayer
@@ -173,11 +190,11 @@ export default function ProductsBrands() {
               Retour
             </Link>
           </Button>
-          
+
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
               <Tag className="h-8 w-8 text-blue-600" />
-              Marques Produits {user.role === 'pro' ? 'Pro' : 'Commercial'}
+              Marques Produits {user.role === "pro" ? "Pro" : "Commercial"}
             </h1>
             <p className="text-gray-600 mt-2">
               Gestion des marques disponibles dans le catalogue
@@ -206,8 +223,12 @@ export default function ProductsBrands() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Marques</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Marques
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.total}
+                </p>
               </div>
               <Tag className="h-8 w-8 text-blue-600" />
             </div>
@@ -218,21 +239,29 @@ export default function ProductsBrands() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Marques Actives</p>
-                <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Marques Actives
+                </p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.active}
+                </p>
               </div>
               <Car className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
-        {user.role === 'pro' && stats.featured !== undefined && (
+        {user.role === "pro" && stats.featured !== undefined && (
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Marques Vedettes</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.featured}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Marques Vedettes
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {stats.featured}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
               </div>
@@ -266,23 +295,28 @@ export default function ProductsBrands() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {brands.map((brand) => (
-            <Card key={brand.marque_id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={brand.marque_id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center justify-between">
                   <span>{brand.marque_name}</span>
-                  {brand.is_featured && user.role === 'pro' && (
+                  {brand.is_featured && user.role === "pro" && (
                     <Badge variant="secondary">Vedette</Badge>
                   )}
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent>
                 {enhanced && (
                   <div className="space-y-2 text-sm text-gray-600 mb-4">
                     {brand.products_count && (
                       <div className="flex justify-between">
                         <span>Produits:</span>
-                        <span className="font-medium">{brand.products_count}</span>
+                        <span className="font-medium">
+                          {brand.products_count}
+                        </span>
                       </div>
                     )}
                     {brand.last_updated && (
@@ -302,7 +336,7 @@ export default function ProductsBrands() {
                       Voir Produits
                     </Link>
                   </Button>
-                  {user.role === 'pro' && (
+                  {user.role === "pro" && (
                     <Button variant="outline" size="sm">
                       Éditer
                     </Button>
@@ -336,31 +370,39 @@ export default function ProductsBrands() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Actives:</span>
-                    <span>{Math.round((stats.active / stats.total) * 100)}%</span>
+                    <span>
+                      {Math.round((stats.active / stats.total) * 100)}%
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-success h-2 rounded-full"
-                      style={{ width: `${(stats.active / stats.total) * 100}%` }}
+                      style={{
+                        width: `${(stats.active / stats.total) * 100}%`,
+                      }}
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {user.role === 'pro' && stats.featured !== undefined && (
+            {user.role === "pro" && stats.featured !== undefined && (
               <Card>
                 <CardContent className="p-4">
                   <h4 className="font-medium mb-2">Marques Vedettes</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Vedettes:</span>
-                      <span>{Math.round((stats.featured / stats.total) * 100)}%</span>
+                      <span>
+                        {Math.round((stats.featured / stats.total) * 100)}%
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-purple-500 h-2 rounded-full"
-                        style={{ width: `${(stats.featured / stats.total) * 100}%` }}
+                        style={{
+                          width: `${(stats.featured / stats.total) * 100}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -372,4 +414,17 @@ export default function ProductsBrands() {
       )}
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

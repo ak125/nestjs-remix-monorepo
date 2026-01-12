@@ -1,14 +1,16 @@
-import { 
-  json, 
-  type LoaderFunctionArgs, 
+import {
+  json,
+  type LoaderFunctionArgs,
   type MetaFunction,
-  type ActionFunctionArgs 
+  type ActionFunctionArgs,
 } from "@remix-run/node";
-import { 
-  Link, 
-  useLoaderData, 
-  useFetcher, 
-  Form 
+import {
+  Link,
+  useLoaderData,
+  useFetcher,
+  Form,
+  useRouteError,
+  isRouteErrorResponse,
 } from "@remix-run/react";
 import {
   BookOpen,
@@ -38,6 +40,7 @@ import { useState, useMemo, useEffect } from "react";
 // Blog Components
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { Error404 } from "~/components/errors/Error404";
 
 // UI Components
 import { Badge } from "~/components/ui/badge";
@@ -56,7 +59,7 @@ interface BlogArticle {
   pg_alias?: string | null; // Alias de la gamme pour URL legacy
   excerpt: string;
   content?: string;
-  type: 'advice' | 'guide' | 'constructeur' | 'glossaire';
+  type: "advice" | "guide" | "constructeur" | "glossaire";
   featuredImage?: string;
   viewsCount: number;
   readingTime: number;
@@ -67,7 +70,7 @@ interface BlogArticle {
     avatar?: string;
   };
   tags?: string[];
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  difficulty?: "beginner" | "intermediate" | "advanced";
   isPopular?: boolean;
   isFeatured?: boolean;
 }
@@ -112,13 +115,22 @@ interface LoaderData {
 // Métadonnées SEO améliorées
 export const meta: MetaFunction<typeof loader> = ({ data: _data }) => {
   const title = "Blog Automecanik - Conseils et Guides Auto Experts";
-  const description = "Découvrez nos conseils d'experts, guides de réparation et actualités du monde automobile. Plus de 500 articles pratiques pour l'entretien de votre véhicule.";
-  
+  const description =
+    "Découvrez nos conseils d'experts, guides de réparation et actualités du monde automobile. Plus de 500 articles pratiques pour l'entretien de votre véhicule.";
+
   return [
     { title },
     { name: "description", content: description },
-    { name: "keywords", content: "blog automobile, conseils auto, guides réparation, entretien voiture, pièces auto, mécanique, diagnostic, tutoriel" },
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto" },
+    {
+      name: "keywords",
+      content:
+        "blog automobile, conseils auto, guides réparation, entretien voiture, pièces auto, mécanique, diagnostic, tutoriel",
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://www.automecanik.com/blog-pieces-auto",
+    },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
@@ -135,9 +147,9 @@ export const meta: MetaFunction<typeof loader> = ({ data: _data }) => {
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const searchParams = {
-    query: url.searchParams.get('q') || undefined,
-    category: url.searchParams.get('category') || undefined,
-    type: url.searchParams.get('type') || undefined,
+    query: url.searchParams.get("q") || undefined,
+    category: url.searchParams.get("category") || undefined,
+    type: url.searchParams.get("type") || undefined,
   };
 
   let blogData = {
@@ -160,23 +172,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const response = await fetch('http://localhost:3000/api/blog/homepage', {
-      method: 'GET',
+    const response = await fetch("http://localhost:3000/api/blog/homepage", {
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'Remix-Blog-Client/1.0',
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "User-Agent": "Remix-Blog-Client/1.0",
       },
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (response.ok) {
       const apiResponse = await response.json();
       if (apiResponse.success && apiResponse.data) {
-        blogData = { 
-          ...apiResponse.data, 
+        blogData = {
+          ...apiResponse.data,
           success: true,
           lastUpdated: new Date().toISOString(),
         };
@@ -185,39 +197,48 @@ export async function loader({ request }: LoaderFunctionArgs) {
       console.warn(`API returned ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
-    console.warn('Blog API error:', error instanceof Error ? error.message : 'Unknown error');
+    console.warn(
+      "Blog API error:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
 
-  return json<LoaderData>({ 
-    blogData, 
-    searchParams 
-  }, {
-    headers: {
-      'Cache-Control': 'public, max-age=300, s-maxage=600',
-    }
-  });
+  return json<LoaderData>(
+    {
+      blogData,
+      searchParams,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, max-age=300, s-maxage=600",
+      },
+    },
+  );
 }
 
 // Action pour interactions utilisateur
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const actionType = formData.get('actionType');
-  const _articleId = formData.get('articleId');
+  const actionType = formData.get("actionType");
+  const _articleId = formData.get("articleId");
 
   try {
     switch (actionType) {
-      case 'bookmark':
-        return json({ success: true, message: 'Article ajouté aux favoris' });
-      case 'share':
-        return json({ success: true, message: 'Article partagé' });
+      case "bookmark":
+        return json({ success: true, message: "Article ajouté aux favoris" });
+      case "share":
+        return json({ success: true, message: "Article partagé" });
       default:
-        return json({ success: false, error: 'Action non reconnue' });
+        return json({ success: false, error: "Action non reconnue" });
     }
   } catch (error) {
-    return json({ 
-      success: false, 
-      error: 'Erreur lors de l\'action' 
-    }, { status: 500 });
+    return json(
+      {
+        success: false,
+        error: "Erreur lors de l'action",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -225,13 +246,13 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BlogIndex() {
   const { blogData, searchParams } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
-  const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
-  const [selectedType, setSelectedType] = useState(searchParams.type || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.query || "");
+  const [selectedType, setSelectedType] = useState(searchParams.type || "");
   const [_animatedStats, setAnimatedStats] = useState({
     articles: 0,
     advice: 0,
     guides: 0,
-    views: 0
+    views: 0,
   });
 
   // Animation des statistiques au chargement
@@ -255,7 +276,7 @@ export default function BlogIndex() {
         articles: Math.floor((overview.totalArticles || 0) * progress),
         advice: Math.floor((overview.totalAdvice || 0) * progress),
         guides: Math.floor((overview.totalGuides || 0) * progress),
-        views: Math.floor((overview.totalViews || 0) * progress)
+        views: Math.floor((overview.totalViews || 0) * progress),
       });
 
       if (currentStep >= steps) {
@@ -264,7 +285,7 @@ export default function BlogIndex() {
           articles: overview.totalArticles || 0,
           advice: overview.totalAdvice || 0,
           guides: overview.totalGuides || 0,
-          views: overview.totalViews || 0
+          views: overview.totalViews || 0,
         });
       }
     }, interval);
@@ -287,33 +308,38 @@ export default function BlogIndex() {
 
   const getTypeLabel = (type: string) => {
     const labels = {
-      advice: 'Conseil',
-      guide: 'Guide',
-      constructeur: 'Constructeur',
-      glossaire: 'Glossaire'
+      advice: "Conseil",
+      guide: "Guide",
+      constructeur: "Constructeur",
+      glossaire: "Glossaire",
     };
     return labels[type as keyof typeof labels] || type;
   };
 
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
-      case 'beginner': return 'success';
-      case 'intermediate': return 'warning';
-      case 'advanced': return 'error';
-      default: return 'bg-gray-100 text-gray-800';
+      case "beginner":
+        return "success";
+      case "intermediate":
+        return "warning";
+      case "advanced":
+        return "error";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Articles filtrés
   const filteredArticles = useMemo(() => {
     if (!blogData.popular) return [];
-    
-    return blogData.popular.filter(article => {
+
+    return blogData.popular.filter((article) => {
       const matchesType = !selectedType || article.type === selectedType;
-      const matchesSearch = !searchQuery || 
+      const matchesSearch =
+        !searchQuery ||
         article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       return matchesType && matchesSearch;
     });
   }, [blogData.popular, selectedType, searchQuery]);
@@ -322,24 +348,41 @@ export default function BlogIndex() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Navigation Blog */}
       <BlogNavigation />
-      
+
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 pt-6">
         <PublicBreadcrumb items={[{ label: "Blog" }]} />
       </div>
-      
+
       {/* Hero Compact */}
       <CompactBlogHeader
         title="Blog Automecanik"
-        description={blogData.success && blogData.stats
-          ? `${blogData.stats.totalArticles}+ articles • ${formatViews(blogData.stats.totalViews)} vues`
-          : "Conseils d'experts et guides pratiques automobile"
+        description={
+          blogData.success && blogData.stats
+            ? `${blogData.stats.totalArticles}+ articles • ${formatViews(blogData.stats.totalViews)} vues`
+            : "Conseils d'experts et guides pratiques automobile"
         }
-        stats={blogData.success && blogData.stats ? [
-          { icon: BookOpen, value: blogData.stats.totalArticles, label: "Articles" },
-          { icon: Sparkles, value: blogData.stats.totalAdvice, label: "Conseils" },
-          { icon: Star, value: blogData.stats.totalGuides || 0, label: "Guides" },
-        ] : []}
+        stats={
+          blogData.success && blogData.stats
+            ? [
+                {
+                  icon: BookOpen,
+                  value: blogData.stats.totalArticles,
+                  label: "Articles",
+                },
+                {
+                  icon: Sparkles,
+                  value: blogData.stats.totalAdvice,
+                  label: "Conseils",
+                },
+                {
+                  icon: Star,
+                  value: blogData.stats.totalGuides || 0,
+                  label: "Guides",
+                },
+              ]
+            : []
+        }
         gradientFrom="from-blue-900"
         gradientTo="to-purple-900"
       />
@@ -362,8 +405,8 @@ export default function BlogIndex() {
                     className="w-full pl-12 pr-4 py-4 rounded-xl border-0 text-gray-900 bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all text-lg"
                   />
                 </div>
-                
-                <select 
+
+                <select
                   name="type"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
@@ -376,9 +419,9 @@ export default function BlogIndex() {
                   <option value="glossaire">Glossaire</option>
                 </select>
 
-                <Button 
-                  type="submit" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  size="lg"
                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-8 py-4 rounded-xl text-lg font-semibold"
                 >
                   <Search className="w-5 h-5 mr-2" />
@@ -396,8 +439,7 @@ export default function BlogIndex() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 text-lg">
-                <Star className="w-4 h-4 mr-2" />
-                À la une
+                <Star className="w-4 h-4 mr-2" />À la une
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                 Articles en vedette
@@ -433,14 +475,19 @@ export default function BlogIndex() {
                         </div>
                       </div>
                     )}
-                    
+
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="secondary" className="bg-info/20 text-info hover:bg-primary/30">
+                        <Badge
+                          variant="secondary"
+                          className="bg-info/20 text-info hover:bg-primary/30"
+                        >
                           {getTypeLabel(article.type)}
                         </Badge>
                         {article.difficulty && (
-                          <Badge className={getDifficultyColor(article.difficulty)}>
+                          <Badge
+                            className={getDifficultyColor(article.difficulty)}
+                          >
                             {article.difficulty}
                           </Badge>
                         )}
@@ -449,12 +496,12 @@ export default function BlogIndex() {
                         {article.title}
                       </CardTitle>
                     </CardHeader>
-                    
+
                     <CardContent>
                       <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
                         {article.excerpt}
                       </p>
-                      
+
                       <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center">
@@ -467,16 +514,20 @@ export default function BlogIndex() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
-                        <Link 
-                          to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog-pieces-auto/article/${article.slug || article.alias}`}
+                        <Link
+                          to={
+                            article.pg_alias
+                              ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+                              : `/blog-pieces-auto/article/${article.slug || article.alias}`
+                          }
                           className="text-blue-600 hover:text-blue-800 font-semibold group-hover:underline inline-flex items-center"
                         >
                           Lire l'article
                           <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        
+
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
@@ -484,8 +535,11 @@ export default function BlogIndex() {
                             className="p-2 hover:bg-info/20"
                             onClick={() => {
                               fetcher.submit(
-                                { actionType: 'bookmark', articleId: article.id },
-                                { method: 'post' }
+                                {
+                                  actionType: "bookmark",
+                                  articleId: article.id,
+                                },
+                                { method: "post" },
                               );
                             }}
                           >
@@ -499,7 +553,9 @@ export default function BlogIndex() {
                               if (navigator.share) {
                                 navigator.share({
                                   title: article.title,
-                                  url: article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`
+                                  url: article.pg_alias
+                                    ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+                                    : `/blog/article/${article.slug || article.alias}`,
                                 });
                               }
                             }}
@@ -547,7 +603,8 @@ export default function BlogIndex() {
                     Montage et Entretien
                   </CardTitle>
                   <p className="text-gray-600 mt-2">
-                    Guides détaillés pour installer et entretenir vos pièces auto
+                    Guides détaillés pour installer et entretenir vos pièces
+                    auto
                   </p>
                 </CardHeader>
                 <CardContent className="relative">
@@ -659,7 +716,10 @@ export default function BlogIndex() {
           {/* Bouton "Tous les conseils" */}
           <div className="text-center">
             <Link to="/blog-pieces-auto/conseils">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all"
+              >
                 <BookOpen className="w-5 h-5 mr-2" />
                 Tous les conseils par catégorie
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -682,9 +742,12 @@ export default function BlogIndex() {
                   Articles, guides et conseils pour tous les niveaux
                 </p>
               </div>
-              
+
               <TabsList className="grid grid-cols-2 md:grid-cols-3 w-full md:w-auto">
-                <TabsTrigger value="popular" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="popular"
+                  className="flex items-center gap-2"
+                >
                   <TrendingUp className="w-4 h-4" />
                   Populaires
                 </TabsTrigger>
@@ -692,7 +755,10 @@ export default function BlogIndex() {
                   <Clock className="w-4 h-4" />
                   Récents
                 </TabsTrigger>
-                <TabsTrigger value="categories" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="categories"
+                  className="flex items-center gap-2"
+                >
                   <Hash className="w-4 h-4" />
                   Catégories
                 </TabsTrigger>
@@ -729,10 +795,13 @@ export default function BlogIndex() {
                           )}
                         </div>
                       )}
-                      
+
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge variant="secondary" className="bg-info/20 text-info">
+                          <Badge
+                            variant="secondary"
+                            className="bg-info/20 text-info"
+                          >
                             {getTypeLabel(article.type)}
                           </Badge>
                           <div className="flex items-center text-sm text-gray-500">
@@ -744,12 +813,12 @@ export default function BlogIndex() {
                           {article.title}
                         </CardTitle>
                       </CardHeader>
-                      
+
                       <CardContent>
                         <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
                           {article.excerpt}
                         </p>
-                        
+
                         <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
@@ -758,13 +827,19 @@ export default function BlogIndex() {
                           {article.publishedAt && (
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
-                              {new Date(article.publishedAt).toLocaleDateString('fr-FR')}
+                              {new Date(article.publishedAt).toLocaleDateString(
+                                "fr-FR",
+                              )}
                             </div>
                           )}
                         </div>
-                        
-                        <Link 
-                          to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog-pieces-auto/article/${article.slug || article.alias}`}
+
+                        <Link
+                          to={
+                            article.pg_alias
+                              ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+                              : `/blog-pieces-auto/article/${article.slug || article.alias}`
+                          }
                           className="text-blue-600 hover:text-blue-800 font-medium group-hover:underline inline-flex items-center"
                         >
                           Lire la suite
@@ -779,7 +854,11 @@ export default function BlogIndex() {
               {filteredArticles.length > 9 && (
                 <div className="text-center mt-12">
                   <Link to="/blog-pieces-auto/popular">
-                    <Button size="lg" variant="outline" className="group px-8 py-4 text-lg">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="group px-8 py-4 text-lg"
+                    >
                       Voir tous les articles populaires
                       <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -800,8 +879,8 @@ export default function BlogIndex() {
                       <Card className="group flex flex-row h-32 hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
                         {article.featuredImage && (
                           <div className="w-32 h-full relative overflow-hidden">
-                            <img 
-                              src={article.featuredImage} 
+                            <img
+                              src={article.featuredImage}
                               alt={article.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               loading="lazy"
@@ -820,9 +899,15 @@ export default function BlogIndex() {
                             </h3>
                           </div>
                           <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{formatReadingTime(article.readingTime)}</span>
-                            <Link 
-                              to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog-pieces-auto/article/${article.slug || article.alias}`}
+                            <span>
+                              {formatReadingTime(article.readingTime)}
+                            </span>
+                            <Link
+                              to={
+                                article.pg_alias
+                                  ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+                                  : `/blog-pieces-auto/article/${article.slug || article.alias}`
+                              }
                               className="text-blue-600 hover:text-blue-800 font-medium"
                             >
                               Lire →
@@ -836,7 +921,9 @@ export default function BlogIndex() {
               ) : (
                 <div className="text-center py-12">
                   <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">Aucun article récent disponible</p>
+                  <p className="text-gray-600">
+                    Aucun article récent disponible
+                  </p>
                 </div>
               )}
             </TabsContent>
@@ -903,11 +990,15 @@ export default function BlogIndex() {
                     Articles tendances
                   </h2>
                   <p className="text-blue-200 text-lg">
-                    Découvrez les articles les plus populaires de notre communauté
+                    Découvrez les articles les plus populaires de notre
+                    communauté
                   </p>
                 </div>
                 <Link to="/blog?tab=popular">
-                  <Button variant="outline" className="hidden md:flex border-white/30 text-white hover:bg-white/10">
+                  <Button
+                    variant="outline"
+                    className="hidden md:flex border-white/30 text-white hover:bg-white/10"
+                  >
                     Voir tout
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -918,13 +1009,20 @@ export default function BlogIndex() {
                 {blogData.popular.slice(0, 3).map((article) => (
                   <Link
                     key={article.id}
-                    to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog-pieces-auto/article/${article.slug || article.alias}`}
+                    to={
+                      article.pg_alias
+                        ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+                        : `/blog-pieces-auto/article/${article.slug || article.alias}`
+                    }
                     className="group"
                   >
                     <Card className="h-full bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden">
                       <CardContent className="p-5">
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                          <Badge
+                            variant="secondary"
+                            className="bg-white/20 text-white border-white/30"
+                          >
                             {getTypeLabel(article.type)}
                           </Badge>
                           <Badge className="bg-orange-500/90 text-white">
@@ -941,7 +1039,15 @@ export default function BlogIndex() {
                         <div className="flex items-center gap-4 text-xs text-blue-300">
                           <div className="flex items-center">
                             <Calendar className="w-3 h-3 mr-1" />
-                            {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                            {article.publishedAt
+                              ? new Date(
+                                  article.publishedAt,
+                                ).toLocaleDateString("fr-FR", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "N/A"}
                           </div>
                         </div>
                       </CardContent>
@@ -958,7 +1064,7 @@ export default function BlogIndex() {
       <section className="py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
-        
+
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <Mail className="w-16 h-16 mx-auto mb-6 animate-bounce" />
@@ -966,10 +1072,14 @@ export default function BlogIndex() {
               Ne manquez aucun article !
             </h2>
             <p className="text-xl mb-8 leading-relaxed text-white/90">
-              Rejoignez <strong className="font-bold">plus de 10 000 passionnés d'automobile</strong> et 
-              recevez nos meilleurs conseils, guides exclusifs et actualités directement dans votre boîte mail.
+              Rejoignez{" "}
+              <strong className="font-bold">
+                plus de 10 000 passionnés d'automobile
+              </strong>{" "}
+              et recevez nos meilleurs conseils, guides exclusifs et actualités
+              directement dans votre boîte mail.
             </p>
-            
+
             {/* Newsletter form amélioré */}
             <div className="max-w-md mx-auto mb-8">
               <Form className="flex flex-col sm:flex-row gap-3">
@@ -979,7 +1089,7 @@ export default function BlogIndex() {
                   className="flex-1 bg-white text-gray-900 border-0 shadow-lg py-6 text-lg"
                   required
                 />
-                <Button 
+                <Button
                   type="submit"
                   size="lg"
                   className="bg-gray-900 hover:bg-black text-white px-8 py-6 text-lg font-bold shadow-2xl"
@@ -994,8 +1104,7 @@ export default function BlogIndex() {
                   Gratuit
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  1 email/semaine
+                  <Clock className="w-4 h-4" />1 email/semaine
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
@@ -1006,9 +1115,9 @@ export default function BlogIndex() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center mt-8">
               <Link to="/contact">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
+                <Button
+                  size="lg"
+                  variant="outline"
                   className="text-white border-2 border-white hover:bg-white hover:text-pink-600 px-8 py-4 rounded-xl text-lg font-semibold group"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
@@ -1017,8 +1126,8 @@ export default function BlogIndex() {
                 </Button>
               </Link>
               <Link to="/catalogue">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-gradient-to-r from-white to-blue-50 text-pink-600 hover:shadow-2xl px-8 py-4 rounded-xl text-lg font-semibold group"
                 >
                   Explorer le catalogue
@@ -1031,4 +1140,17 @@ export default function BlogIndex() {
       </section>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

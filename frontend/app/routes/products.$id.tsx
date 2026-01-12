@@ -1,29 +1,52 @@
 /**
  * 📦 PRODUCTS DETAIL - UNIFIED INTERFACE
- * 
+ *
  * Page de détail unifié d'un produit
  * Remplace commercial.products.$id.tsx
- * 
+ *
  * Features:
  * - Role-based access (Commercial/Pro)
  * - Enhanced product information
  * - Progressive Enhancement ready
  * - Component library integration
- * 
+ *
  * Routes:
  * - /products/:id (base interface)
  * - /products/:id?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
-import { ArrowLeft, Package, Tag, Info, Star, TrendingUp, ShoppingCart } from 'lucide-react';
-import { requireUser } from '../auth/unified.server';
-import { ProductsQuickActions } from '../components/products/ProductsQuickActions';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  ArrowLeft,
+  Package,
+  Tag,
+  Info,
+  Star,
+  TrendingUp,
+  ShoppingCart,
+} from "lucide-react";
+import { requireUser } from "../auth/unified.server";
+import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Error404 } from "~/components/errors/Error404";
 
 /**
  * 🔍 SEO Meta Tags - Page produit individuel
@@ -31,33 +54,36 @@ import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data?.product) {
     return [
-      { title: 'Produit non trouvé' },
-      { name: 'robots', content: 'noindex' },
+      { title: "Produit non trouvé" },
+      { name: "robots", content: "noindex" },
     ];
   }
-  
+
   const product = data.product;
-  const brandName = product.pieces_marque?.marque_name || '';
-  const gammeName = product.pieces_gamme?.gamme_name || '';
+  const brandName = product.pieces_marque?.marque_name || "";
+  const gammeName = product.pieces_gamme?.gamme_name || "";
   const price = product.pieces_price?.price_ttc;
-  
+
   const title = `${product.piece_name} ${brandName} | ${gammeName}`;
-  const description = product.piece_description 
-    || `${product.piece_name} ${brandName} - Référence ${product.piece_sku}. ${gammeName} de qualité. ${price ? `À partir de ${price.toFixed(2)}€ TTC.` : ''} Livraison rapide.`;
-  
+  const description =
+    product.piece_description ||
+    `${product.piece_name} ${brandName} - Référence ${product.piece_sku}. ${gammeName} de qualité. ${price ? `À partir de ${price.toFixed(2)}€ TTC.` : ""} Livraison rapide.`;
+
   return [
     { title },
-    { name: 'description', content: description },
-    { name: 'robots', content: 'index, follow' },
+    { name: "description", content: description },
+    { name: "robots", content: "index, follow" },
     // Open Graph
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'product' },
-    ...(product.piece_image ? [{ property: 'og:image', content: product.piece_image }] : []),
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "product" },
+    ...(product.piece_image
+      ? [{ property: "og:image", content: product.piece_image }]
+      : []),
     // Twitter
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
   ];
 };
 
@@ -72,12 +98,12 @@ interface ProductDetail {
   piece_description?: string;
   piece_stock?: number;
   // Enhanced fields
-  compatibility?: string[];     // Enhanced data
-  specifications?: any;         // Enhanced data
-  related_products?: string[];  // Enhanced data
+  compatibility?: string[]; // Enhanced data
+  specifications?: any; // Enhanced data
+  related_products?: string[]; // Enhanced data
   // Pro-specific fields
-  price_pro?: number;          // Pro exclusive
-  margin?: number;             // Pro exclusive
+  price_pro?: number; // Pro exclusive
+  margin?: number; // Pro exclusive
   // Unified data structure
   pieces_gamme?: {
     gamme_id: string;
@@ -105,7 +131,7 @@ interface ProductDetailData {
     id: string;
     name: string;
     level: number;
-    role: 'pro' | 'commercial';
+    role: "pro" | "commercial";
   };
   product: ProductDetail | null;
   enhanced: boolean;
@@ -114,98 +140,104 @@ interface ProductDetailData {
 
 export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
-  
+
   // Determine user role and check access
   const userLevel = user.level || 0;
-  const userName = user.name || 'Utilisateur';
-  const userRole = userLevel >= 4 ? 'pro' : userLevel >= 3 ? 'commercial' : null;
-  
+  const userName = user.name || "Utilisateur";
+  const userRole =
+    userLevel >= 4 ? "pro" : userLevel >= 3 ? "commercial" : null;
+
   if (!userRole) {
-    throw new Response('Accès refusé - Compte professionnel ou commercial requis', { status: 403 });
+    throw new Response(
+      "Accès refusé - Compte professionnel ou commercial requis",
+      { status: 403 },
+    );
   }
 
   const productId = params.id;
   if (!productId) {
-    throw new Response('ID produit manquant', { status: 400 });
+    throw new Response("ID produit manquant", { status: 400 });
   }
 
   const url = new URL(request.url);
-  const enhanced = url.searchParams.get('enhanced') === 'true';
-  
+  const enhanced = url.searchParams.get("enhanced") === "true";
+
   const baseUrl = process.env.API_URL || "http://localhost:3000";
 
   try {
     const response = await fetch(`${baseUrl}/api/products/${productId}`, {
-      headers: { 
-        'internal-call': 'true',
-        'user-role': userRole,
-        'user-level': userLevel.toString(),
-        'enhanced-mode': enhanced.toString()
-      }
+      headers: {
+        "internal-call": "true",
+        "user-role": userRole,
+        "user-level": userLevel.toString(),
+        "enhanced-mode": enhanced.toString(),
+      },
     });
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Response('Produit non trouvé', { status: 404 });
+        throw new Response("Produit non trouvé", { status: 404 });
       }
       throw new Error(`API Error: ${response.status}`);
     }
 
     const productData = await response.json();
-    
+
     // Map and enhance product data
-    const product: ProductDetail | null = productData ? {
-      piece_id: productData.piece_id || productData.id,
-      piece_name: productData.piece_name || productData.name,
-      piece_alias: productData.piece_alias || productData.alias,
-      piece_sku: productData.piece_sku || productData.sku,
-      piece_image: productData.piece_image || productData.image,
-      piece_activ: productData.piece_activ ?? productData.is_active ?? true,
-      piece_top: productData.piece_top ?? productData.is_top ?? false,
-      piece_description: productData.piece_description || productData.description,
-      piece_stock: productData.piece_stock || productData.stock,
-      pieces_gamme: productData.pieces_gamme || productData.gamme,
-      pieces_marque: productData.pieces_marque || productData.marque,
-      pieces_price: productData.pieces_price || productData.price,
-      ...(enhanced && {
-        compatibility: productData.compatibility,
-        specifications: productData.specifications,
-        related_products: productData.related_products
-      }),
-      ...(userRole === 'pro' && {
-        price_pro: productData.price_pro,
-        margin: productData.margin
-      })
-    } : null;
+    const product: ProductDetail | null = productData
+      ? {
+          piece_id: productData.piece_id || productData.id,
+          piece_name: productData.piece_name || productData.name,
+          piece_alias: productData.piece_alias || productData.alias,
+          piece_sku: productData.piece_sku || productData.sku,
+          piece_image: productData.piece_image || productData.image,
+          piece_activ: productData.piece_activ ?? productData.is_active ?? true,
+          piece_top: productData.piece_top ?? productData.is_top ?? false,
+          piece_description:
+            productData.piece_description || productData.description,
+          piece_stock: productData.piece_stock || productData.stock,
+          pieces_gamme: productData.pieces_gamme || productData.gamme,
+          pieces_marque: productData.pieces_marque || productData.marque,
+          pieces_price: productData.pieces_price || productData.price,
+          ...(enhanced && {
+            compatibility: productData.compatibility,
+            specifications: productData.specifications,
+            related_products: productData.related_products,
+          }),
+          ...(userRole === "pro" && {
+            price_pro: productData.price_pro,
+            margin: productData.margin,
+          }),
+        }
+      : null;
 
     return json<ProductDetailData>({
       user: {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       product,
-      enhanced
+      enhanced,
     });
-
   } catch (error) {
-    console.error('Product detail loading error:', error);
-    
+    console.error("Product detail loading error:", error);
+
     if (error instanceof Response) {
       throw error;
     }
-    
+
     return json<ProductDetailData>({
       user: {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       product: null,
       enhanced,
-      error: 'Erreur lors du chargement du produit'
+      error: "Erreur lors du chargement du produit",
     });
   }
 }
@@ -225,11 +257,11 @@ export default function ProductDetail() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="text-center">
           <Package className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {error || 'Produit non trouvé'}
+            {error || "Produit non trouvé"}
           </h1>
           <p className="text-gray-600">
             Ce produit n'est pas disponible ou n'existe pas.
@@ -242,12 +274,14 @@ export default function ProductDetail() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Produits", href: "/products" },
-        { label: "Catalogue", href: "/products/catalog" },
-        { label: product.piece_name }
-      ]} />
-      
+      <PublicBreadcrumb
+        items={[
+          { label: "Produits", href: "/products" },
+          { label: "Catalogue", href: "/products/catalog" },
+          { label: product.piece_name },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
@@ -283,7 +317,7 @@ export default function ProductDetail() {
               <Package className="h-12 w-12 text-gray-400" />
             </div>
           )}
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div>
@@ -296,9 +330,7 @@ export default function ProductDetail() {
                   </p>
                 )}
                 <div className="flex items-center gap-3 mt-3">
-                  <Badge variant="outline">
-                    SKU: {product.piece_sku}
-                  </Badge>
+                  <Badge variant="outline">SKU: {product.piece_sku}</Badge>
                   {product.piece_top && (
                     <Badge variant="secondary">
                       <Star className="h-3 w-3 mr-1" />
@@ -306,19 +338,13 @@ export default function ProductDetail() {
                     </Badge>
                   )}
                   {!product.piece_activ && (
-                    <Badge variant="destructive">
-                      Inactif
-                    </Badge>
+                    <Badge variant="destructive">Inactif</Badge>
                   )}
-                  {enhanced && (
-                    <Badge variant="secondary">
-                      Mode Avancé
-                    </Badge>
-                  )}
+                  {enhanced && <Badge variant="secondary">Mode Avancé</Badge>}
                 </div>
               </div>
 
-              {user.role === 'pro' && (
+              {user.role === "pro" && (
                 <div className="text-right">
                   <Button className="flex items-center gap-2">
                     <ShoppingCart className="h-4 w-4" />
@@ -363,12 +389,21 @@ export default function ProductDetail() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-2 md:grid-cols-2">
-                      {Object.entries(product.specifications).map(([key, value]) => (
-                        <div key={key} className="flex justify-between py-1 border-b border-gray-100">
-                          <span className="font-medium text-gray-600">{key}:</span>
-                          <span className="text-gray-900">{String(value)}</span>
-                        </div>
-                      ))}
+                      {Object.entries(product.specifications).map(
+                        ([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex justify-between py-1 border-b border-gray-100"
+                          >
+                            <span className="font-medium text-gray-600">
+                              {key}:
+                            </span>
+                            <span className="text-gray-900">
+                              {String(value)}
+                            </span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -405,9 +440,7 @@ export default function ProductDetail() {
                   <div className="text-2xl font-bold text-gray-900">
                     {product.piece_stock}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Unités en stock
-                  </div>
+                  <div className="text-sm text-gray-600">Unités en stock</div>
                   {product.piece_stock > 0 ? (
                     <Badge variant="secondary" className="mt-2">
                       Disponible
@@ -436,16 +469,22 @@ export default function ProductDetail() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>TVA ({(product.pieces_price.price_vat * 100).toFixed(1)}%):</span>
                   <span>
-                    {(product.pieces_price.price_ttc - product.pieces_price.price_ht).toFixed(2)}€
+                    TVA ({(product.pieces_price.price_vat * 100).toFixed(1)}%):
+                  </span>
+                  <span>
+                    {(
+                      product.pieces_price.price_ttc -
+                      product.pieces_price.price_ht
+                    ).toFixed(2)}
+                    €
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Prix TTC:</span>
                   <span>{product.pieces_price.price_ttc.toFixed(2)}€</span>
                 </div>
-                {user.role === 'pro' && product.price_pro && (
+                {user.role === "pro" && product.price_pro && (
                   <div className="flex justify-between text-green-600 font-bold">
                     <span>Prix Pro:</span>
                     <span>{product.price_pro.toFixed(2)}€</span>
@@ -478,8 +517,15 @@ export default function ProductDetail() {
                   <div className="font-semibold text-gray-900">
                     {product.pieces_marque.marque_name}
                   </div>
-                  <Button asChild variant="outline" size="sm" className="mt-3 w-full">
-                    <Link to={`/products/catalog?brand=${product.pieces_marque.marque_id}`}>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full"
+                  >
+                    <Link
+                      to={`/products/catalog?brand=${product.pieces_marque.marque_id}`}
+                    >
                       Voir tous les produits
                     </Link>
                   </Button>
@@ -504,8 +550,15 @@ export default function ProductDetail() {
                       {product.pieces_gamme.gamme_description}
                     </p>
                   )}
-                  <Button asChild variant="outline" size="sm" className="w-full">
-                    <Link to={`/products/catalog?range=${product.pieces_gamme.gamme_id}`}>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Link
+                      to={`/products/catalog?range=${product.pieces_gamme.gamme_id}`}
+                    >
                       Voir la gamme
                     </Link>
                   </Button>
@@ -517,35 +570,57 @@ export default function ProductDetail() {
       </div>
 
       {/* Related Products */}
-      {enhanced && product.related_products && product.related_products.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Produits Associés</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              {product.related_products.slice(0, 4).map((relatedId, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                  <div className="text-center">
-                    <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link to={`/products/${relatedId}`}>
-                        Voir produit
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {enhanced &&
+        product.related_products &&
+        product.related_products.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Produits Associés</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                {product.related_products
+                  .slice(0, 4)
+                  .map((relatedId, index) => (
+                    <div
+                      key={index}
+                      className="p-4 border border-gray-200 rounded-lg"
+                    >
+                      <div className="text-center">
+                        <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Link to={`/products/${relatedId}`}>
+                            Voir produit
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Quick Actions */}
-      <ProductsQuickActions
-        enhanced={enhanced}
-        userRole={user.role}
-      />
+      <ProductsQuickActions enhanced={enhanced} userRole={user.role} />
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

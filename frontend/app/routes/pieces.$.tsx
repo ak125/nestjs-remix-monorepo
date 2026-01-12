@@ -1,20 +1,31 @@
 /**
  * 🔄 ROUTE DE MIGRATION AUTOMATIQUE - ANCIENNES URLs PIÈCES
- * 
+ *
  * Route catch-all pour intercepter les anciennes URLs de pièces
  * et effectuer des redirections 301 automatiques vers la nouvelle structure
- * 
+ *
  * Pattern capturé: /pieces/{category-name-id}/{brand-brandId}/{model-modelId}/{type-typeId}.html
- * 
+ *
  * @version 1.0.0
  * @since 2025-09-14
  * @author SEO Migration Team
  */
 
-import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
 
 // ====================================
 // 🎯 INTERFACES & TYPES
@@ -52,25 +63,27 @@ interface MigrationPageData {
 async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
   try {
     const encodedUrl = encodeURIComponent(legacyUrl);
-    const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3000'}/api/vehicles/migration/test/${encodedUrl}`);
-    
+    const response = await fetch(
+      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/vehicles/migration/test/${encodedUrl}`,
+    );
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return {
       success: data.success,
       legacy_url: legacyUrl,
       new_url: data.migration?.new_url,
-      metadata: data.migration?.metadata
+      metadata: data.migration?.metadata,
     };
   } catch (error) {
-    console.error('Erreur test migration:', error);
+    console.error("Erreur test migration:", error);
     return {
       success: false,
       legacy_url: legacyUrl,
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
+      error: error instanceof Error ? error.message : "Erreur inconnue",
     };
   }
 }
@@ -78,14 +91,16 @@ async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
 /**
  * Effectue une redirection 301 si la migration est possible
  */
-async function _performRedirection(legacyUrl: string): Promise<Response | null> {
+async function _performRedirection(
+  legacyUrl: string,
+): Promise<Response | null> {
   const migration = await testUrlMigration(legacyUrl);
-  
+
   if (migration.success && migration.new_url) {
     // Redirection 301 permanente pour le SEO
     return redirect(migration.new_url, { status: 301 });
   }
-  
+
   return null;
 }
 
@@ -96,55 +111,67 @@ async function _performRedirection(legacyUrl: string): Promise<Response | null> 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const legacyUrl = url.pathname;
-  
+
   console.log(`🔄 Interception URL: ${legacyUrl}`);
-  
+
   // Vérifier si c'est bien une URL de pièce
-  if (!legacyUrl.includes('/pieces/') || !legacyUrl.endsWith('.html')) {
+  if (!legacyUrl.includes("/pieces/") || !legacyUrl.endsWith(".html")) {
     throw new Response("URL non reconnue comme URL de pièce", { status: 404 });
   }
-  
+
   // Vérifier si c'est une URL de pièces avec véhicule (4 segments)
   const vehiclePattern = /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/;
   if (vehiclePattern.test(legacyUrl)) {
-    console.log('🔧 [PIECES V4] URL pièces avec véhicule détectée, laissant passer pour pieces.$gamme.$marque.$modele.$type.tsx');
-    throw new Response("URL pièces avec véhicule - gérée par la route spécialisée", { status: 404 });
+    console.log(
+      "🔧 [PIECES V4] URL pièces avec véhicule détectée, laissant passer pour pieces.$gamme.$marque.$modele.$type.tsx",
+    );
+    throw new Response(
+      "URL pièces avec véhicule - gérée par la route spécialisée",
+      { status: 404 },
+    );
   }
-  
+
   // Pattern pour nos nouvelles URLs gamme simple: /pieces/{alias}-{id}.html
   const newPatternMatch = legacyUrl.match(/\/pieces\/(.+)-(\d+)\.html$/);
-  
+
   if (newPatternMatch) {
     const [, alias, gammeId] = newPatternMatch;
-    console.log(`✅ [PIECES V4] URL gamme simple détectée: alias=${alias}, gammeId=${gammeId}`);
+    console.log(
+      `✅ [PIECES V4] URL gamme simple détectée: alias=${alias}, gammeId=${gammeId}`,
+    );
     // URL gamme simple - rediriger vers pieces.$slug.tsx
-    throw new Response("URL gamme simple - gérée par pieces.$slug.tsx", { status: 404 });
+    throw new Response("URL gamme simple - gérée par pieces.$slug.tsx", {
+      status: 404,
+    });
   }
-  
+
   // Sinon, tenter la migration avec l'ancien système
   const migration = await testUrlMigration(legacyUrl);
-  
+
   // Si migration réussie, redirection 301 immédiate
   if (migration.success && migration.new_url) {
     // En production, effectuer la redirection directement
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       return redirect(migration.new_url, { status: 301 });
     }
-    
+
     // En développement, afficher la page de migration pour debug
     return json<MigrationPageData>({
       migration,
       redirect_in_seconds: 5,
-      show_manual_redirect: true
+      show_manual_redirect: true,
     });
   }
-  
+
   // Si migration échouée, afficher page d'erreur avec diagnostic
-  return json<MigrationPageData>({
-    migration,
-    redirect_in_seconds: 0,
-    show_manual_redirect: false
-  }, { status: 404 });
+  return json<MigrationPageData>(
+    {
+      migration,
+      redirect_in_seconds: 0,
+      show_manual_redirect: false,
+    },
+    { status: 404 },
+  );
 };
 
 // ====================================
@@ -155,8 +182,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data || !data.migration.success) {
     return [
       { title: "Page déplacée - Redirection en cours" },
-      { name: "description", content: "Cette page a été déplacée vers notre nouvelle structure." },
-      { name: "robots", content: "noindex, nofollow" }
+      {
+        name: "description",
+        content: "Cette page a été déplacée vers notre nouvelle structure.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
     ];
   }
 
@@ -168,7 +198,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title },
     { name: "description", content: description },
     { name: "robots", content: "noindex, follow" },
-    { "http-equiv": "refresh", content: `${data.redirect_in_seconds};url=${data.migration.new_url}` }
+    {
+      "http-equiv": "refresh",
+      content: `${data.redirect_in_seconds};url=${data.migration.new_url}`,
+    },
   ];
 };
 
@@ -177,7 +210,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 // ====================================
 
 export default function LegacyPartUrlMigrationPage() {
-  const { migration, redirect_in_seconds, show_manual_redirect } = useLoaderData<typeof loader>();
+  const { migration, redirect_in_seconds, show_manual_redirect } =
+    useLoaderData<typeof loader>();
 
   // Page de succès avec redirection automatique
   if (migration.success && migration.new_url) {
@@ -191,37 +225,47 @@ export default function LegacyPartUrlMigrationPage() {
                 <ArrowRight className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Page Déplacée
             </h1>
-            
+
             <p className="text-gray-600 mb-6">
-              Cette page a été déplacée vers notre nouvelle structure pour une meilleure expérience.
+              Cette page a été déplacée vers notre nouvelle structure pour une
+              meilleure expérience.
             </p>
 
             {/* Informations de migration */}
             {migration.metadata && (
               <div className="bg-primary/5 rounded-xl p-6 mb-6 text-left">
-                <h3 className="font-semibold text-blue-900 mb-3">Informations de redirection</h3>
+                <h3 className="font-semibold text-blue-900 mb-3">
+                  Informations de redirection
+                </h3>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="font-medium text-blue-800">Véhicule:</span>{' '}
+                    <span className="font-medium text-blue-800">Véhicule:</span>{" "}
                     <span className="text-blue-700">
-                      {migration.metadata.vehicle_brand} {migration.metadata.vehicle_model} {migration.metadata.vehicle_type}
+                      {migration.metadata.vehicle_brand}{" "}
+                      {migration.metadata.vehicle_model}{" "}
+                      {migration.metadata.vehicle_type}
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium text-blue-800">Catégorie:</span>{' '}
+                    <span className="font-medium text-blue-800">
+                      Catégorie:
+                    </span>{" "}
                     <span className="text-blue-700">
-                      {migration.metadata.legacy_category} → {migration.metadata.modern_category}
+                      {migration.metadata.legacy_category} →{" "}
+                      {migration.metadata.modern_category}
                     </span>
                   </div>
                   {migration.metadata.seo_keywords.length > 0 && (
                     <div>
-                      <span className="font-medium text-blue-800">Mots-clés:</span>{' '}
+                      <span className="font-medium text-blue-800">
+                        Mots-clés:
+                      </span>{" "}
                       <span className="text-blue-700">
-                        {migration.metadata.seo_keywords.join(', ')}
+                        {migration.metadata.seo_keywords.join(", ")}
                       </span>
                     </div>
                   )}
@@ -231,11 +275,12 @@ export default function LegacyPartUrlMigrationPage() {
 
             {/* Redirection automatique */}
             {redirect_in_seconds > 0 && (
-<Alert className="rounded-xl p-4 mb-6" variant="warning">
+              <Alert className="rounded-xl p-4 mb-6" variant="warning">
                 <div className="flex items-center justify-center text-yellow-800">
                   <Clock className="w-5 h-5 mr-2" />
                   <span className="font-medium">
-                    Redirection automatique dans {redirect_in_seconds} secondes...
+                    Redirection automatique dans {redirect_in_seconds}{" "}
+                    secondes...
                   </span>
                 </div>
               </Alert>
@@ -251,7 +296,7 @@ export default function LegacyPartUrlMigrationPage() {
                   <ArrowRight className="w-5 h-5 mr-2" />
                   Accéder à la nouvelle page
                 </Link>
-                
+
                 <div className="text-sm text-gray-500">
                   <ExternalLink className="w-4 h-4 inline mr-1" />
                   {migration.new_url}
@@ -260,7 +305,7 @@ export default function LegacyPartUrlMigrationPage() {
             )}
 
             {/* Debug info en développement */}
-            {process.env.NODE_ENV === 'development' && (
+            {process.env.NODE_ENV === "development" && (
               <details className="mt-8 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
                   Informations de débogage
@@ -287,26 +332,31 @@ export default function LegacyPartUrlMigrationPage() {
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>
-          
+
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Page non trouvée
           </h1>
-          
+
           <p className="text-gray-600 mb-6">
-            Nous n'avons pas pu trouver cette page ou la rediriger automatiquement.
+            Nous n'avons pas pu trouver cette page ou la rediriger
+            automatiquement.
           </p>
 
           {/* Informations d'erreur */}
           <div className="bg-destructive/5 rounded-xl p-6 mb-6 text-left">
-            <h3 className="font-semibold text-red-900 mb-3">Détails de l'erreur</h3>
+            <h3 className="font-semibold text-red-900 mb-3">
+              Détails de l'erreur
+            </h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-red-800">URL demandée:</span>{' '}
-                <span className="text-red-700 break-all">{migration.legacy_url}</span>
+                <span className="font-medium text-red-800">URL demandée:</span>{" "}
+                <span className="text-red-700 break-all">
+                  {migration.legacy_url}
+                </span>
               </div>
               {migration.error && (
                 <div>
-                  <span className="font-medium text-red-800">Erreur:</span>{' '}
+                  <span className="font-medium text-red-800">Erreur:</span>{" "}
                   <span className="text-red-700">{migration.error}</span>
                 </div>
               )}
@@ -321,9 +371,10 @@ export default function LegacyPartUrlMigrationPage() {
             >
               Retour à l'accueil
             </Link>
-            
+
             <div className="text-sm text-gray-500">
-              Ou utilisez notre sélecteur de véhicule pour trouver les pièces que vous cherchez
+              Ou utilisez notre sélecteur de véhicule pour trouver les pièces
+              que vous cherchez
             </div>
           </div>
         </div>
@@ -352,10 +403,10 @@ export function redirectScript(newUrl: string, seconds: number) {
             window.location.href = '${newUrl}';
           }
         };
-        
+
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
-        
+
         // Nettoyage
         setTimeout(() => {
           clearInterval(interval);
@@ -363,4 +414,17 @@ export function redirectScript(newUrl: string, seconds: number) {
       })();
     </script>
   `;
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

@@ -1,52 +1,59 @@
 /**
  * � PRODUCTS ADMIN - INTERFACE COMMERCIALE
- * 
+ *
  * ⚠️ IMPORTANT: Cette route est DIFFÉRENTE de /admin/products
- * 
+ *
  * 🎯 Usage:
  * - Route: /products/admin
  * - Audience: COMMERCIAL (level 3+) + ADMIN (level 7+)
  * - Contexte: Gestion quotidienne des produits, catalogue enrichi
- * 
+ *
  * 📊 Features commerciales:
  * - 4M+ produits automobile avec recherche avancée
  * - Visualisation enrichie (images, specs, compatibilité)
  * - Progressive Enhancement (?enhanced=true)
  * - Stats temps réel (stock, ventes, tendances)
  * - Interface optimisée pour la vente
- * 
+ *
  * 🔄 Comparaison avec /admin/products:
  * - /products/admin (ICI): Interface commerciale richeFull-featured UI, niveau 3+
  * - /admin/products: Interface système basique, config, niveau 7+
- * 
+ *
  * ✅ Quand utiliser cette route:
  * - Recherche produit pour créer une commande
  * - Consultation catalogue client
  * - Vérification stock disponible
  * - Analytics ventes par produit
- * 
+ *
  * Routes:
  * - /products/admin (interface base)
  * - /products/admin?enhanced=true (interface avancée)
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
-import { 
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
   ShoppingCart,
   Eye,
   TrendingUp,
   AlertTriangle,
-  BarChart3
-} from 'lucide-react';
-import { requireUser } from '../auth/unified.server';
-import { Pagination } from '../components/products/Pagination';
-import { ProductFilters } from '../components/products/ProductFilters';
-import { ProductsQuickActions } from '../components/products/ProductsQuickActions';
-import { ProductsStatsCard } from '../components/products/ProductsStatsCard';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+  BarChart3,
+} from "lucide-react";
+import { requireUser } from "../auth/unified.server";
+import { Pagination } from "../components/products/Pagination";
+import { ProductFilters } from "../components/products/ProductFilters";
+import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
+import { ProductsStatsCard } from "../components/products/ProductsStatsCard";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Error404 } from "~/components/errors/Error404";
 
 // API Product Interface (from backend)
 interface APIProduct {
@@ -68,7 +75,7 @@ interface APIProduct {
   };
   stock: {
     available: number;
-    status: 'in_stock' | 'low_stock' | 'out_of_stock';
+    status: "in_stock" | "low_stock" | "out_of_stock";
     minAlert: number;
   };
   status: {
@@ -98,7 +105,7 @@ interface Product {
   discount?: number;
   margin?: number;
   is_active?: boolean;
-  stockStatus?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  stockStatus?: "in_stock" | "low_stock" | "out_of_stock";
 }
 
 interface ProductStats {
@@ -107,10 +114,10 @@ interface ProductStats {
   brandsCount?: number;
   averageRating?: number;
   inStock?: number;
-  exclusiveProducts?: number;  // Pro-only
-  lowStockItems?: number;  // Commercial focus
-  totalBrands?: number;  // Commercial naming
-  totalCategories?: number;  // Commercial naming
+  exclusiveProducts?: number; // Pro-only
+  lowStockItems?: number; // Commercial focus
+  totalBrands?: number; // Commercial naming
+  totalCategories?: number; // Commercial naming
 }
 
 interface ProductsData {
@@ -118,7 +125,7 @@ interface ProductsData {
     id: string;
     name: string;
     level: number;
-    role: 'pro' | 'commercial';
+    role: "pro" | "commercial";
   };
   stats: ProductStats;
   products: Product[];
@@ -132,7 +139,7 @@ interface ProductsData {
     gammes: Array<{ id: string; name: string }>;
     brands: Array<{ id: string; name: string }>;
   };
-  recentProducts?: Product[];  // Commercial style
+  recentProducts?: Product[]; // Commercial style
   recentBrands?: Array<{
     marque_id: number;
     marque_name: string;
@@ -143,61 +150,72 @@ interface ProductsData {
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
-  
+
   // Vérifier accès commercial (niveau 3+)
   const userLevel = user.level || 0;
-  const userName = user.name || 'Utilisateur';
-  const userRole = 'commercial'; // Une seule interface commerciale
+  const userName = user.name || "Utilisateur";
+  const userRole = "commercial"; // Une seule interface commerciale
   if (userLevel < 3) {
-    throw new Response('Accès refusé - Compte commercial requis', { status: 403 });
+    throw new Response("Accès refusé - Compte commercial requis", {
+      status: 403,
+    });
   }
 
   // Paramètres URL
   const url = new URL(request.url);
-  console.log('🌐 [LOADER] Full URL:', url.toString());
-  console.log('🌐 [LOADER] Search params:', Object.fromEntries(url.searchParams.entries()));
-  
-  const enhanced = url.searchParams.get('enhanced') === 'true';
-  const search = url.searchParams.get('search') || '';
-  const page = url.searchParams.get('page') || '1';
-  const limit = url.searchParams.get('limit') || '50';
-  const gammeId = url.searchParams.get('gammeId') || '';
-  const brandId = url.searchParams.get('brandId') || '';
+  console.log("🌐 [LOADER] Full URL:", url.toString());
+  console.log(
+    "🌐 [LOADER] Search params:",
+    Object.fromEntries(url.searchParams.entries()),
+  );
+
+  const enhanced = url.searchParams.get("enhanced") === "true";
+  const search = url.searchParams.get("search") || "";
+  const page = url.searchParams.get("page") || "1";
+  const limit = url.searchParams.get("limit") || "50";
+  const gammeId = url.searchParams.get("gammeId") || "";
+  const brandId = url.searchParams.get("brandId") || "";
   // Par défaut: actifs seulement (sauf si explicitement demandé tous)
-  const activeOnly = url.searchParams.get('activeOnly');
-  const isActive = activeOnly === 'true' || activeOnly === null ? 'true' : '';
-  const lowStock = url.searchParams.get('lowStock') || '';
-  
-  console.log('🔍 [LOADER] Extracted params:', {
-    gammeId, brandId, search, page, limit, isActive, lowStock
+  const activeOnly = url.searchParams.get("activeOnly");
+  const isActive = activeOnly === "true" || activeOnly === null ? "true" : "";
+  const lowStock = url.searchParams.get("lowStock") || "";
+
+  console.log("🔍 [LOADER] Extracted params:", {
+    gammeId,
+    brandId,
+    search,
+    page,
+    limit,
+    isActive,
+    lowStock,
   });
 
   const baseUrl = process.env.API_URL || "http://localhost:3000";
-  
+
   try {
     // Appels API pour interface commerciale
     const apiCalls = [
       fetch(`${baseUrl}/api/products/stats`, {
-        headers: { 
-          'internal-call': 'true',
-          'user-level': userLevel.toString()
-        }
+        headers: {
+          "internal-call": "true",
+          "user-level": userLevel.toString(),
+        },
       }),
       fetch(`${baseUrl}/api/products/gammes`, {
-        headers: { 'internal-call': 'true' }
+        headers: { "internal-call": "true" },
       }),
       fetch(`${baseUrl}/api/products/brands-test`, {
-        headers: { 'internal-call': 'true' }
-      })
+        headers: { "internal-call": "true" },
+      }),
     ];
 
     const responses = await Promise.all(apiCalls);
-    
+
     // Parse stats (common to both roles)
     let stats: ProductStats = {
       totalProducts: 0,
       brandsCount: 0,
-      categoriesCount: 0
+      categoriesCount: 0,
     };
 
     if (responses[0]?.ok) {
@@ -205,9 +223,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats = {
         totalProducts: statsData.totalProducts || 0,
         brandsCount: statsData.totalBrands || statsData.brandsCount || 0,
-        categoriesCount: statsData.totalCategories || statsData.categoriesCount || 0,
+        categoriesCount:
+          statsData.totalCategories || statsData.categoriesCount || 0,
         lowStockItems: statsData.lowStockItems || 0,
-        inStock: statsData.activeProducts || statsData.inStock || 0
+        inStock: statsData.activeProducts || statsData.inStock || 0,
       };
     }
 
@@ -219,68 +238,72 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     try {
       // Construire URL avec paramètres
       const queryParams = new URLSearchParams();
-      if (search) queryParams.set('search', search);
-      if (page) queryParams.set('page', page);
-      if (limit) queryParams.set('limit', limit);
-      if (gammeId) queryParams.set('gammeId', gammeId);
-      if (brandId) queryParams.set('brandId', brandId);
-      if (isActive) queryParams.set('isActive', isActive);
-      if (lowStock) queryParams.set('lowStock', lowStock);
-      
+      if (search) queryParams.set("search", search);
+      if (page) queryParams.set("page", page);
+      if (limit) queryParams.set("limit", limit);
+      if (gammeId) queryParams.set("gammeId", gammeId);
+      if (brandId) queryParams.set("brandId", brandId);
+      if (isActive) queryParams.set("isActive", isActive);
+      if (lowStock) queryParams.set("lowStock", lowStock);
+
       const apiUrl = `${baseUrl}/api/products/admin/list?${queryParams.toString()}`;
-      console.log('📡 [LOADER] Calling API:', apiUrl);
+      console.log("📡 [LOADER] Calling API:", apiUrl);
 
       // Construire URL pour les filtres dynamiques
       const filtersParams = new URLSearchParams();
-      if (gammeId) filtersParams.set('gammeId', gammeId);
-      if (brandId) filtersParams.set('brandId', brandId);
+      if (gammeId) filtersParams.set("gammeId", gammeId);
+      if (brandId) filtersParams.set("brandId", brandId);
       const filtersUrl = `${baseUrl}/api/products/filters/lists?${filtersParams.toString()}`;
-      console.log('📡 [LOADER] Calling Filters API:', filtersUrl);
+      console.log("📡 [LOADER] Calling Filters API:", filtersUrl);
 
       const [productsResponse, filtersResponse] = await Promise.all([
         fetch(apiUrl, {
-          headers: { 
-            'internal-call': 'true',
-            'user-level': userLevel.toString()
-          }
+          headers: {
+            "internal-call": "true",
+            "user-level": userLevel.toString(),
+          },
         }),
         fetch(filtersUrl, {
-          headers: { 'internal-call': 'true' }
-        })
+          headers: { "internal-call": "true" },
+        }),
       ]);
 
       if (productsResponse.ok) {
         const productsData = await productsResponse.json();
         pagination = productsData.pagination || pagination;
-        
+
         // Transformer les données API vers format UI
-        products = (productsData.products || []).map((apiProduct: APIProduct) => ({
-          id: apiProduct.id.toString(),
-          name: apiProduct.name,
-          description: apiProduct.description || `Référence: ${apiProduct.reference}`,
-          reference: apiProduct.reference,
-          price: apiProduct.pricing.publicTTC,
-          priceProf: apiProduct.pricing.proHT,
-          margin: apiProduct.pricing.margin,
-          brand: apiProduct.brand.name,
-          category: `Catégorie ${apiProduct.categoryId}`,
-          image: apiProduct.status.hasImage 
-            ? `/images/products/${apiProduct.id}.jpg` 
-            : '/images/product-placeholder.jpg',
-          stock: apiProduct.stock.available,
-          stockStatus: apiProduct.stock.status,
-          rating: 4.5, // TODO: Implémenter système d'avis
-          reviews: 0,
-          deliveryTime: apiProduct.stock.status === 'in_stock' ? '24-48h' : '3-5j',
-          is_active: apiProduct.status.isActive,
-        }));
+        products = (productsData.products || []).map(
+          (apiProduct: APIProduct) => ({
+            id: apiProduct.id.toString(),
+            name: apiProduct.name,
+            description:
+              apiProduct.description || `Référence: ${apiProduct.reference}`,
+            reference: apiProduct.reference,
+            price: apiProduct.pricing.publicTTC,
+            priceProf: apiProduct.pricing.proHT,
+            margin: apiProduct.pricing.margin,
+            brand: apiProduct.brand.name,
+            category: `Catégorie ${apiProduct.categoryId}`,
+            image: apiProduct.status.hasImage
+              ? `/images/products/${apiProduct.id}.jpg`
+              : "/images/product-placeholder.jpg",
+            stock: apiProduct.stock.available,
+            stockStatus: apiProduct.stock.status,
+            rating: 4.5, // TODO: Implémenter système d'avis
+            reviews: 0,
+            deliveryTime:
+              apiProduct.stock.status === "in_stock" ? "24-48h" : "3-5j",
+            is_active: apiProduct.status.isActive,
+          }),
+        );
       }
 
       if (filtersResponse.ok) {
         filterLists = await filtersResponse.json();
       }
     } catch (error) {
-      console.error('❌ Erreur chargement produits:', error);
+      console.error("❌ Erreur chargement produits:", error);
       // Continuer avec tableau vide
     }
 
@@ -289,48 +312,50 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       stats,
       products,
       pagination,
       filterLists,
       enhanced,
-      recentProducts: responses[1]?.ok ? (await responses[1].json()).slice(0, 6) : [],
-      recentBrands: responses[2]?.ok ? await responses[2].json() : []
+      recentProducts: responses[1]?.ok
+        ? (await responses[1].json()).slice(0, 6)
+        : [],
+      recentBrands: responses[2]?.ok ? await responses[2].json() : [],
     });
-
   } catch (error) {
-    console.error('Products data loading error:', error);
+    console.error("Products data loading error:", error);
     return json<ProductsData>({
       user: {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       stats: { totalProducts: 0, brandsCount: 0, categoriesCount: 0 },
       products: [],
       pagination: { page: 1, limit: 50, total: 0, totalPages: 0 },
       filterLists: { gammes: [], brands: [] },
       enhanced,
-      error: 'Erreur lors du chargement des données produits'
+      error: "Erreur lors du chargement des données produits",
     });
   }
 }
 
 export default function ProductsAdmin() {
   const data = useLoaderData<typeof loader>();
-  const { user, stats, products, pagination, filterLists, enhanced, error } = data;
-  
+  const { user, stats, products, pagination, filterLists, enhanced, error } =
+    data;
+
   // Compter filtres actifs
   const [searchParams] = useSearchParams();
   const activeFiltersCount = [
-    'search',
-    'gammeId',
-    'brandId',
-    'isActive',
-    'lowStock',
+    "search",
+    "gammeId",
+    "brandId",
+    "isActive",
+    "lowStock",
   ].filter((key) => searchParams.get(key)).length;
 
   // Handle refresh
@@ -343,7 +368,9 @@ export default function ProductsAdmin() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Erreur de chargement</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Erreur de chargement
+          </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={handleRefresh} variant="outline">
             Réessayer
@@ -359,13 +386,12 @@ export default function ProductsAdmin() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Gestion Produits {user.role === 'pro' ? 'Pro' : 'Commercial'}
+            Gestion Produits {user.role === "pro" ? "Pro" : "Commercial"}
           </h1>
           <p className="text-gray-600 mt-2">
-            {user.role === 'pro' 
-              ? 'Interface professionnelle avec accès exclusif et tarifs négociés'
-              : 'Interface commerciale pour la gestion catalogue et stocks'
-            }
+            {user.role === "pro"
+              ? "Interface professionnelle avec accès exclusif et tarifs négociés"
+              : "Interface commerciale pour la gestion catalogue et stocks"}
           </p>
           {enhanced && (
             <Badge variant="secondary" className="mt-2">
@@ -373,7 +399,7 @@ export default function ProductsAdmin() {
             </Badge>
           )}
         </div>
-        
+
         {!enhanced && (
           <Link to="/products/admin?enhanced=true">
             <Button variant="outline" className="flex items-center gap-2">
@@ -415,7 +441,8 @@ export default function ProductsAdmin() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">
-            Catalogue Produits ({pagination.total.toLocaleString()} produits - Page {pagination.page}/{pagination.totalPages})
+            Catalogue Produits ({pagination.total.toLocaleString()} produits -
+            Page {pagination.page}/{pagination.totalPages})
           </h2>
         </div>
 
@@ -455,11 +482,12 @@ export default function ProductsAdmin() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {products.map((product) => {
                     // Badge stock coloré
-                    const stockBadge = product.stockStatus === 'out_of_stock' 
-                      ? { color: 'error', label: 'Rupture' }
-                      : product.stockStatus === 'low_stock'
-                      ? { color: 'orange', label: 'Stock Faible' }
-                      : { color: 'success', label: 'Disponible' };
+                    const stockBadge =
+                      product.stockStatus === "out_of_stock"
+                        ? { color: "error", label: "Rupture" }
+                        : product.stockStatus === "low_stock"
+                          ? { color: "orange", label: "Stock Faible" }
+                          : { color: "success", label: "Disponible" };
 
                     return (
                       <tr key={product.id} className="hover:bg-gray-50">
@@ -487,7 +515,7 @@ export default function ProductsAdmin() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="text-sm font-semibold text-blue-600">
-                            {product.priceProf?.toFixed(2) || '—'} €
+                            {product.priceProf?.toFixed(2) || "—"} €
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -515,9 +543,7 @@ export default function ProductsAdmin() {
                               ✓ Actif
                             </Badge>
                           ) : (
-                            <Badge variant="secondary">
-                              Inactif
-                            </Badge>
+                            <Badge variant="secondary">Inactif</Badge>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -592,4 +618,17 @@ export default function ProductsAdmin() {
       )}
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

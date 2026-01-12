@@ -12,4 +12,4 @@
  * @see frontend/app/routes/_index.tsx - SearchAction urlTemplate
  * @see frontend/app/routes/search.tsx - Page de recherche principale
  */
-export { loader, meta, default } from "./search";
+export { loader, meta, default, ErrorBoundary } from "./search";

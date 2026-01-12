@@ -1,6 +1,19 @@
 import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from "lucide-react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  Shield,
+  Key,
+  Smartphone,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Lock,
+} from "lucide-react";
 
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
@@ -8,11 +21,16 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
-  { title: 'Sécurité du compte | AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/security" },
+  { title: "Sécurité du compte | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/account/security",
+  },
 ];
 
 type SecurityData = {
@@ -54,21 +72,21 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ request }) => {
   // Authentification requise
   const user = await requireAuth(request);
-  
+
   if (!user) {
     throw new Response("Non authentifié", { status: 401 });
   }
-  
+
   try {
     // TODO: Récupérer les données de sécurité depuis l'API
     const security: SecurityData = {
       password: {
         strength: "medium",
         lastChanged: "2025-06-15T10:00:00Z",
-        daysOld: 58
+        daysOld: 58,
       },
       twoFactor: {
-        enabled: false
+        enabled: false,
       },
       sessions: {
         active: 2,
@@ -78,41 +96,42 @@ export const loader: LoaderFunction = async ({ request }) => {
             device: "Chrome sur Windows",
             location: "Paris, France",
             lastSeen: "2025-08-12T15:30:00Z",
-            current: true
+            current: true,
           },
           {
-            id: "2", 
+            id: "2",
             device: "Safari sur iPhone",
             location: "Paris, France",
             lastSeen: "2025-08-11T09:15:00Z",
-            current: false
-          }
-        ]
+            current: false,
+          },
+        ],
       },
       securityScore: 65,
       recommendations: [
         {
           id: "1",
           title: "Activer l'authentification à deux facteurs",
-          description: "Sécurisez votre compte avec une couche de protection supplémentaire",
+          description:
+            "Sécurisez votre compte avec une couche de protection supplémentaire",
           priority: "high",
-          action: "Activer 2FA"
+          action: "Activer 2FA",
         },
         {
           id: "2",
-          title: "Mettre à jour votre mot de passe", 
+          title: "Mettre à jour votre mot de passe",
           description: "Votre mot de passe date de plus de 2 mois",
           priority: "medium",
-          action: "Changer le mot de passe"
+          action: "Changer le mot de passe",
         },
         {
           id: "3",
           title: "Vérifier les sessions actives",
           description: "Vous avez 2 sessions actives sur différents appareils",
           priority: "low",
-          action: "Voir les sessions"
-        }
-      ]
+          action: "Voir les sessions",
+        },
+      ],
     };
 
     return json<LoaderData>({ security, user });
@@ -128,9 +147,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'border-l-4 border-success bg-success/10';
-    if (score >= 60) return 'border-l-4 border-warning bg-warning/10';
-    return 'border-l-4 border-destructive bg-destructive/10';
+    if (score >= 80) return "border-l-4 border-success bg-success/10";
+    if (score >= 60) return "border-l-4 border-warning bg-warning/10";
+    return "border-l-4 border-destructive bg-destructive/10";
   };
 
   const getScoreIcon = (score: number) => {
@@ -149,7 +168,9 @@ function SecurityScoreCard({ score }: { score: number }) {
         <p className="font-medium mb-2">Score de sécurité</p>
         <p className="text-sm opacity-80">
           {score >= 80 && "Excellent niveau de sécurité"}
-          {score >= 60 && score < 80 && "Sécurité correcte, améliorations possibles"}
+          {score >= 60 &&
+            score < 80 &&
+            "Sécurité correcte, améliorations possibles"}
           {score < 60 && "Sécurité insuffisante, actions requises"}
         </p>
       </CardContent>
@@ -157,17 +178,21 @@ function SecurityScoreCard({ score }: { score: number }) {
   );
 }
 
-function RecommendationCard({ recommendation }: { recommendation: SecurityData['recommendations'][0] }) {
+function RecommendationCard({
+  recommendation,
+}: {
+  recommendation: SecurityData["recommendations"][0];
+}) {
   const priorityColors = {
     high: "border-destructive bg-destructive/10",
-    medium: "border-warning bg-warning/10", 
-    low: "border-primary bg-primary/10"
+    medium: "border-warning bg-warning/10",
+    low: "border-primary bg-primary/10",
   };
 
   const priorityBadges = {
     high: { variant: "destructive" as const, text: "Urgent" },
     medium: { variant: "secondary" as const, text: "Important" },
-    low: { variant: "outline" as const, text: "Recommandé" }
+    low: { variant: "outline" as const, text: "Recommandé" },
   };
 
   return (
@@ -176,12 +201,16 @@ function RecommendationCard({ recommendation }: { recommendation: SecurityData['
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-medium text-gray-900">{recommendation.title}</h3>
+              <h3 className="font-medium text-gray-900">
+                {recommendation.title}
+              </h3>
               <Badge variant={priorityBadges[recommendation.priority].variant}>
                 {priorityBadges[recommendation.priority].text}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600 mb-3">{recommendation.description}</p>
+            <p className="text-sm text-gray-600 mb-3">
+              {recommendation.description}
+            </p>
           </div>
           <Button size="sm" variant="outline">
             {recommendation.action}
@@ -197,187 +226,241 @@ export default function AccountSecurity() {
 
   const getPasswordStrengthColor = (strength: string) => {
     switch (strength) {
-      case "strong": return "text-green-600";
-      case "medium": return "text-yellow-600";
-      default: return "text-red-600";
+      case "strong":
+        return "text-green-600";
+      case "medium":
+        return "text-yellow-600";
+      default:
+        return "text-red-600";
     }
   };
 
   const getPasswordStrengthText = (strength: string) => {
     switch (strength) {
-      case "strong": return "Fort";
-      case "medium": return "Moyen";
-      default: return "Faible";
+      case "strong":
+        return "Fort";
+      case "medium":
+        return "Moyen";
+      default:
+        return "Faible";
     }
   };
 
   return (
-    <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
+    <AccountLayout
+      user={user}
+      stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}
+    >
       <div className="space-y-6">
-      {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Mon Compte", href: "/account" },
-        { label: "Sécurité" }
-      ]} />
-      
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sécurité & Mot de passe</h1>
-          <p className="text-gray-600">Gérez la sécurité de votre compte et vos paramètres de connexion</p>
+        {/* Breadcrumb */}
+        <PublicBreadcrumb
+          items={[
+            { label: "Mon Compte", href: "/account" },
+            { label: "Sécurité" },
+          ]}
+        />
+
+        {/* En-tête */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Sécurité & Mot de passe
+            </h1>
+            <p className="text-gray-600">
+              Gérez la sécurité de votre compte et vos paramètres de connexion
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Score de sécurité */}
-      <SecurityScoreCard score={security.securityScore} />
+        {/* Score de sécurité */}
+        <SecurityScoreCard score={security.securityScore} />
 
-      {/* Informations de sécurité */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Mot de passe */}
+        {/* Informations de sécurité */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Mot de passe */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-muted rounded-lg">
+                  <Key className="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900">Mot de passe</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Force</span>
+                  <span
+                    className={`text-sm font-medium ${getPasswordStrengthColor(security.password.strength)}`}
+                  >
+                    {getPasswordStrengthText(security.password.strength)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">
+                    Dernière modification
+                  </span>
+                  <span className="text-sm text-gray-900">
+                    {security.password.lastChanged
+                      ? `Il y a ${security.password.daysOld} jours`
+                      : "Jamais modifié"}
+                  </span>
+                </div>
+              </div>
+
+              <Button className="w-full mt-4" variant="outline">
+                <Lock className="w-4 h-4 mr-2" />
+                Changer le mot de passe
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Authentification à deux facteurs */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <Smartphone className="w-5 h-5 text-green-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900">
+                  Authentification 2FA
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Statut</span>
+                  {security.twoFactor.enabled ? (
+                    <Badge
+                      variant="default"
+                      className="bg-success/20 text-success"
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Activée
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">
+                      <AlertTriangle className="w-3 h-3 mr-1" />
+                      Désactivée
+                    </Badge>
+                  )}
+                </div>
+
+                {security.twoFactor.enabled && security.twoFactor.method && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Méthode</span>
+                    <span className="text-sm text-gray-900 capitalize">
+                      {security.twoFactor.method}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                className="w-full mt-4"
+                variant={security.twoFactor.enabled ? "outline" : "default"}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                {security.twoFactor.enabled ? "Gérer 2FA" : "Activer 2FA"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sessions actives */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-muted rounded-lg">
-                <Key className="w-5 h-5 text-blue-600" />
+                <Clock className="w-5 h-5 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900">Mot de passe</h3>
+              <h3 className="font-semibold text-gray-900">
+                Sessions actives ({security.sessions.active})
+              </h3>
             </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Force</span>
-                <span className={`text-sm font-medium ${getPasswordStrengthColor(security.password.strength)}`}>
-                  {getPasswordStrengthText(security.password.strength)}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Dernière modification</span>
-                <span className="text-sm text-gray-900">
-                  {security.password.lastChanged 
-                    ? `Il y a ${security.password.daysOld} jours`
-                    : "Jamais modifié"
-                  }
-                </span>
-              </div>
-            </div>
-            
-            <Button className="w-full mt-4" variant="outline">
-              <Lock className="w-4 h-4 mr-2" />
-              Changer le mot de passe
-            </Button>
-          </CardContent>
-        </Card>
 
-        {/* Authentification à deux facteurs */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-success/10 rounded-lg">
-                <Smartphone className="w-5 h-5 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900">Authentification 2FA</h3>
-            </div>
-            
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Statut</span>
-                {security.twoFactor.enabled ? (
-                  <Badge variant="default" className="bg-success/20 text-success">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Activée
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive">
-                    <AlertTriangle className="w-3 h-3 mr-1" />
-                    Désactivée
-                  </Badge>
-                )}
-              </div>
-              
-              {security.twoFactor.enabled && security.twoFactor.method && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Méthode</span>
-                  <span className="text-sm text-gray-900 capitalize">
-                    {security.twoFactor.method}
-                  </span>
-                </div>
-              )}
-            </div>
-            
-            <Button className="w-full mt-4" variant={security.twoFactor.enabled ? "outline" : "default"}>
-              <Shield className="w-4 h-4 mr-2" />
-              {security.twoFactor.enabled ? "Gérer 2FA" : "Activer 2FA"}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sessions actives */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-muted rounded-lg">
-              <Clock className="w-5 h-5 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Sessions actives ({security.sessions.active})</h3>
-          </div>
-          
-          <div className="space-y-3">
-            {security.sessions.devices.map((device) => (
-              <div key={device.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900">{device.device}</p>
-                    {device.current && (
-                      <Badge variant="default" className="bg-success/20 text-success">
-                        Session actuelle
-                      </Badge>
-                    )}
+              {security.sessions.devices.map((device) => (
+                <div
+                  key={device.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900">
+                        {device.device}
+                      </p>
+                      {device.current && (
+                        <Badge
+                          variant="default"
+                          className="bg-success/20 text-success"
+                        >
+                          Session actuelle
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">{device.location}</p>
+                    <p className="text-xs text-gray-500">
+                      Dernière activité:{" "}
+                      {new Date(device.lastSeen).toLocaleDateString()} à{" "}
+                      {new Date(device.lastSeen).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600">{device.location}</p>
-                  <p className="text-xs text-gray-500">
-                    Dernière activité: {new Date(device.lastSeen).toLocaleDateString()} à{' '}
-                    {new Date(device.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                  {!device.current && (
+                    <Button size="sm" variant="outline">
+                      Déconnecter
+                    </Button>
+                  )}
                 </div>
-                {!device.current && (
-                  <Button size="sm" variant="outline">
-                    Déconnecter
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Recommandations */}
-      {security.recommendations.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recommandations de sécurité</h2>
-          <div className="space-y-3">
-            {security.recommendations.map((recommendation) => (
-              <RecommendationCard key={recommendation.id} recommendation={recommendation} />
-            ))}
+        {/* Recommandations */}
+        {security.recommendations.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Recommandations de sécurité
+            </h2>
+            <div className="space-y-3">
+              {security.recommendations.map((recommendation) => (
+                <RecommendationCard
+                  key={recommendation.id}
+                  recommendation={recommendation}
+                />
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Navigation */}
+        <div className="flex gap-4">
+          <Button asChild variant="outline">
+            <Link to="/account/dashboard">Retour au dashboard</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/account/profile">Voir le profil</Link>
+          </Button>
         </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex gap-4">
-        <Button asChild variant="outline">
-          <Link to="/account/dashboard">
-            Retour au dashboard
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/account/profile">
-            Voir le profil
-          </Link>
-        </Button>
-      </div>
       </div>
     </AccountLayout>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

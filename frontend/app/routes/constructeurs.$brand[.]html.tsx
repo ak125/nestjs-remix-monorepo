@@ -7,7 +7,12 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   Car,
   Wrench,
@@ -30,6 +35,7 @@ import {
   type RelatedBrand,
   type PopularGamme,
 } from "../types/brand.types";
+import { Error404 } from "~/components/errors/Error404";
 // 🔗 Composants de maillage interne SEO
 
 // ==========================================
@@ -63,83 +69,123 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     return [{ title: "Pièces Auto" }];
   }
 
-  const canonicalUrl = data.seo.canonical || `https://www.automecanik.com${location.pathname}`;
+  const canonicalUrl =
+    data.seo.canonical || `https://www.automecanik.com${location.pathname}`;
   const brand = data.brand;
 
   // 🏭 Schema @graph UNIFIÉ pour page constructeur - BreadcrumbList + Organization + ItemLists
-  const brandSchema = brand ? {
-    "@context": "https://schema.org",
-    "@graph": [
-      // 0️⃣ BreadcrumbList - Fil d'ariane
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${canonicalUrl}#breadcrumb`,
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.automecanik.com/" },
-          { "@type": "ListItem", position: 2, name: "Constructeurs", item: "https://www.automecanik.com/constructeurs/" },
-          { "@type": "ListItem", position: 3, name: `Pièces ${brand.marque_name}`, item: canonicalUrl },
-        ],
-      },
-      // 1️⃣ Organization - Le constructeur automobile
-      {
-        "@type": "Organization",
-        "@id": `${canonicalUrl}#organization`,
-        name: brand.marque_name,
-        url: canonicalUrl,
-        logo: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
-        additionalType: "https://schema.org/AutomotiveBusiness",
-      },
-      // 2️⃣ CollectionPage - La page catalogue
-      {
-        "@type": "CollectionPage",
-        "@id": canonicalUrl,
-        name: data.seo.title,
-        description: data.seo.description,
-        url: canonicalUrl,
-        about: { "@id": `${canonicalUrl}#organization` },
-        mainEntity: { "@id": `${canonicalUrl}#vehicles` },
-        breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
-      },
-      // 3️⃣ ItemList - Véhicules populaires de cette marque
-      ...(data.popular_vehicles && data.popular_vehicles.length > 0 ? [{
-        "@type": "ItemList",
-        "@id": `${canonicalUrl}#vehicles`,
-        name: `Véhicules ${brand.marque_name} les plus recherchés`,
-        numberOfItems: data.popular_vehicles.length,
-        itemListElement: data.popular_vehicles.slice(0, 10).map((vehicle: PopularVehicle, index: number) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          item: {
-            "@type": "Car",
-            name: `${brand.marque_name} ${vehicle.modele_name} ${vehicle.type_name || ''}`.trim(),
-            brand: { "@type": "Brand", name: brand.marque_name },
-            model: vehicle.modele_name,
-            ...(vehicle.type_power_ps && {
-              vehicleEngine: {
-                "@type": "EngineSpecification",
-                enginePower: { "@type": "QuantitativeValue", value: vehicle.type_power_ps, unitCode: "HP" },
+  const brandSchema = brand
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          // 0️⃣ BreadcrumbList - Fil d'ariane
+          {
+            "@type": "BreadcrumbList",
+            "@id": `${canonicalUrl}#breadcrumb`,
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Accueil",
+                item: "https://www.automecanik.com/",
               },
-            }),
-            ...(vehicle.vehicle_url && { url: `https://www.automecanik.com${vehicle.vehicle_url}` }),
-            ...(vehicle.image_url && { image: vehicle.image_url }),
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Constructeurs",
+                item: "https://www.automecanik.com/constructeurs/",
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: `Pièces ${brand.marque_name}`,
+                item: canonicalUrl,
+              },
+            ],
           },
-        })),
-      }] : []),
-      // 4️⃣ ItemList - Pièces populaires pour cette marque (sans @type:Product pour éviter erreur offers manquant)
-      ...(data.popular_parts && data.popular_parts.length > 0 ? [{
-        "@type": "ItemList",
-        "@id": `${canonicalUrl}#parts`,
-        name: `Pièces ${brand.marque_name} populaires`,
-        numberOfItems: data.popular_parts.length,
-        itemListElement: data.popular_parts.slice(0, 8).map((part: ApiPopularPart, index: number) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          name: `${part.pg_name} ${brand.marque_name}`,
-          ...(part.part_url && { url: `https://www.automecanik.com${part.part_url}` }),
-        })),
-      }] : []),
-    ],
-  } : null;
+          // 1️⃣ Organization - Le constructeur automobile
+          {
+            "@type": "Organization",
+            "@id": `${canonicalUrl}#organization`,
+            name: brand.marque_name,
+            url: canonicalUrl,
+            logo:
+              brand.marque_logo ||
+              `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
+            additionalType: "https://schema.org/AutomotiveBusiness",
+          },
+          // 2️⃣ CollectionPage - La page catalogue
+          {
+            "@type": "CollectionPage",
+            "@id": canonicalUrl,
+            name: data.seo.title,
+            description: data.seo.description,
+            url: canonicalUrl,
+            about: { "@id": `${canonicalUrl}#organization` },
+            mainEntity: { "@id": `${canonicalUrl}#vehicles` },
+            breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
+          },
+          // 3️⃣ ItemList - Véhicules populaires de cette marque
+          ...(data.popular_vehicles && data.popular_vehicles.length > 0
+            ? [
+                {
+                  "@type": "ItemList",
+                  "@id": `${canonicalUrl}#vehicles`,
+                  name: `Véhicules ${brand.marque_name} les plus recherchés`,
+                  numberOfItems: data.popular_vehicles.length,
+                  itemListElement: data.popular_vehicles
+                    .slice(0, 10)
+                    .map((vehicle: PopularVehicle, index: number) => ({
+                      "@type": "ListItem",
+                      position: index + 1,
+                      item: {
+                        "@type": "Car",
+                        name: `${brand.marque_name} ${vehicle.modele_name} ${vehicle.type_name || ""}`.trim(),
+                        brand: { "@type": "Brand", name: brand.marque_name },
+                        model: vehicle.modele_name,
+                        ...(vehicle.type_power_ps && {
+                          vehicleEngine: {
+                            "@type": "EngineSpecification",
+                            enginePower: {
+                              "@type": "QuantitativeValue",
+                              value: vehicle.type_power_ps,
+                              unitCode: "HP",
+                            },
+                          },
+                        }),
+                        ...(vehicle.vehicle_url && {
+                          url: `https://www.automecanik.com${vehicle.vehicle_url}`,
+                        }),
+                        ...(vehicle.image_url && { image: vehicle.image_url }),
+                      },
+                    })),
+                },
+              ]
+            : []),
+          // 4️⃣ ItemList - Pièces populaires pour cette marque (sans @type:Product pour éviter erreur offers manquant)
+          ...(data.popular_parts && data.popular_parts.length > 0
+            ? [
+                {
+                  "@type": "ItemList",
+                  "@id": `${canonicalUrl}#parts`,
+                  name: `Pièces ${brand.marque_name} populaires`,
+                  numberOfItems: data.popular_parts.length,
+                  itemListElement: data.popular_parts
+                    .slice(0, 8)
+                    .map((part: ApiPopularPart, index: number) => ({
+                      "@type": "ListItem",
+                      position: index + 1,
+                      name: `${part.pg_name} ${brand.marque_name}`,
+                      ...(part.part_url && {
+                        url: `https://www.automecanik.com${part.part_url}`,
+                      }),
+                    })),
+                },
+              ]
+            : []),
+        ],
+      }
+    : null;
 
   return [
     { title: data.seo.title },
@@ -154,7 +200,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: brand.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
+      href:
+        brand.marque_logo ||
+        `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp?width=200&quality=90&t=31536000`,
     },
 
     // 🏭 JSON-LD Schema Organization
@@ -187,6 +235,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     if (!bestsellersResponse.success || !bestsellersResponse.data) {
       throw new Error("Failed to fetch brand data");
+    }
+
+    // 🔴 FIX GAP 410: Marque désactivée → 410 Gone
+    if (bestsellersResponse.data.brand?.marque_display === 0) {
+      throw new Response("Cette marque n'est plus disponible", {
+        status: 410,
+        headers: {
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
     }
 
     return json(bestsellersResponse.data);
@@ -228,11 +287,7 @@ export default function BrandCatalogPage() {
     history: blog_content?.content
       ? blog_content.content.replace(/<[^>]*>?/gm, "").substring(0, 300) + "..."
       : `Constructeur automobile proposant une large gamme de véhicules alliant performance et innovation.`,
-    strengths: [
-      "Qualité reconnue",
-      "Technologies modernes",
-      "Large réseau",
-    ],
+    strengths: ["Qualité reconnue", "Technologies modernes", "Large réseau"],
     models: [], // On pourrait extraire ça des véhicules populaires si besoin
   };
 
@@ -252,7 +307,10 @@ export default function BrandCatalogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" data-brand={manufacturer.marque_alias?.toLowerCase()}>
+    <div
+      className="min-h-screen bg-gray-50"
+      data-brand={manufacturer.marque_alias?.toLowerCase()}
+    >
       {/* 🧭 Fil d'Ariane */}
       <nav
         className="bg-white border-b border-gray-200 py-3"
@@ -330,8 +388,8 @@ export default function BrandCatalogPage() {
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
-                  Sélectionnez votre véhicule {manufacturer.marque_name}{" "}
-                  pour voir les pièces compatibles
+                  Sélectionnez votre véhicule {manufacturer.marque_name} pour
+                  voir les pièces compatibles
                 </p>
               </div>
 
@@ -523,8 +581,7 @@ export default function BrandCatalogPage() {
                     </div>
                     <div>
                       <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-0.5 md:mb-1">
-                        Véhicules {manufacturer.marque_name} les plus
-                        recherchés
+                        Véhicules {manufacturer.marque_name} les plus recherchés
                       </h2>
                       <p className="text-white/80 text-xs md:text-sm">
                         Découvrez les modèles préférés de nos clients
@@ -615,11 +672,7 @@ export default function BrandCatalogPage() {
 }
 
 // 🚗 Composant Carte de véhicule API - Version améliorée avec SEO complet
-function VehicleCard({
-  vehicle,
-}: {
-  vehicle: PopularVehicle;
-}) {
+function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
   // 🔑 Gestion des valeurs nulles et formatage
   const yearRange =
     vehicle.seo_year_range ||
@@ -679,9 +732,7 @@ function VehicleCard({
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end">
           {/* Badge puissance */}
           {vehicle.type_power_ps && (
-            <span
-              className="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg bg-brand"
-            >
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg bg-brand">
               {vehicle.type_power_ps} ch
             </span>
           )}
@@ -717,9 +768,7 @@ function VehicleCard({
         </p>
 
         {/* Motorisation */}
-        <p
-          className="font-semibold text-sm md:text-base mb-2 line-clamp-1 text-brand"
-        >
+        <p className="font-semibold text-sm md:text-base mb-2 line-clamp-1 text-brand">
           {vehicle.type_name}
         </p>
 
@@ -741,9 +790,7 @@ function VehicleCard({
 
         {/* CTA */}
         <div className="pt-2">
-          <span
-            className="text-xs md:text-sm font-bold group-hover:underline flex items-center justify-center gap-1 py-2 px-4 rounded-lg transition-all bg-brand-light text-brand"
-          >
+          <span className="text-xs md:text-sm font-bold group-hover:underline flex items-center justify-center gap-1 py-2 px-4 rounded-lg transition-all bg-brand-light text-brand">
             Voir les pièces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
@@ -825,17 +872,13 @@ function ApiPartCard({
 
         {/* Footer avec CTA et badge puissance */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <span
-            className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1 text-brand"
-          >
+          <span className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1 text-brand">
             Voir les pièces
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
           {/* Badge motorisation - affiché uniquement si puissance disponible */}
           {part.type_power_ps ? (
-            <span
-              className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full bg-brand"
-            >
+            <span className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full bg-brand">
               {part.type_power_ps} ch
             </span>
           ) : (
@@ -847,4 +890,17 @@ function ApiPartCard({
       </div>
     </Link>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

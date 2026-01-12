@@ -1,12 +1,29 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { ArrowRight, Car, Factory, Search, Sparkles, TrendingUp } from "lucide-react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  ArrowRight,
+  Car,
+  Factory,
+  Search,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import * as React from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
-import { Alert } from '~/components/ui/alert';
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -74,32 +91,45 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ]);
 
     // Parse responses safely
-    const brandsData = brandsRes?.ok ? await brandsRes.json().catch(() => null) : null;
-    const modelsData = modelsRes?.ok ? await modelsRes.json().catch(() => null) : null;
-    const metadataData = metadataRes?.ok ? await metadataRes.json().catch(() => null) : null;
+    const brandsData = brandsRes?.ok
+      ? await brandsRes.json().catch(() => null)
+      : null;
+    const modelsData = modelsRes?.ok
+      ? await modelsRes.json().catch(() => null)
+      : null;
+    const metadataData = metadataRes?.ok
+      ? await metadataRes.json().catch(() => null)
+      : null;
 
     // URL de base Supabase pour les logos
-    const supabaseLogoBaseUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos';
+    const supabaseLogoBaseUrl =
+      "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos";
 
     // Mapper les données de l'API vers le format attendu par le frontend
-    const mappedBrands: BrandLogo[] = (brandsData?.data || []).map((brand: any) => ({
-      id: brand.marque_id,
-      name: brand.marque_name,
-      alias: brand.marque_alias,
-      logo: brand.marque_logo ? `${supabaseLogoBaseUrl}/${brand.marque_logo}` : null,
-      slug: brand.marque_alias,
-    }));
+    const mappedBrands: BrandLogo[] = (brandsData?.data || []).map(
+      (brand: any) => ({
+        id: brand.marque_id,
+        name: brand.marque_name,
+        alias: brand.marque_alias,
+        logo: brand.marque_logo
+          ? `${supabaseLogoBaseUrl}/${brand.marque_logo}`
+          : null,
+        slug: brand.marque_alias,
+      }),
+    );
 
-    const mappedModels: PopularModel[] = (modelsData?.data || []).map((model: any) => ({
-      id: model.modele_id || model.id,
-      name: model.modele_name || model.name,
-      brandName: model.marque_name || model.brandName,
-      modelName: model.modele_name || model.modelName,
-      typeName: model.type_name || model.typeName || '',
-      dateRange: model.date_range || model.dateRange || '',
-      imageUrl: model.image_url || model.imageUrl || null,
-      slug: model.modele_alias || model.slug || '',
-    }));
+    const mappedModels: PopularModel[] = (modelsData?.data || []).map(
+      (model: any) => ({
+        id: model.modele_id || model.id,
+        name: model.modele_name || model.name,
+        brandName: model.marque_name || model.brandName,
+        modelName: model.modele_name || model.modelName,
+        typeName: model.type_name || model.typeName || "",
+        dateRange: model.date_range || model.dateRange || "",
+        imageUrl: model.image_url || model.imageUrl || null,
+        slug: model.modele_alias || model.slug || "",
+      }),
+    );
 
     return json<LoaderData>({
       brands: mappedBrands,
@@ -126,18 +156,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const metadata = data?.metadata;
   const count = data?.stats?.totalBrands ?? 0;
-  
+
   // Utiliser les métadonnées de la base de données si disponibles
-  const title = metadata?.title || "Catalogue Technique Auto - Toutes les marques | Automecanik";
-  const description = metadata?.description || `Découvrez notre catalogue technique de ${count} marques automobiles. Pièces détachées et accessoires pour tous les véhicules. Qualité OEM garantie.`;
-  const keywords = metadata?.keywords || "catalogue auto, pièces détachées, marques automobiles, pièces OEM, accessoires auto";
+  const title =
+    metadata?.title ||
+    "Catalogue Technique Auto - Toutes les marques | Automecanik";
+  const description =
+    metadata?.description ||
+    `Découvrez notre catalogue technique de ${count} marques automobiles. Pièces détachées et accessoires pour tous les véhicules. Qualité OEM garantie.`;
+  const keywords =
+    metadata?.keywords ||
+    "catalogue auto, pièces détachées, marques automobiles, pièces OEM, accessoires auto";
   const robots = metadata?.relfollow || "index, follow";
-  
+
   return [
     { title },
     { name: "description", content: description },
     { name: "keywords", content: keywords },
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/blog-pieces-auto/auto" },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://www.automecanik.com/blog-pieces-auto/auto",
+    },
     { name: "robots", content: robots },
   ];
 };
@@ -146,15 +186,16 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
    Page
 =========================== */
 export default function BlogPiecesAutoIndex() {
-  const { brands, popularModels, metadata, stats } = useLoaderData<typeof loader>();
+  const { brands, popularModels, metadata, stats } =
+    useLoaderData<typeof loader>();
   const [visibleBrands, setVisibleBrands] = React.useState(50);
   const [searchQuery, setSearchQuery] = React.useState("");
 
   // Filtrer les marques selon la recherche
   const filteredBrands = React.useMemo(() => {
     if (!searchQuery.trim()) return brands;
-    return brands.filter(b => 
-      b.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return brands.filter((b) =>
+      b.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [brands, searchQuery]);
 
@@ -163,24 +204,29 @@ export default function BlogPiecesAutoIndex() {
   const modelsPerPage = 4;
 
   const nextModels = () => {
-    setCurrentModelIndex((prev) => 
-      prev + modelsPerPage >= popularModels.length ? 0 : prev + modelsPerPage
+    setCurrentModelIndex((prev) =>
+      prev + modelsPerPage >= popularModels.length ? 0 : prev + modelsPerPage,
     );
   };
 
   const prevModels = () => {
-    setCurrentModelIndex((prev) => 
-      prev === 0 ? Math.max(0, popularModels.length - modelsPerPage) : prev - modelsPerPage
+    setCurrentModelIndex((prev) =>
+      prev === 0
+        ? Math.max(0, popularModels.length - modelsPerPage)
+        : prev - modelsPerPage,
     );
   };
 
-  const visibleModels = popularModels.slice(currentModelIndex, currentModelIndex + modelsPerPage);
+  const visibleModels = popularModels.slice(
+    currentModelIndex,
+    currentModelIndex + modelsPerPage,
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
-      
+
       {/* Header Compact Réutilisable */}
       <CompactBlogHeader
         title={metadata?.h1 || "Catalogue des Constructeurs"}
@@ -225,7 +271,7 @@ export default function BlogPiecesAutoIndex() {
                         <CardContent className="p-8 flex flex-col items-center justify-center h-full min-h-[160px] relative">
                           {/* Gradient background on hover */}
                           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50 group-hover:to-indigo-50 transition-all duration-500" />
-                          
+
                           {/* Logo */}
                           {brand.logo ? (
                             <div className="relative w-full h-24 flex items-center justify-center mb-4">
@@ -235,8 +281,10 @@ export default function BlogPiecesAutoIndex() {
                                 className="max-w-full max-h-full object-contain filter grayscale-0 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500 drop-shadow-sm"
                                 loading="lazy"
                                 onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  e.currentTarget.parentElement?.nextElementSibling?.classList.remove('hidden');
+                                  e.currentTarget.style.display = "none";
+                                  e.currentTarget.parentElement?.nextElementSibling?.classList.remove(
+                                    "hidden",
+                                  );
                                 }}
                               />
                             </div>
@@ -247,12 +295,12 @@ export default function BlogPiecesAutoIndex() {
                               </span>
                             </div>
                           )}
-                          
+
                           {/* Brand Name */}
                           <p className="relative text-sm font-bold text-gray-700 text-center group-hover:text-blue-600 transition-colors duration-300 uppercase tracking-wide">
                             {brand.name}
                           </p>
-                          
+
                           {/* Arrow Icon */}
                           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
@@ -275,17 +323,20 @@ export default function BlogPiecesAutoIndex() {
                     >
                       <span>Voir plus de marques</span>
                       <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
-                      <span className="ml-2 text-sm opacity-80">({filteredBrands.length - visibleBrands} restantes)</span>
+                      <span className="ml-2 text-sm opacity-80">
+                        ({filteredBrands.length - visibleBrands} restantes)
+                      </span>
                     </Button>
                   </div>
                 )}
               </>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-xl">Aucune marque disponible pour le moment</p>
+                <p className="text-gray-600 text-xl">
+                  Aucune marque disponible pour le moment
+                </p>
               </div>
-            )
-}
+            )}
           </div>
         </div>
       </section>
@@ -312,13 +363,25 @@ export default function BlogPiecesAutoIndex() {
                       <Factory className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-3xl font-bold text-gray-900">{stats.totalBrands}+</div>
-                      <div className="text-sm text-gray-600 font-medium">Marques couvertes</div>
+                      <div className="text-3xl font-bold text-gray-900">
+                        {stats.totalBrands}+
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        Marques couvertes
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-semibold">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Vérifiées
                   </div>
@@ -334,13 +397,25 @@ export default function BlogPiecesAutoIndex() {
                       <Car className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-3xl font-bold text-gray-900">5000+</div>
-                      <div className="text-sm text-gray-600 font-medium">Modèles référencés</div>
+                      <div className="text-3xl font-bold text-gray-900">
+                        5000+
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        Modèles référencés
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-semibold">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     À jour
                   </div>
@@ -353,18 +428,40 @@ export default function BlogPiecesAutoIndex() {
                 <div className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-purple-100 hover:border-purple-300 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-7 h-7 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <div className="text-3xl font-bold text-gray-900">100%</div>
-                      <div className="text-sm text-gray-600 font-medium">Compatibilité garantie</div>
+                      <div className="text-3xl font-bold text-gray-900">
+                        100%
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        Compatibilité garantie
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-semibold">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Par véhicule
                   </div>
@@ -377,18 +474,38 @@ export default function BlogPiecesAutoIndex() {
                 <div className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-orange-100 hover:border-orange-300 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-7 h-7 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                     <div className="flex-1">
                       <div className="text-3xl font-bold text-gray-900">✓</div>
-                      <div className="text-sm text-gray-600 font-medium">Pièces certifiées</div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        Pièces certifiées
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-semibold">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Testées
                   </div>
@@ -465,7 +582,7 @@ export default function BlogPiecesAutoIndex() {
                               <Car className="w-16 h-16 text-gray-400" />
                             </div>
                           )}
-                          
+
                           {/* Brand Badge */}
                           <div className="absolute top-3 left-3">
                             <Badge className="bg-white/95 backdrop-blur-sm text-gray-900 font-bold px-3 py-1 shadow-lg">
@@ -479,16 +596,14 @@ export default function BlogPiecesAutoIndex() {
                           <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
                             {model.modelName}
                           </h3>
-                          
+
                           <p className="text-sm text-gray-600 mb-3">
                             {model.typeName}
                           </p>
 
                           {/* Specs */}
                           <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                            <span>
-                              {model.dateRange || "N/A"}
-                            </span>
+                            <span>{model.dateRange || "N/A"}</span>
                           </div>
 
                           {/* Footer */}
@@ -509,12 +624,17 @@ export default function BlogPiecesAutoIndex() {
                 {/* Carousel Indicators */}
                 {popularModels.length > modelsPerPage && (
                   <div className="flex justify-center gap-2 mt-8">
-                    {Array.from({ length: Math.ceil(popularModels.length / modelsPerPage) }).map((_, index) => (
+                    {Array.from({
+                      length: Math.ceil(popularModels.length / modelsPerPage),
+                    }).map((_, index) => (
                       <button
                         key={index}
-                        onClick={() => setCurrentModelIndex(index * modelsPerPage)}
+                        onClick={() =>
+                          setCurrentModelIndex(index * modelsPerPage)
+                        }
                         className={`w-2 h-2 rounded-full transition-all ${
-                          Math.floor(currentModelIndex / modelsPerPage) === index
+                          Math.floor(currentModelIndex / modelsPerPage) ===
+                          index
                             ? "bg-success w-8"
                             : "bg-muted/50 hover:bg-gray-400"
                         }`}
@@ -526,7 +646,9 @@ export default function BlogPiecesAutoIndex() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-xl">Aucun modèle populaire disponible pour le moment</p>
+                <p className="text-gray-600 text-xl">
+                  Aucun modèle populaire disponible pour le moment
+                </p>
               </div>
             )}
           </div>
@@ -547,8 +669,13 @@ export default function BlogPiecesAutoIndex() {
                 Tous les Constructeurs Automobiles
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Chez Automecanik, vous trouverez toutes les pièces détachées pour les plus grandes marques automobiles : 
-                <strong> Peugeot, Renault, Citroën, Volkswagen, Audi, BMW, Mercedes, Ford, Toyota, Nissan, Hyundai, Kia…</strong>
+                Chez Automecanik, vous trouverez toutes les pièces détachées
+                pour les plus grandes marques automobiles :
+                <strong>
+                  {" "}
+                  Peugeot, Renault, Citroën, Volkswagen, Audi, BMW, Mercedes,
+                  Ford, Toyota, Nissan, Hyundai, Kia…
+                </strong>
               </p>
             </div>
 
@@ -561,51 +688,103 @@ export default function BlogPiecesAutoIndex() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 mb-6 shadow-lg">
                       <Car className="w-8 h-8 text-white" />
                     </div>
-                    
+
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Toutes vos Pièces Détachées
                     </h3>
-                    
+
                     <p className="text-gray-700 leading-relaxed mb-6 text-lg">
-                      Que ce soit pour un <strong className="text-blue-600">entretien courant</strong> (plaquettes de frein, filtres, amortisseurs) 
-                      ou des <strong className="text-blue-600">réparations spécifiques</strong>, notre catalogue technique vous guide rapidement 
-                      vers les pièces compatibles avec votre véhicule.
+                      Que ce soit pour un{" "}
+                      <strong className="text-blue-600">
+                        entretien courant
+                      </strong>{" "}
+                      (plaquettes de frein, filtres, amortisseurs) ou des{" "}
+                      <strong className="text-blue-600">
+                        réparations spécifiques
+                      </strong>
+                      , notre catalogue technique vous guide rapidement vers les
+                      pièces compatibles avec votre véhicule.
                     </p>
 
                     <div className="space-y-4">
-<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="success">
+                      <Alert
+                        className="flex items-start gap-3 p-4 rounded-xl"
+                        variant="success"
+                      >
                         <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">Par Marque</p>
-                          <p className="text-sm text-gray-600">Accédez facilement aux pièces par constructeur</p>
+                          <p className="font-semibold text-gray-900">
+                            Par Marque
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Accédez facilement aux pièces par constructeur
+                          </p>
                         </div>
                       </Alert>
 
-<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="info">
+                      <Alert
+                        className="flex items-start gap-3 p-4 rounded-xl"
+                        variant="info"
+                      >
                         <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">Par Modèle</p>
-                          <p className="text-sm text-gray-600">Trouvez les pièces pour votre modèle exact</p>
+                          <p className="font-semibold text-gray-900">
+                            Par Modèle
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Trouvez les pièces pour votre modèle exact
+                          </p>
                         </div>
                       </Alert>
 
-<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="default">
+                      <Alert
+                        className="flex items-start gap-3 p-4 rounded-xl"
+                        variant="default"
+                      >
                         <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">Par Motorisation & Année</p>
-                          <p className="text-sm text-gray-600">Pièces spécifiques à votre configuration</p>
+                          <p className="font-semibold text-gray-900">
+                            Par Motorisation & Année
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Pièces spécifiques à votre configuration
+                          </p>
                         </div>
                       </Alert>
                     </div>
@@ -616,41 +795,54 @@ export default function BlogPiecesAutoIndex() {
                     <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 border-2 border-blue-200 shadow-inner">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30/30 rounded-full blur-3xl" />
                       <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-3xl" />
-                      
+
                       <div className="relative">
                         <h4 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                           <Factory className="w-7 h-7 text-blue-600" />
                           Accès Simplifié
                         </h4>
-                        
+
                         <p className="text-gray-700 leading-relaxed mb-6 text-lg">
-                          Accédez facilement aux <strong className="text-blue-600">pièces de rechange 
-                          spécifiques à votre véhicule</strong> grâce à une navigation intuitive :
+                          Accédez facilement aux{" "}
+                          <strong className="text-blue-600">
+                            pièces de rechange spécifiques à votre véhicule
+                          </strong>{" "}
+                          grâce à une navigation intuitive :
                         </p>
 
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-primary" />
-                            <span className="text-gray-700 font-medium">Navigation par marque</span>
+                            <span className="text-gray-700 font-medium">
+                              Navigation par marque
+                            </span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-indigo-600" />
-                            <span className="text-gray-700 font-medium">Sélection par modèle</span>
+                            <span className="text-gray-700 font-medium">
+                              Sélection par modèle
+                            </span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-purple-600" />
-                            <span className="text-gray-700 font-medium">Filtrage par motorisation</span>
+                            <span className="text-gray-700 font-medium">
+                              Filtrage par motorisation
+                            </span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-primary" />
-                            <span className="text-gray-700 font-medium">Recherche par année</span>
+                            <span className="text-gray-700 font-medium">
+                              Recherche par année
+                            </span>
                           </div>
                         </div>
 
                         <div className="mt-8 p-5 rounded-xl bg-white/80 backdrop-blur-sm border border-blue-200 shadow-lg">
                           <p className="text-sm text-gray-600 italic">
-                            💡 <strong>Astuce :</strong> Utilisez notre moteur de recherche pour trouver rapidement 
-                            toutes les pièces compatibles avec votre véhicule en quelques clics.
+                            💡 <strong>Astuce :</strong> Utilisez notre moteur
+                            de recherche pour trouver rapidement toutes les
+                            pièces compatibles avec votre véhicule en quelques
+                            clics.
                           </p>
                         </div>
                       </div>
@@ -679,19 +871,30 @@ export default function BlogPiecesAutoIndex() {
               Besoin d'aide pour trouver vos pièces ?
             </h2>
             <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Notre équipe d'experts vous accompagne dans le choix de vos pièces détachées
+              Notre équipe d'experts vous accompagne dans le choix de vos pièces
+              détachées
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link to="/contact" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100 transition-all px-8 py-6 text-lg font-semibold rounded-xl">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100 transition-all px-8 py-6 text-lg font-semibold rounded-xl"
+                >
                   <span>Contacter nos experts</span>
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
 
-              <Link to="/blog-pieces-auto/conseils" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all px-8 py-6 text-lg font-semibold rounded-xl">
+              <Link
+                to="/blog-pieces-auto/conseils"
+                className="w-full sm:w-auto"
+              >
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all px-8 py-6 text-lg font-semibold rounded-xl"
+                >
                   Voir nos conseils
                 </Button>
               </Link>
@@ -716,4 +919,17 @@ export default function BlogPiecesAutoIndex() {
       </section>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

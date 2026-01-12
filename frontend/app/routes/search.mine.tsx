@@ -1,14 +1,25 @@
 /**
  * 🔍 RECHERCHE PAR CODE MINE - VERSION OPTIMISÉE
- * 
+ *
  * Interface Remix pour rechercher des véhicules par code mine
  * Route: /search/mine
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Form, Link } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Form,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Error404 } from "~/components/errors/Error404";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -18,10 +29,18 @@ import { VehicleCard } from "~/components/vehicles/VehicleCard";
  * 🔍 SEO Meta Tags - noindex pour recherche code mine
  */
 export const meta: MetaFunction = () => [
-  { title: 'Recherche par code mine | Identifier votre véhicule' },
-  { name: 'description', content: 'Recherchez votre véhicule par code mine pour trouver les pièces compatibles.' },
-  { name: 'robots', content: 'noindex, nofollow' }, // Recherche non indexée
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search/mine" },
+  { title: "Recherche par code mine | Identifier votre véhicule" },
+  {
+    name: "description",
+    content:
+      "Recherchez votre véhicule par code mine pour trouver les pièces compatibles.",
+  },
+  { name: "robots", content: "noindex, nofollow" }, // Recherche non indexée
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/search/mine",
+  },
 ];
 
 interface LoaderData {
@@ -57,61 +76,64 @@ interface LoaderData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const mineCode = url.searchParams.get('code')?.trim();
-  
+  const mineCode = url.searchParams.get("code")?.trim();
+
   if (!mineCode) {
-    return json<LoaderData>({ searchTerm: '' });
+    return json<LoaderData>({ searchTerm: "" });
   }
-  
+
   try {
     // ✅ URL corrigée pour correspondre à notre API backend
-    const apiUrl = process.env.API_URL || 'http://localhost:3000';
-    const response = await fetch(`${apiUrl}/api/vehicles/search/mine/${encodeURIComponent(mineCode)}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+    const apiUrl = process.env.API_URL || "http://localhost:3000";
+    const response = await fetch(
+      `${apiUrl}/api/vehicles/search/mine/${encodeURIComponent(mineCode)}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      
+      console.error("API Error:", response.status, errorText);
+
       if (response.status === 404) {
-        return json<LoaderData>({ 
+        return json<LoaderData>({
           searchTerm: mineCode,
-          error: "Aucun véhicule trouvé pour ce code mine" 
+          error: "Aucun véhicule trouvé pour ce code mine",
         });
       }
-      
+
       throw new Error(`Erreur API: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    
+
     // La réponse de notre API est un VehicleResponseDto
     if (result.data && result.data.length > 0) {
-      return json<LoaderData>({ 
+      return json<LoaderData>({
         vehicle: result.data[0], // Premier résultat
-        searchTerm: mineCode 
+        searchTerm: mineCode,
       });
     } else {
-      return json<LoaderData>({ 
+      return json<LoaderData>({
         searchTerm: mineCode,
-        error: "Aucun véhicule trouvé pour ce code mine" 
+        error: "Aucun véhicule trouvé pour ce code mine",
       });
     }
   } catch (error) {
-    console.error('Search error:', error);
-    return json<LoaderData>({ 
+    console.error("Search error:", error);
+    return json<LoaderData>({
       searchTerm: mineCode,
-      error: "Erreur lors de la recherche. Veuillez réessayer." 
+      error: "Erreur lors de la recherche. Veuillez réessayer.",
     });
   }
 }
 
 export default function SearchMinePage() {
-  const { vehicle, searchTerm = '', error } = useLoaderData<typeof loader>();
+  const { vehicle, searchTerm = "", error } = useLoaderData<typeof loader>();
   const [mineCode, setMineCode] = useState(searchTerm);
 
   return (
@@ -124,10 +146,11 @@ export default function SearchMinePage() {
           </h1>
         </div>
         <p className="text-gray-600">
-          Saisissez un code mine pour identifier précisément un véhicule et ses caractéristiques techniques.
+          Saisissez un code mine pour identifier précisément un véhicule et ses
+          caractéristiques techniques.
         </p>
       </div>
-      
+
       {/* Formulaire de recherche */}
       <Card className="mb-8">
         <CardHeader>
@@ -160,7 +183,8 @@ export default function SearchMinePage() {
               </Button>
             </div>
             <p className="text-sm text-gray-500">
-              Le code mine est un identifiant unique alphanumérique de 10 à 15 caractères
+              Le code mine est un identifiant unique alphanumérique de 10 à 15
+              caractères
             </p>
           </Form>
         </CardContent>
@@ -185,13 +209,15 @@ export default function SearchMinePage() {
       {vehicle && (
         <div className="space-y-6">
           <VehicleCard vehicle={vehicle} showDetails={true} />
-          
+
           {/* Actions */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Actions disponibles</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    Actions disponibles
+                  </h3>
                   <p className="text-sm text-gray-600">
                     Que souhaitez-vous faire avec ce véhicule ?
                   </p>
@@ -255,21 +281,33 @@ export default function SearchMinePage() {
       {!searchTerm && (
         <Card className="bg-gray-50">
           <CardHeader>
-            <CardTitle className="text-lg">Qu'est-ce qu'un code mine ?</CardTitle>
+            <CardTitle className="text-lg">
+              Qu'est-ce qu'un code mine ?
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              Le code mine est un identifiant unique permettant d'identifier précisément 
-              un véhicule et ses caractéristiques techniques. Il se trouve sur la carte grise 
-              du véhicule dans la case J.1.
+              Le code mine est un identifiant unique permettant d'identifier
+              précisément un véhicule et ses caractéristiques techniques. Il se
+              trouve sur la carte grise du véhicule dans la case J.1.
             </p>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Exemples de codes mine :</h4>
+              <h4 className="font-medium text-gray-900 mb-2">
+                Exemples de codes mine :
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <code className="bg-white px-3 py-2 rounded border">M10RENAAG0D001</code>
-                <code className="bg-white px-3 py-2 rounded border">VP1BMWAA11A001</code>
-                <code className="bg-white px-3 py-2 rounded border">VFCCITROEN2020</code>
-                <code className="bg-white px-3 py-2 rounded border">VF7PEUGEOT3008</code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  M10RENAAG0D001
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  VP1BMWAA11A001
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  VFCCITROEN2020
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  VF7PEUGEOT3008
+                </code>
               </div>
             </div>
           </CardContent>
@@ -277,4 +315,17 @@ export default function SearchMinePage() {
       )}
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

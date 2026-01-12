@@ -1,5 +1,8 @@
 // app/routes/$.tsx - Catch-all route pour 404 - Version Optimisée
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { Error404 } from "~/components/errors/Error404";
+import { Error410 } from "~/components/errors/Error410";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -201,4 +204,49 @@ async function checkIfOldLink(pathname: string): Promise<boolean> {
     console.error("Erreur lors de la vérification ancien lien:", error);
     return false; // En cas d'erreur, on assume que ce n'est pas un ancien lien
   }
+}
+
+// ============================================================
+// COMPOSANT + ERROR BOUNDARY LOCAL (Requis pour HTML rendering)
+// ============================================================
+
+/**
+ * Composant par défaut (jamais rendu car le loader throw toujours)
+ * Requis par Remix pour activer l'ErrorBoundary
+ */
+export default function CatchAllRoute() {
+  return null;
+}
+
+/**
+ * ErrorBoundary locale - Capture les erreurs du loader et rend HTML
+ * Plus robuste que de dépendre de root.tsx ErrorBoundary
+ */
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    const data = error.data || {};
+
+    // 410 Gone - Contenu supprimé
+    if (error.status === 410) {
+      return (
+        <Error410
+          url={data.url}
+          isOldLink={data.isOldLink}
+          redirectTo={data.redirectTo}
+        />
+      );
+    }
+
+    // 404 Not Found (default)
+    return <Error404 url={data.url} suggestions={data.suggestions} />;
+  }
+
+  // Erreur JavaScript non-Response (fallback)
+  return (
+    <Error404
+      url={typeof window !== "undefined" ? window.location.pathname : ""}
+    />
+  );
 }

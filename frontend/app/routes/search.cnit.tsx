@@ -1,27 +1,51 @@
 /**
  * 🔍 RECHERCHE PAR CODE CNIT - VERSION OPTIMISÉE
- * 
+ *
  * Interface Remix pour rechercher des véhicules par code CNIT
  * Route: /search/cnit
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Form, Link } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Form,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { VehicleCard } from "../components/vehicles/VehicleCard";
+import { Error404 } from "~/components/errors/Error404";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche CNIT
  */
 export const meta: MetaFunction = () => [
-  { title: 'Recherche par code CNIT | Identifier votre véhicule' },
-  { name: 'description', content: 'Recherchez votre véhicule par code CNIT pour trouver les pièces compatibles.' },
-  { name: 'robots', content: 'noindex, nofollow' }, // Recherche non indexée
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/search/cnit" },
+  { title: "Recherche par code CNIT | Identifier votre véhicule" },
+  {
+    name: "description",
+    content:
+      "Recherchez votre véhicule par code CNIT pour trouver les pièces compatibles.",
+  },
+  { name: "robots", content: "noindex, nofollow" }, // Recherche non indexée
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/search/cnit",
+  },
 ];
 
 interface LoaderData {
@@ -57,61 +81,64 @@ interface LoaderData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const cnitCode = url.searchParams.get('code')?.trim();
-  
+  const cnitCode = url.searchParams.get("code")?.trim();
+
   if (!cnitCode) {
-    return json<LoaderData>({ searchTerm: '' });
+    return json<LoaderData>({ searchTerm: "" });
   }
-  
+
   try {
     // ✅ URL corrigée pour correspondre à notre API backend
-    const apiUrl = process.env.API_URL || 'http://localhost:3000';
-    const response = await fetch(`${apiUrl}/api/vehicles/search/cnit/${encodeURIComponent(cnitCode)}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+    const apiUrl = process.env.API_URL || "http://localhost:3000";
+    const response = await fetch(
+      `${apiUrl}/api/vehicles/search/cnit/${encodeURIComponent(cnitCode)}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      
+      console.error("API Error:", response.status, errorText);
+
       if (response.status === 404) {
-        return json<LoaderData>({ 
+        return json<LoaderData>({
           searchTerm: cnitCode,
-          error: "Aucun véhicule trouvé pour ce code CNIT" 
+          error: "Aucun véhicule trouvé pour ce code CNIT",
         });
       }
-      
+
       throw new Error(`Erreur API: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    
+
     // La réponse de notre API est un VehicleResponseDto
     if (result.data && result.data.length > 0) {
-      return json<LoaderData>({ 
+      return json<LoaderData>({
         vehicle: result.data[0], // Premier résultat
-        searchTerm: cnitCode 
+        searchTerm: cnitCode,
       });
     } else {
-      return json<LoaderData>({ 
+      return json<LoaderData>({
         searchTerm: cnitCode,
-        error: "Aucun véhicule trouvé pour ce code CNIT" 
+        error: "Aucun véhicule trouvé pour ce code CNIT",
       });
     }
   } catch (error) {
-    console.error('Search error:', error);
-    return json<LoaderData>({ 
+    console.error("Search error:", error);
+    return json<LoaderData>({
       searchTerm: cnitCode,
-      error: "Erreur lors de la recherche. Veuillez réessayer." 
+      error: "Erreur lors de la recherche. Veuillez réessayer.",
     });
   }
 }
 
 export default function SearchCnitPage() {
-  const { vehicle, searchTerm = '', error } = useLoaderData<typeof loader>();
+  const { vehicle, searchTerm = "", error } = useLoaderData<typeof loader>();
   const [cnitCode, setCnitCode] = useState(searchTerm);
 
   return (
@@ -124,11 +151,11 @@ export default function SearchCnitPage() {
           </h1>
         </div>
         <p className="text-gray-600">
-          Le code CNIT (Code National d'Identification du Type) permet d'identifier 
-          précisément une version de véhicule homologué en France.
+          Le code CNIT (Code National d'Identification du Type) permet
+          d'identifier précisément une version de véhicule homologué en France.
         </p>
       </div>
-      
+
       {/* Formulaire de recherche */}
       <Card className="mb-8">
         <CardHeader>
@@ -163,8 +190,9 @@ export default function SearchCnitPage() {
             <div className="flex items-start gap-2 text-sm text-primary bg-primary/10 p-3 rounded-lg">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
-                Le code CNIT se trouve sur la carte grise du véhicule dans la case K.
-                Il est composé de lettres et de chiffres (généralement 8 à 12 caractères).
+                Le code CNIT se trouve sur la carte grise du véhicule dans la
+                case K. Il est composé de lettres et de chiffres (généralement 8
+                à 12 caractères).
               </p>
             </div>
           </Form>
@@ -190,13 +218,15 @@ export default function SearchCnitPage() {
       {vehicle && (
         <div className="space-y-6">
           <VehicleCard vehicle={vehicle} showDetails={true} />
-          
+
           {/* Actions */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Actions disponibles</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    Actions disponibles
+                  </h3>
                   <p className="text-sm text-gray-600">
                     Que souhaitez-vous faire avec ce véhicule ?
                   </p>
@@ -260,28 +290,49 @@ export default function SearchCnitPage() {
       {!searchTerm && (
         <Card className="bg-success/5">
           <CardHeader>
-            <CardTitle className="text-lg">Qu'est-ce qu'un code CNIT ?</CardTitle>
+            <CardTitle className="text-lg">
+              Qu'est-ce qu'un code CNIT ?
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              Le Code National d'Identification du Type (CNIT) est un identifiant unique 
-              attribué par les services de l'État français pour chaque version de véhicule 
-              homologué. Il se trouve sur la carte grise dans la case K.
+              Le Code National d'Identification du Type (CNIT) est un
+              identifiant unique attribué par les services de l'État français
+              pour chaque version de véhicule homologué. Il se trouve sur la
+              carte grise dans la case K.
             </p>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Exemples de codes CNIT :</h4>
+              <h4 className="font-medium text-gray-900 mb-2">
+                Exemples de codes CNIT :
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <code className="bg-white px-3 py-2 rounded border">ABC123DEF456</code>
-                <code className="bg-white px-3 py-2 rounded border">XYZ789ABC123</code>
-                <code className="bg-white px-3 py-2 rounded border">DEF456GHI789</code>
-                <code className="bg-white px-3 py-2 rounded border">GHI123JKL456</code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  ABC123DEF456
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  XYZ789ABC123
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  DEF456GHI789
+                </code>
+                <code className="bg-white px-3 py-2 rounded border">
+                  GHI123JKL456
+                </code>
               </div>
             </div>
             <div className="bg-success/10 p-4 rounded-lg">
-              <h4 className="font-medium text-green-900 mb-2">Différence avec le code mine :</h4>
+              <h4 className="font-medium text-green-900 mb-2">
+                Différence avec le code mine :
+              </h4>
               <ul className="text-sm text-green-700 space-y-1">
-                <li>• <strong>Code mine (J.1)</strong> : Identifiant constructeur (plus technique)</li>
-                <li>• <strong>Code CNIT (K)</strong> : Identifiant officiel français (homologation)</li>
+                <li>
+                  • <strong>Code mine (J.1)</strong> : Identifiant constructeur
+                  (plus technique)
+                </li>
+                <li>
+                  • <strong>Code CNIT (K)</strong> : Identifiant officiel
+                  français (homologation)
+                </li>
               </ul>
             </div>
           </CardContent>
@@ -289,4 +340,17 @@ export default function SearchCnitPage() {
       )}
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }
