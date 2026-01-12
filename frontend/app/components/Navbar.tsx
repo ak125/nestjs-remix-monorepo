@@ -24,7 +24,7 @@ import {
   Phone,
   Truck,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
 import { useOptionalUser, useRootCart } from "../root";
@@ -55,9 +55,9 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   // 🛒 Panier: données depuis root loader + état local pour ouverture
   const cartData = useRootCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const toggleCart = () => setIsCartOpen((prev) => !prev);
-  const closeCart = () => setIsCartOpen(false);
-  const _openCart = () => setIsCartOpen(true);
+  const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
+  const closeCart = useCallback(() => setIsCartOpen(false), []);
+  const _openCart = useCallback(() => setIsCartOpen(true), []);
 
   // Résumé du panier depuis les données du root loader
   const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
@@ -147,19 +147,22 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   }, [showSearch]);
 
   // Gestion de la recherche
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    const query = searchQuery.trim();
-    if (query) {
-      // Réinitialiser l'état avant la navigation
-      setSearchQuery("");
-      setShowSearch(false);
-      // Navigation vers la page de recherche
-      window.location.href = `/search?q=${encodeURIComponent(query)}`;
-    }
-  };
+      const query = searchQuery.trim();
+      if (query) {
+        // Réinitialiser l'état avant la navigation
+        setSearchQuery("");
+        setShowSearch(false);
+        // Navigation vers la page de recherche
+        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+      }
+    },
+    [searchQuery],
+  );
 
   return (
     <>
@@ -215,12 +218,15 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
             <Link
               to="/#catalogue"
               onClick={(e) => {
-                const isHomepage = window.location.pathname === '/';
+                const isHomepage = window.location.pathname === "/";
                 const catalogueSection = document.getElementById("catalogue");
-                
+
                 if (isHomepage && catalogueSection) {
                   e.preventDefault();
-                  catalogueSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  catalogueSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
                 }
                 // Sinon : laisse le lien naviguer vers /#catalogue naturellement
               }}
@@ -236,12 +242,16 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
             <Link
               to="/#toutes-les-marques"
               onClick={(e) => {
-                const isHomepage = window.location.pathname === '/';
-                const marquesSection = document.getElementById("toutes-les-marques");
-                
+                const isHomepage = window.location.pathname === "/";
+                const marquesSection =
+                  document.getElementById("toutes-les-marques");
+
                 if (isHomepage && marquesSection) {
                   e.preventDefault();
-                  marquesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  marquesSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
                 }
                 // Sinon : laisse le lien naviguer vers /#toutes-les-marques naturellement
               }}
@@ -450,7 +460,10 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           <div className="flex gap-2 min-w-max">
             <QuickCategoryChip href="/pieces/freinage" label="Freinage" />
             <QuickCategoryChip href="/pieces/filtration" label="Filtration" />
-            <QuickCategoryChip href="/pieces/distribution" label="Distribution" />
+            <QuickCategoryChip
+              href="/pieces/distribution"
+              label="Distribution"
+            />
             <QuickCategoryChip href="/pieces/embrayage" label="Embrayage" />
             <QuickCategoryChip href="/pieces/allumage" label="Allumage" />
             <QuickCategoryChip href="/pieces/suspension" label="Suspension" />

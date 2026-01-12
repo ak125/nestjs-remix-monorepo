@@ -15,7 +15,7 @@ import {
   RotateCcw,
   FileText,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -122,7 +122,7 @@ export default function VehicleSelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_currentVehicle]);
 
-  const loadBrands = async () => {
+  const loadBrands = useCallback(async () => {
     if (loadingBrands || brands.length > 0) return;
 
     setLoadingBrands(true);
@@ -158,176 +158,198 @@ export default function VehicleSelector({
     } finally {
       setLoadingBrands(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingBrands, brands.length, _currentVehicle?.brand?.id]);
 
   // 🏷️ Gestion sélection marque
-  const handleBrandChange = async (brandId: number) => {
-    const brand = brands.find((b) => b.marque_id === brandId) || null;
-    setSelectedBrand(brand);
-    setSelectedYear(null);
-    setSelectedModel(null);
-    setSelectedType(null);
-    setModels([]);
-    setTypes([]);
+  const handleBrandChange = useCallback(
+    async (brandId: number) => {
+      const brand = brands.find((b) => b.marque_id === brandId) || null;
+      setSelectedBrand(brand);
+      setSelectedYear(null);
+      setSelectedModel(null);
+      setSelectedType(null);
+      setModels([]);
+      setTypes([]);
 
-    if (brand) {
-      setLoadingYears(true);
-      try {
-        const yearsData = await enhancedVehicleApi.getYearsByBrand(
-          brand.marque_id,
-        );
-        setYears(yearsData.sort((a, b) => b - a));
-      } catch (error) {
-        console.warn("❌ Erreur chargement années:", error);
+      if (brand) {
+        setLoadingYears(true);
+        try {
+          const yearsData = await enhancedVehicleApi.getYearsByBrand(
+            brand.marque_id,
+          );
+          setYears(yearsData.sort((a, b) => b - a));
+        } catch (error) {
+          console.warn("❌ Erreur chargement années:", error);
+          setYears([]);
+        } finally {
+          setLoadingYears(false);
+        }
+      } else {
         setYears([]);
-      } finally {
-        setLoadingYears(false);
       }
-    } else {
-      setYears([]);
-    }
-  };
+    },
+    [brands],
+  );
 
   // 📅 Gestion sélection année
-  const handleYearChange = async (year: number) => {
-    setSelectedYear(year);
-    setSelectedModel(null);
-    setSelectedType(null);
-    setTypes([]);
+  const handleYearChange = useCallback(
+    async (year: number) => {
+      setSelectedYear(year);
+      setSelectedModel(null);
+      setSelectedType(null);
+      setTypes([]);
 
-    if (selectedBrand && year) {
-      setLoadingModels(true);
-      try {
-        const modelsData = await enhancedVehicleApi.getModels(
-          selectedBrand.marque_id,
-          {
-            year,
-            page: 0, // 🔧 Backend uses zero-indexed pages
-            limit: 100,
-          },
-        );
-        setModels(modelsData);
-      } catch (error) {
-        console.warn("❌ Erreur chargement modèles:", error);
-        setModels([]);
-      } finally {
-        setLoadingModels(false);
+      if (selectedBrand && year) {
+        setLoadingModels(true);
+        try {
+          const modelsData = await enhancedVehicleApi.getModels(
+            selectedBrand.marque_id,
+            {
+              year,
+              page: 0, // 🔧 Backend uses zero-indexed pages
+              limit: 100,
+            },
+          );
+          setModels(modelsData);
+        } catch (error) {
+          console.warn("❌ Erreur chargement modèles:", error);
+          setModels([]);
+        } finally {
+          setLoadingModels(false);
+        }
       }
-    }
-  };
+    },
+    [selectedBrand],
+  );
 
   // 🚗 Gestion sélection modèle
-  const handleModelChange = async (modelId: number) => {
-    const model = models.find((m) => m.modele_id === modelId) || null;
-    setSelectedModel(model);
-    setSelectedType(null);
+  const handleModelChange = useCallback(
+    async (modelId: number) => {
+      const model = models.find((m) => m.modele_id === modelId) || null;
+      setSelectedModel(model);
+      setSelectedType(null);
 
-    if (model && selectedYear) {
-      setLoadingTypes(true);
-      try {
-        const typesData = await enhancedVehicleApi.getTypes(model.modele_id, {
-          year: selectedYear,
-        });
-        setTypes(typesData);
-      } catch (error) {
-        console.warn("❌ Erreur chargement types:", error);
-        setTypes([]);
-      } finally {
-        setLoadingTypes(false);
+      if (model && selectedYear) {
+        setLoadingTypes(true);
+        try {
+          const typesData = await enhancedVehicleApi.getTypes(model.modele_id, {
+            year: selectedYear,
+          });
+          setTypes(typesData);
+        } catch (error) {
+          console.warn("❌ Erreur chargement types:", error);
+          setTypes([]);
+        } finally {
+          setLoadingTypes(false);
+        }
       }
-    }
-  };
+    },
+    [models, selectedYear],
+  );
 
   // ⚙️ Gestion sélection type avec navigation configurée
-  const handleTypeSelect = (type: VehicleType) => {
-    if (!selectedBrand || !selectedModel || !type) {
-      return;
-    }
-
-    setSelectedType(type);
-
-    // 📞 Callback si fourni - toujours appeler même si redirectOnSelect est false
-    if (selectedYear && onVehicleSelect) {
-      onVehicleSelect({
-        brand: selectedBrand,
-        year: selectedYear,
-        model: selectedModel,
-        type,
-      });
-    }
-
-    // 🧭 Navigation selon configuration avec format alias-id
-    if (redirectOnSelect) {
-      let url = "";
-      let brandSlug = "";
-      let modelSlug = "";
-      let typeSlug = "";
-
-      switch (redirectTo) {
-        case "vehicle-page":
-          // 🔧 Fonction helper pour créer un slug propre
-          const createSlug = (name: string): string => {
-            return name
-              .toLowerCase()
-              .normalize("NFD") // Normaliser les caractères accentués
-              .replace(/[\u0300-\u036f]/g, "") // Retirer les accents
-              .replace(/[^\w\s-]/g, "") // Garder uniquement lettres, chiffres, espaces et tirets
-              .trim()
-              .replace(/[\s_]+/g, "-") // Remplacer espaces et underscores par tirets
-              .replace(/-+/g, "-") // Éviter plusieurs tirets consécutifs
-              .replace(/^-+|-+$/g, ""); // Retirer tirets début/fin
-          };
-
-          // 🔧 Construire les slugs avec format alias-id requis par le loader
-          // Gérer les cas où les alias sont vides ou manquants
-          const brandAlias =
-            selectedBrand.marque_alias &&
-            selectedBrand.marque_alias.trim() !== ""
-              ? selectedBrand.marque_alias
-              : createSlug(selectedBrand.marque_name);
-
-          const modelAlias =
-            selectedModel.modele_alias &&
-            selectedModel.modele_alias.trim() !== ""
-              ? selectedModel.modele_alias
-              : createSlug(selectedModel.modele_name);
-
-          const typeAlias =
-            type.type_alias && type.type_alias.trim() !== ""
-              ? type.type_alias
-              : createSlug(type.type_name);
-
-          brandSlug = `${brandAlias}-${selectedBrand.marque_id}`;
-          modelSlug = `${modelAlias}-${selectedModel.modele_id}`;
-          typeSlug = `${typeAlias}-${type.type_id}`;
-
-          url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
-          break;
-
-        case "search":
-          url = `/recherche?brand=${selectedBrand.marque_id}&model=${selectedModel.modele_id}&type=${type.type_id}`;
-          break;
-
-        case "custom":
-          url = customRedirectUrl
-            ? customRedirectUrl({
-                brand: selectedBrand,
-                model: selectedModel,
-                type,
-              })
-            : "";
-          break;
+  const handleTypeSelect = useCallback(
+    (type: VehicleType) => {
+      if (!selectedBrand || !selectedModel || !type) {
+        return;
       }
 
-      if (url && !url.includes("undefined") && !url.includes("--")) {
-        // 🚀 Navigation client-side rapide via Remix (pas de rechargement complet)
-        navigate(url);
+      setSelectedType(type);
+
+      // 📞 Callback si fourni - toujours appeler même si redirectOnSelect est false
+      if (selectedYear && onVehicleSelect) {
+        onVehicleSelect({
+          brand: selectedBrand,
+          year: selectedYear,
+          model: selectedModel,
+          type,
+        });
       }
-    }
-  };
+
+      // 🧭 Navigation selon configuration avec format alias-id
+      if (redirectOnSelect) {
+        let url = "";
+        let brandSlug = "";
+        let modelSlug = "";
+        let typeSlug = "";
+
+        switch (redirectTo) {
+          case "vehicle-page":
+            // 🔧 Fonction helper pour créer un slug propre
+            const createSlug = (name: string): string => {
+              return name
+                .toLowerCase()
+                .normalize("NFD") // Normaliser les caractères accentués
+                .replace(/[\u0300-\u036f]/g, "") // Retirer les accents
+                .replace(/[^\w\s-]/g, "") // Garder uniquement lettres, chiffres, espaces et tirets
+                .trim()
+                .replace(/[\s_]+/g, "-") // Remplacer espaces et underscores par tirets
+                .replace(/-+/g, "-") // Éviter plusieurs tirets consécutifs
+                .replace(/^-+|-+$/g, ""); // Retirer tirets début/fin
+            };
+
+            // 🔧 Construire les slugs avec format alias-id requis par le loader
+            // Gérer les cas où les alias sont vides ou manquants
+            const brandAlias =
+              selectedBrand.marque_alias &&
+              selectedBrand.marque_alias.trim() !== ""
+                ? selectedBrand.marque_alias
+                : createSlug(selectedBrand.marque_name);
+
+            const modelAlias =
+              selectedModel.modele_alias &&
+              selectedModel.modele_alias.trim() !== ""
+                ? selectedModel.modele_alias
+                : createSlug(selectedModel.modele_name);
+
+            const typeAlias =
+              type.type_alias && type.type_alias.trim() !== ""
+                ? type.type_alias
+                : createSlug(type.type_name);
+
+            brandSlug = `${brandAlias}-${selectedBrand.marque_id}`;
+            modelSlug = `${modelAlias}-${selectedModel.modele_id}`;
+            typeSlug = `${typeAlias}-${type.type_id}`;
+
+            url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+            break;
+
+          case "search":
+            url = `/recherche?brand=${selectedBrand.marque_id}&model=${selectedModel.modele_id}&type=${type.type_id}`;
+            break;
+
+          case "custom":
+            url = customRedirectUrl
+              ? customRedirectUrl({
+                  brand: selectedBrand,
+                  model: selectedModel,
+                  type,
+                })
+              : "";
+            break;
+        }
+
+        if (url && !url.includes("undefined") && !url.includes("--")) {
+          // 🚀 Navigation client-side rapide via Remix (pas de rechargement complet)
+          navigate(url);
+        }
+      }
+    },
+    [
+      selectedBrand,
+      selectedModel,
+      selectedYear,
+      onVehicleSelect,
+      redirectOnSelect,
+      redirectTo,
+      customRedirectUrl,
+      navigate,
+    ],
+  );
 
   // 🧹 Reset complet
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSelectedBrand(null);
     setSelectedYear(null);
     setSelectedModel(null);
@@ -336,15 +358,15 @@ export default function VehicleSelector({
     setModels([]);
     setTypes([]);
     setSearchQuery("");
-  };
+  }, []);
 
   // 🔍 Handler recherche par Type Mine
-  const handleMineSearch = () => {
+  const handleMineSearch = useCallback(() => {
     if (!mineCode || mineCode.length < 5) {
       return;
     }
     navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
-  };
+  }, [mineCode, navigate]);
 
   // 🎨 Styles adaptatifs selon variant
   const containerClass = `
