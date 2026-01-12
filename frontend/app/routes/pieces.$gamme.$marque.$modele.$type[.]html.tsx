@@ -171,8 +171,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     resolveGammeId(rawGamme),
   ]);
 
-  // Validation des IDs véhicule - Si invalides, on laisse batch-loader retourner 404
+  // Validation des IDs véhicule - Si invalides, retourner 412 avec options
   // 🛡️ gammeId n'est PAS validé ici - délégué au batch-loader pour permettre gammeId=0 → 404 SEO
+  let vehicleValidationFailed = false;
   try {
     validateVehicleIds({
       marqueId: vehicleIds.marqueId,
@@ -182,19 +183,79 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       source: "loader-validation",
     });
   } catch (validationError) {
-    // 🛡️ IDs invalides → 404 SEO au lieu de 500
+    // 🛡️ IDs invalides → 412 funnel SEO au lieu de 404
     console.warn(
-      `⚠️ [LOADER] Validation IDs échouée, retour 404:`,
+      `⚠️ [LOADER] Validation IDs échouée, retour 412 funnel:`,
       validationError,
     );
-    throw new Response("Véhicule non trouvé", {
-      status: 404,
-      statusText: "Not Found",
-      headers: {
-        "X-Robots-Tag": "noindex, nofollow",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
+    vehicleValidationFailed = true;
+  }
+
+  // Si validation échouée, récupérer les véhicules compatibles et retourner 412
+  if (vehicleValidationFailed) {
+    // Récupérer les véhicules compatibles pour cette gamme via substitution API
+    let compatibleOptions: Array<{
+      id: number;
+      label: string;
+      url: string;
+      description?: string;
+      metadata?: {
+        fuel?: string;
+        power?: string;
+        years?: string;
+        body?: string;
+      };
+    }> = [];
+
+    try {
+      const substitutionUrl = `http://localhost:3000/api/substitution/check?url=/pieces/${gammeData.alias}-${gammeId}.html`;
+      const subResponse = await fetch(substitutionUrl);
+      if (subResponse.ok) {
+        const subData = await subResponse.json();
+        if (subData?.lock?.options && Array.isArray(subData.lock.options)) {
+          compatibleOptions = subData.lock.options.slice(0, 20);
+        }
+      }
+    } catch {
+      // Continuer sans options si erreur
+    }
+
+    throw json(
+      {
+        url: request.url,
+        condition: "Véhicule valide requis",
+        requirement: "Sélectionnez un véhicule compatible",
+        substitution: {
+          lock: {
+            type: "vehicle" as const,
+            missing: "valid_vehicle",
+            known: {
+              gamme: {
+                id: gammeId,
+                name: gammeData.alias,
+                alias: gammeData.alias,
+              },
+              marque: { id: vehicleIds.marqueId, name: marqueData.alias },
+              modele: { id: vehicleIds.modeleId, name: modeleData.alias },
+              type: { id: vehicleIds.typeId, name: typeData.alias },
+            },
+            options: compatibleOptions,
+          },
+          seo: {
+            title: `${gammeData.alias} - Sélectionnez votre véhicule | AutoMecanik`,
+            description: `Trouvez des pièces ${gammeData.alias} compatibles avec votre véhicule`,
+            h1: `${gammeData.alias} - Véhicules compatibles`,
+          },
+        },
       },
-    });
+      {
+        status: 412,
+        headers: {
+          "X-Robots-Tag": "index, follow", // SEO haut funnel - page indexable
+          "Cache-Control": "public, max-age=3600",
+        },
+      },
+    );
   }
 
   // 🚀 LCP OPTIMIZATION V7: Seul batch-loader bloque le LCP
@@ -303,7 +364,51 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       );
     }
 
-    // Sinon, conserver le statut original de l'API (vraie 410 ou autre erreur)
+    // Si on a au moins la gamme, toujours retourner 412 (funnel SEO)
+    // Le 404 ne devrait être utilisé que si on n'a AUCUNE info exploitable
+    if (gamme && gamme.name) {
+      throw json(
+        {
+          url: request.url,
+          condition: "Véhicule valide requis",
+          requirement: "Sélectionnez un véhicule compatible",
+          substitution: {
+            lock: {
+              type: "vehicle" as const,
+              missing: "valid_vehicle",
+              known: {
+                gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
+                // Inclure les infos véhicule partielles si disponibles
+                ...(vehicle?.marque && {
+                  marque: { id: vehicle.marqueId, name: vehicle.marque },
+                }),
+                ...(vehicle?.modele && {
+                  modele: { id: vehicle.modeleId, name: vehicle.modele },
+                }),
+                ...(vehicle?.type && {
+                  type: { id: vehicle.typeId, name: vehicle.type },
+                }),
+              },
+              options: compatibleVehicleOptions,
+            },
+            seo: {
+              title: `${gamme.name} - Sélectionnez votre véhicule | AutoMecanik`,
+              description: `Trouvez des ${gamme.name} compatibles avec votre véhicule. Large choix de pièces auto de qualité.`,
+              h1: `${gamme.name} - Véhicules compatibles`,
+            },
+          },
+        },
+        {
+          status: 412,
+          headers: {
+            "X-Robots-Tag": "index, follow", // SEO: page funnel indexable
+            "Cache-Control": "public, max-age=3600",
+          },
+        },
+      );
+    }
+
+    // Cas extrême: aucune gamme identifiable → vrai 404/410
     const reason =
       batchResponse.validation.recommendation ||
       "Cette combinaison n'est pas disponible.";
