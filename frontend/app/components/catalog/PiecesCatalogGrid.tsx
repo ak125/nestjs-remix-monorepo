@@ -432,7 +432,7 @@ export default function PiecesCatalogGrid({
                     </h4>
                     <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                       {category.pieces.slice(0, 10).map((piece) => {
-                        const pieceUrl = `/pieces/${piece.piece_sku.toLowerCase()}`;
+                        const pieceUrl = `/search?q=${encodeURIComponent(piece.piece_sku)}`;
 
                         return (
                           <Link

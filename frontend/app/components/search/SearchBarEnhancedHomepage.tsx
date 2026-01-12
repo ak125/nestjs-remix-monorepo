@@ -10,7 +10,7 @@
  * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
-import { Form, useNavigate } from '@remix-run/react';
+import { Form, useNavigate } from "@remix-run/react";
 import {
   Search,
   X,
@@ -21,13 +21,16 @@ import {
   Tag,
   ArrowRight,
   Zap,
-  Command
-} from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+  Command,
+} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
-import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
-import { cn } from '../../lib/utils';
-import { scheduleIdleCallback } from '../../utils/performance.utils';
+import {
+  useEnhancedSearchWithDebounce,
+  useEnhancedAutocomplete,
+} from "../../hooks/useEnhancedSearch";
+import { cn } from "../../lib/utils";
+import { scheduleIdleCallback } from "../../utils/performance.utils";
 
 interface SearchBarEnhancedHomepageProps {
   initialQuery?: string;
@@ -39,16 +42,16 @@ interface SearchBarEnhancedHomepageProps {
 
 // Recherches populaires (à récupérer depuis l'API plus tard)
 const POPULAR_SEARCHES = [
-  { query: 'plaquettes de frein', icon: Package, count: '12.5K' },
-  { query: 'filtres à huile', icon: Package, count: '8.2K' },
-  { query: 'disques de frein', icon: Package, count: '7.8K' },
-  { query: 'amortisseurs', icon: Package, count: '6.4K' },
-  { query: 'courroie de distribution', icon: Package, count: '5.9K' },
+  { query: "plaquettes de frein", icon: Package, count: "12.5K" },
+  { query: "filtres à huile", icon: Package, count: "8.2K" },
+  { query: "disques de frein", icon: Package, count: "7.8K" },
+  { query: "amortisseurs", icon: Package, count: "6.4K" },
+  { query: "courroie de distribution", icon: Package, count: "5.9K" },
 ];
 
 export function SearchBarEnhancedHomepage({
-  initialQuery = '',
-  placeholder = 'Rechercher par référence, marque, catégorie...',
+  initialQuery = "",
+  placeholder = "Rechercher par référence, marque, catégorie...",
   className,
   autoFocus = false,
   onSearch,
@@ -63,11 +66,11 @@ export function SearchBarEnhancedHomepage({
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   // Hook Enhanced avec debounce
-  const { 
-    query, 
-    setQuery, 
-    loading: isSearching, 
-    results 
+  const {
+    query,
+    setQuery,
+    loading: isSearching,
+    results,
   } = useEnhancedSearchWithDebounce(initialQuery, 200);
 
   // Hook d'autocomplete Enhanced
@@ -75,12 +78,12 @@ export function SearchBarEnhancedHomepage({
 
   // Charger les recherches récentes depuis localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('recentSearches');
+    const stored = localStorage.getItem("recentSearches");
     if (stored) {
       try {
         setRecentSearches(JSON.parse(stored).slice(0, 3));
       } catch (e) {
-        console.error('Error loading recent searches:', e);
+        console.error("Error loading recent searches:", e);
       }
     }
   }, []);
@@ -90,7 +93,7 @@ export function SearchBarEnhancedHomepage({
   const saveRecentSearch = (searchQuery: string) => {
     const updated = [
       searchQuery,
-      ...recentSearches.filter(s => s !== searchQuery)
+      ...recentSearches.filter((s) => s !== searchQuery),
     ].slice(0, 5);
 
     // Mettre à jour l'état immédiatement pour UX réactive
@@ -98,22 +101,22 @@ export function SearchBarEnhancedHomepage({
 
     // Différer l'écriture localStorage au temps idle
     scheduleIdleCallback(() => {
-      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      localStorage.setItem("recentSearches", JSON.stringify(updated));
     });
   };
 
   // Raccourci clavier Cmd/Ctrl + K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         inputRef.current?.focus();
         setIsFocused(true);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Effet de focus automatique
@@ -126,26 +129,28 @@ export function SearchBarEnhancedHomepage({
   // Suggestions + résultats visibles
   const visibleSuggestions = suggestions.slice(0, 5);
   const previewResults = results?.items?.slice(0, 3) || [];
-  const hasContent = query.length > 0 && (visibleSuggestions.length > 0 || previewResults.length > 0);
+  const hasContent =
+    query.length > 0 &&
+    (visibleSuggestions.length > 0 || previewResults.length > 0);
   const showPopular = isFocused && !query && recentSearches.length === 0;
   const showRecent = isFocused && !query && recentSearches.length > 0;
 
   // Gestion du clavier
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const maxIndex = visibleSuggestions.length - 1;
-    
+
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => prev < maxIndex ? prev + 1 : 0);
+        setSelectedIndex((prev) => (prev < maxIndex ? prev + 1 : 0));
         break;
-        
-      case 'ArrowUp':
+
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : maxIndex);
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : maxIndex));
         break;
-        
-      case 'Enter':
+
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0 && visibleSuggestions[selectedIndex]) {
           const suggestion = visibleSuggestions[selectedIndex];
@@ -154,8 +159,8 @@ export function SearchBarEnhancedHomepage({
           handleSearch(query);
         }
         break;
-        
-      case 'Escape':
+
+      case "Escape":
         setIsFocused(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
@@ -175,10 +180,10 @@ export function SearchBarEnhancedHomepage({
   const handleSearch = (searchQuery?: string) => {
     const finalQuery = (searchQuery || query).trim();
     if (!finalQuery) return;
-    
+
     setIsFocused(false);
     saveRecentSearch(finalQuery);
-    
+
     if (onSearch) {
       onSearch(finalQuery);
     } else {
@@ -188,7 +193,7 @@ export function SearchBarEnhancedHomepage({
 
   // Vider la recherche
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
     setSelectedIndex(-1);
     inputRef.current?.focus();
   };
@@ -196,27 +201,38 @@ export function SearchBarEnhancedHomepage({
   // Fermer le dropdown au clic extérieur
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
-          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
         setIsFocused(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <div className={cn('relative w-full', className)}>
-      <Form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+    <div className={cn("relative w-full", className)}>
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSearch();
+        }}
+      >
         {/* Conteneur principal avec effet glassmorphism */}
         <div className="relative group">
           {/* Glow effect au focus */}
-          <div className={cn(
-            'absolute inset-0 rounded-2xl opacity-0 blur-xl transition-opacity duration-300',
-            'bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400',
-            isFocused && 'opacity-20'
-          )} />
+          <div
+            className={cn(
+              "absolute inset-0 rounded-2xl opacity-0 blur-xl transition-opacity duration-300",
+              "bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400",
+              isFocused && "opacity-20",
+            )}
+          />
 
           {/* Input de recherche */}
           <div className="relative">
@@ -229,28 +245,32 @@ export function SearchBarEnhancedHomepage({
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               className={cn(
-                'w-full pl-14 pr-24 py-4 text-lg',
-                'border-2 border-white/40 rounded-2xl',
-                'bg-white/95 backdrop-blur-md',
-                'text-gray-900',
-                'focus:border-white focus:ring-4 focus:ring-white/30 focus:outline-none',
-                'transition-all duration-300',
-                'shadow-xl shadow-black/10',
-                'placeholder:text-gray-400',
-                isFocused && 'shadow-2xl shadow-black/20 scale-[1.02]'
+                "w-full pl-14 pr-24 py-4 text-lg",
+                "border-2 border-white/40 rounded-2xl",
+                "bg-white/95 backdrop-blur-md",
+                "text-gray-900",
+                "focus:border-white focus:ring-4 focus:ring-white/30 focus:outline-none",
+                "transition-all duration-300",
+                "shadow-xl shadow-black/10",
+                "placeholder:text-gray-400",
+                isFocused && "shadow-2xl shadow-black/20 scale-[1.02]",
               )}
             />
 
             {/* Icône de recherche animée */}
-            <div className={cn(
-              'absolute left-5 top-1/2 transform -translate-y-1/2',
-              'transition-all duration-300',
-              isFocused && 'scale-110'
-            )}>
-              <Search className={cn(
-                'w-5 h-5 transition-colors duration-300',
-                isFocused ? 'text-blue-500' : 'text-gray-400'
-              )} />
+            <div
+              className={cn(
+                "absolute left-5 top-1/2 transform -translate-y-1/2",
+                "transition-all duration-300",
+                isFocused && "scale-110",
+              )}
+            >
+              <Search
+                className={cn(
+                  "w-5 h-5 transition-colors duration-300",
+                  isFocused ? "text-blue-500" : "text-gray-400",
+                )}
+              />
             </div>
 
             {/* Raccourci clavier hint */}
@@ -267,10 +287,10 @@ export function SearchBarEnhancedHomepage({
                 type="button"
                 onClick={handleClear}
                 className={cn(
-                  'absolute right-14 top-1/2 transform -translate-y-1/2',
-                  'p-1.5 hover:bg-gray-200/80 rounded-lg',
-                  'transition-all duration-200',
-                  'hover:scale-110'
+                  "absolute right-14 top-1/2 transform -translate-y-1/2",
+                  "p-1.5 hover:bg-gray-200/80 rounded-lg",
+                  "transition-all duration-200",
+                  "hover:scale-110",
                 )}
               >
                 <X className="w-4 h-4 text-gray-500" />
@@ -289,12 +309,12 @@ export function SearchBarEnhancedHomepage({
               <button
                 type="submit"
                 className={cn(
-                  'absolute right-5 top-1/2 transform -translate-y-1/2',
-                  'p-2 bg-gradient-to-r from-blue-500 to-purple-500',
-                  'rounded-lg text-white',
-                  'hover:from-blue-600 hover:to-purple-600',
-                  'transition-all duration-200',
-                  'hover:scale-110 hover:shadow-lg'
+                  "absolute right-5 top-1/2 transform -translate-y-1/2",
+                  "p-2 bg-gradient-to-r from-blue-500 to-purple-500",
+                  "rounded-lg text-white",
+                  "hover:from-blue-600 hover:to-purple-600",
+                  "transition-all duration-200",
+                  "hover:scale-110 hover:shadow-lg",
                 )}
               >
                 <ArrowRight className="w-4 h-4" />
@@ -304,16 +324,16 @@ export function SearchBarEnhancedHomepage({
         </div>
 
         {/* Dropdown premium */}
-        {(isFocused && (hasContent || showPopular || showRecent)) && (
+        {isFocused && (hasContent || showPopular || showRecent) && (
           <div
             ref={dropdownRef}
             className={cn(
-              'absolute z-50 w-full mt-3',
-              'bg-white/95 backdrop-blur-xl',
-              'border border-gray-200/50',
-              'rounded-2xl shadow-2xl',
-              'max-h-[500px] overflow-y-auto',
-              'animate-in fade-in slide-in-from-top-2 duration-200'
+              "absolute z-50 w-full mt-3",
+              "bg-white/95 backdrop-blur-xl",
+              "border border-gray-200/50",
+              "rounded-2xl shadow-2xl",
+              "max-h-[500px] overflow-y-auto",
+              "animate-in fade-in slide-in-from-top-2 duration-200",
             )}
           >
             {/* Recherches récentes */}
@@ -358,8 +378,12 @@ export function SearchBarEnhancedHomepage({
                         className="w-full px-3 py-2.5 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all flex items-center gap-3 group"
                       >
                         <Icon className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-gray-700 flex-1">{popular.query}</span>
-                        <span className="text-xs text-gray-400 group-hover:text-gray-500">{popular.count}</span>
+                        <span className="text-gray-700 flex-1">
+                          {popular.query}
+                        </span>
+                        <span className="text-xs text-gray-400 group-hover:text-gray-500">
+                          {popular.count}
+                        </span>
                         <ArrowRight className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     );
@@ -382,14 +406,16 @@ export function SearchBarEnhancedHomepage({
                       type="button"
                       onClick={() => handleSuggestionClick(suggestion)}
                       className={cn(
-                        'w-full px-3 py-2.5 text-left rounded-lg transition-all flex items-center gap-3 group',
-                        selectedIndex === index 
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200' 
-                          : 'hover:bg-gray-50'
+                        "w-full px-3 py-2.5 text-left rounded-lg transition-all flex items-center gap-3 group",
+                        selectedIndex === index
+                          ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200"
+                          : "hover:bg-gray-50",
                       )}
                     >
                       <Tag className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                      <span className="text-gray-900 font-medium">{suggestion}</span>
+                      <span className="text-gray-900 font-medium">
+                        {suggestion}
+                      </span>
                       <ArrowRight className="w-4 h-4 text-gray-300 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   ))}
@@ -414,7 +440,11 @@ export function SearchBarEnhancedHomepage({
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => navigate(`/pieces/${item.id}`)}
+                      onClick={() =>
+                        navigate(
+                          `/search?q=${encodeURIComponent(item.reference || item.id)}`,
+                        )
+                      }
                       className="w-full p-3 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group border border-transparent hover:border-blue-200"
                     >
                       <div className="flex items-start gap-3">
@@ -434,7 +464,7 @@ export function SearchBarEnhancedHomepage({
                     </button>
                   ))}
                 </div>
-                
+
                 {/* Lien vers tous les résultats */}
                 <button
                   type="button"
