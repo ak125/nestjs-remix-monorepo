@@ -29,6 +29,7 @@ import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
 import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO
 import { AdminGammesSeoController } from './controllers/admin-gammes-seo.controller'; // 🎯 Gammes SEO G-Level
+import { AdminSeoMatriceController } from './controllers/admin-seo-matrice.controller'; // 📊 Matrice SEO Lexique
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -47,6 +48,7 @@ import { OrdersModule } from '../orders/orders.module';
 import { StaffModule } from '../staff/staff.module';
 import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
+import { SeoModule } from '../seo/seo.module'; // 📊 Pour SeoMatriceService
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     StaffModule,
     ProductsModule,
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
+    SeoModule, // 📊 Import pour accès à SeoMatriceService
   ],
   controllers: [
     ConfigurationController,
@@ -74,6 +77,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     AdminProductsController,
     AdminSeoController, // 📊 Dashboard monitoring SEO
     AdminGammesSeoController, // 🎯 Gammes SEO G-Level classification
+    AdminSeoMatriceController, // 📊 Matrice SEO Lexique validation
   ],
   providers: [
     ConfigurationService,

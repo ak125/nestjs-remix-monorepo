@@ -67,9 +67,8 @@ import { InternalLinkingService } from './internal-linking.service';
 // 🛡️ Service Validation SEO Guides d'Achat
 import { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
 
-// 📊 Service et Contrôleur Matrice SEO (n8n workflow)
+// 📊 Service Matrice SEO (exporté pour AdminModule)
 import { SeoMatriceService } from './services/seo-matrice.service';
-import { SeoMatriceController } from './controllers/seo-matrice.controller';
 
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
@@ -137,7 +136,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
     SeoVariationsController, // 📝 Contrôleur Variations SEO
     SeoLinkTrackingController, // 📊 Contrôleur Tracking Liens Internes
-    SeoMatriceController, // 📊 Contrôleur Matrice SEO (n8n workflow)
+    // SeoMatriceController déplacé vers AdminModule → /api/admin/seo-matrice
   ],
 
   providers: [
