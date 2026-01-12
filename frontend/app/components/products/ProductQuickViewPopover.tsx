@@ -1,6 +1,6 @@
 /**
  * ProductQuickViewPopover - Aperçu rapide d'un produit au survol
- * 
+ *
  * @features
  * - Image produit en grand format
  * - Prix avec réduction si applicable
@@ -9,7 +9,7 @@
  * - Description courte
  * - Boutons d'action : Voir détails, Ajouter au panier
  * - Référence produit
- * 
+ *
  * @example
  * <ProductQuickViewPopover
  *   product={product}
@@ -22,14 +22,11 @@
  * </ProductQuickViewPopover>
  */
 
-import { Eye, ShoppingCart, Star, Package } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { Eye, ShoppingCart, Star, Package } from "lucide-react";
+import { type ReactNode } from "react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../ui/popover';
+import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 export interface ProductForQuickView {
   id: string | number;
@@ -55,9 +52,9 @@ interface ProductQuickViewPopoverProps {
   /** Element déclencheur du popover */
   children?: ReactNode;
   /** Position du popover */
-  side?: 'top' | 'right' | 'bottom' | 'left';
+  side?: "top" | "right" | "bottom" | "left";
   /** Alignement du popover */
-  align?: 'start' | 'center' | 'end';
+  align?: "start" | "center" | "end";
 }
 
 export function ProductQuickViewPopover({
@@ -65,8 +62,8 @@ export function ProductQuickViewPopover({
   onViewDetails,
   onAddToCart,
   children,
-  side = 'right',
-  align = 'start',
+  side = "right",
+  align = "start",
 }: ProductQuickViewPopoverProps) {
   // Calcul de la réduction
   const hasDiscount =
@@ -74,7 +71,7 @@ export function ProductQuickViewPopover({
   const discountPercent = hasDiscount
     ? Math.round(
         ((product.originalPrice! - product.price) / product.originalPrice!) *
-          100
+          100,
       )
     : 0;
 
@@ -116,16 +113,16 @@ export function ProductQuickViewPopover({
     <Popover>
       <PopoverTrigger asChild>
         {children || (
-          <button className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-600 hover:text-gray-900"
+          >
             <Eye className="h-5 w-5" />
-          </button>
+          </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent
-        side={side}
-        align={align}
-        className="w-80 p-0"
-      >
+      <PopoverContent side={side} align={align} className="w-80 p-0">
         <div className="space-y-0">
           {/* Image produit */}
           <div className="relative aspect-video w-full overflow-hidden rounded-t-lg bg-gray-100">
@@ -181,8 +178,8 @@ export function ProductQuickViewPopover({
                       key={star}
                       className={`h-4 w-4 ${
                         star <= product.rating!
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                   ))}
@@ -217,22 +214,23 @@ export function ProductQuickViewPopover({
             {/* Actions */}
             <div className="flex gap-2">
               {onViewDetails && (
-                <button
+                <Button
+                  variant="outline"
                   onClick={onViewDetails}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                  className="flex-1 gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
                   <Eye className="h-4 w-4" />
                   Détails
-                </button>
+                </Button>
               )}
               {onAddToCart && product.stock > 0 && (
-                <button
+                <Button
                   onClick={onAddToCart}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Ajouter
-                </button>
+                </Button>
               )}
             </div>
           </div>

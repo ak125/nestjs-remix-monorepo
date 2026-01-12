@@ -5,18 +5,25 @@
 
 import { Link } from "@remix-run/react";
 
-import { Badge } from '~/components/ui';
+import { Badge, Button } from "~/components/ui";
 
 interface ActivityItem {
   id: string;
-  type: 'ORDER_CREATED' | 'ORDER_UPDATED' | 'STOCK_ALERT' | 'USER_REGISTERED' | 'PAYMENT_RECEIVED' | 'PRODUCT_UPDATED' | 'ADMIN_ACTION';
+  type:
+    | "ORDER_CREATED"
+    | "ORDER_UPDATED"
+    | "STOCK_ALERT"
+    | "USER_REGISTERED"
+    | "PAYMENT_RECEIVED"
+    | "PRODUCT_UPDATED"
+    | "ADMIN_ACTION";
   title: string;
   description: string;
   userId?: string;
   userName?: string;
   entityId?: string;
   timestamp: string;
-  severity: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';
+  severity: "INFO" | "WARNING" | "SUCCESS" | "ERROR";
   metadata?: Record<string, any>;
 }
 
@@ -27,11 +34,11 @@ interface RecentActivityProps {
   showFilters?: boolean;
 }
 
-export function RecentActivity({ 
-  activities, 
+export function RecentActivity({
+  activities,
   title = "🔄 Activité Récente",
   maxItems = 10,
-  showFilters = false 
+  showFilters = false,
 }: RecentActivityProps) {
   if (!activities || activities.length === 0) {
     return (
@@ -51,17 +58,17 @@ export function RecentActivity({
   // Statistiques rapides
   const stats = {
     total: activities.length,
-    today: activities.filter(a => isToday(a.timestamp)).length,
-    errors: activities.filter(a => a.severity === 'ERROR').length,
-    warnings: activities.filter(a => a.severity === 'WARNING').length
+    today: activities.filter((a) => isToday(a.timestamp)).length,
+    errors: activities.filter((a) => a.severity === "ERROR").length,
+    warnings: activities.filter((a) => a.severity === "WARNING").length,
   };
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-        <Link 
-          to="/admin/activity" 
+        <Link
+          to="/admin/activity"
           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
         >
           Historique complet
@@ -72,40 +79,70 @@ export function RecentActivity({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-muted p-3 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-          <div className="text-xs text-blue-600 uppercase tracking-wide">Total</div>
+          <div className="text-xs text-blue-600 uppercase tracking-wide">
+            Total
+          </div>
         </div>
         <div className="bg-success/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-green-600">{stats.today}</div>
-          <div className="text-xs text-green-600 uppercase tracking-wide">Aujourd'hui</div>
+          <div className="text-xs text-green-600 uppercase tracking-wide">
+            Aujourd'hui
+          </div>
         </div>
         <div className="bg-warning/10 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-yellow-600">{stats.warnings}</div>
-          <div className="text-xs text-yellow-600 uppercase tracking-wide">Alertes</div>
+          <div className="text-2xl font-bold text-yellow-600">
+            {stats.warnings}
+          </div>
+          <div className="text-xs text-yellow-600 uppercase tracking-wide">
+            Alertes
+          </div>
         </div>
         <div className="bg-destructive/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
-          <div className="text-xs text-red-600 uppercase tracking-wide">Erreurs</div>
+          <div className="text-xs text-red-600 uppercase tracking-wide">
+            Erreurs
+          </div>
         </div>
       </div>
 
       {/* Filtres rapides */}
       {showFilters && (
         <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-200">
-          <button className="px-3 py-1 bg-info/90 text-info-foreground hover:bg-info rounded-full text-xs font-medium">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="rounded-full bg-info/90 text-info-foreground hover:bg-info"
+          >
             Tout
-          </button>
-          <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          >
             Commandes
-          </button>
-          <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          >
             Stock
-          </button>
-          <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          >
             Utilisateurs
-          </button>
-          <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          >
             Erreurs
-          </button>
+          </Button>
         </div>
       )}
 
@@ -121,15 +158,17 @@ export function RecentActivity({
                     aria-hidden="true"
                   />
                 ) : null}
-                
+
                 <div className="relative flex space-x-3">
                   {/* Icône d'activité */}
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ring-8 ring-white ${getActivityIconStyles(activity.type, activity.severity)}`}>
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full ring-8 ring-white ${getActivityIconStyles(activity.type, activity.severity)}`}
+                  >
                     <span className="text-sm">
                       {getActivityIcon(activity.type)}
                     </span>
                   </div>
-                  
+
                   {/* Contenu */}
                   <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                     <div className="min-w-0 flex-1">
@@ -137,32 +176,35 @@ export function RecentActivity({
                         <p className="text-sm font-medium text-gray-900">
                           {activity.title}
                         </p>
-                        {activity.severity === 'ERROR' && (
+                        {activity.severity === "ERROR" && (
                           <Badge variant="error">Erreur</Badge>
                         )}
-                        {activity.severity === 'WARNING' && (
+                        {activity.severity === "WARNING" && (
                           <Badge variant="warning">Alerte</Badge>
                         )}
                       </div>
-                      
+
                       <p className="text-sm text-gray-600 mt-1">
                         {activity.description}
                       </p>
-                      
+
                       {/* Métadonnées */}
-                      {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {Object.entries(activity.metadata).slice(0, 3).map(([key, value]) => (
-                            <span 
-                              key={key}
-                              className="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-600"
-                            >
-                              {key}: {String(value)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      
+                      {activity.metadata &&
+                        Object.keys(activity.metadata).length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {Object.entries(activity.metadata)
+                              .slice(0, 3)
+                              .map(([key, value]) => (
+                                <span
+                                  key={key}
+                                  className="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-600"
+                                >
+                                  {key}: {String(value)}
+                                </span>
+                              ))}
+                          </div>
+                        )}
+
                       {/* Utilisateur */}
                       {activity.userName && (
                         <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500">
@@ -171,15 +213,15 @@ export function RecentActivity({
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Timestamp et actions */}
                     <div className="flex flex-col items-end space-y-2">
                       <time className="whitespace-nowrap text-xs text-gray-500">
                         {formatRelativeTime(activity.timestamp)}
                       </time>
-                      
+
                       {activity.entityId && (
-                        <Link 
+                        <Link
                           to={getEntityLink(activity.type, activity.entityId)}
                           className="text-xs text-blue-600 hover:text-blue-800"
                         >
@@ -198,8 +240,8 @@ export function RecentActivity({
       {/* Lien vers l'historique complet */}
       {activities.length > maxItems && (
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <Link 
-            to="/admin/activity" 
+          <Link
+            to="/admin/activity"
             className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Voir {activities.length - maxItems} activités supplémentaires
@@ -215,22 +257,22 @@ export function RecentActivity({
  */
 function getActivityIcon(type: string): string {
   switch (type) {
-    case 'ORDER_CREATED':
-      return '🛒';
-    case 'ORDER_UPDATED':
-      return '📝';
-    case 'STOCK_ALERT':
-      return '📦';
-    case 'USER_REGISTERED':
-      return '👤';
-    case 'PAYMENT_RECEIVED':
-      return '💳';
-    case 'PRODUCT_UPDATED':
-      return '🏷️';
-    case 'ADMIN_ACTION':
-      return '⚙️';
+    case "ORDER_CREATED":
+      return "🛒";
+    case "ORDER_UPDATED":
+      return "📝";
+    case "STOCK_ALERT":
+      return "📦";
+    case "USER_REGISTERED":
+      return "👤";
+    case "PAYMENT_RECEIVED":
+      return "💳";
+    case "PRODUCT_UPDATED":
+      return "🏷️";
+    case "ADMIN_ACTION":
+      return "⚙️";
     default:
-      return '📋';
+      return "📋";
   }
 }
 
@@ -239,36 +281,36 @@ function getActivityIcon(type: string): string {
  */
 function getActivityIconStyles(type: string, severity: string): string {
   // Base styles selon la sévérité
-  let baseStyles = '';
+  let baseStyles = "";
   switch (severity) {
-    case 'ERROR':
-      baseStyles = 'bg-destructive text-destructive-foreground';
+    case "ERROR":
+      baseStyles = "bg-destructive text-destructive-foreground";
       break;
-    case 'WARNING':
-      baseStyles = 'bg-warning text-warning-foreground';
+    case "WARNING":
+      baseStyles = "bg-warning text-warning-foreground";
       break;
-    case 'SUCCESS':
-      baseStyles = 'bg-success text-success-foreground';
+    case "SUCCESS":
+      baseStyles = "bg-success text-success-foreground";
       break;
     default:
-      baseStyles = 'bg-primary text-primary-foreground';
+      baseStyles = "bg-primary text-primary-foreground";
   }
 
   // Styles spécifiques selon le type
   switch (type) {
-    case 'ORDER_CREATED':
-    case 'ORDER_UPDATED':
-      return severity === 'INFO' ? 'bg-primary text-white' : baseStyles;
-    case 'STOCK_ALERT':
-      return severity === 'INFO' ? 'bg-orange-500 text-white' : baseStyles;
-    case 'USER_REGISTERED':
-      return severity === 'INFO' ? 'bg-success text-white' : baseStyles;
-    case 'PAYMENT_RECEIVED':
-      return severity === 'INFO' ? 'bg-emerald-500 text-white' : baseStyles;
-    case 'PRODUCT_UPDATED':
-      return severity === 'INFO' ? 'bg-purple-500 text-white' : baseStyles;
-    case 'ADMIN_ACTION':
-      return severity === 'INFO' ? 'bg-gray-500 text-white' : baseStyles;
+    case "ORDER_CREATED":
+    case "ORDER_UPDATED":
+      return severity === "INFO" ? "bg-primary text-white" : baseStyles;
+    case "STOCK_ALERT":
+      return severity === "INFO" ? "bg-orange-500 text-white" : baseStyles;
+    case "USER_REGISTERED":
+      return severity === "INFO" ? "bg-success text-white" : baseStyles;
+    case "PAYMENT_RECEIVED":
+      return severity === "INFO" ? "bg-emerald-500 text-white" : baseStyles;
+    case "PRODUCT_UPDATED":
+      return severity === "INFO" ? "bg-purple-500 text-white" : baseStyles;
+    case "ADMIN_ACTION":
+      return severity === "INFO" ? "bg-gray-500 text-white" : baseStyles;
     default:
       return baseStyles;
   }
@@ -279,17 +321,17 @@ function getActivityIconStyles(type: string, severity: string): string {
  */
 function getEntityLink(type: string, entityId: string): string {
   switch (type) {
-    case 'ORDER_CREATED':
-    case 'ORDER_UPDATED':
+    case "ORDER_CREATED":
+    case "ORDER_UPDATED":
       return `/admin/orders/${entityId}`;
-    case 'USER_REGISTERED':
+    case "USER_REGISTERED":
       return `/admin/users/${entityId}`;
-    case 'PRODUCT_UPDATED':
+    case "PRODUCT_UPDATED":
       return `/admin/products/${entityId}`;
-    case 'STOCK_ALERT':
+    case "STOCK_ALERT":
       return `/admin/stock/alerts/${entityId}`;
     default:
-      return '/admin';
+      return "/admin";
   }
 }
 
@@ -314,7 +356,7 @@ function formatRelativeTime(dateString: string): string {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInMinutes < 1) {
-    return 'À l\'instant';
+    return "À l'instant";
   } else if (diffInMinutes < 60) {
     return `Il y a ${diffInMinutes} min`;
   } else if (diffInHours < 24) {
@@ -322,11 +364,11 @@ function formatRelativeTime(dateString: string): string {
   } else if (diffInDays < 7) {
     return `Il y a ${diffInDays}j`;
   } else {
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 }
