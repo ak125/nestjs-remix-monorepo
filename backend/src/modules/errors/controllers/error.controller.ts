@@ -10,10 +10,12 @@ import {
   HttpStatus,
   HttpCode,
   PreconditionFailedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ErrorService } from '../services/error.service';
 import { RedirectService } from '../services/redirect.service';
 import { ErrorLogService } from '../services/error-log.service';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
 @Controller('api/errors')
 export class ErrorController {
@@ -50,6 +52,67 @@ export class ErrorController {
   @Get('metrics')
   async getMetrics(@Query('period') period?: '24h' | '7d' | '30d') {
     return this.errorService.getErrorMetrics(period || '24h');
+  }
+
+  /**
+   * 🔒 Dashboard Admin - Erreurs 400/404/500 agrégées par URL
+   * Endpoint sécurisé pour monitoring des erreurs en temps réel
+   */
+  @Get('admin/dashboard')
+  @UseGuards(IsAdminGuard)
+  async getAdminDashboard(@Query('hours') hours?: string) {
+    const hoursNum = hours ? parseInt(hours, 10) : 24;
+    const recentErrors = await this.errorLogService.getRecentErrors(500);
+
+    // Filtrer par période
+    const cutoffTime = Date.now() - hoursNum * 3600000;
+    const filteredErrors = recentErrors.filter(
+      (err: any) => new Date(err.created_at).getTime() > cutoffTime,
+    );
+
+    // Agréger par code et URL
+    const stats: Record<
+      string,
+      { error_code: string; url: string; count: number; last_seen: string }
+    > = {};
+
+    for (const err of filteredErrors) {
+      const code = err.error_code?.toString() || 'unknown';
+      const url = err.url || 'unknown';
+      const key = `${code}:${url}`;
+
+      if (!stats[key]) {
+        stats[key] = {
+          error_code: code,
+          url,
+          count: 0,
+          last_seen: err.created_at,
+        };
+      }
+      stats[key].count++;
+      if (new Date(err.created_at) > new Date(stats[key].last_seen)) {
+        stats[key].last_seen = err.created_at;
+      }
+    }
+
+    // Compter par code
+    const byCode = filteredErrors.reduce(
+      (acc: Record<string, number>, err: any) => {
+        const code = err.error_code?.toString() || 'unknown';
+        acc[code] = (acc[code] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+
+    return {
+      period_hours: hoursNum,
+      total: filteredErrors.length,
+      by_code: byCode,
+      top_urls: Object.values(stats)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20),
+    };
   }
 
   /**
