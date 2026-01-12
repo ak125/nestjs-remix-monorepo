@@ -178,6 +178,7 @@ async function checkIfOldLink(pathname: string): Promise<boolean> {
       /^\/deprecated\//, // URLs dépréciées
       /\.old$/, // URLs finissant par .old
       /\/[0-9]{4}\/old\//, // Patterns avec année et "old"
+      /^\/piece\//, // URLs legacy /piece/* (~90K URLs à désindexer)
     ];
 
     // Vérifier si l'URL match un pattern d'ancien lien

@@ -26,6 +26,7 @@ import { toast } from "sonner";
 // Error components
 import { Error404 } from "~/components/errors/Error404";
 import { Error410 } from "~/components/errors/Error410";
+import { Error412 } from "~/components/errors/Error412";
 
 // UI Components
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -278,13 +279,77 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 
   if (!article) {
-    return json<LoaderData>(
+    // 🎯 412 Funnel SEO - Suggérer des articles similaires au lieu de 404
+    // Extraire les termes de recherche du slug
+    const searchTerms = slug
+      .replace(/-/g, " ")
+      .replace(/[0-9]+/g, "")
+      .trim()
+      .slice(0, 50);
+
+    // Chercher des articles similaires
+    let similarOptions: Array<{
+      id: string;
+      label: string;
+      url: string;
+      description?: string;
+    }> = [];
+
+    try {
+      // Utiliser les articles populaires comme suggestions de fallback
+      const popularResponse = await fetch(
+        `http://localhost:3000/api/blog/popular?limit=10`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      if (popularResponse.ok) {
+        const popularData = await popularResponse.json();
+        similarOptions = (popularData.data || popularData || [])
+          .slice(0, 10)
+          .map((a: RelatedArticle) => ({
+            id: a.id,
+            label: a.title,
+            url: `/blog-pieces-auto/article/${a.slug}`,
+            description: a.excerpt,
+          }));
+      }
+    } catch {
+      // Continuer sans suggestions si erreur
+    }
+
+    // Retourner 412 avec suggestions au lieu de 404
+    throw json(
       {
-        article: null,
-        relatedArticles: [],
-        error: "Article non trouvé",
+        url: `/blog-pieces-auto/article/${slug}`,
+        condition: "Article non trouvé",
+        requirement: "Découvrez nos articles populaires",
+        substitution: {
+          lock: {
+            type: "article" as const,
+            missing: "article",
+            known: {
+              searchTerms: searchTerms,
+              requestedSlug: slug,
+            },
+            options: similarOptions,
+          },
+          seo: {
+            title: `Articles conseils auto | Blog AutoMecanik`,
+            description: `Découvrez nos guides et conseils pour l'entretien de votre véhicule. Tutoriels, astuces et recommandations par nos experts.`,
+            h1: `Articles suggérés`,
+          },
+        },
       },
-      { status: 404 },
+      {
+        status: 412,
+        headers: {
+          "X-Robots-Tag": "index, follow", // SEO: page funnel indexable
+          "Cache-Control": "public, max-age=3600",
+        },
+      },
     );
   }
 
@@ -594,12 +659,25 @@ export default function BlogArticle() {
   );
 }
 
-// ErrorBoundary pour gérer les erreurs 410 Gone (URLs legacy) et 404
+// ErrorBoundary pour gérer les erreurs 412/410/404
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  // Gérer les réponses HTTP (410, 404, etc.)
+  // Gérer les réponses HTTP (412, 410, 404, etc.)
   if (isRouteErrorResponse(error)) {
+    // 412 Precondition Failed - Funnel SEO avec suggestions d'articles
+    if (error.status === 412) {
+      const errorData = typeof error.data === "object" ? error.data : {};
+      return (
+        <Error412
+          url={errorData.url}
+          condition={errorData.condition}
+          requirement={errorData.requirement}
+          substitution={errorData.substitution}
+        />
+      );
+    }
+
     // 410 Gone - Contenu définitivement supprimé (URLs legacy "entretien-...")
     if (error.status === 410) {
       // Extraire les données JSON si disponibles

@@ -18,6 +18,7 @@ import { PiecesCleanController } from './controllers/pieces-clean.controller';
 import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
 import { BatchLoaderController } from './controllers/batch-loader.controller';
+import { VehicleHierarchyController } from './controllers/vehicle-hierarchy.controller'; // 🚗 API hiérarchie véhicules pour 412 funnel
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
@@ -83,6 +84,7 @@ import { CacheWarmingService } from './services/cache-warming.service';
     PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
     BatchLoaderController, // 🚀 BATCH LOADER pour optimisation performance
+    VehicleHierarchyController, // 🚗 API hiérarchie véhicules pour 412 funnel SEO
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
