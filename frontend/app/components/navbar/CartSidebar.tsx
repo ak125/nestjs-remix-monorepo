@@ -18,7 +18,6 @@
  */
 import { Link } from "@remix-run/react";
 import { AlertCircle, ShoppingBag, X } from "lucide-react";
-import { useEffect } from "react";
 
 import { useCart, formatPrice, getProductImageUrl } from "../../hooks/useCart";
 import { cn } from "../../lib/utils";
@@ -41,14 +40,6 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     updateQuantity,
     clearCart,
   } = useCart();
-
-  // DEBUG: Log au render
-  useEffect(() => {
-    if (isOpen) {
-      console.log("🔴 CartSidebar OPEN - items:", items);
-      console.log("🔴 CartSidebar - first item:", items[0]);
-    }
-  }, [isOpen, items]);
 
   return (
     <>

@@ -12,12 +12,19 @@ import { createPortal } from "react-dom";
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
 import { StarRating } from "../common/StarRating";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
 
 // Helper inline pour les images rack (remplace image.utils.ts)
-const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
-const getRackImageUrl = (path: string) => `${SUPABASE_STORAGE}/rack-images/${path}`;
+const SUPABASE_STORAGE =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+const getRackImageUrl = (path: string) =>
+  `${SUPABASE_STORAGE}/rack-images/${path}`;
 
 interface PieceDetailModalProps {
   pieceId: number | null;
@@ -71,45 +78,28 @@ export function PieceDetailModal({
   useEffect(() => {
     if (!pieceId) return;
 
-    console.log("📡 Chargement pièce:", pieceId);
-
     const fetchPieceDetail = async () => {
       setLoading(true);
       setError(null);
 
       try {
         // SSR-safe: utiliser URL relative (fonctionne côté client sans window)
-        const response = await fetch(
-          `/api/catalog/pieces/${pieceId}`,
-          {
-            credentials: "include",
-          },
-        );
-
-        console.log("📥 Response status:", response.status);
+        const response = await fetch(`/api/catalog/pieces/${pieceId}`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error(`Erreur ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("✅ Data reçue complète:", JSON.stringify(data, null, 2));
 
         // La réponse backend a la structure { success: true, data: {...} }
         const pieceData = data.data || data.piece || data;
-        console.log("🔍 pieceData extraite:", pieceData);
 
         if (!pieceData || !pieceData.id) {
-          console.error("❌ Données invalides:", pieceData);
           throw new Error("Données de pièce manquantes ou invalides");
         }
-
-        console.log("✅ Pièce valide:", {
-          id: pieceData.id,
-          nom: pieceData.nom,
-          marque: pieceData.marque,
-          prix: pieceData.prix_ttc,
-        });
 
         setPiece(pieceData);
 
@@ -157,8 +147,6 @@ export function PieceDetailModal({
 
   if (!pieceId) return null;
 
-  console.log("🎨 Rendering modal with pieceId:", pieceId);
-
   const _allImages = piece
     ? [piece.image, ...(piece.images || [])].filter(Boolean)
     : [];
@@ -167,12 +155,15 @@ export function PieceDetailModal({
     if (!piece) return;
 
     // GA4: Tracker l'ajout au panier
-    trackAddToCart({
-      id: String(piece.id),
-      name: piece.nom,
-      price: piece.prix_ttc,
-      brand: piece.marque,
-    }, 1);
+    trackAddToCart(
+      {
+        id: String(piece.id),
+        name: piece.nom,
+        price: piece.prix_ttc,
+        brand: piece.marque,
+      },
+      1,
+    );
 
     setAddingToCart(true);
     try {
@@ -338,23 +329,29 @@ export function PieceDetailModal({
                 {/* Colonne droite - Données techniques */}
                 {/* 📱 Mobile: Accordion collapsible */}
                 <div className="md:hidden">
-                  <Accordion type="single" collapsible className="bg-gray-50 rounded-xl">
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="bg-gray-50 rounded-xl"
+                  >
                     <AccordionItem value="specs" className="border-none">
                       <AccordionTrigger className="px-5 py-4 hover:no-underline">
                         <div className="flex items-center gap-2">
                           <ClipboardList className="w-5 h-5 text-blue-600" />
                           <span className="text-lg font-bold text-gray-900">
                             Données techniques
-                            {piece.criteresTechniques && piece.criteresTechniques.length > 0 && (
-                              <span className="ml-2 text-sm font-normal text-gray-500">
-                                ({piece.criteresTechniques.length})
-                              </span>
-                            )}
+                            {piece.criteresTechniques &&
+                              piece.criteresTechniques.length > 0 && (
+                                <span className="ml-2 text-sm font-normal text-gray-500">
+                                  ({piece.criteresTechniques.length})
+                                </span>
+                              )}
                           </span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-5 pb-5">
-                        {piece.criteresTechniques && piece.criteresTechniques.length > 0 ? (
+                        {piece.criteresTechniques &&
+                        piece.criteresTechniques.length > 0 ? (
                           <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                             {piece.criteresTechniques
                               .sort((a, b) => (a.level || 5) - (b.level || 5))
@@ -375,7 +372,9 @@ export function PieceDetailModal({
                               ))}
                           </div>
                         ) : (
-                          <p className="text-gray-500 text-sm">Aucune donnée technique disponible</p>
+                          <p className="text-gray-500 text-sm">
+                            Aucune donnée technique disponible
+                          </p>
                         )}
                       </AccordionContent>
                     </AccordionItem>
@@ -514,13 +513,20 @@ export function PieceDetailModal({
 
                   if (filteredOemEntries.length === 0) return null;
 
-                  const totalRefs = filteredOemEntries.reduce((acc, [, refs]) => acc + refs.length, 0);
+                  const totalRefs = filteredOemEntries.reduce(
+                    (acc, [, refs]) => acc + refs.length,
+                    0,
+                  );
 
                   return (
                     <>
                       {/* 📱 Mobile: Accordion collapsible */}
                       <div className="md:hidden mb-6">
-                        <Accordion type="single" collapsible className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                        <Accordion
+                          type="single"
+                          collapsible
+                          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200"
+                        >
                           <AccordionItem value="oem" className="border-none">
                             <AccordionTrigger className="px-5 py-4 hover:no-underline">
                               <div className="flex items-center gap-2">
@@ -607,9 +613,24 @@ export function PieceDetailModal({
             >
               {addingToCart ? (
                 <>
-                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="w-5 h-5 animate-spin"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   <span>Ajout...</span>
                 </>
@@ -617,7 +638,9 @@ export function PieceDetailModal({
                 <>
                   <ShoppingCart className="w-5 h-5" />
                   <span>Ajouter au panier</span>
-                  <span className="font-bold">· {piece.prix_ttc.toFixed(2)}€</span>
+                  <span className="font-bold">
+                    · {piece.prix_ttc.toFixed(2)}€
+                  </span>
                 </>
               )}
             </button>

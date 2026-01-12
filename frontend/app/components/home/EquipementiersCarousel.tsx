@@ -78,6 +78,7 @@ export function EquipementiersCarousel({
                         height={100}
                         className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           // Fallback SVG avec le nom de la marque
