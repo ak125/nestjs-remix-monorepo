@@ -15,7 +15,7 @@ import { SubstitutionResult } from '../types/substitution.types';
  *
  * Paradigme "200 Always":
  * - L'API retourne toujours HTTP 200
- * - Le vrai code (200/404/410/412) est dans response.httpStatus
+ * - Le statut (200/404/410) est dans response.httpStatus
  * - Le frontend utilise httpStatus pour définir le code HTTP réel
  */
 @Controller('api/substitution')
@@ -31,24 +31,24 @@ export class SubstitutionController {
    * GET /api/substitution/check?url=/pieces/freinage-402.html
    *
    * Point d'entrée principal du Moteur de Substitution.
-   * Retourne toujours HTTP 200, le vrai code est dans response.httpStatus.
+   * Retourne toujours HTTP 200, le statut métier est dans response.httpStatus.
    *
    * @param url - URL à analyser (ex: /pieces/freinage-402.html)
    * @param userAgent - User-Agent pour détection bot
    * @returns SubstitutionResult avec httpStatus, lock, et contenu
    *
    * @example
-   * // Gamme seule → 412 Lock vehicle
+   * // Gamme seule → 200 avec Lock vehicle (page SEO enrichie)
    * curl "http://localhost:3000/api/substitution/check?url=/pieces/freinage-402.html"
    * {
-   *   "httpStatus": 412,
+   *   "httpStatus": 200,
    *   "type": "vehicle_incomplete",
    *   "lock": { "type": "vehicle", "missing": "Marque, modèle et motorisation" },
    *   "message": "Sélectionnez votre véhicule pour voir les pièces compatibles"
    * }
    *
    * @example
-   * // Véhicule complet → 200
+   * // Véhicule complet → 200 (catalogue normal)
    * curl "http://localhost:3000/api/substitution/check?url=/pieces/freinage-402/renault-4/clio-5/type-456.html"
    * {
    *   "httpStatus": 200,
@@ -84,7 +84,7 @@ export class SubstitutionController {
   /**
    * GET /api/substitution/stats
    *
-   * Dashboard analytics du funnel 412.
+   * Dashboard analytics des pages enrichies.
    * Retourne les taux de conversion par type de lock.
    */
   @Get('stats')
@@ -95,7 +95,7 @@ export class SubstitutionController {
       status_200: number;
       status_404: number;
       status_410: number;
-      status_412: number;
+      status_412: number; // Legacy: historique avant migration SEO
     }>;
   }> {
     const [funnelStats, dailyStats] = await Promise.all([

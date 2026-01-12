@@ -4,8 +4,7 @@
  * Matrice HTTP:
  * | Cas                          | Code |
  * |------------------------------|------|
- * | Intention valide mais floue  | 412  | Lock: besoin de contexte
- * | Intention valide et precise  | 200  | Catalogue normal
+ * | Intention valide             | 200  | Page SEO enrichie (avec ou sans lock)
  * | Intention fausse             | 410  | Gone: contenu retire
  * | Intention inconnue           | 404  | Not Found: URL incomprehensible
  */
@@ -45,9 +44,9 @@ export interface ExtractedIntent {
  */
 export type SubstitutionType =
   | 'product_discontinued' // Produit supprime/indisponible → 410
-  | 'vehicle_incomplete' // Vehicule incomplet (manque motorisation) → 412
-  | 'vehicle_unknown' // Vehicule totalement inconnu → 412
-  | 'technology_ambiguous' // Technologie non specifiee (essence/diesel) → 412
+  | 'vehicle_incomplete' // Vehicule incomplet (manque motorisation) → 200 avec lock
+  | 'vehicle_unknown' // Vehicule totalement inconnu → 200 avec lock
+  | 'technology_ambiguous' // Technologie non specifiee (essence/diesel) → 200 avec lock
   | 'gamme_empty' // Gamme valide mais 0 produits → 410
   | 'unknown_slug' // URL avec tokens non reconnus → 404
   | 'none'; // Pas de substitution necessaire → 200
@@ -57,15 +56,14 @@ export type SubstitutionType =
  *
  * | Cas                          | Code |
  * |------------------------------|------|
- * | Intention valide mais floue  | 412  | Lock: besoin de contexte
- * | Intention valide et precise  | 200  | Catalogue normal
+ * | Intention valide             | 200  | Page SEO enrichie (avec ou sans lock)
  * | Intention fausse             | 410  | Gone: contenu retire
  * | Intention inconnue           | 404  | Not Found: URL incomprehensible
  */
-export type SubstitutionHttpStatus = 200 | 404 | 410 | 412;
+export type SubstitutionHttpStatus = 200 | 404 | 410;
 
 /**
- * Les 4 Types de Verrou 412
+ * Les 4 Types de Verrou (page 200 enrichie)
  *
  * A - Vehicule manquant: marque/modele/motorisation
  * B - Technologie manquante: plein/ventile, essence/diesel, bi/mono-masse
@@ -79,7 +77,7 @@ export type LockType =
   | 'precision'; // D - Precision SEO insuffisante
 
 /**
- * Structure du verrou 412
+ * Structure du verrou pour pages enrichies
  * "Dis-moi ce que tu as, et je te dirai ce que tu peux acheter"
  */
 export interface SubstitutionLock {
@@ -114,7 +112,7 @@ export interface SubstitutionResult {
   // Message utilisateur
   message: string;
 
-  // Verrou 412 (si contexte insuffisant)
+  // Verrou (si contexte insuffisant, page 200 enrichie)
   lock?: SubstitutionLock;
 
   // Bloc 1: Produit de substitution
