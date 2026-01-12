@@ -37,7 +37,6 @@ import {
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
-import { Error412 } from "~/components/errors/Error412";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
@@ -642,18 +641,6 @@ export default function PiecesDetailPage() {
       console.log("⏳ Chargement des données en cours...");
     }
   }, [isLoading]);
-
-  // 🔄 412: Afficher le funnel de sélection gamme
-  if (data?.status === 412 && data?.substitution) {
-    return (
-      <Error412
-        url={data.url}
-        condition={data.condition}
-        requirement={data.requirement}
-        substitution={data.substitution}
-      />
-    );
-  }
 
   if (!data || data.status !== 200) {
     return (
