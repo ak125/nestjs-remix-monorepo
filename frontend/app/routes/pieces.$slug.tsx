@@ -1,5 +1,6 @@
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -282,100 +283,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)
   const match = slug.match(/-(\d+)\.html$/);
 
-  // 🔄 SEO: URLs sans ID (ex: /pieces/suspension) → 412 avec sélection gamme
+  // 🔄 SEO: URLs sans ID (ex: /pieces/suspension) → 301 redirect vers catalogue
+  // Raison: 412 est traité comme 4xx par Google → désindexation
+  // 301 préserve le PageRank et guide vers une page indexable
   if (!match) {
-    const API_URL = process.env.API_URL || "http://localhost:3000";
-
     // Nettoyer l'alias (enlever .html si présent)
     const cleanAlias = slug.replace(/\.html$/, "").toLowerCase();
 
-    // Essayer de trouver la gamme par alias exact
-    try {
-      const searchResponse = await fetch(
-        `${API_URL}/api/catalog/gammes/search?q=${encodeURIComponent(cleanAlias)}&limit=20`,
-        { headers: { Accept: "application/json" } },
-      );
-
-      let gammeOptions: Array<{
-        id: number;
-        label: string;
-        url: string;
-        description?: string;
-      }> = [];
-
-      if (searchResponse.ok) {
-        const searchData = await searchResponse.json();
-        gammeOptions = (searchData.data || searchData.gammes || [])
-          .slice(0, 15)
-          .map((g: any) => ({
-            id: g.pg_id || g.id,
-            label: g.pg_name || g.name,
-            url: `/pieces/${g.pg_alias || g.alias}-${g.pg_id || g.id}.html`,
-            description: g.pg_description || g.description,
-          }));
-      }
-
-      // Capitaliser le nom pour l'affichage
-      const displayName = cleanAlias
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ");
-
-      return json(
-        {
-          status: 412,
-          url: request.url,
-          condition: "Gamme non identifiée",
-          requirement: `Sélectionnez la gamme "${displayName}" exacte pour voir les pièces`,
-          substitution: {
-            httpStatus: 412,
-            lock: {
-              type: "precision" as const,
-              missing: "gamme_id",
-              known: { search: cleanAlias },
-              options: gammeOptions,
-            },
-            seo: {
-              title: `${displayName} - Choisissez votre gamme | AutoMecanik`,
-              description: `Trouvez les pièces ${displayName} pour votre véhicule. Sélectionnez la gamme exacte parmi ${gammeOptions.length} disponibles.`,
-              h1: `Pièces ${displayName}`,
-              canonical: `https://www.automecanik.com/pieces/${cleanAlias}`,
-            },
-          },
-        },
-        {
-          status: 412,
-          headers: {
-            "X-Robots-Tag": "index, follow",
-            "Cache-Control": "public, max-age=3600",
-          },
-        },
-      );
-    } catch (error) {
-      console.warn("[pieces.$slug] Erreur recherche gamme:", error);
-      // Fallback: 412 sans options
-      return json(
-        {
-          status: 412,
-          url: request.url,
-          condition: "Format URL incomplet",
-          requirement: "Utilisez le format /pieces/{gamme}-{id}.html",
-          substitution: {
-            httpStatus: 412,
-            lock: {
-              type: "precision" as const,
-              missing: "gamme_id",
-              known: {},
-              options: [],
-            },
-          },
-        },
-        {
-          status: 412,
-          headers: { "X-Robots-Tag": "index, follow" },
-        },
-      );
-    }
+    // 301 redirect vers la page catalogue avec filtre gamme
+    // Cette page retourne 200 et affiche les résultats de recherche
+    return redirect(
+      `/pieces/catalogue?gamme=${encodeURIComponent(cleanAlias)}`,
+      301,
+    );
   }
 
   const gammeId = match[1];
