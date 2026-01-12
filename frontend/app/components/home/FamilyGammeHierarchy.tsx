@@ -1,33 +1,42 @@
 // 📁 frontend/app/components/home/FamilyGammeHierarchy.tsx
 // 🏗️ Composant d'affichage de la hiérarchie Familles → Gammes (sous-catégories)
 
-import { Link } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
 
-import { type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
-import { Button } from '../ui/button';
+import {
+  type FamilyWithGammes,
+  type HierarchyStats,
+} from "../../services/api/hierarchy.api";
+import { Button } from "../ui/button";
 
 // 🎨 Fonctions utilitaires locales pour éviter les imports API redondants
 const getFamilyIcon = (family: FamilyWithGammes): string => {
   const iconMap: { [id: string]: string } = {
-    '1': '🔧', // Système de filtration
-    '2': '🛠️', // Système de freinage
-    '3': '⚙️', // Système d'échappement
-    '4': '🔌', // Système électrique
-    '5': '🏁', // Performance
-    '6': '🛡️', // Protection
-    '7': '💡', // Éclairage
-    '8': '🌡️', // Refroidissement
-    '9': '🚗', // Carrosserie
-    '10': '🔩', // Visserie
+    "1": "🔧", // Système de filtration
+    "2": "🛠️", // Système de freinage
+    "3": "⚙️", // Système d'échappement
+    "4": "🔌", // Système électrique
+    "5": "🏁", // Performance
+    "6": "🛡️", // Protection
+    "7": "💡", // Éclairage
+    "8": "🌡️", // Refroidissement
+    "9": "🚗", // Carrosserie
+    "10": "🔩", // Visserie
   };
-  return iconMap[family.mf_id] || '🔧';
+  return iconMap[family.mf_id] || "🔧";
 };
 
 const getFamilyColor = (family: FamilyWithGammes): string => {
   const colors = [
-    'bg-primary', 'bg-success', 'bg-destructive', 'bg-purple-500',
-    'bg-warning', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
+    "bg-primary",
+    "bg-success",
+    "bg-destructive",
+    "bg-purple-500",
+    "bg-warning",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-gray-500",
   ];
   const index = parseInt(String(family.mf_id)) % colors.length;
   return colors[index];
@@ -35,7 +44,7 @@ const getFamilyColor = (family: FamilyWithGammes): string => {
 
 const getFamilyImage = (family: FamilyWithGammes): string => {
   if (!family.mf_pic) {
-    return '/images/categories/default.svg';
+    return "/images/categories/default.svg";
   }
   // 🚀 Utiliser render/image avec cache 1 an
   return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/familles-produits/${family.mf_pic}?width=400&quality=85&t=31536000`;
@@ -50,55 +59,50 @@ interface FamilyGammeHierarchyProps {
   } | null;
 }
 
-export default function FamilyGammeHierarchy({ 
-  className = '',
-  hierarchyData
+export default function FamilyGammeHierarchy({
+  className = "",
+  hierarchyData,
 }: FamilyGammeHierarchyProps) {
   const [families, setFamilies] = useState<FamilyWithGammes[]>([]);
   const [stats, setStats] = useState<HierarchyStats>({
     total_families: 0,
     total_gammes: 0,
     total_manufacturers: 0,
-    families_with_gammes: 0
+    families_with_gammes: 0,
   });
   const [loading, setLoading] = useState(true);
   const [expandedFamilies, setExpandedFamilies] = useState<string[]>([]);
 
   // Charger les données depuis les props (pas de fallback API pour éviter les doublons)
   useEffect(() => {
-    console.log('🔍 FamilyGammeHierarchy - hierarchyData reçu:', hierarchyData);
-    
     if (hierarchyData && hierarchyData.success && hierarchyData.families) {
-      // Format de l'API: { success: true, families: [...], stats: {...} }
-      console.log('✅ Données reçues avec', hierarchyData.families.length, 'familles');
       setFamilies(hierarchyData.families);
       setStats(hierarchyData.stats);
-      
+
       // ✅ AUTO-EXPAND TOUTES LES FAMILLES PAR DÉFAUT pour afficher toutes les sous-catégories
       if (hierarchyData.families.length > 0) {
-        setExpandedFamilies(hierarchyData.families.map(f => String(f.mf_id)));
+        setExpandedFamilies(hierarchyData.families.map((f) => String(f.mf_id)));
       }
       setLoading(false);
     } else {
       // Pas de données valides - affichage vide sans appel API redondant
-      console.log('⚠️ Aucune donnée hierarchyData valide - affichage vide');
       setFamilies([]);
       setStats({
         total_families: 0,
         total_gammes: 0,
         total_manufacturers: 0,
-        families_with_gammes: 0
+        families_with_gammes: 0,
       });
       setLoading(false);
     }
   }, [hierarchyData]);
-  
+
   // Toggle d'expansion d'une famille
   const toggleFamily = (familyId: string) => {
-    setExpandedFamilies(prev => 
+    setExpandedFamilies((prev) =>
       prev.includes(familyId)
-        ? prev.filter(id => id !== familyId)
-        : [...prev, familyId]
+        ? prev.filter((id) => id !== familyId)
+        : [...prev, familyId],
     );
   };
 
@@ -108,7 +112,7 @@ export default function FamilyGammeHierarchy({
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/2 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map(i => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
             ))}
           </div>
@@ -147,23 +151,29 @@ export default function FamilyGammeHierarchy({
             <div className="text-sm opacity-90">Sous-catégories</div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{families.length}</div>
             <div className="text-xs opacity-90">Familles affichées</div>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold">{stats.families_with_gammes}</div>
+            <div className="text-2xl font-bold">
+              {stats.families_with_gammes}
+            </div>
             <div className="text-xs opacity-90">Familles actives</div>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold">{stats.total_manufacturers}</div>
+            <div className="text-2xl font-bold">
+              {stats.total_manufacturers}
+            </div>
             <div className="text-xs opacity-90">Fabricants</div>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">
-              {stats.total_gammes > 0 ? Math.round(stats.total_gammes / stats.families_with_gammes) : 0}
+              {stats.total_gammes > 0
+                ? Math.round(stats.total_gammes / stats.families_with_gammes)
+                : 0}
             </div>
             <div className="text-xs opacity-90">Moy./famille</div>
           </div>
@@ -178,19 +188,26 @@ export default function FamilyGammeHierarchy({
             const familyIcon = getFamilyIcon(family);
             const familyColor = getFamilyColor(family);
             const familyImage = getFamilyImage(family);
-            
+
             return (
-              <div key={family.mf_id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+              <div
+                key={family.mf_id}
+                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+              >
                 {/* En-tête de la famille */}
-                <div className={`bg-gradient-to-r ${familyColor} text-white p-4`}>
+                <div
+                  className={`bg-gradient-to-r ${familyColor} text-white p-4`}
+                >
                   <div className="flex items-center space-x-3 mb-2">
                     <span className="text-2xl">{familyIcon}</span>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">{family.mf_name_system}</h3>
+                      <h3 className="font-bold text-lg">
+                        {family.mf_name_system}
+                      </h3>
                       <p className="text-sm opacity-90">{family.mf_name}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="bg-white bg-opacity-30 rounded-full px-3 py-1 text-sm font-bold">
                       {family.gammes_count} sous-catégories
@@ -200,12 +217,17 @@ export default function FamilyGammeHierarchy({
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-colors"
                     >
                       <svg
-                        className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -222,11 +244,11 @@ export default function FamilyGammeHierarchy({
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                       loading="lazy"
                       onError={(e) => {
-                        e.currentTarget.src = '/images/categories/default.svg';
+                        e.currentTarget.src = "/images/categories/default.svg";
                       }}
                     />
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 line-clamp-3">
                     {family.mf_description}
                   </p>
@@ -240,19 +262,13 @@ export default function FamilyGammeHierarchy({
                     </h4>
                     <div className="grid grid-cols-1 gap-2 max-h-none overflow-visible">
                       {/* ✅ AFFICHER TOUTES LES SOUS-CATÉGORIES (pas de .slice(0, 10)) */}
-                      {family.gammes.map((gamme, index) => {
-                        console.log('🔍 Debug gamme:', { 
-                          gamme, 
-                          pgId: gamme.pg_id, 
-                          name: gamme.pg_name,
-                          alias: gamme.pg_alias
-                        });
-                        
+                      {family.gammes.map((gamme) => {
                         // Générer l'URL directement vers la page gamme au format pieces/{alias}-{id}.html
-                        const categoryUrl = gamme.pg_id && gamme.pg_alias
+                        const categoryUrl =
+                          gamme.pg_id && gamme.pg_alias
                             ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
-                            : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || '')}&gamme=${gamme.pg_id}`;
-                        
+                            : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || "")}&gamme=${gamme.pg_id}`;
+
                         return (
                           <Link
                             key={gamme.pg_id}
@@ -264,7 +280,7 @@ export default function FamilyGammeHierarchy({
                                 {gamme.pg_name || `Gamme #${gamme.pg_id}`}
                               </span>
                               <span className="text-xs text-gray-500">
-                                {gamme.mc_sort ? `Ordre ${gamme.mc_sort}` : ''}
+                                {gamme.mc_sort ? `Ordre ${gamme.mc_sort}` : ""}
                               </span>
                             </div>
                           </Link>
@@ -293,11 +309,14 @@ export default function FamilyGammeHierarchy({
       <div className="bg-gray-50 px-6 py-4 rounded-b-lg border-t border-gray-200">
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
-            {expandedFamilies.length} famille(s) dépliée(s) sur {families.length}
+            {expandedFamilies.length} famille(s) dépliée(s) sur{" "}
+            {families.length}
           </div>
           <div className="space-x-3">
             <button
-              onClick={() => setExpandedFamilies(families.map(f => String(f.mf_id)))}
+              onClick={() =>
+                setExpandedFamilies(families.map((f) => String(f.mf_id)))
+              }
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
               Tout déplier
@@ -308,7 +327,13 @@ export default function FamilyGammeHierarchy({
             >
               Tout replier
             </button>
-            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/catalog">Voir tout le catalogue</Link></Button>
+            <Button
+              className="text-sm  px-4 py-2 rounded"
+              variant="blue"
+              asChild
+            >
+              <Link to="/catalog">Voir tout le catalogue</Link>
+            </Button>
           </div>
         </div>
       </div>

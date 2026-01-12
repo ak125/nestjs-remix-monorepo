@@ -1,12 +1,20 @@
-import { Suspense, lazy, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 
 /**
  * 🚀 LazySection - Lazy loading avec Intersection Observer
- * 
+ *
  * Charge les composants uniquement quand ils deviennent visibles dans le viewport.
  * Améliore les performances LCP (Largest Contentful Paint) en différant le chargement
  * des sections non-critiques.
- * 
+ *
  * @example
  * // Lazy load avec factory function
  * <LazySection
@@ -14,7 +22,7 @@ import { Suspense, lazy, useEffect, useRef, useState, type ComponentType, type R
  *   fallback={<div>Chargement des avis...</div>}
  *   threshold={0.1}
  * />
- * 
+ *
  * @example
  * // Lazy load avec children
  * <LazySection fallback={<Spinner />}>
@@ -45,9 +53,11 @@ interface LazySectionProps {
 
 export function LazySection({
   loader,
-  fallback = <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-  </div>,
+  fallback = (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>
+  ),
   componentProps = {},
   children,
   threshold = 0.1,
@@ -67,9 +77,6 @@ export function LazySection({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasLoaded) {
-            if (id) {
-              console.log(`🔍 LazySection "${id}" visible - Chargement...`);
-            }
             setIsVisible(true);
             setHasLoaded(true);
             // Déconnecter l'observer une fois chargé
@@ -80,7 +87,7 @@ export function LazySection({
       {
         threshold,
         rootMargin,
-      }
+      },
     );
 
     if (sectionRef.current) {
@@ -97,11 +104,11 @@ export function LazySection({
     return (
       <div ref={sectionRef} className={className} data-lazy-section={id}>
         {isVisible ? (
-          <Suspense fallback={fallback}>
-            {children}
-          </Suspense>
+          <Suspense fallback={fallback}>{children}</Suspense>
         ) : (
-          <div className="min-h-[200px]">{/* Placeholder pour éviter le layout shift */}</div>
+          <div className="min-h-[200px]">
+            {/* Placeholder pour éviter le layout shift */}
+          </div>
         )}
       </div>
     );
@@ -109,7 +116,9 @@ export function LazySection({
 
   // Si loader est fourni (lazy import)
   if (!loader) {
-    console.error('LazySection: Vous devez fournir soit "loader" soit "children"');
+    console.error(
+      'LazySection: Vous devez fournir soit "loader" soit "children"',
+    );
     return null;
   }
 
@@ -122,7 +131,9 @@ export function LazySection({
           <LazyComponent {...componentProps} />
         </Suspense>
       ) : (
-        <div className="min-h-[200px]">{/* Placeholder pour éviter le layout shift */}</div>
+        <div className="min-h-[200px]">
+          {/* Placeholder pour éviter le layout shift */}
+        </div>
       )}
     </div>
   );
@@ -130,9 +141,9 @@ export function LazySection({
 
 /**
  * 🎯 LazySectionSkeleton - Squelette de chargement réutilisable
- * 
+ *
  * Affiche un skeleton loader pendant le chargement des sections lazy.
- * 
+ *
  * @example
  * <LazySection
  *   loader={() => import('./ProductGrid')}
@@ -148,10 +159,10 @@ interface LazySectionSkeletonProps {
   className?: string;
 }
 
-export function LazySectionSkeleton({ 
-  rows = 3, 
+export function LazySectionSkeleton({
+  rows = 3,
   height = "h-24",
-  className = "" 
+  className = "",
 }: LazySectionSkeletonProps) {
   return (
     <div className={`space-y-4 animate-pulse ${className}`}>
@@ -164,7 +175,7 @@ export function LazySectionSkeleton({
 
 /**
  * 🎯 LazyCard - Carte lazy avec placeholder
- * 
+ *
  * Variante de LazySection optimisée pour les cartes de produits.
  */
 interface LazyCardProps {
@@ -174,7 +185,12 @@ interface LazyCardProps {
   eager?: boolean;
 }
 
-export function LazyCard({ loader, componentProps, className, eager }: LazyCardProps) {
+export function LazyCard({
+  loader,
+  componentProps,
+  className,
+  eager,
+}: LazyCardProps) {
   return (
     <LazySection
       loader={loader}
@@ -196,10 +212,10 @@ export function LazyCard({ loader, componentProps, className, eager }: LazyCardP
 
 /**
  * 🎯 useInView - Hook personnalisé pour détecter la visibilité
- * 
+ *
  * @example
  * const { ref, isInView } = useInView({ threshold: 0.5 });
- * 
+ *
  * return (
  *   <div ref={ref}>
  *     {isInView ? <HeavyComponent /> : <Placeholder />}
@@ -238,7 +254,7 @@ export function useInView({
           }
         });
       },
-      { threshold, rootMargin }
+      { threshold, rootMargin },
     );
 
     if (ref.current) {

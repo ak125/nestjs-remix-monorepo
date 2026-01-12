@@ -1,10 +1,10 @@
 // 📁 frontend/app/components/catalog/PiecesCatalogGrid.tsx
 // 🎨 Catalogue de pièces avec le design de FamilyGammeHierarchy
 
-import { Link } from '@remix-run/react';
-import { useState, useEffect } from 'react';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import { Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE DE PIÈCES
@@ -31,7 +31,7 @@ export interface Piece {
   piece_price?: number;
   piece_description?: string;
   brand?: string;
-  stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  stock_status?: "in_stock" | "low_stock" | "out_of_stock";
 }
 
 export interface PiecesCatalogStats {
@@ -60,7 +60,8 @@ const mockCatalogData = {
       id: "freinage",
       name: "Système de freinage",
       systemName: "Freinage",
-      description: "Plaquettes, disques, étriers, liquides de frein et tous composants du système de freinage pour tous véhicules.",
+      description:
+        "Plaquettes, disques, étriers, liquides de frein et tous composants du système de freinage pour tous véhicules.",
       piecesCount: 8743,
       icon: "🛑",
       color: "from-red-500 to-red-700",
@@ -74,28 +75,29 @@ const mockCatalogData = {
           piece_top: true,
           piece_price: 45.99,
           brand: "Bosch",
-          stock_status: "in_stock" as const
+          stock_status: "in_stock" as const,
         },
         {
-          piece_id: "BRK002", 
+          piece_id: "BRK002",
           piece_name: "Disques de frein ventilés Brembo 09.9772.11",
           piece_sku: "BRK002-BREMBO",
           piece_activ: true,
           piece_top: false,
-          piece_price: 89.50,
+          piece_price: 89.5,
           brand: "Brembo",
-          stock_status: "in_stock" as const
-        }
-      ]
+          stock_status: "in_stock" as const,
+        },
+      ],
     },
     {
       id: "moteur",
       name: "Moteur et transmission",
       systemName: "Moteur",
-      description: "Filtres, huiles, courroies, pompes et toutes pièces moteur pour l'entretien et la réparation.",
+      description:
+        "Filtres, huiles, courroies, pompes et toutes pièces moteur pour l'entretien et la réparation.",
       piecesCount: 12456,
       icon: "⚙️",
-      color: "from-blue-500 to-blue-700", 
+      color: "from-blue-500 to-blue-700",
       image: "/images/categories/moteur.jpg",
       pieces: [
         {
@@ -104,31 +106,32 @@ const mockCatalogData = {
           piece_sku: "ENG001-MANN",
           piece_activ: true,
           piece_top: false,
-          piece_price: 12.50,
+          piece_price: 12.5,
           brand: "Mann",
-          stock_status: "in_stock" as const
+          stock_status: "in_stock" as const,
         },
         {
           piece_id: "ENG002",
           piece_name: "Courroie de distribution Gates 5491XS",
-          piece_sku: "ENG002-GATES", 
+          piece_sku: "ENG002-GATES",
           piece_activ: true,
           piece_top: true,
-          piece_price: 67.80,
+          piece_price: 67.8,
           brand: "Gates",
-          stock_status: "low_stock" as const
-        }
-      ]
+          stock_status: "low_stock" as const,
+        },
+      ],
     },
     {
       id: "suspension",
       name: "Suspension et direction",
       systemName: "Suspension",
-      description: "Amortisseurs, ressorts, rotules, silentblocs et composants de suspension pour le confort de conduite.",
+      description:
+        "Amortisseurs, ressorts, rotules, silentblocs et composants de suspension pour le confort de conduite.",
       piecesCount: 6521,
       icon: "🔧",
       color: "from-green-500 to-green-700",
-      image: "/images/categories/suspension.jpg", 
+      image: "/images/categories/suspension.jpg",
       pieces: [
         {
           piece_id: "SUS001",
@@ -138,15 +141,16 @@ const mockCatalogData = {
           piece_top: true,
           piece_price: 89.99,
           brand: "Monroe",
-          stock_status: "in_stock" as const
-        }
-      ]
+          stock_status: "in_stock" as const,
+        },
+      ],
     },
     {
       id: "electrique",
       name: "Système électrique",
-      systemName: "Électrique", 
-      description: "Batteries, alternateurs, démarreurs, capteurs et composants électriques pour tous véhicules.",
+      systemName: "Électrique",
+      description:
+        "Batteries, alternateurs, démarreurs, capteurs et composants électriques pour tous véhicules.",
       piecesCount: 4892,
       icon: "⚡",
       color: "from-yellow-500 to-yellow-700",
@@ -158,17 +162,18 @@ const mockCatalogData = {
           piece_sku: "ELE001-VARTA",
           piece_activ: true,
           piece_top: false,
-          piece_price: 125.00,
+          piece_price: 125.0,
           brand: "Varta",
-          stock_status: "in_stock" as const
-        }
-      ]
+          stock_status: "in_stock" as const,
+        },
+      ],
     },
     {
       id: "carrosserie",
       name: "Carrosserie et éclairage",
       systemName: "Carrosserie",
-      description: "Optiques, pare-chocs, rétroviseurs, pare-brise et éléments de carrosserie.",
+      description:
+        "Optiques, pare-chocs, rétroviseurs, pare-brise et éléments de carrosserie.",
       piecesCount: 9876,
       icon: "🚗",
       color: "from-orange-500 to-orange-700",
@@ -180,17 +185,18 @@ const mockCatalogData = {
           piece_sku: "CAR001-VALEO",
           piece_activ: true,
           piece_top: false,
-          piece_price: 76.80,
+          piece_price: 76.8,
           brand: "Valeo",
-          stock_status: "in_stock" as const
-        }
-      ]
+          stock_status: "in_stock" as const,
+        },
+      ],
     },
     {
       id: "accessoires",
       name: "Accessoires et entretien",
       systemName: "Accessoires",
-      description: "Huiles, liquides, outils et accessoires pour l'entretien et la maintenance.",
+      description:
+        "Huiles, liquides, outils et accessoires pour l'entretien et la maintenance.",
       piecesCount: 3214,
       icon: "🛠️",
       color: "from-purple-500 to-purple-700",
@@ -204,70 +210,71 @@ const mockCatalogData = {
           piece_top: true,
           piece_price: 34.99,
           brand: "Castrol",
-          stock_status: "in_stock" as const
-        }
-      ]
-    }
+          stock_status: "in_stock" as const,
+        },
+      ],
+    },
   ],
   stats: {
     total_categories: 6,
     total_pieces: 45702,
     total_brands: 89,
-    categories_with_pieces: 6
-  }
+    categories_with_pieces: 6,
+  },
 };
 
 // ========================================
 // 🎨 COMPOSANT PRINCIPAL
 // ========================================
 
-export default function PiecesCatalogGrid({ 
-  className = '',
-  catalogData
+export default function PiecesCatalogGrid({
+  className = "",
+  catalogData,
 }: PiecesCatalogGridProps) {
   const [categories, setCategories] = useState<PieceCategory[]>([]);
   const [stats, setStats] = useState<PiecesCatalogStats>({
     total_categories: 0,
     total_pieces: 0,
     total_brands: 0,
-    categories_with_pieces: 0
+    categories_with_pieces: 0,
   });
   const [loading, setLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Charger les données depuis les props ou utiliser les données mockées
   useEffect(() => {
-    console.log('🔍 PiecesCatalogGrid - catalogData reçu:', catalogData);
-    
     if (catalogData) {
       if (catalogData.success && catalogData.categories) {
-        console.log('✅ Format API détecté avec', catalogData.categories.length, 'catégories');
         setCategories(catalogData.categories);
         setStats(catalogData.stats);
-        
+
         // Auto-expand les premières catégories pour l'affichage
         if (catalogData.categories.length > 0) {
-          setExpandedCategories(catalogData.categories.slice(0, 3).map(c => c.id));
+          setExpandedCategories(
+            catalogData.categories.slice(0, 3).map((c) => c.id),
+          );
         }
         setLoading(false);
       }
     } else {
-      console.log('⚠️ Utilisation des données mockées');
+      // Utilisation des données mockées
       setCategories(mockCatalogData.categories);
       setStats(mockCatalogData.stats);
-      
+
       // Auto-expand les premières catégories pour l'affichage
-      setExpandedCategories(mockCatalogData.categories.slice(0, 3).map(c => c.id));
+      setExpandedCategories(
+        mockCatalogData.categories.slice(0, 3).map((c) => c.id),
+      );
       setLoading(false);
     }
   }, [catalogData]);
-  
+
   // Toggle d'expansion d'une catégorie
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => 
+    setExpandedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId],
     );
   };
 
@@ -277,7 +284,7 @@ export default function PiecesCatalogGrid({
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/2 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map(i => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
             ))}
           </div>
@@ -312,18 +319,22 @@ export default function PiecesCatalogGrid({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">🛒 Catalogue Pièces Détachées</h2>
           <div className="text-right">
-            <div className="text-3xl font-bold">{stats.total_pieces.toLocaleString()}</div>
+            <div className="text-3xl font-bold">
+              {stats.total_pieces.toLocaleString()}
+            </div>
             <div className="text-sm opacity-90">Pièces disponibles</div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{categories.length}</div>
             <div className="text-xs opacity-90">Catégories</div>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold">{stats.categories_with_pieces}</div>
+            <div className="text-2xl font-bold">
+              {stats.categories_with_pieces}
+            </div>
             <div className="text-xs opacity-90">Catégories actives</div>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
@@ -332,7 +343,9 @@ export default function PiecesCatalogGrid({
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">
-              {stats.total_pieces > 0 ? Math.round(stats.total_pieces / stats.categories_with_pieces) : 0}
+              {stats.total_pieces > 0
+                ? Math.round(stats.total_pieces / stats.categories_with_pieces)
+                : 0}
             </div>
             <div className="text-xs opacity-90">Pièces/catégorie</div>
           </div>
@@ -344,19 +357,26 @@ export default function PiecesCatalogGrid({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => {
             const isExpanded = expandedCategories.includes(category.id);
-            
+
             return (
-              <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+              <div
+                key={category.id}
+                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+              >
                 {/* En-tête de la catégorie */}
-                <div className={`bg-gradient-to-r ${category.color} text-white p-4`}>
+                <div
+                  className={`bg-gradient-to-r ${category.color} text-white p-4`}
+                >
                   <div className="flex items-center space-x-3 mb-2">
                     <span className="text-2xl">{category.icon}</span>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">{category.systemName}</h3>
+                      <h3 className="font-bold text-lg">
+                        {category.systemName}
+                      </h3>
                       <p className="text-sm opacity-90">{category.name}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="bg-white bg-opacity-30 rounded-full px-3 py-1 text-sm font-bold">
                       {category.piecesCount.toLocaleString()} pièces
@@ -366,12 +386,17 @@ export default function PiecesCatalogGrid({
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-colors"
                     >
                       <svg
-                        className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -389,11 +414,11 @@ export default function PiecesCatalogGrid({
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        e.currentTarget.src = '/images/categories/default.svg';
+                        e.currentTarget.src = "/images/categories/default.svg";
                       }}
                     />
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 line-clamp-3">
                     {category.description}
                   </p>
@@ -408,7 +433,7 @@ export default function PiecesCatalogGrid({
                     <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                       {category.pieces.slice(0, 10).map((piece) => {
                         const pieceUrl = `/pieces/${piece.piece_sku.toLowerCase()}`;
-                        
+
                         return (
                           <Link
                             key={piece.piece_id}
@@ -423,7 +448,7 @@ export default function PiecesCatalogGrid({
                                 <Badge variant="warning">TOP</Badge>
                               )}
                             </div>
-                            
+
                             <div className="flex justify-between items-center">
                               <div className="text-xs text-gray-500">
                                 {piece.brand} • {piece.piece_sku}
@@ -434,23 +459,41 @@ export default function PiecesCatalogGrid({
                                 </div>
                               )}
                             </div>
-                            
+
                             <div className="mt-1">
-                              <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={piece.stock_status === 'in_stock' ? 'success' : piece.stock_status === 'low_stock' ? 'warning' : 'error'}>\n  {piece.stock_status === 'in_stock' && 'En stock'}
-                                {piece.stock_status === 'low_stock' && 'Stock faible'}
-                                {piece.stock_status === 'out_of_stock' && 'Rupture'}\n</Badge>
+                              <Badge
+                                className="text-xs px-2 py-1 rounded-full font-medium "
+                                variant={
+                                  piece.stock_status === "in_stock"
+                                    ? "success"
+                                    : piece.stock_status === "low_stock"
+                                      ? "warning"
+                                      : "error"
+                                }
+                              >
+                                \n{" "}
+                                {piece.stock_status === "in_stock" &&
+                                  "En stock"}
+                                {piece.stock_status === "low_stock" &&
+                                  "Stock faible"}
+                                {piece.stock_status === "out_of_stock" &&
+                                  "Rupture"}
+                                \n
+                              </Badge>
                             </div>
                           </Link>
                         );
                       })}
-                      
+
                       {category.piecesCount > 10 && (
                         <div className="text-center py-2">
                           <Link
                             to={`/pieces/catalogue?category=${category.id}`}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           >
-                            Voir les {(category.piecesCount - 10).toLocaleString()} autres →
+                            Voir les{" "}
+                            {(category.piecesCount - 10).toLocaleString()}{" "}
+                            autres →
                           </Link>
                         </div>
                       )}
@@ -477,11 +520,12 @@ export default function PiecesCatalogGrid({
       <div className="bg-gray-50 px-6 py-4 rounded-b-lg border-t border-gray-200">
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
-            {expandedCategories.length} catégorie(s) dépliée(s) sur {categories.length}
+            {expandedCategories.length} catégorie(s) dépliée(s) sur{" "}
+            {categories.length}
           </div>
           <div className="space-x-3">
             <button
-              onClick={() => setExpandedCategories(categories.map(c => c.id))}
+              onClick={() => setExpandedCategories(categories.map((c) => c.id))}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
               Tout déplier
@@ -492,7 +536,13 @@ export default function PiecesCatalogGrid({
             >
               Tout replier
             </button>
-            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/pieces/catalogue">Voir tout le catalogue</Link></Button>
+            <Button
+              className="text-sm  px-4 py-2 rounded"
+              variant="blue"
+              asChild
+            >
+              <Link to="/pieces/catalogue">Voir tout le catalogue</Link>
+            </Button>
           </div>
         </div>
       </div>
