@@ -2,7 +2,6 @@
 export { Error401 } from "./Error401";
 export { Error404 } from "./Error404";
 export { Error410 } from "./Error410";
-export { Error412 } from "./Error412";
 export { Error503 } from "./Error503";
 export { ErrorGeneric } from "./ErrorGeneric";
 
