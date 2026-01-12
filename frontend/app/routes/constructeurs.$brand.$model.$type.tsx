@@ -33,6 +33,7 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
+import { Error412 } from "~/components/errors/Error412";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -403,7 +404,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   console.log("🚀 [RPC] Vehicle detail loader avec params:", params);
 
-  // Validation stricte des paramètres
+  // Validation des paramètres
   const { brand, model, type } = params;
 
   if (!brand || !model || !type) {
@@ -411,9 +412,58 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
+  // 🔄 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 412 funnel
   if (!brand.includes("-") || !model.includes("-")) {
-    console.error("❌ Format de paramètres invalide pour brand/model");
-    throw new Response("URL invalide", { status: 400 });
+    console.log("🔄 [412] Format legacy détecté, redirection vers funnel:", {
+      brand,
+      model,
+      type,
+    });
+
+    // Capitaliser pour affichage
+    const capitalizeFirst = (str: string) =>
+      str
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+
+    const brandDisplay = capitalizeFirst(brand.replace(/-\d+$/, ""));
+    const modelDisplay = capitalizeFirst(model.replace(/-\d+$/, ""));
+
+    return json(
+      {
+        status: 412,
+        url: `https://www.automecanik.com/constructeurs/${brand}/${model}/${type}`,
+        condition: "Identifiants véhicule requis",
+        requirement:
+          "Cette URL utilise un ancien format. Veuillez sélectionner votre véhicule.",
+        substitution: {
+          httpStatus: 412,
+          lock: {
+            type: "vehicle" as const,
+            missing: "type_id",
+            known: {
+              marque: { id: 0, name: brandDisplay, alias: brand },
+              modele: { id: 0, name: modelDisplay, alias: model },
+            },
+            options: [], // Les options seront remplies par le frontend ou l'utilisateur naviguera
+          },
+          seo: {
+            title: `${brandDisplay} ${modelDisplay} - Sélectionnez votre véhicule | AutoMecanik`,
+            description: `Trouvez les pièces pour votre ${brandDisplay} ${modelDisplay}. Sélectionnez votre motorisation exacte.`,
+            h1: `Pièces ${brandDisplay} ${modelDisplay}`,
+            canonical: `https://www.automecanik.com/constructeurs/${brand}/${model}`,
+          },
+        },
+      },
+      {
+        status: 412,
+        headers: {
+          "X-Robots-Tag": "index, follow",
+          "Cache-Control": "public, max-age=3600",
+        },
+      },
+    );
   }
 
   // Parsing du type_id
@@ -600,6 +650,25 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ];
   }
 
+  // 🔄 412: Utiliser SEO de substitution pour URLs legacy
+  if (data.status === 412 && data.substitution?.seo) {
+    return [
+      { title: data.substitution.seo.title },
+      { name: "description", content: data.substitution.seo.description },
+      { name: "robots", content: "index, follow" },
+      {
+        tagName: "link",
+        rel: "canonical",
+        href: data.substitution.seo.canonical,
+      },
+      { property: "og:title", content: data.substitution.seo.title },
+      {
+        property: "og:description",
+        content: data.substitution.seo.description,
+      },
+    ];
+  }
+
   const result: any[] = [
     { title: data.seo.title },
     { name: "description", content: data.seo.description },
@@ -630,7 +699,40 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<any>(); // any pour supporter LoaderData et 412 response
+
+  // ⚠️ Tous les hooks doivent être appelés avant tout return conditionnel
+  const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
+    new Set(),
+  );
+  const [imageError, setImageError] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  // Effet pour afficher le CTA sticky au scroll
+  useEffect(() => {
+    // Ne pas exécuter pour les pages 412
+    if (data?.status === 412) return;
+
+    const handleScroll = () => {
+      setShowStickyCta(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [data?.status]);
+
+  // 🔄 412: Afficher le funnel de sélection véhicule pour URLs legacy
+  if (data?.status === 412 && data?.substitution) {
+    return (
+      <Error412
+        url={data.url}
+        condition={data.condition}
+        requirement={data.requirement}
+        substitution={data.substitution}
+      />
+    );
+  }
+
   const {
     vehicle,
     catalogFamilies,
@@ -638,25 +740,13 @@ export default function VehicleDetailPage() {
     seo,
     breadcrumb,
     modelContentV1,
-  } = data;
-
-  // État pour gérer l'expansion des familles (comme page index)
-  const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
-    new Set(),
-  );
+  } = data as LoaderData;
 
   // Récupérer le gradient de marque dynamique
   const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
   const _brandPrimary = brandColorsService.getBrandPrimaryColor(
     vehicle.marque_alias,
   );
-
-  // State pour gérer l'erreur de chargement d'image
-  const [imageError, setImageError] = useState(false);
-
-  // 🎯 FAQ dynamique - état et données
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [showStickyCta, setShowStickyCta] = useState(false);
 
   // FAQ items dynamiques basés sur le véhicule
   const faqItems = [
@@ -681,15 +771,6 @@ export default function VehicleDetailPage() {
       answer: `Absolument. Vous disposez de 30 jours pour retourner toute pièce non montée et dans son emballage d'origine. Le remboursement est effectué sous 5 jours ouvrés après réception.`,
     },
   ];
-
-  // Effet pour afficher le CTA sticky au scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowStickyCta(window.scrollY > 400);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <div
