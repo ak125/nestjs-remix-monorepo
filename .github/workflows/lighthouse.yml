@@ -1,0 +1,69 @@
+name: 🔦 Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Permet l'exécution manuelle
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    name: 🔦 Performance Audit
+    runs-on: ubuntu-latest
+    # Après déploiement sur main, ou sur PR pour baseline
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for deployment (main only)
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        run: |
+          echo "⏳ Waiting 2 minutes for deployment to complete..."
+          sleep 120
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            https://www.automecanik.com/
+            https://www.automecanik.com/search?q=plaquette
+            https://www.automecanik.com/pieces/catalogue
+          budgetPath: ./frontend/lighthouse-budget.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          runs: 3  # 3 runs pour moyenner les résultats
+
+      - name: Format Lighthouse results
+        if: always()
+        run: |
+          echo "## 🔦 Lighthouse Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Performance audit completed. Check artifacts for detailed reports." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Targets" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Target |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| FCP | < 1.8s |" >> $GITHUB_STEP_SUMMARY
+          echo "| LCP | < 2.5s |" >> $GITHUB_STEP_SUMMARY
+          echo "| TBT | < 200ms |" >> $GITHUB_STEP_SUMMARY
+          echo "| TTI | < 3.5s |" >> $GITHUB_STEP_SUMMARY
+
+  # Job séparé pour les alertes de performance critique
+  performance-alert:
+    name: ⚠️ Performance Alert
+    runs-on: ubuntu-latest
+    needs: [lighthouse]
+    if: failure()
+
+    steps:
+      - name: Alert on performance regression
+        run: |
+          echo "::warning::Performance budget exceeded! Review Lighthouse results."
+          echo "## ⚠️ Performance Alert" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "One or more performance budgets were exceeded." >> $GITHUB_STEP_SUMMARY
+          echo "Please review the Lighthouse CI artifacts and fix performance issues." >> $GITHUB_STEP_SUMMARY
