@@ -67,6 +67,10 @@ import { InternalLinkingService } from './internal-linking.service';
 // 🛡️ Service Validation SEO Guides d'Achat
 import { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
 
+// 📊 Service et Contrôleur Matrice SEO (n8n workflow)
+import { SeoMatriceService } from './services/seo-matrice.service';
+import { SeoMatriceController } from './controllers/seo-matrice.controller';
+
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
 
@@ -133,6 +137,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
     SeoVariationsController, // 📝 Contrôleur Variations SEO
     SeoLinkTrackingController, // 📊 Contrôleur Tracking Liens Internes
+    SeoMatriceController, // 📊 Contrôleur Matrice SEO (n8n workflow)
   ],
 
   providers: [
@@ -155,6 +160,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat
+    SeoMatriceService, // 📊 Service Matrice SEO (n8n workflow)
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -186,6 +192,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat exporté
+    SeoMatriceService, // 📊 Service Matrice SEO exporté
   ],
 })
 export class SeoModule {
