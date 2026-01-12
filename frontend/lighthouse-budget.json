@@ -1,0 +1,102 @@
+[
+  {
+    "path": "/*",
+    "timings": [
+      {
+        "metric": "first-contentful-paint",
+        "budget": 1800,
+        "tolerance": 200
+      },
+      {
+        "metric": "largest-contentful-paint",
+        "budget": 2500,
+        "tolerance": 300
+      },
+      {
+        "metric": "interactive",
+        "budget": 3500,
+        "tolerance": 500
+      },
+      {
+        "metric": "total-blocking-time",
+        "budget": 200,
+        "tolerance": 50
+      },
+      {
+        "metric": "cumulative-layout-shift",
+        "budget": 0.1,
+        "tolerance": 0.05
+      }
+    ],
+    "resourceCounts": [
+      {
+        "resourceType": "script",
+        "budget": 15
+      },
+      {
+        "resourceType": "stylesheet",
+        "budget": 5
+      },
+      {
+        "resourceType": "image",
+        "budget": 50
+      },
+      {
+        "resourceType": "font",
+        "budget": 6
+      },
+      {
+        "resourceType": "total",
+        "budget": 100
+      }
+    ],
+    "resourceSizes": [
+      {
+        "resourceType": "script",
+        "budget": 400
+      },
+      {
+        "resourceType": "stylesheet",
+        "budget": 100
+      },
+      {
+        "resourceType": "image",
+        "budget": 1000
+      },
+      {
+        "resourceType": "font",
+        "budget": 200
+      },
+      {
+        "resourceType": "total",
+        "budget": 1800
+      }
+    ]
+  },
+  {
+    "path": "/",
+    "timings": [
+      {
+        "metric": "first-contentful-paint",
+        "budget": 1500
+      },
+      {
+        "metric": "largest-contentful-paint",
+        "budget": 2200
+      }
+    ]
+  },
+  {
+    "path": "/search*",
+    "timings": [
+      {
+        "metric": "first-contentful-paint",
+        "budget": 2000
+      },
+      {
+        "metric": "interactive",
+        "budget": 4000
+      }
+    ]
+  }
+]

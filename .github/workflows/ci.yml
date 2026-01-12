@@ -71,6 +71,9 @@ jobs:
       - name: 🔎 Type check
         run: npm run typecheck --if-present
 
+      - name: 🧪 URL Pattern Tests
+        run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
@@ -205,3 +208,66 @@ jobs:
 
           echo "🔄 Rechargement de Caddy..."
           docker exec nestjs-remix-caddy caddy reload --config /etc/caddy/Caddyfile || docker restart nestjs-remix-caddy
+
+  # ============================================
+  # POST-DEPLOYMENT VALIDATION
+  # ============================================
+  validate:
+    name: ✅ Validate URLs
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Validate critical URLs
+        run: |
+          echo "🔍 Validating production URLs..."
+
+          BASE_URL="https://www.automecanik.com"
+          FAILED=0
+
+          # URLs critiques qui doivent retourner 200
+          URLS=(
+            "/"
+            "/health"
+            "/search?q=plaquette"
+            "/pieces/catalogue"
+            "/pieces/catalogue?category=freinage"
+            "/pieces/catalogue?category=moteur"
+            "/contact"
+            "/cart"
+          )
+
+          for url in "${URLS[@]}"; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$url" --max-time 30)
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ $url -> $STATUS"
+            else
+              echo "❌ $url -> $STATUS (expected 200)"
+              FAILED=1
+            fi
+          done
+
+          # URL qui doit retourner 404 (ancien format)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/pieces/freinage" --max-time 30)
+          if [ "$STATUS" != "200" ]; then
+            echo "✅ /pieces/freinage -> $STATUS (correctly not 200)"
+          else
+            echo "⚠️ /pieces/freinage -> $STATUS (should NOT be 200)"
+            # Ne pas échouer pour ça, juste avertir
+          fi
+
+          if [ "$FAILED" = "1" ]; then
+            echo "❌ Some URLs failed validation!"
+            exit 1
+          fi
+
+          echo "✅ All critical URLs validated successfully!"
+
+      - name: Report validation results
+        if: failure()
+        run: |
+          echo "::error::Production URL validation failed. Check deployment logs."
