@@ -1,22 +1,37 @@
-import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
-import { Alert } from '~/components/ui';
 
-import { trackPurchase } from "~/utils/analytics";
 import { processPaymentReturn } from "../services/payment.server";
 import { formatPrice } from "../utils/orders";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui";
+import { trackPurchase } from "~/utils/analytics";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
   { title: "Confirmation de paiement | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/checkout-payment-return" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/checkout-payment-return",
+  },
 ];
 
 interface PaymentResult {
-  status: 'SUCCESS' | 'REFUSED' | 'CANCELLED' | 'PENDING';
+  status: "SUCCESS" | "REFUSED" | "CANCELLED" | "PENDING";
   transactionId: string;
   orderId: string;
   orderNumber?: string;
@@ -29,11 +44,18 @@ interface PaymentResult {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const status = url.searchParams.get("status") || url.searchParams.get("vads_trans_status");
-  const transactionId = url.searchParams.get("trans_id") || url.searchParams.get("transaction_id") || url.searchParams.get("vads_trans_id");
+  const status =
+    url.searchParams.get("status") || url.searchParams.get("vads_trans_status");
+  const transactionId =
+    url.searchParams.get("trans_id") ||
+    url.searchParams.get("transaction_id") ||
+    url.searchParams.get("vads_trans_id");
 
   if (!transactionId) {
-    console.log("❌ Missing transaction ID, params:", Object.fromEntries(url.searchParams));
+    console.log(
+      "❌ Missing transaction ID, params:",
+      Object.fromEntries(url.searchParams),
+    );
     return redirect("/cart");
   }
 
@@ -56,7 +78,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       throw error;
     }
     console.error("❌ Payment return error:", error);
-    throw new Response("Erreur lors du traitement du paiement", { status: 500 });
+    throw new Response("Erreur lors du traitement du paiement", {
+      status: 500,
+    });
   }
 }
 
@@ -65,7 +89,7 @@ export default function PaymentReturnPage() {
 
   // 📊 GA4: Tracker l'achat finalise
   useEffect(() => {
-    if (result?.status === 'SUCCESS') {
+    if (result?.status === "SUCCESS") {
       trackPurchase(result.transactionId, result.amount);
     }
   }, [result]);
@@ -73,55 +97,61 @@ export default function PaymentReturnPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        {result.status === 'SUCCESS' && (
+        {result.status === "SUCCESS" && (
           <div className="p-8 text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-success/15 mb-6">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Paiement réussi !
             </h1>
-            
+
             <p className="text-gray-600 mb-6">
-              Votre commande #{result.orderNumber || result.orderId} a été confirmée.
+              Votre commande #{result.orderNumber || result.orderId} a été
+              confirmée.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Montant payé :</span>
-                  <span className="font-semibold">{formatPrice(result.amount)}</span>
+                  <span className="font-semibold">
+                    {formatPrice(result.amount)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Transaction :</span>
-                  <span className="font-mono text-xs">{result.transactionId}</span>
+                  <span className="font-mono text-xs">
+                    {result.transactionId}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Date :</span>
-                  <span>{new Date(result.date).toLocaleString('fr-FR')}</span>
+                  <span>{new Date(result.date).toLocaleString("fr-FR")}</span>
                 </div>
               </div>
             </div>
 
             {result.email && (
-<Alert className="rounded-lg p-4 mb-6" variant="info">
+              <Alert className="rounded-lg p-4 mb-6" variant="info">
                 <p className="text-sm text-blue-800">
-                  Un email de confirmation vous a été envoyé à l'adresse <strong>{result.email}</strong>.
-                  Vous pouvez suivre votre commande dans votre espace client.
+                  Un email de confirmation vous a été envoyé à l'adresse{" "}
+                  <strong>{result.email}</strong>. Vous pouvez suivre votre
+                  commande dans votre espace client.
                 </p>
               </Alert>
             )}
 
             <div className="space-y-3">
-              <Link 
-                to={`/account/orders/${result.orderId}`} 
+              <Link
+                to={`/account/orders/${result.orderId}`}
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Voir ma commande
               </Link>
-              <Link 
-                to="/products" 
+              <Link
+                to="/products"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Continuer mes achats
@@ -130,16 +160,16 @@ export default function PaymentReturnPage() {
           </div>
         )}
 
-        {result.status === 'REFUSED' && (
+        {result.status === "REFUSED" && (
           <div className="p-8 text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-destructive/15 mb-6">
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Paiement refusé
             </h1>
-            
+
             <p className="text-gray-600 mb-6">
               Votre paiement n'a pas pu être traité.
             </p>
@@ -155,13 +185,15 @@ export default function PaymentReturnPage() {
                 {result.errorCode && (
                   <div className="flex justify-between">
                     <span className="text-gray-500">Code :</span>
-                    <span className="font-mono text-xs">{result.errorCode}</span>
+                    <span className="font-mono text-xs">
+                      {result.errorCode}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
-<Alert className="rounded-lg p-4 mb-6" variant="warning">
+            <Alert className="rounded-lg p-4 mb-6" variant="warning">
               <h3 className="font-medium text-yellow-800 mb-2">Que faire ?</h3>
               <ul className="text-sm text-yellow-700 space-y-1 text-left">
                 <li>• Vérifiez que votre carte est valide et non expirée</li>
@@ -172,14 +204,14 @@ export default function PaymentReturnPage() {
             </Alert>
 
             <div className="space-y-3">
-              <Link 
-                to={`/checkout-payment?orderId=${result.orderId}`} 
+              <Link
+                to={`/checkout-payment?orderId=${result.orderId}`}
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Réessayer le paiement
               </Link>
-              <Link 
-                to="/support/contact" 
+              <Link
+                to="/support/contact"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Contacter le support
@@ -188,32 +220,35 @@ export default function PaymentReturnPage() {
           </div>
         )}
 
-        {result.status === 'CANCELLED' && (
+        {result.status === "CANCELLED" && (
           <div className="p-8 text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-warning/15 mb-6">
               <AlertTriangle className="h-8 w-8 text-yellow-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Paiement annulé
             </h1>
-            
-            <p className="text-gray-600 mb-6">
-              Vous avez annulé le paiement.
-            </p>
 
-            <Alert intent="warning"><p>Votre commande #{result.orderNumber || result.orderId} est toujours en attente de paiement.
-                Elle sera automatiquement annulée dans 24 heures si elle n'est pas payée.</p></Alert>
+            <p className="text-gray-600 mb-6">Vous avez annulé le paiement.</p>
+
+            <Alert intent="warning">
+              <p>
+                Votre commande #{result.orderNumber || result.orderId} est
+                toujours en attente de paiement. Elle sera automatiquement
+                annulée dans 24 heures si elle n'est pas payée.
+              </p>
+            </Alert>
 
             <div className="space-y-3">
-              <Link 
-                to={`/checkout-payment?orderId=${result.orderId}`} 
+              <Link
+                to={`/checkout-payment?orderId=${result.orderId}`}
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Reprendre le paiement
               </Link>
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Modifier mon panier
@@ -222,42 +257,43 @@ export default function PaymentReturnPage() {
           </div>
         )}
 
-        {result.status === 'PENDING' && (
+        {result.status === "PENDING" && (
           <div className="p-8 text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary/15 mb-6">
               <Clock className="h-8 w-8 text-blue-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Paiement en attente
             </h1>
-            
+
             <p className="text-gray-600 mb-6">
               Votre paiement est en cours de traitement.
             </p>
 
-<Alert className="rounded-lg p-4 mb-6" variant="info">
+            <Alert className="rounded-lg p-4 mb-6" variant="info">
               <div className="space-y-2 text-sm text-blue-800">
-                <p>Transaction : <span className="font-mono">{result.transactionId}</span></p>
                 <p>
-                  Nous attendons la confirmation de votre banque.
-                  Cela peut prendre quelques minutes.
+                  Transaction :{" "}
+                  <span className="font-mono">{result.transactionId}</span>
                 </p>
                 <p>
-                  Vous recevrez un email dès que le paiement sera confirmé.
+                  Nous attendons la confirmation de votre banque. Cela peut
+                  prendre quelques minutes.
                 </p>
+                <p>Vous recevrez un email dès que le paiement sera confirmé.</p>
               </div>
             </Alert>
 
             <div className="space-y-3">
-              <Link 
-                to={`/account/orders/${result.orderId}`} 
+              <Link
+                to={`/account/orders/${result.orderId}`}
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Suivre ma commande
               </Link>
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Retour à l'accueil
@@ -268,4 +304,17 @@ export default function PaymentReturnPage() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

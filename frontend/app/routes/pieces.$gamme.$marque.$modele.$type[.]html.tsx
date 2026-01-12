@@ -4,6 +4,7 @@
 
 import {
   defer,
+  json,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -24,6 +25,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
+import { Error412 } from "../components/errors/Error412";
 import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
@@ -235,15 +237,79 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 6. Traitement de la réponse Batch
 
-  // Validation
+  // 🚀 Récupérer les véhicules compatibles pour la gamme (pour les pages 412)
+  let compatibleVehicleOptions: Array<{
+    id: number;
+    label: string;
+    url: string;
+    description?: string;
+  }> = [];
+  try {
+    const substitutionUrl = `http://localhost:3000/api/substitution/check?url=/pieces/${gamme.alias}-${gammeId}.html`;
+    const subResponse = await fetch(substitutionUrl);
+    if (subResponse.ok) {
+      const subData = await subResponse.json();
+      if (subData?.lock?.options && Array.isArray(subData.lock.options)) {
+        compatibleVehicleOptions = subData.lock.options.slice(0, 12); // Limiter à 12 options
+      }
+    }
+  } catch {
+    // En cas d'erreur, on continue sans les options (array vide)
+  }
+
+  // Validation - Convertir 410 → 412 si la gamme existe et le véhicule est valide
+  // Car l'utilisateur peut sélectionner un autre véhicule compatible
   if (batchResponse.validation && !batchResponse.validation.valid) {
-    const statusCode = batchResponse.validation.http_status || 410;
+    const apiStatusCode = batchResponse.validation.http_status || 410;
+
+    // Si l'API retourne 410 mais que la gamme existe et le véhicule est complet,
+    // on retourne 412 (Precondition Failed) car c'est une situation récupérable
+    const isRecoverable =
+      gamme && vehicle && vehicle.marque && vehicle.modele && vehicle.type;
+
+    if (apiStatusCode === 410 && isRecoverable) {
+      // 412 Precondition Failed - l'utilisateur peut choisir un autre véhicule
+      throw json(
+        {
+          url: request.url,
+          condition: "Produits disponibles pour ce véhicule",
+          requirement: "Sélectionnez un autre véhicule compatible",
+          substitution: {
+            lock: {
+              type: "vehicle" as const,
+              missing: "compatible_vehicle",
+              known: {
+                gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
+                marque: { id: vehicle.marqueId, name: vehicle.marque },
+                modele: { id: vehicle.modeleId, name: vehicle.modele },
+                type: { id: vehicle.typeId, name: vehicle.type },
+              },
+              options: compatibleVehicleOptions,
+            },
+            seo: {
+              title: `${gamme.name} - Sélectionnez votre véhicule`,
+              description: `Trouvez des ${gamme.name} compatibles avec votre véhicule`,
+              h1: `${gamme.name} - Autres véhicules compatibles`,
+            },
+          },
+        },
+        {
+          status: 412,
+          headers: {
+            "X-Robots-Tag": "index, follow",
+            "Cache-Control": "public, max-age=3600",
+          },
+        },
+      );
+    }
+
+    // Sinon, conserver le statut original de l'API (vraie 410 ou autre erreur)
     const reason =
       batchResponse.validation.recommendation ||
       "Cette combinaison n'est pas disponible.";
     throw new Response(reason, {
-      status: statusCode,
-      statusText: statusCode === 410 ? "Gone" : "Not Found",
+      status: apiStatusCode,
+      statusText: apiStatusCode === 410 ? "Gone" : "Not Found",
       headers: {
         "X-Robots-Tag": "noindex, nofollow",
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -255,14 +321,38 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const piecesData = mapBatchPiecesToData(batchResponse.pieces);
 
   if (piecesData.length === 0) {
-    throw new Response(
-      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible.`,
+    // La gamme existe, le véhicule est complet, mais pas de produits pour cette combinaison
+    // → 412 (Precondition Failed) car l'utilisateur peut choisir un autre véhicule
+    // Contrairement au 410 (Gone) qui indique une suppression définitive
+    throw json(
       {
-        status: 410,
-        statusText: "Gone",
+        url: request.url,
+        condition: "Produits disponibles pour ce véhicule",
+        requirement: "Sélectionnez un autre véhicule compatible",
+        substitution: {
+          lock: {
+            type: "vehicle" as const,
+            missing: "compatible_vehicle",
+            known: {
+              gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
+              marque: { id: vehicle.marqueId, name: vehicle.marque },
+              modele: { id: vehicle.modeleId, name: vehicle.modele },
+              type: { id: vehicle.typeId, name: vehicle.type },
+            },
+            options: compatibleVehicleOptions,
+          },
+          seo: {
+            title: `${gamme.name} - Sélectionnez votre véhicule`,
+            description: `Trouvez des ${gamme.name} compatibles avec votre véhicule`,
+            h1: `${gamme.name} - Autres véhicules compatibles`,
+          },
+        },
+      },
+      {
+        status: 412,
         headers: {
-          "X-Robots-Tag": "noindex, nofollow",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-Robots-Tag": "index, follow", // SEO haut funnel - page indexable
+          "Cache-Control": "public, max-age=3600",
         },
       },
     );
@@ -882,6 +972,19 @@ export function ErrorBoundary() {
         </head>
         <Error410 url={location.pathname} isOldLink={false} />
       </>
+    );
+  }
+
+  // Gestion spécifique du 412 Precondition Failed (véhicule sans produits)
+  if (isRouteErrorResponse(error) && error.status === 412) {
+    const data = error.data || {};
+    return (
+      <Error412
+        url={location.pathname}
+        condition={data.condition}
+        requirement={data.requirement}
+        substitution={data.substitution}
+      />
     );
   }
 

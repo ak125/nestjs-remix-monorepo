@@ -3,15 +3,40 @@
  * Formulaire pour créer une commande avec validation
  */
 
-import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
-import { Form, useActionData, useNavigate } from "@remix-run/react";
-import { ArrowLeft, Plus, Trash2, Package, MapPin, CreditCard } from "lucide-react";
+import {
+  json,
+  redirect,
+  type ActionFunction,
+  type LoaderFunction,
+} from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Package,
+  MapPin,
+  CreditCard,
+} from "lucide-react";
 import { useState } from "react";
+import { Error404 } from "~/components/errors/Error404";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 
 interface FormData {
@@ -50,30 +75,33 @@ export const loader: LoaderFunction = async ({ context }) => {
   // Temporairement, permettre l'accès sans authentification pour les tests
   // En production, vous devriez ajouter une authentification :
   // const user = await requireUser({ context });
-  
+
   // Ici, vous pourriez charger des données nécessaires comme les produits disponibles
   return json({
     // Ajouter des données de test pour les produits disponibles
     products: [
       { id: "1", name: "Produit A", price: 10.99, sku: "PROD-A" },
       { id: "2", name: "Produit B", price: 15.99, sku: "PROD-B" },
-      { id: "3", name: "Produit C", price: 20.99, sku: "PROD-C" }
-    ]
+      { id: "3", name: "Produit C", price: 20.99, sku: "PROD-C" },
+    ],
   });
 };
 
 export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
-  
+
   try {
     // Parser les données du formulaire
     const items = JSON.parse(formData.get("items") as string);
-    const deliveryAddress = JSON.parse(formData.get("deliveryAddress") as string);
+    const deliveryAddress = JSON.parse(
+      formData.get("deliveryAddress") as string,
+    );
     const deliveryMethod = formData.get("deliveryMethod") as string;
     const deliveryPrice = parseFloat(formData.get("deliveryPrice") as string);
     const notes = formData.get("notes") as string;
     const promocode = formData.get("promocode") as string;
-    const discountAmount = parseFloat(formData.get("discountAmount") as string) || 0;
+    const discountAmount =
+      parseFloat(formData.get("discountAmount") as string) || 0;
 
     const orderData: FormData = {
       items,
@@ -87,41 +115,60 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     // Validation côté client
     if (!items || items.length === 0) {
-      return json<ActionData>({ 
-        error: "Au moins un article est requis" 
-      }, { status: 400 });
+      return json<ActionData>(
+        {
+          error: "Au moins un article est requis",
+        },
+        { status: 400 },
+      );
     }
 
-    if (!deliveryAddress.street || !deliveryAddress.city || !deliveryAddress.postalCode || !deliveryAddress.country) {
-      return json<ActionData>({ 
-        error: "Tous les champs de l'adresse de livraison sont requis" 
-      }, { status: 400 });
+    if (
+      !deliveryAddress.street ||
+      !deliveryAddress.city ||
+      !deliveryAddress.postalCode ||
+      !deliveryAddress.country
+    ) {
+      return json<ActionData>(
+        {
+          error: "Tous les champs de l'adresse de livraison sont requis",
+        },
+        { status: 400 },
+      );
     }
 
     // Utiliser l'intégration directe pour créer la commande
-  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
-  const integration: any = await getRemixIntegrationService(context);
-  const result = await integration.createOrderForRemix?.(orderData);
+    const { getRemixIntegrationService } = await import(
+      "~/server/remix-integration.server"
+    );
+    const integration: any = await getRemixIntegrationService(context);
+    const result = await integration.createOrderForRemix?.(orderData);
 
     if (!result.success) {
-      return json<ActionData>({ 
-        error: result.error || "Erreur lors de la création de la commande" 
-      }, { status: 400 });
+      return json<ActionData>(
+        {
+          error: result.error || "Erreur lors de la création de la commande",
+        },
+        { status: 400 },
+      );
     }
 
     return redirect(`/orders/${result.order.id}`);
   } catch (error) {
     console.error("Error creating order:", error);
-    return json<ActionData>({ 
-      error: "Erreur lors de la création de la commande" 
-    }, { status: 500 });
+    return json<ActionData>(
+      {
+        error: "Erreur lors de la création de la commande",
+      },
+      { status: 500 },
+    );
   }
 };
 
 export default function NewOrder() {
   const actionData = useActionData<ActionData>();
   const navigate = useNavigate();
-  
+
   const [items, setItems] = useState([
     {
       id: Date.now(),
@@ -133,7 +180,7 @@ export default function NewOrder() {
       productSku: "",
       variantId: "",
       variantName: "",
-    }
+    },
   ]);
 
   const [deliveryAddress, setDeliveryAddress] = useState({
@@ -151,34 +198,40 @@ export default function NewOrder() {
   const [discountAmount, setDiscountAmount] = useState(0);
 
   const addItem = () => {
-    setItems([...items, {
-      id: Date.now(),
-      productId: "",
-      productName: "",
-      quantity: 1,
-      unitPrice: 0,
-      totalPrice: 0,
-      productSku: "",
-      variantId: "",
-      variantName: "",
-    }]);
+    setItems([
+      ...items,
+      {
+        id: Date.now(),
+        productId: "",
+        productName: "",
+        quantity: 1,
+        unitPrice: 0,
+        totalPrice: 0,
+        productSku: "",
+        variantId: "",
+        variantName: "",
+      },
+    ]);
   };
 
   const removeItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
+    setItems(items.filter((item) => item.id !== id));
   };
 
   const updateItem = (id: number, field: string, value: any) => {
-    setItems(items.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        if (field === "quantity" || field === "unitPrice") {
-          updatedItem.totalPrice = updatedItem.quantity * updatedItem.unitPrice;
+    setItems(
+      items.map((item) => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value };
+          if (field === "quantity" || field === "unitPrice") {
+            updatedItem.totalPrice =
+              updatedItem.quantity * updatedItem.unitPrice;
+          }
+          return updatedItem;
         }
-        return updatedItem;
-      }
-      return item;
-    }));
+        return item;
+      }),
+    );
   };
 
   const calculateSubtotal = () => {
@@ -226,7 +279,11 @@ export default function NewOrder() {
 
       <Form method="post" className="space-y-6">
         <input type="hidden" name="items" value={JSON.stringify(items)} />
-        <input type="hidden" name="deliveryAddress" value={JSON.stringify(deliveryAddress)} />
+        <input
+          type="hidden"
+          name="deliveryAddress"
+          value={JSON.stringify(deliveryAddress)}
+        />
         <input type="hidden" name="deliveryMethod" value={deliveryMethod} />
         <input type="hidden" name="deliveryPrice" value={deliveryPrice} />
         <input type="hidden" name="notes" value={notes} />
@@ -244,7 +301,12 @@ export default function NewOrder() {
                     <Package className="w-5 h-5 mr-2" />
                     Articles
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addItem}
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Ajouter
                   </Button>
@@ -253,12 +315,17 @@ export default function NewOrder() {
               <CardContent>
                 <div className="space-y-4">
                   {items.map((item, index) => (
-                    <div key={item.id} className="grid grid-cols-12 gap-4 items-end border-b pb-4 last:border-b-0">
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-12 gap-4 items-end border-b pb-4 last:border-b-0"
+                    >
                       <div className="col-span-3">
                         <Label>Nom du produit</Label>
                         <Input
                           value={item.productName}
-                          onChange={(e) => updateItem(item.id, "productName", e.target.value)}
+                          onChange={(e) =>
+                            updateItem(item.id, "productName", e.target.value)
+                          }
                           placeholder="Nom du produit"
                           required
                         />
@@ -267,7 +334,9 @@ export default function NewOrder() {
                         <Label>SKU</Label>
                         <Input
                           value={item.productSku}
-                          onChange={(e) => updateItem(item.id, "productSku", e.target.value)}
+                          onChange={(e) =>
+                            updateItem(item.id, "productSku", e.target.value)
+                          }
                           placeholder="SKU"
                         />
                       </div>
@@ -277,7 +346,13 @@ export default function NewOrder() {
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value))}
+                          onChange={(e) =>
+                            updateItem(
+                              item.id,
+                              "quantity",
+                              parseInt(e.target.value),
+                            )
+                          }
                           required
                         />
                       </div>
@@ -288,7 +363,13 @@ export default function NewOrder() {
                           step="0.01"
                           min="0"
                           value={item.unitPrice}
-                          onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value))}
+                          onChange={(e) =>
+                            updateItem(
+                              item.id,
+                              "unitPrice",
+                              parseFloat(e.target.value),
+                            )
+                          }
                           required
                         />
                       </div>
@@ -330,7 +411,12 @@ export default function NewOrder() {
                     <Label>Rue</Label>
                     <Input
                       value={deliveryAddress.street}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, street: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          street: e.target.value,
+                        })
+                      }
                       placeholder="123 Rue de la Paix"
                       required
                     />
@@ -339,7 +425,12 @@ export default function NewOrder() {
                     <Label>Ville</Label>
                     <Input
                       value={deliveryAddress.city}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, city: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          city: e.target.value,
+                        })
+                      }
                       placeholder="Paris"
                       required
                     />
@@ -348,7 +439,12 @@ export default function NewOrder() {
                     <Label>Code postal</Label>
                     <Input
                       value={deliveryAddress.postalCode}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, postalCode: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          postalCode: e.target.value,
+                        })
+                      }
                       placeholder="75001"
                       required
                     />
@@ -357,7 +453,12 @@ export default function NewOrder() {
                     <Label>Pays</Label>
                     <Input
                       value={deliveryAddress.country}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, country: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          country: e.target.value,
+                        })
+                      }
                       placeholder="France"
                       required
                     />
@@ -366,7 +467,12 @@ export default function NewOrder() {
                     <Label>Information additionnelle</Label>
                     <Input
                       value={deliveryAddress.additionalInfo}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, additionalInfo: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          additionalInfo: e.target.value,
+                        })
+                      }
                       placeholder="Appartement 3B"
                     />
                   </div>
@@ -403,14 +509,23 @@ export default function NewOrder() {
                 <div className="space-y-4">
                   <div>
                     <Label>Méthode de livraison</Label>
-                    <Select value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
+                    <Select
+                      value={deliveryMethod}
+                      onValueChange={handleDeliveryMethodChange}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="standard">Standard (5.99€)</SelectItem>
-                        <SelectItem value="express">Express (12.99€)</SelectItem>
-                        <SelectItem value="pickup">Retrait en magasin (Gratuit)</SelectItem>
+                        <SelectItem value="standard">
+                          Standard (5.99€)
+                        </SelectItem>
+                        <SelectItem value="express">
+                          Express (12.99€)
+                        </SelectItem>
+                        <SelectItem value="pickup">
+                          Retrait en magasin (Gratuit)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -421,7 +536,9 @@ export default function NewOrder() {
                       step="0.01"
                       min="0"
                       value={deliveryPrice}
-                      onChange={(e) => setDeliveryPrice(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        setDeliveryPrice(parseFloat(e.target.value))
+                      }
                     />
                   </div>
                 </div>
@@ -449,7 +566,9 @@ export default function NewOrder() {
                       step="0.01"
                       min="0"
                       value={discountAmount}
-                      onChange={(e) => setDiscountAmount(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        setDiscountAmount(parseFloat(e.target.value))
+                      }
                     />
                   </div>
                 </div>
@@ -490,7 +609,12 @@ export default function NewOrder() {
               <Button type="submit" className="w-full">
                 Créer la commande
               </Button>
-              <Button type="button" variant="outline" className="w-full" onClick={() => navigate(-1)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(-1)}
+              >
                 Annuler
               </Button>
             </div>
@@ -499,4 +623,17 @@ export default function NewOrder() {
       </Form>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

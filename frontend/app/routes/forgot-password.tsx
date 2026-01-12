@@ -1,8 +1,27 @@
-import { json, type ActionFunction, type MetaFunction, redirect } from "@remix-run/node";
-import { Form, useActionData, useSearchParams, Link } from "@remix-run/react";
+import {
+  json,
+  type ActionFunction,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useSearchParams,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import { Error404 } from "~/components/errors/Error404";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
@@ -21,14 +40,19 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   // Utiliser l'intégration directe pour la demande de réinitialisation
-  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const { getRemixIntegrationService } = await import(
+    "~/server/remix-integration.server"
+  );
   const integration: any = await getRemixIntegrationService(context);
   const result = await integration.forgotPasswordForRemix?.(email.toString());
 
   if (result.success) {
     return redirect("/forgot-password?status=sent");
   } else {
-    return json({ error: result.error || "Une erreur est survenue" }, { status: 500 });
+    return json(
+      { error: result.error || "Une erreur est survenue" },
+      { status: 500 },
+    );
   }
 };
 
@@ -51,7 +75,8 @@ export default function ForgotPassword() {
           {status === "sent" && (
             <Alert className="mb-4 border-success bg-success/10">
               <AlertDescription className="text-green-800">
-                Si un compte avec cet email existe, vous recevrez un lien de réinitialisation.
+                Si un compte avec cet email existe, vous recevrez un lien de
+                réinitialisation.
               </AlertDescription>
             </Alert>
           )}
@@ -95,4 +120,17 @@ export default function ForgotPassword() {
       </Card>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

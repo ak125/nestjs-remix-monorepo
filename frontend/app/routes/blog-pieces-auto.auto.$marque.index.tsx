@@ -4,14 +4,20 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
-import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { Error404 } from "~/components/errors/Error404";
 
 /* ===========================
    Types
@@ -873,4 +879,17 @@ export default function BlogPiecesAutoMarque() {
       </section>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

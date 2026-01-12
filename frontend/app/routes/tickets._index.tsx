@@ -2,17 +2,37 @@
  * Page de gestion des tickets - Liste et recherche
  * Remix Route Component pour la gestion des tickets de support
  */
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Link,
+  useLoaderData,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { useState } from "react";
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { getAllTickets, searchTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
+import {
+  getAllTickets,
+  searchTickets,
+  getContactStats,
+  type ContactTicket,
+  type ContactStats,
+} from "../services/api/contact.api";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Gestion des Tickets - Support Client" },
-    { name: "description", content: "Liste et gestion des tickets de support client" },
+    {
+      name: "description",
+      content: "Liste et gestion des tickets de support client",
+    },
   ];
 };
 
@@ -31,25 +51,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "10");
-  const status = url.searchParams.get("status") as 'open' | 'closed' | 'all' || 'all';
+  const status =
+    (url.searchParams.get("status") as "open" | "closed" | "all") || "all";
   const keyword = url.searchParams.get("keyword");
 
   try {
     let ticketsData;
-    
+
     if (keyword) {
       // Recherche avec critères
-      ticketsData = await searchTickets(
-        { keyword },
-        { page, limit },
-        request
-      );
+      ticketsData = await searchTickets({ keyword }, { page, limit }, request);
     } else {
       // Liste normale avec filtres
-      ticketsData = await getAllTickets(
-        { page, limit, status },
-        request
-      );
+      ticketsData = await getAllTickets({ page, limit, status }, request);
     }
 
     const stats = await getContactStats(request);
@@ -68,11 +82,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Erreur lors du chargement des tickets:", error);
     return json<LoaderData>({
       tickets: [],
-      stats: { 
-        total_tickets: 0, 
-        open_tickets: 0, 
-        closed_tickets: 0, 
-        tickets_last_24h: 0 
+      stats: {
+        total_tickets: 0,
+        open_tickets: 0,
+        closed_tickets: 0,
+        tickets_last_24h: 0,
       },
       pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
     });
@@ -82,7 +96,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function TicketsPage() {
   const { tickets, stats, pagination } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("keyword") || "");
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("keyword") || "",
+  );
 
   const currentStatus = searchParams.get("status") || "all";
   const currentPage = parseInt(searchParams.get("page") || "1");
@@ -124,16 +140,21 @@ export default function TicketsPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return 'error';
-      case "high": return 'orange';
-      case "normal": return 'info';
-      case "low": return "bg-gray-100 text-gray-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "urgent":
+        return "error";
+      case "high":
+        return "orange";
+      case "normal":
+        return "info";
+      case "low":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusColor = (isOpen: string) => {
-    return isOpen === '1' ? 'success' : "bg-gray-100 text-gray-800";
+    return isOpen === "1" ? "success" : "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -141,23 +162,39 @@ export default function TicketsPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Gestion des Tickets</h1>
-          <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Gestion des Tickets
+          </h1>
+          <Button className="px-4 py-2   rounded-md" variant="blue" asChild>
+            <Link to="/contact">Nouveau ticket</Link>
+          </Button>
         </div>
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Alert intent="info"><p className="text-sm text-blue-600">Total tickets</p>
-            <p className="text-2xl font-bold text-blue-900">{stats.total_tickets}</p></Alert>
-          <Alert intent="success"><p className="text-sm text-green-600">Ouverts</p>
-            <p className="text-2xl font-bold text-green-900">{stats.open_tickets}</p></Alert>
+          <Alert intent="info">
+            <p className="text-sm text-blue-600">Total tickets</p>
+            <p className="text-2xl font-bold text-blue-900">
+              {stats.total_tickets}
+            </p>
+          </Alert>
+          <Alert intent="success">
+            <p className="text-sm text-green-600">Ouverts</p>
+            <p className="text-2xl font-bold text-green-900">
+              {stats.open_tickets}
+            </p>
+          </Alert>
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Fermés</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.closed_tickets}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {stats.closed_tickets}
+            </p>
           </div>
           <div className="bg-orange-50 p-4 rounded-lg">
             <p className="text-sm text-orange-600">24h</p>
-            <p className="text-2xl font-bold text-orange-900">{stats.tickets_last_24h}</p>
+            <p className="text-2xl font-bold text-orange-900">
+              {stats.tickets_last_24h}
+            </p>
           </div>
         </div>
       </div>
@@ -174,7 +211,13 @@ export default function TicketsPage() {
               placeholder="Rechercher dans les tickets..."
               className="flex-1 lg:w-80 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <Button className="px-4 py-2  rounded-md" variant="blue" type="submit">\n  Rechercher\n</Button>
+            <Button
+              className="px-4 py-2  rounded-md"
+              variant="blue"
+              type="submit"
+            >
+              \n Rechercher\n
+            </Button>
           </form>
 
           {/* Filtres par statut */}
@@ -205,7 +248,13 @@ export default function TicketsPage() {
         {tickets.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">Aucun ticket trouvé.</p>
-            <Button className="inline-block mt-4 px-4 py-2  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
+            <Button
+              className="inline-block mt-4 px-4 py-2  rounded-md"
+              variant="blue"
+              asChild
+            >
+              <Link to="/contact">Créer le premier ticket</Link>
+            </Button>
           </div>
         ) : (
           <>
@@ -233,7 +282,7 @@ export default function TicketsPage() {
                     <div className="text-sm font-medium text-blue-600">
                       #{ticket.msg_id}
                     </div>
-                    
+
                     <div className="md:col-span-2">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {ticket.msg_subject}
@@ -242,30 +291,41 @@ export default function TicketsPage() {
                         {ticket.msg_content.substring(0, 100)}...
                       </p>
                     </div>
-                    
+
                     <div className="text-sm text-gray-900">
                       {ticket.customer ? (
                         <div>
-                          <p>{ticket.customer.cst_name} {ticket.customer.cst_fname}</p>
-                          <p className="text-xs text-gray-500">{ticket.customer.cst_mail}</p>
+                          <p>
+                            {ticket.customer.cst_name}{" "}
+                            {ticket.customer.cst_fname}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {ticket.customer.cst_mail}
+                          </p>
                         </div>
                       ) : (
-                        <span className="text-gray-500">Client #{ticket.msg_cst_id}</span>
+                        <span className="text-gray-500">
+                          Client #{ticket.msg_cst_id}
+                        </span>
                       )}
                     </div>
-                    
+
                     <div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority || "normal")}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority || "normal")}`}
+                      >
                         {ticket.priority || "normal"}
                       </span>
                     </div>
-                    
+
                     <div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.msg_open)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.msg_open)}`}
+                      >
                         {ticket.msg_open === "1" ? "Ouvert" : "Fermé"}
                       </span>
                     </div>
-                    
+
                     <div className="text-sm text-gray-500">
                       {formatDate(ticket.msg_date)}
                     </div>
@@ -285,7 +345,7 @@ export default function TicketsPage() {
             {Math.min(currentPage * pagination.limit, pagination.total)} sur{" "}
             {pagination.total} tickets
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -294,12 +354,13 @@ export default function TicketsPage() {
             >
               Précédent
             </button>
-            
+
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-              .filter(page => 
-                page === 1 || 
-                page === pagination.totalPages || 
-                Math.abs(page - currentPage) <= 2
+              .filter(
+                (page) =>
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  Math.abs(page - currentPage) <= 2,
               )
               .map((page, index, array) => (
                 <div key={page} className="flex items-center">
@@ -318,7 +379,7 @@ export default function TicketsPage() {
                   </button>
                 </div>
               ))}
-            
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === pagination.totalPages}
@@ -331,4 +392,17 @@ export default function TicketsPage() {
       )}
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

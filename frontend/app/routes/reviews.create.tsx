@@ -2,13 +2,26 @@
  * Page Création d'Avis Client
  * Formulaire pour soumettre un nouvel avis client
  */
-import { json, redirect, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  type ActionFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Form,
+  Link,
+  useActionData,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { Star, ArrowLeft, Send } from "lucide-react";
 import { useState } from "react";
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
 import { createReview } from "../services/api/review.api";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,7 +44,7 @@ interface ActionData {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  
+
   const reviewData = {
     customer_id: "1", // ID temporaire pour test
     customer_name: formData.get("customer_name") as string,
@@ -79,9 +92,14 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(`/reviews?created=true`);
   } catch (error) {
     console.error("Erreur lors de la création de l'avis:", error);
-    return json<ActionData>({ 
-      errors: { general: "Erreur lors de la création de l'avis. Veuillez réessayer." } 
-    }, { status: 500 });
+    return json<ActionData>(
+      {
+        errors: {
+          general: "Erreur lors de la création de l'avis. Veuillez réessayer.",
+        },
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -130,7 +148,9 @@ export default function CreateReviewPage() {
             Retour aux avis
           </Link>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Nouveau Avis Client</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Nouveau Avis Client
+        </h1>
         <p className="text-gray-600 mt-1">
           Partagez votre expérience avec nos produits
         </p>
@@ -141,7 +161,7 @@ export default function CreateReviewPage() {
         <Form method="post" className="space-y-6">
           {/* Erreur générale */}
           {actionData?.errors?.general && (
-<Alert className="rounded-md p-4" variant="error">
+            <Alert className="rounded-md p-4" variant="error">
               <div className="text-red-800 text-sm">
                 {actionData.errors.general}
               </div>
@@ -151,7 +171,10 @@ export default function CreateReviewPage() {
           {/* Informations client */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="customer_name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Nom complet *
               </label>
               <input
@@ -173,7 +196,10 @@ export default function CreateReviewPage() {
             </div>
 
             <div>
-              <label htmlFor="customer_email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="customer_email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Adresse email *
               </label>
               <input
@@ -197,7 +223,10 @@ export default function CreateReviewPage() {
 
           {/* Produit */}
           <div>
-            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="product_name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Produit évalué *
             </label>
             <input
@@ -231,11 +260,7 @@ export default function CreateReviewPage() {
                 </span>
               )}
             </div>
-            <input
-              type="hidden"
-              name="rating"
-              value={rating}
-            />
+            <input type="hidden" name="rating" value={rating} />
             {actionData?.errors?.rating && (
               <p className="mt-1 text-sm text-red-600">
                 {actionData.errors.rating}
@@ -248,7 +273,10 @@ export default function CreateReviewPage() {
 
           {/* Commentaire */}
           <div>
-            <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="comment"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Votre avis *
             </label>
             <textarea
@@ -273,13 +301,15 @@ export default function CreateReviewPage() {
           </div>
 
           {/* Recommandations d'évaluation */}
-<Alert className="rounded-md p-4" variant="info">
+          <Alert className="rounded-md p-4" variant="info">
             <h3 className="text-sm font-medium text-blue-900 mb-2">
               Conseils pour un avis utile
             </h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Décrivez votre expérience avec des détails concrets</li>
-              <li>• Mentionnez les points positifs et les aspects à améliorer</li>
+              <li>
+                • Mentionnez les points positifs et les aspects à améliorer
+              </li>
               <li>• Soyez objectif et constructif dans vos commentaires</li>
               <li>• Évitez les propos offensants ou inappropriés</li>
             </ul>
@@ -293,9 +323,13 @@ export default function CreateReviewPage() {
             >
               Annuler
             </Link>
-            
-            <Button className="inline-flex items-center px-6 py-2   rounded-md disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
-              disabled={isSubmitting || rating === 0}>
+
+            <Button
+              className="inline-flex items-center px-6 py-2   rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="blue"
+              type="submit"
+              disabled={isSubmitting || rating === 0}
+            >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -318,11 +352,25 @@ export default function CreateReviewPage() {
           Processus de modération
         </h3>
         <p className="text-sm text-gray-600">
-          Votre avis sera examiné par notre équipe avant publication. Ce processus prend généralement 
-          24 à 48 heures. Nous nous réservons le droit de ne pas publier les avis qui ne respectent 
-          pas nos conditions d'utilisation.
+          Votre avis sera examiné par notre équipe avant publication. Ce
+          processus prend généralement 24 à 48 heures. Nous nous réservons le
+          droit de ne pas publier les avis qui ne respectent pas nos conditions
+          d'utilisation.
         </p>
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

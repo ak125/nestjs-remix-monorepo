@@ -4,7 +4,13 @@
  */
 
 import { json, type LoaderFunction } from "@remix-run/node";
-import { useLoaderData, Link, useNavigate } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   ArrowLeft,
   Package,
@@ -16,6 +22,7 @@ import {
   Mail,
 } from "lucide-react";
 import { OrderLineActions } from "~/components/admin/OrderLineActions";
+import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -722,4 +729,17 @@ export default function OrderDetailsReal() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

@@ -2,29 +2,52 @@
  * Page Détail d'Avis Client
  * Affichage complet et modération d'un avis spécifique
  */
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
-import { 
-  Star, 
-  ArrowLeft, 
-  Check, 
-  X, 
-  Edit3, 
-  Trash2, 
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Form,
+  Link,
+  useLoaderData,
+  useActionData,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  Star,
+  ArrowLeft,
+  Check,
+  X,
+  Edit3,
+  Trash2,
   Flag,
   Calendar,
   User,
   Package,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
-import { toast } from 'sonner';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { getReviewById, updateReviewStatus, deleteReview } from "../services/api/review.api";
+import { toast } from "sonner";
+import {
+  getReviewById,
+  updateReviewStatus,
+  deleteReview,
+} from "../services/api/review.api";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
-    { title: data ? `Avis #${data.review.id} - ${data.review.customer_name}` : "Avis non trouvé" },
+    {
+      title: data
+        ? `Avis #${data.review.id} - ${data.review.customer_name}`
+        : "Avis non trouvé",
+    },
     { name: "description", content: "Détails et modération d'avis client" },
   ];
 };
@@ -40,7 +63,7 @@ interface ActionData {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const reviewId = params.reviewId;
-  
+
   if (!reviewId) {
     throw new Response("ID d'avis manquant", { status: 400 });
   }
@@ -68,25 +91,31 @@ export async function action({ params, request }: ActionFunctionArgs) {
       case "approve":
         await updateReviewStatus(Number(reviewId), "approved", request);
         return json<ActionData>({ success: true });
-      
+
       case "reject":
         await updateReviewStatus(Number(reviewId), "rejected", request);
         return json<ActionData>({ success: true });
-      
+
       case "pending":
         await updateReviewStatus(Number(reviewId), "pending", request);
         return json<ActionData>({ success: true });
-      
+
       case "delete":
         await deleteReview(Number(reviewId), request);
         return redirect("/reviews?deleted=true");
-      
+
       default:
-        return json<ActionData>({ error: "Action non reconnue" }, { status: 400 });
+        return json<ActionData>(
+          { error: "Action non reconnue" },
+          { status: 400 },
+        );
     }
   } catch (error) {
     console.error("Erreur lors de l'action:", error);
-    return json<ActionData>({ error: "Erreur lors de l'action" }, { status: 500 });
+    return json<ActionData>(
+      { error: "Erreur lors de l'action" },
+      { status: 500 },
+    );
   }
 }
 
@@ -122,27 +151,27 @@ export default function ReviewDetailPage() {
     switch (status) {
       case "approved":
         return {
-          className: 'success',
+          className: "success",
           label: "Approuvé",
-          icon: <Check className="w-4 h-4" />
+          icon: <Check className="w-4 h-4" />,
         };
       case "rejected":
         return {
-          className: 'error',
+          className: "error",
           label: "Rejeté",
-          icon: <X className="w-4 h-4" />
+          icon: <X className="w-4 h-4" />,
         };
       case "pending":
         return {
-          className: 'warning',
+          className: "warning",
           label: "En attente",
-          icon: <Flag className="w-4 h-4" />
+          icon: <Flag className="w-4 h-4" />,
         };
       default:
         return {
           className: "bg-gray-100 text-gray-800 border-gray-200",
           label: "Inconnu",
-          icon: <Flag className="w-4 h-4" />
+          icon: <Flag className="w-4 h-4" />,
         };
     }
   };
@@ -162,7 +191,7 @@ export default function ReviewDetailPage() {
             Retour aux avis
           </Link>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -172,8 +201,10 @@ export default function ReviewDetailPage() {
               Soumis le {formatDate(review.created_at)}
             </p>
           </div>
-          
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusBadge.className}`}>
+
+          <div
+            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusBadge.className}`}
+          >
             {statusBadge.icon}
             <span className="ml-1">{statusBadge.label}</span>
           </div>
@@ -182,7 +213,7 @@ export default function ReviewDetailPage() {
 
       {/* Messages d'état */}
       {actionData?.success && (
-<Alert className="mb-6    rounded-md p-4" variant="success">
+        <Alert className="mb-6    rounded-md p-4" variant="success">
           <div className="text-green-800 text-sm">
             Action effectuée avec succès
           </div>
@@ -190,10 +221,8 @@ export default function ReviewDetailPage() {
       )}
 
       {actionData?.error && (
-<Alert className="mb-6    rounded-md p-4" variant="error">
-          <div className="text-red-800 text-sm">
-            {actionData.error}
-          </div>
+        <Alert className="mb-6    rounded-md p-4" variant="error">
+          <div className="text-red-800 text-sm">{actionData.error}</div>
         </Alert>
       )}
 
@@ -218,7 +247,7 @@ export default function ReviewDetailPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   {renderStars(review.rating)}
                   <span className="text-sm text-gray-600 ml-2">
@@ -249,7 +278,9 @@ export default function ReviewDetailPage() {
               <div className="mb-6">
                 <div className="flex items-center space-x-2 mb-2">
                   <MessageSquare className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Commentaire</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Commentaire
+                  </span>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
@@ -265,13 +296,14 @@ export default function ReviewDetailPage() {
                     <Calendar className="w-4 h-4" />
                     <span>Créé le {formatDate(review.created_at)}</span>
                   </div>
-                  
-                  {review.updated_at && review.updated_at !== review.created_at && (
-                    <div className="flex items-center space-x-2">
-                      <Edit3 className="w-4 h-4" />
-                      <span>Modifié le {formatDate(review.updated_at)}</span>
-                    </div>
-                  )}
+
+                  {review.updated_at &&
+                    review.updated_at !== review.created_at && (
+                      <div className="flex items-center space-x-2">
+                        <Edit3 className="w-4 h-4" />
+                        <span>Modifié le {formatDate(review.updated_at)}</span>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -282,13 +314,17 @@ export default function ReviewDetailPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Actions de modération
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {review.status !== "approved" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="approve" />
-                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="green" type="submit"
-                    disabled={isSubmitting}>
+                  <Button
+                    className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50"
+                    variant="green"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
                     <Check className="w-4 h-4 mr-2" />
                     Approuver
                   </Button>
@@ -298,8 +334,12 @@ export default function ReviewDetailPage() {
               {review.status !== "rejected" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="reject" />
-                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="red" type="submit"
-                    disabled={isSubmitting}>
+                  <Button
+                    className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50"
+                    variant="red"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
                     <X className="w-4 h-4 mr-2" />
                     Rejeter
                   </Button>
@@ -309,8 +349,12 @@ export default function ReviewDetailPage() {
               {review.status !== "pending" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="pending" />
-                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="yellow" type="submit"
-                    disabled={isSubmitting}>
+                  <Button
+                    className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50"
+                    variant="yellow"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
                     <Flag className="w-4 h-4 mr-2" />
                     Remettre en attente
                   </Button>
@@ -320,25 +364,27 @@ export default function ReviewDetailPage() {
 
             {/* Action de suppression */}
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Zone de danger</h4>
-              <Form 
-                method="post" 
+              <h4 className="text-sm font-medium text-gray-900 mb-3">
+                Zone de danger
+              </h4>
+              <Form
+                method="post"
                 onSubmit={(e) => {
                   const form = e.currentTarget;
                   if (!form) return;
-                  
+
                   e.preventDefault();
                   toast.error("Supprimer cet avis ?", {
                     duration: 5000,
                     description: "Cette action est irréversible",
                     action: {
-                      label: 'Confirmer',
+                      label: "Confirmer",
                       onClick: () => {
                         form.requestSubmit();
                       },
                     },
                     cancel: {
-                      label: 'Annuler',
+                      label: "Annuler",
                       onClick: () => {},
                     },
                   });
@@ -350,9 +396,12 @@ export default function ReviewDetailPage() {
                   disabled={isSubmitting}
                   className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-destructive/5 disabled:opacity-50"
                   onClick={(e) => {
-                    const form = e.currentTarget.closest('form');
+                    const form = e.currentTarget.closest("form");
                     if (form) {
-                      const event = new Event('submit', { bubbles: true, cancelable: true });
+                      const event = new Event("submit", {
+                        bubbles: true,
+                        cancelable: true,
+                      });
                       form.dispatchEvent(event);
                     }
                   }}
@@ -369,10 +418,8 @@ export default function ReviewDetailPage() {
         <div className="space-y-6">
           {/* Résumé */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Résumé
-            </h3>
-            
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Résumé</h3>
+
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Note</span>
@@ -380,14 +427,16 @@ export default function ReviewDetailPage() {
                   {renderStars(review.rating)}
                 </div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Statut</span>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusBadge.className}`}>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${statusBadge.className}`}
+                >
                   {statusBadge.label}
                 </span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Longueur</span>
                 <span className="text-sm font-medium">
@@ -402,7 +451,7 @@ export default function ReviewDetailPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Actions rapides
             </h3>
-            
+
             <div className="space-y-3">
               <Link
                 to="/reviews"
@@ -410,12 +459,31 @@ export default function ReviewDetailPage() {
               >
                 Retour à la liste
               </Link>
-              
-              <Button className="block w-full text-center px-4 py-2   rounded-md" variant="blue" asChild><Link to="/reviews/create">Nouvel avis</Link></Button>
+
+              <Button
+                className="block w-full text-center px-4 py-2   rounded-md"
+                variant="blue"
+                asChild
+              >
+                <Link to="/reviews/create">Nouvel avis</Link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

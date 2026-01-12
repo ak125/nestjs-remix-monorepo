@@ -1,18 +1,33 @@
 /**
  * 👥 STAFF INDEX - Route moderne alignée sur les autres modules
- * 
+ *
  * Route principale pour la gestion du staff administratif
  * Utilise remixService.getStaff() et remixService.getStaffStatistics()
  * Architecture moderne alignée avec orders, users, suppliers
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { Plus, Edit, Trash, Eye, Users, Crown, Shield, Settings } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  Plus,
+  Edit,
+  Trash,
+  Eye,
+  Users,
+  Crown,
+  Shield,
+  Settings,
+} from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { getRemixApiService } from "../server/remix-api.server";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
 
 // Interface pour les données staff modernes
 interface StaffMember {
@@ -48,85 +63,94 @@ interface StaffData {
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   await requireUser({ context });
-  
+
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "20");
   const status = url.searchParams.get("status");
   const department = url.searchParams.get("department");
   const search = url.searchParams.get("search");
-  
+
   try {
     const remixService = await getRemixApiService(context);
-    
+
     // Récupération des données staff via l'API moderne
-    const staffResult = await remixService.getStaff({ 
-      page, 
-      limit, 
-      status, 
-      department, 
-      search 
+    const staffResult = await remixService.getStaff({
+      page,
+      limit,
+      status,
+      department,
+      search,
     });
-    
+
     const statisticsResult = await remixService.getStaffStatistics();
-    
+
     if (!staffResult.success) {
-      throw new Error(staffResult.error || 'Erreur lors du chargement du staff');
+      throw new Error(
+        staffResult.error || "Erreur lors du chargement du staff",
+      );
     }
-    
+
     return json({
       staff: staffResult.staff || [],
       statistics: statisticsResult.statistics || {
         total: 0,
         active: 0,
         inactive: 0,
-        departments: 0
+        departments: 0,
       },
       pagination: staffResult.pagination,
       success: true,
       timestamp: new Date().toISOString(),
     });
-    
   } catch (error) {
-    console.error('Erreur loader staff:', error);
-    
+    console.error("Erreur loader staff:", error);
+
     return json({
       staff: [],
       statistics: {
         total: 0,
         active: 0,
         inactive: 0,
-        departments: 0
+        departments: 0,
       },
       pagination: { page: 1, totalPages: 1, total: 0 },
       success: false,
-      error: error instanceof Error ? error.message : 'Erreur inconnue',
+      error: error instanceof Error ? error.message : "Erreur inconnue",
       timestamp: new Date().toISOString(),
     });
   }
 };
 
 export default function StaffIndex() {
-  const { staff, statistics, error } = useLoaderData<StaffData & { error?: string; success?: boolean }>();
-  
+  const { staff, statistics, error } = useLoaderData<
+    StaffData & { error?: string; success?: boolean }
+  >();
+
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'error';
+    return isActive ? "success" : "error";
   };
 
   const getRoleColor = (role: string) => {
-    if (role.includes('Super')) return 'bg-warning/20 text-warning border-yellow-200';
-    if (role.includes('Admin')) return 'bg-info/20 text-info border-blue-200';
-    if (role.includes('Manager')) return 'bg-purple-100 text-purple-800 border-purple-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (role.includes("Super"))
+      return "bg-warning/20 text-warning border-yellow-200";
+    if (role.includes("Admin")) return "bg-info/20 text-info border-blue-200";
+    if (role.includes("Manager"))
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   };
-  
+
   return (
     <div className="container mx-auto p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion du Personnel</h1>
-          <p className="text-gray-600 mt-1">Administration et supervision du staff</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Gestion du Personnel
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Administration et supervision du staff
+          </p>
         </div>
         <Link to="/staff/new">
           <Button>
@@ -138,69 +162,80 @@ export default function StaffIndex() {
 
       {/* Erreur */}
       {error && (
-<Alert className="mb-6 p-4    rounded-lg" variant="error">
+        <Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <span className="font-medium">Erreur : {error}</span>
           </div>
         </Alert>
       )}
-      
+
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{statistics.total}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {statistics.total}
+              </p>
               <p className="text-xs text-gray-500">Membres</p>
             </div>
             <Users className="h-8 w-8 text-blue-500" />
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Actifs</p>
-              <p className="text-2xl font-bold text-green-600">{statistics.active}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {statistics.active}
+              </p>
               <p className="text-xs text-gray-500">En service</p>
             </div>
             <Shield className="h-8 w-8 text-green-500" />
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Inactifs</p>
-              <p className="text-2xl font-bold text-gray-600">{statistics.inactive}</p>
+              <p className="text-2xl font-bold text-gray-600">
+                {statistics.inactive}
+              </p>
               <p className="text-xs text-gray-500">Hors service</p>
             </div>
             <Settings className="h-8 w-8 text-gray-500" />
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Départements</p>
-              <p className="text-2xl font-bold text-purple-600">{statistics.departments}</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {statistics.departments}
+              </p>
               <p className="text-xs text-gray-500">Services</p>
             </div>
             <Crown className="h-8 w-8 text-purple-500" />
           </div>
         </div>
       </div>
-      
+
       {/* Liste du personnel */}
       <div className="bg-white rounded-lg shadow overflow-hidden border">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Personnel Administratif</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            Personnel Administratif
+          </h3>
           <p className="text-sm text-gray-500 mt-1">
-            {staff.length} membre{staff.length > 1 ? 's' : ''} affiché{staff.length > 1 ? 's' : ''}
+            {staff.length} membre{staff.length > 1 ? "s" : ""} affiché
+            {staff.length > 1 ? "s" : ""}
           </p>
         </div>
-        
+
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -227,23 +262,34 @@ export default function StaffIndex() {
           <tbody className="bg-white divide-y divide-gray-200">
             {staff.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                <td
+                  colSpan={6}
+                  className="px-6 py-12 text-center text-gray-500"
+                >
                   <div className="flex flex-col items-center gap-3">
                     <Users className="h-12 w-12 text-gray-300" />
-                    <span className="text-lg font-medium">Aucun membre trouvé</span>
-                    <span className="text-sm">Aucun personnel n'est configuré pour le moment</span>
+                    <span className="text-lg font-medium">
+                      Aucun membre trouvé
+                    </span>
+                    <span className="text-sm">
+                      Aucun personnel n'est configuré pour le moment
+                    </span>
                   </div>
                 </td>
               </tr>
             ) : (
               staff.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={member.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
-                            {member.firstName?.[0]}{member.lastName?.[0]}
+                            {member.firstName?.[0]}
+                            {member.lastName?.[0]}
                           </span>
                         </div>
                       </div>
@@ -261,31 +307,49 @@ export default function StaffIndex() {
                     <div className="text-sm text-gray-900">{member.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getRoleColor(member.role)}`}>
+                    <span
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getRoleColor(member.role)}`}
+                    >
                       {member.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{member.department || 'Non assigné'}</div>
+                    <div className="text-sm text-gray-900">
+                      {member.department || "Non assigné"}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(member.isActive)}`}>
-                      {member.isActive ? 'Actif' : 'Inactif'}
+                    <span
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(member.isActive)}`}
+                    >
+                      {member.isActive ? "Actif" : "Inactif"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <Link to={`/staff/${member.id}`}>
-                        <Button variant="outline" size="sm" className="hover:bg-info/20">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="hover:bg-info/20"
+                        >
                           <Eye className="h-4 w-4 text-blue-600" />
                         </Button>
                       </Link>
                       <Link to={`/staff/${member.id}/edit`}>
-                        <Button variant="outline" size="sm" className="hover:bg-warning/5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="hover:bg-warning/5"
+                        >
                           <Edit className="h-4 w-4 text-yellow-600" />
                         </Button>
                       </Link>
-                      <Button variant="outline" size="sm" className="hover:bg-destructive/5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-destructive/5"
+                      >
                         <Trash className="h-4 w-4 text-red-600" />
                       </Button>
                     </div>
@@ -296,17 +360,31 @@ export default function StaffIndex() {
           </tbody>
         </table>
       </div>
-      
+
       {/* Message informatif */}
-<Alert className="mt-6 p-4    rounded-lg" variant="info">
+      <Alert className="mt-6 p-4    rounded-lg" variant="info">
         <div className="flex items-center gap-2 text-blue-700">
           <Users className="h-5 w-5" />
           <span className="font-medium">Interface Staff Moderne</span>
           <span className="text-blue-600 text-sm">
-            - Utilise remixService.getStaff() et remixService.getStaffStatistics()
+            - Utilise remixService.getStaff() et
+            remixService.getStaffStatistics()
           </span>
         </div>
       </Alert>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

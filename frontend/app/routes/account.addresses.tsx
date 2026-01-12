@@ -1,18 +1,33 @@
 import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { MapPin, Plus, Edit2, Trash2, Home, Building } from "lucide-react";
 
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
-  { title: 'Mes adresses | AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/addresses" },
+  { title: "Mes adresses | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/account/addresses",
+  },
 ];
 
 type Address = {
@@ -37,7 +52,7 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ request }) => {
   try {
     const user = await requireAuth(request);
-    
+
     if (!user) {
       throw new Response("Non authentifié", { status: 401 });
     }
@@ -54,7 +69,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         city: "Paris",
         postalCode: "75001",
         country: "France",
-        phone: "+33 1 23 45 67 89"
+        phone: "+33 1 23 45 67 89",
       },
       {
         id: "2",
@@ -67,8 +82,8 @@ export const loader: LoaderFunction = async ({ request }) => {
         city: "Lyon",
         postalCode: "69000",
         country: "France",
-        phone: "+33 4 56 78 90 12"
-      }
+        phone: "+33 4 56 78 90 12",
+      },
     ];
 
     return json<LoaderData>({ addresses, user });
@@ -96,9 +111,7 @@ function AddressCard({ address }: { address: Address }) {
             {address.type === "billing" ? "Facturation" : "Livraison"}
           </CardTitle>
           <div className="flex items-center gap-2">
-            {address.isDefault && (
-              <Badge variant="default">Par défaut</Badge>
-            )}
+            {address.isDefault && <Badge variant="default">Par défaut</Badge>}
             <Button size="sm" variant="outline">
               <Edit2 className="w-4 h-4" />
             </Button>
@@ -112,17 +125,15 @@ function AddressCard({ address }: { address: Address }) {
         <p className="font-medium text-gray-900">
           {address.firstName} {address.lastName}
         </p>
-        {address.company && (
-          <p className="text-gray-600">{address.company}</p>
-        )}
+        {address.company && <p className="text-gray-600">{address.company}</p>}
         <div className="text-gray-600">
           <p>{address.address}</p>
-          <p>{address.postalCode} {address.city}</p>
+          <p>
+            {address.postalCode} {address.city}
+          </p>
           <p>{address.country}</p>
         </div>
-        {address.phone && (
-          <p className="text-gray-600">{address.phone}</p>
-        )}
+        {address.phone && <p className="text-gray-600">{address.phone}</p>}
       </CardContent>
     </Card>
   );
@@ -131,111 +142,141 @@ function AddressCard({ address }: { address: Address }) {
 export default function AccountAddresses() {
   const { addresses, user } = useLoaderData<LoaderData>();
 
-  const billingAddresses = addresses.filter(addr => addr.type === "billing");
-  const shippingAddresses = addresses.filter(addr => addr.type === "shipping");
+  const billingAddresses = addresses.filter((addr) => addr.type === "billing");
+  const shippingAddresses = addresses.filter(
+    (addr) => addr.type === "shipping",
+  );
 
   return (
-    <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
+    <AccountLayout
+      user={user}
+      stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}
+    >
       <div className="space-y-6">
-      {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Mon Compte", href: "/account" },
-        { label: "Mes Adresses" }
-      ]} />
-      
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mes Adresses</h1>
-          <p className="text-gray-600">Gérez vos adresses de facturation et de livraison</p>
-        </div>
-        <Button asChild>
-          <Link to="/account/addresses/new">
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle adresse
-          </Link>
-        </Button>
-      </div>
+        {/* Breadcrumb */}
+        <PublicBreadcrumb
+          items={[
+            { label: "Mon Compte", href: "/account" },
+            { label: "Mes Adresses" },
+          ]}
+        />
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <MapPin className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{addresses.length}</p>
-            <p className="text-sm text-gray-600">Total</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Building className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{billingAddresses.length}</p>
-            <p className="text-sm text-gray-600">Facturation</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Home className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{shippingAddresses.length}</p>
-            <p className="text-sm text-gray-600">Livraison</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Adresses de facturation */}
-      {billingAddresses.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Adresses de facturation</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {billingAddresses.map((address) => (
-              <AddressCard key={address.id} address={address} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Adresses de livraison */}
-      {shippingAddresses.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Adresses de livraison</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {shippingAddresses.map((address) => (
-              <AddressCard key={address.id} address={address} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* État vide */}
-      {addresses.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Aucune adresse enregistrée
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Ajoutez votre première adresse pour faciliter vos commandes
+        {/* En-tête */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Mes Adresses</h1>
+            <p className="text-gray-600">
+              Gérez vos adresses de facturation et de livraison
             </p>
-            <Button asChild>
-              <Link to="/account/addresses/new">
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter une adresse
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <Button asChild>
+            <Link to="/account/addresses/new">
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle adresse
+            </Link>
+          </Button>
+        </div>
 
-      {/* Navigation */}
-      <div className="flex gap-4">
-        <Button asChild variant="outline">
-          <Link to="/account/dashboard">
-            Retour au dashboard
-          </Link>
-        </Button>
-      </div>
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <MapPin className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-gray-900">
+                {addresses.length}
+              </p>
+              <p className="text-sm text-gray-600">Total</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Building className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-gray-900">
+                {billingAddresses.length}
+              </p>
+              <p className="text-sm text-gray-600">Facturation</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Home className="w-8 h-8 text-green-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-gray-900">
+                {shippingAddresses.length}
+              </p>
+              <p className="text-sm text-gray-600">Livraison</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Adresses de facturation */}
+        {billingAddresses.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Adresses de facturation
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {billingAddresses.map((address) => (
+                <AddressCard key={address.id} address={address} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Adresses de livraison */}
+        {shippingAddresses.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Adresses de livraison
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {shippingAddresses.map((address) => (
+                <AddressCard key={address.id} address={address} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* État vide */}
+        {addresses.length === 0 && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Aucune adresse enregistrée
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Ajoutez votre première adresse pour faciliter vos commandes
+              </p>
+              <Button asChild>
+                <Link to="/account/addresses/new">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Ajouter une adresse
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Navigation */}
+        <div className="flex gap-4">
+          <Button asChild variant="outline">
+            <Link to="/account/dashboard">Retour au dashboard</Link>
+          </Button>
+        </div>
       </div>
     </AccountLayout>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

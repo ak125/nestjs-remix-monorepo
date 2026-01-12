@@ -12,7 +12,13 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   ArrowLeft,
   Calendar,
@@ -44,6 +50,7 @@ import CTAButton from "~/components/blog/CTAButton";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
+import { Error404 } from "~/components/errors/Error404";
 
 // SEO Components - HtmlContent remplace dangerouslySetInnerHTML
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -768,4 +775,17 @@ export default function LegacyBlogArticle() {
       <ScrollToTop />
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

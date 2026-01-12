@@ -20,6 +20,8 @@ import {
   Link,
   useNavigation,
   useRevalidator,
+  useRouteError,
+  isRouteErrorResponse,
 } from "@remix-run/react";
 import {
   ShoppingBag,
@@ -34,19 +36,27 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import React, { useEffect } from "react";
+import { getCart } from "../services/cart.server";
+import { Error404 } from "~/components/errors/Error404";
 
-import { MobileBottomBar, MobileBottomBarSpacer } from "~/components/layout/MobileBottomBar";
+import {
+  MobileBottomBar,
+  MobileBottomBarSpacer,
+} from "~/components/layout/MobileBottomBar";
 import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";
-import { getCart } from "../services/cart.server";
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
   { title: "Mon panier | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/cart" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/cart",
+  },
 ];
 
 // Seuil pour la livraison gratuite
@@ -520,7 +530,9 @@ export default function CartPage() {
   // 📊 GA4: Tracker la vue du panier (une seule fois au montage)
   useEffect(() => {
     if (cart?.items?.length) {
-      const validItems = cart.items.filter((item): item is NonNullable<typeof item> => item !== null);
+      const validItems = cart.items.filter(
+        (item): item is NonNullable<typeof item> => item !== null,
+      );
       if (validItems.length > 0) {
         trackViewCart(validItems as any[], cart.summary?.subtotal || 0);
       }
@@ -837,4 +849,17 @@ export default function CartPage() {
       </MobileBottomBar>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

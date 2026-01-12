@@ -2,29 +2,50 @@
  * Page Gestion des Avis Clients
  * Interface complète pour la modération et gestion des avis
  */
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
-import { 
-  Star, 
-  Plus, 
-  Filter, 
-  Search, 
-  Eye, 
-  Check, 
-  X, 
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  Form,
+  Link,
+  useLoaderData,
+  useSubmit,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import {
+  Star,
+  Plus,
+  Filter,
+  Search,
+  Eye,
+  Check,
+  X,
   MoreHorizontal,
   TrendingUp,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  getReviewStats,
+  getAllReviews,
+  updateReviewStatus,
+} from "../services/api/review.api";
+import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
-import { Button } from '~/components/ui/button';
-import { getReviewStats, getAllReviews, updateReviewStatus } from "../services/api/review.api";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Gestion des Avis Clients - Dashboard Support" },
-    { name: "description", content: "Interface de modération et gestion des avis clients" },
+    {
+      name: "description",
+      content: "Interface de modération et gestion des avis clients",
+    },
   ];
 };
 
@@ -44,14 +65,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "10");
   const statusParam = url.searchParams.get("status") || "all";
-  const status = (statusParam === "pending" || statusParam === "approved" || statusParam === "rejected") ? statusParam : "all";
+  const status =
+    statusParam === "pending" ||
+    statusParam === "approved" ||
+    statusParam === "rejected"
+      ? statusParam
+      : "all";
   const _search = url.searchParams.get("search") || "";
 
   try {
     const [reviewsData, stats] = await Promise.all([
-      getAllReviews({ page, limit, status }, request).catch(() => ({ 
-        reviews: [], 
-        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } 
+      getAllReviews({ page, limit, status }, request).catch(() => ({
+        reviews: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
       })),
       getReviewStats(request).catch(() => ({
         total: 0,
@@ -59,14 +85,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
         approved: 0,
         rejected: 0,
         averageRating: 0,
-        ratingDistribution: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 }
-      }))
+        ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
+      })),
     ]);
 
     return json<LoaderData>({
       reviews: reviewsData.reviews || [],
       stats,
-      pagination: 'pagination' in reviewsData ? reviewsData.pagination : { page: reviewsData.page || 1, limit: reviewsData.limit || 10, total: reviewsData.total || 0, totalPages: Math.ceil((reviewsData.total || 0) / (reviewsData.limit || 10)) }
+      pagination:
+        "pagination" in reviewsData
+          ? reviewsData.pagination
+          : {
+              page: reviewsData.page || 1,
+              limit: reviewsData.limit || 10,
+              total: reviewsData.total || 0,
+              totalPages: Math.ceil(
+                (reviewsData.total || 0) / (reviewsData.limit || 10),
+              ),
+            },
     });
   } catch (error) {
     console.error("Erreur lors du chargement des avis:", error);
@@ -78,9 +114,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
         approved: 0,
         rejected: 0,
         averageRating: 0,
-        ratingDistribution: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 }
+        ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
       },
-      pagination: { page: 1, limit: 10, total: 0, totalPages: 0 }
+      pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
     });
   }
 }
@@ -92,12 +128,20 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (intent === "updateStatus" && reviewId) {
     const statusParam = formData.get("status") as string;
-    const status = (statusParam === "pending" || statusParam === "approved" || statusParam === "rejected") ? statusParam : "pending";
+    const status =
+      statusParam === "pending" ||
+      statusParam === "approved" ||
+      statusParam === "rejected"
+        ? statusParam
+        : "pending";
     try {
       await updateReviewStatus(Number(reviewId), status, request);
       return json({ success: true });
     } catch (error) {
-      return json({ error: "Erreur lors de la mise à jour du statut" }, { status: 500 });
+      return json(
+        { error: "Erreur lors de la mise à jour du statut" },
+        { status: 500 },
+      );
     }
   }
 
@@ -131,21 +175,31 @@ export default function ReviewsPage() {
     ));
   };
 
-  const getStatusVariant = (status: string): "success" | "error" | "warning" | "default" => {
+  const getStatusVariant = (
+    status: string,
+  ): "success" | "error" | "warning" | "default" => {
     switch (status) {
-      case "approved": return "success";
-      case "rejected": return "error";
-      case "pending": return "warning";
-      default: return "default";
+      case "approved":
+        return "success";
+      case "rejected":
+        return "error";
+      case "pending":
+        return "warning";
+      default:
+        return "default";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "approved": return "Approuvé";
-      case "rejected": return "Rejeté";
-      case "pending": return "En attente";
-      default: return "Inconnu";
+      case "approved":
+        return "Approuvé";
+      case "rejected":
+        return "Rejeté";
+      case "pending":
+        return "En attente";
+      default:
+        return "Inconnu";
     }
   };
 
@@ -158,10 +212,10 @@ export default function ReviewsPage() {
   };
 
   const toggleReviewSelection = (reviewId: number) => {
-    setSelectedReviews(prev => 
-      prev.includes(reviewId) 
-        ? prev.filter(id => id !== reviewId)
-        : [...prev, reviewId]
+    setSelectedReviews((prev) =>
+      prev.includes(reviewId)
+        ? prev.filter((id) => id !== reviewId)
+        : [...prev, reviewId],
     );
   };
 
@@ -169,7 +223,7 @@ export default function ReviewsPage() {
     if (selectedReviews.length === reviews.length) {
       setSelectedReviews([]);
     } else {
-      setSelectedReviews(reviews.map(review => review.id));
+      setSelectedReviews(reviews.map((review) => review.id));
     }
   };
 
@@ -179,7 +233,9 @@ export default function ReviewsPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestion des Avis Clients</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Gestion des Avis Clients
+            </h1>
             <p className="text-gray-600 mt-1">
               Modération et analyse des évaluations clients
             </p>
@@ -214,7 +270,9 @@ export default function ReviewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.total}
+              </p>
             </div>
           </div>
         </div>
@@ -242,12 +300,16 @@ export default function ReviewsPage() {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-warning/10 rounded-md flex items-center justify-center">
-                <span className="text-sm font-semibold text-yellow-600">⏳</span>
+                <span className="text-sm font-semibold text-yellow-600">
+                  ⏳
+                </span>
               </div>
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">En attente</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.pending}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.pending}
+              </p>
             </div>
           </div>
         </div>
@@ -261,7 +323,9 @@ export default function ReviewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Approuvés</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.approved}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.approved}
+              </p>
             </div>
           </div>
         </div>
@@ -275,7 +339,9 @@ export default function ReviewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Rejetés</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.rejected}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.rejected}
+              </p>
             </div>
           </div>
         </div>
@@ -297,7 +363,7 @@ export default function ReviewsPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
                 <select
                   name="status"
@@ -308,7 +374,7 @@ export default function ReviewsPage() {
                   <option value="approved">Approuvés</option>
                   <option value="rejected">Rejetés</option>
                 </select>
-                
+
                 <select
                   name="limit"
                   className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
@@ -317,8 +383,12 @@ export default function ReviewsPage() {
                   <option value="25">25 par page</option>
                   <option value="50">50 par page</option>
                 </select>
-                
-                <Button className="inline-flex items-center px-4 py-2   rounded-md" variant="blue" type="submit">
+
+                <Button
+                  className="inline-flex items-center px-4 py-2   rounded-md"
+                  variant="blue"
+                  type="submit"
+                >
                   <Filter className="w-4 h-4 mr-2" />
                   Filtrer
                 </Button>
@@ -342,7 +412,9 @@ export default function ReviewsPage() {
                 </span>
                 <button
                   onClick={() => {
-                    selectedReviews.forEach(id => handleStatusUpdate(id, "approved"));
+                    selectedReviews.forEach((id) =>
+                      handleStatusUpdate(id, "approved"),
+                    );
                     setSelectedReviews([]);
                   }}
                   className="px-3 py-1 bg-success/20 text-success text-sm rounded-md hover:bg-success/30"
@@ -351,7 +423,9 @@ export default function ReviewsPage() {
                 </button>
                 <button
                   onClick={() => {
-                    selectedReviews.forEach(id => handleStatusUpdate(id, "rejected"));
+                    selectedReviews.forEach((id) =>
+                      handleStatusUpdate(id, "rejected"),
+                    );
                     setSelectedReviews([]);
                   }}
                   className="px-3 py-1 bg-destructive/20 text-destructive text-sm rounded-md hover:bg-destructive/30"
@@ -362,12 +436,14 @@ export default function ReviewsPage() {
             )}
           </div>
         </div>
-        
+
         <div className="overflow-hidden">
           {reviews.length === 0 ? (
             <div className="text-center py-12">
               <Star className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun avis trouvé</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Aucun avis trouvé
+              </h3>
               <p className="text-gray-600 mb-6">
                 Commencez par collecter des avis de vos clients.
               </p>
@@ -384,7 +460,10 @@ export default function ReviewsPage() {
               <div className="px-6 py-3 bg-gray-50 flex items-center">
                 <input
                   type="checkbox"
-                  checked={selectedReviews.length === reviews.length && reviews.length > 0}
+                  checked={
+                    selectedReviews.length === reviews.length &&
+                    reviews.length > 0
+                  }
                   onChange={selectAllReviews}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -392,7 +471,7 @@ export default function ReviewsPage() {
                   Sélectionner tout
                 </span>
               </div>
-              
+
               {reviews.map((review) => (
                 <div key={review.id} className="px-6 py-4 hover:bg-gray-50">
                   <div className="flex items-start space-x-4">
@@ -402,7 +481,7 @@ export default function ReviewsPage() {
                       onChange={() => toggleReviewSelection(review.id)}
                       className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
@@ -410,38 +489,47 @@ export default function ReviewsPage() {
                             {review.customer_name || "Client anonyme"}
                           </h3>
                           {renderStars(review.rating)}
-                          <span className="text-sm text-gray-500">({review.rating}/5)</span>
+                          <span className="text-sm text-gray-500">
+                            ({review.rating}/5)
+                          </span>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
-                          <Badge variant={getStatusVariant(review.status)} size="sm">
+                          <Badge
+                            variant={getStatusVariant(review.status)}
+                            size="sm"
+                          >
                             {getStatusText(review.status)}
                           </Badge>
-                          
+
                           <div className="relative">
                             <button
                               className="p-1 text-gray-400 hover:text-gray-600"
-                              onClick={() => {/* Menu contextuel */}}
+                              onClick={() => {
+                                /* Menu contextuel */
+                              }}
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="mt-2">
                         <p className="text-sm text-gray-600 line-clamp-2">
                           {review.comment}
                         </p>
                       </div>
-                      
+
                       <div className="mt-3 flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>Produit: {review.product_name || "Non spécifié"}</span>
+                          <span>
+                            Produit: {review.product_name || "Non spécifié"}
+                          </span>
                           <span>•</span>
                           <span>{formatDate(review.created_at)}</span>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           <Link
                             to={`/reviews/${review.id}`}
@@ -450,20 +538,24 @@ export default function ReviewsPage() {
                             <Eye className="w-3 h-3 mr-1" />
                             Détails
                           </Link>
-                          
+
                           {review.status === "pending" && (
                             <>
                               <button
-                                onClick={() => handleStatusUpdate(review.id, "approved")}
+                                onClick={() =>
+                                  handleStatusUpdate(review.id, "approved")
+                                }
                                 disabled={navigation.state !== "idle"}
                                 className="inline-flex items-center px-2 py-1 text-xs bg-success/80 text-success-foreground hover:bg-success rounded  disabled:opacity-50"
                               >
                                 <Check className="w-3 h-3 mr-1" />
                                 Approuver
                               </button>
-                              
+
                               <button
-                                onClick={() => handleStatusUpdate(review.id, "rejected")}
+                                onClick={() =>
+                                  handleStatusUpdate(review.id, "rejected")
+                                }
                                 disabled={navigation.state !== "idle"}
                                 className="inline-flex items-center px-2 py-1 text-xs bg-destructive/15 text-red-700 rounded hover:bg-destructive/30 disabled:opacity-50"
                               >
@@ -481,17 +573,17 @@ export default function ReviewsPage() {
             </div>
           )}
         </div>
-        
+
         {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Affichage de {((pagination.page - 1) * pagination.limit) + 1} à{" "}
-                {Math.min(pagination.page * pagination.limit, pagination.total)} sur{" "}
-                {pagination.total} résultats
+                Affichage de {(pagination.page - 1) * pagination.limit + 1} à{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                sur {pagination.total} résultats
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 {pagination.page > 1 && (
                   <Link
@@ -501,24 +593,27 @@ export default function ReviewsPage() {
                     Précédent
                   </Link>
                 )}
-                
-                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <Link
-                      key={pageNum}
-                      to={`?page=${pageNum}&limit=${pagination.limit}`}
-                      className={`px-3 py-2 text-sm rounded-md ${
-                        pageNum === pagination.page
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {pageNum}
-                    </Link>
-                  );
-                })}
-                
+
+                {Array.from(
+                  { length: Math.min(5, pagination.totalPages) },
+                  (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <Link
+                        key={pageNum}
+                        to={`?page=${pageNum}&limit=${pagination.limit}`}
+                        className={`px-3 py-2 text-sm rounded-md ${
+                          pageNum === pagination.page
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {pageNum}
+                      </Link>
+                    );
+                  },
+                )}
+
                 {pagination.page < pagination.totalPages && (
                   <Link
                     to={`?page=${pagination.page + 1}&limit=${pagination.limit}`}
@@ -534,4 +629,17 @@ export default function ReviewsPage() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

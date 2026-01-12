@@ -1,16 +1,32 @@
 import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useSearchParams } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { Mail, MailOpen, Package } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
-  { title: 'Mes messages | AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/account/messages" },
+  { title: "Mes messages | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/account/messages",
+  },
 ];
 
 /**
@@ -45,7 +61,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!messagesResponse.ok) {
@@ -64,7 +80,11 @@ export const loader: LoaderFunction = async ({ request, context }) => {
     return json({ messages, stats, user });
   } catch (error) {
     console.error("Erreur chargement messages:", error);
-    return json({ messages: [], stats: { total: 0, unread: 0, withOrder: 0 }, user });
+    return json({
+      messages: [],
+      stats: { total: 0, unread: 0, withOrder: 0 },
+      user,
+    });
   }
 };
 
@@ -154,7 +174,9 @@ export default function MessagesList() {
             {messages.length === 0 ? (
               <div className="text-center py-12">
                 <Mail className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600">Vous n'avez aucun message pour le moment.</p>
+                <p className="text-gray-600">
+                  Vous n'avez aucun message pour le moment.
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -175,21 +197,28 @@ export default function MessagesList() {
                           <MailOpen className="h-4 w-4 text-gray-400 flex-shrink-0" />
                         )}
                         <span className="font-medium text-sm">
-                          {message.MSG_ORD_ID ? `#${message.MSG_ORD_ID}/A` : "Message général"}
+                          {message.MSG_ORD_ID
+                            ? `#${message.MSG_ORD_ID}/A`
+                            : "Message général"}
                         </span>
                         {message.MSG_OPEN === 0 && (
                           <Badge className="bg-primary text-xs">Nouveau</Badge>
                         )}
                       </div>
-                      <p className="font-medium truncate">{message.MSG_SUBJECT}</p>
+                      <p className="font-medium truncate">
+                        {message.MSG_SUBJECT}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {new Date(message.MSG_DATE).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(message.MSG_DATE).toLocaleDateString(
+                          "fr-FR",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </div>
                     <Button
@@ -210,4 +239,17 @@ export default function MessagesList() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

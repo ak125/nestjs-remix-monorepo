@@ -11,7 +11,12 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   ArrowLeft,
   BookOpen,
@@ -29,6 +34,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
@@ -384,4 +390,17 @@ export default function GuideDetailPage() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY (Requis pour HTML rendering au lieu de JSON)
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

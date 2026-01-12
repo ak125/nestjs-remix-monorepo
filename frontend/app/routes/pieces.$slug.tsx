@@ -8,6 +8,8 @@ import {
   useNavigation,
   useLocation,
   useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
 } from "@remix-run/react";
 import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
 import { useEffect, lazy, Suspense } from "react";
@@ -33,6 +35,7 @@ import {
   type VehicleCookie,
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import { Error404 } from "~/components/errors/Error404";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
@@ -231,6 +234,42 @@ interface LoaderData {
     symptoms?: string[] | null;
     faq?: Array<{ question: string; answer: string }> | null;
   } | null;
+  // 🔄 Données de substitution (Moteur 200 Always)
+  substitution?: {
+    httpStatus: number;
+    lock?: {
+      type: "vehicle" | "technology" | "ambiguity" | "precision";
+      missing: string;
+      known: {
+        gamme?: { id: number; name: string; alias: string };
+        marque?: { id: number; name: string };
+        modele?: { id: number; name: string };
+      };
+      options: Array<{
+        id: number;
+        label: string;
+        url: string;
+        description?: string;
+      }>;
+    };
+    substitute?: {
+      piece_id: number;
+      name: string;
+      price: number;
+      priceFormatted?: string;
+      image?: string;
+      brand?: string;
+      ref?: string;
+      url: string;
+    };
+    relatedParts?: Array<{
+      pg_id: number;
+      pg_name: string;
+      pg_alias: string;
+      pg_pic?: string;
+      url: string;
+    }>;
+  } | null;
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -253,19 +292,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
-    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO (LCP optimization)
+    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
     const API_URL = process.env.API_URL || "http://localhost:3000";
+    const currentUrl = new URL(request.url);
+    const pathname = currentUrl.pathname;
 
-    const [selectedVehicle, apiData, switchesResponse] = await Promise.all([
-      // 🚗 Récupérer véhicule depuis cookie (parallélisé)
-      getVehicleFromCookie(request.headers.get("Cookie")),
-      fetchGammePageData(gammeId, { signal: controller.signal }),
-      fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
-        signal: controller.signal,
-      })
-        .then((res) => (res.ok ? res.json() : { data: [] }))
-        .catch(() => ({ data: [] })),
-    ]).finally(() => clearTimeout(timeoutId));
+    const [selectedVehicle, apiData, switchesResponse, substitutionResponse] =
+      await Promise.all([
+        // 🚗 Récupérer véhicule depuis cookie (parallélisé)
+        getVehicleFromCookie(request.headers.get("Cookie")),
+        fetchGammePageData(gammeId, { signal: controller.signal }),
+        fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
+          signal: controller.signal,
+        })
+          .then((res) => (res.ok ? res.json() : { data: [] }))
+          .catch(() => ({ data: [] })),
+        // 🔄 Substitution API pour données enrichies (412/410 handling)
+        fetch(
+          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+          {
+            signal: controller.signal,
+          },
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      ]).finally(() => clearTimeout(timeoutId));
 
     console.log(
       "🚗 Véhicule depuis cookie:",
@@ -361,13 +412,35 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       breadcrumbItems.map((i) => i.label).join(" → "),
     );
 
-    // Retourner data avec breadcrumb mis à jour, véhicule et switches SEO
+    // 🔄 Log substitution status
+    if (substitutionResponse) {
+      console.log(
+        `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
+      );
+    }
+
+    // 🔄 Handle 404/410 based on substitution API response
+    if (substitutionResponse?.httpStatus === 404) {
+      throw new Response("Not Found", {
+        status: 404,
+        headers: { "X-Robots-Tag": "noindex, follow" },
+      });
+    }
+    if (substitutionResponse?.httpStatus === 410) {
+      throw new Response("Gone", {
+        status: 410,
+        headers: { "X-Robots-Tag": "noindex, follow" },
+      });
+    }
+
+    // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO et substitution
     return json(
       {
         ...data,
         breadcrumbs: { items: breadcrumbItems },
         selectedVehicle,
         seoSwitches,
+        substitution: substitutionResponse,
       },
       {
         headers: {
@@ -1105,4 +1178,17 @@ export default function PiecesDetailPage() {
       <div className="h-20 md:hidden" />
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

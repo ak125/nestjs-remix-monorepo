@@ -5,7 +5,14 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData, useParams } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import { Error404 } from "~/components/errors/Error404";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 
@@ -467,4 +474,17 @@ export default function LegalPage() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

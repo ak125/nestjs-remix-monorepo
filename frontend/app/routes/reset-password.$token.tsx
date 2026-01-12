@@ -1,8 +1,29 @@
-import { json, type ActionFunction, type LoaderFunction, type MetaFunction, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData, useSearchParams, Link } from "@remix-run/react";
+import {
+  json,
+  type ActionFunction,
+  type LoaderFunction,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
+import { Error404 } from "~/components/errors/Error404";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
@@ -14,7 +35,7 @@ export const meta: MetaFunction = () => [
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { token } = params;
-  
+
   if (!token) {
     throw new Response("Token manquant", { status: 400 });
   }
@@ -24,7 +45,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export const action: ActionFunction = async ({ params, request, context }) => {
   const token = params.token;
-  
+
   if (!token) {
     return json({ error: "Token manquant" }, { status: 400 });
   }
@@ -38,22 +59,36 @@ export const action: ActionFunction = async ({ params, request, context }) => {
   }
 
   if (password !== confirmPassword) {
-    return json({ error: "Les mots de passe ne correspondent pas" }, { status: 400 });
+    return json(
+      { error: "Les mots de passe ne correspondent pas" },
+      { status: 400 },
+    );
   }
 
-  if (typeof password === 'string' && password.length < 6) {
-    return json({ error: "Le mot de passe doit contenir au moins 6 caractères" }, { status: 400 });
+  if (typeof password === "string" && password.length < 6) {
+    return json(
+      { error: "Le mot de passe doit contenir au moins 6 caractères" },
+      { status: 400 },
+    );
   }
 
   // Utiliser l'intégration directe pour réinitialiser le mot de passe
-  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const { getRemixIntegrationService } = await import(
+    "~/server/remix-integration.server"
+  );
   const integration: any = await getRemixIntegrationService(context);
-  const result = await integration.resetPasswordForRemix?.(token, password.toString());
+  const result = await integration.resetPasswordForRemix?.(
+    token,
+    password.toString(),
+  );
 
   if (result.success) {
     return redirect("/login?reset=success");
   } else {
-    return json({ error: result.error || "Token invalide ou expiré" }, { status: 400 });
+    return json(
+      { error: result.error || "Token invalide ou expiré" },
+      { status: 400 },
+    );
   }
 };
 
@@ -68,9 +103,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Nouveau mot de passe</CardTitle>
-          <CardDescription>
-            Entrez votre nouveau mot de passe
-          </CardDescription>
+          <CardDescription>Entrez votre nouveau mot de passe</CardDescription>
         </CardHeader>
         <CardContent>
           {(error || actionData?.error) && (
@@ -127,4 +160,17 @@ export default function ResetPassword() {
       </Card>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }

@@ -1,5 +1,10 @@
 import { json, redirect, type LoaderFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -11,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { Error404 } from "~/components/errors/Error404";
 
 /**
  * Route: /account/messages/:messageId
@@ -147,4 +153,17 @@ export default function MessageDetail() {
       </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY - Gestion des erreurs HTTP
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return <Error404 url={error.data?.url} />;
+  }
+
+  return <Error404 />;
 }
