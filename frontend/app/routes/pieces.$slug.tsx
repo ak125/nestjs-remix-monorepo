@@ -36,6 +36,7 @@ import {
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
+import { Error412 } from "~/components/errors/Error412";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
@@ -280,8 +281,101 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)
   const match = slug.match(/-(\d+)\.html$/);
+
+  // 🔄 SEO: URLs sans ID (ex: /pieces/suspension) → 412 avec sélection gamme
   if (!match) {
-    throw new Response("Invalid slug format", { status: 400 });
+    const API_URL = process.env.API_URL || "http://localhost:3000";
+
+    // Nettoyer l'alias (enlever .html si présent)
+    const cleanAlias = slug.replace(/\.html$/, "").toLowerCase();
+
+    // Essayer de trouver la gamme par alias exact
+    try {
+      const searchResponse = await fetch(
+        `${API_URL}/api/catalog/gammes/search?q=${encodeURIComponent(cleanAlias)}&limit=20`,
+        { headers: { Accept: "application/json" } },
+      );
+
+      let gammeOptions: Array<{
+        id: number;
+        label: string;
+        url: string;
+        description?: string;
+      }> = [];
+
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        gammeOptions = (searchData.data || searchData.gammes || [])
+          .slice(0, 15)
+          .map((g: any) => ({
+            id: g.pg_id || g.id,
+            label: g.pg_name || g.name,
+            url: `/pieces/${g.pg_alias || g.alias}-${g.pg_id || g.id}.html`,
+            description: g.pg_description || g.description,
+          }));
+      }
+
+      // Capitaliser le nom pour l'affichage
+      const displayName = cleanAlias
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+
+      return json(
+        {
+          status: 412,
+          url: request.url,
+          condition: "Gamme non identifiée",
+          requirement: `Sélectionnez la gamme "${displayName}" exacte pour voir les pièces`,
+          substitution: {
+            httpStatus: 412,
+            lock: {
+              type: "precision" as const,
+              missing: "gamme_id",
+              known: { search: cleanAlias },
+              options: gammeOptions,
+            },
+            seo: {
+              title: `${displayName} - Choisissez votre gamme | AutoMecanik`,
+              description: `Trouvez les pièces ${displayName} pour votre véhicule. Sélectionnez la gamme exacte parmi ${gammeOptions.length} disponibles.`,
+              h1: `Pièces ${displayName}`,
+              canonical: `https://www.automecanik.com/pieces/${cleanAlias}`,
+            },
+          },
+        },
+        {
+          status: 412,
+          headers: {
+            "X-Robots-Tag": "index, follow",
+            "Cache-Control": "public, max-age=3600",
+          },
+        },
+      );
+    } catch (error) {
+      console.warn("[pieces.$slug] Erreur recherche gamme:", error);
+      // Fallback: 412 sans options
+      return json(
+        {
+          status: 412,
+          url: request.url,
+          condition: "Format URL incomplet",
+          requirement: "Utilisez le format /pieces/{gamme}-{id}.html",
+          substitution: {
+            httpStatus: 412,
+            lock: {
+              type: "precision" as const,
+              missing: "gamme_id",
+              known: {},
+              options: [],
+            },
+          },
+        },
+        {
+          status: 412,
+          headers: { "X-Robots-Tag": "index, follow" },
+        },
+      );
+    }
   }
 
   const gammeId = match[1];
@@ -628,6 +722,18 @@ export default function PiecesDetailPage() {
       console.log("⏳ Chargement des données en cours...");
     }
   }, [isLoading]);
+
+  // 🔄 412: Afficher le funnel de sélection gamme
+  if (data?.status === 412 && data?.substitution) {
+    return (
+      <Error412
+        url={data.url}
+        condition={data.condition}
+        requirement={data.requirement}
+        substitution={data.substitution}
+      />
+    );
+  }
 
   if (!data || data.status !== 200) {
     return (
