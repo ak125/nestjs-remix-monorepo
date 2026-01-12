@@ -1,13 +1,13 @@
 /**
  * UserActionsPopover - Menu d'actions contextuelles pour les utilisateurs
- * 
+ *
  * @features
  * - Actions rapides : Éditer, Voir profil, Envoyer message
  * - Actions de modération : Bloquer, Supprimer
  * - Icônes colorées par type d'action
  * - Séparateurs visuels entre groupes d'actions
  * - Callbacks personnalisables pour chaque action
- * 
+ *
  * @example
  * <UserActionsPopover
  *   user={user}
@@ -20,14 +20,11 @@
  * </UserActionsPopover>
  */
 
-import { Edit, Eye, Mail, Ban, Trash2, MoreVertical } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { Edit, Eye, Mail, Ban, Trash2, MoreVertical } from "lucide-react";
+import { type ReactNode } from "react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../ui/popover';
+import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 export interface UserForActions {
   id: string | number;
@@ -63,9 +60,9 @@ interface UserActionsPopoverProps {
   /** Afficher l'action supprimer */
   showDelete?: boolean;
   /** Position du popover */
-  side?: 'top' | 'right' | 'bottom' | 'left';
+  side?: "top" | "right" | "bottom" | "left";
   /** Alignement du popover */
-  align?: 'start' | 'center' | 'end';
+  align?: "start" | "center" | "end";
 }
 
 export function UserActionsPopover({
@@ -81,8 +78,8 @@ export function UserActionsPopover({
   showMessage = true,
   showBlock = true,
   showDelete = true,
-  side = 'bottom',
-  align = 'end',
+  side = "bottom",
+  align = "end",
 }: UserActionsPopoverProps) {
   const handleAction = (callback?: () => void, closePopover?: () => void) => {
     callback?.();
@@ -93,16 +90,16 @@ export function UserActionsPopover({
     <Popover>
       <PopoverTrigger asChild>
         {children || (
-          <button className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-600 hover:text-gray-900"
+          >
             <MoreVertical className="h-5 w-5" />
-          </button>
+          </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent
-        side={side}
-        align={align}
-        className="w-64 p-2"
-      >
+      <PopoverContent side={side} align={align} className="w-64 p-2">
         <div className="space-y-1">
           {/* Header avec nom utilisateur */}
           <div className="px-3 py-2 text-sm font-semibold text-gray-900">
@@ -113,33 +110,36 @@ export function UserActionsPopover({
           {(showEdit || showViewProfile || showMessage) && (
             <div className="space-y-1">
               {showEdit && onEdit && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleAction(onEdit)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                 >
                   <Edit className="h-4 w-4 text-blue-600" />
                   <span>Éditer</span>
-                </button>
+                </Button>
               )}
 
               {showViewProfile && onViewProfile && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleAction(onViewProfile)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700"
                 >
                   <Eye className="h-4 w-4 text-purple-600" />
                   <span>Voir profil</span>
-                </button>
+                </Button>
               )}
 
               {showMessage && onSendMessage && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleAction(onSendMessage)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
                 >
                   <Mail className="h-4 w-4 text-green-600" />
                   <span>Envoyer un message</span>
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -154,34 +154,32 @@ export function UserActionsPopover({
           {(showBlock || showDelete) && (
             <div className="space-y-1">
               {showBlock && onToggleBlock && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleAction(onToggleBlock)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700"
                 >
                   <Ban className="h-4 w-4 text-orange-600" />
-                  <span>
-                    {user.isBlocked ? 'Débloquer' : 'Bloquer'}
-                  </span>
-                </button>
+                  <span>{user.isBlocked ? "Débloquer" : "Bloquer"}</span>
+                </Button>
               )}
 
               {showDelete && onDelete && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleAction(onDelete)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4 text-red-600" />
                   <span>Supprimer</span>
-                </button>
+                </Button>
               )}
             </div>
           )}
 
           {/* Footer avec email */}
           <div className="mt-2 border-t border-gray-200 pt-2">
-            <div className="px-3 py-1 text-xs text-gray-500">
-              {user.email}
-            </div>
+            <div className="px-3 py-1 text-xs text-gray-500">{user.email}</div>
           </div>
         </div>
       </PopoverContent>

@@ -1,6 +1,6 @@
 /**
  * 🎯 HEADER V8 ENHANCED - Version améliorée avec backend integration
- * 
+ *
  * Combine :
  * ✅ Votre structure V8 (topBar + main + secondary)
  * ✅ Nos APIs backend réelles (/api/layout/header)
@@ -10,26 +10,27 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
-import { 
-  Search, 
-  User, 
-  Menu, 
-  X, 
+import {
+  Search,
+  User,
+  Menu,
+  X,
   ChevronDown,
   Phone,
   Mail,
   Facebook,
   Twitter,
   Instagram,
-  Linkedin
+  Linkedin,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Alert } from '~/components/ui/alert';
 
 // Imports des modules
 import { useOptionalUser } from "../../root";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 interface HeaderData {
   title: string;
@@ -70,9 +71,9 @@ interface HeaderData {
 }
 
 interface HeaderV8EnhancedProps {
-  context?: 'admin' | 'commercial' | 'public';
+  context?: "admin" | "commercial" | "public";
   theme?: string;
-  variant?: 'basic' | 'ecommerce' | 'admin' | 'custom';
+  variant?: "basic" | "ecommerce" | "admin" | "custom";
   features?: string[];
   showTopBar?: boolean;
   showSecondaryNav?: boolean;
@@ -83,18 +84,20 @@ interface HeaderV8EnhancedProps {
   staticData?: HeaderData; // Pour fallback ou données statiques
 }
 
-export function HeaderV8Enhanced({ 
-  context = 'public',
-  theme = 'default',
+export function HeaderV8Enhanced({
+  context = "public",
+  theme = "default",
   onMobileMenuToggle,
   className = "",
-  staticData 
+  staticData,
 }: HeaderV8EnhancedProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [headerData, setHeaderData] = useState<HeaderData | null>(staticData || null);
+  const [headerData, setHeaderData] = useState<HeaderData | null>(
+    staticData || null,
+  );
   const [loading, setLoading] = useState(!staticData);
-  
+
   const fetcher = useFetcher();
   const user = useOptionalUser();
 
@@ -107,7 +110,11 @@ export function HeaderV8Enhanced({
 
   // Mise à jour des données quand l'API répond
   useEffect(() => {
-    if (fetcher.data && typeof fetcher.data === 'object' && fetcher.data !== null) {
+    if (
+      fetcher.data &&
+      typeof fetcher.data === "object" &&
+      fetcher.data !== null
+    ) {
       const data = fetcher.data as any;
       if (!data.error) {
         setHeaderData(data as HeaderData);
@@ -126,15 +133,15 @@ export function HeaderV8Enhanced({
   const fallbackData: HeaderData = {
     title: "Pièces Auto",
     logo: {
-      url: "/images/logo.png", 
+      url: "/images/logo.png",
       alt: "Logo Pièces Auto",
-      link: "/"
+      link: "/",
     },
     navigation: [
       { label: "Accueil", href: "/", icon: "home" },
       { label: "Catalogue", href: "/catalogue", icon: "box" },
       { label: "Marques", href: "/marques", icon: "tag" },
-      { label: "Aide", href: "/aide", icon: "help" }
+      { label: "Aide", href: "/aide", icon: "help" },
     ],
     topBar: {
       show: true,
@@ -142,15 +149,19 @@ export function HeaderV8Enhanced({
         phone: "+33 1 23 45 67 89",
         email: "contact@pieces-auto.fr",
         social: [
-          { platform: "facebook", url: "https://facebook.com", icon: "facebook" },
-          { platform: "twitter", url: "https://twitter.com", icon: "twitter" }
-        ]
-      }
+          {
+            platform: "facebook",
+            url: "https://facebook.com",
+            icon: "facebook",
+          },
+          { platform: "twitter", url: "https://twitter.com", icon: "twitter" },
+        ],
+      },
     },
     quickSearch: {
       enabled: true,
-      placeholder: "Rechercher une pièce, référence, véhicule..."
-    }
+      placeholder: "Rechercher une pièce, référence, véhicule...",
+    },
   };
 
   const data = headerData || fallbackData;
@@ -158,16 +169,23 @@ export function HeaderV8Enhanced({
   // Rendu des icônes sociales
   const getSocialIcon = (iconName: string) => {
     switch (iconName) {
-      case 'facebook': return <Facebook className="w-4 h-4" />;
-      case 'twitter': return <Twitter className="w-4 h-4" />;
-      case 'instagram': return <Instagram className="w-4 h-4" />;
-      case 'linkedin': return <Linkedin className="w-4 h-4" />;
-      default: return null;
+      case "facebook":
+        return <Facebook className="w-4 h-4" />;
+      case "twitter":
+        return <Twitter className="w-4 h-4" />;
+      case "instagram":
+        return <Instagram className="w-4 h-4" />;
+      case "linkedin":
+        return <Linkedin className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
   return (
-    <header className={`header header--v8-enhanced ${className} ${theme === 'dark' ? 'dark' : ''}`}>
+    <header
+      className={`header header--v8-enhanced ${className} ${theme === "dark" ? "dark" : ""}`}
+    >
       {/* 📞 Top Bar - Contact et réseaux sociaux */}
       {data.topBar?.show && (
         <div className="header__top-bar bg-gray-100 border-b">
@@ -175,8 +193,8 @@ export function HeaderV8Enhanced({
             <div className="flex justify-between items-center py-2 text-sm">
               <div className="flex items-center space-x-4">
                 {data.topBar.content.phone && (
-                  <a 
-                    href={`tel:${data.topBar.content.phone}`} 
+                  <a
+                    href={`tel:${data.topBar.content.phone}`}
                     className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                   >
                     <Phone className="w-4 h-4 mr-1" />
@@ -184,8 +202,8 @@ export function HeaderV8Enhanced({
                   </a>
                 )}
                 {data.topBar.content.email && (
-                  <a 
-                    href={`mailto:${data.topBar.content.email}`} 
+                  <a
+                    href={`mailto:${data.topBar.content.email}`}
                     className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                   >
                     <Mail className="w-4 h-4 mr-1" />
@@ -193,7 +211,7 @@ export function HeaderV8Enhanced({
                   </a>
                 )}
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 {data.topBar.content.social?.map((social) => (
                   <a
@@ -207,7 +225,7 @@ export function HeaderV8Enhanced({
                     {getSocialIcon(social.icon)}
                   </a>
                 ))}
-                
+
                 {/* Stats utilisateurs si disponibles */}
                 {data.userStats && (
                   <span className="text-xs text-gray-500 hidden md:inline">
@@ -224,10 +242,9 @@ export function HeaderV8Enhanced({
       <div className="header__main bg-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            
             {/* 🎨 Logo */}
-            <Link 
-              to={data.logo.link || "/"} 
+            <Link
+              to={data.logo.link || "/"}
               className="header__logo flex-shrink-0"
             >
               <img
@@ -242,7 +259,7 @@ export function HeaderV8Enhanced({
             {/* 🔍 Barre de recherche intégrée (desktop) */}
             {data.quickSearch?.enabled && (
               <div className="header__search hidden md:flex flex-1 max-w-md mx-8">
-                <SearchBar 
+                <SearchBar
                   placeholder={data.quickSearch.placeholder}
                   className="w-full"
                   showSuggestions={true}
@@ -260,7 +277,6 @@ export function HeaderV8Enhanced({
 
             {/* ⚡ Actions utilisateur */}
             <div className="header__actions flex items-center space-x-4">
-              
               {/* 🔍 Recherche mobile */}
               <button
                 className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -273,8 +289,8 @@ export function HeaderV8Enhanced({
               {/* 👤 Menu utilisateur */}
               <div className="relative">
                 {user ? (
-                  <Link 
-                    to="/account" 
+                  <Link
+                    to="/account"
                     rel="nofollow"
                     className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -284,8 +300,8 @@ export function HeaderV8Enhanced({
                     </span>
                   </Link>
                 ) : (
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     rel="nofollow"
                     className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -318,7 +334,7 @@ export function HeaderV8Enhanced({
       {/* 🔍 Barre de recherche mobile (expandable) */}
       {searchOpen && (
         <div className="header__mobile-search md:hidden bg-white border-b p-4">
-          <SearchBar 
+          <SearchBar
             placeholder={data.quickSearch?.placeholder}
             autoFocus={true}
             onSearch={() => setSearchOpen(false)}
@@ -360,13 +376,13 @@ export function HeaderV8Enhanced({
       )}
 
       {/* 🏷️ Navigation secondaire (si présente) */}
-      {data.navigation.some(item => item.children) && (
+      {data.navigation.some((item) => item.children) && (
         <div className="header__secondary bg-gray-50 border-b hidden lg:block">
           <div className="container mx-auto px-4">
             <nav className="flex items-center space-x-6 py-3">
               {data.navigation
-                .filter(item => item.children)
-                .flatMap(item => item.children || [])
+                .filter((item) => item.children)
+                .flatMap((item) => item.children || [])
                 .slice(0, 6) // Limite à 6 éléments
                 .map((item, index) => (
                   <Link
@@ -384,9 +400,11 @@ export function HeaderV8Enhanced({
 
       {/* 📊 Loading state */}
       {loading && (
-<Alert className="header__loading  border-b" variant="info">
+        <Alert className="header__loading  border-b" variant="info">
           <div className="container mx-auto px-4 py-2 text-center">
-            <span className="text-sm text-blue-600">Chargement du header...</span>
+            <span className="text-sm text-blue-600">
+              Chargement du header...
+            </span>
           </div>
         </Alert>
       )}
@@ -400,16 +418,19 @@ function NavItem({ item }: { item: any }) {
 
   if (item.children?.length > 0) {
     return (
-      <div 
+      <div
         className="relative group"
         onMouseEnter={() => setDropdownOpen(true)}
         onMouseLeave={() => setDropdownOpen(false)}
       >
-        <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors py-2">
+        <Button
+          variant="ghost"
+          className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors py-2"
+        >
           <span>{item.label}</span>
           <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180" />
-        </button>
-        
+        </Button>
+
         {dropdownOpen && (
           <div className="absolute top-full left-0 mt-1 w-48 bg-white shadow-lg rounded-lg border py-2 z-50">
             {item.children.map((child: any, index: number) => (
@@ -428,8 +449,8 @@ function NavItem({ item }: { item: any }) {
   }
 
   return (
-    <Link 
-      to={item.href} 
+    <Link
+      to={item.href}
       className="text-gray-700 hover:text-blue-600 transition-colors py-2"
     >
       {item.label}
