@@ -14,7 +14,7 @@ export class VehicleHierarchyController extends SupabaseBaseService {
 
   /**
    * 🚗 GET /api/hierarchy/types - Retourne les motorisations/types d'un modèle
-   * Utilisé par constructeurs.$.tsx pour le funnel 412
+   * Utilisé par constructeurs.$.tsx pour afficher les motorisations disponibles
    *
    * @param modele_id - ID du modèle (ex: 140002 pour CLIO I)
    * @returns Liste des types/motorisations disponibles

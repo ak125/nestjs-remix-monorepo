@@ -24,7 +24,6 @@ import {
   Error401,
   Error404,
   Error410,
-  Error412,
   Error503,
   ErrorGeneric,
 } from "./components/errors";
@@ -350,13 +349,6 @@ export function ErrorBoundary() {
               url={error.data?.url}
               isOldLink={error.data?.isOldLink}
               redirectTo={error.data?.redirectTo}
-            />
-          );
-        case 412:
-          return (
-            <Error412
-              condition={error.data?.condition}
-              requirement={error.data?.requirement}
             />
           );
         case 503:
