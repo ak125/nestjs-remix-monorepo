@@ -4,7 +4,7 @@
 
 import {
   defer,
-  json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -25,7 +25,6 @@ import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
-import { Error412 } from "../components/errors/Error412";
 import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
@@ -171,7 +170,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     resolveGammeId(rawGamme),
   ]);
 
-  // Validation des IDs véhicule - Si invalides, retourner 412 avec options
+  // Validation des IDs véhicule - Si invalides, 301 redirect vers page gamme
   // 🛡️ gammeId n'est PAS validé ici - délégué au batch-loader pour permettre gammeId=0 → 404 SEO
   let vehicleValidationFailed = false;
   try {
@@ -183,79 +182,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       source: "loader-validation",
     });
   } catch (validationError) {
-    // 🛡️ IDs invalides → 412 funnel SEO au lieu de 404
+    // 🛡️ IDs invalides → 301 redirect vers page gamme (SEO optimal)
     console.warn(
-      `⚠️ [LOADER] Validation IDs échouée, retour 412 funnel:`,
+      `⚠️ [LOADER] Validation IDs échouée, redirect 301 vers gamme:`,
       validationError,
     );
     vehicleValidationFailed = true;
   }
 
-  // Si validation échouée, récupérer les véhicules compatibles et retourner 412
+  // 🔄 SEO: Si validation véhicule échouée → 301 redirect vers page gamme
+  // Raison: 412 est traité comme 4xx par Google → désindexation
+  // 301 préserve le PageRank et guide vers une page indexable
   if (vehicleValidationFailed) {
-    // Récupérer les véhicules compatibles pour cette gamme via substitution API
-    let compatibleOptions: Array<{
-      id: number;
-      label: string;
-      url: string;
-      description?: string;
-      metadata?: {
-        fuel?: string;
-        power?: string;
-        years?: string;
-        body?: string;
-      };
-    }> = [];
-
-    try {
-      const substitutionUrl = `http://localhost:3000/api/substitution/check?url=/pieces/${gammeData.alias}-${gammeId}.html`;
-      const subResponse = await fetch(substitutionUrl);
-      if (subResponse.ok) {
-        const subData = await subResponse.json();
-        if (subData?.lock?.options && Array.isArray(subData.lock.options)) {
-          compatibleOptions = subData.lock.options.slice(0, 20);
-        }
-      }
-    } catch {
-      // Continuer sans options si erreur
-    }
-
-    throw json(
-      {
-        url: request.url,
-        condition: "Véhicule valide requis",
-        requirement: "Sélectionnez un véhicule compatible",
-        substitution: {
-          lock: {
-            type: "vehicle" as const,
-            missing: "valid_vehicle",
-            known: {
-              gamme: {
-                id: gammeId,
-                name: gammeData.alias,
-                alias: gammeData.alias,
-              },
-              marque: { id: vehicleIds.marqueId, name: marqueData.alias },
-              modele: { id: vehicleIds.modeleId, name: modeleData.alias },
-              type: { id: vehicleIds.typeId, name: typeData.alias },
-            },
-            options: compatibleOptions,
-          },
-          seo: {
-            title: `${gammeData.alias} - Sélectionnez votre véhicule | AutoMecanik`,
-            description: `Trouvez des pièces ${gammeData.alias} compatibles avec votre véhicule`,
-            h1: `${gammeData.alias} - Véhicules compatibles`,
-          },
-        },
-      },
-      {
-        status: 412,
-        headers: {
-          "X-Robots-Tag": "index, follow", // SEO haut funnel - page indexable
-          "Cache-Control": "public, max-age=3600",
-        },
-      },
+    console.log(
+      `🔄 [301] Validation véhicule échouée, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
+    return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
   // 🚀 LCP OPTIMIZATION V7: Seul batch-loader bloque le LCP
@@ -298,114 +240,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 6. Traitement de la réponse Batch
 
-  // 🚀 Récupérer les véhicules compatibles pour la gamme (pour les pages 412)
-  let compatibleVehicleOptions: Array<{
-    id: number;
-    label: string;
-    url: string;
-    description?: string;
-  }> = [];
-  try {
-    const substitutionUrl = `http://localhost:3000/api/substitution/check?url=/pieces/${gamme.alias}-${gammeId}.html`;
-    const subResponse = await fetch(substitutionUrl);
-    if (subResponse.ok) {
-      const subData = await subResponse.json();
-      if (subData?.lock?.options && Array.isArray(subData.lock.options)) {
-        compatibleVehicleOptions = subData.lock.options.slice(0, 12); // Limiter à 12 options
-      }
-    }
-  } catch {
-    // En cas d'erreur, on continue sans les options (array vide)
-  }
-
-  // Validation - Convertir 410 → 412 si la gamme existe et le véhicule est valide
-  // Car l'utilisateur peut sélectionner un autre véhicule compatible
+  // 🔄 SEO: Validation batch-loader - Si échec mais gamme existe → 301 redirect
+  // Raison: 412 est traité comme 4xx par Google → désindexation
+  // 301 préserve le PageRank et guide vers une page indexable
   if (batchResponse.validation && !batchResponse.validation.valid) {
     const apiStatusCode = batchResponse.validation.http_status || 410;
 
-    // Si l'API retourne 410 mais que la gamme existe et le véhicule est complet,
-    // on retourne 412 (Precondition Failed) car c'est une situation récupérable
-    const isRecoverable =
-      gamme && vehicle && vehicle.marque && vehicle.modele && vehicle.type;
-
-    if (apiStatusCode === 410 && isRecoverable) {
-      // 412 Precondition Failed - l'utilisateur peut choisir un autre véhicule
-      throw json(
-        {
-          url: request.url,
-          condition: "Produits disponibles pour ce véhicule",
-          requirement: "Sélectionnez un autre véhicule compatible",
-          substitution: {
-            lock: {
-              type: "vehicle" as const,
-              missing: "compatible_vehicle",
-              known: {
-                gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
-                marque: { id: vehicle.marqueId, name: vehicle.marque },
-                modele: { id: vehicle.modeleId, name: vehicle.modele },
-                type: { id: vehicle.typeId, name: vehicle.type },
-              },
-              options: compatibleVehicleOptions,
-            },
-            seo: {
-              title: `${gamme.name} - Sélectionnez votre véhicule`,
-              description: `Trouvez des ${gamme.name} compatibles avec votre véhicule`,
-              h1: `${gamme.name} - Autres véhicules compatibles`,
-            },
-          },
-        },
-        {
-          status: 412,
-          headers: {
-            "X-Robots-Tag": "index, follow",
-            "Cache-Control": "public, max-age=3600",
-          },
-        },
+    // Si on a une gamme valide → 301 redirect vers page gamme
+    if (gamme && gamme.alias) {
+      console.log(
+        `🔄 [301] Validation batch échouée (${apiStatusCode}), redirect vers page gamme: /pieces/${gamme.alias}-${gammeId}.html`,
       );
-    }
-
-    // Si on a au moins la gamme, toujours retourner 412 (funnel SEO)
-    // Le 404 ne devrait être utilisé que si on n'a AUCUNE info exploitable
-    if (gamme && gamme.name) {
-      throw json(
-        {
-          url: request.url,
-          condition: "Véhicule valide requis",
-          requirement: "Sélectionnez un véhicule compatible",
-          substitution: {
-            lock: {
-              type: "vehicle" as const,
-              missing: "valid_vehicle",
-              known: {
-                gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
-                // Inclure les infos véhicule partielles si disponibles
-                ...(vehicle?.marque && {
-                  marque: { id: vehicle.marqueId, name: vehicle.marque },
-                }),
-                ...(vehicle?.modele && {
-                  modele: { id: vehicle.modeleId, name: vehicle.modele },
-                }),
-                ...(vehicle?.type && {
-                  type: { id: vehicle.typeId, name: vehicle.type },
-                }),
-              },
-              options: compatibleVehicleOptions,
-            },
-            seo: {
-              title: `${gamme.name} - Sélectionnez votre véhicule | AutoMecanik`,
-              description: `Trouvez des ${gamme.name} compatibles avec votre véhicule. Large choix de pièces auto de qualité.`,
-              h1: `${gamme.name} - Véhicules compatibles`,
-            },
-          },
-        },
-        {
-          status: 412,
-          headers: {
-            "X-Robots-Tag": "index, follow", // SEO: page funnel indexable
-            "Cache-Control": "public, max-age=3600",
-          },
-        },
-      );
+      return redirect(`/pieces/${gamme.alias}-${gammeId}.html`, 301);
     }
 
     // Cas extrême: aucune gamme identifiable → vrai 404/410
@@ -425,42 +271,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Mapping Pièces - Utilise utilitaire centralisé
   const piecesData = mapBatchPiecesToData(batchResponse.pieces);
 
+  // 🔄 SEO: Si 0 produits pour cette combinaison → 301 redirect vers page gamme
+  // Raison: 412 est traité comme 4xx par Google → désindexation
+  // 301 préserve le PageRank et guide vers une page indexable
   if (piecesData.length === 0) {
-    // La gamme existe, le véhicule est complet, mais pas de produits pour cette combinaison
-    // → 412 (Precondition Failed) car l'utilisateur peut choisir un autre véhicule
-    // Contrairement au 410 (Gone) qui indique une suppression définitive
-    throw json(
-      {
-        url: request.url,
-        condition: "Produits disponibles pour ce véhicule",
-        requirement: "Sélectionnez un autre véhicule compatible",
-        substitution: {
-          lock: {
-            type: "vehicle" as const,
-            missing: "compatible_vehicle",
-            known: {
-              gamme: { id: gammeId, name: gamme.name, alias: gamme.alias },
-              marque: { id: vehicle.marqueId, name: vehicle.marque },
-              modele: { id: vehicle.modeleId, name: vehicle.modele },
-              type: { id: vehicle.typeId, name: vehicle.type },
-            },
-            options: compatibleVehicleOptions,
-          },
-          seo: {
-            title: `${gamme.name} - Sélectionnez votre véhicule`,
-            description: `Trouvez des ${gamme.name} compatibles avec votre véhicule`,
-            h1: `${gamme.name} - Autres véhicules compatibles`,
-          },
-        },
-      },
-      {
-        status: 412,
-        headers: {
-          "X-Robots-Tag": "index, follow", // SEO haut funnel - page indexable
-          "Cache-Control": "public, max-age=3600",
-        },
-      },
+    console.log(
+      `🔄 [301] 0 produits pour cette combinaison, redirect vers page gamme: /pieces/${gamme.alias}-${gammeId}.html`,
     );
+    return redirect(`/pieces/${gamme.alias}-${gammeId}.html`, 301);
   }
 
   // Stats prix - Utilise utilitaire centralisé
@@ -1080,18 +898,8 @@ export function ErrorBoundary() {
     );
   }
 
-  // Gestion spécifique du 412 Precondition Failed (véhicule sans produits)
-  if (isRouteErrorResponse(error) && error.status === 412) {
-    const data = error.data || {};
-    return (
-      <Error412
-        url={location.pathname}
-        condition={data.condition}
-        requirement={data.requirement}
-        substitution={data.substitution}
-      />
-    );
-  }
+  // Note: 412 supprimé - toutes les erreurs récupérables font maintenant 301 redirect
+  // vers la page gamme pour préserver le PageRank (SEO optimal)
 
   // Message d'erreur détaillé pour le développement
   const errorMessage =
