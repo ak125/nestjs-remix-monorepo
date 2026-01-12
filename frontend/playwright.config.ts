@@ -54,43 +54,54 @@ export default defineConfig({
   },
 
   // Projets : browsers à tester
-  projects: [
-    {
-      name: 'chromium',
-      use: { 
-        ...devices['Desktop Chrome'],
-        viewport: { width: 1920, height: 1080 },
-      },
-    },
-    {
-      name: 'firefox',
-      use: { 
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1920, height: 1080 },
-      },
-    },
-    {
-      name: 'webkit',
-      use: { 
-        ...devices['Desktop Safari'],
-        viewport: { width: 1920, height: 1080 },
-      },
-    },
-    
-    // Tests mobile pour NavbarMobile (Phase 2)
-    {
-      name: 'mobile-chrome',
-      use: { 
-        ...devices['Pixel 5'],
-      },
-    },
-    {
-      name: 'mobile-safari',
-      use: { 
-        ...devices['iPhone 12'],
-      },
-    },
-  ],
+  // CI: Chromium uniquement (rapide ~5x)
+  // Local: tous les navigateurs (5 browsers)
+  projects: process.env.CI
+    ? [
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            viewport: { width: 1920, height: 1080 },
+          },
+        },
+      ]
+    : [
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            viewport: { width: 1920, height: 1080 },
+          },
+        },
+        {
+          name: 'firefox',
+          use: {
+            ...devices['Desktop Firefox'],
+            viewport: { width: 1920, height: 1080 },
+          },
+        },
+        {
+          name: 'webkit',
+          use: {
+            ...devices['Desktop Safari'],
+            viewport: { width: 1920, height: 1080 },
+          },
+        },
+        // Tests mobile pour NavbarMobile (Phase 2)
+        {
+          name: 'mobile-chrome',
+          use: {
+            ...devices['Pixel 5'],
+          },
+        },
+        {
+          name: 'mobile-safari',
+          use: {
+            ...devices['iPhone 12'],
+          },
+        },
+      ],
 
   // Serveur web pour les tests (optionnel, si besoin de démarrer le serveur auto)
   webServer: process.env.CI ? {
