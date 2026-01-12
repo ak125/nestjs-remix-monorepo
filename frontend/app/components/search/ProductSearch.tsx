@@ -2,27 +2,30 @@
 // 🔍 Composant de recherche produits UNIVERSEL avec dropdown de résultats
 // Utilisable partout : Hero, Navbar, Catalogue, etc.
 
-import { useNavigate } from '@remix-run/react';
-import { Search, Package, TrendingUp, X } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { Badge } from '~/components/ui';
-import { PartImage } from '~/components/ui/ResponsiveImage';
-import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
+import { useNavigate } from "@remix-run/react";
+import { Search, Package, TrendingUp, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  useProductSearch,
+  type ProductSearchResult,
+} from "../../hooks/useProductSearch";
+import { Badge } from "~/components/ui";
+import { PartImage } from "~/components/ui/ResponsiveImage";
 
 interface ProductSearchProps {
-  variant?: 'hero' | 'compact'; // hero = grande pour homepage, compact = petite pour navbar
+  variant?: "hero" | "compact"; // hero = grande pour homepage, compact = petite pour navbar
   className?: string;
   placeholder?: string;
   showSubtext?: boolean; // Afficher le texte sous la barre
 }
 
-export function ProductSearch({ 
-  variant = 'hero',
-  className = '',
+export function ProductSearch({
+  variant = "hero",
+  className = "",
   placeholder,
-  showSubtext = true
+  showSubtext = true,
 }: ProductSearchProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -31,7 +34,7 @@ export function ProductSearch({
   const { results, isLoading, hasResults, isEmpty } = useProductSearch(query, {
     debounceMs: 300,
     minQueryLength: 2,
-    limit: 8
+    limit: 8,
   });
 
   // Show dropdown when we have results
@@ -46,13 +49,16 @@ export function ProductSearch({
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -64,28 +70,30 @@ export function ProductSearch({
   };
 
   const handleResultClick = (result: ProductSearchResult) => {
-    navigate(`/pieces/${result.piece_id}`);
+    // Utiliser la référence ou l'ID pour rechercher le produit
+    const searchTerm = result.reference || result.piece_id;
+    navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
     setShowDropdown(false);
-    setQuery('');
+    setQuery("");
   };
 
   const clearSearch = () => {
-    setQuery('');
+    setQuery("");
     setShowDropdown(false);
   };
 
   // Styles adaptatifs selon variant
-  const isHero = variant === 'hero';
-  const containerClass = isHero ? 'max-w-2xl mx-auto mb-8' : 'w-full';
-  const inputClass = isHero 
-    ? 'w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32'
-    : 'w-full px-4 py-2 text-base text-gray-900 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-24';
+  const isHero = variant === "hero";
+  const containerClass = isHero ? "max-w-2xl mx-auto mb-8" : "w-full";
+  const inputClass = isHero
+    ? "w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32"
+    : "w-full px-4 py-2 text-base text-gray-900 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-24";
   const buttonClass = isHero
-    ? 'absolute right-2 top-2 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2'
-    : 'absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm';
-  const defaultPlaceholder = isHero 
-    ? 'Rechercher par référence, marque, modèle...'
-    : 'Rechercher une pièce...';
+    ? "absolute right-2 top-2 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2"
+    : "absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm";
+  const defaultPlaceholder = isHero
+    ? "Rechercher par référence, marque, modèle..."
+    : "Rechercher une pièce...";
 
   return (
     <div className={`${containerClass} ${className}`} ref={dropdownRef}>
@@ -98,7 +106,7 @@ export function ProductSearch({
             placeholder={placeholder || defaultPlaceholder}
             className={inputClass}
           />
-          
+
           {/* Clear button */}
           {query && (
             <button
@@ -111,12 +119,9 @@ export function ProductSearch({
           )}
 
           {/* Search button */}
-          <button 
-            type="submit"
-            className={buttonClass}
-          >
+          <button type="submit" className={buttonClass}>
             <Search className="w-4 h-4" />
-            {isHero && 'Rechercher'}
+            {isHero && "Rechercher"}
           </button>
         </div>
 
@@ -133,7 +138,8 @@ export function ProductSearch({
                 <div className="p-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
                     <TrendingUp className="w-4 h-4 inline mr-1" />
-                    {results.length} résultat{results.length > 1 ? 's' : ''} trouvé{results.length > 1 ? 's' : ''}
+                    {results.length} résultat{results.length > 1 ? "s" : ""}{" "}
+                    trouvé{results.length > 1 ? "s" : ""}
                   </p>
                 </div>
                 <ul className="divide-y divide-gray-100">
@@ -147,8 +153,8 @@ export function ProductSearch({
                         {/* Image responsive */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                           {result.image_url ? (
-                            <PartImage 
-                              src={result.image_url} 
+                            <PartImage
+                              src={result.image_url}
                               alt={result.name}
                               className="w-full h-full object-cover"
                               sizes="64px"
@@ -160,7 +166,9 @@ export function ProductSearch({
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{result.name}</p>
+                          <p className="font-medium text-gray-900 truncate">
+                            {result.name}
+                          </p>
                           <div className="flex items-center gap-2 mt-1">
                             {result.marque_name && (
                               <Badge variant="info">{result.marque_name}</Badge>
@@ -183,7 +191,9 @@ export function ProductSearch({
                           {result.stock !== undefined && (
                             <p className="text-xs text-gray-500 mt-1">
                               {result.stock > 0 ? (
-                                <span className="text-green-600">✓ En stock</span>
+                                <span className="text-green-600">
+                                  ✓ En stock
+                                </span>
                               ) : (
                                 <span className="text-red-600">Rupture</span>
                               )}
@@ -208,9 +218,12 @@ export function ProductSearch({
             ) : query.length >= 2 ? (
               <div className="p-8 text-center">
                 <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-600 mb-2">Aucun résultat pour "{query}"</p>
+                <p className="text-gray-600 mb-2">
+                  Aucun résultat pour "{query}"
+                </p>
                 <p className="text-sm text-gray-500">
-                  Essayez avec un autre terme ou utilisez le sélecteur de véhicule
+                  Essayez avec un autre terme ou utilisez le sélecteur de
+                  véhicule
                 </p>
               </div>
             ) : null}
@@ -221,7 +234,8 @@ export function ProductSearch({
       {/* Subtext optionnel (seulement en mode hero) */}
       {showSubtext && isHero && (
         <p className="text-sm text-blue-200 mt-2 text-center">
-          Ou sélectionnez votre véhicule ci-dessous pour un catalogue personnalisé
+          Ou sélectionnez votre véhicule ci-dessous pour un catalogue
+          personnalisé
         </p>
       )}
     </div>
