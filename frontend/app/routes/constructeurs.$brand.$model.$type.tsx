@@ -2,6 +2,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -33,7 +34,6 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
-import { Error412 } from "~/components/errors/Error412";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -412,58 +412,21 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
-  // 🔄 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 412 funnel
+  // 🔄 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 301 redirect
+  // Raison: 412 est traité comme 4xx par Google → désindexation
+  // 301 préserve le PageRank et guide vers la page marque existante
   if (!brand.includes("-") || !model.includes("-")) {
-    console.log("🔄 [412] Format legacy détecté, redirection vers funnel:", {
+    console.log("🔄 [301] Format legacy détecté, redirect vers page marque:", {
       brand,
       model,
       type,
     });
 
-    // Capitaliser pour affichage
-    const capitalizeFirst = (str: string) =>
-      str
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ");
+    // Extraire le nom de la marque (sans ID si présent)
+    const brandAlias = brand.replace(/-\d+$/, "").toLowerCase();
 
-    const brandDisplay = capitalizeFirst(brand.replace(/-\d+$/, ""));
-    const modelDisplay = capitalizeFirst(model.replace(/-\d+$/, ""));
-
-    return json(
-      {
-        status: 412,
-        url: `https://www.automecanik.com/constructeurs/${brand}/${model}/${type}`,
-        condition: "Identifiants véhicule requis",
-        requirement:
-          "Cette URL utilise un ancien format. Veuillez sélectionner votre véhicule.",
-        substitution: {
-          httpStatus: 412,
-          lock: {
-            type: "vehicle" as const,
-            missing: "type_id",
-            known: {
-              marque: { id: 0, name: brandDisplay, alias: brand },
-              modele: { id: 0, name: modelDisplay, alias: model },
-            },
-            options: [], // Les options seront remplies par le frontend ou l'utilisateur naviguera
-          },
-          seo: {
-            title: `${brandDisplay} ${modelDisplay} - Sélectionnez votre véhicule | AutoMecanik`,
-            description: `Trouvez les pièces pour votre ${brandDisplay} ${modelDisplay}. Sélectionnez votre motorisation exacte.`,
-            h1: `Pièces ${brandDisplay} ${modelDisplay}`,
-            canonical: `https://www.automecanik.com/constructeurs/${brand}/${model}`,
-          },
-        },
-      },
-      {
-        status: 412,
-        headers: {
-          "X-Robots-Tag": "index, follow",
-          "Cache-Control": "public, max-age=3600",
-        },
-      },
-    );
+    // 301 redirect vers la page marque principale
+    return redirect(`/constructeurs/${brandAlias}.html`, 301);
   }
 
   // Parsing du type_id
@@ -641,31 +604,12 @@ function generateVehicleSchema(vehicle: any, breadcrumb: any) {
   };
 }
 
-// �🎯 Meta function avec SEO optimisé (logique PHP)
+// 🎯 Meta function avec SEO optimisé (logique PHP)
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
       { title: "Page non trouvée" },
       { name: "robots", content: "noindex, nofollow" },
-    ];
-  }
-
-  // 🔄 412: Utiliser SEO de substitution pour URLs legacy
-  if (data.status === 412 && data.substitution?.seo) {
-    return [
-      { title: data.substitution.seo.title },
-      { name: "description", content: data.substitution.seo.description },
-      { name: "robots", content: "index, follow" },
-      {
-        tagName: "link",
-        rel: "canonical",
-        href: data.substitution.seo.canonical,
-      },
-      { property: "og:title", content: data.substitution.seo.title },
-      {
-        property: "og:description",
-        content: data.substitution.seo.description,
-      },
     ];
   }
 
@@ -711,27 +655,12 @@ export default function VehicleDetailPage() {
 
   // Effet pour afficher le CTA sticky au scroll
   useEffect(() => {
-    // Ne pas exécuter pour les pages 412
-    if (data?.status === 412) return;
-
     const handleScroll = () => {
       setShowStickyCta(window.scrollY > 400);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [data?.status]);
-
-  // 🔄 412: Afficher le funnel de sélection véhicule pour URLs legacy
-  if (data?.status === 412 && data?.substitution) {
-    return (
-      <Error412
-        url={data.url}
-        condition={data.condition}
-        requirement={data.requirement}
-        substitution={data.substitution}
-      />
-    );
-  }
+  }, []);
 
   const {
     vehicle,
