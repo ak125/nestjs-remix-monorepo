@@ -70,6 +70,18 @@ import { PurchaseGuideValidatorService } from './validation/purchase-guide-valid
 // 📊 Service Matrice SEO (exporté pour AdminModule)
 import { SeoMatriceService } from './services/seo-matrice.service';
 
+// 🔄 Service Sync Matrice SEO (exporté pour AdminModule)
+import { SeoMatriceSyncService } from './services/seo-matrice-sync.service';
+
+// 🛡️ Service Validation 4 Barrières SEO
+import { SeoBarrierService } from './services/seo-barrier.service';
+
+// 📊 Service Score + Gate SEO
+import { SeoScorerService } from './services/seo-scorer.service';
+
+// 🎯 Service V-Level Analyzer (WebSearch + Anthropic)
+import { VLevelAnalyzerService } from './services/vlevel-analyzer.service';
+
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
 
@@ -136,7 +148,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
     SeoVariationsController, // 📝 Contrôleur Variations SEO
     SeoLinkTrackingController, // 📊 Contrôleur Tracking Liens Internes
-    // SeoMatriceController déplacé vers AdminModule → /api/admin/seo-matrice
+    // Note: AdminSeoMatriceController (protégé) dans AdminModule → /api/admin/seo-matrice
   ],
 
   providers: [
@@ -159,7 +171,11 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat
-    SeoMatriceService, // 📊 Service Matrice SEO (n8n workflow)
+    SeoMatriceService, // 📊 Service Matrice SEO
+    SeoMatriceSyncService, // 🔄 Service Sync Matrice SEO (audit trail)
+    SeoBarrierService, // 🛡️ Service Validation 4 Barrières SEO
+    SeoScorerService, // 📊 Service Score + Gate SEO
+    VLevelAnalyzerService, // 🎯 Service V-Level Analyzer (WebSearch + Anthropic)
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -191,7 +207,11 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat exporté
-    SeoMatriceService, // 📊 Service Matrice SEO exporté
+    SeoMatriceService, // 📊 Service Matrice SEO (exporté pour AdminModule)
+    SeoMatriceSyncService, // 🔄 Service Sync Matrice SEO (exporté pour AdminModule)
+    SeoBarrierService, // 🛡️ Service Validation 4 Barrières SEO (exporté pour AdminModule)
+    SeoScorerService, // 📊 Service Score + Gate SEO (exporté pour AdminModule)
+    VLevelAnalyzerService, // 🎯 Service V-Level Analyzer (exporté pour AdminModule)
   ],
 })
 export class SeoModule {
