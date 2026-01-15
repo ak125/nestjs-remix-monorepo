@@ -67,7 +67,11 @@ export class RmBuilderService extends SupabaseBaseService {
         };
       }
 
-      const products = (data || []) as RmProduct[];
+      const rawProducts = (data || []) as RmProduct[];
+
+      // 🚫 TEMPORAIRE: Masquer stock_status pour le moment
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const products = rawProducts.map(({ stock_status, ...rest }) => rest);
 
       this.logger.debug(
         `Found ${products.length} products in ${duration_ms}ms`,
@@ -78,7 +82,7 @@ export class RmBuilderService extends SupabaseBaseService {
         gamme_id,
         vehicle_id,
         count: products.length,
-        products,
+        products: products as unknown as RmProduct[],
         duration_ms,
       };
     } catch (err) {
