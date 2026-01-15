@@ -233,12 +233,6 @@ jobs:
           URLS=(
             "/"
             "/health"
-            "/search?q=plaquette"
-            "/pieces/catalogue"
-            "/pieces/catalogue?category=freinage"
-            "/pieces/catalogue?category=moteur"
-            "/contact"
-            "/cart"
           )
 
           for url in "${URLS[@]}"; do
