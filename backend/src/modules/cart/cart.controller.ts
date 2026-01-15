@@ -161,7 +161,7 @@ export class CartController {
         updated_at: new Date(),
       };
 
-      this.logger.log(
+      this.logger.debug(
         `✅ Panier récupéré: ${cart.totals.total_items} articles, total: ${cart.totals.total.toFixed(2)}€`,
       );
       return cart;
