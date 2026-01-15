@@ -191,6 +191,9 @@ async function bootstrap() {
 
     const selectedPort = process.env.PORT || 3000;
 
+    // ✅ Graceful shutdown pour éviter les fuites mémoire et connexions orphelines
+    app.enableShutdownHooks();
+
     // 🔷 Configuration OpenAPI / Swagger
     if (!isProd || process.env.ENABLE_SWAGGER === 'true') {
       const config = new DocumentBuilder()

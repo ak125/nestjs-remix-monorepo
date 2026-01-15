@@ -18,13 +18,24 @@ module.exports.getServerBuild = async function getServerBuild() {
 
 module.exports.startDevServer = async function startDevServer(app) {
 	if (process.env.NODE_ENV === 'production') return;
+
 	const vite = await import('vite');
 	devServer = await vite.createServer({
-		server: { middlewareMode: 'true' },
+		server: { middlewareMode: true },
 		root: __dirname,
+		appType: 'custom',
+	});
+
+	// ✅ Error handler pour éviter crash silencieux
+	devServer.middlewares.use((err, req, res, next) => {
+		console.error('[Vite Error]', err.message || err);
+		next(err);
 	});
 
 	app.use(devServer.middlewares);
+
+	// ✅ Log pour confirmer que Vite est actif
+	console.log('[Vite] Dev server middleware attached');
+
 	return devServer;
-	// ...continues
 };
