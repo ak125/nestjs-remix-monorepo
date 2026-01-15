@@ -46,6 +46,9 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
 import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // 🧠 NOUVEAU - Knowledge Graph + Reasoning Engine v2.8.0 !
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 RAG PROXY - NestJS proxy vers service RAG Python !
+import { GmailModule } from './modules/gmail/gmail.module'; // 📧 NOUVEAU - Module Gmail inbox admin !
+import { VehicleKnowledgeModule } from './modules/vehicle-knowledge/vehicle-knowledge.module'; // 🚗 V5 ARCHITECTURE - Entity → Layers → Cards !
+import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Model pour listings optimisés !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -78,12 +81,30 @@ import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 R
           limit: 2000, // 2000 req/heure par IP
         },
       ],
-      // 🛡️ Skip SSR internal calls from localhost (Remix SSR)
+      // 🛡️ Skip internal calls (Remix SSR + Docker containers)
       skipIf: (context) => {
         const request = context.switchToHttp().getRequest();
         const ip = request.ip || request.connection?.remoteAddress;
+
         // Skip localhost/127.0.0.1/::1 (internal SSR calls)
-        return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+        if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
+          return true;
+        }
+
+        // Skip Docker bridge network (172.17.0.0/16) - pour n8n et autres conteneurs
+        if (ip?.startsWith('172.17.') || ip?.startsWith('::ffff:172.17.')) {
+          return true;
+        }
+
+        // Skip Docker internal networks (172.16-31.0.0/12) - tous réseaux Docker
+        const dockerMatch = ip?.match(
+          /^(?:::ffff:)?172\.(1[6-9]|2[0-9]|3[0-1])\./,
+        );
+        if (dockerMatch) {
+          return true;
+        }
+
+        return false;
       },
     }),
 
@@ -150,6 +171,15 @@ import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 R
 
     // 🤖 RAG PROXY - Service RAG Python
     RagProxyModule, // 🤖 ACTIVÉ - Proxy NestJS vers service RAG Python (port 8000) !
+
+    // 📧 GMAIL INBOX - Boîte mail admin intégrée
+    GmailModule, // 📧 ACTIVÉ - Module Gmail inbox admin avec OAuth2 !
+
+    // 🚗 V5 VEHICLE KNOWLEDGE - Architecture Entity → Layers → Cards
+    VehicleKnowledgeModule, // 🚗 ACTIVÉ - Système V5 avec garde-fous RAG !
+
+    // 🏗️ READ MODEL - Listings pré-calculés optimisés
+    RmModule, // 🏗️ ACTIVÉ - Module RM pour accès aux listings optimisés !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées
