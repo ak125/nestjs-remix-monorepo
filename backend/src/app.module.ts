@@ -46,8 +46,6 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
 import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // 🧠 NOUVEAU - Knowledge Graph + Reasoning Engine v2.8.0 !
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 RAG PROXY - NestJS proxy vers service RAG Python !
-import { GmailModule } from './modules/gmail/gmail.module'; // 📧 NOUVEAU - Module Gmail inbox admin !
-import { VehicleKnowledgeModule } from './modules/vehicle-knowledge/vehicle-knowledge.module'; // 🚗 V5 ARCHITECTURE - Entity → Layers → Cards !
 import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Model pour listings optimisés !
 
 /**
@@ -171,12 +169,6 @@ import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Mod
 
     // 🤖 RAG PROXY - Service RAG Python
     RagProxyModule, // 🤖 ACTIVÉ - Proxy NestJS vers service RAG Python (port 8000) !
-
-    // 📧 GMAIL INBOX - Boîte mail admin intégrée
-    GmailModule, // 📧 ACTIVÉ - Module Gmail inbox admin avec OAuth2 !
-
-    // 🚗 V5 VEHICLE KNOWLEDGE - Architecture Entity → Layers → Cards
-    VehicleKnowledgeModule, // 🚗 ACTIVÉ - Système V5 avec garde-fous RAG !
 
     // 🏗️ READ MODEL - Listings pré-calculés optimisés
     RmModule, // 🏗️ ACTIVÉ - Module RM pour accès aux listings optimisés !
