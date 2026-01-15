@@ -23,6 +23,7 @@ import {
   type RelatedBrand,
   type PopularGamme,
 } from "../../types/brand.types";
+import { toBooleanFlag } from "../../utils/type-guards";
 
 // Configuration de l'API
 // Les deux tournent sur le port 3000 (Remix proxifie vers NestJS)
@@ -616,8 +617,8 @@ class BrandApiService {
           rpcData.brand.marque_name.toUpperCase(),
         marque_alias: rpcData.brand.marque_alias,
         marque_logo: this.generateLogoUrl(rpcData.brand.marque_logo),
-        marque_display: Number(rpcData.brand.marque_display) === 1 ? 1 : 0,
-        marque_relfollow: Number(rpcData.brand.marque_relfollow) === 1 ? 1 : 0,
+        marque_display: toBooleanFlag(rpcData.brand.marque_display),
+        marque_relfollow: toBooleanFlag(rpcData.brand.marque_relfollow),
       };
 
       // Traitement des données SEO (utiliser le SEO du RPC ou générer défaut)
