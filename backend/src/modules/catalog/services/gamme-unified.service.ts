@@ -249,6 +249,41 @@ export class GammeUnifiedService extends SupabaseBaseService {
   }
 
   /**
+   * 🔍 Récupère une gamme par son alias (pour migration SEO)
+   * Retourne l'ID de la gamme si trouvée, null sinon
+   */
+  async getGammeByAlias(
+    alias: string,
+  ): Promise<{ id: number; name: string; alias: string } | null> {
+    try {
+      this.logger.log(`🔍 Recherche gamme par alias: ${alias}`);
+
+      const { data, error } = await this.supabase
+        .from(TABLES.pieces_gamme)
+        .select('pg_id, pg_name, pg_alias')
+        .eq('pg_alias', alias)
+        .eq('pg_display', '1')
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        this.logger.warn(`⚠️ Gamme non trouvée pour alias: ${alias}`);
+        return null;
+      }
+
+      this.logger.log(`✅ Gamme trouvée: ${data.pg_name} (ID: ${data.pg_id})`);
+      return {
+        id: data.pg_id,
+        name: data.pg_name,
+        alias: data.pg_alias,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur getGammeByAlias(${alias}):`, error);
+      return null;
+    }
+  }
+
+  /**
    * 🔒 Vérifie si une gamme existe par son ID (pg_id)
    * Utilisé pour la validation SEO des URLs
    */

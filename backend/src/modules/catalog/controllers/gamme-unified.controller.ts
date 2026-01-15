@@ -96,6 +96,31 @@ export class GammeUnifiedController {
   }
 
   /**
+   * 🔍 GET /api/catalog/gammes/by-alias/:alias - Récupère gamme par alias
+   * Pour migration SEO des anciennes URLs sans ID
+   */
+  @Get('by-alias/:alias')
+  async getGammeByAlias(@Param('alias') alias: string) {
+    this.logger.log(`🔍 [GET] /api/catalog/gammes/by-alias/${alias}`);
+
+    const gamme = await this.gammeService.getGammeByAlias(alias);
+
+    if (!gamme) {
+      return {
+        success: false,
+        data: null,
+        message: `Gamme avec alias "${alias}" non trouvée`,
+      };
+    }
+
+    return {
+      success: true,
+      data: gamme,
+      message: `Gamme trouvée: ${gamme.name}`,
+    };
+  }
+
+  /**
    * 📄 POST /api/catalog/gammes/:id/seo - Contenu SEO pour une gamme
    * Utilise RPC V3 avec SEO intégré côté PostgreSQL
    */
