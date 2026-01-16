@@ -147,8 +147,29 @@ jobs:
 
           cd $PROD_DIR
 
+          # ✅ Valider que le fichier .env existe et contient les variables requises
+          echo "🔍 Validating production .env file..."
+          if [ ! -f ".env" ]; then
+            echo "❌ FATAL: .env file missing at $PROD_DIR/.env"
+            echo "Create it from backend/.env.example template"
+            exit 1
+          fi
+          source .env
+          REQUIRED_VARS="NODE_ENV SUPABASE_URL SYSTEMPAY_SITE_ID PAYBOX_SITE SESSION_SECRET"
+          for var in $REQUIRED_VARS; do
+            if [ -z "${!var}" ]; then
+              echo "❌ FATAL: Missing required env var: $var"
+              exit 1
+            fi
+          done
+          echo "✅ All required environment variables present"
+
           # Créer le réseau externe s'il n'existe pas
           docker network create automecanik-prod 2>/dev/null || true
+
+          # Sauvegarder l'image actuelle pour rollback éventuel
+          CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "")
+          echo "📦 Current image: $CURRENT_IMAGE"
 
           # Arrêter et supprimer les anciens conteneurs s'ils existent
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
@@ -157,11 +178,25 @@ jobs:
           # Démarrer avec la nouvelle config
           docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
 
-          # Attendre le démarrage
-          sleep 15
+          # Attendre le démarrage (60s pour laisser l'app s'initialiser)
+          echo "⏳ Waiting for containers to start (60s)..."
+          sleep 60
 
           # Vérifier que les conteneurs tournent
-          docker ps | grep nestjs-remix || echo "⚠️ Conteneurs non trouvés"
+          if ! docker ps | grep -q nestjs-remix-monorepo-prod; then
+            echo "❌ Container not running - checking logs..."
+            docker logs nestjs-remix-monorepo-prod --tail 50
+            exit 1
+          fi
+
+          # Health check - vérifier que l'API répond
+          echo "🏥 Running health check..."
+          if ! curl -sf http://localhost:3000/api/catalog/families > /dev/null; then
+            echo "❌ Health check failed - API not responding"
+            docker logs nestjs-remix-monorepo-prod --tail 30
+            exit 1
+          fi
+          echo "✅ Deployment successful - API responding"
 
           # Nettoyer les images
           docker image prune -f

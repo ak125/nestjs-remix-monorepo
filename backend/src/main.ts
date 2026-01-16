@@ -1,3 +1,8 @@
+// Validate environment variables BEFORE any other imports
+// This ensures the app fails fast if required vars are missing
+import { validateRequiredEnvVars } from './config/env-validation';
+validateRequiredEnvVars();
+
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
