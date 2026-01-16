@@ -26,6 +26,12 @@ services:
       - ./public/sitemaps:/srv/sitemaps
     networks:
       - automecanik-prod
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/api/catalog/families"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   redis_prod:
     image: redis:7-alpine
