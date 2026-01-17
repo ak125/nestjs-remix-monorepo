@@ -3,6 +3,7 @@ import { ChevronRight, Star } from "lucide-react";
 import { useMemo } from "react";
 
 import { type TopGamme } from "../../types/catalog.types";
+import { getOptimizedFamilyImageUrl } from "../../utils/image-optimizer";
 
 interface TopGammesProps {
   topGammesData: {
@@ -57,9 +58,9 @@ export function TopGammes({
             // URL vers la page gamme
             const gammeUrl = `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
 
-            // Image de gamme depuis Supabase Storage (sans transformation, $0)
+            // Image de gamme via imgproxy (WebP optimisé)
             const imageFileName = gamme.pg_img || "default.webp";
-            const gammeImageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${imageFileName}`;
+            const gammeImageUrl = getOptimizedFamilyImageUrl(imageFileName);
 
             return (
               <Link

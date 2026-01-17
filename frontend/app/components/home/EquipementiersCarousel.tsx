@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { type Equipementier } from "../../types/catalog.types";
+import { getOptimizedLogoUrl } from "../../utils/image-optimizer";
 
 interface EquipementiersCarouselProps {
   equipementiersData: {
@@ -60,8 +61,10 @@ export function EquipementiersCarousel({
                   .replace(/[^a-z0-9]+/g, "-")
                   .replace(/^-|-$/g, "") + ".webp";
 
-              // URL du logo depuis Supabase Storage (sans transformation, $0)
-              const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
+              // URL du logo via imgproxy (WebP optimisé)
+              const logoUrl = getOptimizedLogoUrl(
+                `equipementiers-automobiles/${logoFileName}`,
+              );
 
               return (
                 <div

@@ -1,8 +1,9 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
-// ✅ Images WebP optimisées automatiquement
+// ✅ Images WebP optimisées via imgproxy
 import React, { useMemo } from "react";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { ImageOptimizer } from "~/utils/image-optimizer";
 
 interface Piece {
   pie_id: number;
@@ -250,21 +251,19 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
 };
 
 // Composant Carte Pièce
-// 🖼️ Helper pour optimiser les URLs d'images en WebP
+// 🖼️ Helper pour optimiser les URLs d'images via imgproxy
 const optimizeImageUrl = (
   imageUrl: string | undefined,
-  _width: number = 400,
+  width: number = 400,
 ): string => {
   if (!imageUrl) return "";
 
-  // Si c'est une URL Supabase, utiliser la transformation d'image
+  // Extraire le path depuis l'URL Supabase
   if (imageUrl.includes("supabase.co/storage")) {
     const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
     if (match) {
-      const path = match[1];
-      const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-      // Utiliser /object/public/ (image brute, pas de transformation)
-      return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
+      const path = match[1]; // ex: "rack-images/260/6216001.JPG"
+      return ImageOptimizer.getOptimizedUrl(path, { width, quality: 85 });
     }
   }
 
@@ -274,9 +273,12 @@ const optimizeImageUrl = (
 const generateSrcSet = (imageUrl: string | undefined): string => {
   if (!imageUrl) return "";
 
-  return [300, 400, 600]
-    .map((width) => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
-    .join(", ");
+  // Extraire le path depuis l'URL Supabase
+  const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
+  if (!match) return "";
+
+  const path = match[1];
+  return ImageOptimizer.getResponsiveSrcSet(path, [300, 400, 600]);
 };
 
 const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({

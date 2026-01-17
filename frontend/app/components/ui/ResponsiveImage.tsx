@@ -1,10 +1,11 @@
 /**
  * 🖼️ Composant Image Responsive
- * Optimise automatiquement les images avec srcset et sizes
+ * Optimise automatiquement les images avec srcset et sizes via imgproxy
  * Compatible avec Supabase Storage et CDN
  */
 
 import { useState } from "react";
+import { ImageOptimizer } from "~/utils/image-optimizer";
 
 interface ResponsiveImageProps {
   src: string;
@@ -28,33 +29,37 @@ interface ResponsiveImageProps {
 }
 
 /**
- * Génère une URL pour Supabase Storage (image brute, pas de transformation)
- * ⚠️ Transformation désactivée pour éviter coûts $5/1000 images
- * @param url URL de base
- * @param _width (ignoré) Largeur souhaitée
- * @param _quality (ignoré) Qualité (1-100)
+ * Génère une URL optimisée via imgproxy
+ * ✅ Transformation gratuite via imgproxy self-hosted
+ * @param url URL de base (Supabase ou autre)
+ * @param width Largeur souhaitée
+ * @param quality Qualité (1-100)
  */
 function getOptimizedUrl(
   url: string,
-  _width: number,
-  _quality: number = 80,
+  width: number,
+  quality: number = 80,
 ): string {
   if (!url) return "";
 
-  // URLs Supabase Storage - utiliser /object/public/ (PAS de transformation)
+  // URLs Supabase Storage - transformer via imgproxy
   if (url.includes("supabase.co/storage")) {
-    // Supprimer les paramètres de transformation
-    return url.split("?")[0];
+    // Extraire le path depuis l'URL Supabase
+    const match = url.match(/\/public\/(.+?)(?:\?|$)/);
+    if (match) {
+      const path = match[1]; // ex: "uploads/rack-images/260/6216001.JPG"
+      return ImageOptimizer.getOptimizedUrl(path, { width, quality });
+    }
   }
 
-  // Cloudinary - désactivé également
+  // Cloudinary - utiliser sa propre API
   if (url.includes("cloudinary.com")) {
     return url;
   }
 
-  // Imgix ou autres CDN - désactivé également
+  // Imgix ou autres CDN - utiliser leur propre API
   if (url.includes("imgix.net") || url.includes("imagekit.io")) {
-    return url.split("?")[0];
+    return url;
   }
 
   // URL standard - retourner telle quelle
