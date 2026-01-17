@@ -23,6 +23,11 @@ import {
   type RelatedBrand,
   type PopularGamme,
 } from "../../types/brand.types";
+import {
+  getOptimizedLogoUrl,
+  getOptimizedModelImageUrl,
+  getOptimizedFamilyImageUrl,
+} from "../../utils/image-optimizer";
 import { toBooleanFlag } from "../../utils/type-guards";
 
 // Configuration de l'API
@@ -144,8 +149,8 @@ class BrandApiService {
   }
 
   /**
-   * Génère l'URL de l'image de logo (conventions Supabase)
-   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
+   * Génère l'URL de l'image de logo via imgproxy
+   * ✅ OPTIMISÉ WEBP - Transformation automatique via imgproxy
    */
   private generateLogoUrl(logoFilename?: string): string | undefined {
     if (!logoFilename) return undefined;
@@ -155,18 +160,15 @@ class BrandApiService {
       ? logoFilename.replace(".webp", ".png")
       : logoFilename;
 
-    // 🚀 NOUVELLE VERSION: Utilise l'accès direct aux objets (plus fiable si le service de transformation échoue)
-    const path = `constructeurs-automobiles/marques-logos/${finalLogo}`;
-    const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-    const STORAGE_BUCKET = "uploads";
-
-    // Accès direct au fichier
-    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+    // 🚀 Via imgproxy pour transformation WebP automatique
+    return getOptimizedLogoUrl(
+      `constructeurs-automobiles/marques-logos/${finalLogo}`,
+    );
   }
 
   /**
-   * Génère l'URL de l'image de modèle
-   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
+   * Génère l'URL de l'image de modèle via imgproxy
+   * ✅ OPTIMISÉ WEBP - Transformation automatique via imgproxy
    */
   private generateModelImageUrl(brandAlias: string, modelPic?: string): string {
     if (!modelPic) {
@@ -177,17 +179,15 @@ class BrandApiService {
       ? modelPic.replace(".webp", ".jpg")
       : modelPic;
 
-    // 🚀 NOUVELLE VERSION: Accès direct
-    const path = `constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`;
-    const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-    const STORAGE_BUCKET = "uploads";
-
-    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+    // 🚀 Via imgproxy pour transformation WebP automatique
+    return getOptimizedModelImageUrl(
+      `constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`,
+    );
   }
 
   /**
-   * Génère l'URL de l'image de pièce
-   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
+   * Génère l'URL de l'image de pièce via imgproxy
+   * ✅ OPTIMISÉ WEBP - Transformation automatique via imgproxy
    */
   private generatePartImageUrl(partImg?: string): string {
     if (!partImg) {
@@ -198,12 +198,8 @@ class BrandApiService {
       ? partImg.replace(".webp", ".jpg")
       : partImg;
 
-    // 🚀 NOUVELLE VERSION: Accès direct
-    const path = `articles/gammes-produits/catalogue/${finalImage}`;
-    const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-    const STORAGE_BUCKET = "uploads";
-
-    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+    // 🚀 Via imgproxy pour transformation WebP automatique
+    return getOptimizedFamilyImageUrl(finalImage);
   }
 
   /**

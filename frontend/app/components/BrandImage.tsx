@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 interface BrandImageProps {
   brandLogo: string | null;
@@ -51,10 +52,12 @@ export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
     </svg>`,
   )}`;
 
-  // URL Supabase (sans transformation, $0)
+  // URL via imgproxy (WebP optimisé)
   const supabaseUrl =
     brandLogo && availableLogos.includes(brandLogo)
-      ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brandLogo}`
+      ? getOptimizedLogoUrl(
+          `constructeurs-automobiles/marques-logos/${brandLogo}`,
+        )
       : null;
 
   // Si on n'est pas encore côté client, afficher le fallback

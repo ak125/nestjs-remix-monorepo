@@ -1,6 +1,7 @@
 import { type CSSProperties } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 import { cn } from "~/lib/utils";
+import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 type BrandType = "constructeur" | "equipementier";
 
@@ -27,9 +28,6 @@ const textSizeClasses = {
   lg: "text-xs",
   xl: "text-sm",
 };
-
-// URL Supabase pour les logos
-const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
 
 /**
  * Logo de marque avec Avatar Shadcn UI
@@ -73,8 +71,8 @@ export function BrandLogo({
           xl: 48,
         }[size];
 
-  // URL Supabase brute (sans transformation, $0)
-  const logoUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${folder}/${filename}`;
+  // URL via imgproxy (WebP optimisé)
+  const logoUrl = getOptimizedLogoUrl(`${folder}/${filename}`);
 
   // Initiales pour le fallback (2 premières lettres)
   const initials = brandName.substring(0, 2).toUpperCase();

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 interface BrandLogoClientProps {
   logoPath: string | null;
@@ -74,11 +75,13 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
     );
   }
 
-  // Essayer d'afficher le logo Supabase (sans transformation, $0)
+  // Essayer d'afficher le logo via imgproxy (WebP optimisé)
   return (
     <div className="w-16 h-16 rounded-lg bg-white border border-gray-300 overflow-hidden shadow-sm">
       <img
-        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${logoPath}`}
+        src={getOptimizedLogoUrl(
+          `constructeurs-automobiles/marques-logos/${logoPath}`,
+        )}
         alt={brandName}
         width={64}
         height={64}

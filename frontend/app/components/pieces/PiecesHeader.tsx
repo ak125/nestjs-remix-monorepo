@@ -14,6 +14,7 @@ import {
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
+import { getOptimizedModelImageUrl } from "../../utils/image-optimizer";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -201,9 +202,11 @@ export function PiecesHeader({
                       vehicle.modelePic &&
                       vehicle.modelePic !== "no.webp" ? (
                         <>
-                          {/* 🚀 LCP Optimization V5: Image brute (sans transformation, $0) */}
+                          {/* 🚀 LCP Optimization V5: Image via imgproxy (WebP optimisé) */}
                           <img
-                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`}
+                            src={getOptimizedModelImageUrl(
+                              `constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
+                            )}
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
                             height={192}

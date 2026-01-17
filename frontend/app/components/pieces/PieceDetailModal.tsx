@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
+import { getOptimizedRackImageUrl } from "../../utils/image-optimizer";
 import { StarRating } from "../common/StarRating";
 import {
   Accordion,
@@ -20,11 +21,17 @@ import {
 } from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
 
-// Helper inline pour les images rack (remplace image.utils.ts)
-const SUPABASE_STORAGE =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
-const getRackImageUrl = (path: string) =>
-  `${SUPABASE_STORAGE}/rack-images/${path}`;
+// Helper pour les images rack via imgproxy
+const getRackImageUrl = (path: string, width: number = 400) => {
+  // path format: "260/6216001.JPG" -> folder/filename
+  const parts = path.split("/");
+  if (parts.length >= 2) {
+    const folder = parts.slice(0, -1).join("/");
+    const filename = parts[parts.length - 1];
+    return getOptimizedRackImageUrl(folder, filename, width);
+  }
+  return getOptimizedRackImageUrl("", path, width);
+};
 
 interface PieceDetailModalProps {
   pieceId: number | null;

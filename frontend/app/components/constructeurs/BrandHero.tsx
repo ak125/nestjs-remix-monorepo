@@ -7,6 +7,7 @@ import { Car, Home, ChevronRight } from "lucide-react";
 import VehicleSelector from "../vehicle/VehicleSelector";
 import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
+import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 interface BrandHeroProps {
   brand: {
@@ -70,7 +71,9 @@ const BrandHero: React.FC<BrandHeroProps> = ({
               <div className="w-20 h-20 lg:w-24 lg:h-24 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center p-3">
                 {brand.marque_logo ? (
                   <img
-                    src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_logo}`}
+                    src={getOptimizedLogoUrl(
+                      `constructeurs-automobiles/marques-logos/${brand.marque_logo}`,
+                    )}
                     alt={`Logo ${brand.marque_name}`}
                     width={96}
                     height={96}

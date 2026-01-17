@@ -3,6 +3,7 @@
 
 import { Link } from "@remix-run/react";
 import { Calendar, Car, Fuel, Zap } from "lucide-react";
+import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
 
 interface VehicleCardProps {
   vehicle: {
@@ -78,9 +79,11 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
     vehicle.type_year_to,
   );
 
-  // 🖼️ URL de l'image avec fallback (sans transformation, $0)
+  // 🖼️ URL de l'image via imgproxy (WebP optimisé)
   const vehicleImageUrl = vehicle.modele_pic
-    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
+    ? getOptimizedModelImageUrl(
+        `constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`,
+      )
     : "/images/placeholder-vehicle.png";
 
   return (
