@@ -325,7 +325,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
       (piece: any) => ({
         ...piece,
         image: getOptimizedImageUrl(piece.image),
-        thumb: getOptimizedImageUrl(piece.thumb || piece.image, 200, 80),
+        thumb: getOptimizedImageUrl(piece.thumb || piece.image),
       }),
     );
 
@@ -335,7 +335,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
         pieces: (group.pieces || []).map((piece: any) => ({
           ...piece,
           image: getOptimizedImageUrl(piece.image),
-          thumb: getOptimizedImageUrl(piece.thumb || piece.image, 200, 80),
+          thumb: getOptimizedImageUrl(piece.thumb || piece.image),
         })),
       }),
     );
@@ -384,21 +384,13 @@ export class UnifiedPageDataService extends SupabaseBaseService {
               id: rpcResult.vehicle_info.modele_id,
               name: rpcResult.vehicle_info.modele_name,
               alias: rpcResult.vehicle_info.modele_alias,
-              pic: getOptimizedImageUrl(
-                rpcResult.vehicle_info.modele_pic,
-                300,
-                85,
-              ),
+              pic: getOptimizedImageUrl(rpcResult.vehicle_info.modele_pic),
             },
             marque: {
               id: rpcResult.vehicle_info.marque_id,
               name: rpcResult.vehicle_info.marque_name,
               alias: rpcResult.vehicle_info.marque_alias,
-              logo: getOptimizedImageUrl(
-                rpcResult.vehicle_info.marque_logo,
-                150,
-                90,
-              ),
+              logo: getOptimizedImageUrl(rpcResult.vehicle_info.marque_logo),
             },
             motorCodes: rpcResult.vehicle_info.motor_codes || '',
           }
@@ -408,7 +400,7 @@ export class UnifiedPageDataService extends SupabaseBaseService {
             id: rpcResult.gamme_info.pg_id,
             name: rpcResult.gamme_info.pg_name,
             alias: rpcResult.gamme_info.pg_alias,
-            pic: getOptimizedImageUrl(rpcResult.gamme_info.pg_pic, 300, 85),
+            pic: getOptimizedImageUrl(rpcResult.gamme_info.pg_pic),
             mfId: rpcResult.gamme_info.mf_id,
           }
         : null,
