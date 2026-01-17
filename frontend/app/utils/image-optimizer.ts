@@ -97,12 +97,16 @@ export class ImageOptimizer {
     const processingOptions: string[] = [];
 
     // Resize: rs:fit:{width}:{height} ou rs:fit:{width}
+    // Note: imgproxy requiert au moins une option de processing avant /plain/
     if (width && height) {
       processingOptions.push(`rs:fit:${width}:${height}`);
     } else if (width) {
       processingOptions.push(`rs:fit:${width}`);
     } else if (height) {
       processingOptions.push(`rs:fit:0:${height}`);
+    } else {
+      // Passthrough: garder taille originale mais permettre conversion format
+      processingOptions.push("rs:fit:0:0");
     }
 
     // Qualité: q:{quality}

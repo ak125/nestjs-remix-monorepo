@@ -162,13 +162,16 @@ export function buildImgproxyUrl(
   const { width, height, quality = 85, format = 'webp', fit = 'fit' } = options;
   const processingOptions: string[] = [];
 
-  // Resize
+  // Resize - imgproxy requiert au moins une option avant /plain/
   if (width && height) {
     processingOptions.push(`rs:${fit}:${width}:${height}`);
   } else if (width) {
     processingOptions.push(`rs:${fit}:${width}`);
   } else if (height) {
     processingOptions.push(`rs:${fit}:0:${height}`);
+  } else {
+    // Passthrough: garder taille originale mais permettre conversion format
+    processingOptions.push('rs:fit:0:0');
   }
 
   // Qualité (si différente de 85)
@@ -201,20 +204,22 @@ export function transformToImgproxyUrl(
   const { width, height, quality = 85, format = 'webp', fit = 'fit' } = options;
   const processingOptions: string[] = [];
 
+  // Resize - imgproxy requiert au moins une option avant /plain/
   if (width && height) {
     processingOptions.push(`rs:${fit}:${width}:${height}`);
   } else if (width) {
     processingOptions.push(`rs:${fit}:${width}`);
   } else if (height) {
     processingOptions.push(`rs:${fit}:0:${height}`);
+  } else {
+    processingOptions.push('rs:fit:0:0');
   }
 
   if (quality !== 85) {
     processingOptions.push(`q:${quality}`);
   }
 
-  const optionsPath =
-    processingOptions.length > 0 ? processingOptions.join('/') + '/' : '';
+  const optionsPath = processingOptions.join('/') + '/';
 
   return `${IMGPROXY_BASE_URL}/${optionsPath}plain/${supabaseUrl}@${format}`;
 }
