@@ -77,14 +77,17 @@ export const PiecesListView = React.memo(
       console.log("🛒 Click Ajouter panier (ListView), piece:", pieceId);
 
       // GA4: Tracker l'ajout au panier
-      const piece = pieces.find(p => p.id === pieceId);
+      const piece = pieces.find((p) => p.id === pieceId);
       if (piece) {
-        trackAddToCart({
-          id: String(piece.id),
-          name: piece.name,
-          price: piece.price,
-          brand: piece.brand,
-        }, 1);
+        trackAddToCart(
+          {
+            id: String(piece.id),
+            name: piece.name,
+            price: piece.price,
+            brand: piece.brand,
+          },
+          1,
+        );
       }
 
       // Marquer comme en cours
@@ -126,8 +129,10 @@ export const PiecesListView = React.memo(
           const isSelected = selectedPieces.includes(piece.id);
           const hasStock = hasStockAvailable(piece.stock);
 
-
-          // Calcul fiabilité synchronisé avec GridView
+          // Calcul fiabilité - masquer si valeur par défaut (stars=3 ou undefined)
+          // FIX 2026-01-17: Ne pas afficher fiabilité quand c'est la valeur par défaut
+          const hasReliableStars =
+            piece.stars !== undefined && piece.stars !== 3;
           const stars = piece.stars || 3;
           const reliability = Math.round((stars / 6) * 10);
           const reliabilityColor = getReliabilityColor(reliability);
@@ -151,7 +156,11 @@ export const PiecesListView = React.memo(
                   {onSelectPiece && (
                     <button
                       onClick={() => onSelectPiece(piece.id)}
-                      aria-label={isSelected ? `Désélectionner ${piece.name}` : `Sélectionner ${piece.name}`}
+                      aria-label={
+                        isSelected
+                          ? `Désélectionner ${piece.name}`
+                          : `Sélectionner ${piece.name}`
+                      }
                       className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all mt-1 ${
                         isSelected
                           ? "bg-blue-600 border-blue-600 shadow-sm"
@@ -203,16 +212,6 @@ export const PiecesListView = React.memo(
                         </svg>
                       </div>
                     )}
-                    {/* Badge disponibilité */}
-                    {hasStock ? (
-                      <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-semibold rounded shadow-sm">
-                        En stock
-                      </span>
-                    ) : (
-                      <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-semibold rounded shadow-sm">
-                        Rupture
-                      </span>
-                    )}
                   </div>
 
                   {/* Infos Mobile: Logo + Marque + Ref + Fiabilité */}
@@ -248,22 +247,24 @@ export const PiecesListView = React.memo(
                       </span>
                     </div>
 
-                    {/* Barre fiabilité - visible sur mobile */}
-                    <div
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${reliabilityBgColor}`}
-                    >
-                      <div className="w-10 sm:w-14 h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full bg-gradient-to-r ${reliabilityColor} rounded-full`}
-                          style={{ width: `${reliability * 10}%` }}
-                        />
-                      </div>
-                      <span
-                        className={`text-xs sm:text-sm font-black tabular-nums ${reliabilityTextColor}`}
+                    {/* Barre fiabilité - masquée si valeur par défaut */}
+                    {hasReliableStars && (
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${reliabilityBgColor}`}
                       >
-                        {reliability}
-                      </span>
-                    </div>
+                        <div className="w-10 sm:w-14 h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full bg-gradient-to-r ${reliabilityColor} rounded-full`}
+                            style={{ width: `${reliability * 10}%` }}
+                          />
+                        </div>
+                        <span
+                          className={`text-xs sm:text-sm font-black tabular-nums ${reliabilityTextColor}`}
+                        >
+                          {reliability}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -300,7 +301,11 @@ export const PiecesListView = React.memo(
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={() => hasStock && handleAddToCart(piece.id)}
                     title={hasStock ? "Ajouter au panier" : "Indisponible"}
-                    aria-label={hasStock ? `Ajouter ${piece.name} au panier` : `${piece.name} indisponible`}
+                    aria-label={
+                      hasStock
+                        ? `Ajouter ${piece.name} au panier`
+                        : `${piece.name} indisponible`
+                    }
                   >
                     {loadingItems.has(piece.id) ? (
                       <svg

@@ -14,6 +14,8 @@ export interface RmProduct {
   piece_position: string | null;
   score: number;
   has_image: boolean;
+  pmi_folder: string | null; // Bucket folder (e.g. "101")
+  pmi_name: string | null; // Image filename (e.g. "34407_1.JPG")
 }
 
 export interface RmProductsResponse {
