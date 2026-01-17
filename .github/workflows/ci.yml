@@ -125,19 +125,23 @@ jobs:
           # Demarrer preprod
           docker compose -f docker-compose.preprod.yml up -d
 
-          # Health check
-          echo "⏳ Waiting for PREPROD to start (30s)..."
-          sleep 30
+          # Health check avec retry (max 2 min)
+          echo "⏳ Waiting for PREPROD to start..."
+          HEALTHY=0
+          for i in {1..12}; do
+            if curl -sf http://localhost:3100/health > /dev/null 2>&1; then
+              echo "✅ PREPROD is healthy after $((i*10))s"
+              HEALTHY=1
+              break
+            fi
+            echo "Attempt $i/12 - waiting 10s..."
+            sleep 10
+          done
 
-          if ! docker ps | grep -q nestjs-remix-monorepo-preprod; then
-            echo "❌ PREPROD container not running - checking logs..."
+          if [ "$HEALTHY" != "1" ]; then
+            echo "❌ PREPROD health check failed after 2 minutes"
+            docker ps | grep preprod || true
             docker logs nestjs-remix-monorepo-preprod --tail 50
-            exit 1
-          fi
-
-          if ! curl -sf http://localhost:3100/health > /dev/null; then
-            echo "❌ PREPROD health check failed"
-            docker logs nestjs-remix-monorepo-preprod --tail 30
             exit 1
           fi
 
