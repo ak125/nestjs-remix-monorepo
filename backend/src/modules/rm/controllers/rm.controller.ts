@@ -67,6 +67,57 @@ export class RmController {
   }
 
   /**
+   * 🚀 GET /api/rm/page
+   *
+   * Returns complete page data in a single call (~350ms).
+   * Replaces batch-loader for product listing pages.
+   *
+   * @param gamme_id - Product family ID (required)
+   * @param vehicle_id - Vehicle type ID (required)
+   * @param limit - Max products to return (default: 200, max: 500)
+   *
+   * @example
+   * GET /api/rm/page?gamme_id=2066&vehicle_id=17484&limit=200
+   */
+  @Get('page')
+  async getPage(
+    @Query('gamme_id', ParseIntPipe) gamme_id: number,
+    @Query('vehicle_id', ParseIntPipe) vehicle_id: number,
+    @Query('limit', new DefaultValuePipe(200), ParseIntPipe) limit: number,
+  ) {
+    const startTime = performance.now();
+    const clampedLimit = Math.min(Math.max(limit, 1), 500);
+
+    const result = await this.rmBuilder.getPageComplete({
+      gamme_id,
+      vehicle_id,
+      limit: clampedLimit,
+    });
+
+    // Add server-side timing if RPC returned 0
+    if (result.success && result.duration_ms === 0) {
+      result.duration_ms = Math.round(performance.now() - startTime);
+    }
+
+    if (!result.success) {
+      throw new HttpException(
+        {
+          success: false,
+          error: result.error || {
+            code: 'UNKNOWN',
+            message: 'Failed to fetch page data',
+          },
+          gamme_id,
+          vehicle_id,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return result;
+  }
+
+  /**
    * 📄 GET /api/rm/listing
    *
    * Retrieves a cached listing page from rm_get_listing_page RPC.
