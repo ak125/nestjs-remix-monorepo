@@ -1,9 +1,13 @@
 /**
  * RM Mapper - Convertit les produits RM en PieceData
+ *
+ * 📝 CHANGELOG:
+ * - 2026-01-17: Fix images - utiliser imgproxy au lieu de Supabase /render/image/ (supprimé car payant)
  */
 
 import { type RmProduct } from "~/services/api/rm-api.service";
 import { type PieceData } from "~/types/pieces-route.types";
+import { ImageOptimizer } from "~/utils/image-optimizer";
 
 function formatPrice(price: number): string {
   return price.toFixed(2).replace(".", ",");
@@ -34,8 +38,12 @@ export function mapRmProductsToPieceData(rmProducts: RmProduct[]): PieceData[] {
     quality: p.quality,
     stars: getStarsFromQuality(p.quality),
     marque_id: p.pm_id,
+    // ✅ FIX: Utiliser imgproxy au lieu de Supabase /render/image/ (supprimé car payant)
     image: p.has_image
-      ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/rack-images/260/${p.piece_reference}.JPG?width=400&quality=85`
+      ? ImageOptimizer.getOptimizedUrl(
+          `rack-images/260/${p.piece_reference}.JPG`,
+          { width: 400, quality: 85 },
+        )
       : undefined,
     matchKind: 0, // 0 = direct match
   }));
