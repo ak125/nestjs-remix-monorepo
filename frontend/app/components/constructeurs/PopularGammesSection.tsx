@@ -89,11 +89,11 @@ function getDescription(gamme: PopularGamme, brandName: string): string {
 }
 
 /**
- * Génère l'URL de l'image de gamme avec cache 1 an
+ * Génère l'URL de l'image de gamme (sans transformation, $0)
  */
 function getGammeImageUrl(imgFilename: string | null): string | undefined {
   if (!imgFilename) return undefined;
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue/${imgFilename}?width=200&quality=85&t=31536000`;
+  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${imgFilename}`;
 }
 
 export function PopularGammesSection({
@@ -139,8 +139,7 @@ export function PopularGammesSection({
 
             // Construit l'URL vers la page gamme (format: /pieces/{alias}-{id}.html)
             const gammeUrl =
-              gamme.link ||
-              `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
+              gamme.link || `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
 
             return (
               <article

@@ -40,8 +40,9 @@ automecanik.com, www.automecanik.com {
     @apex host automecanik.com
     redir @apex https://www.automecanik.com{uri} permanent
 
-    # ===== PROXY IMAGES OPTIMISÉES (cache 1 an) =====
-    # Route: /img/{bucket}/{path}?query → Supabase /storage/v1/render/image/public/{bucket}/{path}?query
+    # ===== PROXY IMAGES BRUTES (cache 1 an) =====
+    # Route: /img/{bucket}/{path} → Supabase /storage/v1/object/public/{bucket}/{path}
+    # ⚠️ PAS de transformation (désactivé pour éviter coûts $5/1000 images)
     # Caddy ajoute Cache-Control: 1 an, Cloudflare cache au edge
     @img_proxy path_regexp img_path ^/img/(.+)$
     handle @img_proxy {
@@ -49,8 +50,8 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
 
-        # CRITIQUE: Rewrite AVANT le proxy - forward ?width=400&quality=85 à Supabase
-        rewrite * /storage/v1/render/image/public/{re.img_path.1}{query}
+        # Images brutes sans transformation ($0)
+        rewrite * /storage/v1/object/public/{re.img_path.1}
 
         reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
             header_up Host cxpojprgwgubzjyqzmoq.supabase.co

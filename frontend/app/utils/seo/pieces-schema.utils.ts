@@ -3,16 +3,24 @@
  * Génère les schémas JSON-LD pour la page pièces
  */
 
-import { type GammeData, type PieceData, type VehicleData } from "../../types/pieces-route.types";
+import {
+  type GammeData,
+  type PieceData,
+  type VehicleData,
+} from "../../types/pieces-route.types";
 
 // Helper inline pour normaliser les URLs d'images (remplace image.utils.ts)
-const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+const SUPABASE_STORAGE =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
 function normalizeImageUrl(url: string | null | undefined): string {
-  if (!url || typeof url !== 'string') return '';
-  if (url.startsWith('http')) return url;
-  if (url.startsWith('/rack/')) return `${SUPABASE_STORAGE}/rack-images/${url.replace('/rack/', '')}`;
-  if (url.startsWith('/upload/')) return `${SUPABASE_STORAGE}/uploads/${url.replace('/upload/', '')}`;
-  if (url.startsWith('/')) return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+  if (!url || typeof url !== "string") return "";
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/rack/"))
+    return `${SUPABASE_STORAGE}/rack-images/${url.replace("/rack/", "")}`;
+  if (url.startsWith("/upload/"))
+    return `${SUPABASE_STORAGE}/uploads/${url.replace("/upload/", "")}`;
+  if (url.startsWith("/"))
+    return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
   return url;
 }
 
@@ -26,7 +34,11 @@ interface SchemaParams {
   count: number;
   oemRefs?: { oemRefs?: string[] };
   oemRefsSeo?: string[];
-  crossSellingGammes?: Array<{ PG_NAME: string; PG_ALIAS: string; PG_ID: number }>;
+  crossSellingGammes?: Array<{
+    PG_NAME: string;
+    PG_ALIAS: string;
+    PG_ID: number;
+  }>;
   canonicalUrl: string;
 }
 
@@ -45,13 +57,15 @@ function buildCarSchema(vehicle: VehicleData, canonicalUrl: string) {
       vehicleModelDate: vehicle.typeDateStart,
     }),
     ...(vehicle.typeDateStart && {
-      additionalProperty: [{
-        "@type": "PropertyValue",
-        name: "Période de production",
-        value: vehicle.typeDateEnd
-          ? `${vehicle.typeDateStart}-${vehicle.typeDateEnd}`
-          : `depuis ${vehicle.typeDateStart}`,
-      }],
+      additionalProperty: [
+        {
+          "@type": "PropertyValue",
+          name: "Période de production",
+          value: vehicle.typeDateEnd
+            ? `${vehicle.typeDateStart}-${vehicle.typeDateEnd}`
+            : `depuis ${vehicle.typeDateStart}`,
+        },
+      ],
     }),
   };
 }
@@ -63,9 +77,10 @@ function buildProductSchema(
   params: SchemaParams,
   firstPiece: PieceData,
   oemRefsArray: string[],
-  relatedProducts: Array<{ "@type": string; name: string; url: string }>
+  relatedProducts: Array<{ "@type": string; name: string; url: string }>,
 ) {
-  const { vehicle, gamme, seo, minPrice, maxPrice, count, canonicalUrl } = params;
+  const { vehicle, gamme, seo, minPrice, maxPrice, count, canonicalUrl } =
+    params;
 
   return {
     "@type": "Product",
@@ -74,10 +89,16 @@ function buildProductSchema(
     description: seo.description,
     url: canonicalUrl,
     image: firstPiece.image
-      ? normalizeImageUrl(firstPiece.image.startsWith('http') ? firstPiece.image : `/rack/${firstPiece.image}`)
+      ? normalizeImageUrl(
+          firstPiece.image.startsWith("http")
+            ? firstPiece.image
+            : `/rack/${firstPiece.image}`,
+        )
       : firstPiece.marque_logo
-        ? normalizeImageUrl(`/upload/equipementiers-automobiles/${firstPiece.marque_logo}`)
-        : `https://www.automecanik.com/images/gammes/${gamme.alias || 'default'}.webp`,
+        ? normalizeImageUrl(
+            `/upload/equipementiers-automobiles/${firstPiece.marque_logo}`,
+          )
+        : `https://www.automecanik.com/images/gammes/${gamme.alias || "default"}.webp`,
     ...(oemRefsArray[0] && { mpn: oemRefsArray[0] }),
     ...(firstPiece.reference && { sku: firstPiece.reference }),
     brand: { "@type": "Brand", name: firstPiece.brand },
@@ -89,7 +110,11 @@ function buildProductSchema(
       highPrice: maxPrice,
       offerCount: count,
       availability: "https://schema.org/InStock",
-      seller: { "@type": "Organization", name: "Automecanik", url: "https://www.automecanik.com" },
+      seller: {
+        "@type": "Organization",
+        name: "Automecanik",
+        url: "https://www.automecanik.com",
+      },
     },
     additionalProperty: [
       ...oemRefsArray.slice(0, 15).map((ref, i) => ({
@@ -97,7 +122,7 @@ function buildProductSchema(
         name: i === 0 ? "Référence OEM" : "Référence compatible",
         value: ref,
       })),
-    ].filter(p => p.value),
+    ].filter((p) => p.value),
     ...(relatedProducts.length > 0 && { isRelatedTo: relatedProducts }),
   };
 }
@@ -110,7 +135,7 @@ function buildItemListSchema(
   gamme: GammeData,
   vehicle: VehicleData,
   count: number,
-  canonicalUrl: string
+  canonicalUrl: string,
 ) {
   return {
     "@type": "ItemList",
@@ -128,15 +153,24 @@ function buildItemListSchema(
           name: `${piece.name} ${piece.brand}`,
           url: `${canonicalUrl}#product-${piece.id}`,
           image: piece.image
-            ? normalizeImageUrl(piece.image.startsWith('http') ? piece.image : `/rack/${piece.image}`)
-            : normalizeImageUrl(`/upload/equipementiers-automobiles/${piece.marque_logo}`),
+            ? normalizeImageUrl(
+                piece.image.startsWith("http")
+                  ? piece.image
+                  : `/rack/${piece.image}`,
+              )
+            : normalizeImageUrl(
+                `/upload/equipementiers-automobiles/${piece.marque_logo}`,
+              ),
           ...(piece.reference && { sku: piece.reference }),
           brand: { "@type": "Brand", name: piece.brand },
           offers: {
             "@type": "Offer",
             price: piece.price,
             priceCurrency: "EUR",
-            availability: piece.stock === "En stock" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+            availability:
+              piece.stock === "En stock"
+                ? "https://schema.org/InStock"
+                : "https://schema.org/PreOrder",
           },
           isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
         },
@@ -144,8 +178,9 @@ function buildItemListSchema(
   };
 }
 
-// URL de base Supabase pour les images
-const SUPABASE_BASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads';
+// URL de base Supabase pour les images (sans transformation, $0)
+const SUPABASE_BASE_URL =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads";
 
 /**
  * Interface pour les meta tags de preload image responsive
@@ -174,7 +209,7 @@ export type HeroImagePreloadMeta = {
  * @returns Array avec le meta tag ou vide si pas d'image
  */
 export function buildHeroImagePreload(
-  vehicle: Pick<VehicleData, 'modelePic' | 'marqueAlias' | 'marque'>
+  vehicle: Pick<VehicleData, "modelePic" | "marqueAlias" | "marque">,
 ): HeroImagePreloadMeta[] {
   if (!vehicle.modelePic || vehicle.modelePic === "no.webp") {
     return [];
@@ -188,10 +223,11 @@ export function buildHeroImagePreload(
     `${baseUrl}?width=200&quality=80&t=31536000 200w`,
     `${baseUrl}?width=300&quality=85&t=31536000 300w`,
     `${baseUrl}?width=380&quality=85&t=31536000 380w`,
-  ].join(', ');
+  ].join(", ");
 
   // sizes identique à PiecesHeader.tsx (ligne 216)
-  const imagesizes = "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px";
+  const imagesizes =
+    "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px";
 
   return [
     {
@@ -210,7 +246,16 @@ export function buildHeroImagePreload(
  * Génère le schéma complet @graph pour la page pièces
  */
 export function buildPiecesProductSchema(params: SchemaParams) {
-  const { vehicle, gamme, pieces, count, oemRefs, oemRefsSeo, crossSellingGammes, canonicalUrl } = params;
+  const {
+    vehicle,
+    gamme,
+    pieces,
+    count,
+    oemRefs,
+    oemRefsSeo,
+    crossSellingGammes,
+    canonicalUrl,
+  } = params;
 
   const firstPiece = pieces[0];
   if (!firstPiece) return null;
@@ -219,11 +264,12 @@ export function buildPiecesProductSchema(params: SchemaParams) {
   const oemRefsArray = oemRefs?.oemRefs || oemRefsSeo || [];
 
   // Produits liés (cross-selling)
-  const relatedProducts = crossSellingGammes?.slice(0, 3).map((g) => ({
-    "@type": "Product",
-    name: g.PG_NAME,
-    url: `https://www.automecanik.com/pieces/${g.PG_ALIAS}-${g.PG_ID}.html`,
-  })) || [];
+  const relatedProducts =
+    crossSellingGammes?.slice(0, 3).map((g) => ({
+      "@type": "Product",
+      name: g.PG_NAME,
+      url: `https://www.automecanik.com/pieces/${g.PG_ALIAS}-${g.PG_ID}.html`,
+    })) || [];
 
   return {
     "@context": "https://schema.org",

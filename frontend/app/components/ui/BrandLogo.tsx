@@ -61,8 +61,8 @@ export function BrandLogo({
 
   const filename = extractFilename(logoPath);
 
-  // Calculer la taille en pixels pour l'URL
-  const pixelSize =
+  // Calculer la taille en pixels (conservé pour référence future)
+  const _pixelSize =
     typeof size === "number"
       ? size
       : {
@@ -73,8 +73,8 @@ export function BrandLogo({
           xl: 48,
         }[size];
 
-  // URL Supabase render API avec transformation
-  const logoUrl = `${SUPABASE_URL}/storage/v1/render/image/public/uploads/${folder}/${filename}?width=${pixelSize * 2}&quality=90`;
+  // URL Supabase brute (sans transformation, $0)
+  const logoUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${folder}/${filename}`;
 
   // Initiales pour le fallback (2 premières lettres)
   const initials = brandName.substring(0, 2).toUpperCase();
