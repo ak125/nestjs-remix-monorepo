@@ -11,18 +11,27 @@
  * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
 
-import { type FiltersData } from '../../components/pieces/PiecesFilterSidebar';
-import { type CrossSellingGamme, type BlogArticle, type GammeData, type VehicleData } from '../../types/pieces-route.types';
-import { slugify, generateRelatedArticles } from '../../utils/pieces-route.utils';
+import { type FiltersData } from "../../components/pieces/PiecesFilterSidebar";
+import {
+  type CrossSellingGamme,
+  type BlogArticle,
+  type GammeData,
+  type VehicleData,
+} from "../../types/pieces-route.types";
+import { slugify } from "../../utils/pieces-route.utils";
 
 // Helper inline pour normaliser les URLs d'images blog (remplace image.utils.ts)
-const SUPABASE_STORAGE = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+const SUPABASE_STORAGE =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
 function normalizeImageUrl(url: string | null | undefined): string {
-  if (!url || typeof url !== 'string') return '';
-  if (url.startsWith('http')) return url;
-  if (url.startsWith('/rack/')) return `${SUPABASE_STORAGE}/rack-images/${url.replace('/rack/', '')}`;
-  if (url.startsWith('/upload/')) return `${SUPABASE_STORAGE}/uploads/${url.replace('/upload/', '')}`;
-  if (url.startsWith('/')) return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+  if (!url || typeof url !== "string") return "";
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/rack/"))
+    return `${SUPABASE_STORAGE}/rack-images/${url.replace("/rack/", "")}`;
+  if (url.startsWith("/upload/"))
+    return `${SUPABASE_STORAGE}/uploads/${url.replace("/upload/", "")}`;
+  if (url.startsWith("/"))
+    return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
   return url;
 }
 
@@ -37,7 +46,7 @@ function normalizeImageUrl(url: string | null | undefined): string {
 async function fetchFromEndpointChain<T>(
   endpoints: string[],
   parser: (data: unknown) => T | null,
-  options?: { timeout?: number; fallback?: T }
+  options?: { timeout?: number; fallback?: T },
 ): Promise<T | null> {
   const timeout = options?.timeout ?? 2000;
 
@@ -66,7 +75,7 @@ async function fetchFromEndpointChain<T>(
  * 🎯 Parser pour extraire un article de blog depuis diverses structures API
  */
 function parseBlogArticleResponse(data: unknown): BlogArticle | null {
-  if (!data || typeof data !== 'object') return null;
+  if (!data || typeof data !== "object") return null;
 
   const d = data as Record<string, unknown>;
 
@@ -74,18 +83,43 @@ function parseBlogArticleResponse(data: unknown): BlogArticle | null {
   const article = (d.data as Record<string, unknown>) || d.article || d;
 
   // Vérifier si c'est un tableau d'articles
-  const articles = (d.articles || d.data || d.results || d.recentArticles) as unknown[];
+  const articles = (d.articles ||
+    d.data ||
+    d.results ||
+    d.recentArticles) as unknown[];
   if (Array.isArray(articles) && articles.length > 0) {
     const firstArticle = articles[0] as Record<string, unknown>;
     if (firstArticle?.title) {
       return {
-        id: String(firstArticle.id || firstArticle.slug || 'blog-' + Date.now()),
+        id: String(
+          firstArticle.id || firstArticle.slug || "blog-" + Date.now(),
+        ),
         title: String(firstArticle.title),
-        excerpt: String(firstArticle.excerpt || firstArticle.description || (firstArticle.content as string)?.substring(0, 200) || ''),
-        slug: String(firstArticle.slug || firstArticle.url || ''),
-        image: normalizeImageUrl(String(firstArticle.image || firstArticle.thumbnail || firstArticle.featured_image || '')) || undefined,
-        date: String(firstArticle.created_at || firstArticle.date || firstArticle.published_at || new Date().toISOString()),
-        readTime: Number(firstArticle.reading_time || firstArticle.read_time || 5)
+        excerpt: String(
+          firstArticle.excerpt ||
+            firstArticle.description ||
+            (firstArticle.content as string)?.substring(0, 200) ||
+            "",
+        ),
+        slug: String(firstArticle.slug || firstArticle.url || ""),
+        image:
+          normalizeImageUrl(
+            String(
+              firstArticle.image ||
+                firstArticle.thumbnail ||
+                firstArticle.featured_image ||
+                "",
+            ),
+          ) || undefined,
+        date: String(
+          firstArticle.created_at ||
+            firstArticle.date ||
+            firstArticle.published_at ||
+            new Date().toISOString(),
+        ),
+        readTime: Number(
+          firstArticle.reading_time || firstArticle.read_time || 5,
+        ),
       };
     }
   }
@@ -94,13 +128,20 @@ function parseBlogArticleResponse(data: unknown): BlogArticle | null {
   const a = article as Record<string, unknown>;
   if (a && (a.h1 || a.title)) {
     return {
-      id: String(a.id || 'blog-gamme-' + Date.now()),
+      id: String(a.id || "blog-gamme-" + Date.now()),
       title: String(a.h1 || a.title),
-      excerpt: String(a.excerpt || a.description || ''),
-      slug: String(a.slug || ''),
-      image: normalizeImageUrl(String(a.featuredImage || a.image || '')) || undefined,
-      date: String(a.updatedAt || a.publishedAt || a.created_at || new Date().toISOString()),
-      readTime: Number(a.readingTime || a.reading_time || 5)
+      excerpt: String(a.excerpt || a.description || ""),
+      slug: String(a.slug || ""),
+      image:
+        normalizeImageUrl(String(a.featuredImage || a.image || "")) ||
+        undefined,
+      date: String(
+        a.updatedAt ||
+          a.publishedAt ||
+          a.created_at ||
+          new Date().toISOString(),
+      ),
+      readTime: Number(a.readingTime || a.reading_time || 5),
     };
   }
 
@@ -109,51 +150,84 @@ function parseBlogArticleResponse(data: unknown): BlogArticle | null {
 
 /**
  * 🔄 Récupération des gammes cross-selling depuis l'API réelle
- * 
+ *
  * ⚠️ URL API: http://localhost:3000/api/cross-selling/v5/{typeId}/{gammeId}
  * ⚠️ STRUCTURE URL PRÉSERVÉE - NE PAS MODIFIER
  */
 export async function fetchCrossSellingGammes(
-  typeId: number, 
-  gammeId: number
+  typeId: number,
+  gammeId: number,
 ): Promise<CrossSellingGamme[]> {
   try {
-    console.log(`🔄 [CrossSelling] Fetching for type=${typeId}, gamme=${gammeId}`);
-    
+    console.log(
+      `🔄 [CrossSelling] Fetching for type=${typeId}, gamme=${gammeId}`,
+    );
+
     // ⚠️ URL API EXACTE - NE PAS MODIFIER
-    const response = await fetch(`http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`);
-    
+    const response = await fetch(
+      `http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`,
+    );
+
     if (!response.ok) {
       console.warn(`❌ Cross-selling API non disponible: ${response.status}`);
-      
+
       // Fallback avec gammes de test pour démonstration
       return [
-        { PG_ID: 403, PG_NAME: 'Disques de frein', PG_ALIAS: 'disques-de-frein', PG_IMAGE: 'pieces-403.webp' },
-        { PG_ID: 402, PG_NAME: 'Plaquettes de frein', PG_ALIAS: 'plaquettes-de-frein', PG_IMAGE: 'pieces-402.webp' },
-        { PG_ID: 85, PG_NAME: 'Amortisseurs', PG_ALIAS: 'amortisseurs', PG_IMAGE: 'pieces-85.webp' },
-        { PG_ID: 90, PG_NAME: 'Courroies d\'accessoires', PG_ALIAS: 'courroie-d-accessoire', PG_IMAGE: 'pieces-90.webp' }
+        {
+          PG_ID: 403,
+          PG_NAME: "Disques de frein",
+          PG_ALIAS: "disques-de-frein",
+          PG_IMAGE: "pieces-403.webp",
+        },
+        {
+          PG_ID: 402,
+          PG_NAME: "Plaquettes de frein",
+          PG_ALIAS: "plaquettes-de-frein",
+          PG_IMAGE: "pieces-402.webp",
+        },
+        {
+          PG_ID: 85,
+          PG_NAME: "Amortisseurs",
+          PG_ALIAS: "amortisseurs",
+          PG_IMAGE: "pieces-85.webp",
+        },
+        {
+          PG_ID: 90,
+          PG_NAME: "Courroies d'accessoires",
+          PG_ALIAS: "courroie-d-accessoire",
+          PG_IMAGE: "pieces-90.webp",
+        },
       ];
     }
-    
+
     const data = await response.json();
     console.log(`✅ Cross-selling data:`, data);
-    
+
     // ⚡ CORRECTION: L'API V5 retourne { data: { cross_gammes: [] } }
-    const crossGammes = data?.data?.cross_gammes || data?.gammes || data?.cross_gammes || [];
-    
+    const crossGammes =
+      data?.data?.cross_gammes || data?.gammes || data?.cross_gammes || [];
+
     if (Array.isArray(crossGammes) && crossGammes.length > 0) {
       return crossGammes.map((gamme: any) => ({
         PG_ID: gamme.pg_id || gamme.PG_ID || gamme.id,
         PG_NAME: gamme.pg_name || gamme.PG_NAME || gamme.name,
-        PG_ALIAS: gamme.pg_alias || gamme.PG_ALIAS || gamme.alias || slugify(gamme.pg_name || gamme.PG_NAME || gamme.name || ''),
-        PG_IMAGE: gamme.pg_img || gamme.PG_IMAGE || gamme.PG_IMG || `pieces-${gamme.pg_id || gamme.PG_ID || gamme.id}.webp`
+        PG_ALIAS:
+          gamme.pg_alias ||
+          gamme.PG_ALIAS ||
+          gamme.alias ||
+          slugify(gamme.pg_name || gamme.PG_NAME || gamme.name || ""),
+        PG_IMAGE:
+          gamme.pg_img ||
+          gamme.PG_IMAGE ||
+          gamme.PG_IMG ||
+          `pieces-${gamme.pg_id || gamme.PG_ID || gamme.id}.webp`,
       }));
     }
-    
+
     console.warn(`⚠️ Aucune gamme cross-selling trouvée dans la réponse API`);
     return [];
   } catch (error) {
-    console.error('❌ Erreur fetchCrossSellingGammes:', error);
+    console.error("❌ Erreur fetchCrossSellingGammes:", error);
     return [];
   }
 }
@@ -171,7 +245,7 @@ export async function fetchCrossSellingGammes(
  */
 export async function fetchBlogArticle(
   gamme: GammeData,
-  _vehicle: VehicleData
+  _vehicle: VehicleData,
 ): Promise<BlogArticle | null> {
   console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
 
@@ -184,19 +258,19 @@ export async function fetchBlogArticle(
   ];
 
   const fallback: BlogArticle = {
-    id: 'blog-fallback-' + gamme.id,
+    id: "blog-fallback-" + gamme.id,
     title: `Guide d'entretien pour ${gamme.name}`,
     excerpt: `Découvrez nos conseils d'experts pour l'entretien et le remplacement de vos ${gamme.name.toLowerCase()}. Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`,
-    slug: 'guide-entretien-' + gamme.alias,
+    slug: "guide-entretien-" + gamme.alias,
     image: undefined,
     date: new Date().toISOString(),
-    readTime: 5
+    readTime: 5,
   };
 
   return fetchFromEndpointChain<BlogArticle>(
     endpoints,
     parseBlogArticleResponse,
-    { timeout: 2000, fallback }
+    { timeout: 2000, fallback },
   );
 }
 
@@ -213,13 +287,13 @@ export async function fetchBlogArticle(
  */
 export async function fetchRelatedArticlesForGamme(
   gamme: GammeData,
-  vehicle: VehicleData
+  _vehicle: VehicleData,
 ): Promise<BlogArticle[]> {
   console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
 
   // Parser spécialisé pour extraire article principal + articles liés
   const parseRelatedArticles = (data: unknown): BlogArticle[] | null => {
-    if (!data || typeof data !== 'object') return null;
+    if (!data || typeof data !== "object") return null;
 
     const d = data as Record<string, unknown>;
     const articleData = d.data as Record<string, unknown>;
@@ -230,28 +304,47 @@ export async function fetchRelatedArticlesForGamme(
 
     // 1. Article principal
     articles.push({
-      id: String(articleData.id || 'main-' + gamme.id),
-      title: String(articleData.h1 || articleData.title || `Guide ${gamme.name}`),
-      excerpt: String(articleData.excerpt || `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`),
+      id: String(articleData.id || "main-" + gamme.id),
+      title: String(
+        articleData.h1 || articleData.title || `Guide ${gamme.name}`,
+      ),
+      excerpt: String(
+        articleData.excerpt ||
+          `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`,
+      ),
       slug: String(articleData.slug),
-      image: normalizeImageUrl(String(articleData.featuredImage || '')) || undefined,
-      date: String(articleData.updatedAt || articleData.publishedAt || new Date().toISOString()),
-      readTime: Number(articleData.readingTime || 8)
+      image:
+        normalizeImageUrl(String(articleData.featuredImage || "")) || undefined,
+      date: String(
+        articleData.updatedAt ||
+          articleData.publishedAt ||
+          new Date().toISOString(),
+      ),
+      readTime: Number(articleData.readingTime || 8),
     });
 
     // 2. Articles liés (max 3)
-    const relatedArticles = articleData.relatedArticles as Record<string, unknown>[];
+    const relatedArticles = articleData.relatedArticles as Record<
+      string,
+      unknown
+    >[];
     if (Array.isArray(relatedArticles)) {
       for (const related of relatedArticles.slice(0, 3)) {
         if (related?.slug) {
           articles.push({
-            id: String(related.id || 'related-' + Date.now()),
+            id: String(related.id || "related-" + Date.now()),
             title: String(related.h1 || related.title),
-            excerpt: String(related.excerpt || ''),
+            excerpt: String(related.excerpt || ""),
             slug: String(related.slug),
-            image: normalizeImageUrl(String(related.featuredImage || '')) || undefined,
-            date: String(related.updatedAt || related.publishedAt || new Date().toISOString()),
-            readTime: Number(related.readingTime || 5)
+            image:
+              normalizeImageUrl(String(related.featuredImage || "")) ||
+              undefined,
+            date: String(
+              related.updatedAt ||
+                related.publishedAt ||
+                new Date().toISOString(),
+            ),
+            readTime: Number(related.readingTime || 5),
           });
         }
       }
@@ -261,12 +354,16 @@ export async function fetchRelatedArticlesForGamme(
   };
 
   const result = await fetchFromEndpointChain<BlogArticle[]>(
-    [`http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`],
+    [
+      `http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
+    ],
     parseRelatedArticles,
-    { timeout: 2000 }
+    { timeout: 2000 },
   );
 
-  return result ?? generateRelatedArticles(vehicle, gamme);
+  // ⚠️ FIX: Ne pas générer de faux articles avec des slugs inexistants
+  // Si l'API échoue, retourner un tableau vide plutôt que des slugs fictifs
+  return result ?? [];
 }
 
 /**
@@ -286,13 +383,16 @@ export interface SeoSwitches {
  */
 export async function fetchSeoSwitches(
   gammeId: number,
-  timeoutMs: number = 3000
+  timeoutMs: number = 3000,
 ): Promise<SeoSwitches | undefined> {
   try {
-    const response = await fetch(`http://localhost:3000/api/blog/seo-switches/${gammeId}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    const response = await fetch(
+      `http://localhost:3000/api/blog/seo-switches/${gammeId}`,
+      {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(timeoutMs),
+      },
+    );
 
     if (!response.ok) {
       return undefined;
@@ -381,7 +481,7 @@ export interface BatchLoaderResponse {
 export async function fetchBatchLoader(
   typeId: number,
   gammeId: number,
-  timeoutMs: number = 5000
+  timeoutMs: number = 5000,
 ): Promise<BatchLoaderResponse> {
   try {
     const response = await fetch(
@@ -390,39 +490,39 @@ export async function fetchBatchLoader(
         method: "GET",
         signal: AbortSignal.timeout(timeoutMs),
         headers: { Accept: "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {
       console.warn(`⚠️ [BATCH-LOADER] HTTP ${response.status}`);
       // Pour 404/410 on laisse passer (gamme invalide)
       if (response.status === 404 || response.status === 410) {
-        return { pieces: [], validation: { valid: false, http_status: response.status } };
+        return {
+          pieces: [],
+          validation: { valid: false, http_status: response.status },
+        };
       }
       throw new Error(`HTTP ${response.status}`);
     }
 
     return await response.json();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`❌ [BATCH-LOADER] Error:`, message);
     // Graceful degradation - retourne structure vide plutôt que 503
     // Cela permet au cache CDN de servir une version stale si disponible
-    throw new Response(
-      `Service temporairement indisponible.`,
-      {
-        status: 503,
-        statusText: "Service Unavailable",
-        headers: {
-          "Retry-After": "10",
-          "Cache-Control": "no-cache",
-        },
-      }
-    );
+    throw new Response(`Service temporairement indisponible.`, {
+      status: 503,
+      statusText: "Service Unavailable",
+      headers: {
+        "Retry-After": "10",
+        "Cache-Control": "no-cache",
+      },
+    });
   }
 }
 
 /**
  * 🔄 Ré-export du service principal pour cohérence
  */
-export { PiecesService } from './pieces.service';
+export { PiecesService } from "./pieces.service";
