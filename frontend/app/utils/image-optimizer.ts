@@ -12,10 +12,16 @@
 // 🚀 Configuration imgproxy
 const USE_IMGPROXY = true; // Basculer à false pour désactiver transformations
 
-// Proxy via automecanik.com pour contrôle cache (Cloudflare edge + navigateur)
-// En SSR: URL absolue. En client: URL relative pour éviter CORS.
-const PROXY_BASE_URL =
-  typeof window !== "undefined" ? "" : "https://www.automecanik.com";
+// ✅ FIX 2026-01-17: Détection environnement pour imgproxy
+// - Production: imgproxy via automecanik.com (CDN cached)
+// - Development: URLs Supabase directes (évite problèmes CSP en local)
+// NOTE: import.meta.env.DEV est cohérent entre serveur et client (Vite)
+const IS_DEV = import.meta.env.DEV;
+
+// En dev, désactiver imgproxy pour éviter CSP issues avec localhost
+const USE_IMGPROXY_RUNTIME = USE_IMGPROXY && !IS_DEV;
+
+const PROXY_BASE_URL = "https://www.automecanik.com";
 
 // URL Supabase pour source imgproxy
 const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
@@ -84,9 +90,9 @@ export class ImageOptimizer {
       actualPath = cleanPath.replace("rack-images/", "");
     }
 
-    // Si imgproxy désactivé, utiliser le proxy direct
-    if (!USE_IMGPROXY) {
-      return `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+    // Si imgproxy désactivé (ou en dev), utiliser URL Supabase directe
+    if (!USE_IMGPROXY_RUNTIME) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
     }
 
     // 🚀 Construire l'URL imgproxy
@@ -225,10 +231,23 @@ export class ImageOptimizer {
 
 /**
  * Logo de marque optimisé
+ *
+ * @param logoFilename - Nom du fichier OU chemin complet
+ *
+ * @example
+ * // Juste un filename → préfixé avec constructeurs-automobiles/marques-logos/
+ * getOptimizedLogoUrl("bmw.webp")
+ *
+ * @example
+ * // Chemin complet → utilisé tel quel
+ * getOptimizedLogoUrl("equipementiers-automobiles/aisin.webp")
+ *
+ * 📝 FIX 2026-01-17: Si le fichier est déjà .webp, utiliser format "origin"
+ * pour éviter la double extension .webp@webp qui cause des 404
  */
 export function getOptimizedLogoUrl(logoFilename?: string): string {
   if (!logoFilename) {
-    return "/placeholder-logo.svg";
+    return "/images/categories/default.svg";
   }
 
   // Si c'est déjà une URL complète
@@ -236,24 +255,64 @@ export function getOptimizedLogoUrl(logoFilename?: string): string {
     return logoFilename;
   }
 
-  const path = `constructeurs-automobiles/marques-logos/${logoFilename}`;
-  return ImageOptimizer.getOptimizedUrl(path, { width: 200, quality: 90 });
+  // ✅ FIX 2026-01-17: Si le filename contient déjà un "/", c'est un chemin complet
+  // Sinon, préfixer avec le dossier par défaut (constructeurs-automobiles/marques-logos/)
+  const path = logoFilename.includes("/")
+    ? logoFilename // Chemin complet: "equipementiers-automobiles/aisin.webp"
+    : `constructeurs-automobiles/marques-logos/${logoFilename}`; // Juste un filename: "bmw.webp"
+
+  // ✅ FIX: Si le fichier est déjà .webp, pas de conversion format
+  // pour éviter bosch.webp → bosch.webp@webp → 404
+  const isWebp = logoFilename.toLowerCase().endsWith(".webp");
+  return ImageOptimizer.getOptimizedUrl(path, {
+    width: 200,
+    quality: 90,
+    format: isWebp ? "origin" : "webp",
+  });
 }
 
 /**
  * Image de modèle de véhicule optimisée
  * Utilise l'URL directe car les images sont déjà en .webp sur Supabase
+ *
+ * @param pathOrBrandAlias - Chemin complet OU alias de la marque
+ * @param modelPic - Nom de l'image (optionnel si pathOrBrandAlias est le chemin complet)
+ *
+ * @example
+ * // Avec chemin complet (nouveau comportement)
+ * getOptimizedModelImageUrl("constructeurs-automobiles/marques-concepts/renault/megane-iii.webp")
+ *
+ * @example
+ * // Avec deux arguments (ancien comportement)
+ * getOptimizedModelImageUrl("renault", "megane-iii.webp")
  */
 export function getOptimizedModelImageUrl(
-  brandAlias: string,
+  pathOrBrandAlias: string,
   modelPic?: string,
 ): string {
-  if (!modelPic || modelPic === "no.webp") {
-    return "/images/no-model.png";
+  let path: string;
+
+  if (modelPic) {
+    // Ancien comportement: deux arguments (brandAlias, modelPic)
+    if (modelPic === "no.webp") {
+      return "/images/categories/default.svg";
+    }
+    // FIX: Utiliser marques-concepts (pas marques-modeles)
+    path = `constructeurs-automobiles/marques-concepts/${pathOrBrandAlias}/${modelPic}`;
+  } else {
+    // Nouveau comportement: chemin complet passé directement
+    // Vérifier si c'est un chemin valide
+    if (
+      !pathOrBrandAlias ||
+      pathOrBrandAlias.endsWith("no.webp") ||
+      pathOrBrandAlias.endsWith("/undefined") ||
+      pathOrBrandAlias.endsWith("/null")
+    ) {
+      return "/images/categories/default.svg";
+    }
+    path = pathOrBrandAlias;
   }
 
-  // Utiliser l'URL directe (les images .webp existent sur Supabase)
-  const path = `constructeurs-automobiles/marques-modeles/${brandAlias}/${modelPic}`;
   return ImageOptimizer.getOriginalUrl(path);
 }
 
@@ -262,7 +321,7 @@ export function getOptimizedModelImageUrl(
  */
 export function getOptimizedPartImageUrl(partImg?: string): string {
   if (!partImg) {
-    return "/images/no-part.png";
+    return "/images/categories/default.svg"; // FIX: utiliser placeholder existant
   }
 
   const path = `articles/gammes-produits/catalogue/${partImg}`;

@@ -50,7 +50,7 @@ import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 // Services API
 
 // 🚀 RM API - Read Model optimisé (~200ms vs ~1.6s)
-import { fetchRmProducts, fetchRmPage } from "../services/api/rm-api.service";
+import { fetchRmPage } from "../services/api/rm-api.service";
 import {
   fetchBatchLoader,
   fetchBlogArticle,
@@ -204,135 +204,61 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
-  // 🚀 LCP OPTIMIZATION V8: Lazy HTTP calls - lancés APRÈS RM_PAGE
-  // hierarchy et switches sont différés pour éviter contention HTTP
-
-  // Variables pour lazy initialization
-  let hierarchyPromise: Promise<HierarchyData | null> | null = null;
-  let seoSwitchesPromise: Promise<
-    { verbs: Array<{ id: number; content: string }> } | undefined
-  > | null = null;
-
   // 🚀 RM API INTEGRATION - Feature flags pour activation progressive
-  const USE_RM_PAGE = process.env.USE_RM_PAGE === "true"; // Phase 2: Page complète
-  const USE_RM_API = process.env.USE_RM_API === "true"; // Phase 1: Produits seuls
+  const USE_RM_PAGE = process.env.USE_RM_PAGE === "true";
+  const USE_RM_API = process.env.USE_RM_API === "true";
   let rmProducts: ReturnType<typeof mapRmProductsToPieceData> | null = null;
   let rmDuration: number | undefined;
   let dataSource = "batch-loader";
-  let rmPageData: Awaited<ReturnType<typeof fetchRmPage>> | null = null;
 
-  // 🚀 PHASE 2: RM Page Complete (~350ms) - Remplace batch-loader
-  // LCP V8: Réduit à 50 produits initiaux pour SSR rapide
-  // Note: Si la gamme a plus de 50 produits, le reste peut être lazy-loadé côté client
-  const INITIAL_PRODUCTS_LIMIT = 50;
-  if (USE_RM_PAGE && gammeId && vehicleIds.typeId) {
-    try {
-      rmPageData = await fetchRmPage(
-        gammeId,
-        vehicleIds.typeId,
-        INITIAL_PRODUCTS_LIMIT,
-      );
-      if (rmPageData.success) {
-        rmProducts = mapRmProductsToPieceData(rmPageData.products);
-        rmDuration = rmPageData.duration_ms;
-        dataSource = "RM_PAGE";
-        console.log(
-          `🚀 [RM_PAGE] Using ${rmProducts.length} products (${rmDuration}ms)`,
-        );
-      }
-    } catch (err) {
-      console.warn(
-        `⚠️ [RM_PAGE] Failed, fallback to batch-loader:`,
-        err instanceof Error ? err.message : err,
-      );
-      rmPageData = null;
-    }
-  }
-
-  // 🚀 LCP V8: Lancer hierarchy APRÈS RM_PAGE (pour catalogueMameFamille deferred)
-  // Lancer ici pour permettre le streaming même si RM_PAGE réussit
-  hierarchyPromise = fetchJsonOrNull<HierarchyData>(
+  // 🚀 LCP V8: Lancer hierarchy immédiatement (pour catalogueMameFamille deferred)
+  const hierarchyPromise = fetchJsonOrNull<HierarchyData>(
     `http://localhost:3000/api/catalog/gammes/hierarchy`,
     3000,
   );
 
-  // Si RM_PAGE n'est pas activé ou a échoué, utiliser le mode hybride ou batch-loader seul
-  let batchResponse: Awaited<ReturnType<typeof fetchBatchLoader>>;
+  // 🚀 FIX 2026-01-17: TOUJOURS appeler batch-loader pour les données supplémentaires
+  // (grouped_pieces, filters, crossSelling, seo, oemRefs)
+  // RM ne fournit que les produits - batch-loader fournit tout le reste
+  const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
-  if (!rmPageData?.success) {
-    // 🚀 LCP V8: Lancer seoSwitches SEULEMENT si RM_PAGE échoue
-    seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
-
-    // 2. Si RM_API activé (Phase 1), lancer RM en parallèle avec batch-loader
-    const rmPromise =
-      USE_RM_API && gammeId && vehicleIds.typeId
-        ? fetchRmProducts(gammeId, vehicleIds.typeId, 200).catch((err) => {
+  // Lancer RM en parallèle avec batch-loader si activé
+  const INITIAL_PRODUCTS_LIMIT = 50;
+  const rmPromise =
+    (USE_RM_PAGE || USE_RM_API) && gammeId && vehicleIds.typeId
+      ? fetchRmPage(gammeId, vehicleIds.typeId, INITIAL_PRODUCTS_LIMIT).catch(
+          (err) => {
             console.warn(
-              `⚠️ [RM] API failed, fallback to batch-loader:`,
-              err.message,
+              `⚠️ [RM] Failed, using batch-loader products:`,
+              err instanceof Error ? err.message : err,
             );
             return null;
-          })
-        : Promise.resolve(null);
+          },
+        )
+      : Promise.resolve(null);
 
-    // 3. Batch-loader + RM en parallèle
-    const [batchResp, rmResponse] = await Promise.all([
-      fetchBatchLoader(vehicleIds.typeId, gammeId),
-      rmPromise,
-    ]);
-    batchResponse = batchResp;
+  // 🚀 PARALLÉLISATION: batch-loader + RM + seoSwitches en même temps
+  const [batchResponse, rmPageData, seoSwitches] = await Promise.all([
+    fetchBatchLoader(vehicleIds.typeId, gammeId),
+    rmPromise,
+    seoSwitchesPromise,
+  ]);
 
-    // 4. Si RM a réussi et retourne des produits, utiliser les produits RM
-    if (
-      rmResponse &&
-      rmResponse.success &&
-      isRmDataUsable(rmResponse.products, 1)
-    ) {
-      rmProducts = mapRmProductsToPieceData(rmResponse.products);
-      rmDuration = rmResponse.duration_ms;
-      dataSource = "RM_HYBRID";
-      console.log(
-        `🚀 [RM] Using ${rmProducts.length} products from RM API (${rmDuration}ms)`,
-      );
-    }
-  } else {
-    // RM_PAGE a réussi - créer un batchResponse minimal à partir de rmPageData
-    batchResponse = {
-      pieces: [],
-      grouped_pieces: [],
-      blocs: [],
-      filters: null, // Les filtres sont gérés directement via rmPageData.filters
-      seo: undefined,
-      crossSelling: [],
-      vehicleInfo: {
-        typeName: rmPageData.vehicleInfo.type_name,
-        typeAlias: rmPageData.vehicleInfo.type_alias,
-        modeleName: rmPageData.vehicleInfo.modele_name,
-        modeleAlias: rmPageData.vehicleInfo.modele_alias,
-        marqueName: rmPageData.vehicleInfo.marque_name,
-        marqueAlias: rmPageData.vehicleInfo.marque_alias,
-      },
-      oemRefsSeo: [],
-      validation: { valid: true },
-    };
-  }
-
-  // 5. seoSwitches: Skip si RM_PAGE réussit (utilise fallback côté client)
-  // Performance: ~600ms économisés quand RM_PAGE fonctionne
-  let seoSwitches;
-  if (rmPageData?.success) {
-    // Fast path: RM_PAGE réussit, on utilise le fallback du composant
-    seoSwitches = { verbs: [] };
+  // Si RM a réussi, utiliser ses produits (plus rapide ~200ms vs ~1.6s)
+  if (
+    rmPageData &&
+    rmPageData.success &&
+    isRmDataUsable(rmPageData.products, 1)
+  ) {
+    rmProducts = mapRmProductsToPieceData(rmPageData.products);
+    rmDuration = rmPageData.duration_ms;
+    dataSource = "RM_HYBRID";
     console.log(
-      `🚀 [LOADER] ${dataSource} terminé (seoSwitches skipped - fallback used)`,
-    );
-  } else {
-    // Slow path: batch-loader, on attend seoSwitches
-    seoSwitches = await seoSwitchesPromise;
-    console.log(
-      `🚀 [LOADER] ${dataSource} terminé, hierarchy/switches en streaming`,
+      `🚀 [RM] Using ${rmProducts.length} products (${rmDuration}ms)`,
     );
   }
+
+  console.log(`🚀 [LOADER] ${dataSource} terminé, hierarchy en streaming`);
 
   // 5. Construction des objets Vehicle & Gamme (via utilitaires centralisés)
   const vehicle: VehicleData = buildVehicleData({
@@ -422,10 +348,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const compatibilityInfo = buildCompatibilityInfo(vehicle);
 
   // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
-  // hierarchyPromise est lancé après RM_PAGE donc toujours défini ici
   const catalogueMameFamillePromise = buildCataloguePromise(
     gammeId,
-    hierarchyPromise!, // Non-null assertion: lancé ligne 240-243
+    hierarchyPromise,
   );
 
   const loadTime = Date.now() - startTime;
