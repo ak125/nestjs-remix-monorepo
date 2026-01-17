@@ -79,8 +79,8 @@ export function PiecesCrossSelling({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {gammes.map((gamme) => {
             // ⚠️ CRITIQUE: Construction URL préservée
-            // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
-            const url = `/pieces/${gamme.PG_ALIAS}/${vehicle.marque}/${vehicle.modele}/${vehicle.type}.html`;
+            // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
+            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
 
             return (
               <Link
@@ -251,7 +251,8 @@ export function PiecesCrossSellingCompact({
       <div className="p-3 space-y-2">
         {limitedGammes.map((gamme) => {
           // ⚠️ CRITIQUE: Construction URL préservée
-          const url = `/pieces/${gamme.PG_ALIAS}/${vehicle.marque}/${vehicle.modele}/${vehicle.type}.html`;
+          // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
+          const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
 
           return (
             <Link
