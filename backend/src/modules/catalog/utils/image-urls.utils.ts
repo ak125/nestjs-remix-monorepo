@@ -61,25 +61,8 @@ export function buildRackImageUrlWithTransform(
   const folder = imageData.pmi_folder.toString();
   const filename = imageData.pmi_name;
 
-  // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
-  const baseUrl = `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
-
-  return baseUrl;
-
-  /*
-  // Utiliser l'API render/image pour transformation automatique
-  const baseUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
-
-  // Ajouter paramètres de transformation
-  const params = new URLSearchParams();
-  params.set('format', 'webp');
-  params.set('quality', quality.toString());
-  if (width) {
-    params.set('width', width.toString());
-  }
-
-  return `${baseUrl}?${params.toString()}`;
-  */
+  // Utiliser /object/public/ (image brute, pas de transformation)
+  return `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
 }
 
 /**

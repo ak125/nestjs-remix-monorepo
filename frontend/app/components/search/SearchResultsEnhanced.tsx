@@ -1,6 +1,6 @@
 /**
  * 🎨 SEARCH RESULTS ENHANCED - Design moderne avec Tailwind & Shadcn UI
- * 
+ *
  * Améliorations :
  * - Badge "Référence OEM" visible
  * - Statut stock correct (en stock par défaut si non spécifié)
@@ -35,22 +35,21 @@ interface SearchResultItem {
 
 interface SearchResultsEnhancedProps {
   items: SearchResultItem[];
-  viewMode?: 'grid' | 'list';
+  viewMode?: "grid" | "list";
   isCached?: boolean; // ✨ Afficher badge "Cache"
   executionTime?: number;
   onItemClick?: (item: SearchResultItem) => void;
   className?: string;
 }
 
-export function SearchResultsEnhanced({ 
-  items = [], 
-  viewMode = 'grid',
+export function SearchResultsEnhanced({
+  items = [],
+  viewMode = "grid",
   isCached = false,
   executionTime,
   onItemClick,
-  className = ''
+  className = "",
 }: SearchResultsEnhancedProps) {
-  
   if (!items.length) {
     return (
       <div className="text-center py-16">
@@ -67,51 +66,54 @@ export function SearchResultsEnhanced({
 
   // 🖼️ HELPERS D'OPTIMISATION D'IMAGES WEBP
   const optimizeImageUrl = (imageUrl: string, _width: number = 400): string => {
-    if (!imageUrl) return '';
-    
+    if (!imageUrl) return "";
+
     // Si c'est déjà une URL Supabase
-    if (imageUrl.includes('supabase.co/storage')) {
+    if (imageUrl.includes("supabase.co/storage")) {
       // Extraire le chemin après /public/
       const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
       if (match) {
         const path = match[1];
-        const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-        // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
+        const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
+        // Utiliser /object/public/ (image brute, pas de transformation)
         return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
       }
     }
-    
+
     // Sinon retourner l'URL originale
     return imageUrl;
   };
 
-  const generateSrcSet = (imageUrl: string, widths: number[] = [300, 400, 600]): string => {
-    if (!imageUrl) return '';
-    
+  const generateSrcSet = (
+    imageUrl: string,
+    widths: number[] = [300, 400, 600],
+  ): string => {
+    if (!imageUrl) return "";
+
     return widths
-      .map(width => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
-      .join(', ');
+      .map((width) => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
+      .join(", ");
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
   const getBrandName = (brand: string | { name: string } | undefined) => {
-    if (!brand) return 'N/A';
-    return typeof brand === 'object' ? brand.name : brand;
+    if (!brand) return "N/A";
+    return typeof brand === "object" ? brand.name : brand;
   };
 
   const getCategoryName = (category: string | { name: string } | undefined) => {
-    if (!category) return 'N/A';
-    return typeof category === 'object' ? category.name : category;
+    if (!category) return "N/A";
+    return typeof category === "object" ? category.name : category;
   };
 
   const getQualityBadge = (qualityLevel?: number) => {
-    switch(qualityLevel) {
+    switch (qualityLevel) {
       case 1: // OES
         return (
           <Badge variant="default" className="bg-amber-500 hover:bg-amber-600">
@@ -120,11 +122,7 @@ export function SearchResultsEnhanced({
           </Badge>
         );
       case 2: // Aftermarket
-        return (
-          <Badge variant="secondary">
-            Aftermarket
-          </Badge>
-        );
+        return <Badge variant="secondary">Aftermarket</Badge>;
       case 3: // Échange Standard
         return (
           <Badge variant="outline" className="border-blue-500 text-blue-700">
@@ -145,10 +143,10 @@ export function SearchResultsEnhanced({
       price: price,
       priceFormatted: formatPrice(price),
       brand: getBrandName(item.brand),
-      stock: item.inStock !== false ? 'available' : 'unavailable',
-      reference: item.reference
+      stock: item.inStock !== false ? "available" : "unavailable",
+      reference: item.reference,
     };
-    console.log('🛒 mapToPieceData:', { original: item, mapped: pieceData });
+    console.log("🛒 mapToPieceData:", { original: item, mapped: pieceData });
     return pieceData;
   };
 
@@ -161,8 +159,8 @@ export function SearchResultsEnhanced({
         const categoryName = getCategoryName(item.category);
 
         return (
-          <Card 
-            key={item.id} 
+          <Card
+            key={item.id}
             className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
             onClick={() => onItemClick?.(item)}
           >
@@ -170,20 +168,21 @@ export function SearchResultsEnhanced({
               {/* En-tête: Badges */}
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 {getQualityBadge(item._qualityLevel)}
-                
+
                 {item.oemRef && (
-                  <Badge variant="outline" className="border-green-600 text-success bg-success/10">
+                  <Badge
+                    variant="outline"
+                    className="border-green-600 text-success bg-success/10"
+                  >
                     <Zap className="h-3 w-3 mr-1" />
                     OEM: {item.oemRef}
                   </Badge>
                 )}
-                
+
                 {item.isNew && (
-                  <Badge className="bg-success hover:bg-success">
-                    Nouveau
-                  </Badge>
+                  <Badge className="bg-success hover:bg-success">Nouveau</Badge>
                 )}
-                
+
                 {item.onSale && (
                   <Badge className="bg-destructive hover:bg-destructive">
                     Promo
@@ -215,12 +214,8 @@ export function SearchResultsEnhanced({
                 <h3 className="font-bold text-lg text-gray-900 mb-1 group-hover:text-primary transition-colors">
                   {item.reference}
                 </h3>
-                <p className="text-sm text-gray-600 font-medium">
-                  {brandName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {categoryName}
-                </p>
+                <p className="text-sm text-gray-600 font-medium">{brandName}</p>
+                <p className="text-xs text-gray-500">{categoryName}</p>
               </div>
 
               {/* Statut stock */}
@@ -251,9 +246,9 @@ export function SearchResultsEnhanced({
                       </div>
                     )}
                   </div>
-                  
+
                   <div onClick={(e) => e.stopPropagation()}>
-                    <AddToCartButton 
+                    <AddToCartButton
                       piece={mapToPieceData(item)}
                       variant="small"
                     />
@@ -275,8 +270,8 @@ export function SearchResultsEnhanced({
         const categoryName = getCategoryName(item.category);
 
         return (
-          <Card 
-            key={item.id} 
+          <Card
+            key={item.id}
             className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
             onClick={() => onItemClick?.(item)}
           >
@@ -285,7 +280,7 @@ export function SearchResultsEnhanced({
                 {/* Image - ✅ OPTIMISÉE WEBP */}
                 <div className="flex-shrink-0 w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors">
                   {item.image ? (
-                    <img 
+                    <img
                       src={optimizeImageUrl(item.image, 300)}
                       srcSet={generateSrcSet(item.image, [200, 300])}
                       sizes="128px"
@@ -306,18 +301,21 @@ export function SearchResultsEnhanced({
                       {/* Badges */}
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {getQualityBadge(item._qualityLevel)}
-                        
+
                         {item.oemRef && (
-                          <Badge variant="outline" className="border-green-600 text-success bg-success/10">
+                          <Badge
+                            variant="outline"
+                            className="border-green-600 text-success bg-success/10"
+                          >
                             <Zap className="h-3 w-3 mr-1" />
                             OEM: {item.oemRef}
                           </Badge>
                         )}
-                        
+
                         {item.isNew && (
                           <Badge className="bg-success">Nouveau</Badge>
                         )}
-                        
+
                         {item.onSale && (
                           <Badge className="bg-destructive">Promo</Badge>
                         )}
@@ -331,12 +329,16 @@ export function SearchResultsEnhanced({
                       {/* Métadonnées */}
                       <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                         <div>
-                          <span className="text-gray-500">Marque:</span>{' '}
-                          <span className="font-medium text-gray-900">{brandName}</span>
+                          <span className="text-gray-500">Marque:</span>{" "}
+                          <span className="font-medium text-gray-900">
+                            {brandName}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Catégorie:</span>{' '}
-                          <span className="font-medium text-gray-900">{categoryName}</span>
+                          <span className="text-gray-500">Catégorie:</span>{" "}
+                          <span className="font-medium text-gray-900">
+                            {categoryName}
+                          </span>
                         </div>
                       </div>
 
@@ -361,16 +363,17 @@ export function SearchResultsEnhanced({
                           <div className="text-3xl font-bold text-gray-900 mb-1">
                             {formatPrice(item.price)}
                           </div>
-                          {item.originalPrice && item.originalPrice > item.price && (
-                            <div className="text-sm text-gray-500 line-through mb-3">
-                              {formatPrice(item.originalPrice)}
-                            </div>
-                          )}
+                          {item.originalPrice &&
+                            item.originalPrice > item.price && (
+                              <div className="text-sm text-gray-500 line-through mb-3">
+                                {formatPrice(item.originalPrice)}
+                              </div>
+                            )}
                         </>
                       )}
-                      
+
                       <div onClick={(e) => e.stopPropagation()}>
-                        <AddToCartButton 
+                        <AddToCartButton
                           piece={mapToPieceData(item)}
                           variant="default"
                         />
@@ -393,9 +396,10 @@ export function SearchResultsEnhanced({
         <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-700">
-              <span className="font-semibold">{items.length}</span> résultat{items.length > 1 ? 's' : ''}
+              <span className="font-semibold">{items.length}</span> résultat
+              {items.length > 1 ? "s" : ""}
             </div>
-            
+
             {executionTime && (
               <div className="text-sm text-gray-600">
                 • <span className="font-mono">{executionTime}ms</span>
@@ -404,7 +408,10 @@ export function SearchResultsEnhanced({
           </div>
 
           {isCached && (
-            <Badge variant="secondary" className="bg-primary/15 text-blue-700 border-blue-300">
+            <Badge
+              variant="secondary"
+              className="bg-primary/15 text-blue-700 border-blue-300"
+            >
               <Zap className="h-3 w-3 mr-1" />
               Résultats en cache
             </Badge>
@@ -413,7 +420,7 @@ export function SearchResultsEnhanced({
       )}
 
       {/* Grille ou liste */}
-      {viewMode === 'grid' ? renderGridView() : renderListView()}
+      {viewMode === "grid" ? renderGridView() : renderListView()}
     </div>
   );
 }

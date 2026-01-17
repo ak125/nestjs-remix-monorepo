@@ -67,11 +67,11 @@ echo ""
 # =============================================================================
 # TEST 2: WEBP AUTOMATIQUE
 # =============================================================================
-echo "2️⃣  WEBP AUTOMATIQUE (Supabase Image Transformation)"
+echo "2️⃣  IMAGES BRUTES (Supabase Storage - Sans transformation)"
 echo "────────────────────────────────────────────────────"
 
 IMAGE_ORIGINAL="https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG"
-IMAGE_WEBP="https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/rack-images/260/6216001.JPG?width=400&quality=80"
+IMAGE_WEBP="https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG"
 
 ORIGINAL_SIZE=$(curl -s -I "$IMAGE_ORIGINAL" | grep -i "content-length" | awk '{print $2}' | tr -d '\r')
 WEBP_SIZE=$(curl -s -I "$IMAGE_WEBP" -H "Accept: image/webp" | grep -i "content-length" | awk '{print $2}' | tr -d '\r')

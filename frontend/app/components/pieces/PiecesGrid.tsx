@@ -263,7 +263,7 @@ const optimizeImageUrl = (
     if (match) {
       const path = match[1];
       const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-      // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
+      // Utiliser /object/public/ (image brute, pas de transformation)
       return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
     }
   }
@@ -279,7 +279,10 @@ const generateSrcSet = (imageUrl: string | undefined): string => {
     .join(", ");
 };
 
-const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({ piece, isFirst = false }) => (
+const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({
+  piece,
+  isFirst = false,
+}) => (
   <div className="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-300 overflow-hidden group">
     {/* Image - ✅ OPTIMISÉE WEBP */}
     <div className="aspect-square bg-gray-100 relative overflow-hidden">

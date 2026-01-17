@@ -21,18 +21,8 @@ const SUPABASE_URL =
 function getOptimizedImageUrl(relativePath: string | null | undefined): string {
   if (!relativePath) return '';
 
-  // Si déjà URL complète Supabase, s'assurer qu'on utilise /object/public/ (pas render/image)
+  // Si déjà URL complète Supabase, s'assurer qu'on utilise /object/public/
   if (relativePath.startsWith(SUPABASE_URL)) {
-    // Convertir render/image vers object/public si nécessaire
-    if (relativePath.includes('/storage/v1/render/image/public/')) {
-      const cleaned = relativePath
-        .replace(
-          '/storage/v1/render/image/public/',
-          '/storage/v1/object/public/',
-        )
-        .split('?')[0]; // Supprimer les params de transformation
-      return cleaned;
-    }
     // Supprimer les params de transformation si présents
     if (relativePath.includes('/storage/v1/object/public/')) {
       return relativePath.split('?')[0];
