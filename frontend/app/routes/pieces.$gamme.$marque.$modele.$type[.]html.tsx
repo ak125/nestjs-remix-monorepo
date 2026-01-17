@@ -301,30 +301,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       pieces: [],
       grouped_pieces: [],
       blocs: [],
-      filters: {
-        brands: rmPageData.filters.brands,
-        qualities: rmPageData.filters.qualities,
-      },
-      count: rmPageData.count,
-      minPrice: rmPageData.filters.price_range.min,
-      seo: null,
+      filters: null, // Les filtres sont gérés directement via rmPageData.filters
+      seo: undefined,
       crossSelling: [],
       vehicleInfo: {
-        type_id: rmPageData.vehicleInfo.type_id,
-        type_name: rmPageData.vehicleInfo.type_name,
-        type_alias: rmPageData.vehicleInfo.type_alias,
-        modele_id: rmPageData.vehicleInfo.modele_id,
-        modele_name: rmPageData.vehicleInfo.modele_name,
-        modele_alias: rmPageData.vehicleInfo.modele_alias,
-        marque_id: rmPageData.vehicleInfo.marque_id,
-        marque_name: rmPageData.vehicleInfo.marque_name,
-        marque_alias: rmPageData.vehicleInfo.marque_alias,
+        typeName: rmPageData.vehicleInfo.type_name,
+        typeAlias: rmPageData.vehicleInfo.type_alias,
+        modeleName: rmPageData.vehicleInfo.modele_name,
+        modeleAlias: rmPageData.vehicleInfo.modele_alias,
+        marqueName: rmPageData.vehicleInfo.marque_name,
+        marqueAlias: rmPageData.vehicleInfo.marque_alias,
       },
       oemRefsSeo: [],
       validation: { valid: true },
-      success: true,
-      timestamp: new Date().toISOString(),
-      loadTime: rmPageData.duration_ms,
     };
   }
 

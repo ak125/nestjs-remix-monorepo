@@ -3,21 +3,7 @@
  */
 
 import { type RmProduct } from "~/services/api/rm-api.service";
-
-export interface PieceData {
-  id: number;
-  name: string;
-  price: number;
-  priceFormatted: string;
-  brand: string;
-  stock: string;
-  reference: string;
-  quality: string;
-  stars: number;
-  marque_id?: number;
-  image?: string;
-  matchKind?: string;
-}
+import { type PieceData } from "~/types/pieces-route.types";
 
 function formatPrice(price: number): string {
   return price.toFixed(2).replace(".", ",");
@@ -51,7 +37,7 @@ export function mapRmProductsToPieceData(rmProducts: RmProduct[]): PieceData[] {
     image: p.has_image
       ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/rack-images/260/${p.piece_reference}.JPG?width=400&quality=85`
       : undefined,
-    matchKind: "RM",
+    matchKind: 0, // 0 = direct match
   }));
 }
 
