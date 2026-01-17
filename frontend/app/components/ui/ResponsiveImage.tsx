@@ -43,16 +43,8 @@ function getOptimizedUrl(
 
   // URLs Supabase Storage - utiliser /object/public/ (PAS de transformation)
   if (url.includes("supabase.co/storage")) {
-    // Convertir render/image vers object/public si nécessaire
-    let cleanUrl = url;
-    if (url.includes("/storage/v1/render/image/public/")) {
-      cleanUrl = url.replace(
-        "/storage/v1/render/image/public/",
-        "/storage/v1/object/public/",
-      );
-    }
     // Supprimer les paramètres de transformation
-    return cleanUrl.split("?")[0];
+    return url.split("?")[0];
   }
 
   // Cloudinary - désactivé également
