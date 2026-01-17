@@ -37,11 +37,6 @@ jobs:
           docker push massdoc/nestjs-remix-monorepo:production
           docker push massdoc/nestjs-remix-monorepo:${{ github.ref_name }}
 
-      - name: Setup Node.js for sitemap generation
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: 🚀 Deploy to PROD
         env:
           NODE_ENV: production
@@ -104,46 +99,6 @@ jobs:
           echo "✅ PROD deployment successful - API responding"
 
           docker image prune -f
-
-      - name: 🗺️ Generate static sitemaps (si necessaire)
-        run: |
-          PROD_DIR=~/production
-          SITEMAP_FILE="$PROD_DIR/public/sitemaps/sitemap.xml"
-          MAX_AGE_DAYS=7
-
-          if [ -f "$SITEMAP_FILE" ]; then
-            FILE_AGE=$(( ($(date +%s) - $(stat -c %Y "$SITEMAP_FILE")) / 86400 ))
-            if [ $FILE_AGE -lt $MAX_AGE_DAYS ]; then
-              echo "✅ Sitemaps recents ($FILE_AGE jours) - generation ignoree"
-              ls -la $PROD_DIR/public/sitemaps/
-              exit 0
-            fi
-            echo "⚠️ Sitemaps anciens ($FILE_AGE jours) - regeneration necessaire..."
-          else
-            echo "📝 Sitemaps absents - generation initiale..."
-          fi
-
-          if [ -f "$PROD_DIR/.env" ]; then
-            echo "📂 Chargement des variables depuis $PROD_DIR/.env"
-            set -a
-            source $PROD_DIR/.env
-            set +a
-          fi
-
-          echo "📦 Installation des dependances backend..."
-          cd $GITHUB_WORKSPACE/backend
-          npm install --include=dev
-
-          echo "🗺️ Generation des sitemaps statiques..."
-          mkdir -p $PROD_DIR/public/sitemaps
-          export OUTPUT_DIR="$PROD_DIR/public/sitemaps"
-          npx ts-node scripts/generate-sitemaps.ts
-
-          echo "✅ Sitemaps generes dans $PROD_DIR/public/sitemaps/"
-          ls -la $PROD_DIR/public/sitemaps/
-
-          echo "🔄 Rechargement de Caddy..."
-          docker exec nestjs-remix-caddy caddy reload --config /etc/caddy/Caddyfile || docker restart nestjs-remix-caddy
 
       - name: ✅ Validate PROD
         run: |
