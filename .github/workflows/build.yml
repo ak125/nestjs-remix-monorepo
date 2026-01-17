@@ -28,13 +28,13 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.0.0
 
-      - name: 🐳 Build Production Image
+      - name: 🐳 Build and Push Image
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v5.1.0
         with:
           context: .
           push: true
-          tags: massdoc/nestjs-remix-monorepo:production
+          tags: massdoc/nestjs-remix-monorepo:${{ inputs.tag || 'production' }}
           no-cache: true
           build-args: |
             CACHEBUST=${{ github.sha }}

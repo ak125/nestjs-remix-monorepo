@@ -1,0 +1,47 @@
+services:
+  monorepo_preprod:
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis_preprod:6379
+      - REDIS_HOST=redis_preprod
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - NODE_ENV=preprod
+      - DATABASE_URL
+      - SUPABASE_SERVICE_ROLE_KEY
+      - SUPABASE_URL
+      - USE_UNIFIED_RPC=true
+
+    container_name: nestjs-remix-monorepo-preprod
+    image: massdoc/nestjs-remix-monorepo:preprod
+    restart: always
+    ports:
+      - "3100:3000"
+    networks:
+      - automecanik-preprod
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  redis_preprod:
+    image: redis:7-alpine
+    container_name: redis-preprod
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - /dev/volumes/nestjs-remix/preprod/sessions/:/data
+    networks:
+      - automecanik-preprod
+
+networks:
+  automecanik-preprod:
+    external: true
