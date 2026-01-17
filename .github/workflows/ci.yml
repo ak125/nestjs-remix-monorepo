@@ -78,225 +78,74 @@ jobs:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
     secrets: inherit
+    with:
+      tag: preprod
 
   deploy:
-    name: 🚀 Deploy
+    name: 🧪 Deploy PREPROD
     runs-on: [self-hosted, Linux, X64]
     needs: [build, lint, typecheck]
-    # needs: [build]
-    # only build/deploy main branch on pushes
-    # if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push' }}
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      TURBO_REMOTE_ONLY: true
 
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4.1.1
-      
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      #   - name: 🚀 Run Docker Compose on Staging
-      #     if: ${{ github.ref == 'refs/heads/dev' }}
-      #     env:
-      #       NODE_ENV: staging
-      #     run: |
-      #       docker pull massdoc/nestjs-remix-monorepo:latest
-      #       docker compose -f docker-compose.staging.yaml up -d
-      #       docker system prune --all --volumes --force
 
-      - name: Setup Node.js for sitemap generation
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: 🚀 Run Docker Compose on Production
-        if: ${{ github.ref == 'refs/heads/main' }}
+      - name: 🧪 Deploy to PREPROD
         env:
-          NODE_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: preprod
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:production
+          docker pull massdoc/nestjs-remix-monorepo:preprod
 
-          PROD_DIR=~/production
+          PREPROD_DIR=~/preprod
+          mkdir -p $PREPROD_DIR
 
-          # Créer les dossiers
-          mkdir -p $PROD_DIR/config/caddy
+          # Copier docker-compose.preprod.yml
+          cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
 
-          # Sync depuis Git (rm avant cp pour éviter permission denied)
-          rm -f $PROD_DIR/docker-compose.prod.yml
-          rm -f $PROD_DIR/docker-compose.caddy.yml
-          rm -f $PROD_DIR/config/caddy/Caddyfile
-          cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
-          cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
-          cp $GITHUB_WORKSPACE/config/caddy/Caddyfile $PROD_DIR/config/caddy/
-
-          cd $PROD_DIR
-
-          # ✅ Valider que le fichier .env existe et contient les variables requises
-          echo "🔍 Validating production .env file..."
-          if [ ! -f ".env" ]; then
-            echo "❌ FATAL: .env file missing at $PROD_DIR/.env"
-            echo "Create it from backend/.env.example template"
-            exit 1
+          # Copier le .env de prod (meme DB)
+          if [ -f ~/production/.env ]; then
+            cp ~/production/.env $PREPROD_DIR/.env
+          else
+            echo "⚠️ Warning: ~/production/.env not found, preprod may fail"
           fi
-          source .env
-          REQUIRED_VARS="NODE_ENV SUPABASE_URL SYSTEMPAY_SITE_ID PAYBOX_SITE SESSION_SECRET"
-          for var in $REQUIRED_VARS; do
-            if [ -z "${!var}" ]; then
-              echo "❌ FATAL: Missing required env var: $var"
-              exit 1
-            fi
-          done
-          echo "✅ All required environment variables present"
 
-          # Créer le réseau externe s'il n'existe pas
-          docker network create automecanik-prod 2>/dev/null || true
+          cd $PREPROD_DIR
 
-          # Sauvegarder l'image actuelle pour rollback éventuel
-          CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "")
-          echo "📦 Current image: $CURRENT_IMAGE"
+          # Creer le reseau
+          docker network create automecanik-preprod 2>/dev/null || true
 
-          # Arrêter et supprimer les anciens conteneurs s'ils existent
-          docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
-          docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
+          # Arreter anciens conteneurs
+          docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
+          docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
 
-          # Démarrer avec la nouvelle config
-          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+          # Demarrer preprod
+          docker compose -f docker-compose.preprod.yml up -d
 
-          # Attendre le démarrage (60s pour laisser l'app s'initialiser)
-          echo "⏳ Waiting for containers to start (60s)..."
-          sleep 60
+          # Health check
+          echo "⏳ Waiting for PREPROD to start (30s)..."
+          sleep 30
 
-          # Vérifier que les conteneurs tournent
-          if ! docker ps | grep -q nestjs-remix-monorepo-prod; then
-            echo "❌ Container not running - checking logs..."
-            docker logs nestjs-remix-monorepo-prod --tail 50
+          if ! docker ps | grep -q nestjs-remix-monorepo-preprod; then
+            echo "❌ PREPROD container not running - checking logs..."
+            docker logs nestjs-remix-monorepo-preprod --tail 50
             exit 1
           fi
 
-          # Health check - vérifier que l'API répond
-          echo "🏥 Running health check..."
-          if ! curl -sf http://localhost:3000/api/catalog/families > /dev/null; then
-            echo "❌ Health check failed - API not responding"
-            docker logs nestjs-remix-monorepo-prod --tail 30
+          if ! curl -sf http://localhost:3100/health > /dev/null; then
+            echo "❌ PREPROD health check failed"
+            docker logs nestjs-remix-monorepo-preprod --tail 30
             exit 1
           fi
-          echo "✅ Deployment successful - API responding"
+
+          echo "✅ PREPROD deployed successfully on port 3100"
+          echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3100"
 
           # Nettoyer les images
           docker image prune -f
-
-      - name: 🗺️ Generate static sitemaps (si nécessaire)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          PROD_DIR=~/production
-          SITEMAP_FILE="$PROD_DIR/public/sitemaps/sitemap.xml"
-          MAX_AGE_DAYS=7
-
-          # Vérifier si les sitemaps existent et sont récents
-          if [ -f "$SITEMAP_FILE" ]; then
-            FILE_AGE=$(( ($(date +%s) - $(stat -c %Y "$SITEMAP_FILE")) / 86400 ))
-            if [ $FILE_AGE -lt $MAX_AGE_DAYS ]; then
-              echo "✅ Sitemaps récents ($FILE_AGE jours) - génération ignorée"
-              ls -la $PROD_DIR/public/sitemaps/
-              exit 0
-            fi
-            echo "⚠️ Sitemaps anciens ($FILE_AGE jours) - régénération nécessaire..."
-          else
-            echo "📝 Sitemaps absents - génération initiale..."
-          fi
-
-          # Charger les variables d'environnement depuis le .env de production
-          if [ -f "$PROD_DIR/.env" ]; then
-            echo "📂 Chargement des variables depuis $PROD_DIR/.env"
-            set -a
-            source $PROD_DIR/.env
-            set +a
-          fi
-
-          echo "📦 Installation des dépendances backend..."
-          cd $GITHUB_WORKSPACE/backend
-          npm install --include=dev
-
-          echo "🗺️ Génération des sitemaps statiques (714k URLs)..."
-          mkdir -p $PROD_DIR/public/sitemaps
-          export OUTPUT_DIR="$PROD_DIR/public/sitemaps"
-          npx ts-node scripts/generate-sitemaps.ts
-
-          echo "✅ Sitemaps générés dans $PROD_DIR/public/sitemaps/"
-          ls -la $PROD_DIR/public/sitemaps/
-
-          echo "🔄 Rechargement de Caddy..."
-          docker exec nestjs-remix-caddy caddy reload --config /etc/caddy/Caddyfile || docker restart nestjs-remix-caddy
-
-  # ============================================
-  # POST-DEPLOYMENT VALIDATION
-  # ============================================
-  validate:
-    name: ✅ Validate URLs
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-
-    steps:
-      - name: Wait for deployment to stabilize
-        run: sleep 30
-
-      - name: Validate critical URLs
-        run: |
-          echo "🔍 Validating production URLs..."
-
-          BASE_URL="https://www.automecanik.com"
-          FAILED=0
-
-          # URLs critiques qui doivent retourner 200
-          URLS=(
-            "/"
-            "/health"
-          )
-
-          for url in "${URLS[@]}"; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$url" --max-time 30)
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ $url -> $STATUS"
-            else
-              echo "❌ $url -> $STATUS (expected 200)"
-              FAILED=1
-            fi
-          done
-
-          # URL qui doit retourner 404 (ancien format)
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/pieces/freinage" --max-time 30)
-          if [ "$STATUS" != "200" ]; then
-            echo "✅ /pieces/freinage -> $STATUS (correctly not 200)"
-          else
-            echo "⚠️ /pieces/freinage -> $STATUS (should NOT be 200)"
-            # Ne pas échouer pour ça, juste avertir
-          fi
-
-          if [ "$FAILED" = "1" ]; then
-            echo "❌ Some URLs failed validation!"
-            exit 1
-          fi
-
-          echo "✅ All critical URLs validated successfully!"
-
-      - name: Report validation results
-        if: failure()
-        run: |
-          echo "::error::Production URL validation failed. Check deployment logs."
