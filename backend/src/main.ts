@@ -1,3 +1,6 @@
+// Load environment variables FIRST (before any validation)
+import 'dotenv/config';
+
 // Validate environment variables BEFORE any other imports
 // This ensures the app fails fast if required vars are missing
 import { validateRequiredEnvVars } from './config/env-validation';
