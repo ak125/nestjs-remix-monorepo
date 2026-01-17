@@ -18,34 +18,29 @@ export interface PieceImageData {
 }
 
 /**
- * Construit l'URL complète d'une image de pièce automobile avec transformation WebP
+ * Construit l'URL complète d'une image de pièce automobile (image brute)
+ * ⚠️ PAS de transformation (désactivé pour éviter coûts $5/1000 images)
  *
  * @param imageData - Données image (pmi_folder, pmi_name)
- * @param width - Largeur de l'image (défaut: 400)
- * @param quality - Qualité de compression (défaut: 85)
- * @returns URL complète Supabase avec transformation WebP
+ * @returns URL complète Supabase sans transformation
  *
  * @example
  * buildRackImageUrl({ pmi_folder: 30, pmi_name: '0986479103DRFRWHCO00MM.JPG' })
- * // → 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/rack-images/30/0986479103DRFRWHCO00MM.JPG?width=400&quality=85&format=webp'
+ * // → 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986479103DRFRWHCO00MM.JPG'
  */
-export function buildRackImageUrl(
-  imageData?: PieceImageData | null,
-  width: number = 400,
-  quality: number = 85,
-): string {
+export function buildRackImageUrl(imageData?: PieceImageData | null): string {
   // Si pas de données d'image, retourner l'image par défaut
   if (!imageData || !imageData.pmi_folder || !imageData.pmi_name) {
     return DEFAULT_IMAGE;
   }
 
-  // Construire l'URL Supabase Storage avec transformation WebP
+  // Construire l'URL Supabase Storage SANS transformation
   // Note: pmi_name contient déjà l'extension (.JPG, .webp, etc.)
   const folder = imageData.pmi_folder.toString();
   const filename = imageData.pmi_name;
 
-  // 🚀 Utiliser render/image pour transformation automatique WebP (-105KB par page)
-  return `${SUPABASE_URL}/storage/v1/render/image/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}?width=${width}&quality=${quality}&format=webp`;
+  // ⚠️ Utiliser /object/public/ (image brute, pas de transformation, $0)
+  return `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
 }
 
 /**

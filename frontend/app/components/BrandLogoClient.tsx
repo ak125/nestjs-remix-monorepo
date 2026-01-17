@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 
 interface BrandLogoClientProps {
   logoPath: string | null;
@@ -16,20 +16,51 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
   }, []);
 
   const availableLogos = [
-    'audi.webp', 'bmw.webp', 'mercedes.webp', 'alfa-romeo.webp', 
-    'renault.webp', 'peugeot.webp', 'citroen.webp', 'volkswagen.webp', 
-    'ford.webp', 'toyota.webp', 'opel.webp', 'seat.webp', 'skoda.webp',
-    'fiat.webp', 'honda.webp', 'hyundai.webp', 'kia.webp', 'mazda.webp',
-    'mitsubishi.webp', 'nissan.webp', 'dacia.webp', 'jeep.webp', 'lancia.webp',
-    'land-rover.webp', 'mini.webp', 'smart.webp', 'suzuki.webp', 'volvo.webp'
+    "audi.webp",
+    "bmw.webp",
+    "mercedes.webp",
+    "alfa-romeo.webp",
+    "renault.webp",
+    "peugeot.webp",
+    "citroen.webp",
+    "volkswagen.webp",
+    "ford.webp",
+    "toyota.webp",
+    "opel.webp",
+    "seat.webp",
+    "skoda.webp",
+    "fiat.webp",
+    "honda.webp",
+    "hyundai.webp",
+    "kia.webp",
+    "mazda.webp",
+    "mitsubishi.webp",
+    "nissan.webp",
+    "dacia.webp",
+    "jeep.webp",
+    "lancia.webp",
+    "land-rover.webp",
+    "mini.webp",
+    "smart.webp",
+    "suzuki.webp",
+    "volvo.webp",
   ];
 
   // Initiales pour fallback
-  const initials = brandName.split(' ').map(w => w.charAt(0)).join('').slice(0, 2);
+  const initials = brandName
+    .split(" ")
+    .map((w) => w.charAt(0))
+    .join("")
+    .slice(0, 2);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="#f3f4f6" rx="8"/><text x="32" y="40" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#374151">${initials}</text></svg>`;
 
   // Pendant l'hydratation ou si pas de logo disponible, afficher initiales
-  if (!isClient || !logoPath || !availableLogos.includes(logoPath) || imageError) {
+  if (
+    !isClient ||
+    !logoPath ||
+    !availableLogos.includes(logoPath) ||
+    imageError
+  ) {
     return (
       <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 overflow-hidden">
         <img
@@ -43,11 +74,11 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
     );
   }
 
-  // Essayer d'afficher le logo Supabase avec cache 1 an
+  // Essayer d'afficher le logo Supabase (sans transformation, $0)
   return (
     <div className="w-16 h-16 rounded-lg bg-white border border-gray-300 overflow-hidden shadow-sm">
       <img
-        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-logos/${logoPath}?width=64&quality=90&t=31536000`}
+        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${logoPath}`}
         alt={brandName}
         width={64}
         height={64}
@@ -61,7 +92,7 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
           console.log(`❌ Logo échoué: ${brandName} (${logoPath})`);
         }}
       />
-      
+
       {/* Fallback pendant le chargement */}
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 overflow-hidden">

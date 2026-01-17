@@ -11,33 +11,31 @@ import {
 } from '../../../utils/html-entities';
 
 /**
- * 🖼️ Génère une URL d'image optimisée via Supabase render/image
- * Compression WebP automatique + redimensionnement
+ * 🖼️ Génère une URL d'image brute via Supabase object/public
+ * ⚠️ PAS de transformation (désactivé pour éviter coûts $5/1000 images)
  * Cache Cloudflare par URL unique
  */
 const SUPABASE_URL =
   process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 
-function getOptimizedImageUrl(
-  relativePath: string | null | undefined,
-  width = 400,
-  quality = 85,
-): string {
+function getOptimizedImageUrl(relativePath: string | null | undefined): string {
   if (!relativePath) return '';
 
-  // Si déjà URL complète Supabase, transformer vers render/image
+  // Si déjà URL complète Supabase, s'assurer qu'on utilise /object/public/ (pas render/image)
   if (relativePath.startsWith(SUPABASE_URL)) {
-    // Remplacer /object/public/ par /render/image/public/
+    // Convertir render/image vers object/public si nécessaire
+    if (relativePath.includes('/storage/v1/render/image/public/')) {
+      const cleaned = relativePath
+        .replace(
+          '/storage/v1/render/image/public/',
+          '/storage/v1/object/public/',
+        )
+        .split('?')[0]; // Supprimer les params de transformation
+      return cleaned;
+    }
+    // Supprimer les params de transformation si présents
     if (relativePath.includes('/storage/v1/object/public/')) {
-      const transformed = relativePath.replace(
-        '/storage/v1/object/public/',
-        '/storage/v1/render/image/public/',
-      );
-      // Éviter double paramètres
-      if (!transformed.includes('?')) {
-        return `${transformed}?width=${width}&quality=${quality}`;
-      }
-      return transformed;
+      return relativePath.split('?')[0];
     }
     return relativePath;
   }
@@ -59,7 +57,8 @@ function getOptimizedImageUrl(
     path = relativePath.substring(1);
   }
 
-  return `${SUPABASE_URL}/storage/v1/render/image/public/${bucket}/${path}?width=${width}&quality=${quality}`;
+  // ⚠️ Utiliser /object/public/ (image brute, pas de transformation, $0)
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 /**

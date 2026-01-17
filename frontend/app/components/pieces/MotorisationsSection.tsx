@@ -1,5 +1,11 @@
 import { Link } from "@remix-run/react";
-import { Car, ChevronRight, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import {
+  Car,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+} from "lucide-react";
 import React, { useState } from "react";
 import { pluralizePieceName } from "~/lib/seo-utils";
 
@@ -71,7 +77,8 @@ export default function MotorisationsSection({
                 {motorisations.title}
               </h2>
               <p className="text-white/80 text-sm mt-1">
-                Trouvez les {pluralizePieceName(familleName.toLowerCase())} adaptées à votre véhicule
+                Trouvez les {pluralizePieceName(familleName.toLowerCase())}{" "}
+                adaptées à votre véhicule
               </p>
             </div>
           </div>
@@ -120,9 +127,9 @@ export default function MotorisationsSection({
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          // Fallback vers une image placeholder
+                          // Fallback vers une image placeholder (sans transformation, $0)
                           e.currentTarget.src =
-                            "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-modeles/default.webp?width=100&quality=85&t=31536000";
+                            "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/default.webp";
                           e.currentTarget.onerror = null; // Éviter les boucles infinies
                         }}
                       />
@@ -156,9 +163,15 @@ export default function MotorisationsSection({
                     {/* Description propre - template SEO sans erreurs grammaticales */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
                       {(() => {
-                        const plural = pluralizePieceName(familleName.toLowerCase());
+                        const plural = pluralizePieceName(
+                          familleName.toLowerCase(),
+                        );
                         return plural.charAt(0).toUpperCase() + plural.slice(1);
-                      })()} compatibles avec votre {motorisation.marque_name} {motorisation.modele_name} {motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.
+                      })()}{" "}
+                      compatibles avec votre {motorisation.marque_name}{" "}
+                      {motorisation.modele_name} {motorisation.type_name}.
+                      Sélectionnez l'essieu (avant/arrière) pour afficher les
+                      références disponibles.
                     </p>
 
                     {/* CTA amélioré */}

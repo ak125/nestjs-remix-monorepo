@@ -201,15 +201,9 @@ export function PiecesHeader({
                       vehicle.modelePic &&
                       vehicle.modelePic !== "no.webp" ? (
                         <>
-                          {/* 🚀 LCP Optimization V5: srcset responsive + decoding async */}
+                          {/* 🚀 LCP Optimization V5: Image brute (sans transformation, $0) */}
                           <img
                             src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`}
-                            srcSet={`
-                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=200&quality=80&t=31536000 200w,
-                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=300&quality=85&t=31536000 300w,
-                              https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}?width=380&quality=85&t=31536000 380w
-                            `.trim()}
-                            sizes="(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px"
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
                             height={192}

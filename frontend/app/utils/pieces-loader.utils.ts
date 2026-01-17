@@ -4,34 +4,38 @@
  * Extrait pour réduire la taille du fichier route
  */
 
-import { type CatalogueMameFamille } from '../components/pieces/PiecesCatalogueFamille';
-import { type GammeData, type VehicleData } from '../types/pieces-route.types';
-import { toTitleCaseFromSlug } from './pieces-route.utils';
+import { type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
+import { type GammeData, type VehicleData } from "../types/pieces-route.types";
+import { toTitleCaseFromSlug } from "./pieces-route.utils";
 
-// URL de base Supabase pour les images catalogue
-const SUPABASE_CATALOGUE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/articles/gammes-produits/catalogue';
+// URL de base Supabase pour les images catalogue (sans transformation, $0)
+const SUPABASE_CATALOGUE_URL =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue";
 
 /**
  * Paramètres pour construire les données véhicule
  */
 interface BuildVehicleParams {
-  vehicleInfo: {
-    typeName?: string;
-    modelePic?: string;
-    marqueName?: string;
-    modeleName?: string;
-    marqueAlias?: string;
-    modeleAlias?: string;
-    typeAlias?: string;
-    motorCodesFormatted?: string;
-    mineCodesFormatted?: string;
-    cnitCodesFormatted?: string;
-    typePowerPs?: number;
-    typeEngine?: string;
-    typeBody?: string;
-    typeDateStart?: string;
-    typeDateEnd?: string;
-  } | null | undefined;
+  vehicleInfo:
+    | {
+        typeName?: string;
+        modelePic?: string;
+        marqueName?: string;
+        modeleName?: string;
+        marqueAlias?: string;
+        modeleAlias?: string;
+        typeAlias?: string;
+        motorCodesFormatted?: string;
+        mineCodesFormatted?: string;
+        cnitCodesFormatted?: string;
+        typePowerPs?: number;
+        typeEngine?: string;
+        typeBody?: string;
+        typeDateStart?: string;
+        typeDateEnd?: string;
+      }
+    | null
+    | undefined;
   vehicleIds: {
     marqueId: number;
     modeleId: number;
@@ -53,12 +57,15 @@ interface BuildVehicleParams {
 export function buildVehicleData(params: BuildVehicleParams): VehicleData {
   const { vehicleInfo, vehicleIds, urlParams } = params;
 
-  const typeName = vehicleInfo?.typeName || toTitleCaseFromSlug(urlParams.typeAlias);
+  const typeName =
+    vehicleInfo?.typeName || toTitleCaseFromSlug(urlParams.typeAlias);
   const modelePic = vehicleInfo?.modelePic || undefined;
 
   return {
-    marque: vehicleInfo?.marqueName || toTitleCaseFromSlug(urlParams.marqueAlias),
-    modele: vehicleInfo?.modeleName || toTitleCaseFromSlug(urlParams.modeleAlias),
+    marque:
+      vehicleInfo?.marqueName || toTitleCaseFromSlug(urlParams.marqueAlias),
+    modele:
+      vehicleInfo?.modeleName || toTitleCaseFromSlug(urlParams.modeleAlias),
     type: toTitleCaseFromSlug(urlParams.typeAlias),
     typeName,
     typeId: vehicleIds.typeId,
@@ -145,7 +152,7 @@ export interface HierarchyData {
  */
 export function buildCataloguePromise(
   gammeId: number,
-  hierarchyPromise: Promise<HierarchyData | null>
+  hierarchyPromise: Promise<HierarchyData | null>,
 ): Promise<CatalogueMameFamille | null> {
   return hierarchyPromise
     .then((hierarchyData) => {
@@ -153,16 +160,16 @@ export function buildCataloguePromise(
 
       // Trouver la famille contenant la gamme actuelle
       const family = hierarchyData.families.find((f) =>
-        f.gammes?.some((g) =>
-          (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId
-        )
+        f.gammes?.some(
+          (g) => (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId,
+        ),
       );
 
       if (!family || !family.gammes) return null;
 
       // Filtrer les autres gammes (exclure la gamme actuelle)
       const otherGammes = family.gammes.filter(
-        (g) => (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId
+        (g) => (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
       );
 
       return {

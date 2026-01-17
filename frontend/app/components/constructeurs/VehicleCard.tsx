@@ -1,8 +1,8 @@
 // 🚗 VehicleCard - Composant moderne pour l'affichage des véhicules
 // Design moderne avec animations et informations enrichies
 
-import { Link } from '@remix-run/react';
-import { Calendar, Car, Fuel, Zap } from 'lucide-react';
+import { Link } from "@remix-run/react";
+import { Calendar, Car, Fuel, Zap } from "lucide-react";
 
 interface VehicleCardProps {
   vehicle: {
@@ -31,16 +31,37 @@ interface VehicleCardProps {
   className?: string;
 }
 
-const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({
+  vehicle,
+  className = "",
+}) => {
   // 🔗 Construction de l'URL du véhicule - Format SEO: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
   const vehicleUrl = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`;
-  
+
   // 📅 Formatage de la période
-  const formatDateRange = (monthFrom: number, yearFrom: number, monthTo?: number, yearTo?: number) => {
-    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-    const fromMonth = monthNames[monthFrom - 1] || '';
-    const toMonth = monthTo ? monthNames[monthTo - 1] : '';
-    
+  const formatDateRange = (
+    monthFrom: number,
+    yearFrom: number,
+    monthTo?: number,
+    yearTo?: number,
+  ) => {
+    const monthNames = [
+      "Jan",
+      "Fév",
+      "Mar",
+      "Avr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aoû",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Déc",
+    ];
+    const fromMonth = monthNames[monthFrom - 1] || "";
+    const toMonth = monthTo ? monthNames[monthTo - 1] : "";
+
     if (yearTo && yearTo !== yearFrom) {
       return `${fromMonth} ${yearFrom} - ${toMonth} ${yearTo}`;
     } else if (monthTo && monthTo !== monthFrom) {
@@ -51,25 +72,24 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
   };
 
   const dateRange = formatDateRange(
-    vehicle.type_month_from, 
-    vehicle.type_year_from, 
-    vehicle.type_month_to, 
-    vehicle.type_year_to
+    vehicle.type_month_from,
+    vehicle.type_year_from,
+    vehicle.type_month_to,
+    vehicle.type_year_to,
   );
 
-  // 🖼️ URL de l'image avec fallback et cache 1 an
+  // 🖼️ URL de l'image avec fallback (sans transformation, $0)
   const vehicleImageUrl = vehicle.modele_pic
-    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/render/image/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}?width=400&quality=85&t=31536000`
-    : '/images/placeholder-vehicle.png';
+    ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
+    : "/images/placeholder-vehicle.png";
 
   return (
-    <Link 
+    <Link
       to={vehicleUrl}
       className={`block group ${className}`}
       aria-label={`Voir les pièces pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`}
     >
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 h-full">
-        
         {/* 🖼️ Image du véhicule */}
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
           <img
@@ -81,10 +101,11 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
             decoding="async"
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/placeholder-vehicle.png';
+              (e.target as HTMLImageElement).src =
+                "/images/placeholder-vehicle.png";
             }}
           />
-          
+
           {/* 🏷️ Badge marque */}
           <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-md">
             <span className="text-sm font-semibold text-gray-800">
@@ -97,7 +118,9 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
             <div className="absolute top-3 right-3 bg-primary/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md">
               <div className="flex items-center space-x-1 text-white">
                 <Zap className="w-3 h-3" />
-                <span className="text-xs font-medium">{vehicle.type_power_ps} PS</span>
+                <span className="text-xs font-medium">
+                  {vehicle.type_power_ps} PS
+                </span>
               </div>
             </div>
           )}
@@ -105,11 +128,11 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
 
         {/* 📋 Informations du véhicule */}
         <div className="p-6 space-y-4">
-          
           {/* 🏷️ Titre principal */}
           <div>
             <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-              {vehicle.marque_name_meta_title || vehicle.marque_name} {vehicle.modele_name_meta || vehicle.modele_name}
+              {vehicle.marque_name_meta_title || vehicle.marque_name}{" "}
+              {vehicle.modele_name_meta || vehicle.modele_name}
             </h3>
             <p className="text-blue-600 font-semibold text-base mt-1">
               {vehicle.type_name_meta || vehicle.type_name}
@@ -118,7 +141,6 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
 
           {/* 📊 Caractéristiques techniques */}
           <div className="grid grid-cols-2 gap-3 text-sm">
-            
             {/* 🗓️ Période */}
             <div className="flex items-center space-x-2 text-gray-600">
               <Calendar className="w-4 h-4 flex-shrink-0" />
@@ -153,22 +175,20 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) =>
           {/* 🔗 Call-to-action */}
           <div className="pt-2 border-t border-gray-100">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                Voir les pièces
-              </span>
+              <span className="text-sm text-gray-500">Voir les pièces</span>
               <div className="flex items-center space-x-1 text-blue-600 group-hover:text-blue-700">
                 <span className="text-sm font-medium">Découvrir</span>
-                <svg 
-                  className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M9 5l7 7-7 7" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
                   />
                 </svg>
               </div>
