@@ -20,6 +20,16 @@ import {
 } from "../../types/pieces-route.types";
 import { slugify } from "../../utils/pieces-route.utils";
 
+// 🔧 FIX: URL backend configurable (était hardcodé localhost:3000)
+// En SSR (server-side), utilise BACKEND_URL ou fallback localhost:3000
+// Corrige le problème des liens blog fictifs en production Docker
+const BACKEND_URL =
+  typeof window === "undefined"
+    ? process.env.BACKEND_URL ||
+      process.env.API_BASE_URL ||
+      "http://localhost:3000"
+    : "";
+
 // Helper inline pour normaliser les URLs d'images blog (remplace image.utils.ts)
 const SUPABASE_STORAGE =
   "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
@@ -165,7 +175,7 @@ export async function fetchCrossSellingGammes(
 
     // ⚠️ URL API EXACTE - NE PAS MODIFIER
     const response = await fetch(
-      `http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`,
+      `${BACKEND_URL}/api/cross-selling/v5/${typeId}/${gammeId}`,
     );
 
     if (!response.ok) {
@@ -251,26 +261,20 @@ export async function fetchBlogArticle(
 
   // ⚠️ URLs API EXACTES - NE PAS MODIFIER
   const endpoints = [
-    `http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
-    `http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`,
-    `http://localhost:3000/api/blog/popular?limit=1&category=entretien`,
-    `http://localhost:3000/api/blog/homepage`,
+    `${BACKEND_URL}/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
+    `${BACKEND_URL}/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`,
+    `${BACKEND_URL}/api/blog/popular?limit=1&category=entretien`,
+    `${BACKEND_URL}/api/blog/homepage`,
   ];
 
-  const fallback: BlogArticle = {
-    id: "blog-fallback-" + gamme.id,
-    title: `Guide d'entretien pour ${gamme.name}`,
-    excerpt: `Découvrez nos conseils d'experts pour l'entretien et le remplacement de vos ${gamme.name.toLowerCase()}. Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`,
-    slug: "guide-entretien-" + gamme.alias,
-    image: undefined,
-    date: new Date().toISOString(),
-    readTime: 5,
-  };
-
+  // ⚠️ FIX: Pas de fallback avec slug fictif qui cause des 404/301
+  // Si l'API échoue, retourner null plutôt qu'un faux article
   return fetchFromEndpointChain<BlogArticle>(
     endpoints,
     parseBlogArticleResponse,
-    { timeout: 2000, fallback },
+    {
+      timeout: 2000,
+    },
   );
 }
 
@@ -355,7 +359,7 @@ export async function fetchRelatedArticlesForGamme(
 
   const result = await fetchFromEndpointChain<BlogArticle[]>(
     [
-      `http://localhost:3000/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
+      `${BACKEND_URL}/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
     ],
     parseRelatedArticles,
     { timeout: 2000 },
@@ -387,7 +391,7 @@ export async function fetchSeoSwitches(
 ): Promise<SeoSwitches | undefined> {
   try {
     const response = await fetch(
-      `http://localhost:3000/api/blog/seo-switches/${gammeId}`,
+      `${BACKEND_URL}/api/blog/seo-switches/${gammeId}`,
       {
         headers: { Accept: "application/json" },
         signal: AbortSignal.timeout(timeoutMs),
@@ -485,7 +489,7 @@ export async function fetchBatchLoader(
 ): Promise<BatchLoaderResponse> {
   try {
     const response = await fetch(
-      `http://localhost:3000/api/catalog/batch-loader/${typeId}/${gammeId}`,
+      `${BACKEND_URL}/api/catalog/batch-loader/${typeId}/${gammeId}`,
       {
         method: "GET",
         signal: AbortSignal.timeout(timeoutMs),
