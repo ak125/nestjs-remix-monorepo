@@ -61,10 +61,71 @@ async function ensureRedisRunning() {
   }
 }
 
+/**
+ * 🔄 ENV FILE WATCHER
+ *
+ * Problème résolu: Page blanche + boucle infinie après modification .env
+ *
+ * Cause: Vite garde les anciennes valeurs d'environnement en cache.
+ * Quand .env change, le serveur SSR et le client ont des valeurs différentes,
+ * causant un mismatch d'hydration React → page blanche → boucle HMR.
+ *
+ * Solution: Surveiller .env et redémarrer automatiquement quand il change.
+ *
+ * @see https://github.com/ak125/nestjs-remix-monorepo - commit fix(dev): env watcher
+ */
+function watchEnvFile() {
+  const envPath = path.join(__dirname, '.env');
+  let debounceTimer = null;
+
+  // Vérifier que le fichier existe
+  if (!fs.existsSync(envPath)) {
+    console.log('⚠️  Fichier .env non trouvé, watcher désactivé');
+    return;
+  }
+
+  console.log('👀 Surveillance du fichier .env activée');
+
+  fs.watch(envPath, (eventType) => {
+    if (eventType === 'change') {
+      // Debounce pour éviter les redémarrages multiples (éditions rapides)
+      if (debounceTimer) clearTimeout(debounceTimer);
+
+      debounceTimer = setTimeout(() => {
+        console.log('');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('🔄 FICHIER .env MODIFIÉ - Redémarrage automatique...');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('');
+
+        // Nettoyer le cache Vite pour éviter les modules stale
+        // C'est CRITIQUE pour éviter le mismatch SSR/client
+        const viteCachePath = path.join(__dirname, '..', 'frontend', 'node_modules', '.vite');
+        if (fs.existsSync(viteCachePath)) {
+          try {
+            fs.rmSync(viteCachePath, { recursive: true, force: true });
+            console.log('🧹 Cache Vite nettoyé');
+          } catch (err) {
+            console.warn('⚠️  Impossible de nettoyer le cache Vite:', err.message);
+          }
+        }
+
+        // Envoyer SIGUSR2 pour redémarrer nodemon proprement
+        // (nodemon écoute ce signal pour un restart graceful)
+        console.log('🔁 Envoi du signal de redémarrage à nodemon...');
+        process.kill(process.pid, 'SIGUSR2');
+      }, 1000); // Attendre 1s pour éviter les faux positifs
+    }
+  });
+}
+
 // Main startup
 (async () => {
   // First, ensure Redis is running
   await ensureRedisRunning();
+
+  // Activer la surveillance du fichier .env
+  watchEnvFile();
   
   console.log('\n⏳ Waiting for initial TypeScript compilation to complete...');
   console.log(`   Looking for: ${mainJsPath}`);
