@@ -1,20 +1,23 @@
 /**
- * 🖼️ HELPER IMAGES - SANS TRANSFORMATION SUPABASE
+ * 🖼️ HELPER IMAGES - IMGPROXY TRANSFORMATION GRATUITE
  *
- * ⚠️ TRANSFORMATIONS DÉSACTIVÉES pour éviter coûts $5/1000 images
- * ✅ Images servies en brut via /object/public/
- * ✅ Proxy via automecanik.com pour cache Cloudflare 1 an
- * ✅ Pas de coûts Supabase supplémentaires
+ * ✅ Transformation via imgproxy (self-hosted, $0)
+ * ✅ WebP/AVIF automatique selon Accept header
+ * ✅ Resize on-the-fly (fit, fill, crop)
+ * ✅ Cache 1 an via Cloudflare CDN
  *
- * @see https://supabase.com/docs/guides/storage/serving/image-transformations
+ * @see https://docs.imgproxy.net/generating_the_url
  */
 
-// 🚀 Proxy via automecanik.com pour contrôle cache (Cloudflare edge + navigateur)
+// 🚀 Configuration imgproxy
+const USE_IMGPROXY = true; // Basculer à false pour désactiver transformations
+
+// Proxy via automecanik.com pour contrôle cache (Cloudflare edge + navigateur)
 // En SSR: URL absolue. En client: URL relative pour éviter CORS.
 const PROXY_BASE_URL =
   typeof window !== "undefined" ? "" : "https://www.automecanik.com";
 
-// Fallback direct vers Supabase (pour getOriginalUrl et debug)
+// URL Supabase pour source imgproxy
 const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
 const DEFAULT_BUCKET = "uploads";
 
@@ -41,18 +44,20 @@ export class ImageOptimizer {
   private static readonly DEFAULT_QUALITY = 85;
 
   /**
-   * 🚀 Génère une URL optimisée via proxy automecanik.com
+   * 🚀 Génère une URL optimisée via imgproxy
    *
-   * Le proxy Caddy forward vers Supabase et ajoute Cache-Control: 1 an
-   * Cloudflare cache au edge pour réduire 95%+ des requêtes à Supabase
+   * imgproxy transforme les images on-the-fly:
+   * - Resize (fit, fill, crop)
+   * - WebP/AVIF automatique selon Accept header
+   * - Cache 1 an via Cloudflare CDN
    *
    * @example
    * const url = ImageOptimizer.getOptimizedUrl('constructeurs-automobiles/marques-logos/bmw.jpg', { width: 800 });
-   * // => /img/uploads/constructeurs-automobiles/marques-logos/bmw.jpg?width=800
+   * // => /imgproxy/rs:fit:800/q:85/plain/https://supabase.co/.../bmw.jpg@webp
    *
    * @example
    * const url = ImageOptimizer.getOptimizedUrl('rack-images/101/image.jpg', { width: 600 });
-   * // => /img/rack-images/101/image.jpg?width=600
+   * // => /imgproxy/rs:fit:600/q:85/plain/https://supabase.co/.../image.jpg@webp
    */
   static getOptimizedUrl(
     imagePath: string,
@@ -62,7 +67,7 @@ export class ImageOptimizer {
       width,
       height,
       quality = this.DEFAULT_QUALITY,
-      format: _format = "webp",
+      format = "webp",
     } = options;
 
     // Nettoyer le chemin de l'image
@@ -70,7 +75,7 @@ export class ImageOptimizer {
       ? imagePath.slice(1)
       : imagePath;
 
-    // 🚀 Détecter dynamiquement le bucket (fix bug rack-images)
+    // Détecter dynamiquement le bucket
     let bucket = DEFAULT_BUCKET;
     let actualPath = cleanPath;
 
@@ -79,19 +84,40 @@ export class ImageOptimizer {
       actualPath = cleanPath.replace("rack-images/", "");
     }
 
-    // 🚀 Utiliser le proxy automecanik.com pour cache Cloudflare
-    // Format: /img/{bucket}/{path}?width=...&quality=...
-    const baseUrl = `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+    // Si imgproxy désactivé, utiliser le proxy direct
+    if (!USE_IMGPROXY) {
+      return `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+    }
 
-    // Construire les paramètres de transformation
-    const params = new URLSearchParams();
-    if (width) params.set("width", width.toString());
-    if (height) params.set("height", height.toString());
-    if (quality && quality !== this.DEFAULT_QUALITY)
-      params.set("quality", quality.toString());
+    // 🚀 Construire l'URL imgproxy
+    // Format: /imgproxy/{processing_options}/plain/{source_url}@{format}
+    const sourceUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
 
-    const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    // Options de processing imgproxy
+    const processingOptions: string[] = [];
+
+    // Resize: rs:fit:{width}:{height} ou rs:fit:{width}
+    if (width && height) {
+      processingOptions.push(`rs:fit:${width}:${height}`);
+    } else if (width) {
+      processingOptions.push(`rs:fit:${width}`);
+    } else if (height) {
+      processingOptions.push(`rs:fit:0:${height}`);
+    }
+
+    // Qualité: q:{quality}
+    if (quality && quality !== 85) {
+      processingOptions.push(`q:${quality}`);
+    }
+
+    // Construire l'URL finale
+    const optionsPath =
+      processingOptions.length > 0 ? processingOptions.join("/") + "/" : "";
+
+    // Format de sortie (webp par défaut pour auto-détection Accept header)
+    const outputFormat = format === "origin" ? "" : `@${format}`;
+
+    return `${PROXY_BASE_URL}/imgproxy/${optionsPath}plain/${sourceUrl}${outputFormat}`;
   }
 
   /**
