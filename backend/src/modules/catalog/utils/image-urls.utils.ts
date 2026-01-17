@@ -2,12 +2,30 @@
  * 🖼️ HELPER CENTRALISÉ - URLs D'IMAGES PRODUITS
  *
  * Gère la construction des URLs d'images vers Supabase Storage
+ * Compatible avec imgproxy pour transformation gratuite
  * Compatible avec les anciennes structures de données (pmi_folder, pmi_name)
+ *
+ * @see https://docs.imgproxy.net/generating_the_url
  */
 
 const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 const RACK_IMAGES_BUCKET = 'rack-images';
 const DEFAULT_IMAGE = '/images/pieces/default.png';
+
+// Configuration imgproxy
+const USE_IMGPROXY = true;
+const IMGPROXY_BASE_URL = 'https://www.automecanik.com/imgproxy';
+
+/**
+ * Options de transformation imgproxy
+ */
+export interface ImgproxyOptions {
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'webp' | 'avif' | 'jpg' | 'png';
+  fit?: 'fit' | 'fill' | 'crop';
+}
 
 /**
  * Interface pour les données d'image depuis la BDD
@@ -107,4 +125,96 @@ export function parseSupabaseUrl(url: string): {
     bucket: match[1],
     path: match[2],
   };
+}
+
+/**
+ * 🚀 Construit une URL imgproxy pour transformation d'image gratuite
+ *
+ * @param imageData - Données image (pmi_folder, pmi_name)
+ * @param options - Options de transformation (width, height, quality, format)
+ * @returns URL imgproxy transformée
+ *
+ * @example
+ * buildImgproxyUrl({ pmi_folder: 30, pmi_name: 'image.JPG' }, { width: 800 })
+ * // → 'https://www.automecanik.com/imgproxy/rs:fit:800/plain/https://supabase.co/.../image.JPG@webp'
+ */
+export function buildImgproxyUrl(
+  imageData?: PieceImageData | null,
+  options: ImgproxyOptions = {},
+): string {
+  // Si pas de données d'image, retourner l'image par défaut
+  if (!imageData || !imageData.pmi_folder || !imageData.pmi_name) {
+    return DEFAULT_IMAGE;
+  }
+
+  // Si imgproxy désactivé, retourner l'URL Supabase brute
+  if (!USE_IMGPROXY) {
+    return buildRackImageUrl(imageData);
+  }
+
+  const folder = imageData.pmi_folder.toString();
+  const filename = imageData.pmi_name;
+
+  // URL source Supabase
+  const sourceUrl = `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
+
+  // Construire les options de processing
+  const { width, height, quality = 85, format = 'webp', fit = 'fit' } = options;
+  const processingOptions: string[] = [];
+
+  // Resize
+  if (width && height) {
+    processingOptions.push(`rs:${fit}:${width}:${height}`);
+  } else if (width) {
+    processingOptions.push(`rs:${fit}:${width}`);
+  } else if (height) {
+    processingOptions.push(`rs:${fit}:0:${height}`);
+  }
+
+  // Qualité (si différente de 85)
+  if (quality !== 85) {
+    processingOptions.push(`q:${quality}`);
+  }
+
+  // Construire l'URL finale
+  const optionsPath =
+    processingOptions.length > 0 ? processingOptions.join('/') + '/' : '';
+
+  return `${IMGPROXY_BASE_URL}/${optionsPath}plain/${sourceUrl}@${format}`;
+}
+
+/**
+ * Construit une URL imgproxy à partir d'une URL Supabase existante
+ */
+export function transformToImgproxyUrl(
+  supabaseUrl: string,
+  options: ImgproxyOptions = {},
+): string {
+  if (!supabaseUrl || !isSupabaseUrl(supabaseUrl)) {
+    return supabaseUrl;
+  }
+
+  if (!USE_IMGPROXY) {
+    return supabaseUrl;
+  }
+
+  const { width, height, quality = 85, format = 'webp', fit = 'fit' } = options;
+  const processingOptions: string[] = [];
+
+  if (width && height) {
+    processingOptions.push(`rs:${fit}:${width}:${height}`);
+  } else if (width) {
+    processingOptions.push(`rs:${fit}:${width}`);
+  } else if (height) {
+    processingOptions.push(`rs:${fit}:0:${height}`);
+  }
+
+  if (quality !== 85) {
+    processingOptions.push(`q:${quality}`);
+  }
+
+  const optionsPath =
+    processingOptions.length > 0 ? processingOptions.join('/') + '/' : '';
+
+  return `${IMGPROXY_BASE_URL}/${optionsPath}plain/${supabaseUrl}@${format}`;
 }

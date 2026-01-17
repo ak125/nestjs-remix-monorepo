@@ -1,0 +1,75 @@
+# imgproxy - Service de transformation d'images gratuit
+# Documentation: https://docs.imgproxy.net/
+#
+# Usage:
+#   docker compose -f docker-compose.imgproxy.yml up -d
+#
+# URL Format (imgproxy):
+#   /rs:fit:{width}:{height}/q:{quality}/plain/{source_url}@webp
+#
+# Exemple:
+#   http://localhost:8080/rs:fit:800:600/q:80/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG@webp
+
+services:
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    container_name: imgproxy
+    environment:
+      # Bind address
+      IMGPROXY_BIND: ":8080"
+
+      # Security: Only allow Supabase as source
+      IMGPROXY_ALLOWED_SOURCES: "https://cxpojprgwgubzjyqzmoq.supabase.co/"
+
+      # WebP/AVIF auto-detection basé sur Accept header
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+      IMGPROXY_ENABLE_AVIF_DETECTION: "true"
+      IMGPROXY_ENFORCE_WEBP: "false"  # Respecter le format demandé
+
+      # Qualité par défaut
+      IMGPROXY_QUALITY: "80"
+      IMGPROXY_AVIF_QUALITY: "75"
+      IMGPROXY_WEBP_QUALITY: "80"
+
+      # Limites de résolution (protection contre abus)
+      IMGPROXY_MAX_SRC_RESOLUTION: "50"  # 50 megapixels max
+      IMGPROXY_MAX_ANIMATION_FRAMES: "1"  # Pas de GIFs animés
+
+      # Cache headers (Cloudflare cache 1 an)
+      IMGPROXY_CACHE_CONTROL_PASSTHROUGH: "false"
+      IMGPROXY_SET_CANONICAL_HEADER: "true"
+
+      # Performance
+      IMGPROXY_CONCURRENCY: "4"
+      IMGPROXY_MAX_CLIENTS: "100"
+      IMGPROXY_DOWNLOAD_TIMEOUT: "10"
+      IMGPROXY_READ_TIMEOUT: "10"
+      IMGPROXY_WRITE_TIMEOUT: "10"
+
+      # Logging
+      IMGPROXY_LOG_LEVEL: "warn"
+      IMGPROXY_LOG_FORMAT: "json"
+
+      # Désactiver signature en dev (activer en prod avec IMGPROXY_KEY/SALT)
+      IMGPROXY_ALLOW_INSECURE_URLS: "true"
+
+    ports:
+      - "8081:8080"
+    networks:
+      - automecanik-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+    healthcheck:
+      test: ["CMD", "imgproxy", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  automecanik-prod:
+    external: true
