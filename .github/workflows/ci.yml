@@ -118,9 +118,6 @@ jobs:
 
           cd $PREPROD_DIR
 
-          # Creer le reseau
-          docker network create automecanik-preprod 2>/dev/null || true
-
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
           docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true

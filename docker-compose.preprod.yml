@@ -44,4 +44,4 @@ services:
 
 networks:
   automecanik-preprod:
-    external: true
+    driver: bridge
