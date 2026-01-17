@@ -278,4 +278,84 @@ export class RmBuilderService extends SupabaseBaseService {
       };
     }
   }
+
+  /**
+   * 🚀 Get complete page data
+   *
+   * Calls rm_get_page_complete RPC which returns all data needed
+   * for a product listing page in a single call (~350ms).
+   *
+   * @param params - gamme_id, vehicle_id, limit
+   * @returns Complete page data (products, vehicleInfo, gamme, filters)
+   */
+  async getPageComplete(params: {
+    gamme_id: number;
+    vehicle_id: number;
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    products?: RmProduct[];
+    count?: number;
+    vehicleInfo?: Record<string, unknown>;
+    gamme?: Record<string, unknown>;
+    filters?: Record<string, unknown>;
+    duration_ms?: number;
+    error?: { code: string; message: string };
+  }> {
+    const { gamme_id, vehicle_id, limit = 200 } = params;
+
+    this.logger.debug(
+      `Getting page complete for gamme=${gamme_id} vehicle=${vehicle_id} limit=${limit}`,
+    );
+
+    try {
+      const { data, error } = await this.supabase.rpc('rm_get_page_complete', {
+        p_gamme_id: gamme_id,
+        p_vehicle_id: vehicle_id,
+        p_limit: limit,
+      });
+
+      if (error) {
+        this.logger.error(`RPC error: ${error.message}`);
+        return {
+          success: false,
+          error: {
+            code: 'RPC_ERROR',
+            message: error.message,
+          },
+        };
+      }
+
+      // RPC returns JSONB directly
+      const result = data as {
+        success: boolean;
+        products?: RmProduct[];
+        count?: number;
+        vehicleInfo?: Record<string, unknown>;
+        gamme?: Record<string, unknown>;
+        filters?: Record<string, unknown>;
+        duration_ms?: number;
+        error?: { code: string; message: string };
+      };
+
+      if (result.success) {
+        this.logger.debug(
+          `Page complete: ${result.count} products in ${result.duration_ms}ms`,
+        );
+      }
+
+      return result;
+    } catch (err) {
+      this.logger.error(
+        `Exception: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
+      return {
+        success: false,
+        error: {
+          code: 'EXCEPTION',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        },
+      };
+    }
+  }
 }
