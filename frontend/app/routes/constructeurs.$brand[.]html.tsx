@@ -395,8 +395,8 @@ export default function BrandCatalogPage() {
 
               {/* Layout horizontal : Logo + VehicleSelector côte à côte */}
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-                {/* Logo constructeur à gauche */}
-                <div className="flex-shrink-0 w-full lg:w-64">
+                {/* Logo constructeur à gauche - taille réduite */}
+                <div className="flex-shrink-0 w-full lg:w-40">
                   <div className="relative group">
                     {/* Cercle décoratif arrière-plan */}
                     <div className="absolute inset-0 -z-10">
@@ -404,7 +404,7 @@ export default function BrandCatalogPage() {
                     </div>
 
                     {/* Container logo */}
-                    <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-lg group-hover:border-white/50 transition-all duration-500">
+                    <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-white/30 shadow-lg group-hover:border-white/50 transition-all duration-500">
                       <div className="w-full aspect-square flex items-center justify-center">
                         <img
                           src={
