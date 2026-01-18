@@ -57,13 +57,14 @@ export class RmBuilderService extends SupabaseBaseService {
     const { gamme_id, vehicle_id, limit = 500 } = params;
     const cacheKey = `rm:products:${gamme_id}:${vehicle_id}:${limit}`;
 
-    // 1. Try cache first
+    // 1. Try cache first (v1.6.2 - duration_ms fix)
     try {
       const cached = await this.cacheService.get<ProductsResponse>(cacheKey);
       if (cached) {
         this.logger.debug(
           `Cache HIT for ${cacheKey} (${cached.count} products)`,
         );
+        // Return cached data with duration_ms: 0 to indicate instant response
         return { ...cached, cacheHit: true, duration_ms: 0 };
       }
     } catch {
