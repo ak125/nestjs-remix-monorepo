@@ -634,7 +634,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${data.vehicle.marque_alias}/${data.vehicle.modele_pic}`,
+      href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${data.vehicle.marque_alias}/${data.vehicle.modele_pic}`,
     });
   }
 
@@ -865,7 +865,7 @@ export default function VehicleDetailPage() {
                       vehicle.modele_pic !== "no.webp" ? (
                         <>
                           <img
-                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marque_alias}/${vehicle.modele_pic}`}
+                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
                             alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} - ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
                             width={400}
                             height={208}
