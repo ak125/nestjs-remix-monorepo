@@ -198,19 +198,14 @@ export function PiecesHeader({
                 <div className="relative">
                   <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-none md:backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
-                      {!imageError && vehicle.modele ? (
+                      {!imageError &&
+                      vehicle.modelePic &&
+                      vehicle.modelePic !== "no.webp" ? (
                         <>
-                          {/* 🚀 LCP Optimization V5: Image concept (nom de base depuis modele) */}
+                          {/* 🚀 FIX: Utiliser modelePic directement depuis BDD avec marques-modeles */}
                           <img
                             src={getOptimizedModelImageUrl(
-                              `constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modele
-                                .toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "")
-                                .replace(/\s*\([^)]*\)/g, "")
-                                .replace(/\s+(i{1,3}|iv|v|vi)$/i, "")
-                                .replace(/\s+/g, "-")
-                                .trim()}.webp`,
+                              `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
                             )}
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
