@@ -11,7 +11,6 @@
  * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
 
-import { type FiltersData } from "../../components/pieces/PiecesFilterSidebar";
 import {
   type CrossSellingGamme,
   type BlogArticle,
@@ -429,101 +428,6 @@ export interface GroupedPiece {
   filtre_side: string;
   title_h2?: string;
   pieces?: unknown[];
-}
-
-/**
- * 📦 Interface pour la réponse du batch-loader
- */
-export interface BatchLoaderResponse {
-  pieces: unknown[];
-  grouped_pieces?: GroupedPiece[];
-  blocs?: GroupedPiece[];
-  vehicleInfo?: {
-    typeName?: string;
-    modelePic?: string;
-    marqueName?: string;
-    modeleName?: string;
-    marqueAlias?: string;
-    modeleAlias?: string;
-    typeAlias?: string;
-    motorCodesFormatted?: string;
-    mineCodesFormatted?: string;
-    cnitCodesFormatted?: string;
-    typePowerPs?: number;
-    typeEngine?: string;
-    typeBody?: string;
-    typeDateStart?: string;
-    typeDateEnd?: string;
-  } | null;
-  validation?: {
-    valid: boolean;
-    http_status?: number;
-    recommendation?: string;
-  };
-  seo?: {
-    content?: string;
-    h1?: string;
-    data?: { content?: string; h1?: string };
-  };
-  crossSelling?: CrossSellingGamme[];
-  filters?: { data?: FiltersData } | FiltersData | null;
-  oemRefs?: { oemRefs?: string[] };
-  oemRefsSeo?: string[];
-}
-
-/**
- * 🚀 Fetch du batch-loader avec gestion d'erreur et timeout
- *
- * ⚠️ URL API: http://localhost:3000/api/catalog/batch-loader/{typeId}/{gammeId}
- * ⚠️ STRUCTURE URL PRÉSERVÉE - NE PAS MODIFIER
- *
- * @param typeId - ID du type véhicule
- * @param gammeId - ID de la gamme
- * @param timeoutMs - Timeout en millisecondes (défaut: 5000 - optimisé PageSpeed)
- * @returns BatchLoaderResponse ou throw Response 503
- */
-export async function fetchBatchLoader(
-  typeId: number,
-  gammeId: number,
-  timeoutMs: number = 5000,
-): Promise<BatchLoaderResponse> {
-  try {
-    const response = await fetch(
-      `${BACKEND_URL}/api/catalog/batch-loader/${typeId}/${gammeId}`,
-      {
-        method: "GET",
-        signal: AbortSignal.timeout(timeoutMs),
-        headers: { Accept: "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      console.warn(`⚠️ [BATCH-LOADER] HTTP ${response.status}`);
-      // Pour 404/410 on laisse passer (gamme invalide)
-      if (response.status === 404 || response.status === 410) {
-        return {
-          pieces: [],
-          validation: { valid: false, http_status: response.status },
-        };
-      }
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`❌ [BATCH-LOADER] Error:`, message);
-    // Graceful degradation - retourne structure vide plutôt que 503
-    // Cela permet au cache CDN de servir une version stale si disponible
-    throw new Response(`Service temporairement indisponible.`, {
-      status: 503,
-      statusText: "Service Unavailable",
-      headers: {
-        "Retry-After": "10",
-        "Cache-Control": "no-cache",
-      },
-    });
-  }
 }
 
 /**

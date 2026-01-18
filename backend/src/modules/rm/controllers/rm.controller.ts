@@ -118,6 +118,64 @@ export class RmController {
   }
 
   /**
+   * 🚀 GET /api/rm/page-v2
+   *
+   * V2: Returns complete page data with ALL features in a single call (~400ms).
+   * Combines best of batch-loader and RM:
+   * - Products with RM scoring (OE/EQUIV/ECO, stock status)
+   * - Grouped pieces with OEM refs per group
+   * - Complete vehicle info (motor/mine/cnit codes)
+   * - Fully processed SEO (all switches resolved)
+   * - Cross-selling gammes
+   * - Filters with counts
+   * - Validation/data quality metrics
+   *
+   * @param gamme_id - Product family ID (required)
+   * @param vehicle_id - Vehicle type ID (required)
+   * @param limit - Max products to return (default: 200, max: 500)
+   *
+   * @example
+   * GET /api/rm/page-v2?gamme_id=402&vehicle_id=100413&limit=200
+   */
+  @Get('page-v2')
+  async getPageV2(
+    @Query('gamme_id', ParseIntPipe) gamme_id: number,
+    @Query('vehicle_id', ParseIntPipe) vehicle_id: number,
+    @Query('limit', new DefaultValuePipe(200), ParseIntPipe) limit: number,
+  ) {
+    const startTime = performance.now();
+    const clampedLimit = Math.min(Math.max(limit, 1), 500);
+
+    const result = await this.rmBuilder.getPageCompleteV2({
+      gamme_id,
+      vehicle_id,
+      limit: clampedLimit,
+    });
+
+    // Add server-side timing if RPC returned 0
+    if (result.success && result.duration_ms === 0) {
+      result.duration_ms = Math.round(performance.now() - startTime);
+    }
+
+    if (!result.success) {
+      throw new HttpException(
+        {
+          success: false,
+          error: result.error || {
+            code: 'UNKNOWN',
+            message: 'Failed to fetch page v2 data',
+          },
+          gamme_id,
+          vehicle_id,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return result;
+  }
+
+  /**
    * 📄 GET /api/rm/listing
    *
    * Retrieves a cached listing page from rm_get_listing_page RPC.

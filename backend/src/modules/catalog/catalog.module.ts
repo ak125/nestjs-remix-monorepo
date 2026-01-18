@@ -2,7 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
-import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 Import pour batch-loader vehicleInfo
+import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 Import pour vehicleInfo
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -17,7 +17,6 @@ import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filter
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
 import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
-import { BatchLoaderController } from './controllers/batch-loader.controller';
 import { VehicleHierarchyController } from './controllers/vehicle-hierarchy.controller'; // 🚗 API hiérarchie véhicules
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
@@ -70,7 +69,7 @@ import { CacheWarmingService } from './services/cache-warming.service';
     DatabaseModule,
     CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
-    forwardRef(() => VehiclesModule), // 🚗 Import pour batch-loader vehicleInfo (forwardRef pour éviter dépendance circulaire)
+    forwardRef(() => VehiclesModule), // 🚗 Import pour vehicleInfo (forwardRef pour éviter dépendance circulaire)
   ],
   controllers: [
     CatalogController,
@@ -83,7 +82,6 @@ import { CacheWarmingService } from './services/cache-warming.service';
     PiecesCleanController,
     PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
-    BatchLoaderController, // 🚀 BATCH LOADER pour optimisation performance
     VehicleHierarchyController, // 🚗 API hiérarchie véhicules pour pages motorisation
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
