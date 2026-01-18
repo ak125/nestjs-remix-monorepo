@@ -57,15 +57,15 @@ export class RmBuilderService extends SupabaseBaseService {
     const { gamme_id, vehicle_id, limit = 500 } = params;
     const cacheKey = `rm:products:${gamme_id}:${vehicle_id}:${limit}`;
 
-    // 1. Try cache first (v1.6.2 - duration_ms fix)
+    // 1. Try cache first
     try {
       const cached = await this.cacheService.get<ProductsResponse>(cacheKey);
       if (cached) {
+        const cacheDuration = Math.round(performance.now() - startTime);
         this.logger.debug(
-          `Cache HIT for ${cacheKey} (${cached.count} products)`,
+          `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
         );
-        // Return cached data with duration_ms: 0 to indicate instant response
-        return { ...cached, cacheHit: true, duration_ms: 0 };
+        return { ...cached, cacheHit: true, duration_ms: cacheDuration };
       }
     } catch {
       // Cache error - continue to RPC
@@ -371,10 +371,11 @@ export class RmBuilderService extends SupabaseBaseService {
     try {
       const cached = await this.cacheService.get<PageResponse>(cacheKey);
       if (cached && cached.success) {
+        const cacheDuration = Math.round(performance.now() - startTime);
         this.logger.debug(
-          `Cache HIT for ${cacheKey} (${cached.count} products)`,
+          `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
         );
-        return { ...cached, cacheHit: true, duration_ms: 0 };
+        return { ...cached, cacheHit: true, duration_ms: cacheDuration };
       }
     } catch {
       // Cache error - continue to RPC
