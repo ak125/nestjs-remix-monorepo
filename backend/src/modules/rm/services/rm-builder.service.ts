@@ -64,7 +64,7 @@ export class RmBuilderService extends SupabaseBaseService {
         this.logger.debug(
           `Cache HIT for ${cacheKey} (${cached.count} products)`,
         );
-        return { ...cached, cacheHit: true };
+        return { ...cached, cacheHit: true, duration_ms: 0 };
       }
     } catch {
       // Cache error - continue to RPC
