@@ -32,23 +32,9 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     // Déterminer type de page
     let headers = this.seoHeadersService.getDefaultHeaders();
 
-    // API routes - ne pas indexer (sauf endpoints cacheables)
+    // API routes - ne pas indexer
     if (path.startsWith('/api/')) {
-      // 🚀 LCP Optimization: batch-loader GET doit être cacheable par le navigateur
-      // Pattern: /api/catalog/batch-loader/{typeId}/{gammeId}
-      const isCacheableBatchLoader =
-        /^\/api\/catalog\/batch-loader\/\d+\/\d+/.test(path);
-
-      if (isCacheableBatchLoader) {
-        // Laisser le contrôleur définir ses propres headers Cache-Control
-        headers = {
-          'X-Robots-Tag': 'noindex, nofollow',
-          'X-Content-Type-Options': 'nosniff',
-          // Cache-Control est défini par @Header() dans le contrôleur
-        };
-      } else {
-        headers = this.seoHeadersService.getApiHeaders();
-      }
+      headers = this.seoHeadersService.getApiHeaders();
     }
     // Routes privées
     else if (

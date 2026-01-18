@@ -8,6 +8,8 @@ import {
   ListingPageData,
   GetProductsParams,
   GetListingParams,
+  RmPageCompleteV2Response,
+  GetPageV2Params,
 } from '../rm.types';
 
 // Cache TTL: 1 hour (3600 seconds)
@@ -61,7 +63,10 @@ export class RmBuilderService extends SupabaseBaseService {
     try {
       const cached = await this.cacheService.get<ProductsResponse>(cacheKey);
       if (cached) {
-        const cacheDuration = Math.round(performance.now() - startTime);
+        const cacheDuration = Math.max(
+          1,
+          Math.round(performance.now() - startTime),
+        );
         this.logger.debug(
           `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
         );
@@ -371,7 +376,10 @@ export class RmBuilderService extends SupabaseBaseService {
     try {
       const cached = await this.cacheService.get<PageResponse>(cacheKey);
       if (cached && cached.success) {
-        const cacheDuration = Math.round(performance.now() - startTime);
+        const cacheDuration = Math.max(
+          1,
+          Math.round(performance.now() - startTime),
+        );
         this.logger.debug(
           `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
         );
@@ -440,6 +448,170 @@ export class RmBuilderService extends SupabaseBaseService {
           message: err instanceof Error ? err.message : 'Unknown error',
         },
         cacheHit: false,
+      };
+    }
+  }
+
+  /**
+   * 🚀 V2: Get complete page data with ALL features
+   *
+   * Calls rm_get_page_complete_v2 RPC which returns ALL data needed
+   * for a product listing page including:
+   * - Products with RM scoring (OE/EQUIV/ECO, stock status)
+   * - Grouped pieces with OEM refs per group
+   * - Complete vehicle info with motor/mine/cnit codes
+   * - Fully processed SEO (all switches resolved)
+   * - Cross-selling gammes
+   * - Filters with counts
+   * - Validation/data quality metrics
+   *
+   * 🚀 Redis cache: ~50ms hit vs ~400ms RPC miss
+   *
+   * @param params - gamme_id, vehicle_id, limit
+   * @returns Complete page data for frontend
+   */
+  async getPageCompleteV2(
+    params: GetPageV2Params,
+  ): Promise<RmPageCompleteV2Response> {
+    const startTime = performance.now();
+    const { gamme_id, vehicle_id, limit = 200 } = params;
+    const cacheKey = `rm:page-v2:${gamme_id}:${vehicle_id}`;
+
+    // 1. Try cache first
+    try {
+      const cached =
+        await this.cacheService.get<RmPageCompleteV2Response>(cacheKey);
+      if (cached && cached.success) {
+        const cacheDuration = Math.max(
+          1,
+          Math.round(performance.now() - startTime),
+        );
+        this.logger.debug(
+          `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
+        );
+        return { ...cached, cacheHit: true, duration_ms: cacheDuration };
+      }
+    } catch {
+      // Cache error - continue to RPC
+    }
+
+    this.logger.debug(
+      `Cache MISS - Getting page v2 for gamme=${gamme_id} vehicle=${vehicle_id} limit=${limit}`,
+    );
+
+    try {
+      const { data, error } = await this.supabase.rpc(
+        'rm_get_page_complete_v2',
+        {
+          p_gamme_id: gamme_id,
+          p_vehicle_id: vehicle_id,
+          p_limit: limit,
+        },
+      );
+
+      const duration_ms = Math.round(performance.now() - startTime);
+
+      if (error) {
+        this.logger.error(`RPC v2 error: ${error.message}`);
+        return {
+          success: false,
+          products: [],
+          count: 0,
+          minPrice: null,
+          grouped_pieces: [],
+          vehicleInfo: {} as RmPageCompleteV2Response['vehicleInfo'],
+          gamme: {} as RmPageCompleteV2Response['gamme'],
+          seo: { h1: '', title: '', description: '', content: '', preview: '' },
+          oemRefs: [],
+          crossSelling: [],
+          filters: {
+            brands: [],
+            qualities: [],
+            sides: [],
+            price_range: { min: null, max: null },
+          },
+          validation: {
+            valid: false,
+            relationsCount: 0,
+            dataQuality: {
+              quality: 0,
+              pieces_with_brand_percent: 0,
+              pieces_with_image_percent: 0,
+              pieces_with_price_percent: 0,
+            },
+          },
+          duration_ms,
+          cacheHit: false,
+          error: {
+            code: 'RPC_ERROR',
+            message: error.message,
+          },
+        };
+      }
+
+      // RPC returns JSONB directly
+      const result = data as RmPageCompleteV2Response;
+
+      // Override duration with actual timing
+      result.duration_ms = duration_ms;
+      result.cacheHit = false;
+
+      if (result.success) {
+        this.logger.debug(
+          `Page v2 complete: ${result.count} products, ${result.grouped_pieces?.length || 0} groups, ` +
+            `${result.oemRefs?.length || 0} OEM refs in ${duration_ms}ms`,
+        );
+
+        // 2. Store in cache (TTL: 1h)
+        if (result.count && result.count > 0) {
+          try {
+            await this.cacheService.set(cacheKey, result, CACHE_TTL);
+            this.logger.debug(`Cached ${cacheKey} for ${CACHE_TTL}s`);
+          } catch {
+            // Cache error - continue without caching
+          }
+        }
+      }
+
+      return result;
+    } catch (err) {
+      const duration_ms = Math.round(performance.now() - startTime);
+      this.logger.error(
+        `Exception v2: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
+      return {
+        success: false,
+        products: [],
+        count: 0,
+        minPrice: null,
+        grouped_pieces: [],
+        vehicleInfo: {} as RmPageCompleteV2Response['vehicleInfo'],
+        gamme: {} as RmPageCompleteV2Response['gamme'],
+        seo: { h1: '', title: '', description: '', content: '', preview: '' },
+        oemRefs: [],
+        crossSelling: [],
+        filters: {
+          brands: [],
+          qualities: [],
+          sides: [],
+          price_range: { min: null, max: null },
+        },
+        validation: {
+          valid: false,
+          relationsCount: 0,
+          dataQuality: {
+            quality: 0,
+            pieces_with_brand_percent: 0,
+            pieces_with_image_percent: 0,
+            pieces_with_price_percent: 0,
+          },
+        },
+        duration_ms,
+        cacheHit: false,
+        error: {
+          code: 'EXCEPTION',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        },
       };
     }
   }

@@ -130,3 +130,177 @@ export interface GetListingParams {
   vehicle_id: number;
   rebuild_if_missing?: boolean;
 }
+
+// ============================================================================
+// V2 Types - Complete Page Data
+// ============================================================================
+
+/**
+ * Extended product with additional fields from v2 RPC
+ */
+export interface RmProductV2 extends RmProduct {
+  image: string;
+  filtre_gamme: string;
+  is_accessory: boolean;
+}
+
+/**
+ * Grouped pieces with OEM refs per group
+ */
+export interface RmGroupedPiece {
+  filtre_gamme: string;
+  filtre_side: string | null;
+  title_h2: string;
+  pieces: Array<{
+    id: number;
+    nom: string;
+    reference: string;
+    marque: string;
+    marque_id: number;
+    prix_unitaire: number;
+    prix_ttc: number;
+    image: string;
+    dispo: boolean;
+    quality: RmQuality;
+    stock_status: RmStockStatus;
+    score: number;
+  }>;
+  oemRefs: string[];
+  oemRefsCount: number;
+}
+
+/**
+ * Complete vehicle info from v2 RPC
+ */
+export interface RmVehicleInfo {
+  typeId: number;
+  typeName: string;
+  typeAlias: string;
+  typePowerPs: string | null;
+  typePowerKw: string | null;
+  typeYearFrom: string | null;
+  typeYearTo: string | null;
+  typeBody: string | null;
+  typeFuel: string | null;
+  typeEngine: string | null;
+  typeLiter: string | null;
+  modeleId: number;
+  modeleName: string;
+  modeleAlias: string;
+  modelePic: string | null;
+  marqueId: number;
+  marqueName: string;
+  marqueAlias: string;
+  marqueLogo: string | null;
+  motorCodesFormatted: string | null;
+  mineCodesFormatted: string | null;
+  cnitCodesFormatted: string | null;
+}
+
+/**
+ * Gamme info
+ */
+export interface RmGammeInfo {
+  pg_id: number;
+  pg_name: string;
+  pg_alias: string;
+  pg_pic: string | null;
+  pg_ppa_id: number | null;
+  pg_parent: number | null;
+}
+
+/**
+ * SEO data (processed switches)
+ */
+export interface RmSeoData {
+  h1: string;
+  title: string;
+  description: string;
+  content: string;
+  preview: string;
+}
+
+/**
+ * Cross-selling gamme
+ */
+export interface RmCrossSelling {
+  PG_ID: number;
+  PG_NAME: string;
+  PG_ALIAS: string;
+  PG_IMAGE: string | null;
+}
+
+/**
+ * Filter with count
+ */
+export interface RmFilterOption {
+  value?: string;
+  pm_id?: number;
+  pm_name?: string;
+  count: number;
+}
+
+/**
+ * Filters with counts
+ */
+export interface RmFilters {
+  brands: RmFilterOption[];
+  qualities: RmFilterOption[];
+  sides: RmFilterOption[];
+  price_range: {
+    min: number | null;
+    max: number | null;
+  };
+}
+
+/**
+ * Data quality metrics
+ */
+export interface RmDataQuality {
+  quality: number;
+  pieces_with_brand_percent: number;
+  pieces_with_image_percent: number;
+  pieces_with_price_percent: number;
+}
+
+/**
+ * Validation info
+ */
+export interface RmValidation {
+  valid: boolean;
+  relationsCount: number;
+  dataQuality: RmDataQuality;
+}
+
+/**
+ * Complete page response from rm_get_page_complete_v2 RPC
+ */
+export interface RmPageCompleteV2Response {
+  success: boolean;
+  products: RmProductV2[];
+  count: number;
+  minPrice: number | null;
+  grouped_pieces: RmGroupedPiece[];
+  vehicleInfo: RmVehicleInfo;
+  gamme: RmGammeInfo;
+  seo: RmSeoData;
+  oemRefs: string[];
+  crossSelling: RmCrossSelling[];
+  filters: RmFilters;
+  validation: RmValidation;
+  duration_ms: number;
+  cacheHit?: boolean;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+/**
+ * Query parameters for v2 page
+ */
+export interface GetPageV2Params {
+  gamme_id: number;
+  vehicle_id: number;
+  limit?: number;
+}

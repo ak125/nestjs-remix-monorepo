@@ -1,6 +1,16 @@
-﻿// 🔧 Route pièces avec véhicule - Version REFACTORISÉE
+﻿// 🔧 Route pièces avec véhicule - Version RM V2 (CQRS Read Model)
 // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
 // ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
+//
+// 🚀 RM V2: Single RPC for ALL data (~400ms vs ~1.6s with batch-loader)
+// - products: RM-scored products (OE/EQUIV/ECO, stock status)
+// - grouped_pieces: Products grouped by gamme+side with OEM refs per group
+// - vehicleInfo: Complete vehicle info with motor/mine/cnit codes
+// - seo: Fully processed SEO (h1, title, description, content)
+// - oemRefs: Normalized OEM references
+// - crossSelling: Related gammes
+// - filters: Brands/qualities/sides with counts
+// - validation: Data quality metrics
 
 import {
   defer,
@@ -49,48 +59,32 @@ import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 
 // Services API
 
-// 🚀 RM API - Read Model optimisé (~200ms vs ~1.6s)
-import { fetchRmPage } from "../services/api/rm-api.service";
+// 🚀 RM API V2 - Complete Read Model (~400ms, replaces batch-loader)
+import { fetchRmPageV2 } from "../services/api/rm-api.service";
 import {
-  fetchBatchLoader,
   fetchBlogArticle,
-  fetchCrossSellingGammes as _fetchCrossSellingGammes,
   fetchRelatedArticlesForGamme,
   fetchSeoSwitches,
 } from "../services/pieces/pieces-route.service";
 
-// Types centralisés
-import {
-  type GammeData,
-  type LoaderData as _LoaderData,
-  type PieceData as _PieceData,
-  type VehicleData,
-} from "../types/pieces-route.types";
+// Types centralisés (VehicleData utilisé via loaderData.vehicle)
 
 // Utilitaires
 import { fetchJsonOrNull } from "../utils/fetch.utils";
 import { isValidPosition } from "../utils/pieces-filters.utils";
 import {
   buildCataloguePromise,
-  buildCompatibilityInfo,
-  buildGammeData,
-  buildVehicleData,
   type HierarchyData,
 } from "../utils/pieces-loader.utils";
 import {
-  calculatePriceStats,
   generateBuyingGuide,
   generateFAQ,
-  generateRelatedArticles as _generateRelatedArticles, // Fallback uniquement
-  generateSEOContent,
-  mapBatchPiecesToData,
-  mergeSeoContent,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
   validateVehicleIds,
 } from "../utils/pieces-route.utils";
-import { mapRmProductsToPieceData, isRmDataUsable } from "../utils/rm-mapper";
+import { mapRmV2ToLoaderData, isRmV2DataUsable } from "../utils/rm-mapper";
 import {
   buildHeroImagePreload,
   buildPiecesProductSchema,
@@ -164,9 +158,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 2. Parse les IDs depuis les URLs
   const gammeData = parseUrlParam(rawGamme);
-  const marqueData = parseUrlParam(rawMarque);
-  const modeleData = parseUrlParam(rawModele);
-  const typeData = parseUrlParam(rawType);
+  const _marqueData = parseUrlParam(rawMarque);
+  const _modeleData = parseUrlParam(rawModele);
+  const _typeData = parseUrlParam(rawType);
 
   // 3. Résolution des IDs via API (🚀 PARALLÉLISÉ pour performance)
   const [vehicleIds, gammeId] = await Promise.all([
@@ -204,12 +198,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
-  // 🚀 RM API INTEGRATION - Feature flags pour activation progressive
-  const USE_RM_PAGE = process.env.USE_RM_PAGE === "true";
-  const USE_RM_API = process.env.USE_RM_API === "true";
-  let rmProducts: ReturnType<typeof mapRmProductsToPieceData> | null = null;
-  let rmDuration: number | undefined;
-  let dataSource = "batch-loader";
+  // 🚀 RM API V2 - Complete Read Model (replaces batch-loader entirely)
+  // Returns: products, grouped_pieces, vehicleInfo, gamme, seo, oemRefs, crossSelling, filters
 
   // 🚀 LCP V8: Lancer hierarchy immédiatement (pour catalogueMameFamille deferred)
   const hierarchyPromise = fetchJsonOrNull<HierarchyData>(
@@ -217,135 +207,62 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     3000,
   );
 
-  // 🚀 FIX 2026-01-17: TOUJOURS appeler batch-loader pour les données supplémentaires
-  // (grouped_pieces, filters, crossSelling, seo, oemRefs)
-  // RM ne fournit que les produits - batch-loader fournit tout le reste
+  // SEO switches pour anchor text variés
   const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
-  // Lancer RM en parallèle avec batch-loader si activé
-  const INITIAL_PRODUCTS_LIMIT = 50;
-  const rmPromise =
-    (USE_RM_PAGE || USE_RM_API) && gammeId && vehicleIds.typeId
-      ? fetchRmPage(gammeId, vehicleIds.typeId, INITIAL_PRODUCTS_LIMIT).catch(
-          (err) => {
-            console.warn(
-              `⚠️ [RM] Failed, using batch-loader products:`,
-              err instanceof Error ? err.message : err,
-            );
-            return null;
-          },
-        )
-      : Promise.resolve(null);
+  // 🚀 RM V2: Single RPC for ALL data (~400ms vs ~1.6s with batch-loader)
+  const INITIAL_PRODUCTS_LIMIT = 200;
+  const rmV2Promise = fetchRmPageV2(
+    gammeId,
+    vehicleIds.typeId,
+    INITIAL_PRODUCTS_LIMIT,
+  ).catch((err) => {
+    console.error(
+      `❌ [RM V2] Failed:`,
+      err instanceof Error ? err.message : err,
+    );
+    return null;
+  });
 
-  // 🚀 PARALLÉLISATION: batch-loader + RM + seoSwitches en même temps
-  const [batchResponse, rmPageData, seoSwitches] = await Promise.all([
-    fetchBatchLoader(vehicleIds.typeId, gammeId),
-    rmPromise,
+  // 🚀 PARALLÉLISATION: RM V2 + seoSwitches en même temps
+  const [rmV2Response, seoSwitches] = await Promise.all([
+    rmV2Promise,
     seoSwitchesPromise,
   ]);
 
-  // Si RM a réussi, utiliser ses produits (plus rapide ~200ms vs ~1.6s)
-  if (
-    rmPageData &&
-    rmPageData.success &&
-    isRmDataUsable(rmPageData.products, 1)
-  ) {
-    rmProducts = mapRmProductsToPieceData(rmPageData.products);
-    rmDuration = rmPageData.duration_ms;
-    dataSource = "RM_HYBRID";
+  // 🔄 SEO: Validation RM V2 - Si échec → 301 redirect vers page gamme
+  if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
     console.log(
-      `🚀 [RM] Using ${rmProducts.length} products (${rmDuration}ms)`,
+      `🔄 [301] RM V2 invalide ou 0 produits, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
+    return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
-  console.log(`🚀 [LOADER] ${dataSource} terminé, hierarchy en streaming`);
+  console.log(
+    `🚀 [RM V2] ${rmV2Response.count} products in ${rmV2Response.duration_ms}ms (cache: ${rmV2Response.cacheHit})`,
+  );
 
-  // 5. Construction des objets Vehicle & Gamme (via utilitaires centralisés)
-  const vehicle: VehicleData = buildVehicleData({
-    vehicleInfo: batchResponse.vehicleInfo,
-    vehicleIds,
-    urlParams: {
-      marqueAlias: marqueData.alias,
-      modeleAlias: modeleData.alias,
-      typeAlias: typeData.alias,
-    },
+  // 🎯 Map RM V2 response to LoaderData format
+  const loaderData = mapRmV2ToLoaderData(rmV2Response, {
+    loadTime: Date.now() - startTime,
   });
 
-  const gamme: GammeData = buildGammeData(gammeId, gammeData.alias);
+  // Extract mapped data
+  const { vehicle, gamme, pieces: piecesData } = loaderData;
 
   // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
   const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
 
-  // 🚀 V4: blogArticle et relatedArticles seront récupérés en parallèle plus bas
-
-  // 6. Traitement de la réponse Batch
-
-  // 🔄 SEO: Validation batch-loader - Si échec mais gamme existe → 301 redirect
-  // Raison: 412 est traité comme 4xx par Google → désindexation
-  // 301 préserve le PageRank et guide vers une page indexable
-  if (batchResponse.validation && !batchResponse.validation.valid) {
-    const apiStatusCode = batchResponse.validation.http_status || 410;
-
-    // Si on a une gamme valide → 301 redirect vers page gamme
-    if (gamme && gamme.alias) {
-      console.log(
-        `🔄 [301] Validation batch échouée (${apiStatusCode}), redirect vers page gamme: /pieces/${gamme.alias}-${gammeId}.html`,
-      );
-      return redirect(`/pieces/${gamme.alias}-${gammeId}.html`, 301);
-    }
-
-    // Cas extrême: aucune gamme identifiable → vrai 404/410
-    const reason =
-      batchResponse.validation.recommendation ||
-      "Cette combinaison n'est pas disponible.";
-    throw new Response(reason, {
-      status: apiStatusCode,
-      statusText: apiStatusCode === 410 ? "Gone" : "Not Found",
-      headers: {
-        "X-Robots-Tag": "noindex, nofollow",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-      },
-    });
-  }
-
-  // Mapping Pièces - Utilise RM si disponible, sinon batch-loader
-  const piecesData = rmProducts ?? mapBatchPiecesToData(batchResponse.pieces);
-
-  // 🔄 SEO: Si 0 produits pour cette combinaison → 301 redirect vers page gamme
-  // Raison: 412 est traité comme 4xx par Google → désindexation
-  // 301 préserve le PageRank et guide vers une page indexable
-  if (piecesData.length === 0) {
-    console.log(
-      `🔄 [301] 0 produits pour cette combinaison, redirect vers page gamme: /pieces/${gamme.alias}-${gammeId}.html`,
-    );
-    return redirect(`/pieces/${gamme.alias}-${gammeId}.html`, 301);
-  }
-
-  // Stats prix - Utilise utilitaire centralisé
-  const { minPrice, maxPrice } = calculatePriceStats(piecesData);
-
-  // SEO Content - Utilise utilitaire centralisé
-  const seoContent = mergeSeoContent(
-    generateSEOContent(vehicle, gamme),
-    batchResponse.seo,
-  );
-
-  // Cross Selling
-  const crossSellingGammes = batchResponse.crossSelling || [];
-
-  // Generated Content
+  // Generated Content (FAQ and buying guide with vehicle context)
   const faqItems = generateFAQ(vehicle, gamme);
+  const buyingGuide = generateBuyingGuide(vehicle, gamme);
 
   // 🚀 LCP OPTIMIZATION V6: blogArticle et relatedArticles streamés via defer()
-  // Ces données ne bloquent plus le first paint - chargées en background
   const blogArticlePromise = fetchBlogArticle(gamme, vehicle).catch(() => null);
   const relatedArticlesPromise = fetchRelatedArticlesForGamme(
     gamme,
     vehicle,
   ).catch(() => []);
-
-  const buyingGuide = generateBuyingGuide(vehicle, gamme);
-  const compatibilityInfo = buildCompatibilityInfo(vehicle);
 
   // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
   const catalogueMameFamillePromise = buildCataloguePromise(
@@ -355,10 +272,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const loadTime = Date.now() - startTime;
 
-  // 🚀 OPTIMISÉ V3: filters inclus dans batch-loader, plus d'appel séparé
-  const rawFilters = batchResponse.filters;
-  const filtersData: FiltersData | null = rawFilters
-    ? (("filters" in rawFilters ? rawFilters : rawFilters.data) ?? null)
+  // 🎯 Filters from RM V2 (already includes counts)
+  const filtersData: FiltersData | null = rmV2Response.filters
+    ? {
+        filters: [],
+        summary: {
+          total_filters: 3, // brands, qualities, sides
+          total_options:
+            (rmV2Response.filters.brands?.length || 0) +
+            (rmV2Response.filters.qualities?.length || 0) +
+            (rmV2Response.filters.sides?.length || 0),
+        },
+        ...rmV2Response.filters,
+      }
     : null;
 
   // 🚀 LCP OPTIMIZATION V6: defer() pour streamer données non-critiques
@@ -370,32 +296,41 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       vehicle,
       gamme,
       pieces: piecesData,
-      grouped_pieces: batchResponse.grouped_pieces || batchResponse.blocs || [],
-      count: piecesData.length,
-      minPrice,
-      maxPrice,
+      // Map grouped_pieces with null → undefined conversion for filtre_side
+      grouped_pieces: (rmV2Response.grouped_pieces || []).map((g) => ({
+        ...g,
+        filtre_side: g.filtre_side ?? undefined, // Convert null to undefined
+      })),
+      count: rmV2Response.count || piecesData.length,
+      minPrice: loaderData.minPrice,
+      maxPrice: loaderData.maxPrice,
       filtersData,
-      seoContent,
+      seoContent: loaderData.seoContent,
       faqItems,
       buyingGuide,
-      compatibilityInfo,
-      crossSellingGammes,
-      oemRefs: batchResponse.oemRefs || undefined,
-      oemRefsSeo: batchResponse.oemRefsSeo || undefined,
+      compatibilityInfo: loaderData.compatibilityInfo,
+      crossSellingGammes: loaderData.crossSellingGammes,
+      oemRefs: loaderData.oemRefs,
+      oemRefsSeo: loaderData.oemRefsSeo,
       voirAussiLinks, // 🔗 SEO: URLs pré-calculées pour section "Voir aussi"
       seo: {
-        title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
-        h1: seoContent.h1,
-        description: stripHtmlForMeta(seoContent.longDescription),
+        title:
+          rmV2Response.seo?.title ||
+          `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
+        h1: rmV2Response.seo?.h1 || loaderData.seoContent.h1,
+        description: stripHtmlForMeta(
+          rmV2Response.seo?.description ||
+            loaderData.seoContent.longDescription,
+        ),
       },
       performance: {
         loadTime,
-        source: dataSource,
-        cacheHit: false,
-        rmDuration,
+        source: "rm-v2",
+        cacheHit: rmV2Response.cacheHit || false,
+        rmDuration: rmV2Response.duration_ms,
       },
 
-      // === DONNÉES CRITIQUES SECONDAIRES (résolues après batch-loader) ===
+      // === DONNÉES CRITIQUES SECONDAIRES (résolues après RM V2) ===
       seoSwitches, // Résolu car utilisé dans callback JS
 
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===

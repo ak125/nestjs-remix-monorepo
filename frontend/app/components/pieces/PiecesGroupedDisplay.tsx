@@ -12,7 +12,10 @@
 
 import { ChevronDown } from "lucide-react";
 import { useState, useCallback } from "react";
-import { type PieceData, type PiecesFilters } from "../../types/pieces-route.types";
+import {
+  type PieceData,
+  type PiecesFilters,
+} from "../../types/pieces-route.types";
 import { mapApiPieceToData } from "../../utils/pieces-route.utils";
 
 import { PiecesGridView } from "./PiecesGridView";
@@ -25,9 +28,11 @@ const LOAD_MORE_INCREMENT = 20;
 
 interface GroupedPiece {
   filtre_gamme: string;
-  filtre_side: string;
+  filtre_side?: string; // Optional - can be null/undefined in RM V2 response
   title_h2?: string;
   pieces?: any[];
+  oemRefs?: string[]; // OEM refs per group from RM V2
+  oemRefsCount?: number;
 }
 
 interface PiecesGroupedDisplayProps {
@@ -43,47 +48,70 @@ interface PiecesGroupedDisplayProps {
 /**
  * Applique les filtres actifs sur une liste de pièces
  */
-function applyFilters(pieces: any[], activeFilters: PiecesFilters): PieceData[] {
-  return pieces.filter((p) => {
-    const pieceData = mapApiPieceToData(p);
+function applyFilters(
+  pieces: any[],
+  activeFilters: PiecesFilters,
+): PieceData[] {
+  return pieces
+    .filter((p) => {
+      const pieceData = mapApiPieceToData(p);
 
-    // Filtre par marque
-    if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(pieceData.brand)) {
-      return false;
-    }
+      // Filtre par marque
+      if (
+        activeFilters.brands.length > 0 &&
+        !activeFilters.brands.includes(pieceData.brand)
+      ) {
+        return false;
+      }
 
-    // Filtre par texte de recherche
-    if (activeFilters.searchText && !pieceData.name.toLowerCase().includes(activeFilters.searchText.toLowerCase())) {
-      return false;
-    }
+      // Filtre par texte de recherche
+      if (
+        activeFilters.searchText &&
+        !pieceData.name
+          .toLowerCase()
+          .includes(activeFilters.searchText.toLowerCase())
+      ) {
+        return false;
+      }
 
-    // Filtre par qualité
-    if (activeFilters.quality !== "all" && pieceData.quality !== activeFilters.quality) {
-      return false;
-    }
+      // Filtre par qualité
+      if (
+        activeFilters.quality !== "all" &&
+        pieceData.quality !== activeFilters.quality
+      ) {
+        return false;
+      }
 
-    // Filtre par gamme de prix
-    if (activeFilters.priceRange !== "all") {
-      const price = pieceData.price;
-      if (activeFilters.priceRange === "low" && price >= 50) return false;
-      if (activeFilters.priceRange === "medium" && (price < 50 || price >= 150)) return false;
-      if (activeFilters.priceRange === "high" && price < 150) return false;
-    }
+      // Filtre par gamme de prix
+      if (activeFilters.priceRange !== "all") {
+        const price = pieceData.price;
+        if (activeFilters.priceRange === "low" && price >= 50) return false;
+        if (
+          activeFilters.priceRange === "medium" &&
+          (price < 50 || price >= 150)
+        )
+          return false;
+        if (activeFilters.priceRange === "high" && price < 150) return false;
+      }
 
-    // Filtre par disponibilité
-    if (activeFilters.availability === "stock" && pieceData.stock !== "En stock") {
-      return false;
-    }
+      // Filtre par disponibilité
+      if (
+        activeFilters.availability === "stock" &&
+        pieceData.stock !== "En stock"
+      ) {
+        return false;
+      }
 
-    // Filtre par note minimale (sur 10)
-    if (activeFilters.minNote && activeFilters.minNote > 0) {
-      const stars = pieceData.stars || 3;
-      const note = Math.round((stars / 6) * 10);
-      if (note < activeFilters.minNote) return false;
-    }
+      // Filtre par note minimale (sur 10)
+      if (activeFilters.minNote && activeFilters.minNote > 0) {
+        const stars = pieceData.stars || 3;
+        const note = Math.round((stars / 6) * 10);
+        if (note < activeFilters.minNote) return false;
+      }
 
-    return true;
-  }).map(mapApiPieceToData);
+      return true;
+    })
+    .map(mapApiPieceToData);
 }
 
 export function PiecesGroupedDisplay({
@@ -96,7 +124,9 @@ export function PiecesGroupedDisplay({
   onSelectPiece,
 }: PiecesGroupedDisplayProps) {
   // 📱 Pagination mobile-first: état du nombre de produits visibles par groupe
-  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
+  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>(
+    {},
+  );
 
   // Charger plus de produits pour un groupe spécifique
   const handleLoadMore = useCallback((groupKey: string, totalCount: number) => {
@@ -147,9 +177,11 @@ export function PiecesGroupedDisplay({
             {/* Titre H2 dynamique avec modèle véhicule */}
             <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
               <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
-              {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`} {vehicleModele}
+              {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}{" "}
+              {vehicleModele}
               <span className="text-sm font-normal text-gray-500 ml-auto">
-                ({groupPieces.length} article{groupPieces.length > 1 ? "s" : ""})
+                ({groupPieces.length} article{groupPieces.length > 1 ? "s" : ""}
+                )
               </span>
             </h2>
 
@@ -182,7 +214,12 @@ export function PiecesGroupedDisplay({
                 >
                   <ChevronDown className="w-5 h-5" />
                   <span>
-                    Charger {Math.min(remainingCount, LOAD_MORE_INCREMENT)} produit{Math.min(remainingCount, LOAD_MORE_INCREMENT) > 1 ? "s" : ""} de plus
+                    Charger {Math.min(remainingCount, LOAD_MORE_INCREMENT)}{" "}
+                    produit
+                    {Math.min(remainingCount, LOAD_MORE_INCREMENT) > 1
+                      ? "s"
+                      : ""}{" "}
+                    de plus
                   </span>
                 </button>
 
@@ -204,9 +241,14 @@ export function PiecesGroupedDisplay({
             {groupPieces.length > INITIAL_VISIBLE_COUNT && (
               <div className="mt-4 text-center text-sm text-gray-500">
                 {hasMore ? (
-                  <span>Affichage de {visibleCount} sur {groupPieces.length} produits</span>
+                  <span>
+                    Affichage de {visibleCount} sur {groupPieces.length}{" "}
+                    produits
+                  </span>
                 ) : (
-                  <span className="text-green-600 font-medium">✓ Tous les {groupPieces.length} produits affichés</span>
+                  <span className="text-green-600 font-medium">
+                    ✓ Tous les {groupPieces.length} produits affichés
+                  </span>
                 )}
               </div>
             )}
