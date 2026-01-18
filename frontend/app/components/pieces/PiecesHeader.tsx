@@ -198,20 +198,19 @@ export function PiecesHeader({
                 <div className="relative">
                   <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-none md:backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
-                      {!imageError && vehicle.modeleAlias ? (
+                      {!imageError && vehicle.modele ? (
                         <>
-                          {/* 🚀 LCP Optimization V5: Image concept (nom de base sans version) */}
+                          {/* 🚀 LCP Optimization V5: Image concept (nom de base depuis modele) */}
                           <img
                             src={getOptimizedModelImageUrl(
-                              `constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${(
-                                vehicle.modeleAlias || ""
-                              )
-                                .replace(/-(i{1,3}|iv|v)$/i, "")
-                                .replace(/-[a-z]\d{2}$/i, "")
-                                .replace(
-                                  /-(coupe|break|decapotable)-.*$/i,
-                                  "",
-                                )}.webp`,
+                              `constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modele
+                                .toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "")
+                                .replace(/\s*\([^)]*\)/g, "")
+                                .replace(/\s+(i{1,3}|iv|v|vi)$/i, "")
+                                .replace(/\s+/g, "-")
+                                .trim()}.webp`,
                             )}
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
