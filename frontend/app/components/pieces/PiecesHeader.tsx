@@ -205,7 +205,7 @@ export function PiecesHeader({
                           {/* 🚀 LCP Optimization V5: Image via imgproxy (WebP optimisé) */}
                           <img
                             src={getOptimizedModelImageUrl(
-                              `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
+                              `constructeurs-automobiles/marques-concepts/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
                             )}
                             alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
                             width={380}
