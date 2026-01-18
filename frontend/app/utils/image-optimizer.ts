@@ -88,6 +88,11 @@ export class ImageOptimizer {
     if (cleanPath.startsWith("rack-images/")) {
       bucket = "rack-images";
       actualPath = cleanPath.replace("rack-images/", "");
+    } else if (cleanPath.startsWith("uploads/")) {
+      // ✅ FIX 2026-01-18: Gérer le prefix uploads/ pour éviter double bucket
+      // Quand l'URL Supabase complète est parsée, le path inclut déjà "uploads/"
+      bucket = "uploads";
+      actualPath = cleanPath.replace("uploads/", "");
     }
 
     // Si imgproxy désactivé (ou en dev), utiliser URL Supabase directe
@@ -193,6 +198,10 @@ export class ImageOptimizer {
     if (cleanPath.startsWith("rack-images/")) {
       bucket = "rack-images";
       actualPath = cleanPath.replace("rack-images/", "");
+    } else if (cleanPath.startsWith("uploads/")) {
+      // ✅ FIX 2026-01-18: Gérer le prefix uploads/ pour éviter double bucket
+      bucket = "uploads";
+      actualPath = cleanPath.replace("uploads/", "");
     }
 
     // En dev, utiliser Supabase directement pour éviter CSP issues

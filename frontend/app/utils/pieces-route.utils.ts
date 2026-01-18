@@ -428,6 +428,24 @@ export function slugify(text: string): string {
 }
 
 /**
+ * 🎯 Dérive le nombre d'étoiles depuis la qualité (OE/EQUIV/ECO)
+ * Utilisé quand nb_stars n'est pas disponible (ex: données RM V2)
+ */
+function getStarsFromQuality(quality: string | undefined): number | undefined {
+  if (!quality) return undefined;
+  switch (quality.toUpperCase()) {
+    case "OE":
+      return 5;
+    case "EQUIV":
+      return 4;
+    case "ECO":
+      return 3;
+    default:
+      return undefined;
+  }
+}
+
+/**
  * 🔄 Convertit un objet pièce de l'API vers le type PieceData
  * Évite la duplication du mapping dans la route
  */
@@ -443,7 +461,12 @@ export function mapApiPieceToData(p: any): PieceData {
     images: p.images || [],
     stock: p.dispo ? "En stock" : "Sur commande",
     quality: p.qualite || p.quality || "",
-    stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
+    // ✅ FIX 2026-01-18: Dériver stars depuis quality si nb_stars absent (RM V2)
+    stars:
+      p.stars ??
+      (p.nb_stars
+        ? parseInt(p.nb_stars)
+        : getStarsFromQuality(p.quality || p.qualite)),
     side: p.filtre_side || undefined,
     description: p.description || "",
     url: p.url || "",
