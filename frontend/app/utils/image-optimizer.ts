@@ -178,6 +178,8 @@ export class ImageOptimizer {
 
   /**
    * 🔙 Obtient l'URL originale (sans transformation, mais via proxy pour cache)
+   * En dev: utilise Supabase directement (évite CSP issues)
+   * En prod: utilise le proxy pour bénéficier du cache Cloudflare
    */
   static getOriginalUrl(imagePath: string): string {
     const cleanPath = imagePath.startsWith("/")
@@ -193,7 +195,12 @@ export class ImageOptimizer {
       actualPath = cleanPath.replace("rack-images/", "");
     }
 
-    // Utiliser le proxy pour bénéficier du cache Cloudflare
+    // En dev, utiliser Supabase directement pour éviter CSP issues
+    if (IS_DEV) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
+    }
+
+    // En prod, utiliser le proxy pour bénéficier du cache Cloudflare
     return `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
   }
 
