@@ -111,7 +111,8 @@ function applyFilters(
 
       return true;
     })
-    .map(mapApiPieceToData);
+    .map(mapApiPieceToData)
+    .sort((a, b) => (a.price || 0) - (b.price || 0)); // ✅ Tri par prix croissant
 }
 
 export function PiecesGroupedDisplay({
