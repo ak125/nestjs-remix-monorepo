@@ -13,6 +13,17 @@ export default defineConfig({
 	resolve: {
 		preserveSymlinks: true,
 	},
+	// 🚀 Proxy /img/* vers Supabase en développement local
+	// En production, Caddy gère ce proxy
+	server: {
+		proxy: {
+			'/img': {
+				target: 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/img/, ''),
+			},
+		},
+	},
 	build: {
 		cssMinify: MODE === 'production',
 		sourcemap: false, // Désactivé pour réduire la taille du bundle
