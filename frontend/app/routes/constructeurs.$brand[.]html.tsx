@@ -1,4 +1,4 @@
-﻿// 🎨 VERSION AMÉLIORÉE — PAGE CATALOGUE CONSTRUCTEUR
+// 🎨 VERSION AMÉLIORÉE — PAGE CATALOGUE CONSTRUCTEUR
 // Format: /constructeurs/{constructeur}-{id}.html
 // Exemple: /constructeurs/bmw-33.html, /constructeurs/renault-140.html
 
@@ -800,7 +800,7 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
   );
 }
 
-// 📦 Composant Carte de pièce API - Version améliorée style ancien HTML avec multi-alias SEO
+// 📦 Composant Carte de pièce API - Layout original avec image en haut (h-24)
 function ApiPartCard({
   part,
   brandAlias: _brandAlias,
@@ -808,81 +808,55 @@ function ApiPartCard({
   part: ApiPopularPart;
   brandAlias: string;
 }) {
-  // 🔑 Contexte véhicule avec gestion des valeurs nulles/undefined
-  const vehicleContext =
-    [part.marque_name, part.modele_name, part.type_name]
-      .filter(Boolean)
-      .join(" ") || part.pg_name;
-  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : "";
-  const fullContext = powerSuffix
-    ? `${vehicleContext} ${powerSuffix}`
-    : vehicleContext;
-
   return (
     <Link
       to={part.part_url || "#"}
-      className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-red-300 hover:shadow-xl transition-all duration-300"
+      className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
     >
-      {/* Contenu */}
-      <div className="p-3 md:p-4 flex flex-col h-full">
-        {/* En-tête : Image + Titre */}
-        <div className="flex items-start gap-3 mb-3">
-          {/* 🖼️ Image responsive de la pièce avec srcset */}
-          <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-            <PartImage
-              src={part.image_url || "/images/default-part.png"}
-              alt={`${part.pg_name} ${part.marque_name}`}
-              className="h-full w-auto object-contain group-hover:scale-105 transition-transform duration-300 p-1"
-              sizes="80px"
-            />
-          </div>
+      {/* Bordure gradient au hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
+      <div className="absolute inset-0 bg-white m-0.5 rounded-lg group-hover:m-[3px] transition-all duration-300"></div>
 
-          {/* Titres */}
-          <div className="flex-1 min-w-0">
-            {/* Nom de la gamme */}
-            <h4 className="font-bold text-sm md:text-base text-gray-900 mb-0.5 group-hover:text-red-600 transition-colors">
-              {part.pg_name}
-            </h4>
-            {/* Sous-titre avec contexte véhicule */}
-            <p className="text-xs text-gray-500 line-clamp-2">
-              {part.seo_title || `${part.pg_name} pour ${vehicleContext}`}
-            </p>
-          </div>
+      {/* Contenu - Layout original avec image en haut */}
+      <div className="relative p-4">
+        {/* 🖼️ Image centrée en haut - h-24 (96px) */}
+        <div className="flex items-center justify-center h-24 mb-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+          <PartImage
+            src={part.image_url || "/images/default-part.png"}
+            alt={`${part.pg_name} ${part.marque_name}`}
+            className="relative h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300"
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 200px"
+          />
         </div>
 
-        {/* 🎯 Description SEO dynamique multi-alias */}
-        <div className="flex-1 mb-2">
-          {part.seo_switch_content ? (
-            <p className="text-xs md:text-sm text-gray-700 leading-relaxed line-clamp-3">
-              {part.seo_switch_content}
-            </p>
-          ) : (
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Pièce de qualité pour {fullContext}
-            </p>
-          )}
-        </div>
+        {/* Titre */}
+        <h4 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
+          {part.pg_name}
+        </h4>
 
-        {/* Sous-description commerciale (nouveau champ SEO) */}
-        {part.seo_commercial && (
-          <p className="text-[10px] md:text-xs text-gray-400 italic mb-2 line-clamp-1">
-            {part.seo_commercial}
+        {/* Description SEO dynamique */}
+        {part.seo_switch_content ? (
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2 leading-relaxed">
+            {part.seo_switch_content}
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mb-2 line-clamp-1">
+            {part.modele_name} • {part.type_name}
           </p>
         )}
 
-        {/* Footer avec CTA et badge puissance */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <span className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1 text-brand">
-            Voir les pièces
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        {/* Footer avec CTA */}
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+          <span className="text-xs font-medium text-blue-600 group-hover:underline">
+            Voir les pièces →
           </span>
-          {/* Badge motorisation - affiché uniquement si puissance disponible */}
           {part.type_power_ps ? (
-            <span className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full bg-brand">
+            <span className="text-[10px] font-medium text-white px-2 py-0.5 rounded-full bg-blue-600">
               {part.type_power_ps} ch
             </span>
           ) : (
-            <span className="text-[10px] md:text-xs font-medium text-gray-500 px-2 py-0.5 rounded-full bg-gray-100">
+            <span className="text-[10px] font-medium text-gray-500 px-2 py-0.5 rounded-full bg-gray-100">
               Universel
             </span>
           )}
