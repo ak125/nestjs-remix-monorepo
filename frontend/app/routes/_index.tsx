@@ -87,22 +87,48 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Preload critical resources (homepage-specific)
-const SUPABASE_STORAGE = "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos";
+// ✅ Migration /img/* : Preload via proxy Caddy
+const IMG_PROXY_LOGOS = "/img/uploads/constructeurs-automobiles/marques-logos";
 
 export function links() {
   return [
-    // 🔌 Preconnect to Supabase for faster image loading
-    { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
-    { rel: "dns-prefetch", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
-
     // 🚀 LCP Optimization: Preload top 6 brand logos (above-fold, sorted alphabetically)
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/alfa-romeo.webp`, type: "image/webp" },
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/audi.webp`, type: "image/webp" },
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/bmw.webp`, type: "image/webp" },
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/chevrolet.webp`, type: "image/webp" },
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/citroen.webp`, type: "image/webp" },
-    { rel: "preload", as: "image", href: `${SUPABASE_STORAGE}/dacia.webp`, type: "image/webp" },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/alfa-romeo.webp`,
+      type: "image/webp",
+    },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/audi.webp`,
+      type: "image/webp",
+    },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/bmw.webp`,
+      type: "image/webp",
+    },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/chevrolet.webp`,
+      type: "image/webp",
+    },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/citroen.webp`,
+      type: "image/webp",
+    },
+    {
+      rel: "preload",
+      as: "image",
+      href: `${IMG_PROXY_LOGOS}/dacia.webp`,
+      type: "image/webp",
+    },
 
     // 🚀 Homepage-only: Preload critical fonts (Inter + Montserrat)
     {
@@ -110,14 +136,14 @@ export function links() {
       as: "font",
       type: "font/woff2",
       href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
-      crossOrigin: "anonymous" as const
+      crossOrigin: "anonymous" as const,
     },
     {
       rel: "preload",
       as: "font",
       type: "font/woff2",
       href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
-      crossOrigin: "anonymous" as const
+      crossOrigin: "anonymous" as const,
     },
   ];
 }
@@ -149,12 +175,10 @@ export async function loader(_args: LoaderFunctionArgs) {
     const loadTime = Date.now() - startTime;
     console.log(`⚡ Homepage RPC loader: ${loadTime}ms`);
 
-    // Helper pour générer l'URL complète du logo depuis le nom de fichier
+    // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
     const generateLogoUrl = (filename?: string): string | undefined => {
       if (!filename) return undefined;
-      const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-      const path = `constructeurs-automobiles/marques-logos/${filename}`;
-      return `${SUPABASE_URL}/storage/v1/object/public/uploads/${path}`;
+      return `/img/uploads/constructeurs-automobiles/marques-logos/${filename}`;
     };
 
     // Transform RPC response to match expected loader data structure
@@ -206,12 +230,14 @@ export default function TestHomepageModern() {
                 "@id": "https://www.automecanik.com/#website",
                 url: "https://www.automecanik.com",
                 name: "Automecanik",
-                description: "Pièces détachées auto pour toutes marques et modèles",
+                description:
+                  "Pièces détachées auto pour toutes marques et modèles",
                 potentialAction: {
                   "@type": "SearchAction",
                   target: {
                     "@type": "EntryPoint",
-                    urlTemplate: "https://www.automecanik.com/recherche?q={search_term_string}",
+                    urlTemplate:
+                      "https://www.automecanik.com/recherche?q={search_term_string}",
                   },
                   "query-input": "required name=search_term_string",
                 },
@@ -221,7 +247,8 @@ export default function TestHomepageModern() {
                 "@type": "AutoPartsStore",
                 "@id": "https://www.automecanik.com/#store",
                 name: "Automecanik",
-                description: "Catalogue de pièces détachées auto pour toutes marques et modèles",
+                description:
+                  "Catalogue de pièces détachées auto pour toutes marques et modèles",
                 url: "https://www.automecanik.com",
                 logo: "https://www.automecanik.com/logo-navbar.webp",
                 image: "https://www.automecanik.com/logo-og.webp",

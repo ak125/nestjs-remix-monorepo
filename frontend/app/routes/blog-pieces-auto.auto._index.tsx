@@ -101,9 +101,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       ? await metadataRes.json().catch(() => null)
       : null;
 
-    // URL de base Supabase pour les logos
-    const supabaseLogoBaseUrl =
-      "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos";
+    // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
+    const logoBaseUrl = "/img/uploads/constructeurs-automobiles/marques-logos";
 
     // Mapper les données de l'API vers le format attendu par le frontend
     const mappedBrands: BrandLogo[] = (brandsData?.data || []).map(
@@ -111,9 +110,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         id: brand.marque_id,
         name: brand.marque_name,
         alias: brand.marque_alias,
-        logo: brand.marque_logo
-          ? `${supabaseLogoBaseUrl}/${brand.marque_logo}`
-          : null,
+        logo: brand.marque_logo ? `${logoBaseUrl}/${brand.marque_logo}` : null,
         slug: brand.marque_alias,
       }),
     );

@@ -8,11 +8,16 @@
  * @see https://docs.imgproxy.net/generating_the_url
  */
 
+// ✅ Migration 2026-01-20: Utiliser le proxy Caddy /img/* au lieu d'URLs Supabase directes
+// Avantages: Cache 1 an, protection contre transformations (410 Gone), contrôle total
 const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
 const RACK_IMAGES_BUCKET = 'rack-images';
 const DEFAULT_IMAGE = '/images/pieces/default.png';
 
-// Configuration imgproxy
+// Proxy Caddy pour images (cache 1 an, protection params)
+const IMG_PROXY_BASE = '/img';
+
+// Configuration imgproxy (transformations)
 const USE_IMGPROXY = true;
 const IMGPROXY_BASE_URL = 'https://www.automecanik.com/imgproxy';
 
@@ -52,13 +57,13 @@ export function buildRackImageUrl(imageData?: PieceImageData | null): string {
     return DEFAULT_IMAGE;
   }
 
-  // Construire l'URL Supabase Storage SANS transformation
+  // Construire l'URL via le proxy Caddy /img/* (cache 1 an, protection params)
   // Note: pmi_name contient déjà l'extension (.JPG, .webp, etc.)
   const folder = imageData.pmi_folder.toString();
   const filename = imageData.pmi_name;
 
-  // ⚠️ Utiliser /object/public/ (image brute, pas de transformation, $0)
-  return `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
+  // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
+  return `${IMG_PROXY_BASE}/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
 }
 
 /**
@@ -79,8 +84,8 @@ export function buildRackImageUrlWithTransform(
   const folder = imageData.pmi_folder.toString();
   const filename = imageData.pmi_name;
 
-  // Utiliser /object/public/ (image brute, pas de transformation)
-  return `${SUPABASE_URL}/storage/v1/object/public/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
+  // ✅ Migration /img/* : Proxy Caddy (mêmes URLs que buildRackImageUrl)
+  return `${IMG_PROXY_BASE}/${RACK_IMAGES_BUCKET}/${folder}/${filename}`;
 }
 
 /**
@@ -104,27 +109,41 @@ export function buildImageMetadata(
 }
 
 /**
- * Vérifie si une URL est déjà une URL Supabase complète
+ * Vérifie si une URL est déjà une URL Supabase ou proxy /img/*
  * Utile pour éviter de reconstruire une URL déjà construite
  */
 export function isSupabaseUrl(url: string): boolean {
-  return url.includes('supabase.co/storage');
+  return url.includes('supabase.co/storage') || url.startsWith('/img/');
 }
 
 /**
- * Extrait le nom du bucket et le chemin depuis une URL Supabase
+ * Extrait le nom du bucket et le chemin depuis une URL Supabase ou /img/*
  */
 export function parseSupabaseUrl(url: string): {
   bucket: string;
   path: string;
 } | null {
-  const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
-  if (!match) return null;
+  // Essayer le format Supabase
+  const supabaseMatch = url.match(
+    /\/storage\/v1\/object\/public\/([^/]+)\/(.+)/,
+  );
+  if (supabaseMatch) {
+    return {
+      bucket: supabaseMatch[1],
+      path: supabaseMatch[2],
+    };
+  }
 
-  return {
-    bucket: match[1],
-    path: match[2],
-  };
+  // Essayer le format /img/*
+  const imgMatch = url.match(/^\/img\/([^/]+)\/(.+)$/);
+  if (imgMatch) {
+    return {
+      bucket: imgMatch[1],
+      path: imgMatch[2],
+    };
+  }
+
+  return null;
 }
 
 /**

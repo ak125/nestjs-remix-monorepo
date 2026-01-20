@@ -459,7 +459,7 @@ export function mapApiPieceToData(p: any): PieceData {
     priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
     image: p.image || "",
     images: p.images || [],
-    stock: p.dispo ? "En stock" : "Sur commande",
+    stock: "", // 🚫 Stock masqué selon config (2026-01-20)
     quality: p.qualite || p.quality || "",
     // ✅ FIX 2026-01-18: Dériver stars depuis quality si nb_stars absent (RM V2)
     stars:

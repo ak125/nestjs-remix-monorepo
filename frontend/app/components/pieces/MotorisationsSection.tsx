@@ -127,9 +127,9 @@ export default function MotorisationsSection({
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          // Fallback vers une image placeholder (sans transformation, $0)
+                          // ✅ Migration /img/* : Fallback via proxy Caddy
                           e.currentTarget.src =
-                            "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/default.webp";
+                            "/img/uploads/constructeurs-automobiles/marques-modeles/default.webp";
                           e.currentTarget.onerror = null; // Éviter les boucles infinies
                         }}
                       />

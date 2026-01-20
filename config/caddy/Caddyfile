@@ -59,6 +59,24 @@ automecanik.com, www.automecanik.com {
         }
     }
 
+    # ===== BLOQUER TRANSFORMATIONS (410 Gone pour déindexation rapide) =====
+    # Retourne 410 pour les URLs avec params de transformation
+    # Permet à Googlebot de désindexer rapidement les anciennes URLs
+    @img_transform {
+        path /img/*
+        query width=*
+    }
+    @img_transform_quality {
+        path /img/*
+        query quality=*
+    }
+    handle @img_transform {
+        respond "Gone" 410 { close }
+    }
+    handle @img_transform_quality {
+        respond "Gone" 410 { close }
+    }
+
     # ===== PROXY IMAGES BRUTES (fallback, cache 1 an) =====
     # Route: /img/{bucket}/{path} → Supabase /storage/v1/object/public/{bucket}/{path}
     # Utilisé pour images sans transformation ou fallback

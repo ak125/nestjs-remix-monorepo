@@ -91,9 +91,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const brandData = brandResponse.data;
     const brandId = brandData.marque_id;
 
-    // URL de base Supabase pour les logos
-    const supabaseLogoBaseUrl =
-      "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos";
+    // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
+    const logoBaseUrl = "/img/uploads/constructeurs-automobiles/marques-logos";
 
     // 2. Récupérer les modèles de cette marque
     const modelsRes = await fetch(
@@ -133,7 +132,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       name: brandData.marque_name,
       alias: brandData.marque_alias,
       logo: brandData.marque_logo
-        ? `${supabaseLogoBaseUrl}/${brandData.marque_logo}`
+        ? `${logoBaseUrl}/${brandData.marque_logo}`
         : null,
     };
 

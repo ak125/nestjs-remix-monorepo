@@ -313,17 +313,15 @@ class HierarchyApiService {
 
   /**
    * 🖼️ Obtient l'URL de l'image d'une famille
-   * ⚠️ Image brute sans transformation (évite coûts $5/1000 images)
+   * ✅ Migration /img/* : Proxy Caddy avec cache 1 an
    */
   getFamilyImage(family: FamilyWithGammes): string {
     if (!family.mf_pic) {
       return "/images/categories/default.svg";
     }
 
-    // ⚠️ URL DIRECTE sans transformation ($0)
-    const supabaseStorageUrl =
-      "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/";
-    return `${supabaseStorageUrl}${family.mf_pic}`;
+    // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
+    return `/img/uploads/articles/familles-produits/${family.mf_pic}`;
   }
 
   /**
