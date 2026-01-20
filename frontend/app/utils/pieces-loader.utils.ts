@@ -182,11 +182,12 @@ export function buildCataloguePromise(
         items: otherGammes.map((g) => ({
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
-          // ✅ Migration /img/* : Utilise le proxy Caddy au lieu d'URLs Supabase directes
-          image: ImageOptimizer.getOriginalUrl(
+          // ✅ Migration imgproxy : Transformation WebP automatique (gratuit, self-hosted)
+          image: ImageOptimizer.getOptimizedUrl(
             g.image
               ? `${CATALOGUE_IMAGE_PATH}/${g.image}`
               : `${CATALOGUE_IMAGE_PATH}/${g.alias}.webp`,
+            { width: 400 },
           ),
           description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
         })),
