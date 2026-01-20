@@ -302,8 +302,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
     // 🚀 Configuration API depuis variables d'environnement
     // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
+    // ⚠️ Timeout réduit de 180s à 30s pour compatibilité Googlebot (~30s patience)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 180000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
     const API_URL = process.env.API_URL || "http://localhost:3000";
@@ -868,7 +869,7 @@ export default function PiecesDetailPage() {
                         <img
                           src={
                             data.content?.pg_pic ||
-                            "/images/placeholder-product.webp"
+                            "/images/categories/default.svg"
                           }
                           alt={data.content?.pg_name || "Pièce auto"}
                           width={400}
@@ -879,7 +880,7 @@ export default function PiecesDetailPage() {
                           fetchPriority="high"
                           onError={(e) => {
                             e.currentTarget.src =
-                              "/images/placeholder-product.webp";
+                              "/images/categories/default.svg";
                             e.currentTarget.onerror = null;
                           }}
                         />

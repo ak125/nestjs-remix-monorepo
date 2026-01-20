@@ -86,7 +86,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       quantity: parseInt(line.orl_art_quantity || "1"),
       price: parseFloat(line.orl_art_price_sell_unit_ttc || "0"),
       total: parseFloat(line.orl_art_price_sell_ttc || "0"),
-      image: "/placeholder-product.png", // TODO: ajouter l'image
+      image: "/images/categories/default.svg", // Placeholder par défaut
     }));
 
     // ✅ Récupérer les informations du client depuis la commande

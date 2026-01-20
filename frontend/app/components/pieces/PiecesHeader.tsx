@@ -14,7 +14,7 @@ import {
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
-import { getOptimizedModelImageUrl } from "../../utils/image-optimizer";
+import { ImageOptimizer } from "../../utils/image-optimizer";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -202,21 +202,36 @@ export function PiecesHeader({
                       vehicle.modelePic &&
                       vehicle.modelePic !== "no.webp" ? (
                         <>
-                          {/* 🚀 FIX: Utiliser modelePic directement depuis BDD avec marques-modeles */}
-                          <img
-                            src={getOptimizedModelImageUrl(
-                              `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`,
-                            )}
-                            alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
-                            width={380}
-                            height={192}
-                            className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
-                            loading="eager"
-                            // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
-                            fetchpriority="high"
-                            decoding="async"
-                            onError={() => setImageError(true)}
-                          />
+                          {/* 🚀 LCP FIX: srcSet responsive via imgproxy pour charger taille adaptée au viewport */}
+                          {(() => {
+                            const heroImagePath = `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`;
+                            const heroSrc = ImageOptimizer.getOptimizedUrl(
+                              heroImagePath,
+                              { width: 380, quality: 85 },
+                            );
+                            const heroSrcSet =
+                              ImageOptimizer.getResponsiveSrcSet(
+                                heroImagePath,
+                                [200, 300, 380],
+                                85,
+                              );
+                            return (
+                              <img
+                                src={heroSrc}
+                                srcSet={heroSrcSet}
+                                sizes="(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px"
+                                alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
+                                width={380}
+                                height={192}
+                                className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
+                                loading="eager"
+                                // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
+                                fetchpriority="high"
+                                decoding="async"
+                                onError={() => setImageError(true)}
+                              />
+                            );
+                          })()}
                           {/* Gradient overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
                         </>

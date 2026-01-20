@@ -8,6 +8,7 @@ import {
   type PieceData,
   type VehicleData,
 } from "../../types/pieces-route.types";
+import { ImageOptimizer } from "../image-optimizer";
 
 // Helper inline pour normaliser les URLs d'images (remplace image.utils.ts)
 const SUPABASE_STORAGE =
@@ -179,7 +180,8 @@ function buildItemListSchema(
 }
 
 // URL de base Supabase pour les images (sans transformation, $0)
-const SUPABASE_BASE_URL =
+// Note: Conservé pour référence, imgproxy est maintenant utilisé via ImageOptimizer
+const _SUPABASE_BASE_URL =
   "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads";
 
 /**
@@ -202,8 +204,8 @@ export type HeroImagePreloadMeta = {
  * Construit le meta tag de preload responsive pour l'image hero du véhicule
  * Utilisé dans la fonction meta() pour optimiser le LCP
  *
- * 🚀 Utilise imageSrcSet + imageSizes pour matcher le srcSet de l'image
- * Le navigateur choisit automatiquement la bonne taille selon le viewport
+ * 🚀 LCP FIX: Utilise imgproxy pour srcSet identique à PiecesHeader.tsx
+ * Le preload DOIT matcher exactement l'image réelle pour éviter double téléchargement
  *
  * @param vehicle - Données du véhicule (modelePic, marqueAlias, marque)
  * @returns Array avec le meta tag ou vide si pas d'image
@@ -216,25 +218,33 @@ export function buildHeroImagePreload(
   }
 
   const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
-  const baseUrl = `${SUPABASE_BASE_URL}/constructeurs-automobiles/marques-concepts/${marqueSlug}/${vehicle.modelePic}`;
+  // 🚀 LCP FIX: Utiliser marques-modeles (pas marques-concepts) pour matcher PiecesHeader.tsx
+  const imagePath = `constructeurs-automobiles/marques-modeles/${marqueSlug}/${vehicle.modelePic}`;
 
-  // srcSet responsive identique à PiecesHeader.tsx (lignes 211-215)
-  const imageSrcSet = [
-    `${baseUrl}?width=200&quality=80&t=31536000 200w`,
-    `${baseUrl}?width=300&quality=85&t=31536000 300w`,
-    `${baseUrl}?width=380&quality=85&t=31536000 380w`,
-  ].join(", ");
+  // 🚀 LCP FIX: Utiliser imgproxy pour srcSet identique à PiecesHeader.tsx
+  const imageSrcSet = [200, 300, 380]
+    .map(
+      (w) =>
+        `${ImageOptimizer.getOptimizedUrl(imagePath, { width: w, quality: 85 })} ${w}w`,
+    )
+    .join(", ");
 
-  // sizes identique à PiecesHeader.tsx (ligne 216)
+  // sizes identique à PiecesHeader.tsx
   const imageSizes =
     "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px";
+
+  // href = URL par défaut (380w) pour navigateurs sans support srcSet
+  const defaultHref = ImageOptimizer.getOptimizedUrl(imagePath, {
+    width: 380,
+    quality: 85,
+  });
 
   return [
     {
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: "", // Vide pour éviter double téléchargement Safari (web.dev recommandation)
+      href: defaultHref,
       imageSrcSet,
       imageSizes,
       fetchpriority: "high",

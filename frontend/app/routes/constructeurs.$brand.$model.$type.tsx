@@ -441,20 +441,45 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // ========================================
   console.log(`⚡ [RPC] Appel page-data-rpc pour type_id=${type_id}`);
 
-  const rpcResponse = await fetch(
-    `${baseUrl}/api/vehicles/types/${type_id}/page-data-rpc`,
-    {
-      headers: { "internal-call": "true" },
-      signal: AbortSignal.timeout(5000), // 5s timeout
-    },
-  );
+  let rpcResponse: Response;
+  let rpcResult: any;
 
-  if (!rpcResponse.ok) {
-    console.error(`❌ [RPC] Erreur HTTP ${rpcResponse.status}`);
-    throw new Response("Service indisponible", { status: 500 });
+  try {
+    rpcResponse = await fetch(
+      `${baseUrl}/api/vehicles/types/${type_id}/page-data-rpc`,
+      {
+        headers: { "internal-call": "true" },
+        signal: AbortSignal.timeout(10000), // 10s timeout (augmenté de 5s pour fiabilité)
+      },
+    );
+
+    if (!rpcResponse.ok) {
+      console.error(
+        `❌ [RPC] Erreur HTTP ${rpcResponse.status} pour type_id=${type_id}`,
+      );
+      throw new Response("Service indisponible", { status: 500 });
+    }
+
+    rpcResult = await rpcResponse.json();
+  } catch (error) {
+    // Gestion spécifique des timeouts - retourne 503 pour que Google réessaye
+    if (
+      error instanceof Error &&
+      (error.name === "AbortError" || error.name === "TimeoutError")
+    ) {
+      console.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+      });
+    }
+    // Re-throw Response errors (déjà formatés)
+    if (error instanceof Response) {
+      throw error;
+    }
+    // Autres erreurs
+    console.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    throw new Response("Erreur serveur", { status: 500 });
   }
-
-  const rpcResult = await rpcResponse.json();
 
   if (!rpcResult.success || !rpcResult.data?.vehicle) {
     console.error("❌ [RPC] Données invalides:", rpcResult);

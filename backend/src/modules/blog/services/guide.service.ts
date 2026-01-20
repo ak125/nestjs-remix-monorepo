@@ -71,12 +71,14 @@ export class GuideService {
         return { articles: [], total: 0 };
       }
 
-      // Transformer chaque guide en article complet
-      const articles: BlogArticle[] = [];
-      for (const guide of guidesList) {
-        const article = await this.transformGuideToArticle(client, guide);
-        if (article) articles.push(article);
-      }
+      // Transformer chaque guide en article complet (parallélisé pour éviter N+1)
+      const articlePromises = guidesList.map((guide) =>
+        this.transformGuideToArticle(client, guide),
+      );
+      const articlesResults = await Promise.all(articlePromises);
+      const articles = articlesResults.filter(
+        (article): article is BlogArticle => article !== null,
+      );
 
       const result = { articles, total: count || 0 };
       await this.cacheManager.set(cacheKey, result, 1800); // 30 min
@@ -191,11 +193,14 @@ export class GuideService {
 
       if (!guidesList) return [];
 
-      const articles: BlogArticle[] = [];
-      for (const guide of guidesList) {
-        const article = await this.transformGuideToArticle(client, guide);
-        if (article) articles.push(article);
-      }
+      // Paralléliser les transformations pour éviter N+1
+      const articlePromises = guidesList.map((guide) =>
+        this.transformGuideToArticle(client, guide),
+      );
+      const articlesResults = await Promise.all(articlePromises);
+      const articles = articlesResults.filter(
+        (article): article is BlogArticle => article !== null,
+      );
 
       await this.cacheManager.set(cacheKey, articles, 3600);
       return articles;
@@ -237,11 +242,14 @@ export class GuideService {
 
       if (!guidesList) return [];
 
-      const articles: BlogArticle[] = [];
-      for (const guide of guidesList) {
-        const article = await this.transformGuideToArticle(client, guide);
-        if (article) articles.push(article);
-      }
+      // Paralléliser les transformations pour éviter N+1
+      const articlePromises = guidesList.map((guide) =>
+        this.transformGuideToArticle(client, guide),
+      );
+      const articlesResults = await Promise.all(articlePromises);
+      const articles = articlesResults.filter(
+        (article): article is BlogArticle => article !== null,
+      );
 
       await this.cacheManager.set(cacheKey, articles, 3600);
       return articles;
