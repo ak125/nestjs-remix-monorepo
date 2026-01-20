@@ -61,7 +61,7 @@ export function validateVehicleIds(params: {
   marqueId: number;
   modeleId: number;
   typeId: number;
-  gammeId?: number; // 🛡️ Optionnel - validation déléguée au batch-loader si absent
+  gammeId?: number; // 🛡️ Optionnel - validation déléguée au RM V2 RPC si absent
   source?: string;
 }): void {
   const errors: string[] = [];
@@ -75,7 +75,7 @@ export function validateVehicleIds(params: {
   if (!params.typeId || params.typeId <= 0) {
     errors.push(`typeId invalide: ${params.typeId}`);
   }
-  // 🛡️ gammeId optionnel - si fourni, valider; sinon, déléguer au batch-loader
+  // 🛡️ gammeId optionnel - si fourni, valider; sinon, déléguer au RM V2 RPC
   if (
     params.gammeId !== undefined &&
     (!params.gammeId || params.gammeId <= 0)
@@ -276,7 +276,7 @@ export async function resolveVehicleIds(
   const type = parseUrlParam(typeParam);
 
   // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les retourner directement
-  // 🚀 LCP OPTIMIZATION: Le batch-loader fait déjà la validation en interne
+  // 🚀 LCP OPTIMIZATION: Le RM V2 RPC fait déjà la validation en interne
   // Supprimer l'appel redondant à validate-type (économise ~80ms)
   if (marque.id > 0 && modele.id > 0 && type.id > 0) {
     return {
@@ -313,11 +313,11 @@ export async function resolveVehicleIds(
 
           if (modelData) {
             // 🛡️ SEO: Retourner les IDs même si typeId=0
-            // Le batch-loader validera et retournera 404 si nécessaire
+            // Le RM V2 RPC validera et retournera 404 si nécessaire
             return {
               marqueId: brand.marque_id,
               modeleId: modelData.modele_id,
-              typeId: type.id, // Peut être 0 → batch-loader retournera 404
+              typeId: type.id, // Peut être 0 → RM V2 retournera 404
             };
           }
         }
@@ -328,7 +328,7 @@ export async function resolveVehicleIds(
   }
 
   // 🛡️ Fallback: Retourner les IDs parsés depuis l'URL (peuvent être 0 si invalides)
-  // Note: Le batch-loader validera ensuite et retournera 404 HTTP si IDs inexistants en DB
+  // Note: Le RM V2 RPC validera ensuite et retournera 404 HTTP si IDs inexistants en DB
   // Ceci est le comportement attendu pour les URLs malformées ou obsolètes
   console.warn(
     `⚠️ [RESOLVE-VEHICLE] Fallback IDs URL: marque=${marque.alias}(${marque.id}), modele=${modele.alias}(${modele.id}), type=${type.alias}(${type.id})`,
@@ -336,7 +336,7 @@ export async function resolveVehicleIds(
   return {
     marqueId: marque.id,
     modeleId: modele.id,
-    typeId: type.id, // batch-loader retournera 404 si 0
+    typeId: type.id, // RM V2 retournera 404 si 0
   };
 }
 
@@ -367,11 +367,11 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   };
 
   // 🚀 LCP OPTIMIZATION: Si on a un ID dans l'URL, le retourner directement
-  // Le batch-loader fait déjà la validation de l'existence de la gamme en interne
+  // Le RM V2 RPC fait déjà la validation de l'existence de la gamme en interne
   // Supprimer l'appel redondant à /api/catalog/gammes (économise ~50-100ms)
   if (gamme.id > 0) {
     console.log(
-      `✅ [GAMME-ID] ID trouvé dans l'URL: ${gamme.id} (validation déléguée au batch-loader)`,
+      `✅ [GAMME-ID] ID trouvé dans l'URL: ${gamme.id} (validation déléguée au RM V2)`,
     );
     return gamme.id;
   }
@@ -408,11 +408,11 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   }
 
   // 🛡️ Sécurité SEO: Ne pas retourner un ID incorrect si gamme inconnue
-  // Le batch-loader gérera la validation et retournera 404 si nécessaire
+  // Le RM V2 RPC gérera la validation et retournera 404 si nécessaire
   console.error(
-    `❌ [GAMME-ID] Gamme inconnue: ${gamme.alias} - retour 0 pour validation batch-loader`,
+    `❌ [GAMME-ID] Gamme inconnue: ${gamme.alias} - retour 0 pour validation RM V2`,
   );
-  return 0; // Le batch-loader validera et retournera 404 si gamme inexistante
+  return 0; // Le RM V2 RPC validera et retournera 404 si gamme inexistante
 }
 
 /**
@@ -476,7 +476,7 @@ export function mapApiPieceToData(p: any): PieceData {
 }
 
 /**
- * Mappe un tableau de pièces depuis batch-loader vers PieceData[]
+ * Mappe un tableau de pièces depuis RM V2 vers PieceData[]
  */
 export function mapBatchPiecesToData(batchPieces: any[]): PieceData[] {
   return (batchPieces || []).map(mapApiPieceToData);
@@ -497,8 +497,8 @@ export function calculatePriceStats(pieces: PieceData[]): {
 }
 
 /**
- * Merge SEO content généré avec données batch-loader
- * Priorise les données batch si présentes, sinon fallback sur généré
+ * Merge SEO content généré avec données RM V2
+ * Priorise les données RM si présentes, sinon fallback sur généré
  */
 export function mergeSeoContent(
   generated: SEOEnrichedContent,
