@@ -1,6 +1,5 @@
 import {
   json,
-  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -282,19 +281,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)
   const match = slug.match(/-(\d+)\.html$/);
 
-  // 🔄 SEO: URLs sans ID (ex: /pieces/suspension) → 301 redirect vers catalogue
-  // Raison: 412 est traité comme 4xx par Google → désindexation
-  // 301 préserve le PageRank et guide vers une page indexable
+  // 🛑 410 Gone - URLs sans ID (ex: /pieces/suspension)
+  // Ces pages n'existent plus - gammes sans véhicule supprimées
   if (!match) {
-    // Nettoyer l'alias (enlever .html si présent)
-    const cleanAlias = slug.replace(/\.html$/, "").toLowerCase();
-
-    // 301 redirect vers la page catalogue avec filtre gamme
-    // Cette page retourne 200 et affiche les résultats de recherche
-    return redirect(
-      `/pieces/catalogue?gamme=${encodeURIComponent(cleanAlias)}`,
-      301,
-    );
+    console.log(`🛑 [410] /pieces/${slug}`);
+    throw new Response(null, { status: 410 });
   }
 
   const gammeId = match[1];
