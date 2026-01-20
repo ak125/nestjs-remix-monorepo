@@ -82,7 +82,7 @@ export class RmBuilderService extends SupabaseBaseService {
 
     try {
       const { data, error } = await this.supabase.rpc(
-        'get_listing_products_for_build',
+        'get_listing_products_for_build_v2',
         {
           p_gamme_id: gamme_id,
           p_vehicle_id: vehicle_id,

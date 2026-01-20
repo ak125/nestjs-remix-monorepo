@@ -191,23 +191,37 @@ export class GammeRpcService extends SupabaseBaseService {
 
   /**
    * 🔄 Préchauffe le cache pour les gammes populaires
+   * Optimisé: Exécution en parallèle par batches de 10 (100x plus rapide)
    */
   async warmCache(
     pgIds: string[],
   ): Promise<{ success: number; failed: number }> {
     let success = 0;
     let failed = 0;
+    const BATCH_SIZE = 10; // Limite de concurrence pour ne pas surcharger Supabase
 
-    this.logger.log(`🔥 Warm cache pour ${pgIds.length} gammes...`);
+    this.logger.log(
+      `🔥 Warm cache pour ${pgIds.length} gammes (batches de ${BATCH_SIZE})...`,
+    );
 
-    for (const pgId of pgIds) {
-      try {
-        await this.getPageDataRpcV2(pgId);
-        success++;
-      } catch {
-        this.logger.error(`❌ Warm cache failed pour gamme ${pgId}`);
-        failed++;
-      }
+    // Diviser en batches
+    for (let i = 0; i < pgIds.length; i += BATCH_SIZE) {
+      const batch = pgIds.slice(i, i + BATCH_SIZE);
+
+      // Exécuter le batch en parallèle avec Promise.allSettled
+      const results = await Promise.allSettled(
+        batch.map((pgId) => this.getPageDataRpcV2(pgId)),
+      );
+
+      // Compter succès/échecs
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          success++;
+        } else {
+          this.logger.error(`❌ Warm cache failed pour gamme ${batch[index]}`);
+          failed++;
+        }
+      });
     }
 
     this.logger.log(

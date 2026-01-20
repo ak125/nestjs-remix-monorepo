@@ -228,15 +228,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
   let article: BlogArticle | null = null;
   let relatedArticles: RelatedArticle[] = [];
 
+  // Timeout de 15s pour éviter les erreurs 5xx sur timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     // Récupérer l'article
     const articleResponse = await fetch(
-      `http://localhost:3000/api/blog/article/${slug}`,
+      `http://localhost:3000/api/blog/article/${encodeURIComponent(slug)}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       },
     );
 
@@ -255,6 +260,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
             headers: {
               "Content-Type": "application/json",
             },
+            signal: controller.signal,
           },
         );
 
@@ -266,7 +272,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
         console.warn("Articles similaires non disponibles");
       }
     }
+
+    clearTimeout(timeoutId);
   } catch (error) {
+    clearTimeout(timeoutId);
+
+    // Gestion spécifique des timeouts - retourne 503 au lieu de 500
+    if (error instanceof Error && error.name === "AbortError") {
+      console.error("Timeout fetching article:", slug);
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+      });
+    }
+
     console.error("Erreur chargement article:", error);
     return json<LoaderData>(
       {

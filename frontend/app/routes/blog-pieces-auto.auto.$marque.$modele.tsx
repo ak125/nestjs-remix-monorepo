@@ -81,16 +81,23 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
+  // Timeout de 15s pour éviter les erreurs 5xx sur timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
     // Récupérer les informations du modèle et ses motorisations
     const modelRes = await fetch(
-      `${backendUrl}/api/brands/brand/${marque}/model/${modele}`,
+      `${backendUrl}/api/brands/brand/${encodeURIComponent(marque)}/model/${encodeURIComponent(modele)}`,
       {
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
       },
     );
+
+    clearTimeout(timeoutId);
 
     if (!modelRes.ok) {
       throw new Response("Modèle non trouvé", { status: 404 });
@@ -122,6 +129,21 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       metadata: response.data.metadata || null,
     });
   } catch (e) {
+    clearTimeout(timeoutId);
+
+    // Gestion spécifique des timeouts - retourne 503 au lieu de 500
+    if (e instanceof Error && e.name === "AbortError") {
+      console.error("Timeout fetching model:", marque, modele);
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+      });
+    }
+
+    // Ne pas convertir les Response en 500
+    if (e instanceof Response) {
+      throw e;
+    }
+
     console.error("Erreur loader modèle:", e);
     throw new Response("Erreur lors du chargement du modèle", { status: 500 });
   }

@@ -145,20 +145,23 @@ export class VehicleModelsService extends SupabaseBaseService {
             `🔍 Recherche modèle par alias: ${alias} (marque: ${marqueId})`,
           );
 
+          // Utilise .limit(1) au lieu de .single() car certains alias sont dupliqués
+          // (ex: "206" correspond à "206" et "206+")
           const { data, error } = await this.client
             .from(TABLES.auto_modele)
             .select('*')
             .eq('modele_marque_id', marqueId)
             .eq('modele_alias', alias)
             .eq('modele_display', 1)
-            .single();
+            .order('modele_id', { ascending: true })
+            .limit(1);
 
-          if (error) {
+          if (error || !data || data.length === 0) {
             this.logger.debug(`Modèle non trouvé: ${alias}`);
             return null;
           }
 
-          return data;
+          return data[0];
         } catch (error) {
           this.logger.error(
             `Erreur getModelByBrandAndAlias ${marqueId}/${alias}:`,

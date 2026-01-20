@@ -461,6 +461,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => [
 
 7. **Memory Limits:** Backend build uses `--max-old-space-size=4096`. Increase if build fails with OOM.
 
+8. **No Paid Render:** Ne jamais utiliser Render payant. Le projet utilise Docker + Caddy sur serveur self-hosted avec GitHub Actions CI/CD.
+
 ## Incidents et Post-Mortems
 
 ### 2026-01-11 : Crash Production (Module rm/)

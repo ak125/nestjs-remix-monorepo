@@ -1,6 +1,6 @@
 /**
  * 🛒 CART SERVER SERVICE - Service Remix pour gestion du panier
- * 
+ *
  * Service serveur qui encapsule les appels API backend
  * Compatible avec l'architecture existante RemixApiService
  */
@@ -38,7 +38,6 @@ export interface CartActionResult {
  * 📦 Service principal - utilise l'architecture existante RemixApiService
  */
 class CartServerService {
-  
   /**
    * 🔗 Référence vers l'API service existant
    */
@@ -50,41 +49,45 @@ class CartServerService {
   async getCart(request: Request, context?: AppLoadContext): Promise<CartData> {
     try {
       // Tentative d'appel au backend réel
-      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-      
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+
       // Récupérer les cookies de session depuis la requête
-      const cookie = request.headers.get('Cookie') || '';
-      
+      const cookie = request.headers.get("Cookie") || "";
+
       // console.log("🔄 [CartServer] Appel backend:", `${backendUrl}/api/cart`);
-      
+
       const response = await fetch(`${backendUrl}/api/cart`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Cookie': cookie,
-          'Content-Type': 'application/json',
-          'User-Agent': 'RemixCartService/1.0'
-        }
+          Cookie: cookie,
+          "Content-Type": "application/json",
+          "User-Agent": "RemixCartService/1.0",
+        },
       });
 
       if (response.ok) {
         const backendData = await response.json();
         // console.log("✅ [CartServer] Données backend reçues:", JSON.stringify(backendData, null, 2));
-        
+
         // Normaliser les données du backend vers notre format
         const normalized = this.normalizeBackendData(backendData);
         // console.log("🔄 [CartServer] Données normalisées:", JSON.stringify(normalized.summary, null, 2));
         return normalized;
       } else {
-        console.warn("⚠️ [CartServer] Backend non disponible, utilisation des données de démo");
+        console.warn(
+          "⚠️ [CartServer] Backend non disponible, utilisation des données de démo",
+        );
       }
-
     } catch (error) {
-      console.warn("⚠️ [CartServer] Erreur backend, fallback vers démo:", error);
+      console.warn(
+        "⚠️ [CartServer] Erreur backend, fallback vers démo:",
+        error,
+      );
     }
 
     // Fallback : simulation avec données de démo
     // console.log("🔄 [CartServer] Utilisation des données de démo");
-    
+
     return {
       items: [
         {
@@ -102,7 +105,7 @@ class CartServerService {
           product_ref: "REF-TS-001",
           product_image: "/images/tshirt-premium.jpg",
           stock_available: 15,
-          weight: 0.2
+          weight: 0.2,
         },
         {
           id: "demo-item-2",
@@ -119,8 +122,8 @@ class CartServerService {
           product_ref: "REF-SW-002",
           product_image: "/images/sweat-capuche.jpg",
           stock_available: 5,
-          weight: 0.5
-        }
+          weight: 0.5,
+        },
       ],
       summary: {
         total_items: 2,
@@ -130,13 +133,13 @@ class CartServerService {
         shipping_cost: 0,
         discount_amount: 0,
         consigne_total: 0,
-        currency: "EUR"
+        currency: "EUR",
       },
       metadata: {
         user_id: "demo-user",
         session_id: "demo-session",
-        last_updated: new Date().toISOString()
-      }
+        last_updated: new Date().toISOString(),
+      },
     };
   }
 
@@ -144,14 +147,14 @@ class CartServerService {
    * ➕ Ajouter un article au panier
    */
   async addItem(
-    request: Request, 
-    productId: string, 
+    request: Request,
+    productId: string,
     quantity: number = 1,
-    context?: AppLoadContext
+    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
       console.log(`➕ [CartServer] Ajout article ${productId} x${quantity}`);
-      
+
       // Tentative d'utilisation de l'API service existant
       if (this.apiService?.cart?.addItem) {
         return await this.apiService.cart.addItem(request, productId, quantity);
@@ -161,14 +164,13 @@ class CartServerService {
       return {
         success: true,
         message: `Article ${productId} ajouté au panier (x${quantity})`,
-        cart: await this.getCartAsLegacyFormat(request, context)
+        cart: await this.getCartAsLegacyFormat(request, context),
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur addItem:", error);
       return {
         success: false,
-        error: "Erreur lors de l'ajout au panier"
+        error: "Erreur lors de l'ajout au panier",
       };
     }
   }
@@ -180,32 +182,37 @@ class CartServerService {
     request: Request,
     itemId: string,
     quantity: number,
-    context?: AppLoadContext
+    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      console.log(`🔄 [CartServer] Mise à jour quantité ${itemId}: ${quantity}`);
-      
+      console.log(
+        `🔄 [CartServer] Mise à jour quantité ${itemId}: ${quantity}`,
+      );
+
       if (quantity <= 0) {
         return await this.removeFromCart(request, itemId, context);
       }
 
       // Tentative d'utilisation de l'API service existant
       if (this.apiService?.cart?.updateQuantity) {
-        return await this.apiService.cart.updateQuantity(request, itemId, quantity);
+        return await this.apiService.cart.updateQuantity(
+          request,
+          itemId,
+          quantity,
+        );
       }
 
       // Simulation de mise à jour
       return {
         success: true,
         message: `Quantité mise à jour pour l'article ${itemId}`,
-        cart: await this.getCartAsLegacyFormat(request, context)
+        cart: await this.getCartAsLegacyFormat(request, context),
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur updateQuantity:", error);
       return {
         success: false,
-        error: "Erreur lors de la mise à jour"
+        error: "Erreur lors de la mise à jour",
       };
     }
   }
@@ -216,11 +223,11 @@ class CartServerService {
   async removeFromCart(
     request: Request,
     itemId: string,
-    context?: AppLoadContext
+    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
       console.log(`🗑️ [CartServer] Suppression article ${itemId}`);
-      
+
       // Tentative d'utilisation de l'API service existant
       if (this.apiService?.cart?.removeItem) {
         return await this.apiService.cart.removeItem(request, itemId);
@@ -230,14 +237,13 @@ class CartServerService {
       return {
         success: true,
         message: `Article ${itemId} supprimé du panier`,
-        cart: await this.getCartAsLegacyFormat(request, context)
+        cart: await this.getCartAsLegacyFormat(request, context),
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur removeFromCart:", error);
       return {
         success: false,
-        error: "Erreur lors de la suppression"
+        error: "Erreur lors de la suppression",
       };
     }
   }
@@ -245,39 +251,42 @@ class CartServerService {
   /**
    * 🧹 Vider le panier
    */
-  async clearCart(request: Request, context?: AppLoadContext): Promise<CartActionResult> {
+  async clearCart(
+    request: Request,
+    context?: AppLoadContext,
+  ): Promise<CartActionResult> {
     try {
       console.log("🧹 [CartServer] Vidage du panier");
-      
+
       // Faire un appel direct au backend avec les cookies de la requête
       const url = new URL(request.url);
       const baseUrl = `${url.protocol}//${url.host}`;
-      
+
       const response = await fetch(`${baseUrl}/api/cart`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           // Transmettre TOUS les cookies de la requête originale
-          'Cookie': request.headers.get('Cookie') || '',
-          'User-Agent': request.headers.get('User-Agent') || 'RemixServer',
+          Cookie: request.headers.get("Cookie") || "",
+          "User-Agent": request.headers.get("User-Agent") || "RemixServer",
           // Copier les headers d'authentification s'ils existent
-          ...(request.headers.get('authorization') && {
-            'authorization': request.headers.get('authorization')!
-          })
-        }
+          ...(request.headers.get("authorization") && {
+            authorization: request.headers.get("authorization")!,
+          }),
+        },
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: errorData.message || `Erreur HTTP ${response.status}`
+          error: errorData.message || `Erreur HTTP ${response.status}`,
         };
       }
 
       const result = await response.json();
       console.log("✅ [CartServer] Panier vidé:", result);
-      
+
       return {
         success: true,
         message: result.message || "Panier vidé avec succès",
@@ -291,17 +300,19 @@ class CartServerService {
             tax_amount: 0,
             shipping_cost: 0,
             consigne_total: 0,
-            currency: "EUR"
+            currency: "EUR",
           },
-          metadata: {}
-        }
+          metadata: {},
+        },
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur clearCart:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Erreur lors du vidage du panier"
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur lors du vidage du panier",
       };
     }
   }
@@ -309,15 +320,18 @@ class CartServerService {
   /**
    * ✅ Valider le panier
    */
-  async validateCart(request: Request, context?: AppLoadContext): Promise<CartActionResult> {
+  async validateCart(
+    request: Request,
+    context?: AppLoadContext,
+  ): Promise<CartActionResult> {
     try {
       const cart = await this.getCart(request, context);
-      
+
       // Validation basique
       if (!cart.items.length) {
         return {
           success: false,
-          error: "Le panier est vide"
+          error: "Le panier est vide",
         };
       }
 
@@ -326,7 +340,7 @@ class CartServerService {
         if (item.stock_available && item.quantity > item.stock_available) {
           return {
             success: false,
-            error: `Stock insuffisant pour ${item.product_name}`
+            error: `Stock insuffisant pour ${item.product_name}`,
           };
         }
       }
@@ -334,21 +348,20 @@ class CartServerService {
       if (cart.summary.total_price <= 0) {
         return {
           success: false,
-          error: "Total invalide"
+          error: "Total invalide",
         };
       }
 
       return {
         success: true,
         message: "Panier valide",
-        cart: await this.getCartAsLegacyFormat(request, context)
+        cart: await this.getCartAsLegacyFormat(request, context),
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur validateCart:", error);
       return {
         success: false,
-        error: "Erreur lors de la validation"
+        error: "Erreur lors de la validation",
       };
     }
   }
@@ -358,7 +371,7 @@ class CartServerService {
    */
   private normalizeBackendData(backendData: any): CartData {
     // Le backend renvoie un format comme {"cart_id":"R7QW...","user_id":"usr_...","items":[],"totals":{...},"metadata":{...}}
-    
+
     return {
       items: (backendData.items || []).map((item: any) => ({
         id: item.id || item.cart_item_id || `item-${Date.now()}`,
@@ -367,14 +380,20 @@ class CartServerService {
         quantity: item.quantity || 1,
         price: item.price || item.unit_price || 0,
         unit_price: item.unit_price || item.price || 0,
-        total_price: item.total_price || (item.quantity * (item.price || item.unit_price || 0)),
+        total_price:
+          item.total_price ||
+          item.quantity * (item.price || item.unit_price || 0),
         created_at: item.created_at || new Date().toISOString(),
         updated_at: item.updated_at || new Date().toISOString(),
-        product_name: item.product_name || item.name || `Produit ${item.product_id}`,
+        product_name:
+          item.product_name || item.name || `Produit ${item.product_id}`,
         product_sku: item.product_sku || item.sku,
         product_ref: item.product_ref || item.product_sku || item.sku,
         product_brand: item.product_brand || null, // 🔧 AJOUT: Mapper la marque depuis le backend
-        product_image: item.product_image || item.image_url || "/images/no-image.png",
+        product_image:
+          item.product_image ||
+          item.image_url ||
+          "/images/categories/default.svg",
         stock_available: item.stock_available || 999,
         weight: item.weight || 0,
         options: item.options || {},
@@ -385,20 +404,28 @@ class CartServerService {
       })),
       summary: {
         total_items: backendData.totals?.total_items || 0,
-        total_price: backendData.totals?.total || backendData.totals?.total_price || 0, // ✅ Backend envoie "total" pas "total_price"
+        total_price:
+          backendData.totals?.total || backendData.totals?.total_price || 0, // ✅ Backend envoie "total" pas "total_price"
         subtotal: backendData.totals?.subtotal || 0,
-        tax_amount: backendData.totals?.tax || backendData.totals?.tax_amount || 0,
-        shipping_cost: backendData.totals?.shipping || backendData.totals?.shipping_cost || 0,
-        discount_amount: backendData.totals?.discount || backendData.totals?.discount_amount || 0,
+        tax_amount:
+          backendData.totals?.tax || backendData.totals?.tax_amount || 0,
+        shipping_cost:
+          backendData.totals?.shipping ||
+          backendData.totals?.shipping_cost ||
+          0,
+        discount_amount:
+          backendData.totals?.discount ||
+          backendData.totals?.discount_amount ||
+          0,
         consigne_total: backendData.totals?.consigne_total || 0,
-        currency: "EUR"
+        currency: "EUR",
       },
       metadata: {
         user_id: backendData.user_id,
         session_id: backendData.cart_id,
         last_updated: new Date().toISOString(),
-        ...backendData.metadata
-      }
+        ...backendData.metadata,
+      },
     };
   }
 
@@ -409,31 +436,55 @@ class CartServerService {
     return {
       items: rawCart.items || [],
       summary: {
-        total_items: rawCart.totals?.total_items || rawCart.summary?.total_items || 0,
-        total_price: rawCart.totals?.total || rawCart.totals?.total_price || rawCart.summary?.total_price || 0, // ✅ Backend envoie totals.total
+        total_items:
+          rawCart.totals?.total_items || rawCart.summary?.total_items || 0,
+        total_price:
+          rawCart.totals?.total ||
+          rawCart.totals?.total_price ||
+          rawCart.summary?.total_price ||
+          0, // ✅ Backend envoie totals.total
         subtotal: rawCart.totals?.subtotal || rawCart.summary?.subtotal || 0,
-        tax_amount: rawCart.totals?.tax || rawCart.totals?.tax_amount || rawCart.summary?.tax_amount || 0,
-        shipping_cost: rawCart.totals?.shipping || rawCart.totals?.shipping_cost || rawCart.summary?.shipping_cost || 0,
-        discount_amount: rawCart.totals?.discount || rawCart.totals?.discount_amount || rawCart.summary?.discount_amount || 0,
-        consigne_total: rawCart.totals?.consigne_total || rawCart.summary?.consigne_total || 0,
-        currency: rawCart.totals?.currency || rawCart.summary?.currency || "EUR"
+        tax_amount:
+          rawCart.totals?.tax ||
+          rawCart.totals?.tax_amount ||
+          rawCart.summary?.tax_amount ||
+          0,
+        shipping_cost:
+          rawCart.totals?.shipping ||
+          rawCart.totals?.shipping_cost ||
+          rawCart.summary?.shipping_cost ||
+          0,
+        discount_amount:
+          rawCart.totals?.discount ||
+          rawCart.totals?.discount_amount ||
+          rawCart.summary?.discount_amount ||
+          0,
+        consigne_total:
+          rawCart.totals?.consigne_total ||
+          rawCart.summary?.consigne_total ||
+          0,
+        currency:
+          rawCart.totals?.currency || rawCart.summary?.currency || "EUR",
       },
-      metadata: rawCart.metadata || {}
+      metadata: rawCart.metadata || {},
     };
   }
 
   /**
    * 🔄 Convertir vers le format legacy pour compatibilité
    */
-  private async getCartAsLegacyFormat(request: Request, context?: AppLoadContext): Promise<Cart> {
+  private async getCartAsLegacyFormat(
+    request: Request,
+    context?: AppLoadContext,
+  ): Promise<Cart> {
     const cartData = await this.getCart(request, context);
-    
+
     return {
       cart_id: cartData.metadata?.session_id || "default-cart",
       user_id: cartData.metadata?.user_id,
       items: cartData.items,
       totals: cartData.summary,
-      metadata: cartData.metadata || {}
+      metadata: cartData.metadata || {},
     };
   }
 
@@ -450,11 +501,11 @@ class CartServerService {
         tax_amount: 0,
         shipping_cost: 0,
         consigne_total: 0,
-        currency: "EUR"
+        currency: "EUR",
       },
       metadata: {
-        last_updated: new Date().toISOString()
-      }
+        last_updated: new Date().toISOString(),
+      },
     };
   }
 
@@ -478,14 +529,25 @@ export const cartServerService = new CartServerService();
 export const getCart = (request: Request, context?: AppLoadContext) =>
   cartServerService.getCart(request, context);
 
-export const addItem = (request: Request, productId: string, quantity: number = 1, context?: AppLoadContext) =>
-  cartServerService.addItem(request, productId, quantity, context);
+export const addItem = (
+  request: Request,
+  productId: string,
+  quantity: number = 1,
+  context?: AppLoadContext,
+) => cartServerService.addItem(request, productId, quantity, context);
 
-export const updateQuantity = (request: Request, itemId: string, quantity: number, context?: AppLoadContext) =>
-  cartServerService.updateQuantity(request, itemId, quantity, context);
+export const updateQuantity = (
+  request: Request,
+  itemId: string,
+  quantity: number,
+  context?: AppLoadContext,
+) => cartServerService.updateQuantity(request, itemId, quantity, context);
 
-export const removeFromCart = (request: Request, itemId: string, context?: AppLoadContext) =>
-  cartServerService.removeFromCart(request, itemId, context);
+export const removeFromCart = (
+  request: Request,
+  itemId: string,
+  context?: AppLoadContext,
+) => cartServerService.removeFromCart(request, itemId, context);
 
 export const clearCart = (request: Request, context?: AppLoadContext) =>
   cartServerService.clearCart(request, context);

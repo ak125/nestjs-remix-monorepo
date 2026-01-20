@@ -21,20 +21,20 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
 
   // Calculs avec fallbacks
   const unitPrice = item.unit_price || item.price;
-  const totalPrice = item.total_price || (unitPrice * quantity);
+  const totalPrice = item.total_price || unitPrice * quantity;
   const stockAvailable = item.stock_available || 999; // Fallback pour stock illimité
   const productRef = item.product_ref || item.product_sku || item.product_id;
-  const productImage = item.product_image || "/images/no-image.png";
+  const productImage = item.product_image || "/images/categories/default.svg";
   const productName = item.product_name || `Produit ${item.product_id}`;
 
   const handleQuantityChange = async (newQuantity: number) => {
     // Validation
     if (newQuantity < 1) return;
     if (newQuantity > stockAvailable) return;
-    
+
     setIsUpdating(true);
     setQuantity(newQuantity);
-    
+
     try {
       if (newQuantity === 0) {
         onRemove();
@@ -46,15 +46,17 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
     }
   };
 
-  const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQuantityInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newQuantity = parseInt(e.target.value) || 1;
     handleQuantityChange(newQuantity);
   };
 
   const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
@@ -74,7 +76,7 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = "/images/no-image.png";
+                target.src = "/images/categories/default.svg";
               }}
             />
           </div>
@@ -87,24 +89,22 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
                 {item.product_brand}
               </p>
             )}
-            
+
             <h3 className="font-medium text-gray-900 truncate">
               {productName}
             </h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Réf: {productRef}
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Réf: {productRef}</p>
             <p className="text-sm font-medium text-gray-900 mt-1">
               {formatPrice(unitPrice)}
             </p>
-            
+
             {/* 🆕 PHASE 1: Consigne si présente */}
             {item.has_consigne && item.consigne_unit && (
               <p className="text-xs text-orange-600 mt-1">
                 + {formatPrice(item.consigne_unit)} consigne/unité
               </p>
             )}
-            
+
             {/* Alerte stock */}
             {stockAvailable < 10 && stockAvailable > 0 && (
               <div className="flex items-center gap-1 mt-2 text-orange-600">

@@ -19,6 +19,8 @@ import {
   Logger,
   ParseIntPipe,
   Header,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
@@ -234,10 +236,11 @@ export class BrandsController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur getModelByBrandAndSlug:`, error);
-      return {
-        success: false,
-        message: 'Erreur interne du serveur',
-      };
+      // Retourner 500 au lieu de 200 avec success: false
+      throw new HttpException(
+        'Erreur interne du serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

@@ -74,7 +74,8 @@ export function PiecesCatalogueFamille({
                   <h2 className="text-sm font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center gap-2">
                     <Package className="w-4 h-4" />
                     Catalogue{" "}
-                    {catalogueMameFamille.family?.mf_name || "Système de freinage"}
+                    {catalogueMameFamille.family?.mf_name ||
+                      "Système de freinage"}
                     <span className="text-xs font-normal opacity-75">
                       ({catalogueMameFamille.items.length})
                     </span>
@@ -116,7 +117,7 @@ export function PiecesCatalogueFamille({
                               decoding="async"
                               onError={(e) => {
                                 e.currentTarget.src =
-                                  "/images/placeholder-product.png";
+                                  "/images/categories/default.svg";
                               }}
                             />
 
