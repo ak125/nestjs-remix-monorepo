@@ -4,7 +4,7 @@
  * Compatible avec Supabase Storage et CDN
  */
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImageOptimizer } from "~/utils/image-optimizer";
 
 interface ResponsiveImageProps {
@@ -97,6 +97,15 @@ export function ResponsiveImage({
 }: ResponsiveImageProps) {
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // ✅ FIX SSR Hydration: Vérifier si l'image est déjà chargée après mount
+  // Quand l'image charge avant que React hydrate, onLoad ne fire jamais
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, []);
 
   const handleError = () => {
     setHasError(true);
@@ -120,6 +129,7 @@ export function ResponsiveImage({
       )}
 
       <img
+        ref={imgRef}
         src={imageSrc}
         srcSet={srcSet || undefined}
         sizes={srcSet ? sizes : undefined}
