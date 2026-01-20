@@ -183,8 +183,8 @@ export function buildCataloguePromise(
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
           image: g.image
-            ? `${SUPABASE_CATALOGUE_URL}/${g.image}?width=200&quality=85&t=31536000`
-            : `${SUPABASE_CATALOGUE_URL}/${g.alias}.webp?width=200&quality=85&t=31536000`,
+            ? `${SUPABASE_CATALOGUE_URL}/${g.image}`
+            : `${SUPABASE_CATALOGUE_URL}/${g.alias}.webp`,
           description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
         })),
       };
