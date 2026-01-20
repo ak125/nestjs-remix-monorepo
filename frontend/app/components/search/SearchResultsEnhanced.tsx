@@ -64,19 +64,19 @@ export function SearchResultsEnhanced({
     );
   }
 
-  // 🖼️ HELPERS D'OPTIMISATION D'IMAGES WEBP
+  // 🖼️ HELPERS D'OPTIMISATION D'IMAGES
+  // ✅ Migration 2026-01-21: Utiliser /img/* proxy au lieu d'URLs Supabase directes
   const optimizeImageUrl = (imageUrl: string, _width: number = 400): string => {
     if (!imageUrl) return "";
 
-    // Si c'est déjà une URL Supabase
+    // Si c'est une URL Supabase, la convertir vers le proxy /img/*
     if (imageUrl.includes("supabase.co/storage")) {
       // Extraire le chemin après /public/
       const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
       if (match) {
         const path = match[1];
-        const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-        // Utiliser /object/public/ (image brute, pas de transformation)
-        return `${SUPABASE_URL}/storage/v1/object/public/${path}`;
+        // ✅ Utiliser le proxy /img/* au lieu d'URL Supabase directe
+        return `/img/${path}`;
       }
     }
 

@@ -1,4 +1,5 @@
-const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
+// ✅ Migration 2026-01-21: Utiliser /img/* proxy au lieu d'URLs Supabase directes
+// Avantages: Cache 1 an (Caddy), même comportement dev/prod (Vite proxy en dev)
 const STORAGE_BUCKET = "uploads"; // bucket contenant les logos
 
 export function getLogoUrl(logoFileName: string | null): string {
@@ -11,8 +12,8 @@ export function getLogoUrl(logoFileName: string | null): string {
     return logoFileName;
   }
 
-  // Construire l'URL Supabase Storage
-  return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${logoFileName}`;
+  // ✅ Utiliser le proxy /img/* au lieu d'URL Supabase directe
+  return `/img/${STORAGE_BUCKET}/${logoFileName}`;
 }
 
 // Fonction pour créer un avatar avec les initiales si l'image échoue
