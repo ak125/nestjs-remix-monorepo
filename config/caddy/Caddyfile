@@ -71,10 +71,10 @@ automecanik.com, www.automecanik.com {
         query quality=*
     }
     handle @img_transform {
-        respond "Gone" 410 { close }
+        respond "Gone" 410
     }
     handle @img_transform_quality {
-        respond "Gone" 410 { close }
+        respond "Gone" 410
     }
 
     # ===== PROXY IMAGES BRUTES (fallback, cache 1 an) =====
