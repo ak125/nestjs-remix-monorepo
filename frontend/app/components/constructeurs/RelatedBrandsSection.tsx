@@ -61,11 +61,12 @@ function getSectionTitle(currentBrandName: string, country?: string): string {
 }
 
 /**
- * Génère l'URL du logo depuis le nom de fichier (sans transformation, $0)
+ * Génère l'URL du logo depuis le nom de fichier
+ * ✅ Migration /img/* : Proxy Caddy avec cache 1 an
  */
 function getLogoUrl(logoFilename: string | null): string | undefined {
   if (!logoFilename) return undefined;
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${logoFilename}`;
+  return `/img/uploads/constructeurs-automobiles/marques-logos/${logoFilename}`;
 }
 
 export function RelatedBrandsSection({

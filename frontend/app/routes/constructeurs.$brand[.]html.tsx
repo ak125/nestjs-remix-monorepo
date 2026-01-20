@@ -109,9 +109,10 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             "@id": `${canonicalUrl}#organization`,
             name: brand.marque_name,
             url: canonicalUrl,
+            // ✅ Migration /img/* : URL absolue pour JSON-LD
             logo:
               brand.marque_logo ||
-              `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
+              `https://www.automecanik.com/img/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
             additionalType: "https://schema.org/AutomotiveBusiness",
           },
           // 2️⃣ CollectionPage - La page catalogue
@@ -195,14 +196,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:description", content: data.seo.og_description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
 
-    // 🚀 LCP Optimization: Preload brand logo image (sans transformation, $0)
+    // ✅ Migration /img/* : Preload via proxy Caddy
     {
       tagName: "link",
       rel: "preload",
       as: "image",
       href:
         brand.marque_logo ||
-        `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
+        `/img/uploads/constructeurs-automobiles/marques-logos/${brand.marque_alias}.webp`,
     },
 
     // 🏭 JSON-LD Schema Organization
@@ -408,8 +409,9 @@ export default function BrandCatalogPage() {
                       <div className="w-full aspect-square flex items-center justify-center">
                         <img
                           src={
+                            // ✅ Migration /img/* : Proxy Caddy
                             manufacturer.marque_logo ||
-                            `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${getLogoAlias(manufacturer.marque_alias)}.webp`
+                            `/img/uploads/constructeurs-automobiles/marques-logos/${getLogoAlias(manufacturer.marque_alias)}.webp`
                           }
                           alt={`Logo ${manufacturer.marque_name}`}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"

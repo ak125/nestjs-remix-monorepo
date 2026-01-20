@@ -89,11 +89,12 @@ function getDescription(gamme: PopularGamme, brandName: string): string {
 }
 
 /**
- * Génère l'URL de l'image de gamme (sans transformation, $0)
+ * Génère l'URL de l'image de gamme
+ * ✅ Migration /img/* : Proxy Caddy avec cache 1 an
  */
 function getGammeImageUrl(imgFilename: string | null): string | undefined {
   if (!imgFilename) return undefined;
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${imgFilename}`;
+  return `/img/uploads/articles/gammes-produits/catalogue/${imgFilename}`;
 }
 
 export function PopularGammesSection({

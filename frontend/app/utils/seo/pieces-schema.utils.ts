@@ -10,18 +10,20 @@ import {
 } from "../../types/pieces-route.types";
 import { ImageOptimizer } from "../image-optimizer";
 
-// Helper inline pour normaliser les URLs d'images (remplace image.utils.ts)
-const SUPABASE_STORAGE =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+// ✅ Migration /img/* : URLs absolues pour SEO schema JSON-LD
+const SITE_URL = "https://www.automecanik.com";
 function normalizeImageUrl(url: string | null | undefined): string {
   if (!url || typeof url !== "string") return "";
+  // Si déjà URL complète, la retourner
   if (url.startsWith("http")) return url;
+  // Si déjà URL /img/, la rendre absolue
+  if (url.startsWith("/img/")) return `${SITE_URL}${url}`;
+  // Convertir les chemins relatifs vers URLs absolues /img/*
   if (url.startsWith("/rack/"))
-    return `${SUPABASE_STORAGE}/rack-images/${url.replace("/rack/", "")}`;
+    return `${SITE_URL}/img/rack-images/${url.replace("/rack/", "")}`;
   if (url.startsWith("/upload/"))
-    return `${SUPABASE_STORAGE}/uploads/${url.replace("/upload/", "")}`;
-  if (url.startsWith("/"))
-    return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+    return `${SITE_URL}/img/uploads/${url.replace("/upload/", "")}`;
+  if (url.startsWith("/")) return `${SITE_URL}/img/uploads/${url.substring(1)}`;
   return url;
 }
 
@@ -178,11 +180,6 @@ function buildItemListSchema(
       })),
   };
 }
-
-// URL de base Supabase pour les images (sans transformation, $0)
-// Note: Conservé pour référence, imgproxy est maintenant utilisé via ImageOptimizer
-const _SUPABASE_BASE_URL =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads";
 
 /**
  * Interface pour les meta tags de preload image responsive

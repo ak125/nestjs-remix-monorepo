@@ -653,13 +653,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
   ];
 
-  // 🚀 LCP OPTIMIZATION: Preload hero vehicle image (sans transformation, $0)
+  // ✅ Migration /img/* : Preload via proxy Caddy
   if (data.vehicle?.modele_pic && data.vehicle.modele_pic !== "no.webp") {
     result.push({
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${data.vehicle.marque_alias}/${data.vehicle.modele_pic}`,
+      href: `/img/uploads/constructeurs-automobiles/marques-modeles/${data.vehicle.marque_alias}/${data.vehicle.modele_pic}`,
     });
   }
 
@@ -890,7 +890,7 @@ export default function VehicleDetailPage() {
                       vehicle.modele_pic !== "no.webp" ? (
                         <>
                           <img
-                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
+                            src={`/img/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
                             alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} - ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
                             width={400}
                             height={208}
@@ -1163,7 +1163,7 @@ export default function VehicleDetailPage() {
                   <div className="p-6 bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
                     {part.pg_img && part.pg_img !== "no.webp" ? (
                       <img
-                        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
+                        src={`/img/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
                         alt={part.pg_name_meta}
                         className="w-full h-36 object-contain rounded-lg group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"

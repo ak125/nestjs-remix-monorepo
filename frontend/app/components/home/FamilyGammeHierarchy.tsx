@@ -46,8 +46,8 @@ const getFamilyImage = (family: FamilyWithGammes): string => {
   if (!family.mf_pic) {
     return "/images/categories/default.svg";
   }
-  // ⚠️ Image brute sans transformation (évite coûts $5/1000 images)
-  return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/${family.mf_pic}`;
+  // ✅ Migration /img/* : Proxy Caddy avec cache 1 an
+  return `/img/uploads/articles/familles-produits/${family.mf_pic}`;
 };
 
 interface FamilyGammeHierarchyProps {

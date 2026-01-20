@@ -417,7 +417,8 @@ export const SearchFilters = memo(function SearchFilters({
                       : currentValue === option.value;
 
                     const logoFileName = `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`;
-                    const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
+                    // ✅ Migration /img/* : Proxy Caddy avec cache 1 an
+                    const logoUrl = `/img/uploads/equipementiers-automobiles/${logoFileName}`;
 
                     // Note moyenne simulée (7 par défaut)
                     const noteAvg = 7;

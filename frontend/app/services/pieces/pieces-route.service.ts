@@ -29,18 +29,19 @@ const BACKEND_URL =
       "http://localhost:3000"
     : "";
 
-// Helper inline pour normaliser les URLs d'images blog (remplace image.utils.ts)
-const SUPABASE_STORAGE =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+// ✅ Migration /img/* : Utiliser le proxy Caddy au lieu d'URLs Supabase directes
 function normalizeImageUrl(url: string | null | undefined): string {
   if (!url || typeof url !== "string") return "";
+  // Si déjà URL complète, la retourner
   if (url.startsWith("http")) return url;
+  // Si déjà URL /img/, la retourner
+  if (url.startsWith("/img/")) return url;
+  // Convertir les chemins relatifs vers /img/*
   if (url.startsWith("/rack/"))
-    return `${SUPABASE_STORAGE}/rack-images/${url.replace("/rack/", "")}`;
+    return `/img/rack-images/${url.replace("/rack/", "")}`;
   if (url.startsWith("/upload/"))
-    return `${SUPABASE_STORAGE}/uploads/${url.replace("/upload/", "")}`;
-  if (url.startsWith("/"))
-    return `${SUPABASE_STORAGE}/uploads/${url.substring(1)}`;
+    return `/img/uploads/${url.replace("/upload/", "")}`;
+  if (url.startsWith("/")) return `/img/uploads/${url.substring(1)}`;
   return url;
 }
 

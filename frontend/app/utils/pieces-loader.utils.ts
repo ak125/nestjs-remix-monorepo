@@ -6,11 +6,11 @@
 
 import { type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { type GammeData, type VehicleData } from "../types/pieces-route.types";
+import { ImageOptimizer } from "./image-optimizer";
 import { toTitleCaseFromSlug } from "./pieces-route.utils";
 
-// URL de base Supabase pour les images catalogue (sans transformation, $0)
-const SUPABASE_CATALOGUE_URL =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue";
+// Chemin relatif dans le bucket uploads pour les images catalogue
+const CATALOGUE_IMAGE_PATH = "articles/gammes-produits/catalogue";
 
 /**
  * Paramètres pour construire les données véhicule
@@ -182,9 +182,12 @@ export function buildCataloguePromise(
         items: otherGammes.map((g) => ({
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
-          image: g.image
-            ? `${SUPABASE_CATALOGUE_URL}/${g.image}`
-            : `${SUPABASE_CATALOGUE_URL}/${g.alias}.webp`,
+          // ✅ Migration /img/* : Utilise le proxy Caddy au lieu d'URLs Supabase directes
+          image: ImageOptimizer.getOriginalUrl(
+            g.image
+              ? `${CATALOGUE_IMAGE_PATH}/${g.image}`
+              : `${CATALOGUE_IMAGE_PATH}/${g.alias}.webp`,
+          ),
           description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
         })),
       };
