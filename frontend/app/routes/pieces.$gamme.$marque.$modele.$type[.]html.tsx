@@ -2,7 +2,7 @@
 // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
 // ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
 //
-// 🚀 RM V2: Single RPC for ALL data (~400ms vs ~1.6s with batch-loader)
+// 🚀 RM V2: Single RPC for ALL data (~400ms, cached in Redis)
 // - products: RM-scored products (OE/EQUIV/ECO, stock status)
 // - grouped_pieces: Products grouped by gamme+side with OEM refs per group
 // - vehicleInfo: Complete vehicle info with motor/mine/cnit codes
@@ -26,7 +26,7 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
-// 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (RPC V2 redondant avec batch-loader RPC V3)
+// 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (redondant avec RM V2 RPC)
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
@@ -59,7 +59,7 @@ import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 
 // Services API
 
-// 🚀 RM API V2 - Complete Read Model (~400ms, replaces batch-loader)
+// 🚀 RM API V2 - Complete Read Model (~400ms, single RPC)
 import { fetchRmPageV2 } from "../services/api/rm-api.service";
 import {
   fetchBlogArticle,
@@ -169,14 +169,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   ]);
 
   // Validation des IDs véhicule - Si invalides, 301 redirect vers page gamme
-  // 🛡️ gammeId n'est PAS validé ici - délégué au batch-loader pour permettre gammeId=0 → 404 SEO
+  // 🛡️ gammeId n'est PAS validé ici - délégué au RM V2 RPC pour permettre gammeId=0 → 404 SEO
   let vehicleValidationFailed = false;
   try {
     validateVehicleIds({
       marqueId: vehicleIds.marqueId,
       modeleId: vehicleIds.modeleId,
       typeId: vehicleIds.typeId,
-      // gammeId: gammeId, // Retiré - validation par batch-loader (ligne 117-119 backend)
+      // gammeId: gammeId, // Retiré - validation par RM V2 RPC
       source: "loader-validation",
     });
   } catch (validationError) {
@@ -198,7 +198,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
-  // 🚀 RM API V2 - Complete Read Model (replaces batch-loader entirely)
+  // 🚀 RM API V2 - Complete Read Model (single source of truth)
   // Returns: products, grouped_pieces, vehicleInfo, gamme, seo, oemRefs, crossSelling, filters
 
   // 🚀 LCP V8: Lancer hierarchy immédiatement (pour catalogueMameFamille deferred)
@@ -210,7 +210,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // SEO switches pour anchor text variés
   const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
-  // 🚀 RM V2: Single RPC for ALL data (~400ms vs ~1.6s with batch-loader)
+  // 🚀 RM V2: Single RPC for ALL data (~400ms, cached in Redis)
   const INITIAL_PRODUCTS_LIMIT = 200;
   const rmV2Promise = fetchRmPageV2(
     gammeId,

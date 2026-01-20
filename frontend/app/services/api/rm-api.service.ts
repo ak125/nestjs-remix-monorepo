@@ -1,6 +1,6 @@
 /**
  * RM API Service - Read Model pour listings produits optimisés
- * Performance: ~200ms vs ~1.6s (batch-loader)
+ * Performance: ~200ms (single RPC with Redis cache)
  */
 
 export interface RmProduct {
@@ -94,8 +94,7 @@ export interface RmPageResponse {
 
 /**
  * Fetch complete page data from RM API
- * Replaces batch-loader for product listing pages
- * Performance: ~350ms vs ~950ms (batch-loader)
+ * Performance: ~350ms (single RPC with Redis cache)
  */
 export async function fetchRmPage(
   gammeId: number,
@@ -255,7 +254,7 @@ export interface RmPageV2Response {
  * - filters: Brands/qualities/sides with counts
  * - validation: Data quality metrics
  *
- * Performance: ~400ms vs ~950ms (batch-loader)
+ * Performance: ~400ms (single RPC with Redis cache)
  */
 export async function fetchRmPageV2(
   gammeId: number,

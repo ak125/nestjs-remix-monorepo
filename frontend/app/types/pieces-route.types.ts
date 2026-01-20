@@ -14,7 +14,7 @@ export interface ValidatedVehicleIds {
   marqueId: number;
   modeleId: number;
   typeId: number;
-  source: 'url' | 'api' | 'fallback'; // Pour tracer l'origine
+  source: "url" | "api" | "fallback"; // Pour tracer l'origine
 }
 
 export interface VehicleData {
@@ -29,7 +29,7 @@ export interface VehicleData {
   modeleAlias?: string; // Alias du modèle pour l'URL
   typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
-  // 🔧 Codes moteur et types mines (depuis batch-loader vehicleInfo)
+  // 🔧 Codes moteur et types mines (depuis RM V2 vehicleInfo)
   motorCodes?: string[];
   motorCodesFormatted?: string;
   mineCodes?: string[];
@@ -175,26 +175,26 @@ export interface LoaderData {
   minPrice: number;
   maxPrice: number;
   prixPasCherText?: string; // Texte dynamique "pas cher"
-  
+
   // Contenu enrichi V5
   seoContent: SEOEnrichedContent;
   faqItems: FAQItem[];
   relatedArticles: BlogArticle[];
   buyingGuide: GuideContent;
   compatibilityInfo: CompatibilityInfo;
-  
+
   // Sections cross-selling et blog
   crossSellingGammes: CrossSellingGamme[];
   blogArticle?: BlogArticle;
-  
+
   // Catalogue famille
   catalogueMameFamille?: CatalogueMameFamille;
   famille?: FamilleData;
-  
+
   // 🔧 Références OEM constructeur
   oemRefs?: OemRefsData;
   oemRefsSeo?: string[];
-  
+
   seo: SEOInfo;
   performance: PerformanceInfo;
 }
@@ -217,5 +217,5 @@ export type ViewMode = "grid" | "list" | "comparison";
 export interface PriceHistory {
   currentPrice: number;
   previousPrice?: number;
-  trend?: 'up' | 'down' | 'stable';
+  trend?: "up" | "down" | "stable";
 }

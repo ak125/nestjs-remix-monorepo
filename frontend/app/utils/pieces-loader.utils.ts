@@ -49,7 +49,7 @@ interface BuildVehicleParams {
 }
 
 /**
- * Construit les données VehicleData depuis la réponse batch-loader
+ * Construit les données VehicleData depuis la réponse RM V2
  *
  * @param params - Paramètres contenant vehicleInfo, vehicleIds et urlParams
  * @returns VehicleData complète
@@ -75,7 +75,7 @@ export function buildVehicleData(params: BuildVehicleParams): VehicleData {
     modeleAlias: vehicleInfo?.modeleAlias || urlParams.modeleAlias,
     typeAlias: vehicleInfo?.typeAlias || urlParams.typeAlias,
     modelePic,
-    // 🔧 V7: Codes moteur et types mines (depuis batch-loader vehicleInfo)
+    // 🔧 V7: Codes moteur et types mines (depuis RM V2 vehicleInfo)
     motorCodesFormatted: vehicleInfo?.motorCodesFormatted,
     mineCodesFormatted: vehicleInfo?.mineCodesFormatted,
     cnitCodesFormatted: vehicleInfo?.cnitCodesFormatted,
