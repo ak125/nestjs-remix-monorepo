@@ -4,22 +4,41 @@
  */
 
 import { Trash2, Plus, Minus, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { type CartItem } from "../../types/cart";
+import { type CartItem as CartItemType } from "../../types/cart";
+
+// Formatter prix extrait pour éviter recréation à chaque render
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
+};
 
 interface CartItemProps {
-  item: CartItem;
+  item: CartItemType;
   onQuantityChange: (quantity: number) => void;
   onRemove: () => void;
 }
 
-export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
+/**
+ * 🔄 CartItem memoizé - évite re-renders inutiles du panier
+ * Optimisations:
+ * - React.memo() pour comparaison shallow des props
+ * - useCallback() pour handlers stables
+ * - formatPrice extrait hors composant
+ */
+export const CartItem = memo(function CartItem({
+  item,
+  onQuantityChange,
+  onRemove,
+}: CartItemProps) {
   const [quantity, setQuantity] = useState(item.quantity);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Calculs avec fallbacks
+  // Calculs avec fallbacks (valeurs primitives, pas de recalcul si props identiques)
   const unitPrice = item.unit_price || item.price;
   const totalPrice = item.total_price || unitPrice * quantity;
   const stockAvailable = item.stock_available || 999; // Fallback pour stock illimité
@@ -27,38 +46,37 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
   const productImage = item.product_image || "/images/categories/default.svg";
   const productName = item.product_name || `Produit ${item.product_id}`;
 
-  const handleQuantityChange = async (newQuantity: number) => {
-    // Validation
-    if (newQuantity < 1) return;
-    if (newQuantity > stockAvailable) return;
+  // Handler memoizé avec useCallback - stable entre renders
+  const handleQuantityChange = useCallback(
+    async (newQuantity: number) => {
+      // Validation
+      if (newQuantity < 1) return;
+      if (newQuantity > stockAvailable) return;
 
-    setIsUpdating(true);
-    setQuantity(newQuantity);
+      setIsUpdating(true);
+      setQuantity(newQuantity);
 
-    try {
-      if (newQuantity === 0) {
-        onRemove();
-      } else {
-        onQuantityChange(newQuantity);
+      try {
+        if (newQuantity === 0) {
+          onRemove();
+        } else {
+          onQuantityChange(newQuantity);
+        }
+      } finally {
+        setIsUpdating(false);
       }
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+    },
+    [stockAvailable, onQuantityChange, onRemove],
+  );
 
-  const handleQuantityInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const newQuantity = parseInt(e.target.value) || 1;
-    handleQuantityChange(newQuantity);
-  };
-
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
-  };
+  // Handler input memoizé
+  const handleQuantityInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newQuantity = parseInt(e.target.value) || 1;
+      handleQuantityChange(newQuantity);
+    },
+    [handleQuantityChange],
+  );
 
   return (
     <Card className="mb-4 hover:shadow-md transition-shadow">
@@ -178,4 +196,4 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
       </CardContent>
     </Card>
   );
-}
+});
