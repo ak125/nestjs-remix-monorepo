@@ -180,8 +180,9 @@ export class ImageOptimizer {
 
   /**
    * 🔙 Obtient l'URL originale (sans transformation, mais via proxy pour cache)
-   * En dev: utilise Supabase directement (évite CSP issues)
-   * En prod: utilise le proxy pour bénéficier du cache Cloudflare
+   * ✅ Migration 2026-01-21: Toujours utiliser /img/* proxy
+   * - En prod: Caddy gère le proxy vers Supabase + cache 1 an
+   * - En dev: Vite proxy redirige vers Supabase (configuré dans vite.config.ts)
    */
   static getOriginalUrl(imagePath: string): string {
     const cleanPath = imagePath.startsWith("/")
@@ -201,13 +202,8 @@ export class ImageOptimizer {
       actualPath = cleanPath.replace("uploads/", "");
     }
 
-    // En dev, utiliser Supabase directement pour éviter CSP issues
-    if (IS_DEV) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
-    }
-
-    // En prod, utiliser le proxy pour bénéficier du cache Cloudflare
-    return `${PROXY_BASE_URL}/img/${bucket}/${actualPath}`;
+    // ✅ Toujours utiliser le proxy /img/* (fonctionne en dev ET prod)
+    return `/img/${bucket}/${actualPath}`;
   }
 
   /**
