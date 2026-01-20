@@ -272,6 +272,22 @@ interface LoaderData {
   } | null;
 }
 
+/**
+ * ✅ Migration 2026-01-21: Transforme les URLs Supabase en /img/* proxy
+ * Avantages: Cache 1 an (Caddy), même comportement dev/prod (Vite proxy en dev)
+ */
+function toProxyImageUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  // Si c'est une URL Supabase, extraire le path et utiliser /img/*
+  if (url.includes("supabase.co/storage")) {
+    const match = url.match(/\/public\/(.+?)(?:\?|$)/);
+    if (match) {
+      return `/img/${match[1]}`;
+    }
+  }
+  return url;
+}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const slug = params.slug;
   if (!slug) {
@@ -387,8 +403,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             content: heroData.content,
             pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
             pg_alias: heroData.pg_alias || "",
-            pg_pic: heroData.image,
-            pg_wall: heroData.wall,
+            pg_pic: toProxyImageUrl(heroData.image),
+            pg_wall: toProxyImageUrl(heroData.wall),
           }
         : undefined,
       famille: apiData.hero?.famille_info,
