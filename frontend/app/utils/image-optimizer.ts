@@ -12,14 +12,11 @@
 // 🚀 Configuration imgproxy
 const USE_IMGPROXY = true; // Basculer à false pour désactiver transformations
 
-// ✅ FIX 2026-01-17: Détection environnement pour imgproxy
-// - Production: imgproxy via automecanik.com (CDN cached)
-// - Development: URLs Supabase directes (évite problèmes CSP en local)
-// NOTE: import.meta.env.DEV est cohérent entre serveur et client (Vite)
-const IS_DEV = import.meta.env.DEV;
-
-// En dev, désactiver imgproxy pour éviter CSP issues avec localhost
-const USE_IMGPROXY_RUNTIME = USE_IMGPROXY && !IS_DEV;
+// ✅ FIX 2026-01-20: Toujours utiliser imgproxy (même en dev)
+// - Évite facturation Supabase en dev (requêtes directes = facturées)
+// - Même comportement prod/dev = moins de bugs
+// - URLs imgproxy pointent vers automecanik.com donc pas de CSP issues
+const USE_IMGPROXY_RUNTIME = USE_IMGPROXY;
 
 const PROXY_BASE_URL = "https://www.automecanik.com";
 
