@@ -43,6 +43,15 @@ export class RemixController {
       // console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
     }
 
+    // 🛑 410 Gone - Legacy supplier URLs
+    // URLs format: /pieces-{supplier}.html (ex: /pieces-al-ko.html, /pieces-bosch.html)
+    const supplierUrlRegex = /^\/pieces-[a-z0-9-]+\.html$/i;
+    if (supplierUrlRegex.test(request.url)) {
+      console.log(`🛑 [410] Legacy supplier URL: ${request.url}`);
+      response.status(410).send('Gone');
+      return;
+    }
+
     try {
       const build = await getServerBuild();
       // console.log('✅ Server build loaded successfully');
