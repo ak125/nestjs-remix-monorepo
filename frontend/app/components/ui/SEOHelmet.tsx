@@ -94,46 +94,52 @@ export function SEOHelmet({ seo }: SEOHelmetProps) {
 
   return (
     <>
-      {/* Title */}
-      <title>{seo.title}</title>
-      
+      {/* ❌ Title supprimé - Remix gère le <title> via la fonction meta()
+          Évite le duplicate tag qui causait des erreurs d'hydratation */}
+
       {/* Meta description */}
       <meta name="description" content={seo.description} />
-      
+
       {/* Keywords */}
       {seo.keywords && seo.keywords.length > 0 && (
         <meta name="keywords" content={seo.keywords.join(", ")} />
       )}
-      
+
       {/* Canonical URL */}
-      {seo.canonicalUrl && (
-        <link rel="canonical" href={seo.canonicalUrl} />
-      )}
-      
+      {seo.canonicalUrl && <link rel="canonical" href={seo.canonicalUrl} />}
+
       {/* Open Graph */}
       <meta property="og:title" content={seo.ogTitle || seo.title} />
-      <meta property="og:description" content={seo.ogDescription || seo.description} />
+      <meta
+        property="og:description"
+        content={seo.ogDescription || seo.description}
+      />
       <meta property="og:type" content="website" />
       {seo.ogUrl && <meta property="og:url" content={seo.ogUrl} />}
       {seo.ogImage && <meta property="og:image" content={seo.ogImage} />}
-      
+
       {/* Twitter Card */}
       <meta name="twitter:card" content={seo.twitterCard || "summary"} />
       <meta name="twitter:title" content={seo.twitterTitle || seo.title} />
-      <meta name="twitter:description" content={seo.twitterDescription || seo.description} />
-      {seo.twitterImage && <meta name="twitter:image" content={seo.twitterImage} />}
-      
+      <meta
+        name="twitter:description"
+        content={seo.twitterDescription || seo.description}
+      />
+      {seo.twitterImage && (
+        <meta name="twitter:image" content={seo.twitterImage} />
+      )}
+
       {/* Schema.org JSON-LD enrichis */}
       {schemas.map((schema, index) => (
         <script
           key={`schema-${index}`}
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema)
+            __html: JSON.stringify(schema),
           }}
         />
       ))}
-      
+
       {/* Additional meta tags */}
       <meta name="robots" content="index, follow" />
       <meta name="author" content="AutoMecanik" />
@@ -152,7 +158,7 @@ export function useVehicleSEO(vehicle: {
 }) {
   const seoData: SEOData = {
     title: `Pièces ${vehicle.brand} ${vehicle.model} ${vehicle.type} | Pièces Auto`,
-    description: `Découvrez notre sélection de pièces détachées pour ${vehicle.brand} ${vehicle.model} ${vehicle.type}${vehicle.year ? ` ${vehicle.year}` : ''}. Livraison rapide et garantie qualité.`,
+    description: `Découvrez notre sélection de pièces détachées pour ${vehicle.brand} ${vehicle.model} ${vehicle.type}${vehicle.year ? ` ${vehicle.year}` : ""}. Livraison rapide et garantie qualité.`,
     keywords: [
       vehicle.brand.toLowerCase(),
       vehicle.model.toLowerCase(),
@@ -161,7 +167,7 @@ export function useVehicleSEO(vehicle: {
       "pièces auto",
       "automobile",
       "garage",
-      "réparation"
+      "réparation",
     ],
     canonicalUrl: `/enhanced-vehicle-catalog/${vehicle.brand.toLowerCase()}/${vehicle.model.toLowerCase()}/${vehicle.type.toLowerCase()}`,
     ogTitle: `Pièces ${vehicle.brand} ${vehicle.model} ${vehicle.type}`,
@@ -170,23 +176,23 @@ export function useVehicleSEO(vehicle: {
     schemaData: {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": `Pièces ${vehicle.brand} ${vehicle.model} ${vehicle.type}`,
-      "description": `Pièces détachées pour ${vehicle.brand} ${vehicle.model} ${vehicle.type}`,
-      "brand": {
+      name: `Pièces ${vehicle.brand} ${vehicle.model} ${vehicle.type}`,
+      description: `Pièces détachées pour ${vehicle.brand} ${vehicle.model} ${vehicle.type}`,
+      brand: {
         "@type": "Brand",
-        "name": vehicle.brand
+        name: vehicle.brand,
       },
-      "model": vehicle.model,
-      "vehicleEngine": vehicle.type,
-      "offers": {
+      model: vehicle.model,
+      vehicleEngine: vehicle.type,
+      offers: {
         "@type": "AggregateOffer",
-        "priceCurrency": "EUR",
-        "lowPrice": "4.50",
-        "highPrice": "500.00",
-        "availability": "https://schema.org/InStock",
-        "offerCount": vehicle.partsCount || 0
-      }
-    }
+        priceCurrency: "EUR",
+        lowPrice: "4.50",
+        highPrice: "500.00",
+        availability: "https://schema.org/InStock",
+        offerCount: vehicle.partsCount || 0,
+      },
+    },
   };
 
   return seoData;
@@ -198,17 +204,32 @@ export function useVehicleSEO(vehicle: {
 
 /**
  * Génère BreadcrumbList schema.org
+ * - Convertit les URLs relatives en URLs absolues
+ * - Omet le champ "item" si href est vide (valide selon Schema.org pour le dernier élément)
  */
 function generateBreadcrumbSchema(breadcrumbs: BreadcrumbItem[]) {
+  const BASE_URL = "https://www.automecanik.com";
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": breadcrumbs.map((item, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": item.label,
-      "item": item.href
-    }))
+    itemListElement: breadcrumbs.map((item, index) => {
+      const listItem: Record<string, unknown> = {
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+      };
+
+      // Only add "item" field if href is non-empty
+      // Convert relative URLs to absolute
+      if (item.href && item.href.trim() !== "") {
+        listItem.item = item.href.startsWith("http")
+          ? item.href
+          : `${BASE_URL}${item.href}`;
+      }
+
+      return listItem;
+    }),
   };
 }
 
@@ -219,20 +240,20 @@ function generateOrganizationSchema(org: OrganizationData) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": org.name,
-    "url": org.url || "https://www.automecanik.com",
-    "logo": org.logo || "https://www.automecanik.com/logo.png",
+    name: org.name,
+    url: org.url || "https://www.automecanik.com",
+    logo: org.logo || "https://www.automecanik.com/logo.png",
     ...(org.contactPoint && {
-      "contactPoint": {
+      contactPoint: {
         "@type": "ContactPoint",
-        "telephone": org.contactPoint.telephone,
-        "email": org.contactPoint.email,
-        "contactType": org.contactPoint.contactType,
-        "areaServed": "FR",
-        "availableLanguage": ["French"]
-      }
+        telephone: org.contactPoint.telephone,
+        email: org.contactPoint.email,
+        contactType: org.contactPoint.contactType,
+        areaServed: "FR",
+        availableLanguage: ["French"],
+      },
     }),
-    ...(org.sameAs && { "sameAs": org.sameAs })
+    ...(org.sameAs && { sameAs: org.sameAs }),
   };
 }
 
@@ -250,10 +271,10 @@ function generateReviewSchemas(reviews: ReviewData[]) {
   schemas.push({
     "@context": "https://schema.org",
     "@type": "AggregateRating",
-    "ratingValue": avgRating.toFixed(1),
-    "reviewCount": reviews.length,
-    "bestRating": 5,
-    "worstRating": 1
+    ratingValue: avgRating.toFixed(1),
+    reviewCount: reviews.length,
+    bestRating: 5,
+    worstRating: 1,
   });
 
   // Individual Reviews
@@ -261,18 +282,18 @@ function generateReviewSchemas(reviews: ReviewData[]) {
     schemas.push({
       "@context": "https://schema.org",
       "@type": "Review",
-      "author": {
+      author: {
         "@type": "Person",
-        "name": review.author
+        name: review.author,
       },
-      "datePublished": review.date,
-      "reviewBody": review.comment,
-      "reviewRating": {
+      datePublished: review.date,
+      reviewBody: review.comment,
+      reviewRating: {
         "@type": "Rating",
-        "ratingValue": review.rating,
-        "bestRating": 5,
-        "worstRating": 1
-      }
+        ratingValue: review.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
     });
   });
 
@@ -287,16 +308,18 @@ function generateItemListSchema(itemList: ItemListData) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": itemList.name,
-    ...(itemList.description && { "description": itemList.description }),
-    "numberOfItems": itemList.items.length,
-    "itemListElement": itemList.items.map((item, index) => ({
+    name: itemList.name,
+    ...(itemList.description && { description: itemList.description }),
+    numberOfItems: itemList.items.length,
+    itemListElement: itemList.items.map((item, index) => ({
       "@type": "ListItem",
-      "position": item.position || index + 1,
-      "name": item.name,
-      "url": item.url.startsWith('http') ? item.url : `https://www.automecanik.com${item.url}`,
-      ...(item.image && { "image": item.image }),
-      ...(item.description && { "description": item.description })
-    }))
+      position: item.position || index + 1,
+      name: item.name,
+      url: item.url.startsWith("http")
+        ? item.url
+        : `https://www.automecanik.com${item.url}`,
+      ...(item.image && { image: item.image }),
+      ...(item.description && { description: item.description }),
+    })),
   };
 }
