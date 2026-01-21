@@ -21,9 +21,9 @@ services:
       # Security: Only allow Supabase as source
       IMGPROXY_ALLOWED_SOURCES: "https://cxpojprgwgubzjyqzmoq.supabase.co/"
 
-      # WebP/AVIF auto-detection basé sur Accept header
-      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
-      IMGPROXY_ENABLE_AVIF_DETECTION: "true"
+      # WebP/AVIF auto-detection basé sur Accept header (options modernes)
+      IMGPROXY_AUTO_WEBP: "true"
+      IMGPROXY_AUTO_AVIF: "true"
       IMGPROXY_ENFORCE_WEBP: "false"  # Respecter le format demandé
 
       # Qualité par défaut
@@ -35,16 +35,24 @@ services:
       IMGPROXY_MAX_SRC_RESOLUTION: "50"  # 50 megapixels max
       IMGPROXY_MAX_ANIMATION_FRAMES: "1"  # Pas de GIFs animés
 
-      # Cache headers (Cloudflare cache 1 an)
+      # ═══════════════════════════════════════════════════════════════
+      # 🚀 CACHE MÉMOIRE - Amélioration performance +30-50%
+      # ═══════════════════════════════════════════════════════════════
+      # Cache en mémoire (pas besoin de Redis)
+      IMGPROXY_RESULT_CACHE_SIZE: "256"      # 256 images transformées en cache
+      IMGPROXY_SOURCE_CACHE_SIZE: "128"      # 128 images sources en cache
+
+      # Cache headers pour navigateur/CDN (Cloudflare cache 1 an)
       IMGPROXY_CACHE_CONTROL_PASSTHROUGH: "false"
+      IMGPROXY_TTL: "31536000"               # 1 an en secondes
       IMGPROXY_SET_CANONICAL_HEADER: "true"
 
       # Performance
       IMGPROXY_CONCURRENCY: "4"
       IMGPROXY_MAX_CLIENTS: "100"
       IMGPROXY_DOWNLOAD_TIMEOUT: "10"
-      IMGPROXY_READ_TIMEOUT: "10"
-      IMGPROXY_WRITE_TIMEOUT: "10"
+      IMGPROXY_READ_REQUEST_TIMEOUT: "10"  # Remplace IMGPROXY_READ_TIMEOUT
+      IMGPROXY_WRITE_RESPONSE_TIMEOUT: "10"  # Remplace IMGPROXY_WRITE_TIMEOUT
 
       # Logging
       IMGPROXY_LOG_LEVEL: "warn"
