@@ -18,8 +18,8 @@ services:
       # Logs
       - ./logs/caddy:/var/log/caddy
 
-      # Sitemaps statiques (714k URLs générés automatiquement)
-      - ./public/sitemaps:/srv/sitemaps:ro
+      # Sitemaps statiques (714k URLs générés automatiquement) - volume persistant
+      - /dev/volumes/nestjs-remix/production/sitemaps:/srv/sitemaps:ro
 
       # Configuration générée pour redirections (optionnel)
       - ./config/caddy/caddy-pieces-redirects.conf:/etc/caddy/redirects.conf:ro

@@ -89,20 +89,19 @@ automecanik.com, www.automecanik.com {
         # Images brutes sans transformation ($0)
         rewrite * /storage/v1/object/public/{re.img_path.1}
 
-        reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
-            header_up Host cxpojprgwgubzjyqzmoq.supabase.co
+        reverse_proxy https://https://www.automecanik.com {
+            header_up Host https://www.automecanik.com
             header_down -Cache-Control
         }
     }
 
     # ===== SITEMAPS STATIQUES (714k URLs) =====
-    # Servis directement depuis le filesystem (générés automatiquement au déploiement)
+    # Servis directement depuis le filesystem (volume persistant)
     @sitemaps path /sitemap*.xml
     handle @sitemaps {
         root * /srv/sitemaps
         header Content-Type "application/xml; charset=utf-8"
         header Cache-Control "public, max-age=86400"
-        header X-Robots-Tag "noindex"
         file_server
     }
 
