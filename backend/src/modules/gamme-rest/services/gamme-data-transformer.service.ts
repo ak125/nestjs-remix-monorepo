@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildEquipementierLogoUrl,
+  buildGammeImageUrl,
+  IMAGE_CONFIG,
+} from '../../catalog/utils/image-urls.utils';
 
 /**
  * Service de transformation des données pour les pages gamme
@@ -86,18 +92,16 @@ export class GammeDataTransformerService {
   /**
    * Traite les équipementiers
    * ✅ Utilise pm_name et pm_logo depuis la RPC (jointure pieces_marque)
+   * ✅ Utilise buildEquipementierLogoUrl centralisé
    */
   processEquipementiers(equipementiersRaw: any[]): any[] {
-    const SUPABASE_URL =
-      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-
     return equipementiersRaw.map((equip: any) => {
       const pmId = String(equip.seg_pm_id || equip.pm_id);
       const pmName = equip.pm_name || 'Équipementier';
       const pmLogo = equip.pm_logo || 'default.webp';
 
-      // Construire l'URL du logo
-      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${pmLogo}`;
+      // ✅ Utiliser la fonction centralisée
+      const logoUrl = buildEquipementierLogoUrl(pmLogo);
 
       return {
         pm_id: pmId,
@@ -115,11 +119,9 @@ export class GammeDataTransformerService {
   /**
    * Traite le catalogue famille
    * ✅ Génère les liens et URLs d'images corrects pour le maillage interne
+   * ✅ Utilise buildGammeImageUrl centralisé
    */
   processCatalogueFamille(catalogueFamilleRaw: any[]): any[] {
-    const SUPABASE_URL =
-      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-
     return catalogueFamilleRaw.map((piece: any) => {
       const pgId = piece.pg_id;
       const pgAlias = piece.pg_alias;
@@ -128,26 +130,16 @@ export class GammeDataTransformerService {
       // 🔗 Générer le lien vers la page gamme
       const link = `/pieces/${pgAlias}-${pgId}.html`;
 
-      // 📷 Générer l'URL de l'image
-      // Les images sont stockées dans articles/gammes-produits/catalogue/{alias}.webp
+      // 📷 Générer l'URL de l'image via la fonction centralisée
       let imageUrl: string;
       if (pgPic) {
-        if (pgPic.startsWith('http')) {
-          imageUrl = pgPic;
-        } else if (pgPic.startsWith('/')) {
-          imageUrl = pgPic;
-        } else {
-          // Utiliser pg_alias pour construire le chemin correct
-          // Format: articles/gammes-produits/catalogue/nom-gamme.webp
-          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
-        }
+        // buildGammeImageUrl gère déjà les cas http et /img/
+        imageUrl = buildGammeImageUrl(pgPic);
+      } else if (pgAlias) {
+        // Fallback: essayer avec pg_alias.webp si pg_pic est vide
+        imageUrl = buildGammeImageUrl(`${pgAlias}.webp`);
       } else {
-        // Fallback: essayer avec pg_alias si pg_pic est vide
-        if (pgAlias) {
-          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
-        } else {
-          imageUrl = '/images/default-piece.jpg';
-        }
+        imageUrl = IMAGE_CONFIG.DEFAULT_IMAGE;
       }
 
       return {

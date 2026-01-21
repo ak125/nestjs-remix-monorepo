@@ -1,6 +1,10 @@
 /**
  * 🖼️ HELPER CENTRALISÉ - URLs D'IMAGES PRODUITS
  *
+ * ⚠️ SOURCE UNIQUE BACKEND pour toutes les URLs d'images
+ * Tous les services DOIVENT importer depuis ce fichier.
+ * NE PAS définir de constantes d'images locales dans les services.
+ *
  * Gère la construction des URLs d'images vers Supabase Storage
  * Compatible avec imgproxy pour transformation gratuite
  * Compatible avec les anciennes structures de données (pmi_folder, pmi_name)
@@ -8,18 +12,50 @@
  * @see https://docs.imgproxy.net/generating_the_url
  */
 
-// ✅ Migration 2026-01-20: Utiliser le proxy Caddy /img/* au lieu d'URLs Supabase directes
-// Avantages: Cache 1 an, protection contre transformations (410 Gone), contrôle total
-const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-const RACK_IMAGES_BUCKET = 'rack-images';
-const DEFAULT_IMAGE = '/images/pieces/default.png';
+// ═══════════════════════════════════════════════════════════════════════════
+// 🎯 CONFIGURATION CENTRALISÉE - À UTILISER PARTOUT
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Proxy Caddy pour images (cache 1 an, protection params)
-const IMG_PROXY_BASE = '/img';
+/**
+ * Configuration centralisée des URLs d'images
+ * Identique à frontend/app/utils/image-optimizer.ts pour cohérence
+ */
+export const IMAGE_CONFIG = {
+  // Base URLs
+  PROXY_BASE: '/img', // Caddy proxy (prod+dev)
+  IMGPROXY_BASE: '/imgproxy', // Transformation imgproxy
+  DOMAIN: 'https://www.automecanik.com',
 
-// Configuration imgproxy (transformations)
+  // Buckets Supabase
+  BUCKETS: {
+    UPLOADS: 'uploads',
+    RACK_IMAGES: 'rack-images',
+  },
+
+  // Chemins par type d'image
+  PATHS: {
+    GAMMES: 'articles/gammes-produits/catalogue',
+    FAMILLES: 'articles/familles-produits',
+    LOGOS_MARQUES: 'constructeurs-automobiles/marques-logos',
+    LOGOS_EQUIPEMENTIERS: 'equipementiers-automobiles',
+    MODELES: 'constructeurs-automobiles/marques-modeles',
+  },
+
+  // Images par défaut
+  DEFAULT_IMAGE: '/images/pieces/default.png',
+  DEFAULT_LOGO: '/images/categories/default.svg',
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔧 CONSTANTES INTERNES (pour rétrocompatibilité)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SUPABASE_URL = IMAGE_CONFIG.DOMAIN;
+const RACK_IMAGES_BUCKET = IMAGE_CONFIG.BUCKETS.RACK_IMAGES;
+const DEFAULT_IMAGE = IMAGE_CONFIG.DEFAULT_IMAGE;
+const IMG_PROXY_BASE = IMAGE_CONFIG.PROXY_BASE;
 const USE_IMGPROXY = true;
-const IMGPROXY_BASE_URL = 'https://www.automecanik.com/imgproxy';
+const IMGPROXY_BASE_URL = `${IMAGE_CONFIG.DOMAIN}${IMAGE_CONFIG.IMGPROXY_BASE}`;
 
 /**
  * Options de transformation imgproxy
@@ -49,7 +85,7 @@ export interface PieceImageData {
  *
  * @example
  * buildRackImageUrl({ pmi_folder: 30, pmi_name: '0986479103DRFRWHCO00MM.JPG' })
- * // → 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986479103DRFRWHCO00MM.JPG'
+ * // → 'https://www.automecanik.com/img/v1/object/public/rack-images/30/0986479103DRFRWHCO00MM.JPG'
  */
 export function buildRackImageUrl(imageData?: PieceImageData | null): string {
   // Si pas de données d'image, retourner l'image par défaut
@@ -241,4 +277,144 @@ export function transformToImgproxyUrl(
   const optionsPath = processingOptions.join('/') + '/';
 
   return `${IMGPROXY_BASE_URL}/${optionsPath}plain/${supabaseUrl}@${format}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🆕 NOUVELLES FONCTIONS CENTRALISÉES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Construit l'URL d'une image de gamme (catalogue produits)
+ *
+ * @param imagePath - Chemin relatif de l'image (ex: "plaquette-de-frein.jpg")
+ * @returns URL via proxy /img/uploads/articles/gammes-produits/catalogue/...
+ *
+ * @example
+ * buildGammeImageUrl('plaquette-de-frein.jpg')
+ * // → '/img/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.jpg'
+ */
+export function buildGammeImageUrl(imagePath?: string | null): string {
+  if (!imagePath) {
+    return IMAGE_CONFIG.DEFAULT_IMAGE;
+  }
+
+  // Si c'est déjà une URL complète ou proxy, retourner tel quel
+  if (imagePath.startsWith('http') || imagePath.startsWith('/img/')) {
+    return imagePath;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.GAMMES}/${imagePath}`;
+}
+
+/**
+ * Construit l'URL d'un logo de marque constructeur
+ *
+ * @param logoFilename - Nom du fichier logo (ex: "bmw.webp")
+ * @returns URL via proxy /img/uploads/constructeurs-automobiles/marques-logos/...
+ *
+ * @example
+ * buildBrandLogoUrl('bmw.webp')
+ * // → '/img/uploads/constructeurs-automobiles/marques-logos/bmw.webp'
+ */
+export function buildBrandLogoUrl(logoFilename?: string | null): string {
+  if (!logoFilename) {
+    return IMAGE_CONFIG.DEFAULT_LOGO;
+  }
+
+  // Si c'est déjà une URL complète ou proxy, retourner tel quel
+  if (logoFilename.startsWith('http') || logoFilename.startsWith('/img/')) {
+    return logoFilename;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.LOGOS_MARQUES}/${logoFilename}`;
+}
+
+/**
+ * Construit l'URL d'un logo d'équipementier
+ *
+ * @param logoFilename - Nom du fichier logo (ex: "bosch.webp")
+ * @returns URL via proxy /img/uploads/equipementiers-automobiles/...
+ *
+ * @example
+ * buildEquipementierLogoUrl('bosch.webp')
+ * // → '/img/uploads/equipementiers-automobiles/bosch.webp'
+ */
+export function buildEquipementierLogoUrl(
+  logoFilename?: string | null,
+): string {
+  if (!logoFilename) {
+    return IMAGE_CONFIG.DEFAULT_LOGO;
+  }
+
+  // Si c'est déjà une URL complète ou proxy, retourner tel quel
+  if (logoFilename.startsWith('http') || logoFilename.startsWith('/img/')) {
+    return logoFilename;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.LOGOS_EQUIPEMENTIERS}/${logoFilename}`;
+}
+
+/**
+ * Construit l'URL d'une image de modèle de véhicule
+ *
+ * @param brandAlias - Alias de la marque (ex: "renault")
+ * @param modelPic - Nom de l'image du modèle (ex: "megane-iii.webp")
+ * @returns URL via proxy /img/uploads/constructeurs-automobiles/marques-concepts/...
+ *
+ * @example
+ * buildModelImageUrl('renault', 'megane-iii.webp')
+ * // → '/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-iii.webp'
+ */
+export function buildModelImageUrl(
+  brandAlias?: string | null,
+  modelPic?: string | null,
+): string {
+  if (!brandAlias || !modelPic || modelPic === 'no.webp') {
+    return IMAGE_CONFIG.DEFAULT_LOGO;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.MODELES}/${brandAlias}/${modelPic}`;
+}
+
+/**
+ * Construit l'URL d'une image de famille de produits
+ *
+ * @param familyPic - Nom de l'image de famille (ex: "freinage.jpg")
+ * @returns URL via proxy /img/uploads/articles/familles-produits/...
+ *
+ * @example
+ * buildFamilyImageUrl('freinage.jpg')
+ * // → '/img/uploads/articles/familles-produits/freinage.jpg'
+ */
+export function buildFamilyImageUrl(familyPic?: string | null): string {
+  if (!familyPic) {
+    return IMAGE_CONFIG.DEFAULT_IMAGE;
+  }
+
+  // Si c'est déjà une URL complète ou proxy, retourner tel quel
+  if (familyPic.startsWith('http') || familyPic.startsWith('/img/')) {
+    return familyPic;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.FAMILLES}/${familyPic}`;
+}
+
+/**
+ * Construit une URL générique via le proxy /img
+ * Pour les cas où le chemin complet est connu
+ *
+ * @param bucket - Nom du bucket (ex: "uploads", "rack-images")
+ * @param path - Chemin dans le bucket
+ * @returns URL via proxy /img/{bucket}/{path}
+ *
+ * @example
+ * buildProxyImageUrl('uploads', 'articles/gammes-produits/catalogue/freins.jpg')
+ * // → '/img/uploads/articles/gammes-produits/catalogue/freins.jpg'
+ */
+export function buildProxyImageUrl(bucket: string, path: string): string {
+  if (!path) {
+    return IMAGE_CONFIG.DEFAULT_IMAGE;
+  }
+
+  return `${IMAGE_CONFIG.PROXY_BASE}/${bucket}/${path}`;
 }

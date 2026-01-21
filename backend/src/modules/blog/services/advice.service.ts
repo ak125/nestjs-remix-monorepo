@@ -5,6 +5,8 @@ import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
 
 export interface BlogAdvice {
   id?: number;
@@ -54,9 +56,7 @@ export interface AdviceFilters {
 @Injectable()
 export class AdviceService {
   private readonly logger = new Logger(AdviceService.name);
-  private readonly SUPABASE_URL =
-    process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-  private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
+  // Constantes locales supprimées - utiliser buildGammeImageUrl depuis image-urls.utils.ts
 
   constructor(
     private readonly blogService: BlogService,
@@ -1003,7 +1003,8 @@ export class AdviceService {
           const imageFilename =
             pg_image || (pg_alias ? `${pg_alias}.webp` : null);
           if (imageFilename) {
-            featuredImage = `${this.CDN_BASE_URL}/articles/gammes-produits/catalogue/${imageFilename}`;
+            // Utilise la fonction centralisée pour construire l'URL image
+            featuredImage = buildGammeImageUrl(imageFilename);
           }
         }
 

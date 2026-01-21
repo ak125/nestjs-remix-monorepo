@@ -1,6 +1,10 @@
 /**
  * 🖼️ HELPER IMAGES - IMGPROXY TRANSFORMATION GRATUITE
  *
+ * ⚠️ SOURCE UNIQUE FRONTEND pour toutes les URLs d'images
+ * Tous les composants DOIVENT importer depuis ce fichier.
+ * NE PAS définir de constantes d'images locales dans les composants.
+ *
  * ✅ Transformation via imgproxy (self-hosted, $0)
  * ✅ WebP/AVIF automatique selon Accept header
  * ✅ Resize on-the-fly (fit, fill, crop)
@@ -8,6 +12,44 @@
  *
  * @see https://docs.imgproxy.net/generating_the_url
  */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🎯 CONFIGURATION CENTRALISÉE - Identique à backend/image-urls.utils.ts
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Configuration centralisée des URLs d'images
+ * Identique à backend/src/modules/catalog/utils/image-urls.utils.ts pour cohérence
+ */
+export const IMAGE_CONFIG = {
+  // Base URLs
+  PROXY_BASE: "/img", // Caddy proxy (prod+dev)
+  IMGPROXY_BASE: "/imgproxy", // Transformation imgproxy
+  DOMAIN: "https://www.automecanik.com",
+
+  // Buckets Supabase
+  BUCKETS: {
+    UPLOADS: "uploads",
+    RACK_IMAGES: "rack-images",
+  },
+
+  // Chemins par type d'image
+  PATHS: {
+    GAMMES: "articles/gammes-produits/catalogue",
+    FAMILLES: "articles/familles-produits",
+    LOGOS_MARQUES: "constructeurs-automobiles/marques-logos",
+    LOGOS_EQUIPEMENTIERS: "equipementiers-automobiles",
+    MODELES: "constructeurs-automobiles/marques-modeles",
+  },
+
+  // Images par défaut
+  DEFAULT_IMAGE: "/images/pieces/default.png",
+  DEFAULT_LOGO: "/images/categories/default.svg",
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔧 CONSTANTES INTERNES (pour rétrocompatibilité)
+// ═══════════════════════════════════════════════════════════════════════════
 
 // 🚀 Configuration imgproxy
 const USE_IMGPROXY = true; // Basculer à false pour désactiver transformations
@@ -18,11 +60,12 @@ const USE_IMGPROXY = true; // Basculer à false pour désactiver transformations
 // - URLs imgproxy pointent vers automecanik.com donc pas de CSP issues
 const USE_IMGPROXY_RUNTIME = USE_IMGPROXY;
 
-const PROXY_BASE_URL = "https://www.automecanik.com";
+const PROXY_BASE_URL = IMAGE_CONFIG.DOMAIN;
 
-// URL Supabase pour source imgproxy
-const SUPABASE_URL = "https://cxpojprgwgubzjyqzmoq.supabase.co";
-const DEFAULT_BUCKET = "uploads";
+// Source pour imgproxy (côté serveur uniquement, l'utilisateur ne voit jamais cette URL)
+const SUPABASE_STORAGE_URL =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+const DEFAULT_BUCKET = IMAGE_CONFIG.BUCKETS.UPLOADS;
 
 export interface ImageOptimizationOptions {
   width?: number;
@@ -92,14 +135,15 @@ export class ImageOptimizer {
       actualPath = cleanPath.replace("uploads/", "");
     }
 
-    // Si imgproxy désactivé (ou en dev), utiliser URL Supabase directe
+    // Si imgproxy désactivé, utiliser proxy /img direct
     if (!USE_IMGPROXY_RUNTIME) {
-      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
+      return `${SUPABASE_STORAGE_URL}/${bucket}/${actualPath}`;
     }
 
     // 🚀 Construire l'URL imgproxy
     // Format: /imgproxy/{processing_options}/plain/{source_url}@{format}
-    const sourceUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${actualPath}`;
+    // Source via /img proxy (Caddy → Supabase)
+    const sourceUrl = `${SUPABASE_STORAGE_URL}/${bucket}/${actualPath}`;
 
     // Options de processing imgproxy
     const processingOptions: string[] = [];
@@ -207,13 +251,13 @@ export class ImageOptimizer {
   }
 
   /**
-   * 🔙 Obtient l'URL directe Supabase (pour debug uniquement)
+   * 🔙 Obtient l'URL via proxy /img (pour debug uniquement)
    */
   static getDirectSupabaseUrl(imagePath: string): string {
     const cleanPath = imagePath.startsWith("/")
       ? imagePath.slice(1)
       : imagePath;
-    return `${SUPABASE_URL}/storage/v1/object/public/${DEFAULT_BUCKET}/${cleanPath}`;
+    return `${SUPABASE_STORAGE_URL}/${DEFAULT_BUCKET}/${cleanPath}`;
   }
 
   /**
@@ -289,7 +333,7 @@ export function getOptimizedLogoUrl(logoFilename?: string): string {
  *
  * @example
  * // Avec chemin complet (nouveau comportement)
- * getOptimizedModelImageUrl("constructeurs-automobiles/marques-concepts/renault/megane-iii.webp")
+ * getOptimizedModelImageUrl("constructeurs-automobiles/marques-modeles/renault/megane-iii.webp")
  *
  * @example
  * // Avec deux arguments (ancien comportement)
@@ -306,8 +350,8 @@ export function getOptimizedModelImageUrl(
     if (modelPic === "no.webp") {
       return "/images/categories/default.svg";
     }
-    // FIX: Utiliser marques-concepts (pas marques-modeles)
-    path = `constructeurs-automobiles/marques-concepts/${pathOrBrandAlias}/${modelPic}`;
+    // Chemin correct: marques-modeles (dossier réel dans Supabase)
+    path = `constructeurs-automobiles/marques-modeles/${pathOrBrandAlias}/${modelPic}`;
   } else {
     // Nouveau comportement: chemin complet passé directement
     // Vérifier si c'est un chemin valide

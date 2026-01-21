@@ -4,6 +4,13 @@ import { GammeRpcService } from './gamme-rpc.service';
 import { PurchaseGuideDataService } from './purchase-guide-data.service';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { stripHtmlForMeta } from '../../../utils/html-entities';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildGammeImageUrl,
+  buildModelImageUrl,
+  buildProxyImageUrl,
+  IMAGE_CONFIG,
+} from '../../catalog/utils/image-urls.utils';
 
 /**
  * Service de construction de la réponse finale
@@ -95,9 +102,7 @@ export class GammeResponseBuilderService {
     const equipementiers =
       this.transformer.processEquipementiers(equipementiersRaw);
 
-    // URL de base Supabase Storage
-    const SUPABASE_URL =
-      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+    // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts
 
     // Traitement motorisations
     const motorisations = motorisationsEnriched.map(
@@ -140,22 +145,11 @@ export class GammeResponseBuilderService {
         // Note: getExplication() est appelé pour effet de bord potentiel mais le résultat n'est pas utilisé
         getExplication();
 
-        // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
-        let carImage = null;
-        if (
-          item.modele_pic &&
-          item.modele_pic !== 'no.webp' &&
-          item.modele_pic !== ''
-        ) {
-          // Utiliser marque_alias (slug déjà stocké en DB) et modele_pic (nom exact du fichier)
-          const marqueAlias =
-            item.marque_alias ||
-            item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`;
-        } else {
-          // Image par défaut
-          carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
-        }
+        // ✅ Construire l'URL de l'image via fonction centralisée
+        const marqueAlias =
+          item.marque_alias ||
+          item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const carImage = buildModelImageUrl(marqueAlias, item.modele_pic);
 
         // Slugify pour les URLs
         // ✅ Utilise buildPieceVehicleUrlRaw centralisé
@@ -365,13 +359,11 @@ export class GammeResponseBuilderService {
 
     // Traitement motorisations blog (niveau 5)
     const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
+      // ✅ Utilise fonction centralisée
       const marqueAlias =
         item.marque_alias ||
         item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const carImage =
-        item.modele_pic && item.modele_pic !== 'no.webp'
-          ? `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`
-          : `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
+      const carImage = buildModelImageUrl(marqueAlias, item.modele_pic);
 
       const yearFrom = item.type_year_from || '';
       const yearTo = item.type_year_to || "aujourd'hui";
@@ -407,8 +399,12 @@ export class GammeResponseBuilderService {
           title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
           alias: blogData.ba_alias,
           preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
+          // ✅ Utilise fonction centralisée
           image: blogData.ba_wall
-            ? `${SUPABASE_URL}/blog/${blogData.ba_wall}`
+            ? buildProxyImageUrl(
+                IMAGE_CONFIG.BUCKETS.UPLOADS,
+                `blog/${blogData.ba_wall}`,
+              )
             : null,
           updated: blogData.ba_update,
         }
@@ -420,12 +416,13 @@ export class GammeResponseBuilderService {
 
     const totalTime = performance.now() - startTime;
 
-    // URLs Supabase pour les images hero
-    const imageUrl = pgPic
-      ? `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgPic}`
-      : null;
+    // ✅ URLs via fonctions centralisées
+    const imageUrl = pgPic ? buildGammeImageUrl(pgPic) : null;
     const wallUrl = pgWall
-      ? `${SUPABASE_URL}/articles/gammes-produits/wall/${pgWall}`
+      ? buildProxyImageUrl(
+          IMAGE_CONFIG.BUCKETS.UPLOADS,
+          `articles/gammes-produits/wall/${pgWall}`,
+        )
       : null;
 
     return {

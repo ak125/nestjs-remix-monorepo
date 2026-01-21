@@ -9,6 +9,12 @@ import {
   VehicleSearchDto,
   VehicleFilterDto,
 } from './dto/vehicles.dto';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildBrandLogoUrl,
+  buildGammeImageUrl,
+  buildModelImageUrl,
+} from '../catalog/utils/image-urls.utils';
 
 // Types enrichis inspirés de la proposition utilisateur
 export interface VehicleDetailsEnhanced {
@@ -361,8 +367,6 @@ export class VehiclesService extends SupabaseBaseService {
         .single();
 
       const marqueAlias = brandData?.marque_alias || '';
-      const SUPABASE_STORAGE_URL =
-        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
 
       // 🎯 FILTRAGE OPTIMISÉ : Requête unique pour modèles avec motorisations
       if (filters?.year) {
@@ -487,13 +491,10 @@ export class VehiclesService extends SupabaseBaseService {
           `📊 Modèles optimisés pour ${brandId} année ${filters.year}: ${data?.length || 0} (total: ${count || 0})`,
         );
 
-        // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
+        // 🖼️ Enrichir avec image_url via fonction centralisée
         const enrichedData = (data || []).map((model: any) => ({
           ...model,
-          image_url:
-            model.modele_pic && model.modele_pic !== 'no.webp'
-              ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
-              : null,
+          image_url: buildModelImageUrl(marqueAlias, model.modele_pic),
         }));
 
         return {
@@ -525,13 +526,10 @@ export class VehiclesService extends SupabaseBaseService {
         throw error;
       }
 
-      // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
+      // 🖼️ Enrichir avec image_url via fonction centralisée
       const enrichedData = (data || []).map((model: any) => ({
         ...model,
-        image_url:
-          model.modele_pic && model.modele_pic !== 'no.webp'
-            ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
-            : null,
+        image_url: buildModelImageUrl(marqueAlias, model.modele_pic),
       }));
 
       // 🎯 Trier : modèles avec images en premier, puis par nom
@@ -1350,13 +1348,11 @@ export class VehiclesService extends SupabaseBaseService {
         };
       }
 
-      // 3️⃣ Transformer et enrichir les données véhicules
+      // 3️⃣ Transformer et enrichir les données véhicules via fonctions centralisées
       let vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
         ...vehicle,
         vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
-        image_url: vehicle.modele_pic
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
-          : null,
+        image_url: buildModelImageUrl(vehicle.marque_alias, vehicle.modele_pic),
       }));
 
       // 🚗 ENRICHISSEMENT SEO VÉHICULES avec __seo_type_switch
@@ -1424,8 +1420,9 @@ export class VehiclesService extends SupabaseBaseService {
       let parts = (bestsellers?.parts || []).map((part: any) => ({
         ...part,
         part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.cgc_type_alias || 'type'}-${part.cgc_type_id || 0}.html`,
+        // ✅ Utilise fonction centralisée
         image_url: part.pg_alias
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_alias}.webp`
+          ? buildGammeImageUrl(`${part.pg_alias}.webp`)
           : null,
       }));
 
@@ -1913,15 +1910,10 @@ export class VehiclesService extends SupabaseBaseService {
         throw error;
       }
 
-      // Enrichir avec URLs images
-      const SUPABASE_STORAGE_URL =
-        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
-
+      // ✅ Enrichir avec URLs images via fonction centralisée
       const enrichedData = (data || []).map((brand: any) => ({
         ...brand,
-        logo_url: brand.marque_logo
-          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${brand.marque_logo}`
-          : null,
+        logo_url: buildBrandLogoUrl(brand.marque_logo),
       }));
 
       const result = {
@@ -2049,9 +2041,7 @@ export class VehiclesService extends SupabaseBaseService {
         };
       }
 
-      // 3. Construire l'objet complet avec formatage
-      const SUPABASE_STORAGE_URL =
-        'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+      // 3. Construire l'objet complet avec formatage via fonctions centralisées
 
       // Formatage des dates de production
       let productionDateFormatted = '';
@@ -2129,14 +2119,10 @@ export class VehiclesService extends SupabaseBaseService {
         power_formatted: powerFormatted,
         cylinder_cm3: cylinderCm3,
 
-        // URLs
+        // ✅ URLs via fonctions centralisées
         vehicle_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${typeData.type_alias}-${typeData.type_id}.html`,
-        image_url: modele.modele_pic
-          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marque.marque_alias}/${modele.modele_pic}`
-          : null,
-        logo_url: marque.marque_logo
-          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${marque.marque_logo}`
-          : null,
+        image_url: buildModelImageUrl(marque.marque_alias, modele.modele_pic),
+        logo_url: buildBrandLogoUrl(marque.marque_logo),
       };
 
       const result = { success: true, data: fullData };
