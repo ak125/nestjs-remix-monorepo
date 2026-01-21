@@ -9,46 +9,37 @@ import {
   decodeHtmlEntities,
   stripHtmlForMeta,
 } from '../../../utils/html-entities';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import { buildProxyImageUrl, IMAGE_CONFIG } from '../utils/image-urls.utils';
 
 /**
- * 🖼️ Génère une URL d'image brute via Supabase object/public
- * ⚠️ PAS de transformation (désactivé pour éviter coûts $5/1000 images)
- * Cache Cloudflare par URL unique
+ * 🖼️ Génère une URL d'image via proxy /img/*
+ * ✅ Utilise les fonctions centralisées de image-urls.utils.ts
  */
-const SUPABASE_URL =
-  process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-
 function getOptimizedImageUrl(relativePath: string | null | undefined): string {
   if (!relativePath) return '';
 
-  // Si déjà URL complète Supabase, s'assurer qu'on utilise /object/public/
-  if (relativePath.startsWith(SUPABASE_URL)) {
-    // Supprimer les params de transformation si présents
-    if (relativePath.includes('/storage/v1/object/public/')) {
-      return relativePath.split('?')[0];
-    }
+  // Si déjà URL complète ou proxy, retourner telle quelle
+  if (relativePath.startsWith('http') || relativePath.startsWith('/img/')) {
     return relativePath;
   }
 
-  // Si autre URL complète, retourner telle quelle
-  if (relativePath.startsWith('http')) return relativePath;
-
   // Déterminer le bucket selon le préfixe
-  let bucket = 'uploads';
+  let bucket: string = IMAGE_CONFIG.BUCKETS.UPLOADS;
   let path = relativePath;
 
   if (relativePath.startsWith('/rack/')) {
-    bucket = 'rack-images';
+    bucket = IMAGE_CONFIG.BUCKETS.RACK_IMAGES;
     path = relativePath.replace('/rack/', '');
   } else if (relativePath.startsWith('/upload/')) {
-    bucket = 'uploads';
+    bucket = IMAGE_CONFIG.BUCKETS.UPLOADS;
     path = relativePath.replace('/upload/', '');
   } else if (relativePath.startsWith('/')) {
     path = relativePath.substring(1);
   }
 
-  // ⚠️ Utiliser /object/public/ (image brute, pas de transformation, $0)
-  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+  // ✅ Utiliser le proxy /img/* via fonction centralisée
+  return buildProxyImageUrl(bucket, path);
 }
 
 /**

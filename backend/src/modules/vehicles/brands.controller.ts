@@ -27,10 +27,11 @@ import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { BrandSeoService } from './services/seo/brand-seo.service';
 import { BrandRpcService } from './services/brand-rpc.service';
-
-// 🖼️ URL Supabase Storage pour les images
-const SUPABASE_STORAGE_URL =
-  'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildBrandLogoUrl,
+  buildModelImageUrl,
+} from '../catalog/utils/image-urls.utils';
 
 @Controller('api/brands')
 export class BrandsController {
@@ -203,11 +204,8 @@ export class BrandsController {
         slug: type.type_alias || null,
       }));
 
-      // 5. Générer l'URL de l'image du modèle
-      let imageUrl: string | null = null;
-      if (modelData.modele_pic && modelData.modele_pic !== 'no.webp') {
-        imageUrl = `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${modelData.modele_pic}`;
-      }
+      // 5. Générer l'URL de l'image du modèle via fonction centralisée
+      const imageUrl = buildModelImageUrl(marqueAlias, modelData.modele_pic);
 
       // 6. Préparer la réponse au format attendu par le frontend
       return {
@@ -217,9 +215,8 @@ export class BrandsController {
             id: marqueId,
             name: brandData.marque_name,
             alias: marqueAlias,
-            logo: brandData.marque_img
-              ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques/${brandData.marque_img}`
-              : null,
+            // ✅ Utilise fonction centralisée
+            logo: buildBrandLogoUrl(brandData.marque_img),
           },
           model: {
             id: modeleId,

@@ -4,32 +4,32 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   ProductImageMetadata,
   ProductImageType,
   SitemapImage,
 } from '../interfaces/sitemap-image.interface';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildProxyImageUrl,
+  IMAGE_CONFIG,
+} from '../../catalog/utils/image-urls.utils';
 
 @Injectable()
 export class ProductImageService {
   private readonly logger = new Logger(ProductImageService.name);
-  private readonly supabaseUrl: string;
-  private readonly cdnBaseUrl: string;
 
-  constructor(private configService: ConfigService) {
-    this.supabaseUrl =
-      this.configService.get<string>('SUPABASE_URL') ||
-      'https://vxjbdsmpdwqzfvbddvvc.supabase.co';
-    this.cdnBaseUrl = `${this.supabaseUrl}/storage/v1/object/public/uploads`;
-
+  constructor() {
     this.logger.log('🖼️ ProductImageService initialized');
-    this.logger.log(`📦 CDN Base URL: ${this.cdnBaseUrl}`);
+    this.logger.log(
+      `📦 CDN Base URL: ${IMAGE_CONFIG.DOMAIN}${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}`,
+    );
   }
 
   /**
    * Construire l'URL publique stable d'une image
    * (pas d'URL signée temporaire, préférer URLs publiques CDN)
+   * Pour sitemaps: URLs absolues avec domaine
    */
   buildPublicImageUrl(path: string): string {
     // Si déjà une URL complète, retourner telle quelle
@@ -40,8 +40,9 @@ export class ProductImageService {
     // Nettoyer le path (supprimer / initial si présent)
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 
-    // Construire URL CDN publique
-    return `${this.cdnBaseUrl}/${cleanPath}`;
+    // Construire URL CDN publique absolue (pour sitemaps)
+    // Format: https://www.automecanik.com/img/uploads/{path}
+    return `${IMAGE_CONFIG.DOMAIN}${buildProxyImageUrl(IMAGE_CONFIG.BUCKETS.UPLOADS, cleanPath)}`;
   }
 
   /**

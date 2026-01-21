@@ -2,6 +2,8 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import { buildRackImageUrl } from '../../catalog/utils/image-urls.utils';
 
 type SearchFilters = {
   marqueIds?: number[];
@@ -542,14 +544,14 @@ export class SearchSimpleService extends SupabaseBaseService {
         { name: g.pg_name, alias: g.pg_alias },
       ]),
     );
-    // 🖼️ Map des images: pmi_piece_id -> URL complète
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    // 🖼️ Map des images: pmi_piece_id -> URL complète via fonction centralisée
     const imageMap = new Map<number, string>(
       (imagesResult.data || []).map((img: any) => [
         parseInt(img.pmi_piece_id, 10),
-        img.pmi_folder && img.pmi_name
-          ? `${SUPABASE_URL}/storage/v1/object/public/rack-images/${img.pmi_folder}/${img.pmi_name}`
-          : '/images/pieces/default.png',
+        buildRackImageUrl({
+          pmi_folder: img.pmi_folder,
+          pmi_name: img.pmi_name,
+        }),
       ]),
     );
     this.logger.log(`🖼️ ${imagesResult.data?.length || 0} images chargées`);

@@ -16,6 +16,11 @@ import {
 } from '../../seo/internal-linking.service';
 import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+// ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
+import {
+  buildProxyImageUrl,
+  IMAGE_CONFIG,
+} from '../../catalog/utils/image-urls.utils';
 
 /**
  * 📰 BlogService - Service principal AMÉLIORÉ pour la gestion du contenu blog
@@ -33,9 +38,7 @@ import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 @Injectable()
 export class BlogService {
   private readonly logger = new Logger(BlogService.name);
-  private readonly SUPABASE_URL =
-    process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-  private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
+  // Constantes locales supprimées - utiliser IMAGE_CONFIG depuis image-urls.utils.ts
 
   constructor(
     private readonly supabaseService: SupabaseIndexationService,
@@ -47,13 +50,13 @@ export class BlogService {
 
   /**
    * 🖼️ Construire l'URL CDN complète pour une image
+   * Utilise les fonctions centralisées de image-urls.utils.ts
    */
   private buildImageUrl(
     filename: string | null,
     folder: string,
     marqueAlias?: string,
   ): string | null {
-    // 🔍 DEBUG avec LOG (pas debug)
     this.logger.log(
       `   🖼️  buildImageUrl() appelé: filename="${filename}", folder="${folder}", marque="${marqueAlias || 'N/A'}"`,
     );
@@ -68,10 +71,13 @@ export class BlogService {
       return filename;
     }
 
+    // Utiliser les fonctions centralisées pour construire l'URL
     // Si marqueAlias fourni, utiliser structure marques-modeles/{marque}/{modele}.webp
-    const url = marqueAlias
-      ? `${this.CDN_BASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${filename}`
-      : `${this.CDN_BASE_URL}/${folder}/${filename}`;
+    const path = marqueAlias
+      ? `constructeurs-automobiles/marques-modeles/${marqueAlias}/${filename}`
+      : `${folder}/${filename}`;
+
+    const url = buildProxyImageUrl(IMAGE_CONFIG.BUCKETS.UPLOADS, path);
 
     this.logger.log(`   🖼️  → URL construite: ${url}`);
     return url;
