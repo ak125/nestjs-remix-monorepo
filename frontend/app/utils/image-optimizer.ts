@@ -122,7 +122,7 @@ export class ImageOptimizer {
       : imagePath;
 
     // Détecter dynamiquement le bucket
-    let bucket = DEFAULT_BUCKET;
+    let bucket: string = DEFAULT_BUCKET;
     let actualPath = cleanPath;
 
     if (cleanPath.startsWith("rack-images/")) {
@@ -234,7 +234,7 @@ export class ImageOptimizer {
       : imagePath;
 
     // Détecter le bucket
-    let bucket = DEFAULT_BUCKET;
+    let bucket: string = DEFAULT_BUCKET;
     let actualPath = cleanPath;
 
     if (cleanPath.startsWith("rack-images/")) {
