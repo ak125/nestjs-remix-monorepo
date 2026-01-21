@@ -25,7 +25,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./public/sitemaps:/srv/sitemaps
+      - /dev/volumes/nestjs-remix/production/sitemaps:/srv/sitemaps
     networks:
       - automecanik-prod
     healthcheck:
