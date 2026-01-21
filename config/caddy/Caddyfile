@@ -89,8 +89,8 @@ automecanik.com, www.automecanik.com {
         # Images brutes sans transformation ($0)
         rewrite * /storage/v1/object/public/{re.img_path.1}
 
-        reverse_proxy https://https://www.automecanik.com {
-            header_up Host https://www.automecanik.com
+        reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
+            header_up Host cxpojprgwgubzjyqzmoq.supabase.co
             header_down -Cache-Control
         }
     }
