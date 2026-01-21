@@ -14,31 +14,16 @@ export type StockStatus =
  * Vérifie si une pièce est disponible selon son statut de stock
  *
  * @param stockStatus - Statut de stock de la pièce
- * @returns true si la pièce est disponible, false sinon
+ * @returns true - TOUJOURS disponible (stock désactivé temporairement)
  *
- * @example
- * hasStockAvailable('En stock') // → true
- * hasStockAvailable('Sur commande') // → true
- * hasStockAvailable('Rupture') // → false
- * hasStockAvailable('') // → false (stock masqué)
- * hasStockAvailable(undefined) // → true (par défaut disponible)
+ * ⚠️ FIX 2026-01-21: Gestion stock désactivée car non fonctionnelle
+ * Tous les produits sont considérés comme disponibles pour afficher
+ * le bouton "Ajouter au panier" sur toutes les fiches produit.
  */
-export const hasStockAvailable = (stockStatus?: StockStatus): boolean => {
-  // ✅ FIX 2026-01-17: Si stock est "" (empty string), ne pas afficher le badge
-  // Cela permet de masquer le stock selon la config (rm-mapper.ts: stock: "")
-  if (stockStatus === "") return false;
-
-  // Si pas de statut (undefined), considérer comme disponible par défaut
-  if (!stockStatus) return true;
-
-  // Statuts considérés comme disponibles
-  const availableStatuses: StockStatus[] = [
-    "En stock",
-    "available",
-    "Sur commande",
-  ];
-
-  return availableStatuses.includes(stockStatus);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const hasStockAvailable = (_stockStatus?: StockStatus): boolean => {
+  // 🛒 Stock désactivé - tous les produits disponibles
+  return true;
 };
 
 /**
