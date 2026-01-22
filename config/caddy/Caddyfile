@@ -95,13 +95,37 @@ automecanik.com, www.automecanik.com {
         }
     }
 
-    # ===== SITEMAPS STATIQUES (714k URLs) =====
-    # Servis directement depuis le filesystem (volume persistant)
-    @sitemaps path /sitemap*.xml
+    # ===== REDIRECTIONS LEGACY IMAGES (SEO 301) =====
+    # URLs historiques stockées en base → imgproxy (WebP optimisé)
+    # Préserve le PageRank via 301 permanent + images optimisées
+
+    # /rack/{folder}/{file} → imgproxy WebP (800px, q85)
+    @rack_legacy path_regexp rack_path ^/rack/(.+)$
+    redir @rack_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1}@webp permanent
+
+    # /upload/{path} → imgproxy WebP (800px, q85)
+    @upload_legacy path_regexp upload_path ^/upload/(.+)$
+    redir @upload_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1}@webp permanent
+
+    # ===== SITEMAPS V10 (par temperature + unifie) =====
+    # Servis directement depuis /var/www/sitemaps (volume persistant)
+    # Inclut: sitemap.xml (index), hot/, new/, stable/, cold/
+    @sitemaps path /sitemap*.xml /sitemaps/*
     handle @sitemaps {
-        root * /srv/sitemaps
+        root * /var/www/sitemaps
         header Content-Type "application/xml; charset=utf-8"
-        header Cache-Control "public, max-age=86400"
+        header Cache-Control "public, max-age=3600"
+        file_server
+    }
+
+    # ===== CRAWL HUBS (HTML pour Googlebot) =====
+    # Pages de liens internes non indexees pour faciliter le crawl
+    @crawl_hubs path /__crawl__/*
+    handle @crawl_hubs {
+        root * /var/www/crawl-hubs
+        uri strip_prefix /__crawl__
+        header X-Robots-Tag "noindex, follow"
+        header Cache-Control "public, max-age=3600"
         file_server
     }
 
