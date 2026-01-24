@@ -8,4 +8,5 @@ export {
   shouldRevalidate,
   default,
   ErrorBoundary,
+  handle, // Phase 10: Propager pageRole au root Layout
 } from "./constructeurs.$brand.$model.$type";
