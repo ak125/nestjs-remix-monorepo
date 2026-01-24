@@ -1,53 +1,77 @@
-import { 
+import {
   type LoaderFunctionArgs,
   type MetaFunction,
-  redirect 
+  redirect,
 } from "@remix-run/node";
 import { Link, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { z } from "zod";
+import { getOptionalUser } from "../../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { getOptionalUser } from "../../auth/unified.server";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+// Phase 9: PageRole pour analytics
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    clusterId: "auth",
+    canonicalEntity: "register",
+    contentType: "support",
+    funnelStage: "decision",
+    conversionGoal: "lead",
+  }),
+};
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
   { title: "Inscription | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/register" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/register",
+  },
 ];
 
-const _RegisterSchema = z.object({
-  email: z.string().email("Email invalide"),
-  password: z.string().min(8, "8 caractères minimum"),
-  confirmPassword: z.string(),
-  firstName: z.string().min(2, "Prénom requis"),
-  lastName: z.string().min(2, "Nom requis"),
-  phone: z.string().optional(),
-  civility: z.enum(["M", "Mme", "Autre"]),
-  newsletterOptIn: z.boolean().optional(),
-  // Adresse de facturation
-  billingAddress: z.object({
-    address1: z.string().min(5, "Adresse requise"),
-    address2: z.string().optional(),
-    postalCode: z.string().regex(/^\d{5}$/, "Code postal invalide"),
-    city: z.string().min(2, "Ville requise"),
-    country: z.string().default("FR"),
-  }),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
+const _RegisterSchema = z
+  .object({
+    email: z.string().email("Email invalide"),
+    password: z.string().min(8, "8 caractères minimum"),
+    confirmPassword: z.string(),
+    firstName: z.string().min(2, "Prénom requis"),
+    lastName: z.string().min(2, "Nom requis"),
+    phone: z.string().optional(),
+    civility: z.enum(["M", "Mme", "Autre"]),
+    newsletterOptIn: z.boolean().optional(),
+    // Adresse de facturation
+    billingAddress: z.object({
+      address1: z.string().min(5, "Adresse requise"),
+      address2: z.string().optional(),
+      postalCode: z.string().regex(/^\d{5}$/, "Code postal invalide"),
+      city: z.string().min(2, "Ville requise"),
+      country: z.string().default("FR"),
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getOptionalUser({ context });
   if (user) {
     // Rediriger vers la page demandée ou le profil par défaut
     const url = new URL(request.url);
-    const redirectTo = url.searchParams.get('redirectTo') || '/profile';
+    const redirectTo = url.searchParams.get("redirectTo") || "/profile";
     return redirect(redirectTo);
   }
   return null;
@@ -62,28 +86,36 @@ export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     const form = e.currentTarget;
     const formData = new FormData(form);
-    
+
     // Soumettre directement au backend via navigation native (comme le login)
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = '/register-and-login';
-    tempForm.style.display = 'none';
-    
+    const tempForm = document.createElement("form");
+    tempForm.method = "POST";
+    tempForm.action = "/register-and-login";
+    tempForm.style.display = "none";
+
     // Ajouter tous les champs du formulaire
-    const fields = ['email', 'password', 'confirmPassword', 'firstName', 'lastName', 'phone', 'civility'];
-    fields.forEach(field => {
+    const fields = [
+      "email",
+      "password",
+      "confirmPassword",
+      "firstName",
+      "lastName",
+      "phone",
+      "civility",
+    ];
+    fields.forEach((field) => {
       const value = formData.get(field);
       if (value) {
-        const input = document.createElement('input');
+        const input = document.createElement("input");
         input.name = field;
         input.value = value as string;
         tempForm.appendChild(input);
       }
     });
-    
+
     document.body.appendChild(tempForm);
     tempForm.submit();
   };
@@ -126,7 +158,9 @@ export default function RegisterPage() {
           <Badge className="w-full justify-center py-3 bg-primary/5 text-blue-700 hover:bg-info/20 border border-blue-200">
             <span className="flex items-center gap-2 text-sm">
               <span>ℹ️</span>
-              <span>Après inscription, vous serez automatiquement connecté</span>
+              <span>
+                Après inscription, vous serez automatiquement connecté
+              </span>
             </span>
           </Badge>
         </div>
@@ -145,8 +179,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-
-
         {/* Registration Form */}
         <Card className="shadow-xl border-gray-200 backdrop-blur-sm bg-white/90">
           <CardHeader>
@@ -162,13 +194,13 @@ export default function RegisterPage() {
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                   Informations personnelles
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="civility">Civilité</Label>
-                    <select 
-                      id="civility" 
-                      name="civility" 
+                    <select
+                      id="civility"
+                      name="civility"
                       required
                       disabled={isSubmitting}
                       className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 disabled:opacity-50"
@@ -247,33 +279,47 @@ export default function RegisterPage() {
                       autoComplete="new-password"
                       className="h-11 transition-all duration-200"
                       placeholder="••••••••"
-                      onChange={(e) => setPasswordStrength(calculatePasswordStrength(e.target.value))}
+                      onChange={(e) =>
+                        setPasswordStrength(
+                          calculatePasswordStrength(e.target.value),
+                        )
+                      }
                     />
                     {passwordStrength > 0 && (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">Force du mot de passe</span>
-                          <span className={`font-medium ${
-                            passwordStrength < 40 ? 'text-red-600' : 
-                            passwordStrength < 70 ? 'text-yellow-600' : 
-                            'text-green-600'
-                          }`}>
+                          <span className="text-gray-600">
+                            Force du mot de passe
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              passwordStrength < 40
+                                ? "text-red-600"
+                                : passwordStrength < 70
+                                  ? "text-yellow-600"
+                                  : "text-green-600"
+                            }`}
+                          >
                             {getStrengthLabel(passwordStrength)}
                           </span>
                         </div>
                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className={`h-full transition-all duration-300 ${getStrengthColor(passwordStrength)}`}
                             style={{ width: `${passwordStrength}%` }}
                           />
                         </div>
                       </div>
                     )}
-                    <p className="text-xs text-gray-500">Minimum 8 caractères</p>
+                    <p className="text-xs text-gray-500">
+                      Minimum 8 caractères
+                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                    <Label htmlFor="confirmPassword">
+                      Confirmer le mot de passe
+                    </Label>
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
@@ -292,7 +338,7 @@ export default function RegisterPage() {
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                   Adresse de facturation
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="billing.address1">Adresse</Label>
@@ -308,7 +354,9 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="billing.address2">Complément d'adresse (optionnel)</Label>
+                    <Label htmlFor="billing.address2">
+                      Complément d'adresse (optionnel)
+                    </Label>
                     <Input
                       id="billing.address2"
                       name="billing.address2"
@@ -361,7 +409,10 @@ export default function RegisterPage() {
                   disabled={isSubmitting}
                   className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
                 />
-                <Label htmlFor="newsletterOptIn" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="newsletterOptIn"
+                  className="text-sm font-normal cursor-pointer"
+                >
                   Je souhaite recevoir les offres et actualités par email
                 </Label>
               </div>
@@ -378,17 +429,33 @@ export default function RegisterPage() {
                     Déjà un compte ? Se connecter
                   </Button>
                 </Link>
-                
-                <Button 
-                  type="submit" 
+
+                <Button
+                  type="submit"
                   disabled={isSubmitting}
                   className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 h-11 px-8"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Création...
                     </span>
@@ -403,7 +470,8 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-500">
-          En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+          En créant un compte, vous acceptez nos conditions d'utilisation et
+          notre politique de confidentialité.
         </p>
       </div>
     </div>

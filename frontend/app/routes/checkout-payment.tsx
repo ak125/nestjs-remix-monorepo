@@ -23,6 +23,17 @@ import {
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
 import { Error404 } from "~/components/errors/Error404";
 import { trackAddPaymentInfo } from "~/utils/analytics";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+// Phase 9: PageRole pour analytics
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+    clusterId: "checkout-payment",
+    canonicalEntity: "paiement",
+    funnelStage: "decision",
+    conversionGoal: "purchase",
+  }),
+};
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [

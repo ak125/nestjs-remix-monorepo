@@ -31,6 +31,17 @@ import {
 } from "~/components/layout/MobileBottomBar";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackBeginCheckout } from "~/utils/analytics";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+// Phase 9: PageRole pour analytics
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+    clusterId: "checkout",
+    canonicalEntity: "finalisation",
+    funnelStage: "decision",
+    conversionGoal: "purchase",
+  }),
+};
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [

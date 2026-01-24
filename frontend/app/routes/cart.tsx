@@ -47,6 +47,17 @@ import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+// Phase 9: PageRole pour analytics
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+    clusterId: "cart",
+    canonicalEntity: "panier",
+    funnelStage: "decision",
+    conversionGoal: "purchase",
+  }),
+};
 
 // 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
