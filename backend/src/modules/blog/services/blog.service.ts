@@ -1864,16 +1864,17 @@ export class BlogService {
    *
    * Traite les marqueurs #LinkGammeCar_Y# et #LinkGamme_Y# stockés en BDD
    * Respecte les limites configurées (MAX_BLOG_INTERNAL_LINKS)
+   * Phase 1 SEO: Valide les règles de maillage par rôle via sourceUrl
    *
    * @param content - Contenu HTML avec marqueurs
    * @param vehicle - Contexte véhicule pour personnaliser les ancres
-   * @param sourcePgId - ID de la gamme source (page courante)
+   * @param sourceUrl - URL de la page source pour validation des rôles SEO
    * @returns Contenu avec liens HTML + métadonnées A/B testing
    */
   async injectInternalLinks(
     content: string,
     vehicle?: VehicleContext,
-    sourcePgId?: number,
+    sourceUrl?: string,
   ): Promise<LinkInjectionResult> {
     const result: LinkInjectionResult = {
       content,
@@ -1895,16 +1896,13 @@ export class BlogService {
       let processedContent = content;
 
       // 1. Traiter #LinkGammeCar_Y# (liens avec véhicule et rotation verbe+nom)
-      if (
-        vehicle &&
-        sourcePgId &&
-        processedContent.includes('#LinkGammeCar_')
-      ) {
+      // Phase 1 SEO: Validation des rôles via sourceUrl
+      if (vehicle && sourceUrl && processedContent.includes('#LinkGammeCar_')) {
         const linkResult =
           await this.internalLinkingService.processLinkGammeCar(
             processedContent,
             vehicle,
-            sourcePgId,
+            sourceUrl,
           );
 
         processedContent = linkResult.content;
