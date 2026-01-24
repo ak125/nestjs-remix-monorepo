@@ -230,6 +230,206 @@ export class ReferenceService {
     };
   }
 
+  // ============================================
+  // MÉTHODES DE GÉNÉRATION (Phase 7 - Draft + Review)
+  // ============================================
+
+  /**
+   * Génère des entrées R4 Reference depuis les gammes existantes
+   * Les entrées sont créées en mode DRAFT (is_published: false)
+   * @returns Nombre d'entrées créées et ignorées
+   */
+  async generateFromGammes(): Promise<{ created: number; skipped: number }> {
+    this.logger.log('🏭 Generating R4 References from gammes...');
+
+    // 1. Récupérer gammes avec descriptions
+    const { data: gammes, error: gammeError } = await this.supabase
+      .from('__pg_gammes')
+      .select('id, pg_alias, label, description')
+      .not('pg_alias', 'is', null);
+
+    if (gammeError || !gammes) {
+      this.logger.error('❌ Error fetching gammes:', gammeError);
+      return { created: 0, skipped: 0 };
+    }
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const gamme of gammes) {
+      // 2. Vérifier si entrée existe déjà (publiée ou draft)
+      const { count } = await this.supabase
+        .from('__seo_reference')
+        .select('id', { count: 'exact', head: true })
+        .eq('slug', gamme.pg_alias);
+
+      if ((count ?? 0) > 0) {
+        skipped++;
+        continue;
+      }
+
+      // 3. Créer entrée R4 en DRAFT
+      const { error: insertError } = await this.supabase
+        .from('__seo_reference')
+        .insert({
+          slug: gamme.pg_alias,
+          title: `Qu'est-ce qu'un ${gamme.label} ?`,
+          meta_description: `Définition technique du ${gamme.label}: rôle, composition, fonctionnement.`,
+          definition:
+            gamme.description ||
+            `Le ${gamme.label} est une pièce automobile essentielle.`,
+          role_mecanique: `Rôle mécanique du ${gamme.label} dans le véhicule.`,
+          pg_id: gamme.id,
+          is_published: false, // ← DRAFT - validation manuelle requise
+        });
+
+      if (insertError) {
+        this.logger.error(
+          `❌ Error inserting reference ${gamme.pg_alias}:`,
+          insertError,
+        );
+        continue;
+      }
+
+      created++;
+    }
+
+    this.logger.log(
+      `✅ Generation complete: ${created} created, ${skipped} skipped`,
+    );
+    return { created, skipped };
+  }
+
+  /**
+   * Récupère tous les drafts (non publiés)
+   * @returns Liste des références en mode draft
+   */
+  async getDrafts(): Promise<SeoReferenceListItem[]> {
+    this.logger.debug('📝 Fetching draft references');
+
+    const { data, error } = await this.supabase
+      .from('__seo_reference')
+      .select(
+        'id, slug, title, meta_description, definition, pg_id, is_published, created_at',
+      )
+      .eq('is_published', false)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      this.logger.error('❌ Error fetching drafts:', error);
+      return [];
+    }
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      metaDescription: row.meta_description,
+      definition: row.definition?.substring(0, 200) + '...',
+      pgId: row.pg_id,
+      gammeName: null,
+      gammeSlug: null,
+    }));
+  }
+
+  /**
+   * Publie une référence (is_published: true)
+   * @param slug - Le slug de la référence à publier
+   * @returns Succès ou échec
+   */
+  async publish(slug: string): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`📢 Publishing reference: ${slug}`);
+
+    const { error } = await this.supabase
+      .from('__seo_reference')
+      .update({
+        is_published: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('slug', slug);
+
+    if (error) {
+      this.logger.error(`❌ Error publishing ${slug}:`, error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Met à jour une référence (draft ou publiée)
+   * @param slug - Le slug de la référence
+   * @param updates - Les champs à mettre à jour
+   * @returns Succès ou échec
+   */
+  async update(
+    slug: string,
+    updates: Partial<{
+      title: string;
+      meta_description: string;
+      definition: string;
+      role_mecanique: string;
+      role_negatif: string;
+      composition: string[];
+      confusions_courantes: string[];
+      symptomes_associes: string[];
+      regles_metier: string[];
+      scope_limites: string;
+      content_html: string;
+    }>,
+  ): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`✏️ Updating reference: ${slug}`);
+
+    const { error } = await this.supabase
+      .from('__seo_reference')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('slug', slug);
+
+    if (error) {
+      this.logger.error(`❌ Error updating ${slug}:`, error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Supprime une référence draft (non publiée)
+   * @param slug - Le slug de la référence à supprimer
+   * @returns Succès ou échec
+   */
+  async deleteDraft(
+    slug: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`🗑️ Deleting draft reference: ${slug}`);
+
+    // Vérifier que c'est bien un draft
+    const { data: existing } = await this.supabase
+      .from('__seo_reference')
+      .select('is_published')
+      .eq('slug', slug)
+      .single();
+
+    if (existing?.is_published) {
+      return { success: false, error: 'Cannot delete published reference' };
+    }
+
+    const { error } = await this.supabase
+      .from('__seo_reference')
+      .delete()
+      .eq('slug', slug);
+
+    if (error) {
+      this.logger.error(`❌ Error deleting ${slug}:`, error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
   /**
    * Mappe une ligne de la base de données vers une SeoReference
    */

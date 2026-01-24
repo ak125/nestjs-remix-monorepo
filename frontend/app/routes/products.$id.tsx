@@ -47,6 +47,17 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * 📌 SEO Page Role - R2 Product (Transaction)
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+    clusterId: "product",
+    contentType: "product",
+  }),
+};
 
 /**
  * 🔍 SEO Meta Tags - Page produit individuel
