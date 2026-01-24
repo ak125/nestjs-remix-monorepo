@@ -1,17 +1,25 @@
 /**
  * 🏷️ LISTE DES MARQUES AUTOMOBILES
- * 
+ *
  * Page publique listant toutes les marques automobiles
  * Route: /brands
- * 
+ *
  * ✨ VERSION avec carousel modèles populaires
+ *
+ * Rôle SEO : R1 - ROUTER
+ * Intention : Sélection de marque
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { Alert } from '~/components/ui/alert';
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
@@ -19,6 +27,18 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "brands",
+    canonicalEntity: "brands-index",
+  }),
+};
 
 /**
  * 🔍 SEO Meta Tags
@@ -27,21 +47,25 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const total = data?.total || 0;
   const title = `Toutes les Marques Automobiles (${total}) | Pièces Détachées Auto`;
   const description = `Découvrez notre catalogue complet de ${total} marques automobiles. Trouvez les pièces détachées pour BMW, Mercedes, Audi, Volkswagen, Renault, Peugeot et toutes les autres marques.`;
-  
+
   return [
     { title },
-    { name: 'description', content: description },
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/brands" },
-    { name: 'robots', content: 'index, follow' },
+    { name: "description", content: description },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://www.automecanik.com/brands",
+    },
+    { name: "robots", content: "index, follow" },
     // Open Graph
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:url', content: 'https://www.automecanik.com/brands' },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
+    { property: "og:url", content: "https://www.automecanik.com/brands" },
     // Twitter
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
   ];
 };
 
@@ -98,7 +122,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // Récupérer toutes les marques
     const brandsResponse = await fetch(`${baseUrl}/api/brands`, {
-      headers: { 'internal-call': 'true' }
+      headers: { "internal-call": "true" },
     });
 
     if (!brandsResponse.ok) {
@@ -106,18 +130,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const brandsData = await brandsResponse.json();
-    const brands: Brand[] = brandsData.data?.map((brand: any) => ({
-      marque_id: brand.id,
-      marque_name: brand.name,
-      models_count: brand.models_count || 0
-    })) || [];
+    const brands: Brand[] =
+      brandsData.data?.map((brand: any) => ({
+        marque_id: brand.id,
+        marque_name: brand.name,
+        models_count: brand.models_count || 0,
+      })) || [];
 
     // ✨ Récupérer les modèles populaires
     let popularModels: FeaturedModel[] = [];
     try {
-      const modelsResponse = await fetch(`${baseUrl}/api/brands/popular-models?limit=8`, {
-        headers: { 'internal-call': 'true' }
-      });
+      const modelsResponse = await fetch(
+        `${baseUrl}/api/brands/popular-models?limit=8`,
+        {
+          headers: { "internal-call": "true" },
+        },
+      );
       if (modelsResponse.ok) {
         const modelsData = await modelsResponse.json();
         popularModels = modelsData.data || [];
@@ -129,9 +157,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // ✨ Récupérer les logos de marques
     let brandLogos: BrandLogo[] = [];
     try {
-      const logosResponse = await fetch(`${baseUrl}/api/brands/brands-logos?limit=18`, {
-        headers: { 'internal-call': 'true' }
-      });
+      const logosResponse = await fetch(
+        `${baseUrl}/api/brands/brands-logos?limit=18`,
+        {
+          headers: { "internal-call": "true" },
+        },
+      );
       if (logosResponse.ok) {
         const logosData = await logosResponse.json();
         brandLogos = logosData.data || [];
@@ -144,9 +175,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands: brands.sort((a, b) => a.marque_name.localeCompare(b.marque_name)),
       total: brands.length,
       popularModels,
-      brandLogos
+      brandLogos,
     } as LoaderData);
-
   } catch (error) {
     console.error("Erreur chargement marques:", error);
     return json({
@@ -154,25 +184,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
       total: 0,
       popularModels: [],
       brandLogos: [],
-      error: "Impossible de charger les marques"
+      error: "Impossible de charger les marques",
     } as LoaderData);
   }
 }
 
 export default function BrandsIndex() {
-  const { brands, total, popularModels, brandLogos, error } = useLoaderData<typeof loader>();
+  const { brands, total, popularModels, brandLogos, error } =
+    useLoaderData<typeof loader>();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtrage côté client
-  const filteredBrands = brands.filter(brand =>
-    brand.marque_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBrands = brands.filter((brand) =>
+    brand.marque_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <PublicBreadcrumb items={[{ label: "Marques" }]} />
-      
+
       {/* Header */}
       <div className="text-center mb-12">
         <div className="flex justify-center mb-4">
@@ -184,8 +215,8 @@ export default function BrandsIndex() {
           Marques Automobiles
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Découvrez notre catalogue complet de {total} marques automobiles 
-          et explorez leurs modèles et spécifications techniques.
+          Découvrez notre catalogue complet de {total} marques automobiles et
+          explorez leurs modèles et spécifications techniques.
         </p>
       </div>
 
@@ -217,7 +248,9 @@ export default function BrandsIndex() {
       </div>
 
       {error && (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       )}
 
       {/* Statistiques */}
@@ -239,7 +272,10 @@ export default function BrandsIndex() {
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-purple-600 mb-2">
-              {brands.reduce((sum, brand) => sum + (brand.models_count || 0), 0)}
+              {brands.reduce(
+                (sum, brand) => sum + (brand.models_count || 0),
+                0,
+              )}
             </div>
             <div className="text-gray-600">Modèles au total</div>
           </CardContent>
@@ -250,8 +286,8 @@ export default function BrandsIndex() {
       {filteredBrands.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {filteredBrands.map((brand) => (
-            <Link 
-              key={brand.marque_id} 
+            <Link
+              key={brand.marque_id}
               to={`/brands/${brand.marque_id}`}
               className="block"
             >
@@ -260,31 +296,27 @@ export default function BrandsIndex() {
                   {/* Logo de la marque */}
                   <div className="flex justify-center mb-4">
                     <div className="w-16 h-16 relative">
-                      <BrandLogoClient 
+                      <BrandLogoClient
                         logoPath={null}
                         brandName={brand.marque_name}
                       />
                     </div>
                   </div>
-                  
+
                   {/* Nom de la marque */}
                   <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {brand.marque_name}
                   </h3>
-                  
+
                   {/* Nombre de modèles */}
                   <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
                     <Car className="h-4 w-4 mr-1" />
                     <span>{brand.models_count || 0} modèles</span>
                   </div>
-                  
+
                   {/* Bouton d'action */}
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button 
-                      size="sm" 
-                      className="w-full"
-                      variant="outline"
-                    >
+                    <Button size="sm" className="w-full" variant="outline">
                       <span>Explorer</span>
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -301,10 +333,9 @@ export default function BrandsIndex() {
             Aucune marque trouvée
           </h3>
           <p className="text-gray-500">
-            {searchTerm 
+            {searchTerm
               ? `Aucune marque ne correspond à "${searchTerm}"`
-              : "Aucune marque disponible pour le moment"
-            }
+              : "Aucune marque disponible pour le moment"}
           </p>
         </div>
       )}

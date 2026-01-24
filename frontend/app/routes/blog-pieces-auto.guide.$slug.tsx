@@ -4,6 +4,9 @@
  *
  * Exemple :
  * /blog-pieces-auto/guide/pieces-auto-comment-s-y-retrouver
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Comprendre comment choisir une pièce
  */
 
 import {
@@ -26,6 +29,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 // Utils
 
 // UI Components
@@ -37,7 +42,17 @@ import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "guide",
+  }),
+};
 
 // Types
 interface GuideSection {

@@ -1,5 +1,21 @@
 // Route: /mentions-legales -> Mentions légales
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    canonicalEntity: "mentions-legales",
+  }),
+};
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 
@@ -9,9 +25,16 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   }
   return [
     { title: `${data.page.title} - Automecanik` },
-    { name: "description", content: data.page.description || "Mentions légales Automecanik" },
+    {
+      name: "description",
+      content: data.page.description || "Mentions légales Automecanik",
+    },
     { name: "robots", content: "noindex, follow" },
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/mentions-legales" },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://www.automecanik.com/mentions-legales",
+    },
   ];
 };
 

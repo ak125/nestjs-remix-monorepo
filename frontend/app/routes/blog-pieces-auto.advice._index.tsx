@@ -1,3 +1,11 @@
+/**
+ * Route : /blog-pieces-auto/advice
+ * Liste des conseils automobile
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Découvrir des conseils pratiques
+ */
+
 import {
   json,
   type LoaderFunctionArgs,
@@ -12,9 +20,22 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import React, { useState, useMemo } from "react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "advice",
+  }),
+};
 
 interface AdviceArticle {
   id: string;

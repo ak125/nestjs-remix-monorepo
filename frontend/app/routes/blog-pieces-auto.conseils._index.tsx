@@ -1,4 +1,12 @@
 // app/routes/blog-pieces-auto.conseils._index.tsx
+/**
+ * Route : /blog-pieces-auto/conseils
+ * Liste des conseils de montage et entretien par famille
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Trouver des conseils pratiques
+ */
+
 import {
   json,
   type LoaderFunctionArgs,
@@ -12,12 +20,26 @@ import {
 } from "@remix-run/react";
 import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag } from "lucide-react";
 import * as React from "react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "conseils",
+    canonicalEntity: "conseils-index",
+  }),
+};
 
 /* ===========================
    Types

@@ -1,3 +1,14 @@
+/**
+ * Route : /blog-pieces-auto
+ * Index du Blog (R3 - BLOG/EXPERT) - Pédagogie et guides
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Comprendre un problème réel
+ *
+ * Exemple :
+ * /blog-pieces-auto
+ */
+
 import {
   json,
   type LoaderFunctionArgs,
@@ -37,6 +48,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 // Blog Components
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -49,6 +62,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ * Permet l'ajout automatique de data-attributes sur <body>
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "blog",
+    canonicalEntity: "blog-pieces-auto",
+  }),
+};
 
 // Types améliorés
 interface BlogArticle {

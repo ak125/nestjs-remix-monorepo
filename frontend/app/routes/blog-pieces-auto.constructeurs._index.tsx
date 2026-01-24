@@ -1,3 +1,11 @@
+/**
+ * Route : /blog-pieces-auto/constructeurs
+ * Liste des constructeurs automobile et leurs histoires
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Découvrir l'histoire des marques automobiles
+ */
+
 import {
   json,
   type LoaderFunctionArgs,
@@ -12,10 +20,23 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import React, { useState, useMemo } from "react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "constructeurs",
+  }),
+};
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
 

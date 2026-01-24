@@ -1,5 +1,8 @@
 // 🔄 Route catch-all centralisée pour /constructeurs/*
 // Gère : URLs 2-segments (funnel motorisation), URLs legacy, redirections
+//
+// Rôle SEO : R1 - ROUTER
+// Intention : Sélection de motorisation
 
 import {
   json,
@@ -15,6 +18,18 @@ import {
 } from "@remix-run/react";
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "constructeurs",
+  }),
+};
 
 interface MotorOption {
   id: number;

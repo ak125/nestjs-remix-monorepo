@@ -5,6 +5,9 @@
  * Exemple :
  * /blog-pieces-auto/conseils/alternateur
  * → Affiche l'article "Comment changer votre alternateur"
+ *
+ * Rôle SEO : R3 - BLOG
+ * Intention : Comprendre comment installer/entretenir une pièce
  */
 
 import {
@@ -30,6 +33,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 
 // Utils
 import { Badge } from "../components/ui/badge";
@@ -60,7 +65,17 @@ import {
   trackShareArticle,
   trackBookmark,
 } from "~/utils/analytics";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+    clusterId: "conseils",
+  }),
+};
 
 // Analytics
 
