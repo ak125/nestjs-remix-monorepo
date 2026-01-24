@@ -124,8 +124,15 @@ automecanik.com, www.automecanik.com {
     handle @crawl_hubs {
         root * /var/www/crawl-hubs
         uri strip_prefix /__crawl__
+
+        # SEO Headers
         header X-Robots-Tag "noindex, follow"
+        header Content-Language "fr"
+        header Vary "Accept-Encoding"
+
+        # Cache par défaut (1h)
         header Cache-Control "public, max-age=3600"
+
         file_server
     }
 
