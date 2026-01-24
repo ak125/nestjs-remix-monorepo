@@ -1,7 +1,7 @@
 export { SeoModule } from './seo.module';
 export { SeoService } from './seo.service';
 export { SeoController } from './seo.controller';
-export { SitemapUnifiedService } from './services/sitemap-unified.service';
+export { SitemapV10Service } from './services/sitemap-v10.service';
 
 // Validation SEO Guides d'Achat
 export { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
