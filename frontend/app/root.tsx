@@ -35,6 +35,7 @@ import {
 } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
+import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
@@ -70,7 +71,7 @@ export const links: LinksFunction = () => [
   { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
   { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
   { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
-  { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
+  { rel: "preconnect", href: "https://www.automecanik.com" }, // imgproxy
   {
     rel: "preconnect",
     href: "https://fonts.googleapis.com",
@@ -168,6 +169,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const _cart = data?.cart;
   const revalidator = useRevalidator();
   const location = useLocation();
+
+  // 🎯 Phase 5 SEO: Récupérer les data-attributes du rôle de page
+  const pageRoleAttrs = usePageRoleDataAttrs();
 
   // 📊 Google Analytics - Tracking des navigations SPA (optimisé avec requestIdleCallback)
   useEffect(() => {
@@ -293,7 +297,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body className="h-full bg-gray-100">
+      <body className="h-full bg-gray-100" {...pageRoleAttrs}>
         <VehicleProvider>
           <NotificationProvider>
             <div className="min-h-screen flex flex-col">
