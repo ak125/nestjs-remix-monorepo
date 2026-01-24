@@ -41,6 +41,24 @@ export type ContentType =
   | "support"; // R6: contact, aide, FAQ
 
 /**
+ * Phase 9: Étapes du funnel marketing
+ */
+export type FunnelStage =
+  | "awareness" // Découverte
+  | "consideration" // Réflexion
+  | "decision" // Décision d'achat
+  | "retention"; // Fidélisation
+
+/**
+ * Phase 9: Objectifs de conversion par page
+ */
+export type ConversionGoal =
+  | "purchase" // Achat (produit, panier, checkout)
+  | "lead" // Génération de lead (contact, devis)
+  | "engagement" // Engagement (blog, guides)
+  | "navigation"; // Navigation (catalogue, filtres)
+
+/**
  * Métadonnées de rôle SEO pour une route Remix
  * À exporter via `handle` dans chaque route
  */
@@ -50,6 +68,9 @@ export interface PageRoleMeta {
   contentType: ContentType;
   clusterId?: string; // ID du cluster thématique (ex: "embrayage")
   canonicalEntity?: string; // Slug de l'entité canonique
+  // Phase 9: Nouveaux attributs analytics
+  funnelStage?: FunnelStage; // Étape du funnel marketing
+  conversionGoal?: ConversionGoal; // Objectif de conversion
 }
 
 /**
@@ -86,6 +107,30 @@ export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
 };
 
 /**
+ * Phase 9: Mapping rôle → funnel stage par défaut
+ */
+export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
+  [PageRole.R1_ROUTER]: "awareness",
+  [PageRole.R2_PRODUCT]: "decision",
+  [PageRole.R3_BLOG]: "consideration",
+  [PageRole.R4_REFERENCE]: "consideration",
+  [PageRole.R5_DIAGNOSTIC]: "consideration",
+  [PageRole.R6_SUPPORT]: "retention",
+};
+
+/**
+ * Phase 9: Mapping rôle → conversion goal par défaut
+ */
+export const ROLE_DEFAULT_CONVERSION_GOAL: Record<PageRole, ConversionGoal> = {
+  [PageRole.R1_ROUTER]: "navigation",
+  [PageRole.R2_PRODUCT]: "purchase",
+  [PageRole.R3_BLOG]: "engagement",
+  [PageRole.R4_REFERENCE]: "engagement",
+  [PageRole.R5_DIAGNOSTIC]: "engagement",
+  [PageRole.R6_SUPPORT]: "lead",
+};
+
+/**
  * Crée un objet PageRoleMeta avec les valeurs par défaut
  */
 export function createPageRoleMeta(
@@ -98,6 +143,10 @@ export function createPageRoleMeta(
     contentType: overrides?.contentType || ROLE_DEFAULT_CONTENT_TYPE[role],
     clusterId: overrides?.clusterId,
     canonicalEntity: overrides?.canonicalEntity,
+    // Phase 9: Nouveaux attributs avec valeurs par défaut
+    funnelStage: overrides?.funnelStage || ROLE_DEFAULT_FUNNEL_STAGE[role],
+    conversionGoal:
+      overrides?.conversionGoal || ROLE_DEFAULT_CONVERSION_GOAL[role],
   };
 }
 

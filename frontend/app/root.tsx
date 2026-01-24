@@ -206,6 +206,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [location.pathname, location.search]);
 
+  // 📊 Phase 9: DataLayer GTM - Push pageRole attributes
+  useEffect(() => {
+    if (typeof window === "undefined" || !pageRoleAttrs) return;
+
+    // Exclure les pages admin
+    if (location.pathname.startsWith("/admin")) return;
+
+    // Initialiser dataLayer si nécessaire
+    window.dataLayer = window.dataLayer || [];
+
+    // Push les attributs de rôle pour GTM
+    window.dataLayer.push({
+      event: "page_role_loaded",
+      pageRole: pageRoleAttrs["data-page-role"],
+      pageIntent: pageRoleAttrs["data-page-intent"],
+      contentType: pageRoleAttrs["data-content-type"],
+      clusterId: pageRoleAttrs["data-cluster-id"],
+      funnelStage: pageRoleAttrs["data-funnel-stage"],
+      conversionGoal: pageRoleAttrs["data-conversion-goal"],
+      vehicleContext: pageRoleAttrs["data-vehicle-context"],
+    });
+  }, [location.pathname, pageRoleAttrs]);
+
   // 🔄 Synchronisation panier globale via événement
   useEffect(() => {
     const handleCartUpdated = () => {
