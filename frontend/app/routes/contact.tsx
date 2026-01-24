@@ -1,3 +1,11 @@
+/**
+ * Route : /contact
+ * Page Contact (R6 - SUPPORT) - Formulaire de contact
+ *
+ * Rôle SEO : R6 - SUPPORT
+ * Intention : Rassurer / informer
+ */
+
 import {
   json,
   type ActionFunctionArgs,
@@ -20,6 +28,21 @@ import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ * Permet l'ajout automatique de data-attributes sur <body>
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    clusterId: "support",
+    canonicalEntity: "contact",
+    contentType: "support",
+  }),
+};
 
 // Interface de contact temporaire pour éviter les erreurs d'import
 interface ContactRequest {

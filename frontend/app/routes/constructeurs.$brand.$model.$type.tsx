@@ -1,4 +1,7 @@
 // 🚗 Page détail véhicule - Logique métier PHP intégrée
+//
+// Rôle SEO : R1 - ROUTER
+// Intention : Sélection de pièces pour un véhicule spécifique
 
 import {
   json,
@@ -7,6 +10,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
   Car,
   Package,
@@ -34,6 +39,16 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "constructeurs",
+  }),
+};
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();

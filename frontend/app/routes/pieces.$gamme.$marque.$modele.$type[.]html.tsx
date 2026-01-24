@@ -1,16 +1,22 @@
-﻿// 🔧 Route pièces avec véhicule - Version RM V2 (CQRS Read Model)
-// Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
-// ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
-//
-// 🚀 RM V2: Single RPC for ALL data (~400ms, cached in Redis)
-// - products: RM-scored products (OE/EQUIV/ECO, stock status)
-// - grouped_pieces: Products grouped by gamme+side with OEM refs per group
-// - vehicleInfo: Complete vehicle info with motor/mine/cnit codes
-// - seo: Fully processed SEO (h1, title, description, content)
-// - oemRefs: Normalized OEM references
-// - crossSelling: Related gammes
-// - filters: Brands/qualities/sides with counts
-// - validation: Data quality metrics
+/**
+ * Route : /pieces/:gamme/:marque/:modele/:type.html
+ * Page Produit (R2 - PRODUIT) - Pièces avec contexte véhicule complet
+ *
+ * Rôle SEO : R2 - PRODUIT
+ * Intention : Vérifier compatibilité / acheter
+ *
+ * ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
+ *
+ * 🚀 RM V2: Single RPC for ALL data (~400ms, cached in Redis)
+ * - products: RM-scored products (OE/EQUIV/ECO, stock status)
+ * - grouped_pieces: Products grouped by gamme+side with OEM refs per group
+ * - vehicleInfo: Complete vehicle info with motor/mine/cnit codes
+ * - seo: Fully processed SEO (h1, title, description, content)
+ * - oemRefs: Normalized OEM references
+ * - crossSelling: Related gammes
+ * - filters: Brands/qualities/sides with counts
+ * - validation: Data quality metrics
+ */
 
 import {
   defer,
@@ -57,6 +63,8 @@ import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
 import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+
 // Services API
 
 // 🚀 RM API V2 - Complete Read Model (~400ms, single RPC)
@@ -94,6 +102,18 @@ import {
   buildPiecesBreadcrumbs,
   buildVoirAussiLinks,
 } from "../utils/url-builder.utils";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ * Permet l'ajout automatique de data-attributes sur <body>
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+    clusterId: "pieces",
+    canonicalEntity: "pieces-vehicule",
+  }),
+};
 
 // 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
@@ -392,16 +412,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     // âœ¨ NOUVEAU: Canonical URL
     { tagName: "link", rel: "canonical", href: canonicalUrl },
 
-    // âœ¨ NOUVEAU: Resource Hints pour Supabase (préconnexion)
+    // ✅ FIX 2026-01-21: Preconnect vers automecanik.com (imgproxy)
     {
       tagName: "link",
       rel: "preconnect",
-      href: "https://cxpojprgwgubzjyqzmoq.supabase.co",
-    },
-    {
-      tagName: "link",
-      rel: "dns-prefetch",
-      href: "https://cxpojprgwgubzjyqzmoq.supabase.co",
+      href: "https://www.automecanik.com",
     },
 
     // 🚀 LCP Optimization V5: Preload hero vehicle image - Fonction extraite

@@ -1,3 +1,14 @@
+/**
+ * Route : /pieces/:slug
+ * Page Gamme (R1 - ROUTEUR) - Sélection de pièces par famille
+ *
+ * Rôle SEO : R1 - ROUTEUR
+ * Intention : Trouver la bonne pièce pour son véhicule
+ *
+ * Exemple :
+ * /pieces/kit-d-embrayage-479.html
+ */
+
 import {
   json,
   type LoaderFunctionArgs,
@@ -12,6 +23,8 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, lazy, Suspense } from "react";
 // 🆕 V2 UX Components
 
@@ -40,6 +53,18 @@ import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ * Permet l'ajout automatique de data-attributes sur <body>
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "gamme",
+    canonicalEntity: "pieces",
+  }),
+};
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
 // Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)
@@ -422,10 +447,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       { label: data.content?.pg_name || "Pièce", current: true },
     ];
 
-    // 🍞 Ajouter véhicule au breadcrumb si disponible
+    // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
+    // (évite hydration mismatch serveur/client)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
       baseBreadcrumb,
-      selectedVehicle,
+      null, // Pas de véhicule sur page gamme seule
     );
 
     console.log(

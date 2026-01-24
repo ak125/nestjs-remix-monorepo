@@ -1,24 +1,43 @@
 /**
  * 🚗 PAGE PUBLIQUE MARQUE
- * 
+ *
  * Version publique inspirée de l'existant commercial optimisé
  * Route: /brands/$brandId
+ *
+ * Rôle SEO : R1 - ROUTER
+ * Intention : Navigation vers modèles d'une marque
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "brands",
+  }),
+};
 
 /**
  * 🔍 SEO Meta Tags
  */
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
-  const brandName = data?.brand?.marque_name || 'Marque';
+  const brandName = data?.brand?.marque_name || "Marque";
   const modelsCount = data?.models?.length || 0;
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
   const title = `Pièces Détachées ${brandName} | ${modelsCount} Modèles Disponibles`;
@@ -26,17 +45,17 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   return [
     { title },
-    { name: 'description', content: description },
+    { name: "description", content: description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
-    { name: 'robots', content: 'index, follow' },
+    { name: "robots", content: "index, follow" },
     // Open Graph
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'website' },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
     // Twitter
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
   ];
 };
 
@@ -71,44 +90,49 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   try {
     // Récupérer les modèles de la marque (utilise l'API existante optimisée)
-    const modelsResponse = await fetch(`${baseUrl}/api/vehicles/brands/${brandId}/models`, {
-      headers: { 'internal-call': 'true' }
-    });
-    
+    const modelsResponse = await fetch(
+      `${baseUrl}/api/vehicles/brands/${brandId}/models`,
+      {
+        headers: { "internal-call": "true" },
+      },
+    );
+
     if (!modelsResponse.ok) {
       throw new Error(`API Error: ${modelsResponse.status}`);
     }
 
     const modelsData = await modelsResponse.json();
-    const models: Model[] = modelsData.data?.map((model: any) => ({
-      modele_id: model.modele_id,
-      modele_name: model.modele_name,
-      modele_alias: model.modele_alias,
-      modele_year_from: model.modele_year_from,
-      modele_year_to: model.modele_year_to,
-      modele_body: model.modele_body || 'Non spécifié'
-    })) || [];
+    const models: Model[] =
+      modelsData.data?.map((model: any) => ({
+        modele_id: model.modele_id,
+        modele_name: model.modele_name,
+        modele_alias: model.modele_alias,
+        modele_year_from: model.modele_year_from,
+        modele_year_to: model.modele_year_to,
+        modele_body: model.modele_body || "Non spécifié",
+      })) || [];
 
     // Récupérer les infos de la marque
     const brandsResponse = await fetch(`${baseUrl}/api/vehicles/brands`);
     let brand = null;
     if (brandsResponse.ok) {
       const brandsData = await brandsResponse.json();
-      brand = brandsData.data?.find((b: any) => b.marque_id.toString() === brandId) || null;
+      brand =
+        brandsData.data?.find((b: any) => b.marque_id.toString() === brandId) ||
+        null;
     }
 
     // Récupérer quelques types pour affichage (optionnel)
     const types: any[] = [];
 
     return json({ models, brand, types } as LoaderData);
-
   } catch (error) {
     console.error("Erreur chargement marque:", error);
-    return json({ 
-      models: [], 
+    return json({
+      models: [],
       brand: null,
       types: [],
-      error: "Impossible de charger les données" 
+      error: "Impossible de charger les données",
     } as LoaderData);
   }
 }
@@ -120,11 +144,13 @@ export default function BrandPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Marques", href: "/brands" },
-        { label: brand?.marque_name || `Marque #${params.brandId}` }
-      ]} />
-      
+      <PublicBreadcrumb
+        items={[
+          { label: "Marques", href: "/brands" },
+          { label: brand?.marque_name || `Marque #${params.brandId}` },
+        ]}
+      />
+
       {/* Header avec logo de marque */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
@@ -145,7 +171,7 @@ export default function BrandPage() {
             </p>
           </div>
         </div>
-        
+
         <Link to="/brands">
           <Button variant="outline" className="flex items-center space-x-2">
             <ArrowLeft className="h-4 w-4" />
@@ -155,7 +181,9 @@ export default function BrandPage() {
       </div>
 
       {error && (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       )}
 
       {/* Section Modèles */}
@@ -164,32 +192,41 @@ export default function BrandPage() {
           <Car className="h-6 w-6 mr-2 text-blue-600" />
           Modèles {brand?.marque_name}
         </h2>
-        
+
         {models.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {models.map((model) => (
-              <Card key={model.modele_id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={model.modele_id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="p-2 bg-primary/5 rounded-lg">
                       <Car className="h-5 w-5 text-blue-600" />
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      model.modele_year_to 
-                        ? 'bg-gray-100 text-gray-700' 
-                        : 'bg-success/15 text-green-700'
-                    }`}>
-                      {model.modele_year_to ? 'Ancien' : 'Actuel'}
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        model.modele_year_to
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-success/15 text-green-700"
+                      }`}
+                    >
+                      {model.modele_year_to ? "Ancien" : "Actuel"}
                     </span>
                   </div>
-                  
-                  <h3 className="font-semibold text-lg mb-2">{model.modele_name}</h3>
-                  
+
+                  <h3 className="font-semibold text-lg mb-2">
+                    {model.modele_name}
+                  </h3>
+
                   <div className="space-y-2 text-sm text-gray-600">
                     <p className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2" />
                       {model.modele_year_from}
-                      {model.modele_year_to ? ` - ${model.modele_year_to}` : ' - Actuel'}
+                      {model.modele_year_to
+                        ? ` - ${model.modele_year_to}`
+                        : " - Actuel"}
                     </p>
                     <p className="flex items-center">
                       <Settings className="h-4 w-4 mr-2" />
@@ -202,10 +239,12 @@ export default function BrandPage() {
                       Alias: {model.modele_alias}
                     </p>
                   )}
-                  
+
                   {/* Navigation vers les motorisations */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <Link to={`/brands/${params.brandId}/models/${model.modele_id}/types`}>
+                    <Link
+                      to={`/brands/${params.brandId}/models/${model.modele_id}/types`}
+                    >
                       <Button variant="outline" size="sm" className="w-full">
                         <Settings className="h-4 w-4 mr-2" />
                         Voir motorisations

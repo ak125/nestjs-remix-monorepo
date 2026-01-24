@@ -1,10 +1,25 @@
-import  { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    canonicalEntity: "404",
+  }),
+};
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Page non trouvée - 404' },
-    { name: 'description', content: 'La page que vous recherchez n\'existe pas.' },
+    { title: "Page non trouvée - 404" },
+    {
+      name: "description",
+      content: "La page que vous recherchez n'existe pas.",
+    },
   ];
 };
 
@@ -56,7 +71,7 @@ export default function NotFound() {
           >
             Retour à l'accueil
           </Link>
-          
+
           <div className="flex justify-center space-x-4">
             <Link
               to="/contact"
@@ -91,7 +106,7 @@ export default function NotFound() {
                 Explorer nos véhicules
               </div>
             </Link>
-            
+
             <Link
               to="/pieces"
               className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
@@ -103,7 +118,7 @@ export default function NotFound() {
                 Trouver des pièces
               </div>
             </Link>
-            
+
             <Link
               to="/support"
               className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
@@ -115,7 +130,7 @@ export default function NotFound() {
                 Obtenir de l'aide
               </div>
             </Link>
-            
+
             <Link
               to="/guides"
               className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"

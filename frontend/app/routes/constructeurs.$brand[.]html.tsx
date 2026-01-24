@@ -1,6 +1,9 @@
 // 🎨 VERSION AMÉLIORÉE — PAGE CATALOGUE CONSTRUCTEUR
 // Format: /constructeurs/{constructeur}-{id}.html
 // Exemple: /constructeurs/bmw-33.html, /constructeurs/renault-140.html
+//
+// Rôle SEO : R1 - ROUTER
+// Intention : Sélection de véhicule par marque
 
 import {
   json,
@@ -22,6 +25,8 @@ import {
   TrendingUp,
   Package,
 } from "lucide-react";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
 import { RelatedBrandsSection as _RelatedBrandsSection } from "../components/constructeurs/RelatedBrandsSection";
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -36,6 +41,16 @@ import {
   type PopularGamme,
 } from "../types/brand.types";
 import { Error404 } from "~/components/errors/Error404";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "constructeurs",
+  }),
+};
 // 🔗 Composants de maillage interne SEO
 
 // ==========================================

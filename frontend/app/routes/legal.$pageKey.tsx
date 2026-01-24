@@ -14,6 +14,18 @@ import {
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
 
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    clusterId: "legal",
+  }),
+};
+
 const API_URL = process.env.API_URL || "http://localhost:3000";
 
 interface LegalPageFromDB {
