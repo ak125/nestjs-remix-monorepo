@@ -1,4 +1,5 @@
 import { useMatches } from "@remix-run/react";
+import { useVehicleContext } from "./useVehicleContext";
 import {
   type PageRoleMeta,
   type RouteHandleWithRole,
@@ -38,6 +39,8 @@ export function usePageRole(): PageRoleMeta | null {
 /**
  * Hook pour récupérer les data-attributes SEO à appliquer sur un élément
  *
+ * Phase 9: Inclut funnelStage, conversionGoal, vehicleContext
+ *
  * Usage:
  * ```tsx
  * const dataAttrs = usePageRoleDataAttrs();
@@ -46,6 +49,7 @@ export function usePageRole(): PageRoleMeta | null {
  */
 export function usePageRoleDataAttrs(): Record<string, string> | null {
   const pageRole = usePageRole();
+  const vehicleContext = useVehicleContext();
 
   if (!pageRole) {
     return null;
@@ -63,6 +67,20 @@ export function usePageRoleDataAttrs(): Record<string, string> | null {
 
   if (pageRole.canonicalEntity) {
     attrs["data-canonical-entity"] = pageRole.canonicalEntity;
+  }
+
+  // Phase 9: Nouveaux attributs analytics
+  if (pageRole.funnelStage) {
+    attrs["data-funnel-stage"] = pageRole.funnelStage;
+  }
+
+  if (pageRole.conversionGoal) {
+    attrs["data-conversion-goal"] = pageRole.conversionGoal;
+  }
+
+  // Contexte véhicule depuis URL/session
+  if (vehicleContext.formatted) {
+    attrs["data-vehicle-context"] = vehicleContext.formatted;
   }
 
   return attrs;
