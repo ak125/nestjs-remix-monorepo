@@ -17,6 +17,12 @@ import {
   SEO_LINK_LIMITS,
   SEO_AB_TESTING_CONFIG,
 } from '../../config/seo-link-limits.config';
+import {
+  PageRole,
+  getPageRoleFromUrl,
+  isLinkAllowed,
+  PAGE_ROLE_META,
+} from './types/page-role.types';
 
 // =====================================================
 // Types
@@ -70,6 +76,31 @@ interface CachedSwitches {
   verbs: Map<number, GammeCarSwitch[]>; // pgId -> switches ALIAS=1
   nouns: Map<number, GammeCarSwitch[]>; // pgId -> switches ALIAS=2
   gammes: Map<number, GammeInfo>; // pgId -> gamme info
+}
+
+// =====================================================
+// Limites de liens par rôle de page source (Phase 1 SEO)
+// =====================================================
+
+/**
+ * Nombre maximum de liens SEO injectés par rôle de page source
+ * R6 = 0 car pages support ne doivent pas avoir de liens SEO sortants
+ */
+const MAX_LINKS_BY_ROLE: Record<PageRole, number> = {
+  [PageRole.R1_ROUTER]: 2, // Contenu court - max 2 liens
+  [PageRole.R2_PRODUCT]: 1, // Page commerciale - max 1 lien vers référence
+  [PageRole.R3_BLOG]: 3, // Contenu pédagogique - 3 liens contextuels
+  [PageRole.R4_REFERENCE]: 2, // Contenu référence - 2 liens vers blog/diagnostic
+  [PageRole.R5_DIAGNOSTIC]: 2, // Contenu diagnostic - 2 liens
+  [PageRole.R6_SUPPORT]: 0, // Support - pas de liens SEO sortants
+};
+
+/**
+ * Résultat de validation d'un lien
+ */
+interface LinkValidationResult {
+  allowed: boolean;
+  reason?: string;
 }
 
 @Injectable()
@@ -199,24 +230,43 @@ export class InternalLinkingService implements OnModuleInit {
   /**
    * 🎯 MÉTHODE PRINCIPALE: Traite #LinkGammeCar_Y# dans un contenu
    *
+   * Phase 1 SEO: Validation des règles de maillage par rôle
+   * - Vérifie que le lien source→cible est autorisé (ALLOWED_LINKS)
+   * - Applique les limites par rôle (MAX_LINKS_BY_ROLE)
+   * - Enforce la règle R2→R4 max 1 lien
+   *
    * Reproduction fidèle du PHP:
    * - Rotation modulo: (typeId + targetPgId + offset) % count
    * - Combine verbe (ALIAS=1) + nom (ALIAS=2)
-   * - Limite au MAX_INJECTED_LINKS configuré
    *
+   * @param content - Contenu HTML avec marqueurs #LinkGammeCar_Y#
+   * @param vehicle - Contexte véhicule pour construire les URLs
+   * @param sourceUrl - URL de la page source (pour détection du rôle)
    * @returns Contenu avec liens HTML + métadonnées pour tracking A/B
    */
   async processLinkGammeCar(
     content: string,
     vehicle: VehicleContext,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _sourcePgId: number,
+    sourceUrl: string,
   ): Promise<LinkInjectionResult> {
     const result: LinkInjectionResult = {
       content,
       linksInjected: 0,
       formulas: [],
     };
+
+    // 1. Déterminer le rôle de la page source
+    const sourceRole = getPageRoleFromUrl(sourceUrl);
+
+    // 2. Si R6 Support ou rôle inconnu → pas de liens SEO
+    if (sourceRole === PageRole.R6_SUPPORT) {
+      this.logger.debug(
+        `🚫 Page R6 Support (${sourceUrl}) - aucun lien SEO injecté`,
+      );
+      // Supprimer tous les marqueurs sans injecter de liens
+      result.content = content.replace(/#LinkGammeCar_\d+#/g, '');
+      return result;
+    }
 
     // Pattern: #LinkGammeCar_123#
     const pattern = /#LinkGammeCar_(\d+)#/g;
@@ -226,21 +276,73 @@ export class InternalLinkingService implements OnModuleInit {
       return result;
     }
 
-    // Limiter le nombre de liens injectés
-    const maxLinks = SEO_LINK_LIMITS.MAX_INJECTED_LINKS_PER_CONTENT;
-    const linksToProcess = matches.slice(0, maxLinks);
+    // 3. Déterminer la limite de liens selon le rôle source
+    const roleMaxLinks = sourceRole
+      ? MAX_LINKS_BY_ROLE[sourceRole]
+      : SEO_LINK_LIMITS.MAX_INJECTED_LINKS_PER_CONTENT;
+    const configMaxLinks = SEO_LINK_LIMITS.MAX_INJECTED_LINKS_PER_CONTENT;
+    const maxLinks = Math.min(roleMaxLinks, configMaxLinks);
+
+    // 4. Compteur spécial pour R2→R4 (max 1 lien vers référence)
+    let r4LinkCount = 0;
+    const MAX_R2_TO_R4_LINKS = 1;
 
     let processedContent = content;
+    let linksInjectedCount = 0;
 
-    for (const match of linksToProcess) {
+    for (const match of matches) {
       const fullMatch = match[0];
       const targetPgId = parseInt(match[1], 10);
 
+      // Vérifier si on a atteint la limite de liens
+      if (linksInjectedCount >= maxLinks) {
+        this.logger.debug(
+          `⚠️ Limite de ${maxLinks} liens atteinte pour ${sourceRole || 'unknown'}`,
+        );
+        processedContent = processedContent.replace(fullMatch, '');
+        continue;
+      }
+
+      // Construire l'URL cible pour validation du rôle
+      const gamme = await this.fetchGamme(targetPgId);
+      if (!gamme) {
+        processedContent = processedContent.replace(fullMatch, '');
+        continue;
+      }
+
+      const targetUrl = this.buildGammeUrl(gamme, vehicle);
+      const targetRole = getPageRoleFromUrl(targetUrl);
+
+      // 5. Valider le lien selon les règles de maillage
+      const validation = this.validateLinkByRole(
+        sourceUrl,
+        targetUrl,
+        sourceRole,
+        targetRole,
+        r4LinkCount,
+        MAX_R2_TO_R4_LINKS,
+      );
+
+      if (!validation.allowed) {
+        this.logger.debug(`🚫 Lien rejeté: ${validation.reason}`);
+        processedContent = processedContent.replace(fullMatch, '');
+        continue;
+      }
+
+      // 6. Incrémenter compteur R2→R4
+      if (
+        sourceRole === PageRole.R2_PRODUCT &&
+        targetRole === PageRole.R4_REFERENCE
+      ) {
+        r4LinkCount++;
+      }
+
+      // 7. Construire et injecter le lien
       const link = await this.buildLinkGammeCar(targetPgId, vehicle);
 
       if (link) {
         processedContent = processedContent.replace(fullMatch, link.html);
-        result.linksInjected++;
+        linksInjectedCount++;
         result.formulas.push({
           verbId: link.verbId,
           nounId: link.nounId,
@@ -248,16 +350,75 @@ export class InternalLinkingService implements OnModuleInit {
           targetGammeId: link.targetGammeId,
         });
       } else {
-        // Fallback si pas de switch disponible
         processedContent = processedContent.replace(fullMatch, '');
       }
     }
 
-    // Supprimer les marqueurs restants (au-delà de la limite)
+    // Supprimer les marqueurs restants
     processedContent = processedContent.replace(pattern, '');
 
     result.content = processedContent;
+    result.linksInjected = linksInjectedCount;
+
+    if (linksInjectedCount > 0) {
+      this.logger.debug(
+        `✅ ${linksInjectedCount} liens injectés pour ${sourceRole || 'unknown'} (max: ${maxLinks})`,
+      );
+    }
+
     return result;
+  }
+
+  /**
+   * 🛡️ Valide un lien selon les règles de maillage par rôle
+   *
+   * Règles appliquées:
+   * - ALLOWED_LINKS: sourceRole peut lier vers targetRole?
+   * - R2→R4: max 1 lien vers référence
+   * - R6: aucun lien sortant
+   */
+  private validateLinkByRole(
+    sourceUrl: string,
+    targetUrl: string,
+    sourceRole: PageRole | null,
+    targetRole: PageRole | null,
+    currentR4Count: number,
+    maxR4Links: number,
+  ): LinkValidationResult {
+    // Si rôles inconnus, autoriser (fallback)
+    if (!sourceRole || !targetRole) {
+      return { allowed: true };
+    }
+
+    // R6 Support ne doit pas avoir de liens SEO sortants
+    if (sourceRole === PageRole.R6_SUPPORT) {
+      return {
+        allowed: false,
+        reason: `R6 Support (${sourceUrl}) - pas de liens SEO sortants`,
+      };
+    }
+
+    // Vérifier règles ALLOWED_LINKS
+    if (!isLinkAllowed(sourceRole, targetRole)) {
+      return {
+        allowed: false,
+        reason: `${sourceRole} (${PAGE_ROLE_META[sourceRole].label}) → ${targetRole} (${PAGE_ROLE_META[targetRole].label}) non autorisé`,
+      };
+    }
+
+    // Règle spéciale: R2→R4 max 1 lien
+    if (
+      sourceRole === PageRole.R2_PRODUCT &&
+      targetRole === PageRole.R4_REFERENCE &&
+      currentR4Count >= maxR4Links
+    ) {
+      return {
+        allowed: false,
+        reason: `R2→R4 limite atteinte (max ${maxR4Links} lien vers référence)`,
+      };
+    }
+
+    return { allowed: true };
   }
 
   /**

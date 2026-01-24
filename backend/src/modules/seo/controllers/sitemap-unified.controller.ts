@@ -1,70 +1,73 @@
 /**
  * 🗺️ CONTRÔLEUR UNIFIÉ SITEMAP SEO 2026
  *
- * Endpoint principal pour générer tous les sitemaps thématiques:
- * - sitemap-categories.xml
- * - sitemap-vehicules.xml
- * - sitemap-produits-*.xml (shardé)
- * - sitemap-blog.xml
- * - sitemap-pages.xml
+ * REDIRECTEUR vers V10 - Maintient la compatibilité avec l'endpoint legacy
+ *
+ * Endpoint legacy: POST /api/sitemap/generate-all
+ * → Redirige vers SitemapV10Service.generateAll()
  */
 
-import { Controller, Post, Get, Query, Logger } from '@nestjs/common';
-import {
-  SitemapUnifiedService,
-  AllSitemapsResult,
-} from '../services/sitemap-unified.service';
+import { Controller, Post, Get, Logger } from '@nestjs/common';
+import { SitemapV10Service } from '../services/sitemap-v10.service';
 
 @Controller('api/sitemap')
 export class SitemapUnifiedController {
   private readonly logger = new Logger(SitemapUnifiedController.name);
 
-  constructor(private readonly sitemapUnifiedService: SitemapUnifiedService) {}
+  constructor(private readonly sitemapV10Service: SitemapV10Service) {}
 
   /**
    * POST /api/sitemap/generate-all
    *
-   * Génère tous les sitemaps (7 thématiques + index)
-   * V7: Avec validation optionnelle des URLs pièces
+   * 🔄 REDIRECTEUR vers V10 - Endpoint legacy maintenu pour compatibilité
    *
-   * @param outputDir - Répertoire de sortie (défaut: /srv/sitemaps)
-   * @param skipValidation - 'true' pour désactiver la validation (plus rapide)
-   * @returns Résultat avec liste des fichiers générés + stats validation
+   * Génère tous les sitemaps via SitemapV10Service.generateAll()
+   * - 7 types de sitemaps (racine, categories, vehicules, blog, pages, pieces)
+   * - 714k URLs via source __sitemap_p_link
+   * - Temperature buckets (hot/stable/cold)
    */
   @Post('generate-all')
-  async generateAll(
-    @Query('outputDir') outputDir?: string,
-    @Query('skipValidation') skipValidation?: string,
-  ): Promise<{
+  async generateAll(): Promise<{
     success: boolean;
     message: string;
-    data?: AllSitemapsResult;
+    data?: {
+      totalUrls: number;
+      totalFiles: number;
+      durationMs: number;
+      indexPath?: string;
+      buckets: Array<{
+        bucket: string;
+        success: boolean;
+        urlCount: number;
+        filesGenerated: number;
+        error?: string;
+      }>;
+    };
   }> {
+    this.logger.log('🔄 POST /api/sitemap/generate-all → Redirecting to V10');
+
     try {
-      const dir = outputDir || '/srv/sitemaps';
-      const skip = skipValidation === 'true';
+      const result = await this.sitemapV10Service.generateAll();
 
-      this.logger.log(
-        `🚀 Starting unified sitemap generation to ${dir} (validation: ${skip ? 'OFF' : 'ON'})`,
-      );
-
-      const result = await this.sitemapUnifiedService.generateAllSitemaps(dir, {
-        skipValidation: skip,
-      });
-
-      if (result.success) {
-        return {
-          success: true,
-          message: `Generated ${result.files.length} sitemaps with ${result.totalUrls} total URLs in ${result.duration}ms`,
-          data: result,
-        };
-      } else {
-        return {
-          success: false,
-          message: `Generation failed: ${result.errors.join(', ')}`,
-          data: result,
-        };
-      }
+      return {
+        success: result.success,
+        message: result.success
+          ? `Generated ${result.totalFiles} sitemaps with ${result.totalUrls.toLocaleString()} total URLs in ${result.totalDurationMs}ms`
+          : 'Some sitemaps failed to generate',
+        data: {
+          totalUrls: result.totalUrls,
+          totalFiles: result.totalFiles,
+          durationMs: result.totalDurationMs,
+          indexPath: result.indexPath,
+          buckets: result.results.map((r) => ({
+            bucket: r.bucket,
+            success: r.success,
+            urlCount: r.urlCount,
+            filesGenerated: r.filesGenerated,
+            error: r.error,
+          })),
+        },
+      };
     } catch (error: any) {
       this.logger.error(`❌ Sitemap generation error: ${error.message}`);
       return {
@@ -83,11 +86,13 @@ export class SitemapUnifiedController {
   async getStatus(): Promise<{
     available: boolean;
     message: string;
+    version: string;
   }> {
     return {
       available: true,
       message:
-        'SitemapUnifiedService is ready. Use POST /api/sitemap/generate-all to generate sitemaps.',
+        'SitemapV10Service is active. Use POST /api/sitemap/generate-all to generate all sitemaps.',
+      version: 'V10 Unified (replaces V9)',
     };
   }
 }

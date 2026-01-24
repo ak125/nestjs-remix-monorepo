@@ -34,9 +34,6 @@ import { SitemapDeltaService } from './services/sitemap-delta.service';
 // 🗜️ Service Streaming Sitemap
 import { SitemapStreamingService } from './services/sitemap-streaming.service';
 
-// 🗺️ Service Unifié Sitemap SEO 2026
-import { SitemapUnifiedService } from './services/sitemap-unified.service';
-
 // 🤖 Service Robots.txt
 import { RobotsTxtService } from './services/robots-txt.service';
 
@@ -66,6 +63,36 @@ import { InternalLinkingService } from './internal-linking.service';
 
 // 🛡️ Service Validation SEO Guides d'Achat
 import { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
+
+// 🔥 Services Sitemap V10 (Température)
+import { SitemapV10Service } from './services/sitemap-v10.service';
+import { SitemapV10ScoringService } from './services/sitemap-v10-scoring.service';
+import { SitemapV10HubsService } from './services/sitemap-v10-hubs.service';
+
+// 📊 Services Dashboard Enterprise (Crawl/Index/Risk)
+import { GooglebotDetectorService } from './services/googlebot-detector.service';
+import { RiskFlagsEngineService } from './services/risk-flags-engine.service';
+
+// 📊 Service Keywords Dashboard (V-Level par gamme)
+import { KeywordsDashboardService } from './services/keywords-dashboard.service';
+
+// 🎯 Service Validation Rôles de Pages (Phase 0 SEO)
+import { PageRoleValidatorService } from './services/page-role-validator.service';
+
+// 📖 Service Pages Référence (R4)
+import { ReferenceService } from './services/reference.service';
+
+// 🩺 Service Pages Diagnostic (R5 - Observable Pro)
+import { DiagnosticService } from './services/diagnostic.service';
+
+// 📊 Service Pilotage SEO (hebdo + mensuel)
+import { SeoPilotageService } from './services/seo-pilotage.service';
+
+// 📖 Contrôleur Pages Référence (R4)
+import { ReferenceController } from './controllers/reference.controller';
+
+// 🩺 Contrôleur Pages Diagnostic (R5 - Observable Pro)
+import { DiagnosticController } from './controllers/diagnostic.controller';
 
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
@@ -98,11 +125,26 @@ import { SeoMonitoringController } from './controllers/seo-monitoring.controller
 // 🛡️ Contrôleur SEO Monitor (BullMQ)
 import { SeoMonitorController } from './controllers/seo-monitor.controller';
 
+// 🔥 Contrôleur Sitemap V10 (Température)
+import { SitemapV10Controller } from './controllers/sitemap-v10.controller';
+
+// 📊 Contrôleur Dashboard Enterprise
+import { SeoDashboardController } from './controllers/seo-dashboard.controller';
+
+// 📊 Contrôleur Keywords Dashboard (V-Level par gamme)
+import { KeywordsDashboardController } from './controllers/keywords-dashboard.controller';
+
+// 📊 Contrôleur Pilotage SEO (hebdo + mensuel + diagnostics)
+import { SeoPilotageController } from './controllers/seo-pilotage.controller';
+
 // 📊 Contrôleur SEO Logs (Meilisearch)
 import { SeoLogsController } from './controllers/seo-logs.controller';
 
-// �🛡️ Interceptor Headers SEO
+// 🛡️ Interceptor Headers SEO
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
+
+// 🎯 Interceptor Validation Rôles de Pages (Phase B - Enforcement)
+import { PageRoleValidationInterceptor } from './interceptors/page-role-validation.interceptor';
 
 @Module({
   imports: [
@@ -133,6 +175,12 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
     SeoVariationsController, // 📝 Contrôleur Variations SEO
     SeoLinkTrackingController, // 📊 Contrôleur Tracking Liens Internes
+    SitemapV10Controller, // 🔥 Contrôleur Sitemap V10 (Température)
+    SeoDashboardController, // 📊 Dashboard Enterprise (Crawl/Index/Risk)
+    KeywordsDashboardController, // 📊 Dashboard Keywords SEO (V-Level par gamme)
+    ReferenceController, // 📖 Contrôleur Pages Référence (R4)
+    DiagnosticController, // 🩺 Contrôleur Pages Diagnostic (R5)
+    SeoPilotageController, // 📊 Pilotage SEO (hebdo + mensuel + diagnostics)
   ],
 
   providers: [
@@ -144,7 +192,6 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ProductImageService, // 🖼️ Service Images Produits
     SitemapDeltaService, // 🔄 Service Delta Sitemap
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap
-    SitemapUnifiedService, // 🗺️ Service Unifié SEO V5
     RobotsTxtService, // 🤖 Service Robots.txt
     SeoHeadersService, // 📄 Service Headers SEO
     SeoMonitoringService, // 📊 Service Monitoring SEO
@@ -155,11 +202,27 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat
+    SitemapV10Service, // 🔥 Service Sitemap V10 (Température)
+    SitemapV10ScoringService, // 🔥 Service Scoring V10
+    SitemapV10HubsService, // 🔥 Service Hubs Crawl V10
+    GooglebotDetectorService, // 📊 Service Detection Googlebot
+    RiskFlagsEngineService, // 📊 Service Risk Flags Engine
+    KeywordsDashboardService, // 📊 Service Keywords Dashboard (V-Level par gamme)
+    PageRoleValidatorService, // 🎯 Service Validation Rôles de Pages (Phase 0 SEO)
+    ReferenceService, // 📖 Service Pages Référence (R4)
+    DiagnosticService, // 🩺 Service Pages Diagnostic (R5)
+    SeoPilotageService, // 📊 Service Pilotage SEO (hebdo + mensuel)
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
       provide: APP_INTERCEPTOR,
       useClass: SeoHeadersInterceptor,
+    },
+
+    // 🎯 Interceptor Validation Rôles de Pages (Phase B - Monitoring)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PageRoleValidationInterceptor,
     },
 
     // Logger spécialisé pour V4
@@ -178,7 +241,6 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     ProductImageService, // 🖼️ Service Images Produits exporté
     SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
-    SitemapUnifiedService, // 🗺️ Service Unifié SEO V5 exporté
     RobotsTxtService, // 🤖 Service Robots.txt exporté
     SeoHeadersService, // 📄 Service Headers SEO exporté
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
@@ -186,32 +248,47 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
     InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
     PurchaseGuideValidatorService, // 🛡️ Service Validation SEO Guides d'Achat exporté
+    SitemapV10Service, // 🔥 Service Sitemap V10 exporté
+    SitemapV10ScoringService, // 🔥 Service Scoring V10 exporté
+    SitemapV10HubsService, // 🔥 Service Hubs Crawl V10 exporté
+    GooglebotDetectorService, // 📊 Service Detection Googlebot exporté
+    RiskFlagsEngineService, // 📊 Service Risk Flags Engine exporté
+    PageRoleValidatorService, // 🎯 Service Validation Rôles de Pages exporté
+    ReferenceService, // 📖 Service Pages Référence (R4) exporté
+    DiagnosticService, // 🩺 Service Pages Diagnostic (R5) exporté
+    SeoPilotageService, // 📊 Service Pilotage SEO exporté
   ],
 })
 export class SeoModule {
   private readonly logger = new Logger(SeoModule.name);
 
   constructor() {
-    this.logger.log('🗺️ SEO Module V5 Unified activé');
-    this.logger.log('📊 Architecture Sitemap Consolidée:');
-    this.logger.log('   • 9 types de sitemaps thématiques');
-    this.logger.log('   • Support 700k+ URLs avec pagination');
+    this.logger.log('🔥 SEO Module V10 Unified activé (V9 supprimé)');
+    this.logger.log('📊 Architecture Sitemap V10:');
+    this.logger.log('   • Source: __sitemap_p_link (714k URLs)');
+    this.logger.log('   • Temperature buckets: hot/stable/cold');
     this.logger.log('   • Sharding 50k URLs par fichier');
-    this.logger.log('✅ Services principaux:');
-    this.logger.log('   • SitemapUnifiedService (🗺️ V5 - Service principal)');
-    this.logger.log('   • DynamicSeoV4UltimateService (🎯 SEO dynamique)');
-    this.logger.log('   • SeoService / SeoEnhancedService');
+    this.logger.log('✅ Service principal: SitemapV10Service');
     this.logger.log('📋 Sitemaps générés:');
     this.logger.log('   1. sitemap-racine.xml (Homepage)');
-    this.logger.log('   2. sitemap-categories.xml (~105 catégories)');
-    this.logger.log('   3. sitemap-constructeurs.xml (~35 marques)');
-    this.logger.log('   4. sitemap-modeles.xml (~1k modèles)');
-    this.logger.log('   5. sitemap-types.xml (~12.7k motorisations)');
-    this.logger.log('   6. sitemap-pieces-*.xml (~714k pièces shardées)');
-    this.logger.log('   7. sitemap-blog.xml (~109 articles)');
-    this.logger.log('   8. sitemap-pages.xml (~9 pages)');
-    this.logger.log('   9. sitemap.xml (Index principal)');
-    this.logger.log('🔧 Endpoint: POST /api/sitemap/generate-all');
+    this.logger.log('   2. sitemap-categories.xml (~123 gammes INDEX)');
+    this.logger.log(
+      '   3. sitemap-vehicules.xml (~13.8k marques+modèles+types)',
+    );
+    this.logger.log('   4. sitemap-blog.xml (~109 articles)');
+    this.logger.log('   5. sitemap-pages.xml (~9 pages)');
+    this.logger.log(
+      '   6. sitemap-{hot,stable,cold}-pieces-*.xml (~714k pièces)',
+    );
+    this.logger.log('   7. sitemap.xml (Index principal)');
+    this.logger.log('🔧 Endpoint: POST /api/sitemap/generate-all (→ V10)');
+    this.logger.log('🔧 Endpoint: POST /api/sitemap/v10/generate-all');
+    this.logger.log('📊 Dashboard Enterprise (Crawl/Index/Risk):');
+    this.logger.log('   • GooglebotDetectorService (logging passif)');
+    this.logger.log(
+      '   • RiskFlagsEngineService (ORPHAN/DUPLICATE/WEAK_CLUSTER/LOW_CRAWL/CONFUSION)',
+    );
+    this.logger.log('🔧 Endpoint: GET /api/seo/dashboard/stats');
   }
 }
 
@@ -219,3 +296,16 @@ export class SeoModule {
  * 📊 EXPORTS POUR V4 ULTIMATE
  */
 export { SeoVariables } from './dynamic-seo-v4-ultimate.service';
+
+/**
+ * 🎯 EXPORTS POUR RÔLES DE PAGES (Phase 0)
+ */
+export {
+  PageRole,
+  PAGE_ROLE_META,
+  PAGE_ROLE_HIERARCHY,
+  ALLOWED_LINKS,
+  URL_ROLE_PATTERNS,
+  getPageRoleFromUrl,
+  isLinkAllowed,
+} from './types/page-role.types';

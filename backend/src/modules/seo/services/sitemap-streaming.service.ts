@@ -524,7 +524,7 @@ ${shards
 
   // ============================================
   // 🆕 GÉNÉRATION SITEMAPS STATIQUES - OBSOLÈTE
-  // Remplacé par SitemapUnifiedService
+  // Remplacé par SitemapV10Service
   // Utiliser: POST /api/sitemap/generate-all
   // ============================================
 }
