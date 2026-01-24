@@ -314,6 +314,7 @@ export class SitemapV10ScoringService {
       const scoresToInsert: Array<{
         url: string;
         entity_id: number | null;
+        score_total: number;
         score_traffic: number;
         score_conversion: number;
         score_revenue: number;
@@ -324,6 +325,9 @@ export class SitemapV10ScoringService {
         orphan_risk: number;
         duplication_risk: number;
         confusion_risk: number;
+        is_blocked: boolean;
+        block_reason: string | undefined;
+        bucket: 'hot' | 'new' | 'stable' | 'cold' | 'exclude';
       }> = [];
 
       for (const page of pages || []) {
