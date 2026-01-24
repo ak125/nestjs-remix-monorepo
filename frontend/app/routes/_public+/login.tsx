@@ -1,17 +1,44 @@
-import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useSearchParams, Link } from "@remix-run/react";
 import { useState } from "react";
+import { getOptionalUser } from "../../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { getOptionalUser } from "../../auth/unified.server";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+// Phase 9: PageRole pour analytics
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
+    clusterId: "auth",
+    canonicalEntity: "login",
+    contentType: "support",
+    funnelStage: "decision",
+    conversionGoal: "lead",
+  }),
+};
 
 export const meta: MetaFunction = () => [
   { title: "Connexion | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/login" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/login",
+  },
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -35,67 +62,69 @@ export default function LoginPage() {
     e.preventDefault();
     e.stopPropagation(); // 🔧 EMPÊCHER LA PROPAGATION à Remix
     setIsLoading(true);
-    
+
     const form = e.currentTarget;
     const formData = new FormData(form);
-    
+
     // ✅ Récupérer le redirectTo pour rediriger après connexion
-    const redirectTo = searchParams.get('redirectTo');
-    
-    console.log('� [Login] Connexion en cours...');
+    const redirectTo = searchParams.get("redirectTo");
+
+    console.log("� [Login] Connexion en cours...");
     if (redirectTo) {
-      console.log('� [Login] Redirection après connexion:', redirectTo);
+      console.log("� [Login] Redirection après connexion:", redirectTo);
     }
-    
+
     // Soumettre directement au backend via navigation native
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = '/authenticate';
-    tempForm.style.display = 'none';
-    
-    const emailInput = document.createElement('input');
-    emailInput.name = 'email';
-    emailInput.value = formData.get('email') as string;
+    const tempForm = document.createElement("form");
+    tempForm.method = "POST";
+    tempForm.action = "/authenticate";
+    tempForm.style.display = "none";
+
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = formData.get("email") as string;
     tempForm.appendChild(emailInput);
-    
-    const passwordInput = document.createElement('input');
-    passwordInput.name = 'password';
-    passwordInput.value = formData.get('password') as string;
+
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = formData.get("password") as string;
     tempForm.appendChild(passwordInput);
-    
+
     // ✅ Ajouter le redirectTo au formulaire si présent
     if (redirectTo) {
-      const redirectInput = document.createElement('input');
-      redirectInput.name = 'redirectTo';
+      const redirectInput = document.createElement("input");
+      redirectInput.name = "redirectTo";
       redirectInput.value = redirectTo;
       tempForm.appendChild(redirectInput);
-      console.log('✅ [Login] RedirectTo ajouté:', redirectTo);
+      console.log("✅ [Login] RedirectTo ajouté:", redirectTo);
     }
-    
+
     // 🔑 Capturer et envoyer la session invité pour fusion de panier
     const cookieHeader = document.cookie;
-    const sessionCookie = cookieHeader.split(';').find(c => c.trim().startsWith('connect.sid='));
-    
+    const sessionCookie = cookieHeader
+      .split(";")
+      .find((c) => c.trim().startsWith("connect.sid="));
+
     if (sessionCookie) {
       try {
-        const cookieValue = sessionCookie.split('=')[1];
+        const cookieValue = sessionCookie.split("=")[1];
         const decoded = decodeURIComponent(cookieValue);
         // Format: s:<sessionId>.<signature>
         const match = decoded.match(/^s:([^.]+)\./);
         if (match) {
           const guestSessionId = match[1];
-          const sessionInput = document.createElement('input');
-          sessionInput.name = 'guestSessionId';
+          const sessionInput = document.createElement("input");
+          sessionInput.name = "guestSessionId";
           sessionInput.value = guestSessionId;
           tempForm.appendChild(sessionInput);
-          console.log('✅ [Login] Session invité envoyée:', guestSessionId);
+          console.log("✅ [Login] Session invité envoyée:", guestSessionId);
         }
       } catch (err) {
-        console.warn('⚠️ [Login] Erreur parsing cookie:', err);
+        console.warn("⚠️ [Login] Erreur parsing cookie:", err);
       }
     }
-    
-    console.log('📤 [Login] Soumission du formulaire vers /authenticate');
+
+    console.log("📤 [Login] Soumission du formulaire vers /authenticate");
     document.body.appendChild(tempForm);
     tempForm.submit();
   };
@@ -137,7 +166,9 @@ export default function LoginPage() {
         {/* Login Card */}
         <Card className="shadow-xl border-gray-200 backdrop-blur-sm bg-white/90">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Connexion</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Connexion
+            </CardTitle>
             <CardDescription className="text-center">
               Entrez vos identifiants pour accéder à votre espace
             </CardDescription>
@@ -192,9 +223,25 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Connexion en cours...
                   </span>
@@ -232,7 +279,8 @@ export default function LoginPage() {
 
         {/* Footer info */}
         <p className="text-center text-xs text-gray-500">
-          En vous connectant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+          En vous connectant, vous acceptez nos conditions d'utilisation et
+          notre politique de confidentialité.
         </p>
       </div>
     </div>

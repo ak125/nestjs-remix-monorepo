@@ -1,19 +1,45 @@
 /**
  * ⚙️ TYPES/MOTORISATIONS D'UN MODÈLE
- * 
+ *
  * Page des types/motorisations d'un modèle spécifique
  * Route: /brands/$brandId/models/$modelId/types
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Car, Fuel, Zap, Calendar, Settings, Info } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
+import {
+  ArrowLeft,
+  Car,
+  Fuel,
+  Zap,
+  Calendar,
+  Settings,
+  Info,
+} from "lucide-react";
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+/**
+ * Handle export pour propager le rôle SEO au root Layout
+ */
+export const handle = {
+  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+    clusterId: "brands",
+    canonicalEntity: "vehicle-types",
+  }),
+};
 
 interface VehicleType {
   type_id: number;
@@ -56,7 +82,7 @@ interface LoaderData {
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { brandId, modelId } = params;
-  
+
   if (!brandId || !modelId) {
     throw new Response("Brand ID et Model ID requis", { status: 400 });
   }
@@ -65,34 +91,41 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   try {
     // Récupérer les types du modèle
-    const typesResponse = await fetch(`${baseUrl}/api/vehicles/models/${modelId}/types`, {
-      headers: { 'internal-call': 'true' }
-    });
+    const typesResponse = await fetch(
+      `${baseUrl}/api/vehicles/models/${modelId}/types`,
+      {
+        headers: { "internal-call": "true" },
+      },
+    );
 
     if (!typesResponse.ok) {
       throw new Error(`API Error: ${typesResponse.status}`);
     }
 
     const typesData = await typesResponse.json();
-    const types: VehicleType[] = typesData.data?.map((type: any) => ({
-      type_id: type.type_id,
-      type_name: type.type_name,
-      type_year_from: type.type_year_from,
-      type_year_to: type.type_year_to,
-      type_engine_code: type.type_engine_code || 'N/A',
-      type_fuel_type: type.type_fuel_type || 'Essence',
-      type_power_hp: type.type_power_hp || 0,
-      type_power_kw: type.type_power_kw || 0,
-      type_engine_displacement: type.type_engine_displacement,
-      type_body_type: type.type_body_type || 'Berline',
-      type_drive_type: type.type_drive_type || 'FWD',
-      type_transmission_type: type.type_transmission_type || 'Manuelle'
-    })) || [];
+    const types: VehicleType[] =
+      typesData.data?.map((type: any) => ({
+        type_id: type.type_id,
+        type_name: type.type_name,
+        type_year_from: type.type_year_from,
+        type_year_to: type.type_year_to,
+        type_engine_code: type.type_engine_code || "N/A",
+        type_fuel_type: type.type_fuel_type || "Essence",
+        type_power_hp: type.type_power_hp || 0,
+        type_power_kw: type.type_power_kw || 0,
+        type_engine_displacement: type.type_engine_displacement,
+        type_body_type: type.type_body_type || "Berline",
+        type_drive_type: type.type_drive_type || "FWD",
+        type_transmission_type: type.type_transmission_type || "Manuelle",
+      })) || [];
 
     // Récupérer les infos du modèle
-    const modelResponse = await fetch(`${baseUrl}/api/vehicles/models/${modelId}`, {
-      headers: { 'internal-call': 'true' }
-    });
+    const modelResponse = await fetch(
+      `${baseUrl}/api/vehicles/models/${modelId}`,
+      {
+        headers: { "internal-call": "true" },
+      },
+    );
 
     let model: Model | null = null;
     if (modelResponse.ok) {
@@ -101,7 +134,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         model = {
           modele_id: modelData.data.modele_id,
           modele_name: modelData.data.modele_name,
-          modele_alias: modelData.data.modele_alias
+          modele_alias: modelData.data.modele_alias,
         };
       }
     }
@@ -111,27 +144,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
     let brand = null;
     if (brandsResponse.ok) {
       const brandsData = await brandsResponse.json();
-      brand = brandsData.data?.find((b: any) => b.marque_id.toString() === brandId) || null;
+      brand =
+        brandsData.data?.find((b: any) => b.marque_id.toString() === brandId) ||
+        null;
     }
 
     // Calculer les statistiques
-    const fuelTypes = [...new Set(types.map(t => t.type_fuel_type))];
-    const powers = types.map(t => t.type_power_hp).filter(p => p > 0);
-    const years = types.map(t => t.type_year_from);
-    
+    const fuelTypes = [...new Set(types.map((t) => t.type_fuel_type))];
+    const powers = types.map((t) => t.type_power_hp).filter((p) => p > 0);
+    const years = types.map((t) => t.type_year_from);
+
     const stats = {
       totalTypes: types.length,
-      activePeriod: types.length > 0 
-        ? `${Math.min(...years)} - ${new Date().getFullYear()}`
-        : 'N/A',
+      activePeriod:
+        types.length > 0
+          ? `${Math.min(...years)} - ${new Date().getFullYear()}`
+          : "N/A",
       fuelTypes,
-      powerRange: powers.length > 0 
-        ? { min: Math.min(...powers), max: Math.max(...powers) }
-        : { min: 0, max: 0 }
+      powerRange:
+        powers.length > 0
+          ? { min: Math.min(...powers), max: Math.max(...powers) }
+          : { min: 0, max: 0 },
     };
 
     return json({ types, model, brand, stats } as LoaderData);
-
   } catch (error) {
     console.error("Erreur chargement types:", error);
     return json({
@@ -140,11 +176,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
       brand: null,
       stats: {
         totalTypes: 0,
-        activePeriod: 'N/A',
+        activePeriod: "N/A",
         fuelTypes: [],
-        powerRange: { min: 0, max: 0 }
+        powerRange: { min: 0, max: 0 },
       },
-      error: "Impossible de charger les types"
+      error: "Impossible de charger les types",
     } as LoaderData);
   }
 }
@@ -156,38 +192,44 @@ export default function BrandModelTypes() {
   // Fonction pour obtenir l'icône de carburant
   const getFuelIcon = (fuelType: string) => {
     const fuel = fuelType.toLowerCase();
-    if (fuel.includes('diesel')) return <Fuel className="h-4 w-4 text-black" />;
-    if (fuel.includes('electr') || fuel.includes('hybrid')) return <Zap className="h-4 w-4 text-green-500" />;
+    if (fuel.includes("diesel")) return <Fuel className="h-4 w-4 text-black" />;
+    if (fuel.includes("electr") || fuel.includes("hybrid"))
+      return <Zap className="h-4 w-4 text-green-500" />;
     return <Fuel className="h-4 w-4 text-blue-500" />;
   };
 
   // Fonction pour obtenir la couleur du badge carburant
   const getFuelBadgeVariant = (fuelType: string) => {
     const fuel = fuelType.toLowerCase();
-    if (fuel.includes('diesel')) return 'secondary';
-    if (fuel.includes('electr') || fuel.includes('hybrid')) return 'default';
-    return 'outline';
+    if (fuel.includes("diesel")) return "secondary";
+    if (fuel.includes("electr") || fuel.includes("hybrid")) return "default";
+    return "outline";
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Marques", href: "/brands" },
-        { label: brand?.marque_name || `Marque #${params.brandId}`, href: `/brands/${params.brandId}` },
-        { label: model?.modele_name || "Modèle", href: `/brands/${params.brandId}` },
-        { label: "Motorisations" }
-      ]} />
+      <PublicBreadcrumb
+        items={[
+          { label: "Marques", href: "/brands" },
+          {
+            label: brand?.marque_name || `Marque #${params.brandId}`,
+            href: `/brands/${params.brandId}`,
+          },
+          {
+            label: model?.modele_name || "Modèle",
+            href: `/brands/${params.brandId}`,
+          },
+          { label: "Motorisations" },
+        ]}
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
           {brand && (
             <div className="w-16 h-16">
-              <BrandLogoClient
-                logoPath={null}
-                brandName={brand.marque_name}
-              />
+              <BrandLogoClient logoPath={null} brandName={brand.marque_name} />
             </div>
           )}
           <div>
@@ -202,7 +244,7 @@ export default function BrandModelTypes() {
             </p>
           </div>
         </div>
-        
+
         <Link to={`/brands/${params.brandId}`}>
           <Button variant="outline" className="flex items-center space-x-2">
             <ArrowLeft className="h-4 w-4" />
@@ -212,7 +254,9 @@ export default function BrandModelTypes() {
       </div>
 
       {error && (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       )}
 
       {/* Statistiques */}
@@ -221,26 +265,32 @@ export default function BrandModelTypes() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Configurations</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalTypes}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Configurations
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.totalTypes}
+                </p>
               </div>
               <Settings className="h-8 w-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Période</p>
-                <p className="text-lg font-bold text-gray-900">{stats.activePeriod}</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {stats.activePeriod}
+                </p>
               </div>
               <Calendar className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -254,13 +304,15 @@ export default function BrandModelTypes() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Carburants</p>
-                <p className="text-lg font-bold text-gray-900">{stats.fuelTypes.length}</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {stats.fuelTypes.length}
+                </p>
               </div>
               <Fuel className="h-8 w-8 text-purple-600" />
             </div>
@@ -291,45 +343,67 @@ export default function BrandModelTypes() {
                         <h3 className="font-semibold text-lg text-gray-900">
                           {type.type_name}
                         </h3>
-                        <Badge variant={getFuelBadgeVariant(type.type_fuel_type)}>
+                        <Badge
+                          variant={getFuelBadgeVariant(type.type_fuel_type)}
+                        >
                           {getFuelIcon(type.type_fuel_type)}
                           <span className="ml-1">{type.type_fuel_type}</span>
                         </Badge>
                         <Badge variant="outline">
                           {type.type_year_from}
-                          {type.type_year_to ? ` - ${type.type_year_to}` : ' - Actuel'}
+                          {type.type_year_to
+                            ? ` - ${type.type_year_to}`
+                            : " - Actuel"}
                         </Badge>
                       </div>
 
                       {/* Grille des spécifications */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-gray-600">Code moteur</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Code moteur
+                          </p>
                           <p className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
                             {type.type_engine_code}
                           </p>
                         </div>
-                        
+
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-gray-600">Puissance</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Puissance
+                          </p>
                           <p className="text-sm">
-                            <span className="font-semibold">{type.type_power_hp} cv</span>
-                            <span className="text-gray-500"> ({type.type_power_kw} kW)</span>
+                            <span className="font-semibold">
+                              {type.type_power_hp} cv
+                            </span>
+                            <span className="text-gray-500">
+                              {" "}
+                              ({type.type_power_kw} kW)
+                            </span>
                           </p>
                         </div>
-                        
+
                         {type.type_engine_displacement && (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium text-gray-600">Cylindrée</p>
+                            <p className="text-sm font-medium text-gray-600">
+                              Cylindrée
+                            </p>
                             <p className="text-sm font-semibold">
-                              {(type.type_engine_displacement / 1000).toFixed(1)}L
+                              {(type.type_engine_displacement / 1000).toFixed(
+                                1,
+                              )}
+                              L
                             </p>
                           </div>
                         )}
-                        
+
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-gray-600">Transmission</p>
-                          <p className="text-sm">{type.type_transmission_type}</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Transmission
+                          </p>
+                          <p className="text-sm">
+                            {type.type_transmission_type}
+                          </p>
                         </div>
                       </div>
                     </div>
