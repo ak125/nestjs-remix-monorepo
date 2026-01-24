@@ -1,11 +1,17 @@
 import {
   Controller,
   Get,
+  Post,
+  Patch,
+  Delete,
   Param,
+  Body,
   NotFoundException,
   Logger,
   Header,
+  UseGuards,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import {
   ReferenceService,
   SeoReference,
@@ -58,12 +64,19 @@ interface ReferenceListResponse {
 /**
  * Contrôleur API pour les pages Référence (R4)
  * Endpoints pour récupérer les définitions canoniques des pièces auto
+ *
+ * IMPORTANT: L'ordre des routes compte en NestJS!
+ * Les routes statiques doivent être AVANT les routes dynamiques (:slug)
  */
 @Controller('api/seo/reference')
 export class ReferenceController {
   private readonly logger = new Logger(ReferenceController.name);
 
   constructor(private readonly referenceService: ReferenceService) {}
+
+  // ============================================
+  // ROUTES STATIQUES (AVANT les routes avec :slug)
+  // ============================================
 
   /**
    * Liste toutes les références publiées
@@ -93,22 +106,60 @@ export class ReferenceController {
   }
 
   /**
-   * Récupère une référence par son slug
-   * GET /api/seo/reference/:slug
+   * Liste tous les drafts (références non publiées)
+   * GET /api/seo/reference/drafts
+   * ADMIN ONLY
    */
-  @Get(':slug')
-  @Header('Cache-Control', 'public, max-age=3600') // Cache 1 heure
-  async getReference(@Param('slug') slug: string): Promise<ReferenceResponse> {
-    this.logger.debug(`📖 GET /api/seo/reference/${slug}`);
+  @Get('drafts')
+  @UseGuards(IsAdminGuard)
+  async getDrafts(): Promise<{
+    drafts: SeoReferenceListItem[];
+    total: number;
+  }> {
+    this.logger.debug('📝 GET /api/seo/reference/drafts');
+    const drafts = await this.referenceService.getDrafts();
+    return { drafts, total: drafts.length };
+  }
 
-    const reference = await this.referenceService.getBySlug(slug);
+  /**
+   * Génère des références R4 depuis les gammes existantes
+   * POST /api/seo/reference/generate
+   * Crée les entrées en mode DRAFT (is_published: false)
+   * ADMIN ONLY
+   */
+  @Post('generate')
+  @UseGuards(IsAdminGuard)
+  async generateFromGammes(): Promise<{ created: number; skipped: number }> {
+    this.logger.log('🏭 POST /api/seo/reference/generate');
+    return this.referenceService.generateFromGammes();
+  }
 
-    if (!reference) {
-      throw new NotFoundException(`Référence non trouvée: ${slug}`);
+  /**
+   * Récupère le slug de référence pour une gamme donnée
+   * GET /api/seo/reference/by-gamme/:pgId
+   */
+  @Get('by-gamme/:pgId')
+  @Header('Cache-Control', 'public, max-age=86400') // Cache 24h
+  async getReferenceByGamme(
+    @Param('pgId') pgId: string,
+  ): Promise<{ slug: string | null; url: string | null }> {
+    const pgIdNum = parseInt(pgId, 10);
+
+    if (isNaN(pgIdNum)) {
+      return { slug: null, url: null };
     }
 
-    return this.mapToResponse(reference);
+    const slug = await this.referenceService.getReferenceSlugByGammeId(pgIdNum);
+
+    return {
+      slug,
+      url: slug ? `/reference-auto/${slug}` : null,
+    };
   }
+
+  // ============================================
+  // ROUTES AVEC :slug (sous-routes d'abord)
+  // ============================================
 
   /**
    * Vérifie si une référence existe (pour préchargement)
@@ -144,26 +195,83 @@ export class ReferenceController {
   }
 
   /**
-   * Récupère le slug de référence pour une gamme donnée
-   * GET /api/seo/reference/by-gamme/:pgId
+   * Publie une référence (is_published: true)
+   * PATCH /api/seo/reference/:slug/publish
+   * ADMIN ONLY
    */
-  @Get('by-gamme/:pgId')
-  @Header('Cache-Control', 'public, max-age=86400') // Cache 24h
-  async getReferenceByGamme(
-    @Param('pgId') pgId: string,
-  ): Promise<{ slug: string | null; url: string | null }> {
-    const pgIdNum = parseInt(pgId, 10);
+  @Patch(':slug/publish')
+  @UseGuards(IsAdminGuard)
+  async publishReference(
+    @Param('slug') slug: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`📢 PATCH /api/seo/reference/${slug}/publish`);
+    return this.referenceService.publish(slug);
+  }
 
-    if (isNaN(pgIdNum)) {
-      return { slug: null, url: null };
+  /**
+   * Met à jour une référence (draft ou publiée)
+   * PATCH /api/seo/reference/:slug
+   * ADMIN ONLY
+   */
+  @Patch(':slug')
+  @UseGuards(IsAdminGuard)
+  async updateReference(
+    @Param('slug') slug: string,
+    @Body()
+    body: Partial<{
+      title: string;
+      meta_description: string;
+      definition: string;
+      role_mecanique: string;
+      role_negatif: string;
+      composition: string[];
+      confusions_courantes: string[];
+      symptomes_associes: string[];
+      regles_metier: string[];
+      scope_limites: string;
+      content_html: string;
+    }>,
+  ): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`✏️ PATCH /api/seo/reference/${slug}`);
+    return this.referenceService.update(slug, body);
+  }
+
+  /**
+   * Supprime un draft (non publié uniquement)
+   * DELETE /api/seo/reference/:slug
+   * ADMIN ONLY
+   */
+  @Delete(':slug')
+  @UseGuards(IsAdminGuard)
+  async deleteDraft(
+    @Param('slug') slug: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    this.logger.log(`🗑️ DELETE /api/seo/reference/${slug}`);
+    return this.referenceService.deleteDraft(slug);
+  }
+
+  // ============================================
+  // ROUTE GÉNÉRIQUE :slug (EN DERNIER!)
+  // ============================================
+
+  /**
+   * Récupère une référence par son slug
+   * GET /api/seo/reference/:slug
+   *
+   * IMPORTANT: Cette route doit être EN DERNIER car elle capture tout!
+   */
+  @Get(':slug')
+  @Header('Cache-Control', 'public, max-age=3600') // Cache 1 heure
+  async getReference(@Param('slug') slug: string): Promise<ReferenceResponse> {
+    this.logger.debug(`📖 GET /api/seo/reference/${slug}`);
+
+    const reference = await this.referenceService.getBySlug(slug);
+
+    if (!reference) {
+      throw new NotFoundException(`Référence non trouvée: ${slug}`);
     }
 
-    const slug = await this.referenceService.getReferenceSlugByGammeId(pgIdNum);
-
-    return {
-      slug,
-      url: slug ? `/reference-auto/${slug}` : null,
-    };
+    return this.mapToResponse(reference);
   }
 
   /**
