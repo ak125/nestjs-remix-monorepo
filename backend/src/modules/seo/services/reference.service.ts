@@ -150,7 +150,10 @@ export class ReferenceService {
     const { data, error } = await this.supabase
       .from('__seo_reference')
       .select('id, slug, title, meta_description, definition, pg_id')
-      .in('id', refData.related_references)
+      .in(
+        'id',
+        refData.related_references.map((id) => String(id)),
+      )
       .eq('is_published', true);
 
     if (error) {

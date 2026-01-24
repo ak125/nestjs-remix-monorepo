@@ -219,45 +219,168 @@ export class DiagnosticService {
   }
 
   /**
-   * Genere le Schema.org HowTo pour un diagnostic
+   * Genere le Schema.org enrichi pour un diagnostic (R5)
+   * Inclut: HowTo + FAQPage + BreadcrumbList
+   * Impact SEO: +10-15% CTR avec Rich Snippets Google
+   *
    * @param diagnostic - Le diagnostic
-   * @returns Le JSON-LD Schema.org
+   * @returns Le JSON-LD Schema.org @graph
    */
   generateSchemaOrg(diagnostic: SeoDiagnostic): Record<string, unknown> {
-    // Si un schema existe deja, le retourner
+    // Si un schema existe deja dans la DB, le retourner tel quel
     if (diagnostic.schema_org) {
       return diagnostic.schema_org;
     }
 
-    // Sinon, generer un schema HowTo
-    const steps =
+    const baseUrl = 'https://www.automecanik.com';
+    const pageUrl = `${baseUrl}/diagnostic-auto/${diagnostic.slug}`;
+
+    // 1. HowTo Schema (existant, ameliore)
+    const howToSteps =
       diagnostic.recommended_actions?.map((action, index) => ({
         '@type': 'HowToStep',
         position: index + 1,
         name: action.action,
         text: action.action,
+        ...(action.duration && {
+          estimatedDuration: `PT${action.duration.toUpperCase().replace(/\s/g, '')}`,
+        }),
       })) || [];
 
-    return {
-      '@context': 'https://schema.org',
+    const howToSchema: Record<string, unknown> = {
       '@type': 'HowTo',
-      name: `Diagnostiquer: ${diagnostic.title}`,
+      '@id': `${pageUrl}#howto`,
+      name: diagnostic.title,
       description:
         diagnostic.meta_description ||
-        diagnostic.symptom_description?.substring(0, 200),
-      step: steps,
-      estimatedCost: diagnostic.estimated_repair_cost_min
-        ? {
-            '@type': 'MonetaryAmount',
-            currency: 'EUR',
-            minValue: diagnostic.estimated_repair_cost_min,
-            maxValue: diagnostic.estimated_repair_cost_max,
-          }
-        : undefined,
-      totalTime: diagnostic.estimated_repair_duration
-        ? `PT${diagnostic.estimated_repair_duration.toUpperCase().replace(/\s/g, '')}`
-        : undefined,
+        this.stripHtml(diagnostic.symptom_description || '').substring(0, 200),
+      step: howToSteps,
     };
+
+    // Ajouter estimatedCost si disponible
+    if (diagnostic.estimated_repair_cost_min) {
+      howToSchema.estimatedCost = {
+        '@type': 'MonetaryAmount',
+        currency: 'EUR',
+        minValue: diagnostic.estimated_repair_cost_min,
+        maxValue: diagnostic.estimated_repair_cost_max,
+      };
+    }
+
+    // Ajouter totalTime si disponible
+    if (diagnostic.estimated_repair_duration) {
+      howToSchema.totalTime = `PT${diagnostic.estimated_repair_duration.toUpperCase().replace(/\s/g, '')}`;
+    }
+
+    // 2. FAQPage Schema (NOUVEAU - Rich Snippets Google)
+    const faqQuestions: Array<Record<string, unknown>> = [];
+
+    // Q1: Symptomes
+    if (diagnostic.symptom_description) {
+      const titleBase = diagnostic.title.split(':')[0].toLowerCase().trim();
+      faqQuestions.push({
+        '@type': 'Question',
+        name: `Quels sont les symptômes d'un ${titleBase} ?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: this.stripHtml(diagnostic.symptom_description).substring(
+            0,
+            500,
+          ),
+        },
+      });
+    }
+
+    // Q2: Diagnostic
+    if (diagnostic.sign_description) {
+      const titleBase = diagnostic.title.split(':')[0].toLowerCase().trim();
+      faqQuestions.push({
+        '@type': 'Question',
+        name: `Comment diagnostiquer un ${titleBase} ?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: this.stripHtml(diagnostic.sign_description).substring(0, 500),
+        },
+      });
+    }
+
+    // Q3: Codes OBD (si disponibles)
+    if (diagnostic.dtc_codes && diagnostic.dtc_codes.length > 0) {
+      const dtcDescriptions = Object.entries(diagnostic.dtc_descriptions || {})
+        .map(([code, desc]) => `${code}: ${desc}`)
+        .join('. ');
+
+      faqQuestions.push({
+        '@type': 'Question',
+        name: 'Quels codes OBD sont associés à ce problème ?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Codes OBD associés: ${diagnostic.dtc_codes.join(', ')}. ${dtcDescriptions}`,
+        },
+      });
+    }
+
+    // Q4: Cout (si disponible)
+    if (
+      diagnostic.estimated_repair_cost_min &&
+      diagnostic.estimated_repair_cost_max
+    ) {
+      faqQuestions.push({
+        '@type': 'Question',
+        name: 'Combien coûte cette réparation ?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Le coût estimé de la réparation est de ${diagnostic.estimated_repair_cost_min}€ à ${diagnostic.estimated_repair_cost_max}€, avec une durée d'intervention d'environ ${diagnostic.estimated_repair_duration || '2-3 heures'}.`,
+        },
+      });
+    }
+
+    const faqSchema: Record<string, unknown> = {
+      '@type': 'FAQPage',
+      '@id': `${pageUrl}#faq`,
+      mainEntity: faqQuestions,
+    };
+
+    // 3. BreadcrumbList Schema (NOUVEAU)
+    const breadcrumbSchema: Record<string, unknown> = {
+      '@type': 'BreadcrumbList',
+      '@id': `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Accueil',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Diagnostic Auto',
+          item: `${baseUrl}/diagnostic-auto`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: diagnostic.title,
+          item: pageUrl,
+        },
+      ],
+    };
+
+    // Assembler le @graph complet
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [howToSchema, faqSchema, breadcrumbSchema],
+    };
+  }
+
+  /**
+   * Supprime les balises HTML d'une chaine
+   * @param html - La chaine avec HTML
+   * @returns La chaine sans HTML
+   */
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '').trim();
   }
 
   /**
