@@ -1901,11 +1901,10 @@ ${links}
     try {
       const urls: string[] = [];
 
-      // 1. Blog Advice (conseils techniques)
+      // 1. Blog Advice (conseils techniques) - no display filter, column doesn't exist
       const { data: advices } = await this.supabase
         .from('__blog_advice')
         .select('ba_alias')
-        .eq('ba_display', '1')
         .limit(1000);
 
       if (advices && advices.length > 0) {
@@ -1918,10 +1917,10 @@ ${links}
       }
 
       // 2. Blog Guides (guides détaillés)
+      // 2. Blog Guides - no display filter, column doesn't exist
       const { data: guides } = await this.supabase
         .from('__blog_guide')
         .select('bg_alias')
-        .eq('bg_display', '1')
         .limit(1000);
 
       if (guides && guides.length > 0) {
@@ -1950,22 +1949,19 @@ ${links}
         this.logger.log(`   Found ${conseilGammes.length} conseil gamme pages`);
       }
 
-      // 4. Blog SEO Marque (pages marque du blog)
-      const { data: seoMarques } = await this.supabase
-        .from('__blog_seo_marque')
-        .select('bsm_marque_alias')
-        .eq('bsm_display', '1')
+      // 4. Use __sitemap_blog as authoritative source (already has correct URLs)
+      const { data: sitemapBlog } = await this.supabase
+        .from('__sitemap_blog')
+        .select('url')
         .limit(500);
 
-      if (seoMarques && seoMarques.length > 0) {
-        for (const m of seoMarques) {
-          if (m.bsm_marque_alias) {
-            urls.push(
-              `${this.BASE_URL}/blog-pieces-auto/auto/${m.bsm_marque_alias}`,
-            );
+      if (sitemapBlog && sitemapBlog.length > 0) {
+        for (const b of sitemapBlog) {
+          if (b.url) {
+            urls.push(`${this.BASE_URL}${b.url}`);
           }
         }
-        this.logger.log(`   Found ${seoMarques.length} blog seo marque pages`);
+        this.logger.log(`   Found ${sitemapBlog.length} sitemap blog pages`);
       }
 
       // Écrire le fichier
