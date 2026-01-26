@@ -704,7 +704,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>${this.htmlEscape(config.title)}</title>
   <meta name="description" content="${this.htmlEscape(config.description)}">
   <style>
@@ -773,7 +773,7 @@ ${links}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Index des hubs de crawl - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -1039,7 +1039,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>${this.htmlEscape(config.title)}</title>
   <meta name="description" content="${this.htmlEscape(config.description)}">
   <style>
@@ -1401,7 +1401,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>${this.htmlEscape(config.title)} - Part ${partIndex + 1}/${totalParts}</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -1482,7 +1482,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Index ${this.htmlEscape(config.title)}</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -1560,7 +1560,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Index des Clusters - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
@@ -1671,7 +1671,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Pages Money - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -1837,7 +1837,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Pages à stabiliser (J7) - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -1986,7 +1986,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Contenu Éditorial - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -2092,7 +2092,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Pages Listing - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -2284,7 +2284,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Constructeurs Part ${i + 1}/${parts.length} - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -2346,7 +2346,7 @@ ${indexSignature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Index Constructeurs - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
@@ -2516,7 +2516,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>${brand.marque_name} Part ${i + 1}/${parts.length} - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -2582,7 +2582,7 @@ ${indexSignature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>${brand.marque_name} - Véhicules - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
@@ -2652,7 +2652,7 @@ ${mainIndexSignature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Constructeurs par Marque - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
@@ -2717,7 +2717,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Pages à risque - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -2881,7 +2881,7 @@ ${signature}
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="robots" content="noindex, follow">
+  <meta name="robots" content="index, follow">
   <title>Hubs de Crawl - Automecanik</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
