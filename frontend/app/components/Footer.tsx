@@ -112,6 +112,14 @@ export const Footer = () => {
                     Contact
                   </Link>
                 </li>
+                <li>
+                  <a
+                    href="/__crawl__/index.html"
+                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                  >
+                    Plan du site
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -212,8 +220,7 @@ export const Footer = () => {
           <div className="border-t border-neutral-700 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-neutral-400 text-sm">
-                © {new Date().getFullYear()} Automecanik. Tous droits
-                réservés.
+                © {new Date().getFullYear()} Automecanik. Tous droits réservés.
               </p>
               <div className="flex gap-4 text-sm">
                 <Link
