@@ -125,8 +125,8 @@ automecanik.com, www.automecanik.com {
         root * /var/www/crawl-hubs
         uri strip_prefix /__crawl__
 
-        # SEO Headers
-        header X-Robots-Tag "noindex, follow"
+        # SEO Headers - index pour permettre l'indexation des hubs
+        header X-Robots-Tag "index, follow"
         header Content-Language "fr"
         header Vary "Accept-Encoding"
 
