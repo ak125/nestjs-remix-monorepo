@@ -1910,7 +1910,9 @@ ${links}
       if (advices && advices.length > 0) {
         for (const a of advices) {
           if (a.ba_alias) {
-            urls.push(`${this.BASE_URL}/blog-pieces-auto/advice/${a.ba_alias}`);
+            urls.push(
+              `${this.BASE_URL}/blog-pieces-auto/article/${a.ba_alias}`,
+            );
           }
         }
         this.logger.log(`   Found ${advices.length} blog advice pages`);
@@ -1926,7 +1928,9 @@ ${links}
       if (guides && guides.length > 0) {
         for (const g of guides) {
           if (g.bg_alias) {
-            urls.push(`${this.BASE_URL}/blog-pieces-auto/guide/${g.bg_alias}`);
+            urls.push(
+              `${this.BASE_URL}/blog-pieces-auto/article/${g.bg_alias}`,
+            );
           }
         }
         this.logger.log(`   Found ${guides.length} blog guide pages`);
