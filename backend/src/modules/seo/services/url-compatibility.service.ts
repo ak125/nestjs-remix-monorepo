@@ -415,6 +415,96 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   }
 
   /**
+   * Résout une URL legacy /pieces-auto/{alias} vers la nouvelle URL /pieces/{alias}-{id}.html
+   * @param legacyPath - Le chemin legacy (ex: /pieces-auto/filtre-a-huile)
+   * @returns L'URL de redirection si trouvée, null sinon
+   */
+  async resolveLegacyGammeUrl(legacyPath: string): Promise<{
+    found: boolean;
+    newUrl: string | null;
+    gammeId: number | null;
+    gammeName: string | null;
+  }> {
+    try {
+      // Extraire l'alias de l'URL legacy
+      // Patterns supportés:
+      // - /pieces-auto/{alias}
+      // - /pieces-auto/{alias}/
+      const match = legacyPath.match(/^\/pieces-auto\/([a-z0-9-]+)\/?$/i);
+
+      if (!match) {
+        this.logger.debug(
+          `URL ne correspond pas au pattern /pieces-auto/{alias}: ${legacyPath}`,
+        );
+        return { found: false, newUrl: null, gammeId: null, gammeName: null };
+      }
+
+      const alias = match[1].toLowerCase();
+      this.logger.debug(`Recherche gamme avec alias: ${alias}`);
+
+      // Chercher la gamme par alias exact
+      const { data: gamme, error } = await this.client
+        .from(TABLES.pieces_gamme)
+        .select('pg_id, pg_name, pg_alias')
+        .eq('pg_alias', alias)
+        .eq('pg_display', '1')
+        .single();
+
+      if (error || !gamme) {
+        // Essayer avec une recherche plus souple (sans tirets, espaces)
+        const normalizedAlias = alias.replace(/-/g, '');
+        const { data: gammeAlt, error: errorAlt } = await this.client
+          .from(TABLES.pieces_gamme)
+          .select('pg_id, pg_name, pg_alias')
+          .eq('pg_display', '1')
+          .limit(1);
+
+        // Chercher dans les résultats
+        if (!errorAlt && gammeAlt) {
+          for (const g of gammeAlt) {
+            const gAlias = (g.pg_alias || '').replace(/-/g, '');
+            if (gAlias === normalizedAlias) {
+              const newUrl = this.generateGammeUrl(
+                g.pg_id,
+                g.pg_alias || this.slugify(g.pg_name),
+              );
+              return {
+                found: true,
+                newUrl,
+                gammeId: g.pg_id,
+                gammeName: g.pg_name,
+              };
+            }
+          }
+        }
+
+        this.logger.debug(`Gamme non trouvée pour alias: ${alias}`);
+        return { found: false, newUrl: null, gammeId: null, gammeName: null };
+      }
+
+      // Gamme trouvée, générer la nouvelle URL
+      const newUrl = this.generateGammeUrl(
+        gamme.pg_id,
+        gamme.pg_alias || this.slugify(gamme.pg_name),
+      );
+      this.logger.log(`URL legacy résolue: ${legacyPath} → ${newUrl}`);
+
+      return {
+        found: true,
+        newUrl,
+        gammeId: gamme.pg_id,
+        gammeName: gamme.pg_name,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erreur resolveLegacyGammeUrl pour ${legacyPath}:`,
+        error,
+      );
+      return { found: false, newUrl: null, gammeId: null, gammeName: null };
+    }
+  }
+
+  /**
    * Vérifie la compatibilité des URLs entre ancien et nouveau système
    * Retourne un rapport détaillé avec statistiques
    */

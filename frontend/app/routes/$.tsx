@@ -81,6 +81,66 @@ export async function loader({ request }: LoaderFunctionArgs) {
       // Continue malgré l'erreur de redirection
     }
 
+    // 2.5 Gérer les URLs legacy /pieces-auto/{alias}
+    // Si l'alias correspond à une gamme existante → 301 redirect
+    // Sinon → 410 Gone
+    if (pathname.startsWith("/pieces-auto/")) {
+      try {
+        const legacyResponse = await fetch(
+          `${process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"}/api/redirects/resolve-legacy?url=${encodeURIComponent(pathname)}`,
+          {
+            headers: { "Internal-Call": "true" },
+          },
+        );
+
+        if (legacyResponse.ok) {
+          const legacyData = await legacyResponse.json();
+
+          if (legacyData.found && legacyData.destination) {
+            // Gamme trouvée - 301 redirect vers la nouvelle URL
+            console.log(
+              `[SEO] Legacy URL resolved: ${pathname} → ${legacyData.destination}`,
+            );
+            throw new Response(null, {
+              status: 301,
+              headers: {
+                Location: legacyData.destination,
+                "Cache-Control": "public, max-age=31536000",
+                "X-Redirect-Reason": "legacy-pieces-auto-resolved",
+              },
+            });
+          } else {
+            // Gamme non trouvée - 410 Gone
+            console.log(
+              `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
+            );
+            throw json(
+              {
+                url: pathname,
+                message:
+                  "Cette page a été définitivement supprimée. Le contenu n'est plus disponible.",
+                isOldLink: true,
+                reason: legacyData.reason || "URL legacy non résolue",
+              },
+              {
+                status: 410,
+                headers: {
+                  "Cache-Control": "public, max-age=86400", // Cache 24h
+                  "X-Robots-Tag": "noindex, follow",
+                },
+              },
+            );
+          }
+        }
+      } catch (legacyError) {
+        if (legacyError instanceof Response) {
+          throw legacyError;
+        }
+        console.error("Erreur résolution URL legacy:", legacyError);
+        // En cas d'erreur, continuer vers le 404 standard
+      }
+    }
+
     // 3. Récupérer des suggestions intelligentes
     let suggestions: string[] = [];
     try {
