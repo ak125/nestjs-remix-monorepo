@@ -2785,9 +2785,6 @@ ${links}
     // 2. Générer les hubs transversaux (prioritaires)
     const transversalResults: HubGenerationResult[] = [];
 
-    const moneyResult = await this.generateMoneyHub();
-    transversalResults.push(moneyResult);
-
     const riskResult = await this.generateRiskHub();
     transversalResults.push(riskResult);
 
@@ -2912,10 +2909,6 @@ ${signature}
 
   <h2>🔥 Hubs Prioritaires</h2>
   <ul>
-    <li class="hot">
-      <a href="hot/money.html">💰 Pages Money</a>
-      <br><span class="meta">Top 2,000 pages à fort ROI - Crawl prioritaire</span>
-    </li>
     <li class="risk">
       <a href="risk/weak-cluster.html">⚠️ Pages à Risque</a>
       <br><span class="meta">Pages orphelines ou faible crawl - Sauvetage SEO</span>
