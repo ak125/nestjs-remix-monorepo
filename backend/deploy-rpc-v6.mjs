@@ -7,7 +7,7 @@ const PROJECT_ID = "cxpojprgwgubzjyqzmoq";
 const sql = fs.readFileSync('sql/fix-rpc-v3-integer-cast.sql', 'utf8');
 
 console.log('SQL file size:', sql.length, 'bytes');
-console.log('Deploying RPC V6 fix to Supabase...');
+console.log('Deploying RPC V7 fix to Supabase...');
 
 // Send to Supabase API
 const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_ID}/database/query`, {
