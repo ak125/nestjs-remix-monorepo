@@ -2871,9 +2871,10 @@ ${links}
     const listingsUrls =
       transversalResults.find((r) => r.filePath.includes('listings'))
         ?.urlCount || 0;
-    const vehiclesUrls =
-      transversalResults.find((r) => r.filePath.includes('vehicles'))
-        ?.urlCount || 0;
+    // Véhicules sont générés par marque, sommer tous les résultats
+    const vehiclesUrls = transversalResults
+      .filter((r) => r.type === 'vehicules')
+      .reduce((sum, r) => sum + r.urlCount, 0);
 
     const signature = this.generateSignature(totalUrls, 'v10-main-index');
     const html = `<!DOCTYPE html>
@@ -2932,7 +2933,7 @@ ${signature}
       <br><span class="meta">${listingsUrls.toLocaleString()} liens - Catégories et index gamme/marque</span>
     </li>
     <li class="vehicles">
-      <a href="constructeurs/vehicles.html">🚗 Pages Véhicules</a>
+      <a href="constructeurs/index.html">🚗 Pages Véhicules</a>
       <br><span class="meta">${vehiclesUrls.toLocaleString()} liens - Marques, modèles, motorisations</span>
     </li>
   </ul>
