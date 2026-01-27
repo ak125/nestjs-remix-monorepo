@@ -83,6 +83,19 @@ export interface ResponsiveImageSet {
 }
 
 /**
+ * 🚀 LCP Optimization: Picture-ready image set for AVIF/WebP with fallback
+ * Used by <picture> elements for optimal format delivery
+ */
+export interface PictureImageSet {
+  avifSrcSet: string;
+  webpSrcSet: string;
+  fallbackSrc: string;
+  sizes: string;
+  width?: number;
+  height?: number;
+}
+
+/**
  * 🎯 CLASSE PRINCIPALE D'OPTIMISATION
  */
 export class ImageOptimizer {
@@ -219,6 +232,80 @@ export class ImageOptimizer {
       sizes: "(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px",
       webpSrc: this.getOptimizedUrl(imagePath, { ...options, format: "webp" }),
       originalSrc: this.getOriginalUrl(imagePath),
+    };
+  }
+
+  /**
+   * 🚀 LCP Optimization: Generates picture-ready image set for AVIF/WebP
+   *
+   * Returns srcSet strings for both AVIF and WebP formats to be used
+   * with <picture> elements for optimal format delivery.
+   * AVIF is 25-35% smaller than WebP for supported browsers.
+   *
+   * @example
+   * const { avifSrcSet, webpSrcSet, fallbackSrc, sizes } = ImageOptimizer.getPictureImageSet('logos/bmw.jpg');
+   * <picture>
+   *   <source srcSet={avifSrcSet} type="image/avif" sizes={sizes} />
+   *   <source srcSet={webpSrcSet} type="image/webp" sizes={sizes} />
+   *   <img src={fallbackSrc} alt="..." loading="lazy" decoding="async" />
+   * </picture>
+   */
+  static getPictureImageSet(
+    imagePath: string,
+    options: {
+      widths?: number[];
+      quality?: number;
+      sizes?: string;
+      width?: number;
+      height?: number;
+    } = {},
+  ): PictureImageSet {
+    const {
+      widths = this.DEFAULT_WIDTHS,
+      quality = this.DEFAULT_QUALITY,
+      sizes = "(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px",
+      width,
+      height,
+    } = options;
+
+    // Generate AVIF srcSet
+    const avifSrcSet = widths
+      .map((w) => {
+        const url = this.getOptimizedUrl(imagePath, {
+          width: w,
+          quality,
+          format: "avif",
+        });
+        return `${url} ${w}w`;
+      })
+      .join(", ");
+
+    // Generate WebP srcSet
+    const webpSrcSet = widths
+      .map((w) => {
+        const url = this.getOptimizedUrl(imagePath, {
+          width: w,
+          quality,
+          format: "webp",
+        });
+        return `${url} ${w}w`;
+      })
+      .join(", ");
+
+    // Fallback to WebP at default width
+    const fallbackSrc = this.getOptimizedUrl(imagePath, {
+      width: width || 800,
+      quality,
+      format: "webp",
+    });
+
+    return {
+      avifSrcSet,
+      webpSrcSet,
+      fallbackSrc,
+      sizes,
+      width,
+      height,
     };
   }
 

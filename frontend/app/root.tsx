@@ -45,8 +45,9 @@ import { type CartData } from "./types/cart";
 // @ts-ignore
 
 // URL Google Fonts (non-bloquant via preload)
+// 🚀 LCP Optimization: Reduced from 14 to 6 font weights + Latin subset
 const GOOGLE_FONTS_URL =
-  "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Montserrat:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Montserrat:wght@600;700&family=Roboto+Mono:wght@400&subset=latin&display=swap";
 
 export const links: LinksFunction = () => [
   // 🚀 LCP Optimization: Preload CSS critique
@@ -104,7 +105,7 @@ export const meta: MetaFunction = () => [
     content:
       "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
   },
-  { viewport: "width=device-width,initial-scale=1" },
+  { viewport: "width=device-width, initial-scale=1" },
   { name: "theme-color", content: "#2563eb" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
   { property: "og:image:width", content: "1200" },
@@ -173,6 +174,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // 🎯 Phase 5 SEO: Récupérer les data-attributes du rôle de page
   const pageRoleAttrs = usePageRoleDataAttrs();
 
+  // Extraire les valeurs primitives pour éviter les re-renders en boucle
+  // (les dépendances d'objets causent des boucles infinies)
+  const gtmPageRole = pageRoleAttrs?.["data-page-role"];
+  const gtmPageIntent = pageRoleAttrs?.["data-page-intent"];
+  const gtmContentType = pageRoleAttrs?.["data-content-type"];
+  const gtmClusterId = pageRoleAttrs?.["data-cluster-id"];
+  const gtmFunnelStage = pageRoleAttrs?.["data-funnel-stage"];
+  const gtmConversionGoal = pageRoleAttrs?.["data-conversion-goal"];
+  const gtmVehicleContext = pageRoleAttrs?.["data-vehicle-context"];
+
   // 📊 Google Analytics - Tracking des navigations SPA (optimisé avec requestIdleCallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -207,8 +218,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [location.pathname, location.search]);
 
   // 📊 Phase 9: DataLayer GTM - Push pageRole attributes
+  // IMPORTANT: Dépendre de primitives (gtm*) au lieu de l'objet pageRoleAttrs
+  // pour éviter une boucle infinie de re-renders
   useEffect(() => {
-    if (typeof window === "undefined" || !pageRoleAttrs) return;
+    if (typeof window === "undefined" || !gtmPageRole) return;
 
     // Exclure les pages admin
     if (location.pathname.startsWith("/admin")) return;
@@ -219,31 +232,63 @@ export function Layout({ children }: { children: React.ReactNode }) {
     // Push les attributs de rôle pour GTM
     window.dataLayer.push({
       event: "page_role_loaded",
-      pageRole: pageRoleAttrs["data-page-role"],
-      pageIntent: pageRoleAttrs["data-page-intent"],
-      contentType: pageRoleAttrs["data-content-type"],
-      clusterId: pageRoleAttrs["data-cluster-id"],
-      funnelStage: pageRoleAttrs["data-funnel-stage"],
-      conversionGoal: pageRoleAttrs["data-conversion-goal"],
-      vehicleContext: pageRoleAttrs["data-vehicle-context"],
+      pageRole: gtmPageRole,
+      pageIntent: gtmPageIntent,
+      contentType: gtmContentType,
+      clusterId: gtmClusterId,
+      funnelStage: gtmFunnelStage,
+      conversionGoal: gtmConversionGoal,
+      vehicleContext: gtmVehicleContext,
     });
-  }, [location.pathname, pageRoleAttrs]);
+  }, [
+    location.pathname,
+    gtmPageRole,
+    gtmPageIntent,
+    gtmContentType,
+    gtmClusterId,
+    gtmFunnelStage,
+    gtmConversionGoal,
+    gtmVehicleContext,
+  ]);
 
   // 🔄 Synchronisation panier globale via événement
+  // ⚠️ FIX BOUCLE: Ajout d'un flag anti-boucle pour éviter les revalidations en cascade
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let isRevalidating = false;
+
     const handleCartUpdated = () => {
-      console.log("🔄 [root] cart:updated → revalidate");
-      revalidator.revalidate();
+      // Ignorer si une revalidation est déjà en cours
+      if (isRevalidating) {
+        console.log("🛑 [root] cart:updated ignoré (revalidation en cours)");
+        return;
+      }
+
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      debounceTimer = setTimeout(() => {
+        console.log("🔄 [root] cart:updated → revalidate");
+        isRevalidating = true;
+        revalidator.revalidate();
+        // Reset le flag après 5 secondes
+        setTimeout(() => {
+          isRevalidating = false;
+        }, 5000);
+      }, 2000);
     };
 
     window.addEventListener("cart:updated", handleCartUpdated);
-    return () => window.removeEventListener("cart:updated", handleCartUpdated);
+    return () => {
+      window.removeEventListener("cart:updated", handleCartUpdated);
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Revalidator est stable - pas besoin de dépendance
+  }, []);
 
   return (
-    <html lang="fr" className="h-full">
-      <head>
+    <html lang="fr" className="h-full" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <Meta />
         <Links />
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
@@ -320,7 +365,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body className="h-full bg-gray-100" {...pageRoleAttrs}>
+      <body
+        className="h-full bg-gray-100"
+        suppressHydrationWarning
+        {...pageRoleAttrs}
+      >
         <VehicleProvider>
           <NotificationProvider>
             <div className="min-h-screen flex flex-col">
