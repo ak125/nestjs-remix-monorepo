@@ -9,7 +9,11 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import {
+  useLoaderData,
+  isRouteErrorResponse,
+  useRouteError,
+} from "@remix-run/react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
@@ -31,6 +35,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Error404, Error410 } from "../components/errors";
 import {
   ModelContentV1Display,
   type ModelContentV1Data,
@@ -39,6 +44,7 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
+import { normalizeTypeAlias } from "../utils/url-builder.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -227,7 +233,7 @@ function transformRpcToLoaderData(
     modele_relfollow: v.modele_relfollow || 1,
     modele_pic: v.modele_pic,
     type_id: v.type_id || type_id,
-    type_alias: v.type_alias || typeWithoutHtml,
+    type_alias: normalizeTypeAlias(v.type_alias, v.type_name),
     type_name: v.type_name,
     type_name_meta: v.type_name_meta || v.type_name,
     type_power_ps: v.type_power_ps,
@@ -317,12 +323,8 @@ function transformRpcToLoaderData(
     content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
   }
 
-  // Canonical URL
-  const normalizedTypeAlias =
-    v.type_alias && v.type_alias.trim() !== "" && v.type_alias !== "type"
-      ? v.type_alias
-      : type_id.toString();
-  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${normalizedTypeAlias}-${vehicleData.type_id}.html`;
+  // Canonical URL (uses normalizeTypeAlias to handle null, empty, or "null" string values)
+  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
 
   // Catalogue (depuis RPC)
   const catalogFamilies: CatalogFamily[] = (
@@ -498,12 +500,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!rpcResult.success || !rpcResult.data?.vehicle) {
     console.error("❌ [RPC] Données invalides:", rpcResult);
-    throw new Response("Véhicule non trouvé", { status: 404 });
+    throw new Response("Véhicule supprimé du catalogue", { status: 410 });
   }
 
   console.log(
     `✅ [RPC] Données reçues en ${rpcResult._performance?.totalTime?.toFixed(0) || "N/A"}ms`,
   );
+
+  // ========================================
+  // 🔄 CANONICALIZATION: 301 redirect si URL non-canonique
+  // ========================================
+  const v = rpcResult.data.vehicle;
+  const canonicalTypeAlias = normalizeTypeAlias(v.type_alias, v.type_name);
+  const urlTypeAlias = typeParts.slice(0, -1).join("-"); // Tout sauf l'ID
+
+  // Si l'alias dans l'URL ne correspond pas à l'alias canonique → 301
+  if (urlTypeAlias && urlTypeAlias !== canonicalTypeAlias) {
+    const canonicalUrl = `/constructeurs/${brand}/${model}/${canonicalTypeAlias}-${type_id}.html`;
+    console.log(
+      `🔄 [301] Redirect "${urlTypeAlias}" → "${canonicalTypeAlias}"`,
+    );
+    return redirect(canonicalUrl, 301);
+  }
 
   // ========================================
   // 🔄 TRANSFORMATION RPC → LoaderData
@@ -1549,7 +1567,28 @@ export default function VehicleDetailPage() {
 
 // 🔥 Error Boundary pour capturer les erreurs de rendu
 export function ErrorBoundary() {
-  console.error("🔥🔥🔥 ERROR BOUNDARY TRIGGERED 🔥🔥🔥");
+  const error = useRouteError();
+
+  // Handle 410 - Vehicle removed from catalog (SEO: Google will deindex faster)
+  if (isRouteErrorResponse(error) && error.status === 410) {
+    return (
+      <Error410
+        url={typeof window !== "undefined" ? window.location.href : undefined}
+      />
+    );
+  }
+
+  // Handle 404 - Generic not found
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    return (
+      <Error404
+        url={typeof window !== "undefined" ? window.location.href : undefined}
+      />
+    );
+  }
+
+  // Generic error for other cases
+  console.error("🔥 ERROR BOUNDARY:", error);
   return (
     <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl">

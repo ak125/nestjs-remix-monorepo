@@ -18,9 +18,10 @@ import {
 } from "@remix-run/react";
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -108,8 +109,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           motorOptions = (data.data || []).slice(0, 30).map((type: any) => ({
             id: type.type_id,
             label: type.type_name,
-            url: `/constructeurs/${brand}/${model}/${type.type_alias}-${type.type_id}.html`,
-            description: type.type_alias,
+            url: `/constructeurs/${brand}/${model}/${normalizeTypeAlias(type.type_alias, type.type_name)}-${type.type_id}.html`,
+            description: type.type_alias || type.type_name,
             metadata: {
               fuel: type.type_fuel,
               power: type.type_power_ps?.toString(),
