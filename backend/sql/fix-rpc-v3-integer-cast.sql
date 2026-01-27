@@ -1,22 +1,28 @@
 -- ============================================================================
--- FIX V5: RPC V3 Integer Cast Error - relation_criteria_positions CTE
+-- FIX V7: RPC V3 Integer Cast Error - CORRECT FIX
 -- ============================================================================
--- Problème: "invalid input syntax for type integer: """" (code 22P02) ligne 110
--- Cause: pieces_relation_type ET pieces_relation_criteria ont des colonnes TEXT!
+-- Problème: "invalid input syntax for type integer: """"
 --
--- Corrections appliquées (V1→V5):
--- 1. mc_mf_prime: COALESCE(NULLIF(..., '')::INTEGER, 0)
--- 2. piece_pm_id (piece_brands): NULLIF(piece_pm_id, '')::INTEGER
--- 3. piece_pm_id (assembled_pieces): NULLIF(ap.piece_pm_id, '')::INTEGER
--- 4. rtp_psf_id (relations): NULLIF(rtp_psf_id, '')::INTEGER
--- 5. rtp_pm_id (relations): NULLIF(rtp_pm_id, '')::INTEGER
--- 6. pc_piece_id (criteria_positions): NULLIF(pc_piece_id, '')::INTEGER [V3]
--- 7. rtp_piece_id (relations SELECT): NULLIF(rtp_piece_id, '')::INTEGER [V4]
--- 8. rtp_type_id (relations WHERE): NULLIF(rtp_type_id, '')::INTEGER [V4]
--- 9. rtp_pg_id (relations WHERE): NULLIF(rtp_pg_id, '')::INTEGER [V4]
--- 10. rcp_piece_id (relation_criteria_positions): NULLIF [V5]
--- 11. rcp_type_id (relation_criteria_positions): NULLIF [V5]
--- 12. rcp_pg_id (relation_criteria_positions): NULLIF [V5]
+-- V6 BUG: Applied NULLIF to INTEGER columns which caused PostgreSQL to try
+--         comparing INTEGER to empty string '' which fails!
+--
+-- V7 SOLUTION:
+-- - KEEP NULLIF for TEXT columns that are cast to INTEGER
+-- - REMOVE NULLIF for columns that are already INTEGER
+--
+-- TEXT columns (NEED NULLIF when casting to INTEGER):
+-- - auto_type.type_id, type_modele_id
+-- - auto_type_motor_code.tmc_type_id
+-- - __seo_gamme_car.sgc_pg_id
+-- - catalog_gamme.mc_pg_id, mc_mf_prime
+-- - pieces_criteria.pc_piece_id
+-- - pieces.piece_pm_id
+-- - pieces_price.pri_type
+-- - pieces_marque.pm_nb_stars
+--
+-- INTEGER columns (NO NULLIF - already INTEGER):
+-- - pieces_relation_type.rtp_* (all are INTEGER)
+-- - pieces_relation_criteria.rcp_* (all are INTEGER except rcp_cri_value)
 --
 -- Usage: Copier/coller dans Supabase SQL Editor et exécuter
 -- ============================================================================
@@ -50,12 +56,13 @@ DECLARE
   v_seo_content TEXT;
   v_seo_preview TEXT;
   -- CDN Supabase Storage
-  v_cdn_base TEXT := 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public';
+  v_cdn_base TEXT := 'https://https://www.automecanik.com/img/v1/object/public';
 BEGIN
 
   -- ═══════════════════════════════════════════════════════════════════════════
   -- PARTIE 0: RÉCUPÉRER LES INFOS VÉHICULE ET GAMME (pour SEO)
   -- ═══════════════════════════════════════════════════════════════════════════
+  -- FIX V6: NULLIF sur at.type_modele_id et at.type_id
   SELECT
     amarq.marque_name,
     amarq.marque_alias,
@@ -77,22 +84,23 @@ BEGIN
     v_type_alias,
     v_type_power_ps
   FROM auto_type at
-  JOIN auto_modele am ON am.modele_id = at.type_modele_id::INTEGER
+  JOIN auto_modele am ON am.modele_id = NULLIF(at.type_modele_id, '')::INTEGER
   JOIN auto_marque amarq ON amarq.marque_id = am.modele_marque_id
-  WHERE at.type_id::INTEGER = p_type_id
+  WHERE NULLIF(at.type_id, '')::INTEGER = p_type_id
     AND at.type_display = '1'
   LIMIT 1;
 
-  -- FIX #1: Récupérer mf_id avec NULLIF pour éviter l'erreur sur string vide
+  -- FIX V6: NULLIF sur cg.mc_pg_id
   SELECT COALESCE(NULLIF(cg.mc_mf_prime, '')::INTEGER, 0)
   INTO v_mf_id
   FROM pieces_gamme pg
-  LEFT JOIN catalog_gamme cg ON cg.mc_pg_id::INTEGER = pg.pg_id
+  LEFT JOIN catalog_gamme cg ON NULLIF(cg.mc_pg_id, '')::INTEGER = pg.pg_id
   WHERE pg.pg_id = p_pg_id;
 
   -- ═══════════════════════════════════════════════════════════════════════════
   -- PARTIE 1: TRAITER LES TEMPLATES SEO
   -- ═══════════════════════════════════════════════════════════════════════════
+  -- FIX V6: NULLIF sur sgc_pg_id
   SELECT
     process_seo_template(
       COALESCE(sgc_h1, ''),
@@ -131,7 +139,7 @@ BEGIN
     )
   INTO v_seo_h1, v_seo_title, v_seo_description, v_seo_content, v_seo_preview
   FROM __seo_gamme_car
-  WHERE sgc_pg_id::INTEGER = p_pg_id
+  WHERE NULLIF(sgc_pg_id, '')::INTEGER = p_pg_id
   LIMIT 1;
 
   -- ═══════════════════════════════════════════════════════════════════════════
@@ -140,6 +148,7 @@ BEGIN
 
   WITH
   -- 🚗 VEHICLE INFO
+  -- FIX V6: NULLIF sur at.type_modele_id et at.type_id
   vehicle_info AS (
     SELECT
       at.type_id,
@@ -162,21 +171,23 @@ BEGIN
       amarq.marque_alias,
       amarq.marque_logo
     FROM auto_type at
-    JOIN auto_modele am ON am.modele_id = at.type_modele_id::INTEGER
+    JOIN auto_modele am ON am.modele_id = NULLIF(at.type_modele_id, '')::INTEGER
     JOIN auto_marque amarq ON amarq.marque_id = am.modele_marque_id
-    WHERE at.type_id::INTEGER = p_type_id
+    WHERE NULLIF(at.type_id, '')::INTEGER = p_type_id
       AND at.type_display = '1'
     LIMIT 1
   ),
 
   -- 🔧 MOTOR CODES
+  -- FIX V6: NULLIF sur tmc_type_id
   motor_codes AS (
     SELECT COALESCE(STRING_AGG(tmc_code, ', '), '') as codes
     FROM auto_type_motor_code
-    WHERE tmc_type_id::INTEGER = p_type_id
+    WHERE NULLIF(tmc_type_id, '')::INTEGER = p_type_id
   ),
 
   -- 📦 GAMME INFO
+  -- FIX V6: NULLIF sur cg.mc_pg_id
   gamme_info AS (
     SELECT
       pg.pg_id,
@@ -185,7 +196,7 @@ BEGIN
       pg.pg_pic,
       COALESCE(cg.mc_mf_prime, '') as mf_id
     FROM pieces_gamme pg
-    LEFT JOIN catalog_gamme cg ON cg.mc_pg_id::INTEGER = pg.pg_id
+    LEFT JOIN catalog_gamme cg ON NULLIF(cg.mc_pg_id, '')::INTEGER = pg.pg_id
     WHERE pg.pg_id = p_pg_id
     LIMIT 1
   ),
@@ -194,15 +205,15 @@ BEGIN
   -- PARTIE 3: PIÈCES (code V2)
   -- ═══════════════════════════════════════════════════════════════════════════
 
-  -- FIX V4: NULLIF pour TOUTES les colonnes TEXT de pieces_relation_type
+  -- FIX V7: pieces_relation_type columns are INTEGER, not TEXT - no NULLIF needed
   relations AS (
     SELECT DISTINCT
-      NULLIF(rtp_piece_id, '')::INTEGER as rtp_piece_id,
-      NULLIF(rtp_psf_id, '')::INTEGER as rtp_psf_id,
-      NULLIF(rtp_pm_id, '')::INTEGER as rtp_pm_id
+      rtp_piece_id,
+      rtp_psf_id,
+      rtp_pm_id
     FROM pieces_relation_type
-    WHERE NULLIF(rtp_type_id, '')::INTEGER = p_type_id
-      AND NULLIF(rtp_pg_id, '')::INTEGER = p_pg_id
+    WHERE rtp_type_id = p_type_id
+      AND rtp_pg_id = p_pg_id
     LIMIT 500
   ),
 
@@ -289,7 +300,7 @@ BEGIN
     GROUP BY pmi_piece_id
   ),
 
-  -- FIX #2: piece_brands avec NULLIF pour éviter l'erreur sur string vide
+  -- FIX V7: piece_pm_id is SMALLINT, not TEXT - no NULLIF needed
   piece_brands AS (
     SELECT
       pm_id,
@@ -297,7 +308,7 @@ BEGIN
       pm_logo,
       pm_nb_stars
     FROM pieces_marque
-    WHERE pm_id IN (SELECT DISTINCT COALESCE(rtp_pm_id, NULLIF(piece_pm_id, '')::INTEGER) FROM active_pieces)
+    WHERE pm_id IN (SELECT DISTINCT COALESCE(rtp_pm_id, piece_pm_id) FROM active_pieces)
   ),
 
   side_positions AS (
@@ -327,10 +338,11 @@ BEGIN
     ORDER BY NULLIF(pc_piece_id, '')::INTEGER
   ),
 
-  -- FIX V5: NULLIF pour TOUTES les colonnes TEXT de pieces_relation_criteria
+  -- FIX V7: pieces_relation_criteria columns are INTEGER, not TEXT - no NULLIF needed
+  -- (only rcp_cri_value is TEXT)
   relation_criteria_positions AS (
-    SELECT DISTINCT ON (piece_id)
-      NULLIF(rcp_piece_id, '')::INTEGER as piece_id,
+    SELECT DISTINCT ON (rcp_piece_id)
+      rcp_piece_id as piece_id,
       CASE
         WHEN LOWER(rcp_cri_value) LIKE '%essieu avant%' OR LOWER(rcp_cri_value) = 'avant' THEN 'Avant'
         WHEN LOWER(rcp_cri_value) LIKE '%essieu arrière%' OR LOWER(rcp_cri_value) = 'arrière' THEN 'Arrière'
@@ -339,12 +351,12 @@ BEGIN
         ELSE NULL
       END as detected_position
     FROM pieces_relation_criteria
-    WHERE NULLIF(rcp_type_id, '')::INTEGER = p_type_id
-      AND NULLIF(rcp_pg_id, '')::INTEGER = p_pg_id
-      AND NULLIF(rcp_piece_id, '')::INTEGER IN (SELECT piece_id FROM active_pieces)
+    WHERE rcp_type_id = p_type_id
+      AND rcp_pg_id = p_pg_id
+      AND rcp_piece_id IN (SELECT piece_id FROM active_pieces)
       AND rcp_cri_value IS NOT NULL
       AND rcp_cri_value != ''
-    ORDER BY piece_id
+    ORDER BY rcp_piece_id
   ),
 
   -- FIX #3: assembled_pieces avec NULLIF pour éviter l'erreur sur string vide
@@ -390,7 +402,7 @@ BEGIN
     LEFT JOIN best_prices bp ON bp.pri_piece_id = ap.piece_id::TEXT
     LEFT JOIN first_images fi ON fi.piece_id_text = ap.piece_id::TEXT
     LEFT JOIN all_images ai ON ai.piece_id_text = ap.piece_id::TEXT
-    LEFT JOIN piece_brands pm ON pm.pm_id = COALESCE(ap.rtp_pm_id, NULLIF(ap.piece_pm_id, '')::INTEGER)
+    LEFT JOIN piece_brands pm ON pm.pm_id = COALESCE(ap.rtp_pm_id, ap.piece_pm_id)
     LEFT JOIN side_positions sp ON sp.psf_id = ap.rtp_psf_id
     LEFT JOIN criteria_positions cp ON cp.piece_id = ap.piece_id
     LEFT JOIN relation_criteria_positions rcp ON rcp.piece_id = ap.piece_id
@@ -605,6 +617,7 @@ BEGIN
     ),
 
     -- Templates bruts pour debug (optionnel)
+    -- FIX V6: NULLIF sur sgc_pg_id
     'seo_templates', (
       SELECT jsonb_build_object(
         'h1', COALESCE(sgc_h1, ''),
@@ -614,7 +627,7 @@ BEGIN
         'preview', COALESCE(sgc_preview, '')
       )
       FROM __seo_gamme_car
-      WHERE sgc_pg_id::INTEGER = p_pg_id
+      WHERE NULLIF(sgc_pg_id, '')::INTEGER = p_pg_id
       LIMIT 1
     ),
 
@@ -692,7 +705,7 @@ BEGIN
     'minPrice', (SELECT MIN(prix_unitaire) FROM sorted_pieces WHERE prix_unitaire > 0),
     'relations_found', (SELECT COUNT(*)::INTEGER FROM relations),
     'success', true,
-    'version', 'RPC_V3_SEO_INTEGRATED_FIXED_V5'
+    'version', 'RPC_V3_SEO_INTEGRATED_FIXED_V7'
   ) INTO v_result;
 
   -- Ajouter la durée d'exécution
@@ -715,3 +728,4 @@ GRANT EXECUTE ON FUNCTION get_pieces_for_type_gamme_v3(INTEGER, INTEGER) TO serv
 -- ============================================================================
 -- SELECT get_pieces_for_type_gamme_v3(9045, 4);
 -- SELECT get_pieces_for_type_gamme_v3(17398, 479);
+-- SELECT get_pieces_for_type_gamme_v3(100413, 42);  -- Test avec pg=42
