@@ -7,11 +7,13 @@ import {
   Req,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ErrorService } from '../modules/errors/services/error.service';
 import { RedirectService } from '../modules/errors/services/redirect.service';
 import { ErrorLogService } from '../modules/errors/services/error-log.service';
+import { UrlCompatibilityService } from '../modules/seo/services/url-compatibility.service';
 
 @Controller('api/errors')
 export class ErrorsApiController {
@@ -104,7 +106,12 @@ export class ErrorsApiController {
 
 @Controller('api/redirects')
 export class RedirectsApiController {
-  constructor(private readonly redirectService: RedirectService) {}
+  private readonly logger = new Logger(RedirectsApiController.name);
+
+  constructor(
+    private readonly redirectService: RedirectService,
+    private readonly urlCompatibilityService: UrlCompatibilityService,
+  ) {}
 
   @Get('check')
   async checkRedirect(@Query('url') url: string) {
@@ -146,6 +153,70 @@ export class RedirectsApiController {
         destination: null,
         permanent: false,
         found: false,
+      };
+    }
+  }
+
+  /**
+   * Résout une URL legacy /pieces-auto/{alias} vers la nouvelle URL
+   * GET /api/redirects/resolve-legacy?url=/pieces-auto/filtre-a-huile
+   *
+   * Retourne:
+   * - found: true + destination si l'alias correspond à une gamme
+   * - found: false si l'alias n'existe pas (devrait retourner 410)
+   */
+  @Get('resolve-legacy')
+  async resolveLegacyUrl(@Query('url') url: string) {
+    if (!url) {
+      throw new HttpException(
+        'URL parameter is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      this.logger.debug(`Résolution URL legacy: ${url}`);
+
+      // Vérifier si c'est une URL /pieces-auto/
+      if (!url.startsWith('/pieces-auto/')) {
+        return {
+          found: false,
+          destination: null,
+          reason: 'URL does not match /pieces-auto/ pattern',
+        };
+      }
+
+      // Essayer de résoudre l'URL via le service
+      const result =
+        await this.urlCompatibilityService.resolveLegacyGammeUrl(url);
+
+      if (result.found && result.newUrl) {
+        this.logger.log(
+          `URL legacy résolue: ${url} → ${result.newUrl} (gamme: ${result.gammeName})`,
+        );
+        return {
+          found: true,
+          destination: result.newUrl,
+          permanent: true,
+          gammeId: result.gammeId,
+          gammeName: result.gammeName,
+        };
+      }
+
+      // Non trouvé - devrait être traité comme 410
+      this.logger.debug(`URL legacy non résolue: ${url}`);
+      return {
+        found: false,
+        destination: null,
+        reason: 'Gamme alias not found in database',
+        shouldReturn410: true,
+      };
+    } catch (error) {
+      this.logger.error(`Erreur résolution URL legacy ${url}:`, error);
+      return {
+        found: false,
+        destination: null,
+        error: 'Resolution failed',
       };
     }
   }

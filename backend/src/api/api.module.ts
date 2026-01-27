@@ -4,9 +4,10 @@ import {
   RedirectsApiController,
 } from './errors-api.controller';
 import { ErrorsModule } from '../modules/errors/errors.module';
+import { SeoModule } from '../modules/seo/seo.module';
 
 @Module({
-  imports: [ErrorsModule],
+  imports: [ErrorsModule, SeoModule],
   controllers: [ErrorsApiController, RedirectsApiController],
 })
 export class ApiModule {}
