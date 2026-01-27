@@ -7,7 +7,7 @@
  * Principle: L'IA NE CREE PAS LA VERITE (AI-COS Axiome Zero)
  */
 
-import { McpDataType, McpValidationMode, McpVerificationStatus } from '../mcp-validation.types';
+import { McpDataType, McpValidationMode } from '../mcp-validation.types';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DECORATOR OPTIONS
@@ -116,10 +116,10 @@ export interface McpVerificationEnvelope {
 
 /** Simplified verification status for response */
 export type McpVerifyStatus =
-  | 'verified'     // MCP confirmed the data
-  | 'unverified'   // MCP could not verify (but allowed through)
-  | 'warning'      // MCP detected discrepancy (warning mode)
-  | 'blocked';     // MCP rejected (block mode)
+  | 'verified' // MCP confirmed the data
+  | 'unverified' // MCP could not verify (but allowed through)
+  | 'warning' // MCP detected discrepancy (warning mode)
+  | 'blocked'; // MCP rejected (block mode)
 
 /** Refusal details when verification fails in block mode */
 export interface McpRefusalDetails {
@@ -313,13 +313,31 @@ export interface McpQueryFunction<TInput, TOutput> {
 
 /** Registry of MCP query functions by tool name */
 export type McpQueryRegistry = {
-  verifyPartCompatibility: McpQueryFunction<VerifyCompatibilityInput, VerifyCompatibilityOutput>;
-  getVerifiedStockAndPrice: McpQueryFunction<GetStockPriceInput, GetStockPriceOutput>;
-  verifyVehicleIdentity: McpQueryFunction<VerifyVehicleInput, VerifyVehicleOutput>;
+  verifyPartCompatibility: McpQueryFunction<
+    VerifyCompatibilityInput,
+    VerifyCompatibilityOutput
+  >;
+  getVerifiedStockAndPrice: McpQueryFunction<
+    GetStockPriceInput,
+    GetStockPriceOutput
+  >;
+  verifyVehicleIdentity: McpQueryFunction<
+    VerifyVehicleInput,
+    VerifyVehicleOutput
+  >;
   diagnose: McpQueryFunction<DiagnoseInput, DiagnoseOutput>;
-  resolvePageRole: McpQueryFunction<ResolvePageRoleInput, ResolvePageRoleOutput>;
-  verifyReference: McpQueryFunction<VerifyReferenceInput, VerifyReferenceOutput>;
-  checkSafetyGate: McpQueryFunction<CheckSafetyGateInput, CheckSafetyGateOutput>;
+  resolvePageRole: McpQueryFunction<
+    ResolvePageRoleInput,
+    ResolvePageRoleOutput
+  >;
+  verifyReference: McpQueryFunction<
+    VerifyReferenceInput,
+    VerifyReferenceOutput
+  >;
+  checkSafetyGate: McpQueryFunction<
+    CheckSafetyGateInput,
+    CheckSafetyGateOutput
+  >;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -426,7 +444,11 @@ export interface CheckSafetyGateOutput {
   recommended_action: string | null;
   show_emergency_contact: boolean;
   emergency_contact: string | null;
-  triggered_observables: Array<{ node_id: string; label: string; gate: string }> | null;
+  triggered_observables: Array<{
+    node_id: string;
+    label: string;
+    gate: string;
+  }> | null;
   verifiedAt: string;
 }
 
@@ -437,7 +459,13 @@ export interface ResolvePageRoleInput {
 }
 
 export interface ResolvePageRoleOutput {
-  role: 'R1_ROUTER' | 'R2_PRODUCT' | 'R3_BLOG' | 'R4_REFERENCE' | 'R5_DIAGNOSTIC' | 'R6_SUPPORT';
+  role:
+    | 'R1_ROUTER'
+    | 'R2_PRODUCT'
+    | 'R3_BLOG'
+    | 'R4_REFERENCE'
+    | 'R5_DIAGNOSTIC'
+    | 'R6_SUPPORT';
   canonical?: string;
   allowedLinks: string[];
   verifiedAt: string;
@@ -468,7 +496,7 @@ export const MCP_VERIFY_DEFAULTS: Partial<McpVerifyOptions> = {
   onMismatch: 'warning',
   includeInResponse: true,
   timeout: 5000,
-  minConfidence: 0.70,
+  minConfidence: 0.7,
 };
 
 /** Metadata key for @McpVerify() decorator */
@@ -479,7 +507,7 @@ export const MCP_ALERT_SEVERITY_MAP: Record<McpDataType, McpAlertSeverity> = {
   compatibility: 'critical',
   price: 'critical',
   stock: 'critical',
-  safety: 'critical',    // Phase 3: Safety is critical
+  safety: 'critical', // Phase 3: Safety is critical
   reference: 'error',
   vehicle: 'error',
   diagnostic: 'warning',

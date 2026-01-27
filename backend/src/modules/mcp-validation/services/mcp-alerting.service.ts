@@ -48,13 +48,17 @@ export class McpAlertingService implements OnModuleInit {
 
   onModuleInit() {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey);
       this.logger.log('MCP Alerting Service initialized with Supabase');
     } else {
-      this.logger.warn('Supabase not configured - alerts will only go to console');
+      this.logger.warn(
+        'Supabase not configured - alerts will only go to console',
+      );
     }
 
     // Load webhook configuration if available
@@ -178,8 +182,8 @@ export class McpAlertingService implements OnModuleInit {
 
     // Filter by minimum severity for this channel
     const minSeverity = channel.config?.minSeverity || 'warning';
-    const filteredAlerts = alerts.filter((a) =>
-      this.severityLevel(a.severity) >= this.severityLevel(minSeverity),
+    const filteredAlerts = alerts.filter(
+      (a) => this.severityLevel(a.severity) >= this.severityLevel(minSeverity),
     );
 
     if (filteredAlerts.length === 0) return;
@@ -208,7 +212,9 @@ export class McpAlertingService implements OnModuleInit {
    * Build webhook payload (Slack format)
    */
   private buildWebhookPayload(alerts: McpMismatchAlert[]): object {
-    const criticalCount = alerts.filter((a) => a.severity === 'critical').length;
+    const criticalCount = alerts.filter(
+      (a) => a.severity === 'critical',
+    ).length;
     const blockedCount = alerts.filter((a) => a.blocked).length;
 
     const emoji = criticalCount > 0 ? ':rotating_light:' : ':warning:';
@@ -233,7 +239,9 @@ export class McpAlertingService implements OnModuleInit {
             },
             {
               title: 'Endpoints',
-              value: [...new Set(alerts.map((a) => a.endpoint))].slice(0, 5).join('\n'),
+              value: [...new Set(alerts.map((a) => a.endpoint))]
+                .slice(0, 5)
+                .join('\n'),
               short: false,
             },
           ],
@@ -253,13 +261,13 @@ export class McpAlertingService implements OnModuleInit {
         alert.severity === 'critical'
           ? this.logger.error.bind(this.logger)
           : alert.severity === 'error'
-          ? this.logger.warn.bind(this.logger)
-          : this.logger.log.bind(this.logger);
+            ? this.logger.warn.bind(this.logger)
+            : this.logger.log.bind(this.logger);
 
       logFn(
         `[MCP Alert] ${alert.severity.toUpperCase()} - ${alert.dataType} @ ${alert.endpoint}` +
-        ` | blocked=${alert.blocked} | requestId=${alert.requestId}` +
-        ` | discrepancies=${alert.discrepancy.map((d) => d.field).join(',')}`,
+          ` | blocked=${alert.blocked} | requestId=${alert.requestId}` +
+          ` | discrepancies=${alert.discrepancy.map((d) => d.field).join(',')}`,
       );
     }
   }
@@ -268,7 +276,10 @@ export class McpAlertingService implements OnModuleInit {
    * Check if alert meets minimum severity threshold
    */
   private meetsMinSeverity(severity: McpAlertSeverity): boolean {
-    return this.severityLevel(severity) >= this.severityLevel(this.config.minSeverity);
+    return (
+      this.severityLevel(severity) >=
+      this.severityLevel(this.config.minSeverity)
+    );
   }
 
   /**

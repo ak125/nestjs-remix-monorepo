@@ -38,10 +38,14 @@ export class McpQueryService implements OnModuleInit {
 
   onModuleInit() {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn('Supabase credentials not configured - MCP queries will return null');
+      this.logger.warn(
+        'Supabase credentials not configured - MCP queries will return null',
+      );
       return;
     }
 
@@ -83,7 +87,7 @@ export class McpQueryService implements OnModuleInit {
    */
   async verifyPartCompatibility(
     input: VerifyCompatibilityInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<VerifyCompatibilityOutput | null> {
     if (!this.supabase) return null;
 
@@ -134,10 +138,10 @@ export class McpQueryService implements OnModuleInit {
       );
 
       if (error) {
-        this.logger.warn(
-          `Compatibility check RPC failed: ${error.message}`,
-          { pieceId: resolvedPieceId, ktypnr: resolvedKtypnr },
-        );
+        this.logger.warn(`Compatibility check RPC failed: ${error.message}`, {
+          pieceId: resolvedPieceId,
+          ktypnr: resolvedKtypnr,
+        });
         // Fallback to direct table query
         return this.fallbackCompatibilityCheck(resolvedPieceId, resolvedKtypnr);
       }
@@ -145,7 +149,7 @@ export class McpQueryService implements OnModuleInit {
       return {
         compatible: data?.compatible ?? null,
         linkageId: data?.linkage_id,
-        confidence: data?.compatible ? 0.95 : 0.80,
+        confidence: data?.compatible ? 0.95 : 0.8,
         source: 'tecdoc',
         verifiedAt: new Date().toISOString(),
       };
@@ -199,17 +203,22 @@ export class McpQueryService implements OnModuleInit {
    */
   async getVerifiedStockAndPrice(
     input: GetStockPriceInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<GetStockPriceOutput | null> {
     if (!this.supabase) return null;
 
     try {
-      const { pieceId, quantity = 1, context: priceContext = 'browsing' } = input;
+      const {
+        pieceId,
+        quantity = 1,
+        context: priceContext = 'browsing',
+      } = input;
 
       // Query pieces_price table
       const { data, error } = await this.supabase
         .from('pieces_price')
-        .select(`
+        .select(
+          `
           pri_id,
           pri_qte_cond,
           pri_vente_ht,
@@ -217,7 +226,8 @@ export class McpQueryService implements OnModuleInit {
           pri_consigne_ht,
           pri_consigne_ttc,
           pri_updated_at
-        `)
+        `,
+        )
         .eq('pri_piece_id', pieceId)
         .eq('pri_active', true)
         .single();
@@ -236,8 +246,8 @@ export class McpQueryService implements OnModuleInit {
         priceContext === 'checkout'
           ? 0 // No cache in checkout
           : priceContext === 'cart'
-          ? 5 * 60 * 1000 // 5 minutes in cart
-          : 30 * 60 * 1000; // 30 minutes in browsing
+            ? 5 * 60 * 1000 // 5 minutes in cart
+            : 30 * 60 * 1000; // 30 minutes in browsing
 
       return {
         available,
@@ -264,12 +274,12 @@ export class McpQueryService implements OnModuleInit {
    */
   async verifyVehicleIdentity(
     input: VerifyVehicleInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<VerifyVehicleOutput | null> {
     if (!this.supabase) return null;
 
     try {
-      const { brand, model, type, year, ktypnr, vin, plate } = input;
+      const { brand, model, type, year, ktypnr, vin, plate: _plate } = input;
 
       // If ktypnr provided, verify it exists
       if (ktypnr) {
@@ -319,8 +329,11 @@ export class McpQueryService implements OnModuleInit {
   }
 
   private async resolveVehicleFromVin(
-    vin: string,
-  ): Promise<Omit<VerifyVehicleOutput, 'confidence' | 'ambiguous' | 'verifiedAt'> | null> {
+    _vin: string,
+  ): Promise<Omit<
+    VerifyVehicleOutput,
+    'confidence' | 'ambiguous' | 'verifiedAt'
+  > | null> {
     // VIN decoding would go here - simplified for now
     // In production, call external VIN decode API or internal mapping
     return null;
@@ -330,7 +343,7 @@ export class McpQueryService implements OnModuleInit {
     brand: string,
     model: string,
     type?: string,
-    year?: number,
+    _year?: number,
   ): Promise<VerifyVehicleOutput | null> {
     try {
       let query = this.supabase
@@ -358,7 +371,7 @@ export class McpQueryService implements OnModuleInit {
           model: v.v_model,
           type: v.v_type,
           engineCode: v.v_engine_code,
-          confidence: 0.90,
+          confidence: 0.9,
           ambiguous: false,
           verifiedAt: new Date().toISOString(),
         };
@@ -372,7 +385,7 @@ export class McpQueryService implements OnModuleInit {
         model: v.v_model,
         type: v.v_type,
         engineCode: v.v_engine_code,
-        confidence: 0.60,
+        confidence: 0.6,
         ambiguous: true,
         alternatives: data.slice(1).map((alt) => ({
           ktypnr: alt.v_ktypnr,
@@ -394,7 +407,7 @@ export class McpQueryService implements OnModuleInit {
    */
   async diagnose(
     input: DiagnoseInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<DiagnoseOutput | null> {
     if (!this.supabase) return null;
 
@@ -450,7 +463,7 @@ export class McpQueryService implements OnModuleInit {
    */
   async resolvePageRole(
     input: ResolvePageRoleInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<ResolvePageRoleOutput | null> {
     try {
       const { url, path } = input;
@@ -470,12 +483,22 @@ export class McpQueryService implements OnModuleInit {
         {
           pattern: /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+\.html$/,
           role: 'R2_PRODUCT',
-          allowedLinks: ['R1_ROUTER', 'R3_BLOG', 'R4_REFERENCE', 'R5_DIAGNOSTIC'],
+          allowedLinks: [
+            'R1_ROUTER',
+            'R3_BLOG',
+            'R4_REFERENCE',
+            'R5_DIAGNOSTIC',
+          ],
         },
         {
           pattern: /^\/blog-pieces-auto\//,
           role: 'R3_BLOG',
-          allowedLinks: ['R1_ROUTER', 'R2_PRODUCT', 'R4_REFERENCE', 'R5_DIAGNOSTIC'],
+          allowedLinks: [
+            'R1_ROUTER',
+            'R2_PRODUCT',
+            'R4_REFERENCE',
+            'R5_DIAGNOSTIC',
+          ],
         },
         {
           pattern: /^\/reference-auto\//,
@@ -485,7 +508,12 @@ export class McpQueryService implements OnModuleInit {
         {
           pattern: /^\/diagnostic-auto\//,
           role: 'R5_DIAGNOSTIC',
-          allowedLinks: ['R1_ROUTER', 'R2_PRODUCT', 'R4_REFERENCE', 'R6_SUPPORT'],
+          allowedLinks: [
+            'R1_ROUTER',
+            'R2_PRODUCT',
+            'R4_REFERENCE',
+            'R6_SUPPORT',
+          ],
         },
         {
           pattern: /^\/(contact|mentions-legales|politique-)/,
@@ -527,12 +555,12 @@ export class McpQueryService implements OnModuleInit {
    */
   async verifyReference(
     input: VerifyReferenceInput,
-    context: McpVerifyContext,
+    _context: McpVerifyContext,
   ): Promise<VerifyReferenceOutput | null> {
     if (!this.supabase) return null;
 
     try {
-      const { reference, type = 'oem' } = input;
+      const { reference, type: _type = 'oem' } = input;
 
       // Search in pieces_ref_search table
       const { data, error } = await this.supabase
@@ -562,7 +590,7 @@ export class McpQueryService implements OnModuleInit {
         pieceId,
         oemCodes: oemData?.map((d) => d.prs_ref) || [],
         brandName: data[0].prs_brand_name,
-        confidence: data.length === 1 ? 0.95 : 0.80,
+        confidence: data.length === 1 ? 0.95 : 0.8,
         verifiedAt: new Date().toISOString(),
       };
     } catch (error) {

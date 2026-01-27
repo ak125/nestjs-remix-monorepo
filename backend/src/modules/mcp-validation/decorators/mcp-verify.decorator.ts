@@ -69,17 +69,19 @@ export function McpVerify(options: McpVerifyOptions) {
     throw new Error('@McpVerify requires dataType option');
   }
 
-  if (!['verification', 'gatekeeper', 'enforcement'].includes(mergedOptions.mode)) {
-    throw new Error(`@McpVerify mode must be 'verification', 'gatekeeper', or 'enforcement'`);
+  if (
+    !['verification', 'gatekeeper', 'enforcement'].includes(mergedOptions.mode)
+  ) {
+    throw new Error(
+      `@McpVerify mode must be 'verification', 'gatekeeper', or 'enforcement'`,
+    );
   }
 
   if (!['warning', 'block'].includes(mergedOptions.onMismatch)) {
     throw new Error(`@McpVerify onMismatch must be 'warning' or 'block'`);
   }
 
-  return applyDecorators(
-    SetMetadata(MCP_VERIFY_KEY, mergedOptions),
-  );
+  return applyDecorators(SetMetadata(MCP_VERIFY_KEY, mergedOptions));
 }
 
 /**
@@ -94,15 +96,13 @@ export function McpVerify(options: McpVerifyOptions) {
  * @Post('check-compatibility')
  * async checkCompatibility() { ... }
  */
-export function McpVerifyCompatibility(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyCompatibility(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'compatibility',
     mode: 'gatekeeper',
     onMismatch: 'block',
     includeInResponse: true,
-    minConfidence: 0.80, // Higher threshold for safety
+    minConfidence: 0.8, // Higher threshold for safety
     ...overrides,
   });
 }
@@ -115,9 +115,7 @@ export function McpVerifyCompatibility(
  * @Get('price/:pieceId')
  * async getPrice() { ... }
  */
-export function McpVerifyPrice(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyPrice(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'price',
     mode: 'verification',
@@ -136,9 +134,7 @@ export function McpVerifyPrice(
  * @Get('availability/:pieceId')
  * async getAvailability() { ... }
  */
-export function McpVerifyStock(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyStock(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'stock',
     mode: 'verification',
@@ -157,15 +153,13 @@ export function McpVerifyStock(
  * @Post('diagnose')
  * async diagnose() { ... }
  */
-export function McpVerifyDiagnostic(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyDiagnostic(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'diagnostic',
     mode: 'verification',
     onMismatch: 'warning',
     includeInResponse: true,
-    minConfidence: 0.60, // Lower threshold for diagnostics (probabilistic)
+    minConfidence: 0.6, // Lower threshold for diagnostics (probabilistic)
     ...overrides,
   });
 }
@@ -180,15 +174,13 @@ export function McpVerifyDiagnostic(
  * @Post('safety/check')
  * async checkSafety() { ... }
  */
-export function McpVerifySafety(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifySafety(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'diagnostic',
     mode: 'enforcement', // Strictest mode
     onMismatch: 'block',
     includeInResponse: true,
-    minConfidence: 0.90, // Very high threshold for safety
+    minConfidence: 0.9, // Very high threshold for safety
     timeout: 10000, // Longer timeout - safety is worth waiting for
     ...overrides,
   });
@@ -211,7 +203,9 @@ export function McpVerifySafety(
  * async checkSafetyGate() { ... }
  */
 export function McpVerifySafetyGate(
-  overrides?: Partial<McpVerifyOptions> & { autoBlockLevel?: 'stop_soon' | 'stop_immediate' },
+  overrides?: Partial<McpVerifyOptions> & {
+    autoBlockLevel?: 'stop_soon' | 'stop_immediate';
+  },
 ) {
   return McpVerify({
     dataType: 'safety',
@@ -254,7 +248,9 @@ export function McpVerifySafetyGate(
  * async verifyCompatibility() { ... }
  */
 export function McpVerifyEnforcement(
-  overrides: Partial<McpVerifyOptions> & { dataType: McpVerifyOptions['dataType'] },
+  overrides: Partial<McpVerifyOptions> & {
+    dataType: McpVerifyOptions['dataType'];
+  },
 ) {
   return McpVerify({
     dataType: overrides.dataType,
@@ -262,7 +258,7 @@ export function McpVerifyEnforcement(
     onMismatch: 'block', // Will be converted to redirect by interceptor
     includeInResponse: true,
     redirectOnEnforcement: true, // Enable redirect behavior (default)
-    minConfidence: 0.80,
+    minConfidence: 0.8,
     timeout: 5000,
     ...overrides,
   });
@@ -305,7 +301,7 @@ export function McpVerifyEnforcementCompatibility(
 ) {
   return McpVerifyEnforcement({
     dataType: 'compatibility',
-    minConfidence: 0.80,
+    minConfidence: 0.8,
     ...overrides,
   });
 }
@@ -338,9 +334,7 @@ export function McpVerifyEnforcementPrice(
  * @Post('resolve-vehicle')
  * async resolveVehicle() { ... }
  */
-export function McpVerifyVehicle(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyVehicle(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'vehicle',
     mode: 'verification',
@@ -358,9 +352,7 @@ export function McpVerifyVehicle(
  * @Get('search/by-ref/:ref')
  * async searchByRef() { ... }
  */
-export function McpVerifyReference(
-  overrides?: Partial<McpVerifyOptions>,
-) {
+export function McpVerifyReference(overrides?: Partial<McpVerifyOptions>) {
   return McpVerify({
     dataType: 'reference',
     mode: 'verification',
@@ -373,7 +365,10 @@ export function McpVerifyReference(
 /**
  * Helper to check if a handler has @McpVerify metadata
  */
-export function hasMcpVerify(target: object, propertyKey?: string | symbol): boolean {
+export function hasMcpVerify(
+  target: object,
+  propertyKey?: string | symbol,
+): boolean {
   if (propertyKey) {
     return Reflect.hasMetadata(MCP_VERIFY_KEY, target, propertyKey);
   }

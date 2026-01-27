@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'crypto';
 import {
-  McpValidationMode,
   McpValidationContext,
   McpValidationLogEntry,
-  McpMatchStatus,
   McpVerificationResult,
   McpDataType,
   McpShadowComparison,
@@ -82,7 +80,11 @@ export class McpValidationService {
     }
 
     // Compare results
-    const comparison = this.compareResults(directResult, mcpResult, context.dataType);
+    const comparison = this.compareResults(
+      directResult,
+      mcpResult,
+      context.dataType,
+    );
 
     // Log validation result
     const logEntry = this.createLogEntry(
@@ -306,11 +308,7 @@ export class McpValidationService {
       ];
     }
 
-    if (
-      typeof direct !== 'object' ||
-      direct === null ||
-      mcp === null
-    ) {
+    if (typeof direct !== 'object' || direct === null || mcp === null) {
       if (direct !== mcp) {
         const fieldName = path.split('.').pop() || path;
         let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
@@ -329,10 +327,9 @@ export class McpValidationService {
     // Compare objects recursively
     const directObj = direct as Record<string, unknown>;
     const mcpObj = mcp as Record<string, unknown>;
-    const allKeys = Array.from(new Set([
-      ...Object.keys(directObj),
-      ...Object.keys(mcpObj),
-    ]));
+    const allKeys = Array.from(
+      new Set([...Object.keys(directObj), ...Object.keys(mcpObj)]),
+    );
 
     for (const key of allKeys) {
       const newPath = path ? `${path}.${key}` : key;
@@ -515,7 +512,7 @@ export class McpValidationService {
   private createRefusalResult<T>(
     dataType: McpDataType,
     reason: string,
-    code: string,
+    _code: string,
   ): McpVerificationResult<T> {
     const messages = MCP_REFUSAL_MESSAGES[dataType];
 
