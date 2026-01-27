@@ -13,14 +13,18 @@ export default defineConfig({
 	resolve: {
 		preserveSymlinks: true,
 	},
-	// 🚀 Proxy /img/* vers Supabase en développement local
-	// En production, Caddy gère ce proxy
+	// 🚀 Proxy pour dev mode
 	server: {
 		proxy: {
-			'/img': {
-				target: 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public',
+			// Proxy /api/* vers le backend NestJS (port 3000)
+			'/api': {
+				target: 'http://localhost:3000',
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/img/, ''),
+			},
+			// Proxy /img/* via automecanik.com (Caddy → Supabase)
+			'/img': {
+				target: 'https://www.automecanik.com',
+				changeOrigin: true,
 			},
 		},
 	},

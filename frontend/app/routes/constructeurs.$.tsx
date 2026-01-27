@@ -127,29 +127,48 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         );
         if (response.ok) {
           const data = await response.json();
-          motorOptions = (data.data || []).slice(0, 30).map((type: any) => ({
-            id: type.type_id,
-            label: type.type_name,
-            url: `/constructeurs/${brand}/${model}/${normalizeTypeAlias(type.type_alias, type.type_name)}-${type.type_id}.html`,
-            description: type.type_alias || type.type_name,
-            metadata: {
-              fuel: type.type_fuel,
-              power: type.type_power_ps?.toString(),
-              years: type.type_year_to
-                ? `${type.type_year_from}-${type.type_year_to}`
-                : `${type.type_year_from}+`,
-              body: type.type_body,
-            },
-          }));
+          // Filter out types with null type_name (invalid motorizations)
+          motorOptions = (data.data || [])
+            .filter((type: any) => type.type_name !== null)
+            .slice(0, 30)
+            .map((type: any) => ({
+              id: type.type_id,
+              label: type.type_name,
+              url: `/constructeurs/${expectedBrand}/${expectedModel}/${normalizeTypeAlias(type.type_alias, type.type_name)}-${type.type_id}.html`,
+              description: type.type_alias || type.type_name,
+              metadata: {
+                fuel: type.type_fuel,
+                power: type.type_power_ps?.toString(),
+                years: type.type_year_to
+                  ? `${type.type_year_from}-${type.type_year_to}`
+                  : `${type.type_year_from}+`,
+                body: type.type_body,
+              },
+            }));
         }
       }
     } catch (error) {
       console.warn("[ConstructeursCatchAll] Erreur fetch types:", error);
     }
 
-    // Si aucune motorisation trouvée → 301 vers page marque
+    // Si aucune motorisation valide → 410 Gone (modèle sans motorisations disponibles)
     if (motorOptions.length === 0) {
-      return redirect(`/constructeurs/${marqueAlias}.html`, 301);
+      console.log(
+        `[ConstructeursCatchAll] 410 Gone: modele_id=${modeleId} has no valid motorizations`,
+      );
+      throw new Response(
+        JSON.stringify({
+          error: "Model No Longer Available",
+          message: "Ce modèle n'a pas de motorisations disponibles",
+          modele_id: modeleId,
+          code: "MODEL_NO_MOTORS",
+        }),
+        {
+          status: 410,
+          statusText: "Gone",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Formater les noms pour l'affichage
