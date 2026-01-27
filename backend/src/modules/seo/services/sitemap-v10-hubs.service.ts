@@ -2873,7 +2873,7 @@ ${links}
         ?.urlCount || 0;
     // Véhicules sont générés par marque, sommer tous les résultats
     const vehiclesUrls = transversalResults
-      .filter((r) => r.type === 'vehicules')
+      .filter((r) => r.hubType === 'vehicules')
       .reduce((sum, r) => sum + r.urlCount, 0);
 
     const signature = this.generateSignature(totalUrls, 'v10-main-index');
@@ -2950,3 +2950,4 @@ ${signature}
     this.logger.log(`   ✓ Generated main hub index: ${filePath}`);
   }
 }
+// Cache bust: 1769478053
