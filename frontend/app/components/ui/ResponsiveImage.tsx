@@ -5,7 +5,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { ImageOptimizer } from "~/utils/image-optimizer";
+import { ImageOptimizer, type PictureImageSet } from "~/utils/image-optimizer";
 
 interface ResponsiveImageProps {
   src: string;
@@ -140,6 +140,136 @@ export function ResponsiveImage({
         onError={handleError}
         onLoad={handleLoad}
       />
+    </div>
+  );
+}
+
+/**
+ * 🚀 LCP Optimization: Picture element with AVIF/WebP format cascade
+ *
+ * Uses <picture> element for optimal format delivery:
+ * - AVIF: 25-35% smaller than WebP (Chrome 85+, Firefox 93+, Safari 16+)
+ * - WebP: Fallback for older browsers
+ * - JPEG/PNG: Final fallback
+ *
+ * @example
+ * <PictureImage
+ *   path="articles/gammes-produits/catalogue/piece.jpg"
+ *   alt="Brake pad"
+ *   widths={[400, 800, 1200]}
+ *   sizes="(max-width: 640px) 100vw, 50vw"
+ * />
+ */
+interface PictureImageProps {
+  /** Path to image (relative to Supabase storage) */
+  path: string;
+  alt: string;
+  className?: string;
+  imgClassName?: string;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "sync" | "auto";
+  sizes?: string;
+  widths?: number[];
+  quality?: number;
+  fallback?: string;
+  width?: number;
+  height?: number;
+  onError?: () => void;
+  showPlaceholder?: boolean;
+}
+
+export function PictureImage({
+  path,
+  alt,
+  className = "",
+  imgClassName = "",
+  loading = "lazy",
+  decoding = "async",
+  sizes = "(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px",
+  widths = [400, 800, 1200],
+  quality = 85,
+  fallback = "/images/placeholder.webp",
+  width,
+  height,
+  onError,
+  showPlaceholder = false,
+}: PictureImageProps) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Check if image is already loaded after mount (SSR hydration fix)
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  const handleError = () => {
+    setHasError(true);
+    onError?.();
+  };
+
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
+
+  // Generate picture-ready image set
+  const imageSet: PictureImageSet = hasError
+    ? {
+        avifSrcSet: "",
+        webpSrcSet: "",
+        fallbackSrc: fallback,
+        sizes,
+        width,
+        height,
+      }
+    : ImageOptimizer.getPictureImageSet(path, {
+        widths,
+        quality,
+        sizes,
+        width,
+        height,
+      });
+
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* Placeholder during loading */}
+      {showPlaceholder && !isLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+      )}
+
+      <picture>
+        {/* AVIF source - best compression, modern browsers */}
+        {!hasError && imageSet.avifSrcSet && (
+          <source
+            srcSet={imageSet.avifSrcSet}
+            sizes={imageSet.sizes}
+            type="image/avif"
+          />
+        )}
+        {/* WebP source - good compression, wide support */}
+        {!hasError && imageSet.webpSrcSet && (
+          <source
+            srcSet={imageSet.webpSrcSet}
+            sizes={imageSet.sizes}
+            type="image/webp"
+          />
+        )}
+        {/* Fallback img */}
+        <img
+          ref={imgRef}
+          src={imageSet.fallbackSrc}
+          alt={alt}
+          width={width}
+          height={height}
+          className={`${imgClassName} ${!isLoaded && showPlaceholder ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
+          loading={loading}
+          decoding={decoding}
+          onError={handleError}
+          onLoad={handleLoad}
+        />
+      </picture>
     </div>
   );
 }
