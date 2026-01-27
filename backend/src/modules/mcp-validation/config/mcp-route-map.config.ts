@@ -17,7 +17,10 @@ export interface McpRouteMapping {
   /** Optional: Extract params from URL via capture groups */
   extractParams?: (matches: RegExpMatchArray) => Record<string, unknown>;
   /** Optional: Skip in certain contexts */
-  skipIf?: (context: { checkoutContext: boolean; bypassCache: boolean }) => boolean;
+  skipIf?: (context: {
+    checkoutContext: boolean;
+    bypassCache: boolean;
+  }) => boolean;
   /** Optional: Description for documentation */
   description?: string;
 }
@@ -229,8 +232,6 @@ export function getConfiguredDataTypes(): McpDataType[] {
 /**
  * Get routes by data type
  */
-export function getRoutesByDataType(
-  dataType: McpDataType,
-): McpRouteMapping[] {
+export function getRoutesByDataType(dataType: McpDataType): McpRouteMapping[] {
   return MCP_SHADOW_ROUTE_MAP.filter((r) => r.dataType === dataType);
 }

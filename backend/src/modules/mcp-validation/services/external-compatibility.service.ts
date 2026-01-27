@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChromeDevToolsClientService, ScrapingResult } from './chrome-devtools-client.service';
+import { ChromeDevToolsClientService } from './chrome-devtools-client.service';
 import { CacheService } from '../../../cache/cache.service';
 
 /**
@@ -68,7 +68,15 @@ export interface CompatibilityComparisonResult {
 }
 
 export interface ExternalVerifyOptions {
-  sources?: ('partlink' | 'catcar' | 'infocars' | 'oscaro' | 'partslink24' | 'autodoc' | 'tecdoc')[];
+  sources?: (
+    | 'partlink'
+    | 'catcar'
+    | 'infocars'
+    | 'oscaro'
+    | 'partslink24'
+    | 'autodoc'
+    | 'tecdoc'
+  )[];
   timeout?: number;
   screenshots?: boolean;
   parallel?: boolean;
@@ -188,7 +196,12 @@ interface SourceConfig {
   /**
    * Source type for categorization
    */
-  sourceType?: 'official_catalog' | 'oem_authenticated' | 'parts_database' | 'commercial' | 'aggregator';
+  sourceType?:
+    | 'official_catalog'
+    | 'oem_authenticated'
+    | 'parts_database'
+    | 'commercial'
+    | 'aggregator';
 
   /**
    * Supports direct KType number lookup
@@ -218,13 +231,13 @@ interface SourceConfig {
  * Based on data quality, update frequency, and authority
  */
 const SOURCE_RELIABILITY_WEIGHTS: Record<string, number> = {
-  tecdoc: 1.0,       // Authoritative - Official TecDoc database
+  tecdoc: 1.0, // Authoritative - Official TecDoc database
   partslink24: 0.95, // OEM catalog, authenticated, high quality
-  partlink: 0.75,    // Good coverage, parts database
-  catcar: 0.70,      // Parts database
-  infocars: 0.65,    // Compatibility matrix
-  oscaro: 0.60,      // Commercial aggregator (confidential)
-  autodoc: 0.55,     // Commercial aggregator (confidential)
+  partlink: 0.75, // Good coverage, parts database
+  catcar: 0.7, // Parts database
+  infocars: 0.65, // Compatibility matrix
+  oscaro: 0.6, // Commercial aggregator (confidential)
+  autodoc: 0.55, // Commercial aggregator (confidential)
 };
 
 // ============================================================================
@@ -255,7 +268,7 @@ const CACHE_TTL_CONFIG: Record<string, number> = {
 /**
  * Cache key prefixes for external verification
  */
-const CACHE_KEY_PREFIXES = {
+const _CACHE_KEY_PREFIXES = {
   tecdoc: 'ext:tecdoc',
   partslink24: 'ext:pl24',
   scrape: 'ext:scrape',
@@ -305,7 +318,7 @@ const SOURCE_CONFIGS: Record<string, SourceConfig> = {
     }`,
     enabled: true,
     // Phase 6
-    reliabilityWeight: 0.70,
+    reliabilityWeight: 0.7,
     sourceType: 'parts_database',
     rateLimit: 20,
     retryConfig: { maxRetries: 2, backoffMs: 1000 },
@@ -354,7 +367,7 @@ const SOURCE_CONFIGS: Record<string, SourceConfig> = {
     supportsImmatriculation: true,
     immatriculationUrlPattern: '/garage/vehicule/{immat}',
     // Phase 6
-    reliabilityWeight: 0.60,
+    reliabilityWeight: 0.6,
     sourceType: 'commercial',
     rateLimit: 20,
     retryConfig: { maxRetries: 1, backoffMs: 2000 },
@@ -400,14 +413,16 @@ const SOURCE_CONFIGS: Record<string, SourceConfig> = {
     name: 'PartLink24',
     baseUrl: 'https://www.partslink24.com',
     loginUrl: '/partslink24/user/login.do',
-    searchUrlPattern: '/partslink24/launchpad.do?action=search&searchTerm={ref}',
+    searchUrlPattern:
+      '/partslink24/launchpad.do?action=search&searchTerm={ref}',
     waitForText: 'Résultats',
     requiresAuth: true,
     authFields: {
       accountIdSelector: 'input[name="accountId"], #accountId',
       usernameSelector: 'input[name="userName"], #userName',
       passwordSelector: 'input[name="password"], #password',
-      submitSelector: 'button[type="submit"], input[type="submit"], .login-button',
+      submitSelector:
+        'button[type="submit"], input[type="submit"], .login-button',
     },
     extractScript: `() => {
       // Extract vehicle compatibility data from PartLink24
@@ -484,10 +499,18 @@ export class ExternalCompatibilityService {
     @Optional() private readonly cacheService?: CacheService,
   ) {
     // Parse enabled sources from env
-    const sourcesEnv = this.configService.get<string>('EXTERNAL_SOURCES_ENABLED', 'partlink,catcar');
-    this.enabledSources = sourcesEnv.split(',').map((s) => s.trim().toLowerCase());
+    const sourcesEnv = this.configService.get<string>(
+      'EXTERNAL_SOURCES_ENABLED',
+      'partlink,catcar',
+    );
+    this.enabledSources = sourcesEnv
+      .split(',')
+      .map((s) => s.trim().toLowerCase());
 
-    this.defaultTimeout = this.configService.get<number>('EXTERNAL_SCRAPE_TIMEOUT', 15000);
+    this.defaultTimeout = this.configService.get<number>(
+      'EXTERNAL_SCRAPE_TIMEOUT',
+      15000,
+    );
 
     // Load PartLink24 credentials if available
     const accountId = this.configService.get<string>('PARTSLINK24_ACCOUNT_ID');
@@ -499,10 +522,14 @@ export class ExternalCompatibilityService {
       this.logger.log('PartLink24 credentials configured');
     } else {
       this.partslink24Credentials = null;
-      this.logger.warn('PartLink24 credentials not configured - source will be skipped');
+      this.logger.warn(
+        'PartLink24 credentials not configured - source will be skipped',
+      );
     }
 
-    this.logger.log(`External sources enabled: ${this.enabledSources.join(', ')}`);
+    this.logger.log(
+      `External sources enabled: ${this.enabledSources.join(', ')}`,
+    );
   }
 
   /**
@@ -516,15 +543,19 @@ export class ExternalCompatibilityService {
     internalResult: { compatible: boolean; confidence: number },
     options?: ExternalVerifyOptions,
   ): Promise<CompatibilityComparisonResult> {
-    const startTime = Date.now();
+    const _startTime = Date.now();
     const timestamp = new Date().toISOString();
 
     // Determine which sources to use
-    const sourcesToUse = options?.sources || (this.enabledSources as ExternalVerifyOptions['sources']);
+    const sourcesToUse =
+      options?.sources ||
+      (this.enabledSources as ExternalVerifyOptions['sources']);
     const timeout = options?.timeout || this.defaultTimeout;
     const takeScreenshots = options?.screenshots ?? false;
 
-    this.logger.log(`Verifying piece ${pieceRef} for ${vehicleInfo.brand} ${vehicleInfo.model}`);
+    this.logger.log(
+      `Verifying piece ${pieceRef} for ${vehicleInfo.brand} ${vehicleInfo.model}`,
+    );
 
     // Fetch from all sources (parallel or sequential)
     const externalResults: ExternalVerificationResult[] = [];
@@ -532,7 +563,13 @@ export class ExternalCompatibilityService {
     if (options?.parallel !== false) {
       // Parallel execution
       const promises = sourcesToUse!.map((source) =>
-        this.scrapeSource(source, pieceRef, vehicleInfo, timeout, takeScreenshots),
+        this.scrapeSource(
+          source,
+          pieceRef,
+          vehicleInfo,
+          timeout,
+          takeScreenshots,
+        ),
       );
       const results = await Promise.allSettled(promises);
 
@@ -544,7 +581,13 @@ export class ExternalCompatibilityService {
     } else {
       // Sequential execution
       for (const source of sourcesToUse!) {
-        const result = await this.scrapeSource(source, pieceRef, vehicleInfo, timeout, takeScreenshots);
+        const result = await this.scrapeSource(
+          source,
+          pieceRef,
+          vehicleInfo,
+          timeout,
+          takeScreenshots,
+        );
         if (result) {
           externalResults.push(result);
         }
@@ -555,13 +598,21 @@ export class ExternalCompatibilityService {
     const useWeighted = options?.useWeightedConsensus !== false; // Default to weighted
     const analysis = useWeighted
       ? this.analyzeConsensusWeighted(internalResult, externalResults)
-      : { ...this.analyzeConsensus(internalResult, externalResults), weightedScore: 0, sourceBreakdown: [] };
+      : {
+          ...this.analyzeConsensus(internalResult, externalResults),
+          weightedScore: 0,
+          sourceBreakdown: [],
+        };
 
     // Phase 6: Cross-validate OEM references
     const oemValidation = this.crossValidateOemReferences(externalResults);
 
     // Build recommendation (NEVER block)
-    const recommendation = this.buildRecommendation(analysis, pieceRef, vehicleInfo);
+    const recommendation = this.buildRecommendation(
+      analysis,
+      pieceRef,
+      vehicleInfo,
+    );
 
     // Build detailed response
     const response: CompatibilityComparisonResult & {
@@ -578,11 +629,12 @@ export class ExternalCompatibilityService {
       consensus_confidence: analysis.confidence,
       recommendation,
       can_purchase: true, // NEVER block
-      purchase_warning: analysis.consensus === 'divergent'
-        ? '⚠️ Compatibilité non confirmée à 100%. Vérifiez les références OEM avant achat.'
-        : oemValidation.hasConflicts
-        ? '⚠️ Références OEM divergentes détectées. Vérifiez la référence exacte pour votre véhicule.'
-        : undefined,
+      purchase_warning:
+        analysis.consensus === 'divergent'
+          ? '⚠️ Compatibilité non confirmée à 100%. Vérifiez les références OEM avant achat.'
+          : oemValidation.hasConflicts
+            ? '⚠️ Références OEM divergentes détectées. Vérifiez la référence exacte pour votre véhicule.'
+            : undefined,
       verification_timestamp: timestamp,
     };
 
@@ -634,18 +686,27 @@ export class ExternalCompatibilityService {
       }
 
       // 2. Take snapshot to understand the form
-      const snapshot = await this.chromeClient.takeSnapshot();
+      const _snapshot = await this.chromeClient.takeSnapshot();
 
       // 3. Fill account ID (look for the field by label or common patterns)
-      await this.chromeClient.fillByLabel('Account ID', this.partslink24Credentials.accountId);
+      await this.chromeClient.fillByLabel(
+        'Account ID',
+        this.partslink24Credentials.accountId,
+      );
       await this.sleep(200);
 
       // 4. Fill username
-      await this.chromeClient.fillByLabel('User', this.partslink24Credentials.username);
+      await this.chromeClient.fillByLabel(
+        'User',
+        this.partslink24Credentials.username,
+      );
       await this.sleep(200);
 
       // 5. Fill password
-      await this.chromeClient.fillByLabel('Password', this.partslink24Credentials.password);
+      await this.chromeClient.fillByLabel(
+        'Password',
+        this.partslink24Credentials.password,
+      );
       await this.sleep(200);
 
       // 6. Submit login form (click Login button)
@@ -654,7 +715,10 @@ export class ExternalCompatibilityService {
 
       // 7. Handle potential "session already exists" dialog
       const sessionDialogSnapshot = await this.chromeClient.takeSnapshot();
-      if (sessionDialogSnapshot.content?.includes('session') || sessionDialogSnapshot.content?.includes('Confirmer')) {
+      if (
+        sessionDialogSnapshot.content?.includes('session') ||
+        sessionDialogSnapshot.content?.includes('Confirmer')
+      ) {
         this.logger.log('Session dialog detected, clicking Confirmer...');
         await this.chromeClient.clickByText('Confirmer');
         await this.sleep(2000);
@@ -686,7 +750,9 @@ export class ExternalCompatibilityService {
         return true;
       }
 
-      this.logger.warn('PartLink24 authentication status uncertain - proceeding anyway');
+      this.logger.warn(
+        'PartLink24 authentication status uncertain - proceeding anyway',
+      );
       this.partslink24Authenticated = true; // Try to continue
       return true;
     } catch (error) {
@@ -719,7 +785,9 @@ export class ExternalCompatibilityService {
     // Handle authentication for sources that require it
     if (config.requiresAuth && source === 'partslink24') {
       if (!this.partslink24Credentials) {
-        this.logger.debug('PartLink24 requires credentials but none configured');
+        this.logger.debug(
+          'PartLink24 requires credentials but none configured',
+        );
         return null;
       }
       const authSuccess = await this.authenticatePartLink24();
@@ -778,14 +846,19 @@ export class ExternalCompatibilityService {
         // Check if vehicle is in compatibility matrix
         const vehicleMatch = data.matrix.find(
           (m) =>
-            m.vehicle?.toLowerCase().includes(vehicleInfo.brand.toLowerCase()) &&
+            m.vehicle
+              ?.toLowerCase()
+              .includes(vehicleInfo.brand.toLowerCase()) &&
             m.vehicle?.toLowerCase().includes(vehicleInfo.model.toLowerCase()),
         );
         compatible = vehicleMatch?.compatible ?? null;
       } else if (data?.vehicles && data.vehicles.length > 0) {
         // Check if vehicle is in compatible list
-        const vehiclePattern = `${vehicleInfo.brand} ${vehicleInfo.model}`.toLowerCase();
-        compatible = data.vehicles.some((v) => v.toLowerCase().includes(vehiclePattern));
+        const vehiclePattern =
+          `${vehicleInfo.brand} ${vehicleInfo.model}`.toLowerCase();
+        compatible = data.vehicles.some((v) =>
+          v.toLowerCase().includes(vehiclePattern),
+        );
       }
 
       return {
@@ -796,7 +869,9 @@ export class ExternalCompatibilityService {
         extractedData: {
           oem_refs: data?.oemRefs,
           compatible_vehicles: data?.vehicles,
-          price_range: data?.priceRange || (data?.price ? { min: data.price, max: data.price } : undefined),
+          price_range:
+            data?.priceRange ||
+            (data?.price ? { min: data.price, max: data.price } : undefined),
         },
         screenshot: result.screenshot,
         duration_ms: Date.now() - startTime,
@@ -823,28 +898,44 @@ export class ExternalCompatibilityService {
   private analyzeConsensus(
     internalResult: { compatible: boolean; confidence: number },
     externalResults: ExternalVerificationResult[],
-  ): { consensus: CompatibilityComparisonResult['consensus']; confidence: number } {
+  ): {
+    consensus: CompatibilityComparisonResult['consensus'];
+    confidence: number;
+  } {
     // Filter successful results
-    const validResults = externalResults.filter((r) => r.compatible !== null && !r.error);
+    const validResults = externalResults.filter(
+      (r) => r.compatible !== null && !r.error,
+    );
 
     if (validResults.length === 0) {
-      return { consensus: 'inconclusive', confidence: internalResult.confidence };
+      return {
+        consensus: 'inconclusive',
+        confidence: internalResult.confidence,
+      };
     }
 
     // Count agreements
-    const agreements = validResults.filter((r) => r.compatible === internalResult.compatible).length;
-    const disagreements = validResults.filter((r) => r.compatible !== internalResult.compatible).length;
+    const agreements = validResults.filter(
+      (r) => r.compatible === internalResult.compatible,
+    ).length;
+    const disagreements = validResults.filter(
+      (r) => r.compatible !== internalResult.compatible,
+    ).length;
     const total = validResults.length;
 
     // Calculate weighted confidence
     const avgExternalConfidence =
-      validResults.reduce((sum, r) => sum + r.confidence, 0) / validResults.length;
+      validResults.reduce((sum, r) => sum + r.confidence, 0) /
+      validResults.length;
 
     if (agreements === total) {
       // All sources agree
       return {
         consensus: 'confirmed',
-        confidence: Math.min(0.95, (internalResult.confidence + avgExternalConfidence) / 2 + 0.1),
+        confidence: Math.min(
+          0.95,
+          (internalResult.confidence + avgExternalConfidence) / 2 + 0.1,
+        ),
       };
     } else if (disagreements > agreements) {
       // More sources disagree
@@ -879,7 +970,9 @@ export class ExternalCompatibilityService {
     internalResult: { compatible: boolean; confidence: number },
     externalResults: ExternalVerificationResult[],
   ): WeightedConsensusResult {
-    const validResults = externalResults.filter((r) => r.compatible !== null && !r.error);
+    const validResults = externalResults.filter(
+      (r) => r.compatible !== null && !r.error,
+    );
 
     if (validResults.length === 0) {
       return {
@@ -909,12 +1002,16 @@ export class ExternalCompatibilityService {
         source: result.source,
         weight,
         compatible: result.compatible,
-        contribution: result.compatible === internalResult.compatible ? weight : -weight * 0.5,
+        contribution:
+          result.compatible === internalResult.compatible
+            ? weight
+            : -weight * 0.5,
       });
     }
 
     // Calculate weighted score (0-1)
-    const weightedScore = totalWeight > 0 ? compatibleWeight / totalWeight : 0.5;
+    const weightedScore =
+      totalWeight > 0 ? compatibleWeight / totalWeight : 0.5;
 
     // Determine consensus based on weighted score
     let consensus: CompatibilityComparisonResult['consensus'];
@@ -922,13 +1019,13 @@ export class ExternalCompatibilityService {
 
     if (weightedScore >= 0.7) {
       consensus = 'confirmed';
-      confidence = Math.min(0.95, 0.50 + weightedScore * 0.45);
+      confidence = Math.min(0.95, 0.5 + weightedScore * 0.45);
     } else if (weightedScore <= 0.3) {
       consensus = 'divergent';
-      confidence = Math.max(0.30, 0.50 - (1 - weightedScore) * 0.30);
+      confidence = Math.max(0.3, 0.5 - (1 - weightedScore) * 0.3);
     } else {
       consensus = 'partial';
-      confidence = 0.40 + weightedScore * 0.30;
+      confidence = 0.4 + weightedScore * 0.3;
     }
 
     // Adjust confidence based on number of high-reliability sources
@@ -975,7 +1072,10 @@ export class ExternalCompatibilityService {
 
     // Collect OEM refs from each source
     for (const result of externalResults) {
-      if (result.extractedData.oem_refs && result.extractedData.oem_refs.length > 0) {
+      if (
+        result.extractedData.oem_refs &&
+        result.extractedData.oem_refs.length > 0
+      ) {
         oemsBySource.set(result.source, result.extractedData.oem_refs);
       }
     }
@@ -989,11 +1089,14 @@ export class ExternalCompatibilityService {
     }
 
     // Normalize and count occurrences
-    const normalizedOems = new Map<string, {
-      original: string;
-      sources: string[];
-      count: number;
-    }>();
+    const normalizedOems = new Map<
+      string,
+      {
+        original: string;
+        sources: string[];
+        count: number;
+      }
+    >();
 
     for (const [source, refs] of oemsBySource.entries()) {
       for (const ref of refs) {
@@ -1039,14 +1142,18 @@ export class ExternalCompatibilityService {
     const partlinkRefs = oemsBySource.get('PartLink') || [];
 
     if (partslink24Refs.length > 0 && partlinkRefs.length > 0) {
-      const pl24Normalized = new Set(partslink24Refs.map((r) => this.normalizeOemRef(r)));
-      const plNormalized = new Set(partlinkRefs.map((r) => this.normalizeOemRef(r)));
+      const pl24Normalized = new Set(
+        partslink24Refs.map((r) => this.normalizeOemRef(r)),
+      );
+      const plNormalized = new Set(
+        partlinkRefs.map((r) => this.normalizeOemRef(r)),
+      );
 
-      const intersection = [...pl24Normalized].filter((r) => plNormalized.has(r));
+      const intersection = [...pl24Normalized].filter((r) =>
+        plNormalized.has(r),
+      );
       if (intersection.length === 0 && partslink24Refs.length > 0) {
-        conflictDetails.push(
-          `PartLink24 and PartLink refs do not overlap`,
-        );
+        conflictDetails.push(`PartLink24 and PartLink refs do not overlap`);
       }
     }
 
@@ -1073,13 +1180,15 @@ export class ExternalCompatibilityService {
       vehicleInfo.year?.toString() || '',
       vehicleInfo.ktypnr?.toString() || '',
       vehicleInfo.engine_code?.toLowerCase() || '',
-    ].filter(Boolean).join(':');
+    ]
+      .filter(Boolean)
+      .join(':');
 
     // Simple hash for shorter keys
     let hash = 0;
     for (let i = 0; i < normalized.length; i++) {
       const char = normalized.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
 
@@ -1153,7 +1262,8 @@ export class ExternalCompatibilityService {
     // Try cache first (unless bypass requested)
     if (!bypassCache && this.cacheService) {
       try {
-        const cached = await this.cacheService.get<ExternalVerificationResult>(cacheKey);
+        const cached =
+          await this.cacheService.get<ExternalVerificationResult>(cacheKey);
         if (cached) {
           this.logger.debug(`Cache HIT for ${source}: ${cacheKey}`);
           return {
@@ -1169,7 +1279,13 @@ export class ExternalCompatibilityService {
     }
 
     // Scrape from source
-    const result = await this.scrapeSource(source, pieceRef, vehicleInfo, timeout, takeScreenshot);
+    const result = await this.scrapeSource(
+      source,
+      pieceRef,
+      vehicleInfo,
+      timeout,
+      takeScreenshot,
+    );
 
     // Cache successful results
     if (result && !result.error && this.cacheService) {
@@ -1204,16 +1320,20 @@ export class ExternalCompatibilityService {
     internalResult: { compatible: boolean; confidence: number },
     options?: ExternalVerifyOptions & { bypassCache?: boolean },
   ): Promise<CompatibilityComparisonResult> {
-    const startTime = Date.now();
+    const _startTime = Date.now();
     const timestamp = new Date().toISOString();
     const bypassCache = options?.bypassCache ?? false;
 
     // Determine which sources to use
-    const sourcesToUse = options?.sources || (this.enabledSources as ExternalVerifyOptions['sources']);
+    const sourcesToUse =
+      options?.sources ||
+      (this.enabledSources as ExternalVerifyOptions['sources']);
     const timeout = options?.timeout || this.defaultTimeout;
     const takeScreenshots = options?.screenshots ?? false;
 
-    this.logger.log(`Verifying (cached) piece ${pieceRef} for ${vehicleInfo.brand} ${vehicleInfo.model}`);
+    this.logger.log(
+      `Verifying (cached) piece ${pieceRef} for ${vehicleInfo.brand} ${vehicleInfo.model}`,
+    );
 
     // Fetch from all sources with caching
     const externalResults: ExternalVerificationResult[] = [];
@@ -1221,7 +1341,14 @@ export class ExternalCompatibilityService {
     if (options?.parallel !== false) {
       // Parallel execution with caching
       const promises = sourcesToUse!.map((source) =>
-        this.scrapeSourceCached(source, pieceRef, vehicleInfo, timeout, takeScreenshots, bypassCache),
+        this.scrapeSourceCached(
+          source,
+          pieceRef,
+          vehicleInfo,
+          timeout,
+          takeScreenshots,
+          bypassCache,
+        ),
       );
       const results = await Promise.allSettled(promises);
 
@@ -1233,7 +1360,14 @@ export class ExternalCompatibilityService {
     } else {
       // Sequential execution with caching
       for (const source of sourcesToUse!) {
-        const result = await this.scrapeSourceCached(source, pieceRef, vehicleInfo, timeout, takeScreenshots, bypassCache);
+        const result = await this.scrapeSourceCached(
+          source,
+          pieceRef,
+          vehicleInfo,
+          timeout,
+          takeScreenshots,
+          bypassCache,
+        );
         if (result) {
           externalResults.push(result);
         }
@@ -1241,13 +1375,20 @@ export class ExternalCompatibilityService {
     }
 
     // Use weighted consensus (Phase 6)
-    const analysis = this.analyzeConsensusWeighted(internalResult, externalResults);
+    const analysis = this.analyzeConsensusWeighted(
+      internalResult,
+      externalResults,
+    );
 
     // Cross-validate OEM references (Phase 6)
     const oemValidation = this.crossValidateOemReferences(externalResults);
 
     // Build recommendation
-    const recommendation = this.buildRecommendation(analysis, pieceRef, vehicleInfo);
+    const recommendation = this.buildRecommendation(
+      analysis,
+      pieceRef,
+      vehicleInfo,
+    );
 
     return {
       internal_result: {
@@ -1260,11 +1401,12 @@ export class ExternalCompatibilityService {
       consensus_confidence: analysis.confidence,
       recommendation,
       can_purchase: true, // NEVER block
-      purchase_warning: analysis.consensus === 'divergent'
-        ? '⚠️ Compatibilité non confirmée à 100%. Vérifiez les références OEM avant achat.'
-        : oemValidation.hasConflicts
-        ? '⚠️ Références OEM divergentes détectées. Vérifiez la référence exacte pour votre véhicule.'
-        : undefined,
+      purchase_warning:
+        analysis.consensus === 'divergent'
+          ? '⚠️ Compatibilité non confirmée à 100%. Vérifiez les références OEM avant achat.'
+          : oemValidation.hasConflicts
+            ? '⚠️ Références OEM divergentes détectées. Vérifiez la référence exacte pour votre véhicule.'
+            : undefined,
       verification_timestamp: timestamp,
     };
   }
@@ -1272,7 +1414,10 @@ export class ExternalCompatibilityService {
   /**
    * Clear cache for a specific piece/vehicle combination
    */
-  async clearCacheForPiece(pieceRef: string, vehicleInfo?: VehicleInfo): Promise<number> {
+  async clearCacheForPiece(
+    pieceRef: string,
+    vehicleInfo?: VehicleInfo,
+  ): Promise<number> {
     if (!this.cacheService) {
       return 0;
     }
@@ -1307,7 +1452,10 @@ export class ExternalCompatibilityService {
    * CRITICAL: Never recommends blocking - always redirects to diagnostic
    */
   private buildRecommendation(
-    analysis: { consensus: CompatibilityComparisonResult['consensus']; confidence: number },
+    analysis: {
+      consensus: CompatibilityComparisonResult['consensus'];
+      confidence: number;
+    },
     pieceRef: string,
     vehicleInfo: VehicleInfo,
   ): CompatibilityComparisonResult['recommendation'] {
@@ -1323,7 +1471,8 @@ export class ExternalCompatibilityService {
         return {
           action: 'proceed',
           message: 'Compatibilité confirmée par sources multiples.',
-          message_detail: 'Notre base de données et les sources externes concordent.',
+          message_detail:
+            'Notre base de données et les sources externes concordent.',
         };
 
       case 'divergent':
@@ -1341,7 +1490,7 @@ export class ExternalCompatibilityService {
           redirect_url: `/diagnostic/compatibility-analysis?${encodedParams}`,
           message: 'Vérification recommandée.',
           message_detail:
-            'Certaines sources confirment la compatibilité, d\'autres non. Vérifiez les références OEM.',
+            "Certaines sources confirment la compatibilité, d'autres non. Vérifiez les références OEM.",
         };
 
       case 'inconclusive':
@@ -1350,7 +1499,7 @@ export class ExternalCompatibilityService {
           action: 'verify',
           message: 'Vérification impossible via sources externes.',
           message_detail:
-            'Les sources externes n\'ont pas pu confirmer. Fiez-vous aux références OEM ou contactez-nous.',
+            "Les sources externes n'ont pas pu confirmer. Fiez-vous aux références OEM ou contactez-nous.",
         };
     }
   }
@@ -1358,22 +1507,47 @@ export class ExternalCompatibilityService {
   /**
    * Scrape PartLink specifically
    */
-  async scrapePartLink(pieceRef: string): Promise<ExternalVerificationResult | null> {
-    return this.scrapeSource('partlink', pieceRef, { brand: '', model: '' }, this.defaultTimeout, false);
+  async scrapePartLink(
+    pieceRef: string,
+  ): Promise<ExternalVerificationResult | null> {
+    return this.scrapeSource(
+      'partlink',
+      pieceRef,
+      { brand: '', model: '' },
+      this.defaultTimeout,
+      false,
+    );
   }
 
   /**
    * Scrape CatCar specifically
    */
-  async scrapeCatCar(brand: string, model: string): Promise<ExternalVerificationResult | null> {
-    return this.scrapeSource('catcar', '', { brand, model }, this.defaultTimeout, false);
+  async scrapeCatCar(
+    brand: string,
+    model: string,
+  ): Promise<ExternalVerificationResult | null> {
+    return this.scrapeSource(
+      'catcar',
+      '',
+      { brand, model },
+      this.defaultTimeout,
+      false,
+    );
   }
 
   /**
    * Scrape Info-Cars specifically
    */
-  async scrapeInfoCars(pieceRef: string): Promise<ExternalVerificationResult | null> {
-    return this.scrapeSource('infocars', pieceRef, { brand: '', model: '' }, this.defaultTimeout, false);
+  async scrapeInfoCars(
+    pieceRef: string,
+  ): Promise<ExternalVerificationResult | null> {
+    return this.scrapeSource(
+      'infocars',
+      pieceRef,
+      { brand: '', model: '' },
+      this.defaultTimeout,
+      false,
+    );
   }
 
   // ============================================================================
@@ -1525,7 +1699,8 @@ export class ExternalCompatibilityService {
           quantity: number;
           notes?: string;
         }>;
-      }>({ function: `() => {
+      }>({
+        function: `() => {
         const parts = [];
 
         // Strategy 1: Look for table rows with part data
@@ -1587,7 +1762,8 @@ export class ExternalCompatibilityService {
             return true;
           })
         };
-      }` });
+      }`,
+      });
 
       if (!result?.data?.parts) {
         return [];
@@ -1611,7 +1787,9 @@ export class ExternalCompatibilityService {
    * Note: Direct reference search may not work on PartLink24.
    * Use scrapePartsLink24Catalog() for reliable results.
    */
-  async searchPartsLink24ByRef(oemRef: string): Promise<ExternalVerificationResult | null> {
+  async searchPartsLink24ByRef(
+    oemRef: string,
+  ): Promise<ExternalVerificationResult | null> {
     // First authenticate
     const authSuccess = await this.authenticatePartLink24();
     if (!authSuccess) {

@@ -13,27 +13,27 @@
 
 /** MCP validation mode - progressive enforcement */
 export type McpValidationMode =
-  | 'shadow'       // Phase 1: Run in parallel, no impact
+  | 'shadow' // Phase 1: Run in parallel, no impact
   | 'verification' // Phase 2: Secondary check with warnings
-  | 'gatekeeper'   // Phase 3: Mandatory gate with fallbacks
+  | 'gatekeeper' // Phase 3: Mandatory gate with fallbacks
   | 'enforcement'; // Phase 4: Block if MCP inconclusive
 
 /** Match status between MCP and direct results */
 export type McpMatchStatus =
-  | 'match'        // Results are identical
-  | 'mismatch'     // Results differ
-  | 'mcp_only'     // Only MCP returned a result
-  | 'direct_only'  // Only direct query returned a result
-  | 'error';       // Error during comparison
+  | 'match' // Results are identical
+  | 'mismatch' // Results differ
+  | 'mcp_only' // Only MCP returned a result
+  | 'direct_only' // Only direct query returned a result
+  | 'error'; // Error during comparison
 
 /** Verification status */
 export type McpVerificationStatus =
-  | 'verified'      // Data confirmed by MCP
-  | 'unverified'    // Data not confirmed
-  | 'inconclusive'  // Cannot determine
-  | 'rejected'      // Explicitly rejected
-  | 'timeout'       // Verification timed out
-  | 'error';        // Error during verification
+  | 'verified' // Data confirmed by MCP
+  | 'unverified' // Data not confirmed
+  | 'inconclusive' // Cannot determine
+  | 'rejected' // Explicitly rejected
+  | 'timeout' // Verification timed out
+  | 'error'; // Error during verification
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DATA TYPES FOR VALIDATION
@@ -42,76 +42,79 @@ export type McpVerificationStatus =
 /** Types of data that require MCP validation */
 export type McpDataType =
   | 'compatibility' // Vehicle-part compatibility (CRITICAL)
-  | 'price'         // Product pricing (CRITICAL)
-  | 'stock'         // Stock availability (CRITICAL)
-  | 'safety'        // Safety gate verification (CRITICAL) - Phase 3
-  | 'reference'     // OEM/Part references (HIGH)
-  | 'vehicle'       // Vehicle identity resolution
-  | 'diagnostic'    // KG diagnostic results
-  | 'page_role'     // SEO page role resolution
-  | 'content';      // Expert content authorization
+  | 'price' // Product pricing (CRITICAL)
+  | 'stock' // Stock availability (CRITICAL)
+  | 'safety' // Safety gate verification (CRITICAL) - Phase 3
+  | 'reference' // OEM/Part references (HIGH)
+  | 'vehicle' // Vehicle identity resolution
+  | 'diagnostic' // KG diagnostic results
+  | 'page_role' // SEO page role resolution
+  | 'content'; // Expert content authorization
 
 /** Criticality level */
 export type McpCriticality = 'critical' | 'high' | 'medium' | 'low';
 
 /** Data type configuration */
-export const MCP_DATA_TYPE_CONFIG: Record<McpDataType, {
-  criticality: McpCriticality;
-  cacheMaxAge: number;      // Max cache age in seconds (0 = no cache)
-  requiresVerification: boolean;
-  fallbackAllowed: boolean;
-}> = {
+export const MCP_DATA_TYPE_CONFIG: Record<
+  McpDataType,
+  {
+    criticality: McpCriticality;
+    cacheMaxAge: number; // Max cache age in seconds (0 = no cache)
+    requiresVerification: boolean;
+    fallbackAllowed: boolean;
+  }
+> = {
   compatibility: {
     criticality: 'critical',
-    cacheMaxAge: 0,          // Never cache compatibility for safety parts
+    cacheMaxAge: 0, // Never cache compatibility for safety parts
     requiresVerification: true,
     fallbackAllowed: false,
   },
   price: {
     criticality: 'critical',
-    cacheMaxAge: 0,          // Real-time in checkout context
+    cacheMaxAge: 0, // Real-time in checkout context
     requiresVerification: true,
     fallbackAllowed: false,
   },
   stock: {
     criticality: 'critical',
-    cacheMaxAge: 300,        // 5 minutes for browsing
+    cacheMaxAge: 300, // 5 minutes for browsing
     requiresVerification: true,
     fallbackAllowed: false,
   },
   safety: {
     criticality: 'critical',
-    cacheMaxAge: 0,          // Never cache safety - real-time verification required
+    cacheMaxAge: 0, // Never cache safety - real-time verification required
     requiresVerification: true,
-    fallbackAllowed: false,  // Fail-safe: block on error
+    fallbackAllowed: false, // Fail-safe: block on error
   },
   reference: {
     criticality: 'high',
-    cacheMaxAge: 86400,      // 24 hours
+    cacheMaxAge: 86400, // 24 hours
     requiresVerification: true,
     fallbackAllowed: true,
   },
   vehicle: {
     criticality: 'high',
-    cacheMaxAge: 86400,      // 24 hours (stable data)
+    cacheMaxAge: 86400, // 24 hours (stable data)
     requiresVerification: true,
     fallbackAllowed: true,
   },
   diagnostic: {
     criticality: 'medium',
-    cacheMaxAge: 3600,       // 1 hour
+    cacheMaxAge: 3600, // 1 hour
     requiresVerification: false,
     fallbackAllowed: true,
   },
   page_role: {
     criticality: 'medium',
-    cacheMaxAge: 3600,       // 1 hour
+    cacheMaxAge: 3600, // 1 hour
     requiresVerification: false,
     fallbackAllowed: true,
   },
   content: {
     criticality: 'low',
-    cacheMaxAge: 300,        // 5 minutes
+    cacheMaxAge: 300, // 5 minutes
     requiresVerification: false,
     fallbackAllowed: true,
   },
@@ -197,39 +200,42 @@ export interface McpVerificationResult<T = unknown> {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Standard refusal messages by data type */
-export const MCP_REFUSAL_MESSAGES: Record<McpDataType, {
-  code: string;
-  fr: string;
-  en: string;
-}> = {
+export const MCP_REFUSAL_MESSAGES: Record<
+  McpDataType,
+  {
+    code: string;
+    fr: string;
+    en: string;
+  }
+> = {
   compatibility: {
     code: 'COMPAT_NOT_VERIFIED',
-    fr: 'La compatibilite de cette piece avec votre vehicule n\'a pas pu etre confirmee. Verifiez les references constructeur.',
+    fr: "La compatibilite de cette piece avec votre vehicule n'a pas pu etre confirmee. Verifiez les references constructeur.",
     en: 'The compatibility of this part with your vehicle could not be confirmed. Please verify manufacturer references.',
   },
   price: {
     code: 'PRICE_NOT_VERIFIED',
-    fr: 'Le prix affiche n\'a pas pu etre verifie en temps reel. Veuillez rafraichir la page.',
+    fr: "Le prix affiche n'a pas pu etre verifie en temps reel. Veuillez rafraichir la page.",
     en: 'The displayed price could not be verified in real-time. Please refresh the page.',
   },
   stock: {
     code: 'STOCK_NOT_VERIFIED',
-    fr: 'La disponibilite de cet article n\'a pas pu etre confirmee. Contactez-nous pour plus d\'informations.',
+    fr: "La disponibilite de cet article n'a pas pu etre confirmee. Contactez-nous pour plus d'informations.",
     en: 'The availability of this item could not be confirmed. Contact us for more information.',
   },
   safety: {
     code: 'SAFETY_NOT_VERIFIED',
-    fr: 'La verification de securite n\'a pas pu etre effectuee. Par mesure de precaution, veuillez contacter le support.',
+    fr: "La verification de securite n'a pas pu etre effectuee. Par mesure de precaution, veuillez contacter le support.",
     en: 'Safety verification could not be completed. As a precaution, please contact support.',
   },
   reference: {
     code: 'REF_NOT_VERIFIED',
-    fr: 'Cette reference n\'a pas pu etre verifiee dans notre catalogue. Verifiez la reference OEM.',
+    fr: "Cette reference n'a pas pu etre verifiee dans notre catalogue. Verifiez la reference OEM.",
     en: 'This reference could not be verified in our catalog. Please check the OEM reference.',
   },
   vehicle: {
     code: 'VEHICLE_NOT_VERIFIED',
-    fr: 'Le vehicule n\'a pas pu etre identifie de maniere unique. Precisez le modele exact.',
+    fr: "Le vehicule n'a pas pu etre identifie de maniere unique. Precisez le modele exact.",
     en: 'The vehicle could not be uniquely identified. Please specify the exact model.',
   },
   diagnostic: {
@@ -239,12 +245,12 @@ export const MCP_REFUSAL_MESSAGES: Record<McpDataType, {
   },
   page_role: {
     code: 'ROLE_CONFLICT',
-    fr: 'Le role de cette page n\'a pas pu etre determine.',
+    fr: "Le role de cette page n'a pas pu etre determine.",
     en: 'The role of this page could not be determined.',
   },
   content: {
     code: 'CONTENT_NOT_AUTHORIZED',
-    fr: 'Ce contenu n\'est pas autorise pour ce type de page.',
+    fr: "Ce contenu n'est pas autorise pour ce type de page.",
     en: 'This content is not authorized for this page type.',
   },
 };
@@ -258,9 +264,9 @@ export type CircuitBreakerState = 'closed' | 'open' | 'half-open';
 
 /** Circuit breaker configuration */
 export interface CircuitBreakerConfig {
-  failureThreshold: number;   // Failures before opening (default: 5)
-  recoveryTimeout: number;    // ms before half-open (default: 60000)
-  halfOpenRequests: number;   // Test requests in half-open (default: 3)
+  failureThreshold: number; // Failures before opening (default: 5)
+  recoveryTimeout: number; // ms before half-open (default: 60000)
+  halfOpenRequests: number; // Test requests in half-open (default: 3)
 }
 
 /** Circuit breaker status */
@@ -470,7 +476,7 @@ export const MCP_ENFORCEMENT_RECOMMENDATIONS: Record<McpDataType, string[]> = {
   compatibility: [
     'Vérifiez les références OEM de votre véhicule',
     'Contactez notre support pour confirmation',
-    'Utilisez l\'outil de diagnostic pour une analyse approfondie',
+    "Utilisez l'outil de diagnostic pour une analyse approfondie",
   ],
   price: [
     'Rafraîchissez la page pour obtenir le prix actuel',
@@ -486,7 +492,7 @@ export const MCP_ENFORCEMENT_RECOMMENDATIONS: Record<McpDataType, string[]> = {
     'En cas de doute sur la sécurité, faites vérifier votre véhicule',
   ],
   reference: [
-    'Vérifiez la référence OEM sur le carnet d\'entretien',
+    "Vérifiez la référence OEM sur le carnet d'entretien",
     'Contactez le constructeur pour confirmation',
   ],
   vehicle: [
@@ -497,12 +503,8 @@ export const MCP_ENFORCEMENT_RECOMMENDATIONS: Record<McpDataType, string[]> = {
     'Consultez un professionnel pour un diagnostic complet',
     'Les résultats sont fournis à titre indicatif',
   ],
-  page_role: [
-    'Cette page nécessite une vérification manuelle',
-  ],
-  content: [
-    'Le contenu n\'a pas pu être validé automatiquement',
-  ],
+  page_role: ['Cette page nécessite une vérification manuelle'],
+  content: ["Le contenu n'a pas pu être validé automatiquement"],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -518,16 +520,22 @@ export interface McpValidationStats {
   matchRate: number;
   avgLatencyMs: number;
   p95LatencyMs: number;
-  byDataType: Record<McpDataType, {
-    count: number;
-    matchRate: number;
-    avgLatencyMs: number;
-  }>;
-  byEndpoint: Record<string, {
-    count: number;
-    matchRate: number;
-    errorRate: number;
-  }>;
+  byDataType: Record<
+    McpDataType,
+    {
+      count: number;
+      matchRate: number;
+      avgLatencyMs: number;
+    }
+  >;
+  byEndpoint: Record<
+    string,
+    {
+      count: number;
+      matchRate: number;
+      errorRate: number;
+    }
+  >;
   period: {
     from: string;
     to: string;

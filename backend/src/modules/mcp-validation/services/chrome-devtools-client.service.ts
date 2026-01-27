@@ -63,8 +63,14 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   private readonly maxRetries: number;
 
   constructor(private readonly configService: ConfigService) {
-    this.defaultTimeout = this.configService.get<number>('EXTERNAL_SCRAPE_TIMEOUT', 15000);
-    this.maxRetries = this.configService.get<number>('EXTERNAL_SCRAPE_MAX_RETRIES', 2);
+    this.defaultTimeout = this.configService.get<number>(
+      'EXTERNAL_SCRAPE_TIMEOUT',
+      15000,
+    );
+    this.maxRetries = this.configService.get<number>(
+      'EXTERNAL_SCRAPE_MAX_RETRIES',
+      2,
+    );
   }
 
   async onModuleInit() {
@@ -168,7 +174,9 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    * NOTE: In production, this calls the MCP Chrome DevTools server.
    * For now, we simulate the interface to allow development without the actual browser.
    */
-  async navigatePage(options: NavigateOptions): Promise<{ success: boolean; error?: string }> {
+  async navigatePage(
+    options: NavigateOptions,
+  ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Navigating to: ${options.url}`);
 
     // TODO: Replace with actual MCP call when integrated
@@ -186,7 +194,10 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   /**
    * Wait for text to appear on page
    */
-  async waitForText(text: string, timeout?: number): Promise<{ success: boolean; error?: string }> {
+  async waitForText(
+    text: string,
+    _timeout?: number,
+  ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Waiting for text: "${text}"`);
 
     // TODO: Replace with actual MCP call
@@ -200,7 +211,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    */
   async waitForElement(
     selector: string,
-    timeout?: number,
+    _timeout?: number,
   ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Waiting for element: ${selector}`);
 
@@ -212,7 +223,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    * Execute JavaScript on the page and return result
    */
   async evaluateScript<T>(
-    options: EvaluateScriptOptions,
+    _options: EvaluateScriptOptions,
   ): Promise<{ success: boolean; data: T | null; error?: string }> {
     this.logger.debug('Evaluating script on page');
 
@@ -227,7 +238,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    * Take a screenshot of the current page
    */
   async takeScreenshot(
-    options?: ScreenshotOptions,
+    _options?: ScreenshotOptions,
   ): Promise<{ success: boolean; data: string | null; error?: string }> {
     this.logger.debug('Taking screenshot');
 
@@ -252,7 +263,10 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   /**
    * Fill an input field
    */
-  async fill(uid: string, value: string): Promise<{ success: boolean; error?: string }> {
+  async fill(
+    uid: string,
+    _value: string,
+  ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Filling element ${uid} with value`);
 
     // TODO: Replace with actual MCP call
@@ -264,7 +278,11 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   /**
    * Get the current page snapshot (DOM tree)
    */
-  async getSnapshot(): Promise<{ success: boolean; data: string | null; error?: string }> {
+  async getSnapshot(): Promise<{
+    success: boolean;
+    data: string | null;
+    error?: string;
+  }> {
     this.logger.debug('Getting page snapshot');
 
     // TODO: Replace with actual MCP call
@@ -280,9 +298,17 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   /**
    * Take a snapshot and return it in a more convenient format
    */
-  async takeSnapshot(): Promise<{ success: boolean; content: string | null; error?: string }> {
+  async takeSnapshot(): Promise<{
+    success: boolean;
+    content: string | null;
+    error?: string;
+  }> {
     const result = await this.getSnapshot();
-    return { success: result.success, content: result.data, error: result.error };
+    return {
+      success: result.success,
+      content: result.data,
+      error: result.error,
+    };
   }
 
   /**
@@ -295,7 +321,10 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    * await chromeClient.fillByLabel('Account ID', 'fr-152103');
    * await chromeClient.fillByLabel('Password', 'secret123');
    */
-  async fillByLabel(labelText: string, value: string): Promise<{ success: boolean; error?: string }> {
+  async fillByLabel(
+    labelText: string,
+    value: string,
+  ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Filling field labeled "${labelText}"`);
 
     // TODO: Replace with actual MCP call that:
@@ -307,7 +336,8 @@ export class ChromeDevToolsClientService implements OnModuleInit {
     // Find input elements near the label text
     try {
       // First try to find by evaluating script
-      const findResult = await this.evaluateScript<{ uid: string }>({ function: `() => {
+      const findResult = await this.evaluateScript<{ uid: string }>({
+        function: `() => {
         // Strategy 1: Find by label element
         const labels = Array.from(document.querySelectorAll('label'));
         for (const label of labels) {
@@ -337,7 +367,8 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         }
 
         return null;
-      }` });
+      }`,
+      });
 
       if (findResult.success && findResult.data?.uid) {
         return this.fill(findResult.data.uid, value);
@@ -345,10 +376,10 @@ export class ChromeDevToolsClientService implements OnModuleInit {
 
       // Fallback: try common field name patterns
       const fieldMappings: Record<string, string[]> = {
-        'account': ['accountId', 'account', 'accountid'],
-        'user': ['userName', 'username', 'user', 'login'],
-        'password': ['password', 'pwd', 'pass'],
-        'email': ['email', 'mail'],
+        account: ['accountId', 'account', 'accountid'],
+        user: ['userName', 'username', 'user', 'login'],
+        password: ['password', 'pwd', 'pass'],
+        email: ['email', 'mail'],
       };
 
       const labelLower = labelText.toLowerCase();
@@ -361,7 +392,10 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         }
       }
 
-      return { success: false, error: `Could not find field for label: ${labelText}` };
+      return {
+        success: false,
+        error: `Could not find field for label: ${labelText}`,
+      };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -377,7 +411,9 @@ export class ChromeDevToolsClientService implements OnModuleInit {
    * await chromeClient.clickByText('Volkswagen');
    * await chromeClient.clickByText('Confirmer');
    */
-  async clickByText(text: string): Promise<{ success: boolean; error?: string }> {
+  async clickByText(
+    text: string,
+  ): Promise<{ success: boolean; error?: string }> {
     this.logger.debug(`Clicking element with text: "${text}"`);
 
     // TODO: Replace with actual MCP call that:
@@ -387,7 +423,11 @@ export class ChromeDevToolsClientService implements OnModuleInit {
 
     try {
       // Use evaluate script to find and click
-      const result = await this.evaluateScript<{ clicked: boolean; uid?: string }>({ function: `() => {
+      const result = await this.evaluateScript<{
+        clicked: boolean;
+        uid?: string;
+      }>({
+        function: `() => {
         // Find clickable element containing the text
         const textLower = '${text.toLowerCase()}';
         const selectors = ['button', 'a', 'input[type="submit"]', 'input[type="button"]', '[role="button"]', '[onclick]', 'li', 'div[class*="clickable"]', 'span[class*="link"]', '.brand-logo', '[data-action]'];
@@ -418,11 +458,15 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         }
 
         return { clicked: false };
-      }` });
+      }`,
+      });
 
       return result.success && result.data?.clicked
         ? { success: true }
-        : { success: false, error: `Could not find element with text: ${text}` };
+        : {
+            success: false,
+            error: `Could not find element with text: ${text}`,
+          };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -438,10 +482,13 @@ export class ChromeDevToolsClientService implements OnModuleInit {
     labelText: string,
     optionValue: string,
   ): Promise<{ success: boolean; error?: string }> {
-    this.logger.debug(`Selecting "${optionValue}" from dropdown labeled "${labelText}"`);
+    this.logger.debug(
+      `Selecting "${optionValue}" from dropdown labeled "${labelText}"`,
+    );
 
     try {
-      const result = await this.evaluateScript<{ selected: boolean }>({ function: `() => {
+      const result = await this.evaluateScript<{ selected: boolean }>({
+        function: `() => {
         const labelLower = '${labelText.toLowerCase()}';
         const valueLower = '${optionValue.toLowerCase()}';
 
@@ -486,11 +533,15 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         }
 
         return { selected: false };
-      }` });
+      }`,
+      });
 
       return result.success && result.data?.selected
         ? { success: true }
-        : { success: false, error: `Could not select "${optionValue}" from "${labelText}"` };
+        : {
+            success: false,
+            error: `Could not select "${optionValue}" from "${labelText}"`,
+          };
     } catch (error) {
       return { success: false, error: error.message };
     }

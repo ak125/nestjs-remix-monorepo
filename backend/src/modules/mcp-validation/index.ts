@@ -49,14 +49,13 @@ export {
   McpVerifyStock,
   McpVerifyDiagnostic,
   McpVerifySafety,
-  McpVerifySafetyGate,  // Phase 3: Safety gate gatekeeper mode
+  McpVerifySafetyGate, // Phase 3: Safety gate gatekeeper mode
 
   // Phase 4: Enforcement with Redirect (JAMAIS de blocage vente)
   McpVerifyEnforcement,
   McpVerifyEnforcementSafety,
   McpVerifyEnforcementCompatibility,
   McpVerifyEnforcementPrice,
-
   McpVerifyVehicle,
   McpVerifyReference,
   hasMcpVerify,

@@ -1,4 +1,10 @@
-import { Module, Global, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  Global,
+  MiddlewareConsumer,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 

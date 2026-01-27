@@ -72,10 +72,9 @@ export class McpShadowInterceptor implements NestInterceptor {
     const controller = context.getClass();
 
     // 1. Check for @McpValidate decorator (explicit annotation)
-    const validateOptions = this.reflector.get<McpValidateOptions>(
-      MCP_VALIDATE_KEY,
-      handler,
-    ) || this.reflector.get<McpValidateOptions>(MCP_VALIDATE_KEY, controller);
+    const validateOptions =
+      this.reflector.get<McpValidateOptions>(MCP_VALIDATE_KEY, handler) ||
+      this.reflector.get<McpValidateOptions>(MCP_VALIDATE_KEY, controller);
 
     // 2. Check route map (declarative config)
     const routeMatch = findMatchingRoute(request.method, request.path);
@@ -152,7 +151,7 @@ export class McpShadowInterceptor implements NestInterceptor {
     directResult: unknown,
     context: McpValidationContext,
     tool: string,
-    routeMapping?: McpRouteMapping,
+    _routeMapping?: McpRouteMapping,
   ): Promise<void> {
     const startTime = Date.now();
 

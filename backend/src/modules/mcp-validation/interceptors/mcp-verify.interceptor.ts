@@ -107,20 +107,25 @@ export class McpVerifyInterceptor implements NestInterceptor {
         // Phase 4: Enforcement mode with redirect (NEVER block sales)
         if (options.mode === 'enforcement') {
           // Check kill switch
-          const enforcementEnabled = this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
+          const enforcementEnabled =
+            this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
 
           // If redirect is enabled (default) OR kill switch is off, redirect instead of block
           if (!enforcementEnabled || options.redirectOnEnforcement !== false) {
             this.logger.warn(
               `MCP enforcement redirect for ${verifyContext.endpoint}: ${error.message}`,
             );
-            return of(this.createEnforcementRedirectResponse(
-              null,
-              options,
-              verifyContext,
-              startTime,
-              error instanceof McpVerifyError ? error.message : (error as Error).message,
-            ));
+            return of(
+              this.createEnforcementRedirectResponse(
+                null,
+                options,
+                verifyContext,
+                startTime,
+                error instanceof McpVerifyError
+                  ? error.message
+                  : (error as Error).message,
+              ),
+            );
           }
         }
 
@@ -153,7 +158,9 @@ export class McpVerifyInterceptor implements NestInterceptor {
       params: {
         ...request.params,
         ...request.query,
-        ...(request.body && typeof request.body === 'object' ? request.body : {}),
+        ...(request.body && typeof request.body === 'object'
+          ? request.body
+          : {}),
       },
       userId: (request as any).user?.id || (request as any).session?.userId,
       sessionId: (request as any).sessionID,
@@ -170,17 +177,36 @@ export class McpVerifyInterceptor implements NestInterceptor {
     options: McpVerifyOptions,
     context: McpVerifyContext,
     startTime: number,
-  ): Promise<T | (T & { _mcp_verification: McpVerificationEnvelope }) | McpEnforcementRedirectResponse<T>> {
-    const { dataType, mode, onMismatch, includeInResponse, minConfidence } = options;
+  ): Promise<
+    | T
+    | (T & { _mcp_verification: McpVerificationEnvelope })
+    | McpEnforcementRedirectResponse<T>
+  > {
+    const {
+      dataType,
+      mode,
+      onMismatch,
+      includeInResponse: _includeInResponse,
+      minConfidence,
+    } = options;
 
     try {
       // Get the appropriate MCP query function
       const toolName = this.getToolNameForDataType(dataType);
-      const queryFn = toolName ? this.queryService.getQueryFunction(toolName as any) : null;
+      const queryFn = toolName
+        ? this.queryService.getQueryFunction(toolName as any)
+        : null;
 
       if (!queryFn) {
         this.logger.warn(`No MCP query function for dataType: ${dataType}`);
-        return this.enrichResponse(response, 'unverified', [], context, startTime, options);
+        return this.enrichResponse(
+          response,
+          'unverified',
+          [],
+          context,
+          startTime,
+          options,
+        );
       }
 
       // Execute MCP verification
@@ -190,7 +216,8 @@ export class McpVerifyInterceptor implements NestInterceptor {
         // MCP returned null - handle based on mode
         if (mode === 'enforcement') {
           // Phase 4: Redirect instead of block
-          const enforcementEnabled = this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
+          const enforcementEnabled =
+            this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
           if (!enforcementEnabled || options.redirectOnEnforcement !== false) {
             return this.createEnforcementRedirectResponse(
               response,
@@ -222,8 +249,7 @@ export class McpVerifyInterceptor implements NestInterceptor {
 
       // Check confidence threshold
       const confidenceOk =
-        !minConfidence ||
-        (mcpResult as any).confidence >= minConfidence;
+        !minConfidence || (mcpResult as any).confidence >= minConfidence;
 
       // Determine status based on comparison and confidence
       let status: McpVerifyStatus = 'verified';
@@ -237,12 +263,14 @@ export class McpVerifyInterceptor implements NestInterceptor {
         for (const disc of discrepancies) {
           warnings.push(
             `${disc.field} discrepancy: MCP=${JSON.stringify(disc.mcpValue)}, ` +
-            `Direct=${JSON.stringify(disc.directValue)} (severity: ${disc.severity})`,
+              `Direct=${JSON.stringify(disc.directValue)} (severity: ${disc.severity})`,
           );
         }
 
         // Alert on critical mismatches
-        const hasCritical = discrepancies.some((d) => d.severity === 'critical');
+        const hasCritical = discrepancies.some(
+          (d) => d.severity === 'critical',
+        );
         if (hasCritical) {
           await this.alertingService.alert({
             severity: MCP_ALERT_SEVERITY_MAP[dataType],
@@ -264,8 +292,13 @@ export class McpVerifyInterceptor implements NestInterceptor {
         if (onMismatch === 'block' || mode === 'enforcement') {
           // Phase 4: Redirect instead of block in enforcement mode
           if (mode === 'enforcement') {
-            const enforcementEnabled = this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
-            if (!enforcementEnabled || options.redirectOnEnforcement !== false) {
+            const enforcementEnabled =
+              this.configService.get<string>('MCP_ENFORCEMENT_MODE') !==
+              'false';
+            if (
+              !enforcementEnabled ||
+              options.redirectOnEnforcement !== false
+            ) {
               return this.createEnforcementRedirectResponse(
                 response,
                 options,
@@ -310,7 +343,8 @@ export class McpVerifyInterceptor implements NestInterceptor {
 
       // Phase 4: In enforcement mode, redirect instead of block
       if (mode === 'enforcement') {
-        const enforcementEnabled = this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
+        const enforcementEnabled =
+          this.configService.get<string>('MCP_ENFORCEMENT_MODE') !== 'false';
         if (!enforcementEnabled || options.redirectOnEnforcement !== false) {
           return this.createEnforcementRedirectResponse(
             response,
@@ -468,7 +502,8 @@ export class McpVerifyInterceptor implements NestInterceptor {
     startTime: number,
     reason: string,
   ): McpEnforcementRedirectResponse<T> {
-    const redirectUrl = options.fallbackUrl || MCP_FALLBACK_URL_MAP[options.dataType];
+    const redirectUrl =
+      options.fallbackUrl || MCP_FALLBACK_URL_MAP[options.dataType];
     const recommendations = this.getRecommendations(options.dataType);
 
     // Build query params for redirect URL
@@ -481,7 +516,11 @@ export class McpVerifyInterceptor implements NestInterceptor {
     // Add relevant context params
     if (context.params) {
       for (const [key, value] of Object.entries(context.params)) {
-        if (value !== undefined && value !== null && typeof value !== 'object') {
+        if (
+          value !== undefined &&
+          value !== null &&
+          typeof value !== 'object'
+        ) {
           queryParams[key] = String(value);
         }
       }
@@ -530,28 +569,40 @@ export class McpVerifyInterceptor implements NestInterceptor {
    * Get recommendations for a data type
    */
   private getRecommendations(dataType: McpDataType): string[] {
-    return MCP_ENFORCEMENT_RECOMMENDATIONS[dataType] || [
-      'Utilisez notre outil de diagnostic pour une analyse approfondie',
-      'Contactez notre support si vous avez des questions',
-    ];
+    return (
+      MCP_ENFORCEMENT_RECOMMENDATIONS[dataType] || [
+        'Utilisez notre outil de diagnostic pour une analyse approfondie',
+        'Contactez notre support si vous avez des questions',
+      ]
+    );
   }
 
   /**
    * Get purchase warning message based on data type
    */
-  private getPurchaseWarning(dataType: McpDataType, reason: string): string {
+  private getPurchaseWarning(dataType: McpDataType, _reason: string): string {
     const warningMap: Record<McpDataType, string> = {
-      compatibility: '⚠️ La compatibilité n\'a pas pu être vérifiée automatiquement. Vérifiez les références OEM avant achat.',
-      price: '⚠️ Le prix affiché peut ne pas être à jour. Vérifiez le prix final au moment du paiement.',
-      stock: '⚠️ La disponibilité peut avoir changé. Confirmez avant de finaliser votre commande.',
-      safety: '⚠️ Un diagnostic sécurité est recommandé avant achat. Consultez un professionnel si nécessaire.',
-      reference: '⚠️ La référence n\'a pas pu être vérifiée. Assurez-vous qu\'elle correspond à votre véhicule.',
-      vehicle: '⚠️ L\'identification du véhicule n\'est pas complète. Vérifiez les détails avant achat.',
-      diagnostic: '⚠️ Le diagnostic automatique n\'est pas concluant. Consultez un professionnel.',
+      compatibility:
+        "⚠️ La compatibilité n'a pas pu être vérifiée automatiquement. Vérifiez les références OEM avant achat.",
+      price:
+        '⚠️ Le prix affiché peut ne pas être à jour. Vérifiez le prix final au moment du paiement.',
+      stock:
+        '⚠️ La disponibilité peut avoir changé. Confirmez avant de finaliser votre commande.',
+      safety:
+        '⚠️ Un diagnostic sécurité est recommandé avant achat. Consultez un professionnel si nécessaire.',
+      reference:
+        "⚠️ La référence n'a pas pu être vérifiée. Assurez-vous qu'elle correspond à votre véhicule.",
+      vehicle:
+        "⚠️ L'identification du véhicule n'est pas complète. Vérifiez les détails avant achat.",
+      diagnostic:
+        "⚠️ Le diagnostic automatique n'est pas concluant. Consultez un professionnel.",
       page_role: '⚠️ Contenu non vérifié.',
       content: '⚠️ Contenu non vérifié.',
     };
 
-    return warningMap[dataType] || '⚠️ Vérification non concluante. Veuillez vérifier les détails avant achat.';
+    return (
+      warningMap[dataType] ||
+      '⚠️ Vérification non concluante. Veuillez vérifier les détails avant achat.'
+    );
   }
 }
