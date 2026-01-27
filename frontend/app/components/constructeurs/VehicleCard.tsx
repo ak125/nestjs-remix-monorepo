@@ -4,6 +4,7 @@
 import { Link } from "@remix-run/react";
 import { Calendar, Car, Fuel, Zap } from "lucide-react";
 import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
+import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 
 interface VehicleCardProps {
   vehicle: {
@@ -37,7 +38,11 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
   className = "",
 }) => {
   // 🔗 Construction de l'URL du véhicule - Format SEO: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
-  const vehicleUrl = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`;
+  const safeTypeAlias = normalizeTypeAlias(
+    vehicle.type_alias,
+    vehicle.type_name,
+  );
+  const vehicleUrl = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${safeTypeAlias}-${vehicle.cgc_type_id}.html`;
 
   // 📅 Formatage de la période
   const formatDateRange = (
