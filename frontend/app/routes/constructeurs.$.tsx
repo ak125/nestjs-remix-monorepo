@@ -88,10 +88,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const brandMatch = brand.match(/^(.+)-(\d+)$/);
     const modelMatch = model.match(/^(.+)-(\d+)$/);
 
-    const marqueAlias = brandMatch ? brandMatch[1] : brand;
+    const rawMarqueAlias = brandMatch ? brandMatch[1] : brand;
     const marqueId = brandMatch ? parseInt(brandMatch[2], 10) : 0;
-    const modeleAlias = modelMatch ? modelMatch[1] : model;
+    const rawModeleAlias = modelMatch ? modelMatch[1] : model;
     const modeleId = modelMatch ? parseInt(modelMatch[2], 10) : 0;
+
+    // Normalize aliases: remove leading/trailing dashes and collapse multiple dashes
+    const marqueAlias = rawMarqueAlias
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const modeleAlias = rawModeleAlias
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    // Check for non-canonical URL (double dashes, etc.) and redirect to canonical
+    const expectedBrand = `${marqueAlias}-${marqueId}`;
+    const expectedModel = `${modeleAlias}-${modeleId}`;
+    if (brand !== expectedBrand || model !== expectedModel) {
+      console.log(
+        `[ConstructeursCatchAll] 301 redirect: ${brand}/${model} → ${expectedBrand}/${expectedModel}`,
+      );
+      return redirect(
+        `/constructeurs/${expectedBrand}/${expectedModel}.html`,
+        301,
+      );
+    }
 
     // Fetch motorisations disponibles
     const apiUrl = new URL(request.url);
@@ -150,7 +171,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         title: `Pièces ${marqueDisplay} ${modeleDisplay} - ${motorOptions.length} motorisations | AutoMecanik`,
         description: `Catalogue pièces auto ${marqueDisplay} ${modeleDisplay}. Sélectionnez votre motorisation parmi ${motorOptions.length} versions disponibles pour trouver les pièces compatibles.`,
         h1: `Pièces auto ${marqueDisplay} ${modeleDisplay}`,
-        canonical: `https://www.automecanik.com/constructeurs/${brand}/${model}.html`,
+        canonical: `https://www.automecanik.com/constructeurs/${marqueAlias}-${marqueId}/${modeleAlias}-${modeleId}.html`,
       },
     };
 
