@@ -34,6 +34,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { getAppConfig } from '../../../config/app.config';
+import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.service';
 
 // Types
 export type TemperatureBucket = 'hot' | 'new' | 'stable' | 'cold';
@@ -106,6 +107,8 @@ const STATIC_PAGES = [
   { loc: '/', priority: '1.0', changefreq: 'daily' },
   { loc: '/constructeurs', priority: '0.8', changefreq: 'weekly' },
   { loc: '/blog', priority: '0.7', changefreq: 'daily' },
+  { loc: '/diagnostic-auto', priority: '0.8', changefreq: 'weekly' }, // R5 Index
+  { loc: '/reference-auto', priority: '0.8', changefreq: 'weekly' }, // R4 Index
   { loc: '/cgv', priority: '0.3', changefreq: 'yearly' },
   { loc: '/mentions-legales', priority: '0.3', changefreq: 'yearly' },
   { loc: '/politique-confidentialite', priority: '0.3', changefreq: 'yearly' },
@@ -195,12 +198,22 @@ export class SitemapV10Service {
       if (blog) allFilePaths.push(blog);
 
       // 5. Pages statiques
-      this.logger.log('📄 [5/6] Generating sitemap-pages.xml...');
+      this.logger.log('📄 [5/8] Generating sitemap-pages.xml...');
       const pages = await this.generatePagesSitemap();
       if (pages) allFilePaths.push(pages);
 
-      // 6. Pièces par température (714k URLs via source V9)
-      this.logger.log('📦 [6/6] Generating sitemap-{bucket}-pieces-*.xml...');
+      // 6. Diagnostic R5 (Observable Pro)
+      this.logger.log('🩺 [6/8] Generating sitemap-diagnostic.xml...');
+      const diagnostic = await this.generateDiagnosticSitemap();
+      if (diagnostic) allFilePaths.push(diagnostic);
+
+      // 7. Référence R4
+      this.logger.log('📖 [7/8] Generating sitemap-reference.xml...');
+      const reference = await this.generateReferenceSitemap();
+      if (reference) allFilePaths.push(reference);
+
+      // 8. Pièces par température (714k URLs via source V9)
+      this.logger.log('📦 [8/8] Generating sitemap-{bucket}-pieces-*.xml...');
       const buckets: TemperatureBucket[] = ['hot', 'stable', 'cold'];
 
       for (const bucket of buckets) {
@@ -233,15 +246,17 @@ export class SitemapV10Service {
               (shard + 1) * this.MAX_URLS_PER_FILE,
             );
 
+            // Format simplifié: sitemap-pieces-*.xml à la racine (cohérent avec categories, vehicules)
             const fileName =
               numShards === 1
-                ? `sitemap-${bucket}-pieces.xml`
-                : `sitemap-${bucket}-pieces-${shard + 1}.xml`;
+                ? `sitemap-pieces.xml`
+                : `sitemap-pieces-${shard + 1}.xml`;
 
             const filePath = await this.writeSitemapFile(
               bucket,
               fileName,
               shardUrls,
+              true, // writeToRoot: écrire à la racine pour cohérence avec autres sitemaps
             );
             filePaths.push(filePath);
             allFilePaths.push(filePath);
@@ -479,14 +494,22 @@ export class SitemapV10Service {
 
   /**
    * Écrit un fichier sitemap XML
+   * @param bucket - Le bucket de température (pour la config changefreq/priority)
+   * @param fileName - Le nom du fichier
+   * @param urls - Les URLs à inclure
+   * @param writeToRoot - Si true, écrit à la racine de OUTPUT_DIR au lieu du sous-répertoire bucket
    */
   private async writeSitemapFile(
     bucket: TemperatureBucket,
     fileName: string,
     urls: SitemapUrl[],
+    writeToRoot: boolean = false,
   ): Promise<string> {
     const config = BUCKET_CONFIG[bucket];
-    const dirPath = path.join(this.OUTPUT_DIR, bucket);
+    // Si writeToRoot, écrire directement à OUTPUT_DIR, sinon dans le sous-répertoire bucket
+    const dirPath = writeToRoot
+      ? this.OUTPUT_DIR
+      : path.join(this.OUTPUT_DIR, bucket);
     const filePath = path.join(dirPath, fileName);
 
     // Créer le répertoire si nécessaire
@@ -585,9 +608,16 @@ ${urlEntries}
     const sitemapEntries = results
       .flatMap((r) =>
         r.filePaths.map((fp) => {
-          const relativePath = fp.replace(this.OUTPUT_DIR, '');
+          // Extraire le chemin relatif sans le slash initial
+          const relativePath = fp
+            .replace(this.OUTPUT_DIR, '')
+            .replace(/^\//, '');
+          // Fichiers à la racine (sans /) → URL directe, sinon préfixer avec /sitemaps/
+          const sitemapUrl = relativePath.includes('/')
+            ? `${this.BASE_URL}/sitemaps/${relativePath}`
+            : `${this.BASE_URL}/${relativePath}`;
           return `  <sitemap>
-    <loc>${this.BASE_URL}/sitemaps${relativePath}</loc>
+    <loc>${sitemapUrl}</loc>
     <lastmod>${today}</lastmod>
   </sitemap>`;
         }),
@@ -667,9 +697,11 @@ ${sitemapEntries}
   async pingGoogle(
     bucket?: TemperatureBucket,
   ): Promise<{ ok: boolean; status: number }> {
+    // L'index principal est à /sitemap.xml (racine)
+    // Les sitemaps de bucket (si utilisés) seraient dans /sitemaps/${bucket}/
     const sitemapUrl = bucket
       ? `${this.BASE_URL}/sitemaps/${bucket}/sitemap-${bucket}.xml`
-      : `${this.BASE_URL}/sitemaps/sitemap.xml`;
+      : `${this.BASE_URL}/sitemap.xml`;
 
     const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
 
@@ -689,6 +721,9 @@ ${sitemapEntries}
 
   // Cache des pg_id INDEX (évite double requête DB)
   private indexPgIdsCache: Set<string> | null = null;
+
+  // Cache global pour déduplication inter-familles
+  private processedUrlsCache: Set<string> | null = null;
 
   /**
    * 🎯 Récupère les pg_id des gammes INDEX (avec cache) - LOGIQUE V9
@@ -1027,6 +1062,116 @@ ${sitemapEntries}
   }
 
   /**
+   * 🚗 Génère sitemaps véhicules par marque
+   * Output: vehicules/sitemap-{brand}.xml
+   * ~30 marques, 100-1400 URLs chacune
+   */
+  async generateVehiculesByBrand(): Promise<{
+    success: boolean;
+    filePaths: string[];
+    totalUrls: number;
+    brandCount: number;
+  }> {
+    const startTime = Date.now();
+    this.logger.log('🚗 Starting vehicle sitemaps by brand generation...');
+
+    const filePaths: string[] = [];
+    let totalUrls = 0;
+
+    try {
+      interface VehiculeType {
+        niveau: number;
+        url: string;
+        priority: number;
+        changefreq: string;
+      }
+
+      // Récupérer tous les véhicules
+      const { count, error: countError } = await this.supabase
+        .from('__sitemap_vehicules')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) {
+        this.logger.error(`❌ Error counting vehicules: ${countError.message}`);
+        return { success: false, filePaths: [], totalUrls: 0, brandCount: 0 };
+      }
+
+      const totalCount = count || 0;
+      if (totalCount === 0) {
+        this.logger.warn('⚠️ No vehicules found');
+        return { success: false, filePaths: [], totalUrls: 0, brandCount: 0 };
+      }
+
+      const vehicules = await this.fetchWithPagination<VehiculeType>(
+        '__sitemap_vehicules',
+        'niveau, url, priority, changefreq',
+        totalCount,
+      );
+
+      if (!vehicules || vehicules.length === 0) {
+        return { success: false, filePaths: [], totalUrls: 0, brandCount: 0 };
+      }
+
+      // Grouper par marque (extraire de l'URL: /constructeurs/{brand}-{id}/...)
+      const brandMap = new Map<string, VehiculeType[]>();
+
+      for (const v of vehicules) {
+        // Extraire la marque depuis l'URL: /constructeurs/mercedes-benz-4/...
+        const match = v.url.match(/\/constructeurs\/([a-z0-9-]+?)-\d+/i);
+        const brand = match ? match[1].toLowerCase() : 'autres';
+
+        if (!brandMap.has(brand)) {
+          brandMap.set(brand, []);
+        }
+        brandMap.get(brand)!.push(v);
+      }
+
+      // Créer le répertoire vehicules/
+      const vehiculesDir = path.join(this.OUTPUT_DIR, 'vehicules');
+      await fs.mkdir(vehiculesDir, { recursive: true });
+
+      // Générer un sitemap par marque
+      const brands = Array.from(brandMap.keys()).sort();
+      this.logger.log(`   Found ${brands.length} brands to process...`);
+
+      for (const brand of brands) {
+        const brandVehicules = brandMap.get(brand)!;
+        const urls: SitemapUrl[] = brandVehicules.map((v) => ({
+          url: v.url,
+          page_type: 'vehicule',
+          changefreq: v.changefreq || 'monthly',
+          priority: v.priority.toString(),
+          last_modified_at: null,
+        }));
+
+        const filePath = path.join(vehiculesDir, `sitemap-${brand}.xml`);
+        await this.writeStaticSitemapFile(filePath, urls);
+        filePaths.push(filePath);
+        totalUrls += urls.length;
+
+        this.logger.log(
+          `   ✅ vehicules/sitemap-${brand}.xml: ${urls.length} URLs`,
+        );
+      }
+
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `✅ Vehicle by brand generation complete: ${totalUrls} URLs in ${brands.length} files (${duration}ms)`,
+      );
+
+      return {
+        success: true,
+        filePaths,
+        totalUrls,
+        brandCount: brands.length,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate vehicules by brand: ${error}`);
+      return { success: false, filePaths: [], totalUrls: 0, brandCount: 0 };
+    }
+  }
+
+  /**
    * 📝 Génère sitemap-blog.xml
    */
   private async generateBlogSitemap(): Promise<string | null> {
@@ -1084,6 +1229,121 @@ ${sitemapEntries}
       return filePath;
     } catch (error) {
       this.logger.error(`❌ Failed to generate pages sitemap: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * 🩺 Génère sitemap-diagnostic.xml (pages R5 Observable Pro)
+   * Source: table __seo_observable via RPC get_all_seo_observables_for_sitemap
+   *
+   * Priorités basées sur risk_level:
+   * - critique: 0.9 (urgence sécurité)
+   * - securite: 0.8 (impact sécurité)
+   * - confort: 0.7 (impact confort)
+   */
+  private async generateDiagnosticSitemap(): Promise<string | null> {
+    try {
+      // Appeler la RPC function créée dans la migration
+      const { data: diagnostics, error } = await this.supabase.rpc(
+        'get_all_seo_observables_for_sitemap',
+      );
+
+      if (error) {
+        this.logger.error(
+          `❌ Error fetching diagnostics for sitemap: ${error.message}`,
+        );
+        return null;
+      }
+
+      if (!diagnostics || diagnostics.length === 0) {
+        this.logger.warn('⚠️ No diagnostic pages found for sitemap');
+        return null;
+      }
+
+      // Mapper vers SitemapUrl avec priorité basée sur risk_level
+      const urls: SitemapUrl[] = diagnostics.map(
+        (d: {
+          slug: string;
+          updated_at: string;
+          risk_level: string;
+          safety_gate: string;
+        }) => {
+          // Priorité: critique > securite > confort
+          let priority = '0.7';
+          if (d.risk_level === 'critique') {
+            priority = '0.9';
+          } else if (d.risk_level === 'securite') {
+            priority = '0.8';
+          }
+
+          // Pages avec safety_gate stop_immediate = urgence maximale
+          if (d.safety_gate === 'stop_immediate') {
+            priority = '1.0';
+          }
+
+          return {
+            url: `/diagnostic-auto/${d.slug}`,
+            page_type: 'diagnostic',
+            changefreq: 'weekly',
+            priority,
+            last_modified_at: d.updated_at,
+          };
+        },
+      );
+
+      const filePath = path.join(this.OUTPUT_DIR, 'sitemap-diagnostic.xml');
+      await this.writeStaticSitemapFile(filePath, urls);
+      this.logger.log(`   ✅ sitemap-diagnostic.xml: ${urls.length} URLs (R5)`);
+      return filePath;
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate diagnostic sitemap: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * 📖 Génère sitemap-reference.xml (pages R4 Référence)
+   * Source: table __seo_reference
+   *
+   * Priorité fixe 0.8 (pages canoniques de référence)
+   */
+  private async generateReferenceSitemap(): Promise<string | null> {
+    try {
+      const { data: references, error } = await this.supabase
+        .from('__seo_reference')
+        .select('slug, updated_at')
+        .eq('is_published', true)
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        this.logger.error(
+          `❌ Error fetching references for sitemap: ${error.message}`,
+        );
+        return null;
+      }
+
+      if (!references || references.length === 0) {
+        this.logger.warn('⚠️ No reference pages found for sitemap');
+        return null;
+      }
+
+      const urls: SitemapUrl[] = references.map(
+        (r: { slug: string; updated_at: string }) => ({
+          url: `/reference-auto/${r.slug}`,
+          page_type: 'reference',
+          changefreq: 'monthly', // Contenu canonique stable
+          priority: '0.8',
+          last_modified_at: r.updated_at,
+        }),
+      );
+
+      const filePath = path.join(this.OUTPUT_DIR, 'sitemap-reference.xml');
+      await this.writeStaticSitemapFile(filePath, urls);
+      this.logger.log(`   ✅ sitemap-reference.xml: ${urls.length} URLs (R4)`);
+      return filePath;
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate reference sitemap: ${error}`);
       return null;
     }
   }
@@ -1223,15 +1483,17 @@ ${sitemapEntries}
             (shard + 1) * this.MAX_URLS_PER_FILE,
           );
 
+          // Format simplifié: sitemap-pieces-*.xml à la racine (cohérent avec categories, vehicules)
           const fileName =
             numShards === 1
-              ? `sitemap-${bucket}-pieces.xml`
-              : `sitemap-${bucket}-pieces-${shard + 1}.xml`;
+              ? `sitemap-pieces.xml`
+              : `sitemap-pieces-${shard + 1}.xml`;
 
           const filePath = await this.writeSitemapFile(
             bucket,
             fileName,
             shardUrls,
+            true, // writeToRoot: écrire à la racine pour cohérence avec autres sitemaps
           );
           filePaths.push(filePath);
           this.logger.log(
@@ -1291,6 +1553,355 @@ ${sitemapEntries}
     const totalFiles = results.reduce((sum, r) => sum + r.filesGenerated, 0);
 
     this.logger.log(`✅ V10 FUSION generation complete:`);
+    this.logger.log(`   Total URLs: ${totalUrls.toLocaleString()}`);
+    this.logger.log(`   Total Files: ${totalFiles}`);
+    this.logger.log(`   Duration: ${totalDurationMs}ms`);
+
+    return {
+      success: results.every((r) => r.success),
+      results,
+      totalUrls,
+      totalFiles,
+      totalDurationMs,
+      indexPath,
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 🔥 GÉNÉRATION PAR FAMILLE THÉMATIQUE (18 familles)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Liste des clés de familles produits (exclut les hubs transversaux)
+   */
+  private readonly PRODUCT_FAMILY_KEYS = [
+    'filtres',
+    'freinage',
+    'distribution',
+    'allumage',
+    'direction',
+    'suspension',
+    'support-moteur',
+    'embrayage',
+    'transmission',
+    'electrique',
+    'capteurs',
+    'alimentation',
+    'moteur',
+    'refroidissement',
+    'climatisation',
+    'echappement',
+    'eclairage',
+    'accessoires',
+    'turbo',
+  ];
+
+  /**
+   * 🔥 Génère le sitemap XML pour une famille thématique
+   * @param familyKey Clé de la famille (ex: 'freinage', 'filtres')
+   */
+  async generateByFamily(familyKey: string): Promise<GenerationResult> {
+    const startTime = Date.now();
+    const _runId = crypto.randomUUID(); // Reserved for future logging
+
+    this.logger.log(`📦 Generating sitemap for family: ${familyKey}...`);
+
+    const familyConfig = FAMILY_CLUSTERS[familyKey];
+    if (!familyConfig) {
+      this.logger.error(`❌ Unknown family: ${familyKey}`);
+      return {
+        success: false,
+        bucket: 'stable' as TemperatureBucket,
+        urlCount: 0,
+        filesGenerated: 0,
+        durationMs: Date.now() - startTime,
+        filePaths: [],
+        error: `Unknown family: ${familyKey}`,
+      };
+    }
+
+    try {
+      // 1. Récupérer toutes les gamme names de cette famille
+      const allGammeNames = familyConfig.subcategories.flatMap(
+        (s) => s.gamme_names,
+      );
+
+      // 2. Récupérer les pg_id correspondants depuis pieces_gamme (INDEX uniquement)
+      const { data: gammes, error: gammeError } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id')
+        .in('pg_name', allGammeNames)
+        .eq('pg_display', '1')
+        .eq('pg_relfollow', '1'); // INDEX uniquement
+
+      if (gammeError) {
+        throw new Error(`Gamme lookup failed: ${gammeError.message}`);
+      }
+
+      const pgIds = (gammes || []).map((g) => String(g.pg_id));
+
+      if (pgIds.length === 0) {
+        this.logger.warn(`⚠️ No gammes found for family ${familyKey}`);
+        return {
+          success: true,
+          bucket: 'stable' as TemperatureBucket,
+          urlCount: 0,
+          filesGenerated: 0,
+          durationMs: Date.now() - startTime,
+          filePaths: [],
+        };
+      }
+
+      // 3. Récupérer TOUTES les pièces depuis __sitemap_p_link (pagination)
+      interface PieceV9 {
+        map_pg_alias: string;
+        map_pg_id: string;
+        map_marque_alias: string;
+        map_marque_id: string;
+        map_modele_alias: string;
+        map_modele_id: string;
+        map_type_alias: string;
+        map_type_id: string;
+      }
+
+      const allPieces: PieceV9[] = [];
+      const PAGE_SIZE = 1000;
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: pieces, error: piecesError } = await this.supabase
+          .from('__sitemap_p_link')
+          .select(
+            'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
+          )
+          .in('map_pg_id', pgIds)
+          .gt('map_has_item', 5) // Filtre thin content
+          .range(offset, offset + PAGE_SIZE - 1);
+
+        if (piecesError) {
+          throw new Error(`Pieces fetch failed: ${piecesError.message}`);
+        }
+
+        if (pieces && pieces.length > 0) {
+          allPieces.push(...pieces);
+          offset += PAGE_SIZE;
+          hasMore = pieces.length === PAGE_SIZE;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      this.logger.log(
+        `   📊 Found ${allPieces.length.toLocaleString()} URLs for ${familyKey}`,
+      );
+
+      // 4. Construire les SitemapUrl
+      const urls: SitemapUrl[] = allPieces.map((p) => ({
+        url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+        page_type: 'product',
+        changefreq: 'weekly',
+        priority: '0.6',
+        last_modified_at: null,
+      }));
+
+      // 4.5 Dédupliquer inter-familles (éviter qu'une URL apparaisse dans plusieurs sitemaps)
+      let uniqueUrls = urls;
+      if (this.processedUrlsCache) {
+        const beforeCount = urls.length;
+        uniqueUrls = urls.filter((u) => {
+          if (this.processedUrlsCache!.has(u.url)) {
+            return false; // URL déjà traitée dans famille précédente
+          }
+          this.processedUrlsCache!.add(u.url);
+          return true;
+        });
+        const dedupedCount = beforeCount - uniqueUrls.length;
+        if (dedupedCount > 0) {
+          this.logger.log(
+            `   🔄 Deduplicated ${dedupedCount} inter-family URLs`,
+          );
+        }
+      }
+
+      // 5. Écrire le(s) fichier(s) XML avec sharding si >50k URLs
+      const filePaths: string[] = [];
+      const numShards = Math.ceil(uniqueUrls.length / this.MAX_URLS_PER_FILE);
+
+      for (let shard = 0; shard < numShards; shard++) {
+        const shardUrls = uniqueUrls.slice(
+          shard * this.MAX_URLS_PER_FILE,
+          (shard + 1) * this.MAX_URLS_PER_FILE,
+        );
+
+        const fileName =
+          numShards === 1
+            ? `sitemap-${familyKey}.xml`
+            : `sitemap-${familyKey}-${shard + 1}.xml`;
+
+        const filePath = await this.writeFamilySitemapFile(
+          familyKey,
+          fileName,
+          shardUrls,
+        );
+        filePaths.push(filePath);
+
+        this.logger.log(
+          `   ✓ Generated ${fileName} (${shardUrls.length.toLocaleString()} URLs)`,
+        );
+      }
+
+      const durationMs = Date.now() - startTime;
+
+      return {
+        success: true,
+        bucket: 'stable' as TemperatureBucket, // Pour compatibilité avec le type existant
+        urlCount: uniqueUrls.length,
+        filesGenerated: filePaths.length,
+        durationMs,
+        filePaths,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `❌ Failed to generate family ${familyKey}: ${errorMessage}`,
+      );
+
+      return {
+        success: false,
+        bucket: 'stable' as TemperatureBucket,
+        urlCount: 0,
+        filesGenerated: 0,
+        durationMs: Date.now() - startTime,
+        filePaths: [],
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Écrit un fichier sitemap pour une famille thématique
+   */
+  private async writeFamilySitemapFile(
+    familyKey: string,
+    fileName: string,
+    urls: SitemapUrl[],
+  ): Promise<string> {
+    const dirPath = path.join(this.OUTPUT_DIR, 'familles');
+    const filePath = path.join(dirPath, fileName);
+
+    // Créer le répertoire si nécessaire
+    await fs.mkdir(dirPath, { recursive: true });
+
+    // Construire le XML
+    const urlEntries = urls
+      .map((u) => {
+        const loc = u.url.startsWith('http')
+          ? u.url
+          : `${this.BASE_URL}${u.url}`;
+        const lastmod = u.last_modified_at
+          ? new Date(u.last_modified_at).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0];
+
+        return `  <url>
+    <loc>${this.xmlEscape(loc)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${u.changefreq || 'weekly'}</changefreq>
+    <priority>${u.priority || '0.6'}</priority>
+  </url>`;
+      })
+      .join('\n');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlEntries}
+</urlset>`;
+
+    await fs.writeFile(filePath, xml, 'utf8');
+    return filePath;
+  }
+
+  /**
+   * 🚀 Génère TOUS les sitemaps par famille thématique
+   * Remplace la génération par température
+   */
+  async generateAllByFamily(): Promise<AllBucketsResult> {
+    const startTime = Date.now();
+    this.logger.log('🚀 Starting V10 FAMILY-BASED sitemap generation...');
+
+    // Reset caches
+    this.indexPgIdsCache = null;
+    this.processedUrlsCache = new Set<string>(); // Déduplication inter-familles
+
+    const results: GenerationResult[] = [];
+    const allFilePaths: string[] = [];
+
+    // 🧹 Nettoyer les fichiers obsolètes
+    await this.cleanupObsoleteFiles();
+
+    try {
+      // 1. Sitemaps statiques (comme avant)
+      this.logger.log('🏠 [1/8] Generating sitemap-racine.xml...');
+      const racine = await this.generateRacineSitemap();
+      if (racine) allFilePaths.push(racine);
+
+      this.logger.log('📂 [2/8] Generating sitemap-categories.xml...');
+      const categories = await this.generateCategoriesSitemap();
+      if (categories) allFilePaths.push(categories);
+
+      this.logger.log('🚗 [3/8] Generating vehicules by brand (~30 files)...');
+      const vehiculesResult = await this.generateVehiculesByBrand();
+      if (vehiculesResult.success) {
+        allFilePaths.push(...vehiculesResult.filePaths);
+        this.logger.log(
+          `   ✅ ${vehiculesResult.brandCount} brand sitemaps: ${vehiculesResult.totalUrls} URLs`,
+        );
+      }
+
+      this.logger.log('📝 [4/8] Generating sitemap-blog.xml...');
+      const blog = await this.generateBlogSitemap();
+      if (blog) allFilePaths.push(blog);
+
+      this.logger.log('📄 [5/8] Generating sitemap-pages.xml...');
+      const pages = await this.generatePagesSitemap();
+      if (pages) allFilePaths.push(pages);
+
+      this.logger.log('🩺 [6/8] Generating sitemap-diagnostic.xml...');
+      const diagnostic = await this.generateDiagnosticSitemap();
+      if (diagnostic) allFilePaths.push(diagnostic);
+
+      this.logger.log('📖 [7/8] Generating sitemap-reference.xml...');
+      const reference = await this.generateReferenceSitemap();
+      if (reference) allFilePaths.push(reference);
+
+      // 2. Sitemaps par FAMILLE (19 familles)
+      this.logger.log(
+        `📦 [8/8] Generating ${this.PRODUCT_FAMILY_KEYS.length} family sitemaps...`,
+      );
+
+      for (let i = 0; i < this.PRODUCT_FAMILY_KEYS.length; i++) {
+        const familyKey = this.PRODUCT_FAMILY_KEYS[i];
+        this.logger.log(
+          `   [${i + 1}/${this.PRODUCT_FAMILY_KEYS.length}] ${familyKey}...`,
+        );
+
+        const result = await this.generateByFamily(familyKey);
+        results.push(result);
+        allFilePaths.push(...result.filePaths);
+      }
+    } catch (error) {
+      this.logger.error(`❌ Fatal error during generation:`, error);
+    }
+
+    // Générer l'index principal avec TOUS les fichiers
+    const indexPath = await this.generateSitemapIndexFromPaths(allFilePaths);
+
+    const totalDurationMs = Date.now() - startTime;
+    const totalUrls = results.reduce((sum, r) => sum + r.urlCount, 0);
+    const totalFiles = allFilePaths.length;
+
+    this.logger.log(`✅ V10 FAMILY generation complete:`);
     this.logger.log(`   Total URLs: ${totalUrls.toLocaleString()}`);
     this.logger.log(`   Total Files: ${totalFiles}`);
     this.logger.log(`   Duration: ${totalDurationMs}ms`);
