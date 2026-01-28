@@ -1,8 +1,7 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
-import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 Import pour vehicleInfo
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -18,6 +17,7 @@ import { PiecesCleanController } from './controllers/pieces-clean.controller';
 import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
 import { VehicleHierarchyController } from './controllers/vehicle-hierarchy.controller'; // 🚗 API hiérarchie véhicules
+import { CompatibilityController } from './controllers/compatibility.controller'; // 🎯 API compatibilité pièce/véhicule
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
@@ -38,8 +38,11 @@ import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
+import { SeoTemplateService } from './services/seo-template.service'; // ⚡ SEO processing NestJS (RPC V4)
 import { HomepageRpcService } from './services/homepage-rpc.service';
 import { CacheWarmingService } from './services/cache-warming.service';
+import { CompatibilityService } from './services/compatibility.service'; // 🎯 Service compatibilité pièce/véhicule
+import { PopularGammesService } from './services/popular-gammes.service'; // 🔗 Service maillage SEO (découplage Catalog↔Vehicles)
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -69,7 +72,6 @@ import { CacheWarmingService } from './services/cache-warming.service';
     DatabaseModule,
     CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
-    forwardRef(() => VehiclesModule), // 🚗 Import pour vehicleInfo (forwardRef pour éviter dépendance circulaire)
   ],
   controllers: [
     CatalogController,
@@ -83,6 +85,7 @@ import { CacheWarmingService } from './services/cache-warming.service';
     PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
     VehicleHierarchyController, // 🚗 API hiérarchie véhicules pour pages motorisation
+    CompatibilityController, // 🎯 API compatibilité pièce/véhicule (Pack Confiance V2)
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
@@ -102,12 +105,18 @@ import { CacheWarmingService } from './services/cache-warming.service';
     PricingService,
     // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)
     OemPlatformMappingService,
-    // ⚡ UNIFIED PAGE DATA - RPC V3 (1 requête avec SEO intégré PostgreSQL)
+    // ⚡ SEO TEMPLATE SERVICE - Processing NestJS avec cache Redis (RPC V4)
+    SeoTemplateService,
+    // ⚡ UNIFIED PAGE DATA - RPC V4 (1 requête + SEO NestJS)
     UnifiedPageDataService,
     // 🏠 HOMEPAGE RPC - 4 appels API en 1
     HomepageRpcService,
     // 🔥 CACHE WARMING - Préchauffage au démarrage
     CacheWarmingService,
+    // 🎯 COMPATIBILITY SERVICE - Vérification compatibilité pièce/véhicule (Pack Confiance V2)
+    CompatibilityService,
+    // 🔗 POPULAR GAMMES SERVICE - Maillage SEO (découplage Catalog↔Vehicles)
+    PopularGammesService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
@@ -122,8 +131,11 @@ import { CacheWarmingService } from './services/cache-warming.service';
     GammeUnifiedService, // ✅ Exporté pour GammeRestModule
     VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
     OemPlatformMappingService, // 🔧 Exporté pour filtrage OEM SEO
-    UnifiedPageDataService, // ✅ Exporté pour GammeRestModule (RPC V3)
+    SeoTemplateService, // ⚡ Exporté pour traitement SEO externe
+    UnifiedPageDataService, // ✅ Exporté pour GammeRestModule (RPC V4)
     HomepageRpcService, // 🏠 Exporté pour homepage RPC
+    CompatibilityService, // 🎯 Exporté pour Pack Confiance V2
+    PopularGammesService, // 🔗 Exporté pour VehiclesModule (maillage SEO)
   ],
 })
 export class CatalogModule {
