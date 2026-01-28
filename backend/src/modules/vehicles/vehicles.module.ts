@@ -37,6 +37,18 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
 // Services SEO
 import { BrandSeoService } from './services/seo/brand-seo.service';
 
+// Services Meta (extrait de VehiclesService)
+import { VehicleMetaService } from './services/vehicle-meta.service';
+
+// Services Bestsellers (extrait de VehiclesService)
+import { BrandBestsellersService } from './services/brand-bestsellers.service';
+
+// Services Motor Codes (extrait de VehiclesService)
+import { VehicleMotorCodesService } from './services/vehicle-motor-codes.service';
+
+// Services Profile (extrait de VehiclesService)
+import { VehicleProfileService } from './services/vehicle-profile.service';
+
 // Service RPC optimisé (LCP)
 import { VehicleRpcService } from './services/vehicle-rpc.service';
 import { BrandRpcService } from './services/brand-rpc.service';
@@ -90,6 +102,18 @@ import { CacheModule as RedisCacheModule } from '../cache/cache.module';
     // SEO
     BrandSeoService,
 
+    // Meta (extrait de VehiclesService)
+    VehicleMetaService,
+
+    // Bestsellers (extrait de VehiclesService)
+    BrandBestsellersService,
+
+    // Motor Codes (extrait de VehiclesService)
+    VehicleMotorCodesService,
+
+    // Profile (extrait de VehiclesService)
+    VehicleProfileService,
+
     // RPC optimisé (LCP)
     VehicleRpcService,
     BrandRpcService,
@@ -106,6 +130,10 @@ import { CacheModule as RedisCacheModule } from '../cache/cache.module';
     VehicleCacheService,
     VehicleRpcService,
     BrandRpcService,
+    VehicleMetaService,
+    BrandBestsellersService,
+    VehicleMotorCodesService,
+    VehicleProfileService,
   ],
 })
 export class VehiclesModule {}

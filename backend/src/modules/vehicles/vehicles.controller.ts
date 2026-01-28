@@ -12,8 +12,11 @@ import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
-import { CatalogGammeService } from '../catalog/services/catalog-gamme.service';
+import { PopularGammesService } from '../catalog/services/popular-gammes.service';
 import { VehicleRpcService } from './services/vehicle-rpc.service';
+import { BrandBestsellersService } from './services/brand-bestsellers.service';
+import { VehicleMotorCodesService } from './services/vehicle-motor-codes.service';
+import { VehicleProfileService } from './services/vehicle-profile.service';
 
 // ✅ VEHICLES CONTROLLER PRINCIPAL - Pour sélecteur véhicule
 // Routes: /api/vehicles
@@ -24,8 +27,11 @@ export class VehiclesController {
   constructor(
     private readonly vehiclesService: VehiclesService,
     private readonly vehicleBrandsService: VehicleBrandsService,
-    private readonly catalogGammeService: CatalogGammeService,
+    private readonly popularGammesService: PopularGammesService,
     private readonly vehicleRpcService: VehicleRpcService,
+    private readonly brandBestsellersService: BrandBestsellersService,
+    private readonly vehicleMotorCodesService: VehicleMotorCodesService,
+    private readonly vehicleProfileService: VehicleProfileService,
   ) {}
 
   /**
@@ -179,7 +185,7 @@ export class VehiclesController {
     const limitVehiclesNum = limitVehicles ? parseInt(limitVehicles, 10) : 12;
     const limitPartsNum = limitParts ? parseInt(limitParts, 10) : 12;
 
-    return this.vehiclesService.getBrandBestsellers(
+    return this.brandBestsellersService.getBrandBestsellers(
       brandAlias,
       limitVehiclesNum,
       limitPartsNum,
@@ -210,7 +216,7 @@ export class VehiclesController {
       // Récupération parallèle des données de maillage
       const [relatedBrands, popularGammes] = await Promise.all([
         this.vehicleBrandsService.getRelatedBrands(brandIdNum, limitBrandsNum),
-        this.catalogGammeService.getPopularGammesForMaillage(limitGammesNum),
+        this.popularGammesService.getPopularGammesForMaillage(limitGammesNum),
       ]);
 
       this.logger.log(
@@ -271,7 +277,7 @@ export class VehiclesController {
     this.logger.log(
       `🔍 GET /api/vehicles/search/motor-code/${motorCode}?exact=${isExact}`,
     );
-    return this.vehiclesService.searchByMotorCode(motorCode, isExact);
+    return this.vehicleMotorCodesService.searchByMotorCode(motorCode, isExact);
   }
 
   /**
@@ -282,7 +288,7 @@ export class VehiclesController {
   async getMotorCodesByTypeId(@Param('typeId') typeId: string) {
     const typeIdNum = parseInt(typeId, 10);
     this.logger.log(`🔧 GET /api/vehicles/types/${typeIdNum}/motor-codes`);
-    return this.vehiclesService.getMotorCodesByTypeId(typeIdNum);
+    return this.vehicleMotorCodesService.getMotorCodesByTypeId(typeIdNum);
   }
 
   /**
@@ -293,7 +299,7 @@ export class VehiclesController {
   async getMineCodesByTypeId(@Param('typeId') typeId: string) {
     const typeIdNum = parseInt(typeId, 10);
     this.logger.log(`🔧 GET /api/vehicles/types/${typeIdNum}/mine-codes`);
-    return this.vehiclesService.getMineCodesByTypeId(typeIdNum);
+    return this.vehicleMotorCodesService.getMineCodesByTypeId(typeIdNum);
   }
 
   /**
@@ -305,7 +311,7 @@ export class VehiclesController {
   async getVehicleFullDetails(@Param('typeId') typeId: string) {
     const typeIdNum = parseInt(typeId, 10);
     this.logger.log(`🚗 GET /api/vehicles/types/${typeIdNum}/full`);
-    return this.vehiclesService.getVehicleFullDetails(typeIdNum);
+    return this.vehicleProfileService.getVehicleFullDetails(typeIdNum);
   }
 
   // ========================================
