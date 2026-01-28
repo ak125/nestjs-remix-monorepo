@@ -1,19 +1,10 @@
 -- ============================================================================
--- RPC Function: get_homepage_data_optimized
+-- Migration: Fix stats.total_gammes in get_homepage_data_optimized
 -- ============================================================================
--- Purpose: Récupère TOUTES les données de la page d'accueil en 1 seule requête RPC
---          au lieu de 4 appels API séquentiels
+-- Problem: stats.total_gammes was counting ALL gammes in pieces_gamme (4205)
+--          instead of only gammes linked to catalog_gamme (~230)
 --
--- Remplace:
---   1. /api/catalog/equipementiers (équipementiers premium)
---   2. /api/blog/advice?limit=6 (articles conseils populaires)
---   3. /api/catalog/gammes/hierarchy (familles + gammes catalogue)
---   4. /api/brands/brands-logos (marques automobiles avec logos)
---
--- Performance cible: <150ms au lieu de 400-800ms
---
--- Usage depuis NestJS:
---   const { data } = await this.supabase.rpc('get_homepage_data_optimized');
+-- Fix: Use COUNT(DISTINCT) on catalog_gamme joined with pieces_gamme
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION get_homepage_data_optimized()
@@ -166,6 +157,7 @@ BEGIN
 
     -- ========================================
     -- SECTION 5: STATISTIQUES GLOBALES
+    -- FIX: total_gammes now counts only catalog-linked gammes
     -- ========================================
     'stats', jsonb_build_object(
       'total_equipementiers', (SELECT COUNT(DISTINCT pm_name) FROM pieces_marque WHERE pm_display = '1'),
@@ -185,23 +177,7 @@ BEGIN
 END;
 $$;
 
--- ============================================================================
--- PERMISSIONS
--- ============================================================================
+-- Permissions (réaffirmer pour être sûr)
 GRANT EXECUTE ON FUNCTION get_homepage_data_optimized() TO authenticated;
 GRANT EXECUTE ON FUNCTION get_homepage_data_optimized() TO anon;
 GRANT EXECUTE ON FUNCTION get_homepage_data_optimized() TO service_role;
-
--- ============================================================================
--- DOCUMENTATION
--- ============================================================================
-COMMENT ON FUNCTION get_homepage_data_optimized IS
-  'RPC optimisée page accueil - Combine 4 appels API en 1.
-   Performance: <150ms vs 400-800ms.
-   Retourne: equipementiers, blog_articles, catalog (families+gammes), brands, stats';
-
--- ============================================================================
--- TEST (à exécuter dans Supabase SQL Editor)
--- ============================================================================
--- SELECT * FROM get_homepage_data_optimized();
--- Vérifie: equipementiers > 0, blog_articles = 6, catalog.families > 0, brands > 0
