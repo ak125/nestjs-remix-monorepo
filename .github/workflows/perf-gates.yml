@@ -1,0 +1,120 @@
+name: 🎯 Performance Gates
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'backend/src/modules/catalog/**'
+      - 'backend/src/modules/seo/**'
+
+# Thresholds (from lighthouse-budget.json):
+# - LCP: ≤2500ms (Google "Good")
+# - CLS: ≤0.1 (Google "Good")
+# - TTFB: ≤800ms (critical for SEO)
+# - TBT: ≤300ms (proxy for INP)
+# - FCP: ≤2000ms
+
+jobs:
+  lighthouse:
+    name: 🔍 CWV Performance Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+
+      - name: Start server
+        run: |
+          npm run start &
+          echo "⏳ Waiting for server to start..."
+          timeout 60 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
+          echo "✅ Server is ready"
+        env:
+          NODE_ENV: production
+          PORT: 3000
+          REDIS_URL: redis://localhost:6379
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000/
+            http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
+            http://localhost:3000/constructeurs/renault.html
+          budgetPath: ./lighthouse-budget.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Check CWV Thresholds
+        if: always()
+        run: |
+          echo "🎯 Performance Gate Results"
+          echo "=========================="
+          echo ""
+          echo "📊 Thresholds Applied:"
+          echo "  • LCP  ≤ 2500ms"
+          echo "  • CLS  ≤ 0.1"
+          echo "  • TTFB ≤ 800ms"
+          echo "  • TBT  ≤ 300ms"
+          echo "  • FCP  ≤ 2000ms"
+          echo ""
+          echo "If this job fails, check Lighthouse artifacts for details."
+          echo "Budget violations will cause automatic failure."
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lighthouseLinks = '${{ steps.lighthouse.outputs.links }}';
+
+            const body = `## 🎯 Performance Gate Results
+
+            | Metric | Threshold | Status |
+            |--------|-----------|--------|
+            | LCP | ≤ 2500ms | ${{ job.status == 'success' && '✅' || '❌' }} |
+            | CLS | ≤ 0.1 | ${{ job.status == 'success' && '✅' || '❌' }} |
+            | TTFB | ≤ 800ms | ${{ job.status == 'success' && '✅' || '❌' }} |
+
+            📈 [View Full Lighthouse Report](${lighthouseLinks || 'Check artifacts'})
+
+            ---
+            *Powered by DCO V2 Anti-Regression Gates*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

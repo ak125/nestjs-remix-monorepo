@@ -7,6 +7,62 @@ const maxWaitTime = 120000; // 2 minutes
 const checkIntervalMs = 500; // Check every 500ms
 let elapsed = 0;
 
+// 🧹 Auto-cleanup old processes to prevent port conflicts
+function cleanupOldProcesses() {
+  console.log('🧹 Checking for old dev processes...');
+
+  const currentPid = process.pid;
+  const parentPid = process.ppid;
+
+  // Patterns of processes to clean up (but not our own)
+  const processPatterns = [
+    'node dist/main',
+    'nodemon.*dist',
+  ];
+
+  try {
+    // Check if port 3000 is already in use
+    const portCheck = execSync('ss -tlnp | grep ":3000 " || true', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    }).trim();
+
+    if (portCheck) {
+      console.log('⚠️  Port 3000 is in use, cleaning up old processes...');
+
+      processPatterns.forEach(pattern => {
+        try {
+          const pids = execSync(`pgrep -f "${pattern}" || true`, { encoding: 'utf-8' })
+            .trim()
+            .split('\n')
+            .filter(pid => {
+              const pidNum = parseInt(pid);
+              return pid && pidNum !== currentPid && pidNum !== parentPid;
+            });
+
+          pids.forEach(pid => {
+            if (pid) {
+              console.log(`   Killing old process PID ${pid} (${pattern})`);
+              execSync(`kill -9 ${pid} 2>/dev/null || true`);
+            }
+          });
+        } catch (e) {
+          // Ignore errors, process might already be dead
+        }
+      });
+
+      // Wait for port to be released
+      console.log('   Waiting for port to be released...');
+      execSync('sleep 2');
+      console.log('✅ Old processes cleaned up');
+    } else {
+      console.log('✅ Port 3000 is free');
+    }
+  } catch (error) {
+    console.log('⚠️  Could not check port status:', error.message);
+  }
+}
+
 // 🚀 Auto-start Redis with Docker
 async function ensureRedisRunning() {
   console.log('🔍 Checking Redis status...');
@@ -121,7 +177,10 @@ function watchEnvFile() {
 
 // Main startup
 (async () => {
-  // First, ensure Redis is running
+  // First, cleanup any old processes blocking port 3000
+  cleanupOldProcesses();
+
+  // Then, ensure Redis is running
   await ensureRedisRunning();
 
   // Activer la surveillance du fichier .env

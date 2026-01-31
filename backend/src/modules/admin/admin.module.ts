@@ -27,11 +27,13 @@ import { ReportingController } from './controllers/reporting.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
-import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO
+import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO (DEPRECATED)
 import { AdminGammesSeoController } from './controllers/admin-gammes-seo.controller'; // 🎯 Gammes SEO G-Level
+import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
+import { SeoCockpitService } from './services/seo-cockpit.service'; // 🚀 Service SEO Cockpit
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -47,6 +49,7 @@ import { OrdersModule } from '../orders/orders.module';
 import { StaffModule } from '../staff/staff.module';
 import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
+import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 
 @Module({
   imports: [
@@ -56,6 +59,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     StaffModule,
     ProductsModule,
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
+    SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
   ],
   controllers: [
     ConfigurationController,
@@ -72,8 +76,9 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     UserManagementController,
     AdminStaffController,
     AdminProductsController,
-    AdminSeoController, // 📊 Dashboard monitoring SEO
+    AdminSeoController, // 📊 Dashboard monitoring SEO (DEPRECATED - use SeoCockpitController)
     AdminGammesSeoController, // 🎯 Gammes SEO G-Level classification
+    SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
   ],
   providers: [
     ConfigurationService,
@@ -87,6 +92,7 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
     AdminGammesSeoService, // 🎯 Service Gammes SEO
     GammeSeoThresholdsService, // 🎯 Seuils Gammes SEO
     GammeSeoAuditService, // 🎯 Audit Gammes SEO
+    SeoCockpitService, // 🚀 Service SEO Cockpit Unifié
   ],
   exports: [
     ConfigurationService,

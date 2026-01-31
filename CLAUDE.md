@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Présentation des réponses
+
+**Ordre de lecture naturel :** Toujours structurer les réponses pour une lecture de haut en bas :
+- Contexte/historique en haut
+- Actions/modifications au milieu
+- Résultat final et informations importantes en bas (le plus visible)
+
+Cela permet à l'utilisateur de voir immédiatement le résultat final sans scroller.
+
 ## Project Overview
 
 This is a production-ready NestJS + Remix monorepo for an automotive parts e-commerce platform. The backend (NestJS) serves both the API and the frontend (Remix) on the same port (3000) in development and production.
