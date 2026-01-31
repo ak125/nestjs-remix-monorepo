@@ -638,13 +638,10 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(
-            `http://127.0.0.1:3000/api/orders/${orderId}/mark-paid`,
-            {
-              method: "POST",
-              credentials: "include",
-            },
-          ).then(async (response) => {
+          const promise = fetch(`/api/orders/${orderId}/mark-paid`, {
+            method: "POST",
+            credentials: "include",
+          }).then(async (response) => {
             if (!response.ok) {
               const error = await response.json();
               throw new Error(error.message || "Enregistrement échoué");
@@ -687,13 +684,10 @@ export default function OrdersRoute() {
           onClick: async () => {
             setIsLoading(true);
 
-            const promise = fetch(
-              `http://127.0.0.1:3000/api/orders/${orderId}/validate`,
-              {
-                method: "POST",
-                credentials: "include",
-              },
-            ).then(async (response) => {
+            const promise = fetch(`/api/orders/${orderId}/validate`, {
+              method: "POST",
+              credentials: "include",
+            }).then(async (response) => {
               if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.message || "Validation échouée");
@@ -735,15 +729,12 @@ export default function OrdersRoute() {
 
     setIsLoading(true);
 
-    const promise = fetch(
-      `http://127.0.0.1:3000/api/orders/${actionOrderId}/ship`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
-      },
-    ).then(async (response) => {
+    const promise = fetch(`/api/orders/${actionOrderId}/ship`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
+    }).then(async (response) => {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Expédition échouée");
@@ -779,15 +770,12 @@ export default function OrdersRoute() {
 
     setIsLoading(true);
 
-    const promise = fetch(
-      `http://127.0.0.1:3000/api/orders/${actionOrderId}/cancel`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ reason: cancelReason.trim() }),
-      },
-    ).then(async (response) => {
+    const promise = fetch(`/api/orders/${actionOrderId}/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reason: cancelReason.trim() }),
+    }).then(async (response) => {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Annulation échouée");
@@ -833,15 +821,12 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(
-            `http://127.0.0.1:3000/api/orders/${orderId}/status`,
-            {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ statusId: "3" }), // En préparation
-            },
-          ).then(async (response) => {
+          const promise = fetch(`/api/orders/${orderId}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ statusId: "3" }), // En préparation
+          }).then(async (response) => {
             if (!response.ok) {
               const error = await response.json();
               throw new Error(error.message || "Mise à jour échouée");
@@ -882,15 +867,12 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(
-            `http://127.0.0.1:3000/api/orders/${orderId}/status`,
-            {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ statusId: "4" }), // Prête
-            },
-          ).then(async (response) => {
+          const promise = fetch(`/api/orders/${orderId}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ statusId: "4" }), // Prête
+          }).then(async (response) => {
             if (!response.ok) {
               const error = await response.json();
               throw new Error(error.message || "Mise à jour échouée");
@@ -931,13 +913,10 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(
-            `http://127.0.0.1:3000/api/orders/${orderId}/deliver`,
-            {
-              method: "POST",
-              credentials: "include",
-            },
-          ).then(async (response) => {
+          const promise = fetch(`/api/orders/${orderId}/deliver`, {
+            method: "POST",
+            credentials: "include",
+          }).then(async (response) => {
             if (!response.ok) {
               const error = await response.json();
               throw new Error(error.message || "Mise à jour échouée");
