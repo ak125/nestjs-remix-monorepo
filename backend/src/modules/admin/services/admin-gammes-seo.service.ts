@@ -1936,4 +1936,120 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       return null;
     }
   }
+
+  // ====================================
+  // 📊 SECTION K - V-LEVEL CONFORMITÉ
+  // ====================================
+
+  /**
+   * Get Section K metrics for V-Level conformity dashboard
+   * Uses RPC: get_vlevel_section_k_metrics
+   */
+  async getSectionKMetrics(pgId?: number) {
+    this.logger.log(`📊 getSectionKMetrics(pgId=${pgId || 'all'})`);
+
+    try {
+      const { data, error } = await this.supabase.rpc(
+        'get_vlevel_section_k_metrics',
+        { p_pg_id: pgId || null },
+      );
+
+      if (error) {
+        this.logger.error('❌ RPC get_vlevel_section_k_metrics error:', error);
+        throw error;
+      }
+
+      const metrics = data || [];
+
+      // Calculate KPIs
+      const total = metrics.length;
+      const conformes = metrics.filter(
+        (m: { status: string }) => m.status === 'CONFORME',
+      ).length;
+      const nonConformes = total - conformes;
+
+      // Calculate global coverage
+      const totalExpected = metrics.reduce(
+        (sum: number, m: { expected_v4: number }) => sum + (m.expected_v4 || 0),
+        0,
+      );
+      const totalActual = metrics.reduce(
+        (sum: number, m: { actual_v4: number }) => sum + (m.actual_v4 || 0),
+        0,
+      );
+      const coverageGlobal =
+        totalExpected > 0
+          ? ((totalActual / totalExpected) * 100).toFixed(1)
+          : '0.0';
+
+      const kpis = {
+        total,
+        conformes,
+        nonConformes,
+        coverageGlobal,
+      };
+
+      this.logger.log(
+        `✅ Section K: ${total} gammes, ${conformes} conformes, ${nonConformes} non-conformes`,
+      );
+
+      return { metrics, kpis };
+    } catch (error) {
+      this.logger.error('❌ getSectionKMetrics error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get missing type_ids for a specific gamme (Section K drill-down)
+   */
+  async getSectionKMissingDetails(pgId: number) {
+    this.logger.log(`🔍 getSectionKMissingDetails(pgId=${pgId})`);
+
+    try {
+      // Get type_ids expected (in catalog, not covered by V2/V3)
+      // minus type_ids with V4
+      const { data, error } = await this.supabase.rpc(
+        'get_vlevel_section_k_missing',
+        { p_pg_id: pgId },
+      );
+
+      if (error) {
+        // If RPC doesn't exist, return empty array
+        this.logger.warn('⚠️ RPC get_vlevel_section_k_missing not found');
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('❌ getSectionKMissingDetails error:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get extra type_ids for a specific gamme (Section K drill-down)
+   */
+  async getSectionKExtrasDetails(pgId: number) {
+    this.logger.log(`🔍 getSectionKExtrasDetails(pgId=${pgId})`);
+
+    try {
+      // Get V4 type_ids that are not expected
+      const { data, error } = await this.supabase.rpc(
+        'get_vlevel_section_k_extras',
+        { p_pg_id: pgId },
+      );
+
+      if (error) {
+        // If RPC doesn't exist, return empty array
+        this.logger.warn('⚠️ RPC get_vlevel_section_k_extras not found');
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('❌ getSectionKExtrasDetails error:', error);
+      return [];
+    }
+  }
 }

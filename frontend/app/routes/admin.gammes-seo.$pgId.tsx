@@ -105,7 +105,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   );
 
   if (!response.ok) {
-    throw new Response("Gamme non trouvee", { status: 404 });
+    // Handle different error statuses appropriately
+    if (response.status === 401 || response.status === 403) {
+      throw new Response("Non autorise", { status: response.status });
+    }
+    if (response.status === 404) {
+      throw new Response("Gamme non trouvee", { status: 404 });
+    }
+    // For other errors, try to get error message from response
+    let errorMessage = "Erreur serveur";
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // Ignore JSON parse error
+    }
+    throw new Response(errorMessage, { status: response.status });
   }
 
   const result = await response.json();
@@ -148,7 +163,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const sectionKResponse = await fetch(
-      `${backendUrl}/api/admin/section-k/metrics?pg_id=${pgId}`,
+      `${backendUrl}/api/admin/gammes-seo/section-k/metrics?pg_id=${pgId}`,
       { headers: { Cookie: cookieHeader, "Content-Type": "application/json" } },
     );
 
@@ -161,20 +176,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       if (sectionK.metrics?.status === "NON_CONFORME") {
         if (sectionK.metrics.missing > 0) {
           const missingRes = await fetch(
-            `${backendUrl}/api/admin/section-k/${pgId}/missing`,
+            `${backendUrl}/api/admin/gammes-seo/section-k/${pgId}/missing`,
             { headers: { Cookie: cookieHeader } },
           );
           if (missingRes.ok) {
-            sectionK.missingTypeIds = await missingRes.json();
+            const missingData = await missingRes.json();
+            sectionK.missingTypeIds = missingData.data || [];
           }
         }
         if (sectionK.metrics.extras > 0) {
           const extrasRes = await fetch(
-            `${backendUrl}/api/admin/section-k/${pgId}/extras`,
+            `${backendUrl}/api/admin/gammes-seo/section-k/${pgId}/extras`,
             { headers: { Cookie: cookieHeader } },
           );
           if (extrasRes.ok) {
-            sectionK.extrasTypeIds = await extrasRes.json();
+            const extrasData = await extrasRes.json();
+            sectionK.extrasTypeIds = extrasData.data || [];
           }
         }
       }

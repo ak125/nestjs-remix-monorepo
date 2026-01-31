@@ -69,11 +69,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const apiUrl = getInternalApiUrl("");
 
   try {
-    const response = await fetch(`${apiUrl}/api/admin/section-k/metrics`, {
-      headers: {
-        Cookie: request.headers.get("Cookie") || "",
+    const response = await fetch(
+      `${apiUrl}/api/admin/gammes-seo/section-k/metrics`,
+      {
+        headers: {
+          Cookie: request.headers.get("Cookie") || "",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
