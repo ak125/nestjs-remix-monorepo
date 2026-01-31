@@ -37,6 +37,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => [
   { title: "V-Level Status - Admin" },
@@ -83,7 +84,7 @@ interface ValidationResult {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    const apiUrl = `${process.env.BACKEND_URL || "http://localhost:3000"}/api/admin/gammes-seo/v-level/global-stats`;
+    const apiUrl = `${getInternalApiUrl("")}/api/admin/gammes-seo/v-level/global-stats`;
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -206,7 +207,9 @@ export default function VLevelStatusPage() {
                 <div className="text-3xl font-bold">{stats.totalGammes}</div>
                 <p className="text-sm text-gray-500">
                   {stats.gammesWithVLevel} avec V-Level (
-                  {Math.round((stats.gammesWithVLevel / stats.totalGammes) * 100)}
+                  {Math.round(
+                    (stats.gammesWithVLevel / stats.totalGammes) * 100,
+                  )}
                   %)
                 </p>
               </CardContent>
@@ -225,10 +228,16 @@ export default function VLevelStatusPage() {
                   {stats.distribution.total}
                 </div>
                 <div className="flex gap-1 mt-1">
-                  <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-amber-100 text-amber-800"
+                  >
                     V1: {stats.distribution.v1}
                   </Badge>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800"
+                  >
                     V2: {stats.distribution.v2}
                   </Badge>
                 </div>
@@ -244,7 +253,9 @@ export default function VLevelStatusPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stats.g1Stats.coverage}%</div>
+                <div className="text-3xl font-bold">
+                  {stats.g1Stats.coverage}%
+                </div>
                 <p className="text-sm text-gray-500">
                   {stats.g1Stats.withV2}/{stats.g1Stats.total} gammes G1 avec V2
                 </p>
@@ -264,10 +275,16 @@ export default function VLevelStatusPage() {
                   {formatDate(stats.lastUpdated)}
                 </div>
                 <div className="flex gap-1 mt-1">
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800"
+                  >
                     Frais: {stats.freshness.fresh}
                   </Badge>
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  <Badge
+                    variant="secondary"
+                    className="bg-yellow-100 text-yellow-800"
+                  >
                     Perimes: {stats.freshness.stale}
                   </Badge>
                 </div>
@@ -289,11 +306,31 @@ export default function VLevelStatusPage() {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { label: "V1 - Champions Modele", count: stats.distribution.v1, color: "bg-amber-500" },
-                  { label: "V2 - Champions Gamme", count: stats.distribution.v2, color: "bg-green-500" },
-                  { label: "V3 - Challengers", count: stats.distribution.v3, color: "bg-blue-500" },
-                  { label: "V4 - Faibles", count: stats.distribution.v4, color: "bg-gray-400" },
-                  { label: "V5 - Bloc B", count: stats.distribution.v5, color: "bg-orange-500" },
+                  {
+                    label: "V1 - Champions Modele",
+                    count: stats.distribution.v1,
+                    color: "bg-amber-500",
+                  },
+                  {
+                    label: "V2 - Champions Gamme",
+                    count: stats.distribution.v2,
+                    color: "bg-green-500",
+                  },
+                  {
+                    label: "V3 - Challengers",
+                    count: stats.distribution.v3,
+                    color: "bg-blue-500",
+                  },
+                  {
+                    label: "V4 - Faibles",
+                    count: stats.distribution.v4,
+                    color: "bg-gray-400",
+                  },
+                  {
+                    label: "V5 - Bloc B",
+                    count: stats.distribution.v5,
+                    color: "bg-orange-500",
+                  },
                 ].map((level) => (
                   <div key={level.label} className="space-y-1">
                     <div className="flex justify-between text-sm">
@@ -301,7 +338,9 @@ export default function VLevelStatusPage() {
                       <span className="font-medium">
                         {level.count} (
                         {stats.distribution.total > 0
-                          ? Math.round((level.count / stats.distribution.total) * 100)
+                          ? Math.round(
+                              (level.count / stats.distribution.total) * 100,
+                            )
                           : 0}
                         %)
                       </span>
@@ -328,7 +367,8 @@ export default function VLevelStatusPage() {
                 Fraicheur des Donnees
               </CardTitle>
               <CardDescription>
-                Age des donnees V-Level (Frais: moins de 7j, Perimes: 7-30j, Anciens: plus de 30j)
+                Age des donnees V-Level (Frais: moins de 7j, Perimes: 7-30j,
+                Anciens: plus de 30j)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -374,7 +414,9 @@ export default function VLevelStatusPage() {
                   ) : (
                     <>
                       <AlertCircle className="h-5 w-5 text-red-600" />
-                      <span className="text-red-800">Violations V1 Detectees</span>
+                      <span className="text-red-800">
+                        Violations V1 Detectees
+                      </span>
                     </>
                   )}
                 </CardTitle>

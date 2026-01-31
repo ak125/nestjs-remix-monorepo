@@ -1,19 +1,25 @@
 /**
  * 📦 GESTION DE STOCK COMMERCIAL
- * 
+ *
  * Interface optimisée basée sur l'existant admin.stock.working.tsx
  * ✅ Réutilise les APIs fonctionnelles
  * ✅ Interface adaptée au contexte commercial
  * ✅ Données réelles de pieces_price
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams, Form, Link } from '@remix-run/react';
-import { 
-  Package, AlertTriangle, TrendingDown, TrendingUp,
-  History, FileText, Download, Search
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
+import {
+  Package,
+  AlertTriangle,
+  TrendingDown,
+  TrendingUp,
+  History,
+  FileText,
+  Download,
+  Search,
 } from "lucide-react";
-import { useState } from 'react';
+import { useState } from "react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
@@ -53,42 +59,45 @@ interface LoaderData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const limit = parseInt(url.searchParams.get('limit') || '20', 10);
-  const search = url.searchParams.get('search') || '';
-  const available = url.searchParams.get('available') || '';
-  const minPrice = url.searchParams.get('minPrice') || '';
-  const maxPrice = url.searchParams.get('maxPrice') || '';
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const limit = parseInt(url.searchParams.get("limit") || "20", 10);
+  const search = url.searchParams.get("search") || "";
+  const available = url.searchParams.get("available") || "";
+  const minPrice = url.searchParams.get("minPrice") || "";
+  const maxPrice = url.searchParams.get("maxPrice") || "";
 
   try {
     // Configuration API centralisée
-    const API_BASE = process.env.NODE_ENV === 'production' 
-      ? process.env.API_URL 
-      : 'http://127.0.0.1:3000';
-      
+    const API_BASE =
+      process.env.NODE_ENV === "production"
+        ? process.env.API_URL
+        : "http://127.0.0.1:3000";
+
     // Réutiliser les APIs existantes qui fonctionnent
     const statsResponse = await fetch(`${API_BASE}/api/admin/stock/stats`);
     const statsData = await statsResponse.json();
 
     // Construire l'URL pour le dashboard avec filtres
     const dashboardUrl = new URL(`${API_BASE}/api/admin/stock/dashboard`);
-    dashboardUrl.searchParams.set('page', page.toString());
-    dashboardUrl.searchParams.set('limit', limit.toString());
-    if (search) dashboardUrl.searchParams.set('search', search);
-    if (available) dashboardUrl.searchParams.set('available', available);
-    if (minPrice) dashboardUrl.searchParams.set('minPrice', minPrice);
-    if (maxPrice) dashboardUrl.searchParams.set('maxPrice', maxPrice);
+    dashboardUrl.searchParams.set("page", page.toString());
+    dashboardUrl.searchParams.set("limit", limit.toString());
+    if (search) dashboardUrl.searchParams.set("search", search);
+    if (available) dashboardUrl.searchParams.set("available", available);
+    if (minPrice) dashboardUrl.searchParams.set("minPrice", minPrice);
+    if (maxPrice) dashboardUrl.searchParams.set("maxPrice", maxPrice);
 
     const dashboardResponse = await fetch(dashboardUrl.toString());
     const dashboardData = await dashboardResponse.json();
 
     return json({
-      stats: statsData.success ? statsData.data : { 
-        availableItems: 0, 
-        unavailableItems: 0, 
-        lowStockItems: 0,
-        totalItems: 0 
-      },
+      stats: statsData.success
+        ? statsData.data
+        : {
+            availableItems: 0,
+            unavailableItems: 0,
+            lowStockItems: 0,
+            totalItems: 0,
+          },
       items: dashboardData.success ? dashboardData.data.items : [],
       totalItems: dashboardData.success ? dashboardData.data.totalItems : 0,
       currentPage: page,
@@ -96,47 +105,53 @@ export async function loader({ request }: LoaderFunctionArgs) {
       filters: { search, available, minPrice, maxPrice },
     });
   } catch (error) {
-    console.error('Erreur chargement stock commercial:', error);
+    console.error("Erreur chargement stock commercial:", error);
     return json({
-      stats: { availableItems: 0, unavailableItems: 0, lowStockItems: 0, totalItems: 0 },
+      stats: {
+        availableItems: 0,
+        unavailableItems: 0,
+        lowStockItems: 0,
+        totalItems: 0,
+      },
       items: [],
       totalItems: 0,
       currentPage: 1,
       limit: 20,
-      filters: { search: '', available: '', minPrice: '', maxPrice: '' },
+      filters: { search: "", available: "", minPrice: "", maxPrice: "" },
     });
   }
 }
 
 export default function CommercialStockIndex() {
-  const { stats, items, totalItems, currentPage, limit, filters } = useLoaderData<LoaderData>();
+  const { stats, items, totalItems, currentPage, limit, filters } =
+    useLoaderData<LoaderData>();
   const [searchParams] = useSearchParams();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const formatPrice = (price: string) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(parseFloat(price));
   };
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('fr-FR').format(num);
+    return new Intl.NumberFormat("fr-FR").format(num);
   };
 
   const getStockStatus = (item: StockItem) => {
-    if (item.pri_dispo === '0') {
-      return { label: "Rupture", color: 'error', };
+    if (item.pri_dispo === "0") {
+      return { label: "Rupture", color: "error" };
     }
     if (parseFloat(item.pri_marge) < 20) {
-      return { label: "Marge faible", color: 'orange', };
+      return { label: "Marge faible", color: "orange" };
     }
-    return { label: "Disponible", color: 'success', };
+    return { label: "Disponible", color: "success" };
   };
 
   const handleExport = () => {
     // Logique d'export basée sur l'API existante
-    window.open(`http://localhost:3000/api/admin/stock/health`, '_blank');
+    window.open(`http://127.0.0.1:3000/api/admin/stock/health`, "_blank");
   };
 
   return (
@@ -168,8 +183,12 @@ export default function CommercialStockIndex() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Produits</p>
-              <p className="text-2xl font-bold">{formatNumber(stats.totalItems || totalItems)}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Total Produits
+              </p>
+              <p className="text-2xl font-bold">
+                {formatNumber(stats.totalItems || totalItems)}
+              </p>
             </div>
             <Package className="h-8 w-8 text-blue-500" />
           </div>
@@ -179,20 +198,22 @@ export default function CommercialStockIndex() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-700">Disponibles</p>
-              <p className="text-2xl font-bold text-green-700">{formatNumber(stats.availableItems)}</p>
+              <p className="text-2xl font-bold text-green-700">
+                {formatNumber(stats.availableItems)}
+              </p>
             </div>
             <TrendingUp className="h-8 w-8 text-green-600" />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Prêt à la vente
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Prêt à la vente</p>
         </Card>
 
         <Card className="p-6 border-red-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-red-700">Indisponibles</p>
-              <p className="text-2xl font-bold text-red-700">{formatNumber(stats.unavailableItems)}</p>
+              <p className="text-2xl font-bold text-red-700">
+                {formatNumber(stats.unavailableItems)}
+              </p>
             </div>
             <AlertTriangle className="h-8 w-8 text-red-600" />
           </div>
@@ -204,14 +225,16 @@ export default function CommercialStockIndex() {
         <Card className="p-6 border-yellow-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-yellow-700">Marge &lt; 20%</p>
-              <p className="text-2xl font-bold text-yellow-700">{formatNumber(stats.lowStockItems)}</p>
+              <p className="text-sm font-medium text-yellow-700">
+                Marge &lt; 20%
+              </p>
+              <p className="text-2xl font-bold text-yellow-700">
+                {formatNumber(stats.lowStockItems)}
+              </p>
             </div>
             <TrendingDown className="h-8 w-8 text-yellow-600" />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Attention rentabilité
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Attention rentabilité</p>
         </Card>
       </div>
 
@@ -281,7 +304,7 @@ export default function CommercialStockIndex() {
                     onChange={(e) => {
                       if (e.target.checked) {
                         setSelectedItems(
-                          new Set(items.map((item) => item.pri_piece_id))
+                          new Set(items.map((item) => item.pri_piece_id)),
                         );
                       } else {
                         setSelectedItems(new Set());
@@ -289,13 +312,27 @@ export default function CommercialStockIndex() {
                     }}
                   />
                 </th>
-                <th className="text-left p-4 font-medium text-gray-700">Référence</th>
-                <th className="text-left p-4 font-medium text-gray-700">Description</th>
-                <th className="text-right p-4 font-medium text-gray-700">Prix HT</th>
-                <th className="text-right p-4 font-medium text-gray-700">Prix TTC</th>
-                <th className="text-right p-4 font-medium text-gray-700">Marge</th>
-                <th className="text-center p-4 font-medium text-gray-700">Statut</th>
-                <th className="text-right p-4 font-medium text-gray-700">Actions</th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Référence
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Description
+                </th>
+                <th className="text-right p-4 font-medium text-gray-700">
+                  Prix HT
+                </th>
+                <th className="text-right p-4 font-medium text-gray-700">
+                  Prix TTC
+                </th>
+                <th className="text-right p-4 font-medium text-gray-700">
+                  Marge
+                </th>
+                <th className="text-center p-4 font-medium text-gray-700">
+                  Statut
+                </th>
+                <th className="text-right p-4 font-medium text-gray-700">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -303,11 +340,11 @@ export default function CommercialStockIndex() {
                 items.map((item) => {
                   const status = getStockStatus(item);
                   const isSelected = selectedItems.has(item.pri_piece_id);
-                  
+
                   return (
-                    <tr 
-                      key={item.pri_piece_id} 
-                      className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-primary/5' : ''}`}
+                    <tr
+                      key={item.pri_piece_id}
+                      className={`border-b hover:bg-gray-50 ${isSelected ? "bg-primary/5" : ""}`}
                     >
                       <td className="p-4">
                         <input
@@ -347,27 +384,37 @@ export default function CommercialStockIndex() {
                         <div className="font-semibold">
                           {parseFloat(item.pri_marge).toFixed(1)}%
                         </div>
-                        <div className={`text-xs ${
-                          parseFloat(item.pri_marge) < 20 ? 'text-red-600' :
-                          parseFloat(item.pri_marge) > 50 ? 'text-green-600' : 'text-yellow-600'
-                        }`}>
-                          {parseFloat(item.pri_marge) < 20 ? 'Faible' :
-                           parseFloat(item.pri_marge) > 50 ? 'Élevée' : 'Normale'}
+                        <div
+                          className={`text-xs ${
+                            parseFloat(item.pri_marge) < 20
+                              ? "text-red-600"
+                              : parseFloat(item.pri_marge) > 50
+                                ? "text-green-600"
+                                : "text-yellow-600"
+                          }`}
+                        >
+                          {parseFloat(item.pri_marge) < 20
+                            ? "Faible"
+                            : parseFloat(item.pri_marge) > 50
+                              ? "Élevée"
+                              : "Normale"}
                         </div>
                       </td>
                       <td className="p-4 text-center">
-                        <Badge className={status.color}>
-                          {status.label}
-                        </Badge>
+                        <Badge className={status.color}>{status.label}</Badge>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <Link to={`/commercial/products/${item.pri_piece_id}`}>
+                          <Link
+                            to={`/commercial/products/${item.pri_piece_id}`}
+                          >
                             <Button variant="secondary" size="sm">
                               <FileText className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Link to={`/commercial/stock/${item.pri_piece_id}/history`}>
+                          <Link
+                            to={`/commercial/stock/${item.pri_piece_id}/history`}
+                          >
                             <Button variant="secondary" size="sm">
                               <History className="h-4 w-4" />
                             </Button>
@@ -392,28 +439,33 @@ export default function CommercialStockIndex() {
         {totalItems > limit && (
           <div className="p-4 border-t flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Affichage de {(currentPage - 1) * limit + 1} à{' '}
-              {Math.min(currentPage * limit, totalItems)} sur {formatNumber(totalItems)} produits
+              Affichage de {(currentPage - 1) * limit + 1} à{" "}
+              {Math.min(currentPage * limit, totalItems)} sur{" "}
+              {formatNumber(totalItems)} produits
             </div>
             <div className="flex gap-2">
               {currentPage > 1 && (
                 <Link
-                  to={`?${new URLSearchParams({ 
-                    ...Object.fromEntries(searchParams), 
-                    page: (currentPage - 1).toString() 
+                  to={`?${new URLSearchParams({
+                    ...Object.fromEntries(searchParams),
+                    page: (currentPage - 1).toString(),
                   })}`}
                 >
-                  <Button variant="outline" size="sm">Précédent</Button>
+                  <Button variant="outline" size="sm">
+                    Précédent
+                  </Button>
                 </Link>
               )}
               {currentPage * limit < totalItems && (
                 <Link
-                  to={`?${new URLSearchParams({ 
-                    ...Object.fromEntries(searchParams), 
-                    page: (currentPage + 1).toString() 
+                  to={`?${new URLSearchParams({
+                    ...Object.fromEntries(searchParams),
+                    page: (currentPage + 1).toString(),
                   })}`}
                 >
-                  <Button variant="outline" size="sm">Suivant</Button>
+                  <Button variant="outline" size="sm">
+                    Suivant
+                  </Button>
                 </Link>
               )}
             </div>
@@ -426,7 +478,8 @@ export default function CommercialStockIndex() {
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white shadow-lg border rounded-lg p-4">
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium">
-              {selectedItems.size} produit{selectedItems.size > 1 ? 's' : ''} sélectionné{selectedItems.size > 1 ? 's' : ''}
+              {selectedItems.size} produit{selectedItems.size > 1 ? "s" : ""}{" "}
+              sélectionné{selectedItems.size > 1 ? "s" : ""}
             </span>
             <Button size="sm" variant="outline">
               Exporter sélection

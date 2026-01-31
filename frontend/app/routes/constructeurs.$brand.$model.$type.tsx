@@ -45,6 +45,7 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -451,7 +452,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const typeParts = typeWithoutHtml.split("-");
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
 
-  const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   // ========================================
   // 🚀 APPEL RPC OPTIMISÉ (1 seul appel au lieu de 4)

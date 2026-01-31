@@ -31,18 +31,26 @@
  *
  * @meta noindex, nofollow - Admin only
  */
-import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, Link, Form } from '@remix-run/react';
-import { useState } from 'react';
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
-import { Alert } from '~/components/ui/alert';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { useLoaderData, Link, Form } from "@remix-run/react";
+import { useState } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => [
-  { title: 'Produits | Admin AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/products" },
+  { title: "Produits | Admin AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/admin/products",
+  },
 ];
 
 interface Product {
@@ -70,24 +78,28 @@ interface ProductsApiResponse {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const url = new URL(request.url);
-    const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '25';
-    const search = url.searchParams.get('search') || '';
+    const page = url.searchParams.get("page") || "1";
+    const limit = url.searchParams.get("limit") || "25";
+    const search = url.searchParams.get("search") || "";
 
-    console.log(`🔄 Produits Admin: Chargement page ${page}, limit ${limit}, search: "${search}"`);
+    console.log(
+      `🔄 Produits Admin: Chargement page ${page}, limit ${limit}, search: "${search}"`,
+    );
 
     // Appel API produits
-    const apiUrl = `http://localhost:3000/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+    const apiUrl = `http://127.0.0.1:3000/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
     const response = await fetch(apiUrl);
-    
+
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
     }
 
     const productsData: ProductsApiResponse = await response.json();
-    
+
     // Statistiques produits
-    const statsResponse = await fetch('http://localhost:3000/api/admin/products/stats/detailed');
+    const statsResponse = await fetch(
+      "http://127.0.0.1:3000/api/admin/products/stats/detailed",
+    );
     const statsData = statsResponse.ok ? await statsResponse.json() : null;
 
     console.log(`✅ Produits chargés: ${productsData.data.length} items`);
@@ -97,20 +109,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       stats: statsData?.stats || null,
       searchQuery: search,
     });
-
   } catch (error) {
-    console.error('❌ Erreur chargement produits:', error);
-    
+    console.error("❌ Erreur chargement produits:", error);
+
     return json({
       products: {
         success: false,
         data: [],
         pagination: { page: 1, limit: 25, total: 0, pages: 0 },
-        error: 'Erreur de chargement'
+        error: "Erreur de chargement",
       },
       stats: null,
-      searchQuery: '',
-      error: String(error)
+      searchQuery: "",
+      error: String(error),
     });
   }
 };
@@ -120,10 +131,10 @@ export default function AdminProducts() {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
   const toggleProduct = (productId: number) => {
-    setSelectedProducts(prev => 
+    setSelectedProducts((prev) =>
       prev.includes(productId)
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId],
     );
   };
 
@@ -131,7 +142,7 @@ export default function AdminProducts() {
     if (selectedProducts.length === products.data.length) {
       setSelectedProducts([]);
     } else {
-      setSelectedProducts(products.data.map(p => p.piece_id));
+      setSelectedProducts(products.data.map((p) => p.piece_id));
     }
   };
 
@@ -152,7 +163,13 @@ export default function AdminProducts() {
             </p>
           </div>
           <div className="flex space-x-3">
-            <Button className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md" variant="blue" asChild><Link to="/admin/products/new">➕ Nouveau Produit</Link></Button>
+            <Button
+              className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md"
+              variant="blue"
+              asChild
+            >
+              <Link to="/admin/products/new">➕ Nouveau Produit</Link>
+            </Button>
             <Link
               to="/admin/products/export"
               className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -166,27 +183,33 @@ export default function AdminProducts() {
         {stats && (
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bg-white overflow-hidden shadow rounded-lg p-4">
-              <dt className="text-sm font-medium text-gray-500">Total Produits</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                Total Produits
+              </dt>
               <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                {stats.totalProducts?.toLocaleString('fr-FR') || '0'}
+                {stats.totalProducts?.toLocaleString("fr-FR") || "0"}
               </dd>
             </div>
             <div className="bg-white overflow-hidden shadow rounded-lg p-4">
-              <dt className="text-sm font-medium text-gray-500">Produits Actifs</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                Produits Actifs
+              </dt>
               <dd className="mt-1 text-2xl font-semibold text-green-600">
-                {stats.activeProducts?.toLocaleString('fr-FR') || '0'}
+                {stats.activeProducts?.toLocaleString("fr-FR") || "0"}
               </dd>
             </div>
             <div className="bg-white overflow-hidden shadow rounded-lg p-4">
               <dt className="text-sm font-medium text-gray-500">Catégories</dt>
               <dd className="mt-1 text-2xl font-semibold text-blue-600">
-                {stats.totalCategories?.toLocaleString('fr-FR') || '0'}
+                {stats.totalCategories?.toLocaleString("fr-FR") || "0"}
               </dd>
             </div>
             <div className="bg-white overflow-hidden shadow rounded-lg p-4">
-              <dt className="text-sm font-medium text-gray-500">Stock Faible</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                Stock Faible
+              </dt>
               <dd className="mt-1 text-2xl font-semibold text-red-600">
-                {stats.lowStockItems?.toLocaleString('fr-FR') || '0'}
+                {stats.lowStockItems?.toLocaleString("fr-FR") || "0"}
               </dd>
             </div>
           </div>
@@ -195,9 +218,14 @@ export default function AdminProducts() {
 
       {/* Filtres et recherche */}
       <div className="bg-white shadow rounded-lg p-6">
-        <Form method="get" className="space-y-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-4">
+        <Form
+          method="get"
+          className="space-y-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-4"
+        >
           <div className="flex-1">
-            <label htmlFor="search" className="sr-only">Rechercher</label>
+            <label htmlFor="search" className="sr-only">
+              Rechercher
+            </label>
             <input
               type="text"
               name="search"
@@ -207,7 +235,13 @@ export default function AdminProducts() {
               className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
-          <Button className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" variant="blue" type="submit">\n  🔍 Rechercher\n</Button>
+          <Button
+            className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            variant="blue"
+            type="submit"
+          >
+            \n 🔍 Rechercher\n
+          </Button>
           {searchQuery && (
             <Link
               to="/admin/products"
@@ -221,17 +255,21 @@ export default function AdminProducts() {
 
       {/* Actions en lot */}
       {selectedProducts.length > 0 && (
-<Alert className="rounded-lg p-4" variant="info">
+        <Alert className="rounded-lg p-4" variant="info">
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-800">
               {selectedProducts.length} produit(s) sélectionné(s)
             </span>
             <div className="flex space-x-2">
-              <Button className="text-sm  px-3 py-1 rounded" variant="blue">\n  Activer\n</Button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="blue">
+                \n Activer\n
+              </Button>
               <button className="text-sm bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                 Désactiver
               </button>
-              <Button className="text-sm  px-3 py-1 rounded" variant="red">\n  Supprimer\n</Button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="red">
+                \n Supprimer\n
+              </Button>
             </div>
           </div>
         </Alert>
@@ -243,7 +281,7 @@ export default function AdminProducts() {
           <>
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Produits ({products.pagination.total.toLocaleString('fr-FR')})
+                Produits ({products.pagination.total.toLocaleString("fr-FR")})
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
                 Page {products.pagination.page} sur {products.pagination.pages}
@@ -257,7 +295,10 @@ export default function AdminProducts() {
                     <th className="px-6 py-3 text-left">
                       <input
                         type="checkbox"
-                        checked={selectedProducts.length === products.data.length && products.data.length > 0}
+                        checked={
+                          selectedProducts.length === products.data.length &&
+                          products.data.length > 0
+                        }
                         onChange={toggleAll}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -322,7 +363,12 @@ export default function AdminProducts() {
                         {product.piece_sku}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Actif' : 'Inactif'}\n</Badge>
+                        <Badge
+                          className="inline-flex px-2 py-1 text-xs font-semibold rounded-full "
+                          variant={product.piece_activ ? "success" : "error"}
+                        >
+                          \n {product.piece_activ ? "Actif" : "Inactif"}\n
+                        </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <Link
@@ -368,11 +414,24 @@ export default function AdminProducts() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Affichage de <span className="font-medium">{((products.pagination.page - 1) * products.pagination.limit) + 1}</span> à{' '}
+                      Affichage de{" "}
                       <span className="font-medium">
-                        {Math.min(products.pagination.page * products.pagination.limit, products.pagination.total)}
-                      </span>{' '}
-                      sur <span className="font-medium">{products.pagination.total}</span> résultats
+                        {(products.pagination.page - 1) *
+                          products.pagination.limit +
+                          1}
+                      </span>{" "}
+                      à{" "}
+                      <span className="font-medium">
+                        {Math.min(
+                          products.pagination.page * products.pagination.limit,
+                          products.pagination.total,
+                        )}
+                      </span>{" "}
+                      sur{" "}
+                      <span className="font-medium">
+                        {products.pagination.total}
+                      </span>{" "}
+                      résultats
                     </p>
                   </div>
                   <div>
@@ -385,26 +444,30 @@ export default function AdminProducts() {
                           ←
                         </Link>
                       )}
-                      
+
                       {/* Pages numbers */}
-                      {Array.from({ length: Math.min(5, products.pagination.pages) }, (_, i) => {
-                        const pageNum = Math.max(1, products.pagination.page - 2) + i;
-                        if (pageNum > products.pagination.pages) return null;
-                        
-                        return (
-                          <Link
-                            key={pageNum}
-                            to={`/admin/products?page=${pageNum}&search=${searchQuery}`}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              pageNum === products.pagination.page
-                                ? 'z-10 bg-primary/5 border-blue-500 text-blue-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            }`}
-                          >
-                            {pageNum}
-                          </Link>
-                        );
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, products.pagination.pages) },
+                        (_, i) => {
+                          const pageNum =
+                            Math.max(1, products.pagination.page - 2) + i;
+                          if (pageNum > products.pagination.pages) return null;
+
+                          return (
+                            <Link
+                              key={pageNum}
+                              to={`/admin/products?page=${pageNum}&search=${searchQuery}`}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                pageNum === products.pagination.page
+                                  ? "z-10 bg-primary/5 border-blue-500 text-blue-600"
+                                  : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                              }`}
+                            >
+                              {pageNum}
+                            </Link>
+                          );
+                        },
+                      )}
 
                       {products.pagination.page < products.pagination.pages && (
                         <Link

@@ -132,11 +132,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const category = url.searchParams.get("category")?.trim() || "";
 
     // API call to localhost for internal monorepo communication
-    const apiUrl = `http://localhost:3000/api/blog/advice?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
+    const apiUrl = `http://127.0.0.1:3000/api/blog/advice?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
 
     const [mainResponse, statsResponse] = await Promise.allSettled([
       fetch(apiUrl),
-      fetch("http://localhost:3000/api/blog/advice/stats"),
+      fetch("http://127.0.0.1:3000/api/blog/advice/stats"),
     ]);
 
     if (mainResponse.status === "rejected" || !mainResponse.value.ok) {

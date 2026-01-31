@@ -6,18 +6,31 @@
  * ✅ Style cohérent avec les autres composants admin
  */
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+  useNavigate,
+} from "@remix-run/react";
 import { useState } from "react";
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Gestion des Fournisseurs - Admin" },
-    { name: "description", content: "Interface d'administration pour la gestion des fournisseurs" },
+    {
+      name: "description",
+      content: "Interface d'administration pour la gestion des fournisseurs",
+    },
     { name: "robots", content: "noindex, nofollow" },
   ];
 };
@@ -52,14 +65,14 @@ interface Supplier {
     id: any;
     type: string;
     isActive: boolean;
-    brand?: { id: any; name: string; };
-    piece?: { id: any; reference: string; };
-    productInfo?: { 
-      id: any; 
-      designation: string; 
-      reference: string; 
-      brand: string; 
-      isActive: boolean; 
+    brand?: { id: any; name: string };
+    piece?: { id: any; reference: string };
+    productInfo?: {
+      id: any;
+      designation: string;
+      reference: string;
+      brand: string;
+      isActive: boolean;
     };
   }>;
 }
@@ -67,7 +80,7 @@ interface Supplier {
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // Utiliser requireAdmin comme les autres modules admin
   await requireAdmin({ context });
-  
+
   const url = new URL(request.url);
   const params = {
     status: url.searchParams.get("status") || undefined,
@@ -76,33 +89,33 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     page: url.searchParams.get("page") || "1",
     limit: url.searchParams.get("limit") || "20",
   };
-  
+
   try {
     console.log("🔄 Chargement des fournisseurs depuis l'API...");
-    
+
     // Utiliser l'API suppliers existante
-    const apiUrl = `http://localhost:3000/api/suppliers`;
-    
+    const apiUrl = `http://127.0.0.1:3000/api/suppliers`;
+
     const suppliersResponse = await fetch(apiUrl, {
       headers: { "Internal-Call": "true" },
     });
-    
+
     if (!suppliersResponse.ok) {
       throw new Error(`API Error: ${suppliersResponse.status}`);
     }
-    
+
     const suppliersData = await suppliersResponse.json();
     const suppliers = suppliersData.suppliers || [];
-    
+
     // Enrichir chaque fournisseur avec ses statistiques (pour les premiers 20)
     const enrichedSuppliers = await Promise.all(
       suppliers.slice(0, 20).map(async (supplier: any) => {
         try {
           const detailsResponse = await fetch(
-            `http://localhost:3000/api/suppliers/details/${supplier.id}`,
-            { headers: { "Internal-Call": "true" } }
+            `http://127.0.0.1:3000/api/suppliers/details/${supplier.id}`,
+            { headers: { "Internal-Call": "true" } },
           );
-          
+
           if (detailsResponse.ok) {
             const detailsData = await detailsResponse.json();
             return {
@@ -110,59 +123,64 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
               statistics: detailsData.data?.statistics || {
                 totalBrands: 0,
                 totalPieces: 0,
-                totalLinks: 0
+                totalLinks: 0,
               },
-              links: detailsData.data?.links || []
+              links: detailsData.data?.links || [],
             };
           } else {
             // Erreur HTTP - utiliser les statistiques par défaut
             return {
               ...supplier,
               statistics: { totalBrands: 0, totalPieces: 0, totalLinks: 0 },
-              links: []
+              links: [],
             };
           }
         } catch (error) {
-          console.warn(`Erreur enrichissement fournisseur ${supplier.id}:`, error);
+          console.warn(
+            `Erreur enrichissement fournisseur ${supplier.id}:`,
+            error,
+          );
           // Retourner le fournisseur avec des statistiques par défaut SEULEMENT en cas d'erreur
           return {
             ...supplier,
             statistics: { totalBrands: 0, totalPieces: 0, totalLinks: 0 },
-            links: []
+            links: [],
           };
         }
-      })
+      }),
     );
-    
+
     // Utiliser les données enrichies pour les calculs
-    const suppliersToProcess = enrichedSuppliers.length > 0 ? enrichedSuppliers : suppliers;
-    
+    const suppliersToProcess =
+      enrichedSuppliers.length > 0 ? enrichedSuppliers : suppliers;
+
     // Appliquer les filtres côté client pour l'instant
     let filteredSuppliers = suppliersToProcess;
-    
+
     if (params.search) {
       const search = params.search.toLowerCase();
-      filteredSuppliers = suppliersToProcess.filter((supplier: any) =>
-        supplier.name?.toLowerCase().includes(search) ||
-        supplier.companyName?.toLowerCase().includes(search) ||
-        supplier.code?.toLowerCase().includes(search)
+      filteredSuppliers = suppliersToProcess.filter(
+        (supplier: any) =>
+          supplier.name?.toLowerCase().includes(search) ||
+          supplier.companyName?.toLowerCase().includes(search) ||
+          supplier.code?.toLowerCase().includes(search),
       );
     }
-    
+
     if (params.status) {
       const isActive = params.status === "active";
-      filteredSuppliers = filteredSuppliers.filter((supplier: any) => 
-        supplier.isActive === isActive
+      filteredSuppliers = filteredSuppliers.filter(
+        (supplier: any) => supplier.isActive === isActive,
       );
     }
-    
+
     // Pagination côté client
     const page = parseInt(params.page);
     const _limit = parseInt(params.limit);
     const startIndex = (page - 1) * _limit;
     const endIndex = startIndex + _limit;
     const paginatedSuppliers = filteredSuppliers.slice(startIndex, endIndex);
-    
+
     // Calculer les statistiques
     const statistics = {
       total: suppliers.length,
@@ -170,10 +188,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       inactive: suppliers.filter((s: any) => !s.isActive).length,
       withEmail: suppliers.filter((s: any) => s.email).length,
       withWebsite: 0, // Pas de champ website dans l'API actuelle
-      countries: [...new Set(suppliers.map((s: any) => s.country).filter(Boolean))]
+      countries: [
+        ...new Set(suppliers.map((s: any) => s.country).filter(Boolean)),
+      ],
     };
-    
-    console.log(`✅ ${paginatedSuppliers.length} fournisseurs chargés (${filteredSuppliers.length} total après filtre)`);
+
+    console.log(
+      `✅ ${paginatedSuppliers.length} fournisseurs chargés (${filteredSuppliers.length} total après filtre)`,
+    );
 
     return json({
       suppliers: paginatedSuppliers,
@@ -183,10 +205,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       statistics,
       params,
     });
-    
   } catch (error) {
     console.error("❌ Erreur lors du chargement des fournisseurs:", error);
-    
+
     // Données de fallback pour éviter les erreurs d'interface
     return json({
       suppliers: [],
@@ -199,33 +220,34 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         inactive: 0,
         withEmail: 0,
         withWebsite: 0,
-        countries: []
+        countries: [],
       },
-      params
+      params,
     });
   }
 }
 
 export default function SuppliersIndex() {
-  const { suppliers, totalPages, currentPage, statistics, params } = useLoaderData<typeof loader>();
+  const { suppliers, totalPages, currentPage, statistics, params } =
+    useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [localSearch, setLocalSearch] = useState(params.search || '');
-  
+  const [localSearch, setLocalSearch] = useState(params.search || "");
+
   const _limit = parseInt(params.limit);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const newParams = new URLSearchParams(searchParams);
     if (localSearch.trim()) {
-      newParams.set('search', localSearch.trim());
+      newParams.set("search", localSearch.trim());
     } else {
-      newParams.delete('search');
+      newParams.delete("search");
     }
-    newParams.set('page', '1');
+    newParams.set("page", "1");
     navigate(`/admin/suppliers?${newParams.toString()}`);
   };
-  
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Navigation Breadcrumb */}
@@ -248,46 +270,40 @@ export default function SuppliersIndex() {
           >
             📤 Importer
           </Link>
-          <Button className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Nouveau Fournisseur</Link></Button>
+          <Button
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm"
+            variant="blue"
+            asChild
+          >
+            <Link to="/admin/suppliers/new">➕ Nouveau Fournisseur</Link>
+          </Button>
         </div>
       </div>
-      
+
       {/* Statistiques */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <StatCard 
-          title="Total" 
-          value={statistics.total} 
-          icon="🏢"
-        />
-        <StatCard 
-          title="Actifs" 
-          value={statistics.active} 
+        <StatCard title="Total" value={statistics.total} icon="🏢" />
+        <StatCard
+          title="Actifs"
+          value={statistics.active}
           icon="✅"
-          color="green" 
+          color="green"
         />
-        <StatCard 
-          title="Inactifs" 
-          value={statistics.inactive} 
+        <StatCard
+          title="Inactifs"
+          value={statistics.inactive}
           icon="❌"
-          color="gray" 
+          color="gray"
         />
-        <StatCard 
-          title="Avec Email" 
-          value={statistics.withEmail} 
-          icon="📧"
-        />
-        <StatCard 
-          title="Avec Site Web" 
-          value={statistics.withWebsite} 
+        <StatCard title="Avec Email" value={statistics.withEmail} icon="📧" />
+        <StatCard
+          title="Avec Site Web"
+          value={statistics.withWebsite}
           icon="🌐"
         />
-        <StatCard 
-          title="Pays" 
-          value={statistics.countries.length} 
-          icon="🌍"
-        />
+        <StatCard title="Pays" value={statistics.countries.length} icon="🌍" />
       </div>
-      
+
       {/* Filtres */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
@@ -310,15 +326,19 @@ export default function SuppliersIndex() {
                 </button>
               </form>
             </div>
-            
+
             {/* Filtres */}
             <div className="flex items-center space-x-3">
               <Form method="get" className="flex items-center space-x-2">
-                <input type="hidden" name="search" value={params.search || ''} />
-                <select 
+                <input
+                  type="hidden"
+                  name="search"
+                  value={params.search || ""}
+                />
+                <select
                   name="status"
                   className="border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                  defaultValue={params.status || ''}
+                  defaultValue={params.status || ""}
                   onChange={(e) => e.target.form?.submit()}
                 >
                   <option value="">Tous les statuts</option>
@@ -330,7 +350,7 @@ export default function SuppliersIndex() {
           </div>
         </div>
       </div>
-      
+
       {/* Liste des fournisseurs */}
       <div className="space-y-4">
         {suppliers.length === 0 ? (
@@ -344,13 +364,20 @@ export default function SuppliersIndex() {
                   Aucun fournisseur trouvé
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {params.search ? 
-                    `Aucun résultat pour "${params.search}"` : 
-                    "Aucun fournisseur dans votre base de données"
-                  }
+                  {params.search
+                    ? `Aucun résultat pour "${params.search}"`
+                    : "Aucun fournisseur dans votre base de données"}
                 </p>
                 <div className="mt-6">
-                  <Button className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Ajouter le premier fournisseur</Link></Button>
+                  <Button
+                    className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md"
+                    variant="blue"
+                    asChild
+                  >
+                    <Link to="/admin/suppliers/new">
+                      ➕ Ajouter le premier fournisseur
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -358,18 +385,15 @@ export default function SuppliersIndex() {
         ) : (
           <div className="grid gap-4">
             {suppliers.map((supplier) => (
-              <SupplierCard 
-                key={supplier.id} 
-                supplier={supplier} 
-              />
+              <SupplierCard key={supplier.id} supplier={supplier} />
             ))}
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
-        <PaginationControls 
+        <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
           searchParams={searchParams}
@@ -380,16 +404,16 @@ export default function SuppliersIndex() {
 }
 
 // Composant Carte Statistique
-function StatCard({ 
-  title, 
-  value, 
-  icon, 
-  color = "blue" 
-}: { 
-  title: string; 
-  value: number; 
+function StatCard({
+  title,
+  value,
+  icon,
+  color = "blue",
+}: {
+  title: string;
+  value: number;
   icon: string;
-  color?: "blue" | "green" | "yellow" | "red" | "gray"; 
+  color?: "blue" | "green" | "yellow" | "red" | "gray";
 }) {
   const colorClasses = {
     blue: "text-primary bg-primary/10",
@@ -403,7 +427,9 @@ function StatCard({
     <div className="bg-white overflow-hidden shadow rounded-lg">
       <div className="p-5">
         <div className="flex items-center">
-          <div className={`flex-shrink-0 rounded-lg p-2 ${colorClasses[color]}`}>
+          <div
+            className={`flex-shrink-0 rounded-lg p-2 ${colorClasses[color]}`}
+          >
             <div className="text-2xl">{icon}</div>
           </div>
           <div className="ml-4 w-0 flex-1">
@@ -430,21 +456,28 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">{supplier.name}</h3>
-              <Badge className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium " variant={supplier.isActive ? 'success' : 'error'}>\n  {supplier.isActive ? "Actif" : "Inactif"}\n</Badge>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {supplier.name}
+              </h3>
+              <Badge
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium "
+                variant={supplier.isActive ? "success" : "error"}
+              >
+                \n {supplier.isActive ? "Actif" : "Inactif"}\n
+              </Badge>
               {supplier.code && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                   {supplier.code}
                 </span>
               )}
             </div>
-            
+
             {supplier.companyName && (
               <p className="text-sm text-gray-600 mb-2">
                 🏢 {supplier.companyName}
               </p>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
               {supplier.email && (
                 <div className="flex items-center text-gray-600">
@@ -462,21 +495,27 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
                 </div>
               )}
             </div>
-            
+
             {supplier.contactName && (
               <div className="mt-2 text-sm">
                 <span className="text-gray-500">Contact:</span>
-                <span className="ml-1 font-medium text-gray-900">{supplier.contactName}</span>
+                <span className="ml-1 font-medium text-gray-900">
+                  {supplier.contactName}
+                </span>
                 {supplier.contactEmail && (
-                  <span className="text-gray-500 ml-2">({supplier.contactEmail})</span>
+                  <span className="text-gray-500 ml-2">
+                    ({supplier.contactEmail})
+                  </span>
                 )}
               </div>
             )}
-            
+
             {supplier.minimumOrderAmount && (
               <div className="mt-2 text-sm">
                 <span className="text-gray-500">Commande minimum:</span>
-                <span className="ml-1 font-medium text-gray-900">{supplier.minimumOrderAmount}€</span>
+                <span className="ml-1 font-medium text-gray-900">
+                  {supplier.minimumOrderAmount}€
+                </span>
               </div>
             )}
 
@@ -502,9 +541,10 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
                   <div className="text-gray-500">Total Liens</div>
                 </div>
               </div>
-              
+
               {/* Message informatif si pas de liens */}
-              {(!supplier.statistics?.totalLinks || supplier.statistics.totalLinks === 0) && (
+              {(!supplier.statistics?.totalLinks ||
+                supplier.statistics.totalLinks === 0) && (
                 <div className="mt-2 text-xs text-gray-400 text-center">
                   Aucune liaison configurée pour ce fournisseur
                 </div>
@@ -523,22 +563,30 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
                       <span
                         key={index}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          link.type === 'brand' 
-                            ? 'info' : 'success'
+                          link.type === "brand" ? "info" : "success"
                         }`}
-                        title={link.productInfo ? `${link.productInfo.designation} - ${link.productInfo.brand} (Ref: ${link.productInfo.reference})` : ''}
+                        title={
+                          link.productInfo
+                            ? `${link.productInfo.designation} - ${link.productInfo.brand} (Ref: ${link.productInfo.reference})`
+                            : ""
+                        }
                       >
-                        {link.type === 'brand' ? '🏷️' : '📦'} 
+                        {link.type === "brand" ? "🏷️" : "📦"}
                         <span className="truncate max-w-24">
-                          {link.productInfo?.designation || link.brand?.name || link.piece?.reference || 'N/A'}
+                          {link.productInfo?.designation ||
+                            link.brand?.name ||
+                            link.piece?.reference ||
+                            "N/A"}
                         </span>
-                        {link.productInfo?.brand && 
-                         link.productInfo.brand !== 'À déterminer' && 
-                         link.productInfo.brand !== link.productInfo.designation && (
-                          <span className="ml-1 text-xs opacity-70 font-normal">
-                            ({link.productInfo.brand.substring(0, 8)}{link.productInfo.brand.length > 8 ? '...' : ''})
-                          </span>
-                        )}
+                        {link.productInfo?.brand &&
+                          link.productInfo.brand !== "À déterminer" &&
+                          link.productInfo.brand !==
+                            link.productInfo.designation && (
+                            <span className="ml-1 text-xs opacity-70 font-normal">
+                              ({link.productInfo.brand.substring(0, 8)}
+                              {link.productInfo.brand.length > 8 ? "..." : ""})
+                            </span>
+                          )}
                       </span>
                     ))}
                     {supplier.links.length > 10 && (
@@ -551,23 +599,21 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               </div>
             )}
           </div>
-          
+
           <div className="flex gap-2 ml-4">
-            <Link 
+            <Link
               to={`/admin/suppliers/${supplier.id}`}
               className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               👁️ Voir
             </Link>
-            <Link 
+            <Link
               to={`/admin/suppliers/${supplier.id}/edit`}
               className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               ✏️ Modifier
             </Link>
-            <button 
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-destructive bg-white hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            >
+            <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-destructive bg-white hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
               🗑️ Supprimer
             </button>
           </div>
@@ -578,18 +624,18 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
 }
 
 // Composant Contrôles de Pagination
-function PaginationControls({ 
-  currentPage, 
-  totalPages, 
-  searchParams 
-}: { 
-  currentPage: number; 
-  totalPages: number; 
-  searchParams: URLSearchParams; 
+function PaginationControls({
+  currentPage,
+  totalPages,
+  searchParams,
+}: {
+  currentPage: number;
+  totalPages: number;
+  searchParams: URLSearchParams;
 }) {
   const createPageUrl = (page: number) => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.set('page', page.toString());
+    newParams.set("page", page.toString());
     return `/admin/suppliers?${newParams.toString()}`;
   };
 
@@ -597,7 +643,7 @@ function PaginationControls({
     <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
       <div className="hidden sm:block">
         <p className="text-sm text-gray-700">
-          Page <span className="font-medium">{currentPage}</span> sur{' '}
+          Page <span className="font-medium">{currentPage}</span> sur{" "}
           <span className="font-medium">{totalPages}</span>
         </p>
       </div>
@@ -610,20 +656,20 @@ function PaginationControls({
             ← Précédent
           </Link>
         )}
-        
+
         <div className="hidden sm:flex space-x-1 mx-4">
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             const page = Math.max(1, currentPage - 2) + i;
             if (page > totalPages) return null;
-            
+
             return (
-              <Link 
-                key={page} 
+              <Link
+                key={page}
                 to={createPageUrl(page)}
                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
                   page === currentPage
-                    ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                    ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                 }`}
               >
                 {page}
@@ -631,7 +677,7 @@ function PaginationControls({
             );
           })}
         </div>
-        
+
         {currentPage < totalPages && (
           <Link
             to={createPageUrl(currentPage + 1)}

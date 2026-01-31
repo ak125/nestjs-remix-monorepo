@@ -1,13 +1,17 @@
 /**
  * 🛒 API CART - Endpoint pour CartSidebarSimple
- * 
+ *
  * Cette route permet au useFetcher de récupérer le panier
  * avec les bonnes cookies de session (contrairement aux fetch client-side)
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
 
-const API_BASE = process.env.API_BASE_URL || "http://localhost:3000";
+const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 
 /**
  * GET - Récupérer le panier
@@ -15,8 +19,11 @@ const API_BASE = process.env.API_BASE_URL || "http://localhost:3000";
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const cookie = request.headers.get("Cookie") || "";
-    console.log("[API Cart Remix] Cookie reçu:", cookie ? cookie.substring(0, 50) + "..." : "AUCUN");
-    
+    console.log(
+      "[API Cart Remix] Cookie reçu:",
+      cookie ? cookie.substring(0, 50) + "..." : "AUCUN",
+    );
+
     const response = await fetch(`${API_BASE}/api/cart`, {
       method: "GET",
       headers: {
@@ -27,17 +34,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      console.error("[API Cart] Erreur fetch:", response.status, response.statusText);
+      console.error(
+        "[API Cart] Erreur fetch:",
+        response.status,
+        response.statusText,
+      );
       return json(
-        { items: [], subtotal: 0, itemCount: 0, consigneTotal: 0, error: "Erreur API" },
-        { status: response.status }
+        {
+          items: [],
+          subtotal: 0,
+          itemCount: 0,
+          consigneTotal: 0,
+          error: "Erreur API",
+        },
+        { status: response.status },
       );
     }
 
     const data = await response.json();
-    
-    console.log("[API Cart Remix] Réponse backend:", data.totals?.total_items, "articles");
-    
+
+    console.log(
+      "[API Cart Remix] Réponse backend:",
+      data.totals?.total_items,
+      "articles",
+    );
+
     // Le backend retourne data.totals.*, on le transforme en format plat
     return json({
       items: data.items || [],
@@ -48,8 +69,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     console.error("[API Cart] Erreur:", error);
     return json(
-      { items: [], subtotal: 0, itemCount: 0, consigneTotal: 0, error: "Erreur serveur" },
-      { status: 500 }
+      {
+        items: [],
+        subtotal: 0,
+        itemCount: 0,
+        consigneTotal: 0,
+        error: "Erreur serveur",
+      },
+      { status: 500 },
     );
   }
 }
@@ -70,7 +97,9 @@ export async function action({ request }: ActionFunctionArgs) {
       const productId = formData.get("productId") as string;
       const quantity = parseInt(formData.get("quantity") as string, 10);
 
-      console.log(`[API Cart] Update: productId=${productId}, quantity=${quantity}`);
+      console.log(
+        `[API Cart] Update: productId=${productId}, quantity=${quantity}`,
+      );
 
       const response = await fetch(`${API_BASE}/api/cart/items`, {
         method: "POST",
@@ -78,10 +107,10 @@ export async function action({ request }: ActionFunctionArgs) {
           "Content-Type": "application/json",
           Cookie: cookie,
         },
-        body: JSON.stringify({ 
-          product_id: parseInt(productId, 10), 
+        body: JSON.stringify({
+          product_id: parseInt(productId, 10),
           quantity,
-          replace: true // Flag pour remplacer la quantité au lieu d'additionner
+          replace: true, // Flag pour remplacer la quantité au lieu d'additionner
         }),
         credentials: "include",
       });
@@ -133,6 +162,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "Intent inconnu", intent }, { status: 400 });
   } catch (error) {
     console.error("[API Cart Action] Erreur:", error);
-    return json({ error: "Erreur serveur", details: String(error) }, { status: 500 });
+    return json(
+      { error: "Erreur serveur", details: String(error) },
+      { status: 500 },
+    );
   }
 }

@@ -42,6 +42,7 @@ import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
@@ -135,7 +136,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     // Charger le guide depuis l'API
     const res = await fetch(`${backendUrl}/api/blog/guides/slug/${slug}`, {

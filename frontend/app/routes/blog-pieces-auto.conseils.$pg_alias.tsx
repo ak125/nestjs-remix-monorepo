@@ -65,6 +65,7 @@ import {
   trackShareArticle,
   trackBookmark,
 } from "~/utils/analytics";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
@@ -151,7 +152,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   try {
-    const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const baseUrl = getInternalApiUrl("");
 
     // 1️⃣ Essayer d'abord par slug (pour les liens depuis la liste)
     let response = await fetch(`${baseUrl}/api/blog/article/${pg_alias}`, {

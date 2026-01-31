@@ -59,12 +59,17 @@ interface MigrationPageData {
 
 /**
  * Appelle l'API de migration backend pour tester une URL
+ * @param legacyUrl - L'URL legacy à tester
+ * @param baseUrl - L'URL de base de l'API (passée depuis le loader)
  */
-async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
+async function testUrlMigration(
+  legacyUrl: string,
+  baseUrl: string,
+): Promise<MigrationResult> {
   try {
     const encodedUrl = encodeURIComponent(legacyUrl);
     const response = await fetch(
-      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/vehicles/migration/test/${encodedUrl}`,
+      `${baseUrl}/api/vehicles/migration/test/${encodedUrl}`,
     );
 
     if (!response.ok) {
@@ -93,8 +98,9 @@ async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
  */
 async function _performRedirection(
   legacyUrl: string,
+  baseUrl: string,
 ): Promise<Response | null> {
-  const migration = await testUrlMigration(legacyUrl);
+  const migration = await testUrlMigration(legacyUrl, baseUrl);
 
   if (migration.success && migration.new_url) {
     // Redirection 301 permanente pour le SEO
@@ -111,6 +117,8 @@ async function _performRedirection(
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const legacyUrl = url.pathname;
+  // Get base URL from request origin (server-side only)
+  const baseUrl = url.origin;
 
   console.log(`🔄 Interception URL: ${legacyUrl}`);
 
@@ -146,7 +154,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   // Sinon, tenter la migration avec l'ancien système
-  const migration = await testUrlMigration(legacyUrl);
+  const migration = await testUrlMigration(legacyUrl, baseUrl);
 
   // Si migration réussie, redirection 301 immédiate
   if (migration.success && migration.new_url) {

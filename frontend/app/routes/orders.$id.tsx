@@ -122,7 +122,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
     // Appel direct à l'API backend
     const response = await fetch(
-      `http://localhost:3000/api/legacy-orders/${orderId}`,
+      `http://127.0.0.1:3000/api/legacy-orders/${orderId}`,
       {
         headers: {
           Cookie: cookie,

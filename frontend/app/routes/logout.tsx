@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const action = async ({
   request,
@@ -10,7 +11,7 @@ export const action = async ({
 
   try {
     // Faire un POST vers le backend pour déconnecter
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
     const response = await fetch(`${backendUrl}/auth/logout`, {
       method: "POST",
       headers: {

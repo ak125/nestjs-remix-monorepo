@@ -18,6 +18,7 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /* ===========================
    Types
@@ -71,7 +72,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     // 1. Récupérer les informations de la marque
     const brandRes = await fetch(`${backendUrl}/api/brands/brand/${marque}`, {

@@ -18,7 +18,7 @@ interface DashboardStats {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    const response = await fetch("http://localhost:3000/dashboard/stats");
+    const response = await fetch("http://127.0.0.1:3000/dashboard/stats");
     const stats: DashboardStats = await response.json();
 
     return json({

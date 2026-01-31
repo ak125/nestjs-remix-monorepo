@@ -29,6 +29,7 @@ import {
 import { Input } from "../components/ui/input";
 import { VehicleCard } from "../components/vehicles/VehicleCard";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche CNIT
@@ -89,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // ✅ URL corrigée pour correspondre à notre API backend
-    const apiUrl = process.env.API_URL || "http://localhost:3000";
+    const apiUrl = getInternalApiUrl("");
     const response = await fetch(
       `${apiUrl}/api/vehicles/search/cnit/${encodeURIComponent(cnitCode)}`,
       {

@@ -23,6 +23,7 @@ import {
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
 import { Error404 } from "~/components/errors/Error404";
 import { trackAddPaymentInfo } from "~/utils/analytics";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // Phase 9: PageRole pour analytics
@@ -67,7 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // ✅ Phase 7: Récupérer la vraie commande depuis l'API
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
     const orderResponse = await fetch(`${backendUrl}/api/orders/${orderId}`, {
       headers: {
         Cookie: request.headers.get("Cookie") || "",
@@ -342,7 +343,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     // ✅ Phase 7: Récupérer les infos de la commande pour obtenir le montant total avec consignes
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
     console.log(
       "🔍 Fetching order details from:",
       `${backendUrl}/api/orders/${orderId}`,

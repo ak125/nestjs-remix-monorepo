@@ -1,6 +1,6 @@
 /**
  * 🔧 COMPATIBILITÉ PIÈCES/VÉHICULES
- * 
+ *
  * Interface pour vérifier la compatibilité entre pièces et véhicules
  * Route: /commercial/vehicles/compatibility
  */
@@ -9,12 +9,18 @@ import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { ArrowRight, Car, Cog, Search } from "lucide-react";
 import { useState } from "react";
-import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface CompatibilityData {
   user: any;
@@ -47,39 +53,41 @@ interface CompatibilityData {
     modelId: string;
     typeId?: string;
   };
-  searchMode: 'piece-to-vehicle' | 'vehicle-to-parts' | null;
+  searchMode: "piece-to-vehicle" | "vehicle-to-parts" | null;
   error?: string;
 }
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   // Vérifier l'authentification
   const user = await requireUser({ context });
-  
+
   // Vérifier le niveau d'accès commercial (niveau 3+)
   if (!user.level || user.level < 3) {
-    throw redirect('/unauthorized');
+    throw redirect("/unauthorized");
   }
 
   const url = new URL(request.url);
-  const pieceId = url.searchParams.get('pieceId');
-  const brandId = url.searchParams.get('brandId');
-  const modelId = url.searchParams.get('modelId');
-  const typeId = url.searchParams.get('typeId');
-  
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const pieceId = url.searchParams.get("pieceId");
+  const brandId = url.searchParams.get("brandId");
+  const modelId = url.searchParams.get("modelId");
+  const typeId = url.searchParams.get("typeId");
+
+  const baseUrl = getInternalApiUrl("");
 
   try {
     let compatibilityResult;
     let partsByVehicle;
     let vehicleInfo;
-    let searchMode: 'piece-to-vehicle' | 'vehicle-to-parts' | null = null;
+    let searchMode: "piece-to-vehicle" | "vehicle-to-parts" | null = null;
     let error: string | undefined = undefined;
 
     // Mode 1: Recherche des véhicules compatibles avec une pièce
     if (pieceId) {
-      searchMode = 'piece-to-vehicle';
-      const response = await fetch(`${baseUrl}/api/catalog/vehicles/compatibility/${pieceId}`);
-      
+      searchMode = "piece-to-vehicle";
+      const response = await fetch(
+        `${baseUrl}/api/catalog/vehicles/compatibility/${pieceId}`,
+      );
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -88,23 +96,25 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
           error = data.error;
         }
       } else {
-        error = 'Erreur lors de la recherche de compatibilité';
+        error = "Erreur lors de la recherche de compatibilité";
       }
     }
 
     // Mode 2: Recherche des pièces pour un véhicule
     if (brandId && modelId) {
-      searchMode = 'vehicle-to-parts';
+      searchMode = "vehicle-to-parts";
       vehicleInfo = { brandId, modelId, typeId };
-      
-      const searchQuery = new URLSearchParams();
-      searchQuery.append('brandId', brandId);
-      searchQuery.append('modelId', modelId);
-      if (typeId) searchQuery.append('typeId', typeId);
-      searchQuery.append('limit', '50');
 
-      const response = await fetch(`${baseUrl}/api/catalog/vehicles/parts/by-vehicle?${searchQuery}`);
-      
+      const searchQuery = new URLSearchParams();
+      searchQuery.append("brandId", brandId);
+      searchQuery.append("modelId", modelId);
+      if (typeId) searchQuery.append("typeId", typeId);
+      searchQuery.append("limit", "50");
+
+      const response = await fetch(
+        `${baseUrl}/api/catalog/vehicles/parts/by-vehicle?${searchQuery}`,
+      );
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -113,7 +123,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
           error = data.error;
         }
       } else {
-        error = 'Erreur lors de la recherche de pièces';
+        error = "Erreur lors de la recherche de pièces";
       }
     }
 
@@ -123,26 +133,32 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       partsByVehicle,
       vehicleInfo,
       searchMode,
-      error
+      error,
     });
   } catch (err) {
-    console.error('Erreur loader compatibilité:', err);
+    console.error("Erreur loader compatibilité:", err);
     return json<CompatibilityData>({
       user,
       searchMode: null,
-      error: 'Erreur serveur'
+      error: "Erreur serveur",
     });
   }
 }
 
 export default function VehiclesCompatibility() {
-  const { compatibilityResult, partsByVehicle, vehicleInfo, searchMode, error } = useLoaderData<typeof loader>();
-  
-  const [pieceSearch, setPieceSearch] = useState('');
+  const {
+    compatibilityResult,
+    partsByVehicle,
+    vehicleInfo,
+    searchMode,
+    error,
+  } = useLoaderData<typeof loader>();
+
+  const [pieceSearch, setPieceSearch] = useState("");
   const [vehicleSearch, setVehicleSearch] = useState({
-    brandId: vehicleInfo?.brandId || '',
-    modelId: vehicleInfo?.modelId || '',
-    typeId: vehicleInfo?.typeId || ''
+    brandId: vehicleInfo?.brandId || "",
+    modelId: vehicleInfo?.modelId || "",
+    typeId: vehicleInfo?.typeId || "",
   });
 
   return (
@@ -150,7 +166,9 @@ export default function VehiclesCompatibility() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🔧 Compatibilité Pièces/Véhicules</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            🔧 Compatibilité Pièces/Véhicules
+          </h1>
           <p className="text-gray-600 mt-1">
             Vérifiez la compatibilité entre pièces et véhicules
           </p>
@@ -175,7 +193,10 @@ export default function VehiclesCompatibility() {
           <CardContent>
             <Form method="get" className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="pieceId" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="pieceId"
+                  className="text-sm font-medium text-gray-700"
+                >
                   ID de la pièce
                 </label>
                 <Input
@@ -206,39 +227,63 @@ export default function VehiclesCompatibility() {
             <Form method="get" className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <label htmlFor="brandId" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="brandId"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     ID Marque
                   </label>
                   <Input
                     name="brandId"
                     placeholder="Ex: 1"
                     value={vehicleSearch.brandId}
-                    onChange={(e) => setVehicleSearch(prev => ({ ...prev, brandId: e.target.value }))}
+                    onChange={(e) =>
+                      setVehicleSearch((prev) => ({
+                        ...prev,
+                        brandId: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="modelId" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="modelId"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     ID Modèle
                   </label>
                   <Input
                     name="modelId"
                     placeholder="Ex: 1"
                     value={vehicleSearch.modelId}
-                    onChange={(e) => setVehicleSearch(prev => ({ ...prev, modelId: e.target.value }))}
+                    onChange={(e) =>
+                      setVehicleSearch((prev) => ({
+                        ...prev,
+                        modelId: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label htmlFor="typeId" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="typeId"
+                  className="text-sm font-medium text-gray-700"
+                >
                   ID Type (optionnel)
                 </label>
                 <Input
                   name="typeId"
                   placeholder="Ex: 1"
                   value={vehicleSearch.typeId}
-                  onChange={(e) => setVehicleSearch(prev => ({ ...prev, typeId: e.target.value }))}
+                  onChange={(e) =>
+                    setVehicleSearch((prev) => ({
+                      ...prev,
+                      typeId: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <Button type="submit" className="w-full flex items-center gap-2">
@@ -252,11 +297,13 @@ export default function VehiclesCompatibility() {
 
       {/* Messages d'erreur */}
       {error && (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       )}
 
       {/* Résultats - Pièce vers véhicules */}
-      {searchMode === 'piece-to-vehicle' && compatibilityResult && (
+      {searchMode === "piece-to-vehicle" && compatibilityResult && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -271,12 +318,22 @@ export default function VehiclesCompatibility() {
                 Pièce analysée
               </h3>
               <div className="text-sm space-y-1">
-                <div><strong>ID:</strong> {compatibilityResult.piece.piece_id}</div>
-                <div><strong>Nom:</strong> {compatibilityResult.piece.piece_title}</div>
-                <div><strong>Référence:</strong> {compatibilityResult.piece.piece_ref}</div>
-                <div><strong>Marque:</strong> {compatibilityResult.piece.piece_marque}</div>
                 <div>
-                  <strong>Gamme:</strong> 
+                  <strong>ID:</strong> {compatibilityResult.piece.piece_id}
+                </div>
+                <div>
+                  <strong>Nom:</strong> {compatibilityResult.piece.piece_title}
+                </div>
+                <div>
+                  <strong>Référence:</strong>{" "}
+                  {compatibilityResult.piece.piece_ref}
+                </div>
+                <div>
+                  <strong>Marque:</strong>{" "}
+                  {compatibilityResult.piece.piece_marque}
+                </div>
+                <div>
+                  <strong>Gamme:</strong>
                   <Badge variant="secondary" className="ml-2">
                     {compatibilityResult.piece.piece_gamme}
                   </Badge>
@@ -287,21 +344,29 @@ export default function VehiclesCompatibility() {
             {/* Marques compatibles */}
             <div>
               <h4 className="font-medium text-gray-900 mb-3">
-                Marques automobiles compatibles ({compatibilityResult.compatibleBrands.length})
+                Marques automobiles compatibles (
+                {compatibilityResult.compatibleBrands.length})
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {compatibilityResult.compatibleBrands.map((brand) => (
-                  <div key={brand.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                  <div
+                    key={brand.id}
+                    className="flex items-center space-x-3 p-3 border rounded-lg"
+                  >
                     {brand.logo && (
-                      <img 
-                        src={brand.logo} 
+                      <img
+                        src={brand.logo}
                         alt={brand.name}
                         className="w-8 h-8 object-contain"
                       />
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{brand.name}</div>
-                      <div className="text-sm text-gray-500">Code: {brand.code}</div>
+                      <div className="font-medium text-gray-900">
+                        {brand.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Code: {brand.code}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -312,7 +377,7 @@ export default function VehiclesCompatibility() {
       )}
 
       {/* Résultats - Véhicule vers pièces */}
-      {searchMode === 'vehicle-to-parts' && partsByVehicle && (
+      {searchMode === "vehicle-to-parts" && partsByVehicle && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -322,15 +387,18 @@ export default function VehiclesCompatibility() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Info véhicule */}
-<Alert className="rounded-lg p-4" variant="success">
+            <Alert className="rounded-lg p-4" variant="success">
               <h3 className="font-semibold text-green-900 mb-2">
                 Véhicule analysé
               </h3>
               <div className="text-sm">
-                <strong>Marque ID:</strong> {vehicleInfo?.brandId} | 
+                <strong>Marque ID:</strong> {vehicleInfo?.brandId} |
                 <strong> Modèle ID:</strong> {vehicleInfo?.modelId}
                 {vehicleInfo?.typeId && (
-                  <span> | <strong>Type ID:</strong> {vehicleInfo.typeId}</span>
+                  <span>
+                    {" "}
+                    | <strong>Type ID:</strong> {vehicleInfo.typeId}
+                  </span>
                 )}
               </div>
             </Alert>
@@ -342,7 +410,10 @@ export default function VehiclesCompatibility() {
               </h4>
               <div className="space-y-3">
                 {partsByVehicle.map((part, index) => (
-                  <div key={`${part.piece_id}-${index}`} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div
+                    key={`${part.piece_id}-${index}`}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  >
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">
                         {part.piece_title}
@@ -351,10 +422,10 @@ export default function VehiclesCompatibility() {
                         Réf: {part.piece_ref} | Marque: {part.piece_marque}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline">
-                          {part.piece_gamme}
-                        </Badge>
-                        <span className={`text-xs ${part.piece_stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <Badge variant="outline">{part.piece_gamme}</Badge>
+                        <span
+                          className={`text-xs ${part.piece_stock > 0 ? "text-green-600" : "text-red-600"}`}
+                        >
                           Stock: {part.piece_stock}
                         </span>
                       </div>
@@ -385,8 +456,8 @@ export default function VehiclesCompatibility() {
               Vérification de compatibilité
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Utilisez l'un des formulaires ci-dessus pour vérifier la compatibilité 
-              entre pièces et véhicules dans les deux sens.
+              Utilisez l'un des formulaires ci-dessus pour vérifier la
+              compatibilité entre pièces et véhicules dans les deux sens.
             </p>
           </CardContent>
         </Card>

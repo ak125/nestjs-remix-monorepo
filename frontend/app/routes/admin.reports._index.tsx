@@ -2,41 +2,53 @@
  * Page Rapports - Analyses et statistiques détaillées
  */
 
-import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { 
-  BarChart3, 
-  Download, 
-  FileText, 
-  TrendingUp, 
-  Users, 
-  ShoppingCart, 
+import {
+  BarChart3,
+  Download,
+  FileText,
+  TrendingUp,
+  Users,
+  ShoppingCart,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Rapports & Analyses - Admin" },
-    { name: "description", content: "Rapports détaillés et analyses de performance" },
+    {
+      name: "description",
+      content: "Rapports détaillés et analyses de performance",
+    },
     { name: "robots", content: "noindex, nofollow" },
   ];
 };
 
 export const loader: LoaderFunction = async () => {
   try {
-    console.log('📊 Chargement des données pour les rapports...');
-    
+    console.log("📊 Chargement des données pour les rapports...");
+
     // Récupérer les données depuis les différentes APIs
-    const [usersResponse, ordersResponse, ordersStatsResponse] = await Promise.all([
-      fetch('http://localhost:3000/api/legacy-users?limit=1000'),
-      fetch('http://localhost:3000/api/legacy-orders?limit=1000'),
-      fetch('http://localhost:3000/api/legacy-orders/stats').catch(() => null)
-    ]);
+    const [usersResponse, ordersResponse, ordersStatsResponse] =
+      await Promise.all([
+        fetch("http://127.0.0.1:3000/api/legacy-users?limit=1000"),
+        fetch("http://127.0.0.1:3000/api/legacy-orders?limit=1000"),
+        fetch("http://127.0.0.1:3000/api/legacy-orders/stats").catch(
+          () => null,
+        ),
+      ]);
 
     let reportData = {
       users: {
@@ -44,25 +56,25 @@ export const loader: LoaderFunction = async () => {
         active: 0,
         professional: 0,
         verified: 0,
-        growth: 0
+        growth: 0,
       },
       orders: {
         total: 0,
         completed: 0,
         pending: 0,
         revenue: 0,
-        avgOrderValue: 0
+        avgOrderValue: 0,
       },
       performance: {
         conversionRate: 0,
         activeUserRate: 0,
-        verificationRate: 0
+        verificationRate: 0,
       },
       trends: {
         usersThisMonth: 0,
         ordersThisMonth: 0,
-        revenueThisMonth: 0
-      }
+        revenueThisMonth: 0,
+      },
     };
 
     // Traiter les données users
@@ -72,7 +84,9 @@ export const loader: LoaderFunction = async () => {
       reportData.users.total = users.length;
       reportData.users.active = users.filter((u: any) => u.isActive).length;
       reportData.users.professional = users.filter((u: any) => u.isPro).length;
-      reportData.users.verified = users.filter((u: any) => u.emailVerified).length;
+      reportData.users.verified = users.filter(
+        (u: any) => u.emailVerified,
+      ).length;
     }
 
     // Traiter les statistiques commandes avancées
@@ -82,8 +96,10 @@ export const loader: LoaderFunction = async () => {
       if (statsData.data) {
         reportData.orders.revenue = statsData.data.totalRevenue || 0;
         reportData.orders.completed = statsData.data.paidCount || 0;
-        reportData.orders.total = statsData.data.totalCount || reportData.orders.total;
-        reportData.orders.pending = reportData.orders.total - reportData.orders.completed;
+        reportData.orders.total =
+          statsData.data.totalCount || reportData.orders.total;
+        reportData.orders.pending =
+          reportData.orders.total - reportData.orders.completed;
       }
     }
 
@@ -92,38 +108,64 @@ export const loader: LoaderFunction = async () => {
       const ordersData = await ordersResponse.json();
       const orders = ordersData.data || ordersData.orders || [];
       reportData.orders.total = orders.length;
-      reportData.orders.completed = orders.filter((o: any) => o.isPaid === true || o.ord_is_pay === "1").length;
-      reportData.orders.pending = orders.filter((o: any) => o.isPaid === false || o.ord_is_pay !== "1").length;
-      
-      const paidOrders = orders.filter((o: any) => o.isPaid === true || o.ord_is_pay === "1");
-      reportData.orders.revenue = paidOrders.reduce((sum: number, o: any) => 
-        sum + parseFloat(o.totalTtc || o.ord_total_ttc || o.total || 0), 0
+      reportData.orders.completed = orders.filter(
+        (o: any) => o.isPaid === true || o.ord_is_pay === "1",
+      ).length;
+      reportData.orders.pending = orders.filter(
+        (o: any) => o.isPaid === false || o.ord_is_pay !== "1",
+      ).length;
+
+      const paidOrders = orders.filter(
+        (o: any) => o.isPaid === true || o.ord_is_pay === "1",
       );
-      reportData.orders.avgOrderValue = reportData.orders.completed > 0 ? 
-        reportData.orders.revenue / reportData.orders.completed : 0;
+      reportData.orders.revenue = paidOrders.reduce(
+        (sum: number, o: any) =>
+          sum + parseFloat(o.totalTtc || o.ord_total_ttc || o.total || 0),
+        0,
+      );
+      reportData.orders.avgOrderValue =
+        reportData.orders.completed > 0
+          ? reportData.orders.revenue / reportData.orders.completed
+          : 0;
     }
 
     // Calculer les métriques de performance
-    reportData.performance.conversionRate = reportData.orders.total > 0 ? 
-      (reportData.orders.completed / reportData.orders.total) * 100 : 0;
-    reportData.performance.activeUserRate = reportData.users.total > 0 ? 
-      (reportData.users.active / reportData.users.total) * 100 : 0;
-    reportData.performance.verificationRate = reportData.users.total > 0 ? 
-      (reportData.users.verified / reportData.users.total) * 100 : 0;
+    reportData.performance.conversionRate =
+      reportData.orders.total > 0
+        ? (reportData.orders.completed / reportData.orders.total) * 100
+        : 0;
+    reportData.performance.activeUserRate =
+      reportData.users.total > 0
+        ? (reportData.users.active / reportData.users.total) * 100
+        : 0;
+    reportData.performance.verificationRate =
+      reportData.users.total > 0
+        ? (reportData.users.verified / reportData.users.total) * 100
+        : 0;
 
-    console.log('✅ Données des rapports chargées:', reportData);
+    console.log("✅ Données des rapports chargées:", reportData);
 
     return json({ reportData });
   } catch (error) {
-    console.error('❌ Erreur lors du chargement des rapports:', error);
-    return json({ 
+    console.error("❌ Erreur lors du chargement des rapports:", error);
+    return json({
       reportData: {
         users: { total: 0, active: 0, professional: 0, verified: 0 },
-        orders: { total: 0, completed: 0, pending: 0, revenue: 0, avgOrderValue: 0 },
-        performance: { conversionRate: 0, activeUserRate: 0, verificationRate: 0 },
-        trends: { usersThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 }
+        orders: {
+          total: 0,
+          completed: 0,
+          pending: 0,
+          revenue: 0,
+          avgOrderValue: 0,
+        },
+        performance: {
+          conversionRate: 0,
+          activeUserRate: 0,
+          verificationRate: 0,
+        },
+        trends: { usersThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 },
       },
-      error: 'Erreur de connexion aux APIs pour les rapports'
+      error: "Erreur de connexion aux APIs pour les rapports",
     });
   }
 };
@@ -175,39 +217,54 @@ export default function AdminReports() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de Conversion</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Taux de Conversion
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{reportData.performance.conversionRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {reportData.performance.conversionRate.toFixed(1)}%
+            </div>
             <p className="text-xs text-muted-foreground">
-              {reportData.orders.completed}/{reportData.orders.total} commandes payées
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs Actifs</CardTitle>
-            <Users className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reportData.performance.activeUserRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {reportData.users.active}/{reportData.users.total} utilisateurs actifs
+              {reportData.orders.completed}/{reportData.orders.total} commandes
+              payées
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Emails Vérifiés</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Utilisateurs Actifs
+            </CardTitle>
+            <Users className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {reportData.performance.activeUserRate.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {reportData.users.active}/{reportData.users.total} utilisateurs
+              actifs
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Emails Vérifiés
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{reportData.performance.verificationRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {reportData.performance.verificationRate.toFixed(1)}%
+            </div>
             <p className="text-xs text-muted-foreground">
-              {reportData.users.verified}/{reportData.users.total} emails vérifiés
+              {reportData.users.verified}/{reportData.users.total} emails
+              vérifiés
             </p>
           </CardContent>
         </Card>
@@ -221,7 +278,9 @@ export default function AdminReports() {
               <Users className="h-5 w-5" />
               Analyse des Utilisateurs
             </CardTitle>
-            <CardDescription>Répartition et engagement des utilisateurs</CardDescription>
+            <CardDescription>
+              Répartition et engagement des utilisateurs
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -243,7 +302,10 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Emails Vérifiés</span>
-                <Badge variant="default" className="bg-purple-100 text-purple-800">
+                <Badge
+                  variant="default"
+                  className="bg-purple-100 text-purple-800"
+                >
                   {reportData.users.verified}
                 </Badge>
               </div>
@@ -257,7 +319,9 @@ export default function AdminReports() {
               <ShoppingCart className="h-5 w-5" />
               Analyse des Commandes
             </CardTitle>
-            <CardDescription>Performance des ventes et transactions</CardDescription>
+            <CardDescription>
+              Performance des ventes et transactions
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -279,7 +343,10 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Chiffre d'Affaires</span>
-                <Badge variant="default" className="bg-purple-100 text-purple-800">
+                <Badge
+                  variant="default"
+                  className="bg-purple-100 text-purple-800"
+                >
                   {reportData.orders.revenue.toFixed(2)}€
                 </Badge>
               </div>
@@ -301,7 +368,9 @@ export default function AdminReports() {
             <TrendingUp className="h-5 w-5" />
             Recommandations
           </CardTitle>
-          <CardDescription>Suggestions d'amélioration basées sur les données</CardDescription>
+          <CardDescription>
+            Suggestions d'amélioration basées sur les données
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
@@ -309,33 +378,59 @@ export default function AdminReports() {
               <h4 className="font-semibold text-green-600">Points Forts</h4>
               <ul className="text-sm space-y-1">
                 {reportData.performance.conversionRate > 50 && (
-                  <li>✅ Excellent taux de conversion ({reportData.performance.conversionRate.toFixed(1)}%)</li>
+                  <li>
+                    ✅ Excellent taux de conversion (
+                    {reportData.performance.conversionRate.toFixed(1)}%)
+                  </li>
                 )}
                 {reportData.performance.activeUserRate > 80 && (
-                  <li>✅ Très bon engagement utilisateur ({reportData.performance.activeUserRate.toFixed(1)}%)</li>
+                  <li>
+                    ✅ Très bon engagement utilisateur (
+                    {reportData.performance.activeUserRate.toFixed(1)}%)
+                  </li>
                 )}
                 {reportData.performance.verificationRate > 70 && (
-                  <li>✅ Bon taux de vérification email ({reportData.performance.verificationRate.toFixed(1)}%)</li>
+                  <li>
+                    ✅ Bon taux de vérification email (
+                    {reportData.performance.verificationRate.toFixed(1)}%)
+                  </li>
                 )}
                 {reportData.users.professional > 0 && (
-                  <li>✅ Base de clients professionnels solide ({reportData.users.professional} pros)</li>
+                  <li>
+                    ✅ Base de clients professionnels solide (
+                    {reportData.users.professional} pros)
+                  </li>
                 )}
               </ul>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold text-orange-600">Axes d'Amélioration</h4>
+              <h4 className="font-semibold text-orange-600">
+                Axes d'Amélioration
+              </h4>
               <ul className="text-sm space-y-1">
                 {reportData.performance.conversionRate < 30 && (
-                  <li>🔸 Améliorer le taux de conversion ({reportData.performance.conversionRate.toFixed(1)}%)</li>
+                  <li>
+                    🔸 Améliorer le taux de conversion (
+                    {reportData.performance.conversionRate.toFixed(1)}%)
+                  </li>
                 )}
                 {reportData.performance.verificationRate < 50 && (
-                  <li>🔸 Encourager la vérification des emails ({reportData.performance.verificationRate.toFixed(1)}%)</li>
+                  <li>
+                    🔸 Encourager la vérification des emails (
+                    {reportData.performance.verificationRate.toFixed(1)}%)
+                  </li>
                 )}
                 {reportData.orders.pending > reportData.orders.completed && (
-                  <li>🔸 Réduire les commandes en attente ({reportData.orders.pending} en cours)</li>
+                  <li>
+                    🔸 Réduire les commandes en attente (
+                    {reportData.orders.pending} en cours)
+                  </li>
                 )}
                 {reportData.orders.avgOrderValue < 100 && (
-                  <li>🔸 Augmenter le panier moyen ({reportData.orders.avgOrderValue.toFixed(2)}€)</li>
+                  <li>
+                    🔸 Augmenter le panier moyen (
+                    {reportData.orders.avgOrderValue.toFixed(2)}€)
+                  </li>
                 )}
               </ul>
             </div>

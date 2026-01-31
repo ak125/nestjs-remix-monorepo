@@ -136,7 +136,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 1. Récupérer le panier
     console.log("🛒 [Checkout Action] Récupération du panier...");
-    const cartResponse = await fetch("http://localhost:3000/api/cart", {
+    const cartResponse = await fetch("http://127.0.0.1:3000/api/cart", {
       headers: {
         Cookie: request.headers.get("Cookie") || "",
       },
@@ -226,7 +226,7 @@ export async function action({ request }: ActionFunctionArgs) {
     );
     console.log("🚀 [Checkout Action] Envoi requête création commande...");
 
-    const response = await fetch("http://localhost:3000/api/orders", {
+    const response = await fetch("http://127.0.0.1:3000/api/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

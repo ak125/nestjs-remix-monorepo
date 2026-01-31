@@ -3,7 +3,13 @@
  * Utilise la table ___xtr_msg avec Context7
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect, type MetaFunction } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  redirect,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import {
   MessageSquare,
@@ -18,18 +24,22 @@ import {
   User,
   Calendar,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => [
-  { title: 'Messages | Admin AutoMecanik' },
-  { name: 'robots', content: 'noindex, nofollow' },
-  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/admin/messages" },
+  { title: "Messages | Admin AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/admin/messages",
+  },
 ];
 
 // Interfaces pour les messages
@@ -43,8 +53,8 @@ interface Message {
   msg_subject: string;
   msg_content: string;
   msg_parent_id?: string;
-  msg_open: '0' | '1';
-  msg_close: '0' | '1';
+  msg_open: "0" | "1";
+  msg_close: "0" | "1";
   customer?: {
     cst_name: string;
     cst_fname: string;
@@ -73,89 +83,95 @@ interface MessageData {
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const user = await requireAdmin({ context });
-  
+
   if (!user.level || user.level < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
   }
 
   const formData = await request.formData();
-  const action = formData.get('action');
-  const messageId = formData.get('messageId');
+  const action = formData.get("action");
+  const messageId = formData.get("messageId");
 
-  if (action === 'close' && messageId) {
+  if (action === "close" && messageId) {
     try {
-      const response = await fetch(`http://localhost:3000/api/messages/${messageId}/close`, {
-        method: 'PUT',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `http://127.0.0.1:3000/api/messages/${messageId}/close`,
+        {
+          method: "PUT",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (response.ok) {
         console.log(`✅ Message ${messageId} fermé avec succès`);
       } else {
-        console.error(`❌ Erreur fermeture message ${messageId}:`, response.status);
+        console.error(
+          `❌ Erreur fermeture message ${messageId}:`,
+          response.status,
+        );
       }
     } catch (error) {
       console.error(`❌ Erreur réseau fermeture message:`, error);
     }
   }
 
-  return redirect('/admin/messages');
+  return redirect("/admin/messages");
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireAdmin({ context });
-  
+
   // Vérifier les permissions admin
   if (!user.level || user.level < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
   }
 
   const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get('page') || '1');
-  const limit = parseInt(url.searchParams.get('limit') || '20');
-  const staffFilter = url.searchParams.get('staff');
-  const customerFilter = url.searchParams.get('customer');
-  const statusFilter = url.searchParams.get('status') || 'all';
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "20");
+  const staffFilter = url.searchParams.get("staff");
+  const customerFilter = url.searchParams.get("customer");
+  const statusFilter = url.searchParams.get("status") || "all";
 
   try {
-    console.log('📧 Chargement messages depuis l\'API...');
-    
+    console.log("📧 Chargement messages depuis l'API...");
+
     // Construction de l'URL API avec filtres
-    const apiUrl = new URL('http://localhost:3000/api/messages');
-    apiUrl.searchParams.set('page', page.toString());
-    apiUrl.searchParams.set('limit', limit.toString());
-    
+    const apiUrl = new URL("http://127.0.0.1:3000/api/messages");
+    apiUrl.searchParams.set("page", page.toString());
+    apiUrl.searchParams.set("limit", limit.toString());
+
     if (staffFilter) {
-      apiUrl.searchParams.set('staff', staffFilter);
+      apiUrl.searchParams.set("staff", staffFilter);
     }
     if (customerFilter) {
-      apiUrl.searchParams.set('customer', customerFilter);
+      apiUrl.searchParams.set("customer", customerFilter);
     }
-    if (statusFilter !== 'all') {
-      apiUrl.searchParams.set('status', statusFilter);
+    if (statusFilter !== "all") {
+      apiUrl.searchParams.set("status", statusFilter);
     }
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     const [messagesResponse, statsResponse] = await Promise.all([
       fetch(apiUrl.toString(), {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
         signal: controller.signal,
       }),
-      fetch('http://localhost:3000/api/messages/stats/overview', {
+      fetch("http://127.0.0.1:3000/api/messages/stats/overview", {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
         signal: controller.signal,
-      })
+      }),
     ]);
 
     clearTimeout(timeoutId);
@@ -163,9 +179,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (messagesResponse.ok && statsResponse.ok) {
       const messagesData = await messagesResponse.json();
       const statsData = await statsResponse.json();
-      
-      console.log(`✅ ${messagesData.messages?.length || 0} messages récupérés`);
-      
+
+      console.log(
+        `✅ ${messagesData.messages?.length || 0} messages récupérés`,
+      );
+
       return json({
         messages: messagesData.messages || [],
         total: messagesData.total || 0,
@@ -175,8 +193,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         fallbackMode: false,
       } as MessageData);
     } else {
-      console.error('❌ Erreur API messages:', messagesResponse.status, statsResponse.status);
-      
+      console.error(
+        "❌ Erreur API messages:",
+        messagesResponse.status,
+        statsResponse.status,
+      );
+
       return json({
         messages: [],
         total: 0,
@@ -188,34 +210,35 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       } as MessageData);
     }
   } catch (error: any) {
-    console.error('❌ Erreur lors du chargement des messages:', error);
-    
+    console.error("❌ Erreur lors du chargement des messages:", error);
+
     return json({
       messages: [],
       total: 0,
       page: 1,
       totalPages: 1,
       stats: { total: 0, open: 0, closed: 0 },
-      error: 'Erreur de connexion à l\'API messages',
+      error: "Erreur de connexion à l'API messages",
       fallbackMode: true,
     } as MessageData);
   }
 }
 
 export default function AdminMessages() {
-  const { messages, total, page, totalPages, stats, error, fallbackMode } = useLoaderData<MessageData>();
+  const { messages, total, page, totalPages, stats, error, fallbackMode } =
+    useLoaderData<MessageData>();
   const _navigation = useNavigation();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const formatDate = (dateStr: string) => {
     try {
-      return new Date(dateStr).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateStr).toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch {
       return dateStr;
@@ -223,20 +246,20 @@ export default function AdminMessages() {
   };
 
   const getStatusColor = (message: Message) => {
-    if (message.msg_close === '1') return 'error';
-    if (message.msg_open === '1') return 'success';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (message.msg_close === "1") return "error";
+    if (message.msg_open === "1") return "success";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   const getStatusText = (message: Message) => {
-    if (message.msg_close === '1') return 'Fermé';
-    if (message.msg_open === '1') return 'Ouvert';
-    return 'En attente';
+    if (message.msg_close === "1") return "Fermé";
+    if (message.msg_open === "1") return "Ouvert";
+    return "En attente";
   };
 
   const getStatusIcon = (message: Message) => {
-    if (message.msg_close === '1') return <XCircle className="h-4 w-4" />;
-    if (message.msg_open === '1') return <CheckCircle className="h-4 w-4" />;
+    if (message.msg_close === "1") return <XCircle className="h-4 w-4" />;
+    if (message.msg_open === "1") return <CheckCircle className="h-4 w-4" />;
     return <Clock className="h-4 w-4" />;
   };
 
@@ -250,15 +273,17 @@ export default function AdminMessages() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Link 
-                to="/admin/staff" 
+              <Link
+                to="/admin/staff"
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
               >
                 <ArrowLeft className="h-5 w-5" />
                 Retour Staff
               </Link>
               <MessageSquare className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Messagerie Client/Staff</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Messagerie Client/Staff
+              </h1>
             </div>
             <p className="text-gray-600">
               Communication depuis la table ___xtr_msg avec Context7
@@ -272,8 +297,8 @@ export default function AdminMessages() {
               <Filter className="h-4 w-4" />
               Filtres
             </button>
-            <Link 
-              to="/admin/messages/new" 
+            <Link
+              to="/admin/messages/new"
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Send className="h-4 w-4" />
@@ -284,9 +309,13 @@ export default function AdminMessages() {
       </div>
 
       {/* Indicateur de source */}
-      <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-        fallbackMode ? 'border-warning bg-warning/10' : 'border-success bg-success/10'
-      }`}>
+      <div
+        className={`mb-6 p-4 rounded-lg border-l-4 ${
+          fallbackMode
+            ? "border-warning bg-warning/10"
+            : "border-success bg-success/10"
+        }`}
+      >
         <div className="flex items-center gap-2">
           {fallbackMode ? (
             <AlertCircle className="h-5 w-5 text-yellow-600" />
@@ -294,16 +323,16 @@ export default function AdminMessages() {
             <MessageSquare className="h-5 w-5 text-green-600" />
           )}
           <span className="font-medium">
-            {fallbackMode 
-              ? 'Mode fallback - API messages indisponible' 
-              : 'Messages en temps réel depuis table ___xtr_msg'}
+            {fallbackMode
+              ? "Mode fallback - API messages indisponible"
+              : "Messages en temps réel depuis table ___xtr_msg"}
           </span>
         </div>
       </div>
 
       {/* Erreur */}
       {error && (
-<Alert className="mb-6 p-4    rounded-lg" variant="error">
+        <Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
@@ -351,7 +380,10 @@ export default function AdminMessages() {
             <div>
               <p className="text-sm text-gray-600">Taux de Résolution</p>
               <p className="text-2xl font-bold text-blue-900">
-                {stats.total > 0 ? Math.round((stats.closed / stats.total) * 100) : 0}%
+                {stats.total > 0
+                  ? Math.round((stats.closed / stats.total) * 100)
+                  : 0}
+                %
               </p>
               <p className="text-xs text-gray-500">Messages traités</p>
             </div>
@@ -400,7 +432,11 @@ export default function AdminMessages() {
               </select>
             </div>
             <div className="flex items-end">
-              <Button className="w-full px-4 py-2  rounded-md flex items-center justify-center gap-2" variant="blue" type="submit">
+              <Button
+                className="w-full px-4 py-2  rounded-md flex items-center justify-center gap-2"
+                variant="blue"
+                type="submit"
+              >
                 <Search className="h-4 w-4" />
                 Filtrer
               </Button>
@@ -475,10 +511,9 @@ export default function AdminMessages() {
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {message.customer 
+                          {message.customer
                             ? `${message.customer.cst_fname} ${message.customer.cst_name}`
-                            : 'Client inconnu'
-                          }
+                            : "Client inconnu"}
                         </div>
                         <div className="text-sm text-gray-500">
                           {message.customer?.cst_mail || message.msg_cst_id}
@@ -493,10 +528,9 @@ export default function AdminMessages() {
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {message.staff 
+                          {message.staff
                             ? `${message.staff.firstName} ${message.staff.lastName}`
-                            : 'Staff inconnu'
-                          }
+                            : "Staff inconnu"}
                         </div>
                         <div className="text-sm text-gray-500">
                           {message.staff?.email || message.msg_cnfa_id}
@@ -511,7 +545,9 @@ export default function AdminMessages() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(message)}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(message)}`}
+                    >
                       {getStatusIcon(message)}
                       {getStatusText(message)}
                     </span>
@@ -524,10 +560,14 @@ export default function AdminMessages() {
                       >
                         Voir
                       </button>
-                      {message.msg_open === '1' && (
+                      {message.msg_open === "1" && (
                         <Form method="post" className="inline">
                           <input type="hidden" name="action" value="close" />
-                          <input type="hidden" name="messageId" value={message.msg_id} />
+                          <input
+                            type="hidden"
+                            name="messageId"
+                            value={message.msg_id}
+                          />
                           <button
                             type="submit"
                             className="text-red-600 hover:text-red-900"
@@ -546,7 +586,9 @@ export default function AdminMessages() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">Aucun message trouvé</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                Aucun message trouvé
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Aucune communication client/staff n'a été trouvée.
               </p>
@@ -599,13 +641,13 @@ export default function AdminMessages() {
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <span className="font-medium text-gray-700">Sujet:</span>
                 <p className="text-gray-900">{selectedMessage.msg_subject}</p>
               </div>
-              
+
               <div>
                 <span className="font-medium text-gray-700">Contenu:</span>
                 <div className="bg-gray-50 p-3 rounded border mt-1">
@@ -614,39 +656,41 @@ export default function AdminMessages() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-gray-700">Client:</span>
                   <p className="text-gray-900">
-                    {selectedMessage.customer 
+                    {selectedMessage.customer
                       ? `${selectedMessage.customer.cst_fname} ${selectedMessage.customer.cst_name}`
-                      : selectedMessage.msg_cst_id
-                    }
+                      : selectedMessage.msg_cst_id}
                   </p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Staff:</span>
                   <p className="text-gray-900">
-                    {selectedMessage.staff 
+                    {selectedMessage.staff
                       ? `${selectedMessage.staff.firstName} ${selectedMessage.staff.lastName}`
-                      : selectedMessage.msg_cnfa_id
-                    }
+                      : selectedMessage.msg_cnfa_id}
                   </p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Date:</span>
-                  <p className="text-gray-900">{formatDate(selectedMessage.msg_date)}</p>
+                  <p className="text-gray-900">
+                    {formatDate(selectedMessage.msg_date)}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Statut:</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(selectedMessage)}`}>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(selectedMessage)}`}
+                  >
                     {getStatusIcon(selectedMessage)}
                     {getStatusText(selectedMessage)}
                   </span>
                 </div>
               </div>
-              
+
               {selectedMessage.msg_ord_id && (
                 <div>
                   <span className="font-medium text-gray-700">Commande:</span>

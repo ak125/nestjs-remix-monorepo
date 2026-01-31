@@ -26,6 +26,7 @@ import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /* ===========================
    Types
@@ -152,7 +153,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 =========================== */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
     const res = await fetch(
       `${backendUrl}/api/blog/guides?limit=100&type=achat`,
       {

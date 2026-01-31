@@ -1,6 +1,6 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
-import { Badge, Alert } from '~/components/ui';
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
+import { Badge, Alert } from "~/components/ui";
 
 interface Product {
   piece_id: number;
@@ -41,7 +41,9 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   }
 
   try {
-    const response = await fetch(`http://localhost:3000/api/admin/products/${productId}`);
+    const response = await fetch(
+      `http://127.0.0.1:3000/api/admin/products/${productId}`,
+    );
     const productData: ProductDetailData = await response.json();
 
     if (!productData.success) {
@@ -54,7 +56,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     if (error instanceof Response) {
       throw error;
     }
-    console.error('Erreur lors du chargement du produit:', error);
+    console.error("Erreur lors du chargement du produit:", error);
     throw new Response("Erreur lors du chargement du produit", { status: 500 });
   }
 };
@@ -63,21 +65,21 @@ export default function AdminProductDetail() {
   const { product } = useLoaderData<typeof loader>();
 
   const formatPrice = (price: number | null) => {
-    if (price === null) return 'Non défini';
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
+    if (price === null) return "Non défini";
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
   const formatPercentage = (value: number | null) => {
-    if (value === null) return 'Non défini';
+    if (value === null) return "Non défini";
     return `${value}%`;
   };
 
   const formatStock = (stock: number | null) => {
-    if (stock === null) return 'Non défini';
-    return stock.toLocaleString('fr-FR');
+    if (stock === null) return "Non défini";
+    return stock.toLocaleString("fr-FR");
   };
 
   return (
@@ -127,50 +129,75 @@ export default function AdminProductDetail() {
             <div className="flex space-x-4">
               <span
                 className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                  product.piece_activ
-                    ? 'success' : 'error'
+                  product.piece_activ ? "success" : "error"
                 }`}
               >
-                {product.piece_activ ? '✅ Produit Actif' : '❌ Produit Inactif'}
+                {product.piece_activ
+                  ? "✅ Produit Actif"
+                  : "❌ Produit Inactif"}
               </span>
               {product.piece_top && (
-                <Badge variant="warning">
-                  ⭐ Produit TOP
-                </Badge>
+                <Badge variant="warning">⭐ Produit TOP</Badge>
               )}
             </div>
           </div>
 
           {/* Informations générales */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Informations Générales</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Informations Générales
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nom du produit</label>
-                <p className="mt-1 text-sm text-gray-900">{product.piece_name}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  Nom du produit
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {product.piece_name}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Référence</label>
-                <p className="mt-1 text-sm text-gray-900 font-mono">{product.piece_alias}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  Référence
+                </label>
+                <p className="mt-1 text-sm text-gray-900 font-mono">
+                  {product.piece_alias}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">SKU</label>
-                <p className="mt-1 text-sm text-gray-900 font-mono">{product.piece_sku}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  SKU
+                </label>
+                <p className="mt-1 text-sm text-gray-900 font-mono">
+                  {product.piece_sku}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Unité</label>
-                <p className="mt-1 text-sm text-gray-900">{product.piece_unite || 'Non définie'}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  Unité
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {product.piece_unite || "Non définie"}
+                </p>
               </div>
               {product.piece_description && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_description}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_description}
+                  </p>
                 </div>
               )}
               {product.piece_observation && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Observations</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_observation}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Observations
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_observation}
+                  </p>
                 </div>
               )}
             </div>
@@ -178,45 +205,73 @@ export default function AdminProductDetail() {
 
           {/* Références fabricant */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Références Fabricant</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Références Fabricant
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Marque / Référence</label>
-                <p className="mt-1 text-sm text-gray-900">{product.piece_marque_reference || 'Non définie'}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  Marque / Référence
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {product.piece_marque_reference || "Non définie"}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Fabricant / Référence</label>
-                <p className="mt-1 text-sm text-gray-900">{product.piece_fabricant_reference || 'Non définie'}</p>
+                <label className="block text-sm font-medium text-gray-700">
+                  Fabricant / Référence
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {product.piece_fabricant_reference || "Non définie"}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Informations techniques */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Informations Techniques</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Informations Techniques
+            </h2>
             <div className="grid grid-cols-1 gap-6">
               {product.piece_application && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Application</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_application}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Application
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_application}
+                  </p>
                 </div>
               )}
               {product.piece_critere_technique && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Critères Techniques</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_critere_technique}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Critères Techniques
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_critere_technique}
+                  </p>
                 </div>
               )}
               {product.piece_gamme_reference && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Gamme</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_gamme_reference}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Gamme
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_gamme_reference}
+                  </p>
                 </div>
               )}
               {product.piece_keyword_reference && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Mots-clés</label>
-                  <p className="mt-1 text-sm text-gray-900">{product.piece_keyword_reference}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Mots-clés
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {product.piece_keyword_reference}
+                  </p>
                 </div>
               )}
             </div>
@@ -227,22 +282,30 @@ export default function AdminProductDetail() {
         <div className="space-y-6">
           {/* Tarification */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Tarification</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Tarification
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Prix d'achat</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Prix d'achat
+                </label>
                 <p className="mt-1 text-lg font-semibold text-gray-900">
                   {formatPrice(product.piece_prix_achat)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Prix unitaire</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Prix unitaire
+                </label>
                 <p className="mt-1 text-lg font-semibold text-green-600">
                   {formatPrice(product.piece_prix_unitaire)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Taux de marge min.</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Taux de marge min.
+                </label>
                 <p className="mt-1 text-sm text-gray-900">
                   {formatPercentage(product.piece_taux_marge_min)}
                 </p>
@@ -255,32 +318,42 @@ export default function AdminProductDetail() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Stock</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Quantité en stock</label>
-                <p className={`mt-1 text-2xl font-bold ${
-                  product.piece_qte_stock && product.piece_qte_stock_mini && 
-                  product.piece_qte_stock <= product.piece_qte_stock_mini
-                    ? 'text-red-600'
-                    : 'text-green-600'
-                }`}>
+                <label className="block text-sm font-medium text-gray-700">
+                  Quantité en stock
+                </label>
+                <p
+                  className={`mt-1 text-2xl font-bold ${
+                    product.piece_qte_stock &&
+                    product.piece_qte_stock_mini &&
+                    product.piece_qte_stock <= product.piece_qte_stock_mini
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }`}
+                >
                   {formatStock(product.piece_qte_stock)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Stock minimum</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Stock minimum
+                </label>
                 <p className="mt-1 text-sm text-gray-900">
                   {formatStock(product.piece_qte_stock_mini)}
                 </p>
               </div>
-              {product.piece_qte_stock && product.piece_qte_stock_mini && 
-               product.piece_qte_stock <= product.piece_qte_stock_mini && (
-                <Alert intent="error">⚠️ Stock faible !</Alert>
-              )}
+              {product.piece_qte_stock &&
+                product.piece_qte_stock_mini &&
+                product.piece_qte_stock <= product.piece_qte_stock_mini && (
+                  <Alert intent="error">⚠️ Stock faible !</Alert>
+                )}
             </div>
           </div>
 
           {/* Documentation */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Documentation</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Documentation
+            </h2>
             <div className="space-y-3">
               {product.piece_fiche_technique ? (
                 <a
@@ -298,7 +371,7 @@ export default function AdminProductDetail() {
                   <span>Pas de fiche technique</span>
                 </span>
               )}
-              
+
               {product.piece_fiche_catalogue ? (
                 <a
                   href={product.piece_fiche_catalogue}

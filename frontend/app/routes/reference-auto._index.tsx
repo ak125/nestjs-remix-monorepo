@@ -25,6 +25,7 @@ import { Badge } from "../components/ui/badge";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // Types
 interface ReferenceItem {
@@ -81,7 +82,7 @@ export const meta: MetaFunction = () => {
 =========================== */
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     const res = await fetch(`${backendUrl}/api/seo/reference`, {
       headers: { "Content-Type": "application/json" },

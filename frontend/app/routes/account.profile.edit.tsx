@@ -106,7 +106,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
   try {
     // TODO: Appel API pour mettre à jour le profil
-    const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 
     const response = await fetch(`${baseUrl}/api/legacy-users/${authUser.id}`, {
       method: "PUT",

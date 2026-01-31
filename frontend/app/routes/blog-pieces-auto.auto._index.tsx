@@ -27,6 +27,7 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /* ===========================
    Types
@@ -75,7 +76,7 @@ interface LoaderData {
 =========================== */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     // Fetch brands, popular models and metadata in parallel
     const [brandsRes, modelsRes, metadataRes] = await Promise.all([

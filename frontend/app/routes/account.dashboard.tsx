@@ -15,6 +15,7 @@ import { StatCard } from "../components/dashboard/StatCard";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /**
  * 🔒 SEO Meta Tags - noindex pour espace compte utilisateur
@@ -106,7 +107,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     // API Call - même endpoint que les versions précédentes
-    const baseUrl = process.env.API_URL || "http://localhost:3000";
+    const baseUrl = getInternalApiUrl("");
     const dashboardResponse = await fetch(
       `${baseUrl}/api/legacy-users/dashboard`,
       {

@@ -43,7 +43,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
   }
 
   // Récupérer le message depuis l'API backend
-  const _API_URL = process.env.API_BASE_URL || "http://localhost:3000";
+  const _API_URL = process.env.API_BASE_URL || "http://127.0.0.1:3000";
   const baseUrl = process.env.SUPABASE_URL || "";
   const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 

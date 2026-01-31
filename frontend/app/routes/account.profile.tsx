@@ -19,6 +19,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => [
   { title: "Mon profil | AutoMecanik" },
@@ -74,7 +75,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     // Essayer de récupérer le profil complet depuis l'API
     try {
-      const baseUrl = process.env.API_URL || "http://localhost:3000";
+      const baseUrl = getInternalApiUrl("");
       const profileResponse = await fetch(`${baseUrl}/api/users/profile`, {
         headers: {
           Cookie: request.headers.get("Cookie") || "",

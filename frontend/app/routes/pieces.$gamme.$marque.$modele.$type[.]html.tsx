@@ -223,7 +223,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 🚀 LCP V8: Lancer hierarchy immédiatement (pour catalogueMameFamille deferred)
   const hierarchyPromise = fetchJsonOrNull<HierarchyData>(
-    `http://localhost:3000/api/catalog/gammes/hierarchy`,
+    `http://127.0.0.1:3000/api/catalog/gammes/hierarchy`,
     3000,
   );
 

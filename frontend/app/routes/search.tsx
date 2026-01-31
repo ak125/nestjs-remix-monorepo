@@ -135,7 +135,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // Appel API search (avec prix et images)
-    const apiUrl = new URL("http://localhost:3000/api/search");
+    const apiUrl = new URL("http://127.0.0.1:3000/api/search");
     apiUrl.searchParams.set("query", query);
     apiUrl.searchParams.set("page", page.toString());
     apiUrl.searchParams.set("limit", limit.toString());
