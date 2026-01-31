@@ -729,6 +729,108 @@ export class AdminGammesSeoController {
   }
 
   // ============================================================================
+  // 📊 SECTION K - V-LEVEL CONFORMITÉ
+  // ============================================================================
+
+  /**
+   * 📊 GET /api/admin/gammes-seo/section-k/metrics
+   * Métriques Section K pour dashboard conformité V-Level
+   */
+  @Get('section-k/metrics')
+  async getSectionKMetrics(@Query('pg_id') pgId?: string) {
+    try {
+      this.logger.log(
+        `📊 GET /api/admin/gammes-seo/section-k/metrics (pg_id=${pgId || 'all'})`,
+      );
+
+      const pgIdNum = pgId ? parseInt(pgId, 10) : undefined;
+      const result = await this.gammesSeoService.getSectionKMetrics(pgIdNum);
+
+      return {
+        success: true,
+        ...result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error fetching Section K metrics:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des métriques Section K',
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 GET /api/admin/gammes-seo/section-k/:pgId/missing
+   * Détail des type_ids manquants pour une gamme
+   */
+  @Get('section-k/:pgId/missing')
+  async getSectionKMissing(@Param('pgId') pgId: string) {
+    try {
+      const pgIdNum = parseInt(pgId, 10);
+      this.logger.log(
+        `🔍 GET /api/admin/gammes-seo/section-k/${pgIdNum}/missing`,
+      );
+
+      const data =
+        await this.gammesSeoService.getSectionKMissingDetails(pgIdNum);
+
+      return {
+        success: true,
+        data,
+        count: data.length,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error fetching Section K missing:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des manquants Section K',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 GET /api/admin/gammes-seo/section-k/:pgId/extras
+   * Détail des type_ids en surplus pour une gamme
+   */
+  @Get('section-k/:pgId/extras')
+  async getSectionKExtras(@Param('pgId') pgId: string) {
+    try {
+      const pgIdNum = parseInt(pgId, 10);
+      this.logger.log(
+        `🔍 GET /api/admin/gammes-seo/section-k/${pgIdNum}/extras`,
+      );
+
+      const data =
+        await this.gammesSeoService.getSectionKExtrasDetails(pgIdNum);
+
+      return {
+        success: true,
+        data,
+        count: data.length,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Error fetching Section K extras:', error);
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Erreur lors de la récupération des extras Section K',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============================================================================
   // 🎯 PHASE 1 BADGES SEO V2: Endpoints pour les agrégats
   // ============================================================================
 

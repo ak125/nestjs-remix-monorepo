@@ -16,7 +16,8 @@ import {
   useRevalidator,
   useLocation,
 } from "@remix-run/react";
-import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -162,7 +163,29 @@ declare module "@remix-run/node" {
   }
 }
 
+// Create QueryClient with SSR-safe configuration
+// Using useState ensures each request gets its own client (important for SSR)
+function useQueryClient() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // Disable automatic refetching on window focus in admin
+            refetchOnWindowFocus: false,
+            // Retry once on failure
+            retry: 1,
+            // Keep data fresh for 5 minutes
+            staleTime: 5 * 60 * 1000,
+          },
+        },
+      }),
+  );
+  return queryClient;
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const data = useRouteLoaderData("root") as
     | { user: any; cart: CartData | null }
     | undefined;
@@ -370,18 +393,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
         {...pageRoleAttrs}
       >
-        <VehicleProvider>
-          <NotificationProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar logo={logo} />
-              <main className="flex-grow flex flex-col">
-                <div className="flex-grow">{children}</div>
-              </main>
-            </div>
-            <Footer />
-            <NotificationContainer />
-          </NotificationProvider>
-        </VehicleProvider>
+        <QueryClientProvider client={queryClient}>
+          <VehicleProvider>
+            <NotificationProvider>
+              <div className="min-h-screen flex flex-col">
+                <Navbar logo={logo} />
+                <main className="flex-grow flex flex-col">
+                  <div className="flex-grow">{children}</div>
+                </main>
+              </div>
+              <Footer />
+              <NotificationContainer />
+            </NotificationProvider>
+          </VehicleProvider>
+        </QueryClientProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
         <Toaster position="top-right" expand={true} richColors closeButton />
         <ScrollRestoration />

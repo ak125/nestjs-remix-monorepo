@@ -128,8 +128,59 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
+    // Handle different HTTP error statuses
+    if (error.status === 401 || error.status === 403) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+          <div className="p-8 text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              {error.status === 401 ? "Non authentifié" : "Accès refusé"}
+            </h1>
+            <p className="text-gray-600 mb-6">
+              {error.status === 401
+                ? "Veuillez vous connecter pour accéder à cette page."
+                : "Vous n'avez pas les permissions nécessaires pour accéder à cette ressource."}
+            </p>
+            <a
+              href="/login"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Se connecter
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    if (error.status >= 500) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+          <div className="p-8 text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Erreur serveur
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Une erreur est survenue. Veuillez réessayer plus tard.
+            </p>
+            <p className="text-sm text-gray-400">Code: {error.status}</p>
+          </div>
+        </div>
+      );
+    }
+
+    // 404 and other client errors
     return <Error404 url={error.data?.url} />;
   }
 
-  return <Error404 />;
+  // Unexpected errors
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="p-8 text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Erreur inattendue
+        </h1>
+        <p className="text-gray-600">Une erreur inattendue s'est produite.</p>
+      </div>
+    </div>
+  );
 }
