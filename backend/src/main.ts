@@ -4,6 +4,7 @@ import 'dotenv/config';
 // Validate environment variables BEFORE any other imports
 // This ensures the app fails fast if required vars are missing
 import { validateRequiredEnvVars } from './config/env-validation';
+import { buildCSPDirectives } from './config/csp.config';
 validateRequiredEnvVars();
 
 import { getPublicDir, startDevServer } from '@fafa/frontend';
@@ -119,56 +120,12 @@ async function bootstrap() {
       const helmet = (await import('helmet')).default;
       const compression = (await import('compression')).default;
 
-      // Configuration Helmet avec CSP personnalisée pour autoriser Supabase + Google Analytics
+      // Configuration Helmet avec CSP centralisée (voir config/csp.config.ts)
+      const isDev = process.env.NODE_ENV !== 'production';
       app.use(
         helmet({
           contentSecurityPolicy: {
-            directives: {
-              defaultSrc: ["'self'"],
-              styleSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                'https://fonts.googleapis.com', // Google Fonts
-              ], // Pour Tailwind CSS
-              scriptSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                'https://www.googletagmanager.com', // Google Tag Manager
-                'https://www.google-analytics.com', // Google Analytics
-              ],
-              imgSrc: [
-                "'self'",
-                'data:',
-                'blob:',
-                process.env.SUPABASE_URL ||
-                  'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
-                'https://www.google-analytics.com', // Pixel GA
-                'https://www.googletagmanager.com', // Pixel GTM
-              ],
-              connectSrc: [
-                "'self'",
-                'ws:',
-                'wss:',
-                // DEV: autoriser Vite HMR ping (http non-websocket)
-                ...(process.env.NODE_ENV !== 'production'
-                  ? ['http://127.0.0.1:24678', 'http://localhost:24678']
-                  : []),
-                'https://www.google-analytics.com', // Envoi données GA
-                'https://analytics.google.com', // GA4 endpoint
-                'https://region1.google-analytics.com', // GA4 régional
-              ],
-              fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'], // Google Fonts
-              objectSrc: ["'none'"],
-              mediaSrc: ["'self'"],
-              frameSrc: ["'none'"],
-              formAction: [
-                "'self'",
-                'https://paiement.systempay.fr',
-                'https://paiement-secure.test.lyra-collect.com',
-                'https://tpeweb.paybox.com', // Paybox PRODUCTION
-                'https://preprod-tpeweb.paybox.com', // Paybox PREPROD
-              ], // Autoriser soumission vers SystemPay et Paybox
-            },
+            directives: buildCSPDirectives(isDev),
           },
         }),
       );
@@ -250,6 +207,15 @@ async function bootstrap() {
 
     await app.listen(selectedPort);
     console.log(`Serveur opérationnel sur http://localhost:${selectedPort}`);
+
+    // ✅ HTTP Server Hardening - Évite socket hang up et connexions zombies
+    const httpServer = app.getHttpServer();
+    httpServer.keepAliveTimeout = 65000; // 65s (doit être > timeout proxies comme Caddy)
+    httpServer.headersTimeout = 66000; // 66s (doit être > keepAliveTimeout)
+    httpServer.requestTimeout = 300000; // 5 min pour les gros uploads
+    console.log(
+      '✅ HTTP timeouts configurés: keepAlive=65s, headers=66s, request=5min',
+    );
   } catch (error) {
     console.error('Erreur lors du démarrage du serveur :', error);
   }
