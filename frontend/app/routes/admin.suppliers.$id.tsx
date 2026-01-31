@@ -1,16 +1,16 @@
 /**
  * 🏢 DÉTAIL FOURNISSEUR - Admin Interface
- * 
+ *
  * Page de détail d'un fournisseur spécifique
  * Route: /admin/suppliers/:id
  */
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
-import { toast } from 'sonner';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import { toast } from "sonner";
 import { requireUser } from "../auth/unified.server";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 // Types pour les données du fournisseur
 interface SupplierDetail {
@@ -19,7 +19,7 @@ interface SupplierDetail {
   alias: string;
   display: string;
   sort: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   created_at: string;
   updated_at: string;
   // Nouvelles propriétés enrichies
@@ -33,12 +33,12 @@ interface SupplierDetail {
     id: any;
     type: string;
     isActive: boolean;
-    productInfo?: { 
-      id: any; 
-      designation: string; 
-      reference: string; 
-      brand: string; 
-      isActive: boolean; 
+    productInfo?: {
+      id: any;
+      designation: string;
+      reference: string;
+      brand: string;
+      isActive: boolean;
     };
   }>;
 }
@@ -51,7 +51,7 @@ interface SupplierDetailData {
 // Loader pour récupérer les détails du fournisseur
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
-  
+
   // Vérifier les permissions admin
   if (!user.level || user.level < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
@@ -63,10 +63,10 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
   }
 
   try {
-    console.log('[SupplierDetail] Récupération fournisseur ID:', supplierId);
-    
+    console.log("[SupplierDetail] Récupération fournisseur ID:", supplierId);
+
     // Appel direct à l'API backend - route details
-    const apiUrl = `http://localhost:3000/api/suppliers/details/${supplierId}`;
+    const apiUrl = `http://127.0.0.1:3000/api/suppliers/details/${supplierId}`;
     const response = await fetch(apiUrl, {
       headers: { "Internal-Call": "true" },
     });
@@ -82,7 +82,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     }
 
     const supplierData = await response.json();
-    console.log('[SupplierDetail] Données reçues:', supplierData);
+    console.log("[SupplierDetail] Données reçues:", supplierData);
 
     // Extraire les données du wrapper API
     const supplier_raw = supplierData.data || supplierData;
@@ -91,10 +91,13 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     const supplier: SupplierDetail = {
       id: supplier_raw.spl_id || supplier_raw.id,
       name: supplier_raw.spl_name || supplier_raw.name,
-      alias: supplier_raw.spl_alias || supplier_raw.alias || '',
-      display: supplier_raw.spl_display || supplier_raw.display || '1',
-      sort: supplier_raw.spl_sort || supplier_raw.sort || '0',
-      status: (supplier_raw.spl_display === '1' || supplier_raw.spl_display === 1) ? 'active' : 'inactive',
+      alias: supplier_raw.spl_alias || supplier_raw.alias || "",
+      display: supplier_raw.spl_display || supplier_raw.display || "1",
+      sort: supplier_raw.spl_sort || supplier_raw.sort || "0",
+      status:
+        supplier_raw.spl_display === "1" || supplier_raw.spl_display === 1
+          ? "active"
+          : "inactive",
       created_at: supplier_raw.created_at || new Date().toISOString(),
       updated_at: supplier_raw.updated_at || new Date().toISOString(),
       // Ajouter les données enrichies
@@ -108,12 +111,11 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     };
 
     return json<SupplierDetailData>({ supplier });
-
   } catch (error: any) {
-    console.error('[SupplierDetail] Erreur:', error);
+    console.error("[SupplierDetail] Erreur:", error);
     return json<SupplierDetailData>({
       supplier: null,
-      error: `Erreur lors de la récupération: ${error?.message || 'Erreur inconnue'}`,
+      error: `Erreur lors de la récupération: ${error?.message || "Erreur inconnue"}`,
     });
   }
 }
@@ -134,9 +136,14 @@ export default function SupplierDetail() {
               Fournisseur non trouvé
             </h1>
             <p className="text-gray-600 mb-6">
-              {error || "Le fournisseur demandé n'existe pas ou n'est plus accessible."}
+              {error ||
+                "Le fournisseur demandé n'existe pas ou n'est plus accessible."}
             </p>
-            <Button className="px-4 py-2  rounded-lg" variant="blue" asChild><Link to="/admin/suppliers">← Retour à la liste des fournisseurs</Link></Button>
+            <Button className="px-4 py-2  rounded-lg" variant="blue" asChild>
+              <Link to="/admin/suppliers">
+                ← Retour à la liste des fournisseurs
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -144,33 +151,30 @@ export default function SupplierDetail() {
   }
 
   const handleToggleStatus = () => {
-    const newStatus = supplier.status === 'active' ? 'inactive' : 'active';
-    const newDisplay = newStatus === 'active' ? '1' : '0';
-    
+    const newStatus = supplier.status === "active" ? "inactive" : "active";
+    const newDisplay = newStatus === "active" ? "1" : "0";
+
     fetcher.submit(
-      { 
-        intent: 'toggle-status',
-        display: newDisplay 
+      {
+        intent: "toggle-status",
+        display: newDisplay,
       },
-      { method: 'POST' }
+      { method: "POST" },
     );
   };
 
   const handleDelete = () => {
     toast.error(`Supprimer le fournisseur "${supplier.name}" ?`, {
       duration: 5000,
-      description: 'Cette action est irréversible',
+      description: "Cette action est irréversible",
       action: {
-        label: 'Confirmer',
+        label: "Confirmer",
         onClick: () => {
-          fetcher.submit(
-            { intent: 'delete' },
-            { method: 'POST' }
-          );
+          fetcher.submit({ intent: "delete" }, { method: "POST" });
         },
       },
       cancel: {
-        label: 'Annuler',
+        label: "Annuler",
         onClick: () => {},
       },
     });
@@ -192,9 +196,14 @@ export default function SupplierDetail() {
               Détails du Fournisseur
             </h1>
           </div>
-          
+
           <div className="flex items-center space-x-3">
-            <Badge className="px-3 py-1 rounded-full text-sm font-medium " variant={supplier.status === 'active' ? 'success' : 'error'}>\n  {supplier.status === 'active' ? 'Actif' : 'Inactif'}\n</Badge>
+            <Badge
+              className="px-3 py-1 rounded-full text-sm font-medium "
+              variant={supplier.status === "active" ? "success" : "error"}
+            >
+              \n {supplier.status === "active" ? "Actif" : "Inactif"}\n
+            </Badge>
           </div>
         </div>
 
@@ -206,7 +215,10 @@ export default function SupplierDetail() {
               <div>
                 <h2 className="text-2xl font-bold mb-2">{supplier.name}</h2>
                 <p className="text-blue-100">
-                  Alias: <span className="font-medium">{supplier.alias || 'Non défini'}</span>
+                  Alias:{" "}
+                  <span className="font-medium">
+                    {supplier.alias || "Non défini"}
+                  </span>
                 </p>
               </div>
               <div className="text-right">
@@ -224,27 +236,33 @@ export default function SupplierDetail() {
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                   Informations Générales
                 </h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Nom:</span>
                     <span className="font-medium">{supplier.name}</span>
                   </div>
-                  
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Alias/Code:</span>
-                    <span className="font-medium">{supplier.alias || 'Non défini'}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Statut:</span>
-                    <span className={`font-medium ${
-                      supplier.status === 'active' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {supplier.status === 'active' ? 'Actif' : 'Inactif'}
+                    <span className="font-medium">
+                      {supplier.alias || "Non défini"}
                     </span>
                   </div>
-                  
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Statut:</span>
+                    <span
+                      className={`font-medium ${
+                        supplier.status === "active"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {supplier.status === "active" ? "Actif" : "Inactif"}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Ordre de tri:</span>
                     <span className="font-medium">{supplier.sort}</span>
@@ -257,7 +275,7 @@ export default function SupplierDetail() {
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                   Informations Techniques
                 </h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">ID Base:</span>
@@ -265,25 +283,29 @@ export default function SupplierDetail() {
                       {supplier.id}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Display:</span>
                     <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
                       {supplier.display}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Créé le:</span>
                     <span className="text-sm">
-                      {new Date(supplier.created_at).toLocaleDateString('fr-FR')}
+                      {new Date(supplier.created_at).toLocaleDateString(
+                        "fr-FR",
+                      )}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Modifié le:</span>
                     <span className="text-sm">
-                      {new Date(supplier.updated_at).toLocaleDateString('fr-FR')}
+                      {new Date(supplier.updated_at).toLocaleDateString(
+                        "fr-FR",
+                      )}
                     </span>
                   </div>
                 </div>
@@ -297,17 +319,20 @@ export default function SupplierDetail() {
               <div className="flex space-x-3">
                 <button
                   onClick={handleToggleStatus}
-                  disabled={fetcher.state !== 'idle'}
+                  disabled={fetcher.state !== "idle"}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    supplier.status === 'active'
-                      ? 'bg-warning hover:bg-warning/90 text-white'
-                      : 'bg-success hover:bg-success/90 text-white'
+                    supplier.status === "active"
+                      ? "bg-warning hover:bg-warning/90 text-white"
+                      : "bg-success hover:bg-success/90 text-white"
                   } disabled:opacity-50`}
                 >
-                  {fetcher.state !== 'idle' ? 'Chargement...' : 
-                   supplier.status === 'active' ? 'Désactiver' : 'Activer'}
+                  {fetcher.state !== "idle"
+                    ? "Chargement..."
+                    : supplier.status === "active"
+                      ? "Désactiver"
+                      : "Activer"}
                 </button>
-                
+
                 <Link
                   to={`/admin/suppliers/${supplier.id}/edit`}
                   className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
@@ -315,9 +340,15 @@ export default function SupplierDetail() {
                   Modifier
                 </Link>
               </div>
-              
-              <Button className="px-4 py-2  rounded-lg font-medium  disabled:opacity-50" variant="red" onClick={handleDelete}
-                disabled={fetcher.state !== 'idle'}>\n  Supprimer\n</Button>
+
+              <Button
+                className="px-4 py-2  rounded-lg font-medium  disabled:opacity-50"
+                variant="red"
+                onClick={handleDelete}
+                disabled={fetcher.state !== "idle"}
+              >
+                \n Supprimer\n
+              </Button>
             </div>
           </div>
         </div>
@@ -330,25 +361,31 @@ export default function SupplierDetail() {
             <div className="text-sm text-gray-600">
               <div className="flex justify-between items-center mt-2">
                 <span>Articles:</span>
-                <span className="font-semibold text-blue-600">{supplier.statistics?.totalPieces || 0}</span>
+                <span className="font-semibold text-blue-600">
+                  {supplier.statistics?.totalPieces || 0}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Marques:</span>
-                <span className="font-semibold text-blue-600">{supplier.statistics?.totalBrands || 0}</span>
+                <span className="font-semibold text-blue-600">
+                  {supplier.statistics?.totalBrands || 0}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Actifs:</span>
-                <span className="font-semibold text-green-600">{supplier.statistics?.activeLinks || 0}</span>
+                <span className="font-semibold text-green-600">
+                  {supplier.statistics?.activeLinks || 0}
+                </span>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
             <div className="text-2xl text-green-600 mb-2">📋</div>
             <div className="text-lg font-semibold text-gray-900">Commandes</div>
             <div className="text-sm text-gray-600">À implémenter</div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
             <div className="text-2xl text-purple-600 mb-2">💰</div>
             <div className="text-lg font-semibold text-gray-900">CA Total</div>
@@ -364,7 +401,7 @@ export default function SupplierDetail() {
                 Liste des Produits ({supplier.links.length})
               </h3>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -391,7 +428,8 @@ export default function SupplierDetail() {
                           <span className="mr-2">📦</span>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {link.productInfo?.designation || 'Produit sans nom'}
+                              {link.productInfo?.designation ||
+                                "Produit sans nom"}
                             </div>
                             <div className="text-sm text-gray-500">
                               ID: {link.productInfo?.id || link.id}
@@ -401,22 +439,27 @@ export default function SupplierDetail() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {link.productInfo?.reference || 'N/A'}
+                          {link.productInfo?.reference || "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {link.productInfo?.brand || 'À déterminer'}
+                          {link.productInfo?.brand || "À déterminer"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={link.isActive ? 'success' : 'error'}>\n  {link.isActive ? 'Actif' : 'Inactif'}\n</Badge>
+                        <Badge
+                          className="inline-flex px-2 py-1 text-xs font-semibold rounded-full "
+                          variant={link.isActive ? "success" : "error"}
+                        >
+                          \n {link.isActive ? "Actif" : "Inactif"}\n
+                        </Badge>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              
+
               {supplier.links.length > 20 && (
                 <div className="mt-4 text-center text-sm text-gray-500">
                   ... et {supplier.links.length - 20} autres produits
@@ -431,23 +474,32 @@ export default function SupplierDetail() {
 }
 
 // Action pour gérer les modifications (toggle status, delete)
-export async function action({ request, params }: { request: Request; params: any }) {
+export async function action({
+  request,
+  params,
+}: {
+  request: Request;
+  params: any;
+}) {
   const formData = await request.formData();
-  const intent = formData.get('intent') as string;
+  const intent = formData.get("intent") as string;
   const supplierId = params.id;
 
   try {
-    if (intent === 'toggle-status') {
-      const display = formData.get('display') as string;
-      
-      const response = await fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true',
+    if (intent === "toggle-status") {
+      const display = formData.get("display") as string;
+
+      const response = await fetch(
+        `http://127.0.0.1:3000/api/suppliers/${supplierId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Internal-Call": "true",
+          },
+          body: JSON.stringify({ spl_display: display }),
         },
-        body: JSON.stringify({ spl_display: display }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur API: ${response.status}`);
@@ -456,24 +508,29 @@ export async function action({ request, params }: { request: Request; params: an
       return json({ success: true });
     }
 
-    if (intent === 'delete') {
-      const response = await fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
-        method: 'DELETE',
-        headers: { 'Internal-Call': 'true' },
-      });
+    if (intent === "delete") {
+      const response = await fetch(
+        `http://127.0.0.1:3000/api/suppliers/${supplierId}`,
+        {
+          method: "DELETE",
+          headers: { "Internal-Call": "true" },
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur API: ${response.status}`);
       }
 
       // Redirection vers la liste après suppression
-      return redirect('/admin/suppliers');
+      return redirect("/admin/suppliers");
     }
 
-    return json({ error: 'Action non reconnue' }, { status: 400 });
-
+    return json({ error: "Action non reconnue" }, { status: 400 });
   } catch (error: any) {
-    console.error('[SupplierDetail Action] Erreur:', error);
-    return json({ error: error?.message || 'Erreur inconnue' }, { status: 500 });
+    console.error("[SupplierDetail Action] Erreur:", error);
+    return json(
+      { error: error?.message || "Erreur inconnue" },
+      { status: 500 },
+    );
   }
 }

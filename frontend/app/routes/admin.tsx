@@ -17,6 +17,7 @@ import {
 import { getOptionalUser, getAuthUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -58,12 +59,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
     // Récupérer les données depuis la nouvelle API Dashboard
     const dashboardResponse = await fetch(
-      `${process.env.API_URL || "http://localhost:3000"}/api/dashboard/stats`,
+      `${getInternalApiUrl("")}/api/dashboard/stats`,
     );
 
     // Récupérer les statistiques produits admin
     const productsStatsResponse = await fetch(
-      `${process.env.API_URL || "http://localhost:3000"}/api/admin/products/stats/detailed`,
+      `${getInternalApiUrl("")}/api/admin/products/stats/detailed`,
     );
 
     if (dashboardResponse.ok) {

@@ -1,6 +1,6 @@
 /**
  * 🏷️ PRODUCTS RANGES - INTERFACE AVANCÉE
- * 
+ *
  * Gestion complète des gammes avec fonctionnalités avancées :
  * - Pagination intelligente
  * - Recherche dans les gammes
@@ -9,19 +9,38 @@
  * - Mode Pro avec analytics
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
-import { 
-  ArrowLeft, Package, 
-  Search, ChevronLeft, ChevronRight, Eye, Edit, Grid, List,
-  RefreshCw
-} from 'lucide-react';
-import { requireUser } from '../auth/unified.server';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
+import {
+  ArrowLeft,
+  Package,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Edit,
+  Grid,
+  List,
+  RefreshCw,
+} from "lucide-react";
+import { requireUser } from "../auth/unified.server";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface ProductRange {
   id: string;
@@ -36,7 +55,7 @@ interface ProductRange {
   // Pro exclusive fields
   average_margin?: number;
   monthly_sales?: number;
-  stock_status?: 'high' | 'medium' | 'low';
+  stock_status?: "high" | "medium" | "low";
   performance_score?: number;
   last_updated?: string;
 }
@@ -46,7 +65,7 @@ interface RangesAdvancedData {
     id: string;
     name: string;
     level: number;
-    role: 'pro' | 'commercial';
+    role: "pro" | "commercial";
   };
   ranges: ProductRange[];
   stats: {
@@ -66,7 +85,7 @@ interface RangesAdvancedData {
     search: string;
     status: string;
     sort: string;
-    view: 'grid' | 'list';
+    view: "grid" | "list";
   };
   enhanced: boolean;
   error?: string;
@@ -76,7 +95,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
     // Authentification utilisateur
     const user = await requireUser({ context });
-    
+
     const url = new URL(request.url);
     const enhanced = url.searchParams.get("enhanced") === "true";
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -84,144 +103,160 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const search = url.searchParams.get("search") || "";
     const statusFilter = url.searchParams.get("status") || "all";
     const sortBy = url.searchParams.get("sort") || "name";
-    const viewMode = (url.searchParams.get("view") || "grid") as 'grid' | 'list';
-    
-    const userName = user.name || user.email?.split('@')[0] || 'Utilisateur';
+    const viewMode = (url.searchParams.get("view") || "grid") as
+      | "grid"
+      | "list";
+
+    const userName = user.name || user.email?.split("@")[0] || "Utilisateur";
     const userLevel = user.level || 1;
-    const userRole = userLevel >= 4 ? 'pro' : 'commercial';
-    
-    const baseUrl = process.env.API_URL || "http://localhost:3000";
+    const userRole = userLevel >= 4 ? "pro" : "commercial";
+
+    const baseUrl = getInternalApiUrl("");
 
     // Récupérer TOUTES les gammes pour filtrer et paginer côté serveur
     const rangesResponse = await fetch(`${baseUrl}/api/products/gammes`, {
-      headers: { 
-        'internal-call': 'true',
-        'user-role': userRole,
-        'user-level': userLevel.toString()
-      }
+      headers: {
+        "internal-call": "true",
+        "user-role": userRole,
+        "user-level": userLevel.toString(),
+      },
     });
 
     let allRanges: ProductRange[] = [];
     let totalFound = 0;
-    
+
     if (rangesResponse.ok) {
       const realRanges = await rangesResponse.json();
-      console.log(`🎯 ${realRanges.length} gammes récupérées pour filtrage avancé`);
-      
+      console.log(
+        `🎯 ${realRanges.length} gammes récupérées pour filtrage avancé`,
+      );
+
       // Mapper et enrichir les données
-      const enrichedRanges = await Promise.all(realRanges.map(async (gamme: any, index: number) => {
-        // Simuler comptage de produits (dans la vraie app, récupérer depuis la base)
-        const productCount = Math.floor(Math.random() * 2000) + 50;
-        
-        return {
-          id: gamme.id,
-          name: gamme.name,
-          alias: gamme.alias,
-          description: gamme.alias || `Gamme automobile: ${gamme.name}`,
-          image: gamme.image ? `/images/gammes/${gamme.image}` : null,
-          product_count: productCount,
-          is_active: gamme.is_active,
-          is_top: gamme.is_top,
-          category: gamme.name.includes('Adaptateur') ? 'Adaptateurs' : 
-                   gamme.name.includes('Accumulateur') ? 'Systèmes' :
-                   gamme.name.includes('frein') ? 'Freinage' : 'Divers',
-          ...(userRole === 'pro' && enhanced && {
-            average_margin: Math.floor(Math.random() * 35) + 10,
-            monthly_sales: Math.floor(Math.random() * 1000) + 100,
-            stock_status: (['high', 'medium', 'low'] as const)[Math.floor(Math.random() * 3)],
-            performance_score: Math.floor(Math.random() * 100) + 1,
-            last_updated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-          })
-        } as ProductRange;
-      }));
-      
+      const enrichedRanges = await Promise.all(
+        realRanges.map(async (gamme: any, index: number) => {
+          // Simuler comptage de produits (dans la vraie app, récupérer depuis la base)
+          const productCount = Math.floor(Math.random() * 2000) + 50;
+
+          return {
+            id: gamme.id,
+            name: gamme.name,
+            alias: gamme.alias,
+            description: gamme.alias || `Gamme automobile: ${gamme.name}`,
+            image: gamme.image ? `/images/gammes/${gamme.image}` : null,
+            product_count: productCount,
+            is_active: gamme.is_active,
+            is_top: gamme.is_top,
+            category: gamme.name.includes("Adaptateur")
+              ? "Adaptateurs"
+              : gamme.name.includes("Accumulateur")
+                ? "Systèmes"
+                : gamme.name.includes("frein")
+                  ? "Freinage"
+                  : "Divers",
+            ...(userRole === "pro" &&
+              enhanced && {
+                average_margin: Math.floor(Math.random() * 35) + 10,
+                monthly_sales: Math.floor(Math.random() * 1000) + 100,
+                stock_status: (["high", "medium", "low"] as const)[
+                  Math.floor(Math.random() * 3)
+                ],
+                performance_score: Math.floor(Math.random() * 100) + 1,
+                last_updated: new Date(
+                  Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+                ).toISOString(),
+              }),
+          } as ProductRange;
+        }),
+      );
+
       // Appliquer les filtres
       let filteredRanges = enrichedRanges.filter((range) => {
         // Filtre de recherche
         if (search) {
           const searchTerm = search.toLowerCase();
           const matchName = range.name.toLowerCase().includes(searchTerm);
-          const matchAlias = range.alias && range.alias.toLowerCase().includes(searchTerm);
-          const matchCategory = range.category && range.category.toLowerCase().includes(searchTerm);
+          const matchAlias =
+            range.alias && range.alias.toLowerCase().includes(searchTerm);
+          const matchCategory =
+            range.category && range.category.toLowerCase().includes(searchTerm);
           if (!matchName && !matchAlias && !matchCategory) return false;
         }
-        
+
         // Filtre de statut
-        if (statusFilter === 'active' && !range.is_active) return false;
-        if (statusFilter === 'inactive' && range.is_active) return false;
-        if (statusFilter === 'top' && !range.is_top) return false;
-        
+        if (statusFilter === "active" && !range.is_active) return false;
+        if (statusFilter === "inactive" && range.is_active) return false;
+        if (statusFilter === "top" && !range.is_top) return false;
+
         return true;
       });
-      
+
       // Appliquer le tri
       filteredRanges.sort((a, b) => {
         switch (sortBy) {
-          case 'name':
+          case "name":
             return a.name.localeCompare(b.name);
-          case 'name_desc':
+          case "name_desc":
             return b.name.localeCompare(a.name);
-          case 'products':
+          case "products":
             return b.product_count - a.product_count;
-          case 'products_asc':
+          case "products_asc":
             return a.product_count - b.product_count;
-          case 'performance':
+          case "performance":
             return (b.performance_score || 0) - (a.performance_score || 0);
           default:
             return a.name.localeCompare(b.name);
         }
       });
-      
+
       totalFound = filteredRanges.length;
-      
+
       // Appliquer la pagination
       const startIndex = (page - 1) * limit;
       allRanges = filteredRanges.slice(startIndex, startIndex + limit);
     }
 
     const totalPages = Math.ceil(totalFound / limit);
-    
+
     return json<RangesAdvancedData>({
       user: {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       ranges: allRanges,
       stats: {
         total: totalFound,
-        active: allRanges.filter(r => r.is_active).length,
-        top: allRanges.filter(r => r.is_top).length,
+        active: allRanges.filter((r) => r.is_active).length,
+        top: allRanges.filter((r) => r.is_top).length,
         totalProducts: allRanges.reduce((sum, r) => sum + r.product_count, 0),
-        filtered: totalFound
+        filtered: totalFound,
       },
       pagination: {
         total: totalFound,
         page,
         limit,
-        totalPages
+        totalPages,
       },
       filters: {
         search,
         status: statusFilter,
         sort: sortBy,
-        view: viewMode
+        view: viewMode,
       },
-      enhanced
+      enhanced,
     });
-
   } catch (error) {
     console.error("❌ Erreur loader products.ranges.advanced:", error);
-    
+
     return json<RangesAdvancedData>({
-      user: { id: 'error', name: 'Erreur', level: 1, role: 'commercial' },
+      user: { id: "error", name: "Erreur", level: 1, role: "commercial" },
       ranges: [],
       stats: { total: 0, active: 0, top: 0, totalProducts: 0, filtered: 0 },
       pagination: { total: 0, page: 1, limit: 12, totalPages: 0 },
       filters: { search: "", status: "all", sort: "name", view: "grid" },
       enhanced: false,
-      error: "Impossible de charger les gammes"
+      error: "Impossible de charger les gammes",
     });
   }
 }
@@ -235,28 +270,28 @@ export default function ProductsRangesAdvanced() {
   const _handleSearch = (search: string) => {
     const newParams = new URLSearchParams(searchParams);
     if (search) {
-      newParams.set('search', search);
+      newParams.set("search", search);
     } else {
-      newParams.delete('search');
+      newParams.delete("search");
     }
-    newParams.set('page', '1'); // Retour à la première page
+    newParams.set("page", "1"); // Retour à la première page
     setSearchParams(newParams);
   };
 
   const handleFilter = (key: string, value: string) => {
     const newParams = new URLSearchParams(searchParams);
-    if (value && value !== 'all') {
+    if (value && value !== "all") {
       newParams.set(key, value);
     } else {
       newParams.delete(key);
     }
-    newParams.set('page', '1'); // Retour à la première page
+    newParams.set("page", "1"); // Retour à la première page
     setSearchParams(newParams);
   };
 
   const handlePageChange = (newPage: number) => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.set('page', newPage.toString());
+    newParams.set("page", newPage.toString());
     setSearchParams(newParams);
   };
 
@@ -271,10 +306,12 @@ export default function ProductsRangesAdvanced() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="text-center">
           <Package className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Erreur de chargement</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Erreur de chargement
+          </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={() => window.location.reload()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -295,10 +332,12 @@ export default function ProductsRangesAdvanced() {
             Products Admin
           </Link>
         </Button>
-        
+
         <div className="flex-1">
           <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-            <Link to="/products/admin" className="hover:text-gray-900">Products</Link>
+            <Link to="/products/admin" className="hover:text-gray-900">
+              Products
+            </Link>
             <span>/</span>
             <span className="text-gray-900">Gammes Avancées</span>
           </div>
@@ -306,7 +345,8 @@ export default function ProductsRangesAdvanced() {
             🏷️ Gestion Avancée des Gammes
           </h1>
           <p className="text-gray-600">
-            {stats.filtered} gammes trouvées • {stats.totalProducts.toLocaleString()} produits total
+            {stats.filtered} gammes trouvées •{" "}
+            {stats.totalProducts.toLocaleString()} produits total
           </p>
         </div>
 
@@ -315,8 +355,8 @@ export default function ProductsRangesAdvanced() {
             ⚡ Mode Avancé
           </Badge>
         )}
-        
-        {user.role === 'pro' && (
+
+        {user.role === "pro" && (
           <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
             💎 PRO
           </Badge>
@@ -327,25 +367,33 @@ export default function ProductsRangesAdvanced() {
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.total}
+            </div>
             <p className="text-sm text-gray-600">Gammes Total</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.active}
+            </div>
             <p className="text-sm text-gray-600">Actives</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">{stats.top}</div>
+            <div className="text-2xl font-bold text-orange-600">
+              {stats.top}
+            </div>
             <p className="text-sm text-gray-600">Top Gammes</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.totalProducts.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {stats.totalProducts.toLocaleString()}
+            </div>
             <p className="text-sm text-gray-600">Produits</p>
           </CardContent>
         </Card>
@@ -375,11 +423,11 @@ export default function ProductsRangesAdvanced() {
                 </Button>
               </Form>
             </div>
-            
+
             {/* Filtre statut */}
-            <Select 
-              value={filters.status} 
-              onValueChange={(value) => handleFilter('status', value)}
+            <Select
+              value={filters.status}
+              onValueChange={(value) => handleFilter("status", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Statut" />
@@ -393,9 +441,9 @@ export default function ProductsRangesAdvanced() {
             </Select>
 
             {/* Tri */}
-            <Select 
-              value={filters.sort} 
-              onValueChange={(value) => handleFilter('sort', value)}
+            <Select
+              value={filters.sort}
+              onValueChange={(value) => handleFilter("sort", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Trier par" />
@@ -404,17 +452,19 @@ export default function ProductsRangesAdvanced() {
                 <SelectItem value="name">📝 Nom A-Z</SelectItem>
                 <SelectItem value="name_desc">📝 Nom Z-A</SelectItem>
                 <SelectItem value="products">📦 Plus de produits</SelectItem>
-                <SelectItem value="products_asc">📦 Moins de produits</SelectItem>
-                {user.role === 'pro' && enhanced && (
+                <SelectItem value="products_asc">
+                  📦 Moins de produits
+                </SelectItem>
+                {user.role === "pro" && enhanced && (
                   <SelectItem value="performance">📈 Performance</SelectItem>
                 )}
               </SelectContent>
             </Select>
 
             {/* Limite par page */}
-            <Select 
-              value={pagination.limit.toString()} 
-              onValueChange={(value) => handleFilter('limit', value)}
+            <Select
+              value={pagination.limit.toString()}
+              onValueChange={(value) => handleFilter("limit", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Par page" />
@@ -430,37 +480,37 @@ export default function ProductsRangesAdvanced() {
             {/* Vue */}
             <div className="flex gap-2">
               <Button
-                variant={filters.view === 'grid' ? 'default' : 'outline'}
+                variant={filters.view === "grid" ? "default" : "outline"}
                 size="sm"
-                onClick={() => handleFilter('view', 'grid')}
+                onClick={() => handleFilter("view", "grid")}
               >
                 <Grid className="h-4 w-4" />
               </Button>
               <Button
-                variant={filters.view === 'list' ? 'default' : 'outline'}
+                variant={filters.view === "list" ? "default" : "outline"}
                 size="sm"
-                onClick={() => handleFilter('view', 'list')}
+                onClick={() => handleFilter("view", "list")}
               >
                 <List className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          
+
           {/* Actions rapides */}
           <div className="flex gap-2 mt-4 pt-4 border-t">
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/products/ranges?enhanced=true">
-                ⚡ Mode Avancé
-              </Link>
+              <Link to="/products/ranges?enhanced=true">⚡ Mode Avancé</Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/products/catalog">
-                📦 Voir Catalogue
-              </Link>
+              <Link to="/products/catalog">📦 Voir Catalogue</Link>
             </Button>
           </div>
         </CardContent>
@@ -471,13 +521,18 @@ export default function ProductsRangesAdvanced() {
         <Card>
           <CardContent className="text-center py-12">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune gamme trouvée</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Aucune gamme trouvée
+            </h3>
             <p className="text-gray-600 mb-4">
               Essayez de modifier vos critères de recherche ou vos filtres.
             </p>
-            <Button variant="outline" onClick={() => {
-              setSearchParams(new URLSearchParams({ page: '1' }));
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchParams(new URLSearchParams({ page: "1" }));
+              }}
+            >
               Réinitialiser les filtres
             </Button>
           </CardContent>
@@ -485,10 +540,13 @@ export default function ProductsRangesAdvanced() {
       ) : (
         <>
           {/* Gammes en mode grille */}
-          {filters.view === 'grid' && (
+          {filters.view === "grid" && (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
               {ranges.map((range) => (
-                <Card key={range.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={range.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -497,12 +555,16 @@ export default function ProductsRangesAdvanced() {
                         </CardTitle>
                         <div className="flex items-center gap-2 mb-2">
                           {range.is_active ? (
-                            <Badge className="bg-success/20 text-success">✅ Actif</Badge>
+                            <Badge className="bg-success/20 text-success">
+                              ✅ Actif
+                            </Badge>
                           ) : (
                             <Badge variant="secondary">❌ Inactif</Badge>
                           )}
                           {range.is_top && (
-                            <Badge className="bg-warning/20 text-warning">⭐ Top</Badge>
+                            <Badge className="bg-warning/20 text-warning">
+                              ⭐ Top
+                            </Badge>
                           )}
                         </div>
                         <p className="text-sm text-gray-600 line-clamp-2">
@@ -511,41 +573,61 @@ export default function ProductsRangesAdvanced() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent>
                     {/* Statistiques de la gamme */}
                     <div className="space-y-3 mb-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Produits</span>
-                        <span className="font-medium">{range.product_count.toLocaleString()}</span>
+                        <span className="font-medium">
+                          {range.product_count.toLocaleString()}
+                        </span>
                       </div>
-                      
-                      {user.role === 'pro' && enhanced && range.average_margin && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Marge moy.</span>
-                          <span className="font-medium text-green-600">{range.average_margin}%</span>
-                        </div>
-                      )}
-                      
-                      {user.role === 'pro' && enhanced && range.monthly_sales && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Ventes/mois</span>
-                          <span className="font-medium">{range.monthly_sales}</span>
-                        </div>
-                      )}
-                      
-                      {user.role === 'pro' && enhanced && range.stock_status && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Stock</span>
-                          <Badge variant={
-                            range.stock_status === 'high' ? 'default' : 
-                            range.stock_status === 'medium' ? 'secondary' : 'destructive'
-                          }>
-                            {range.stock_status === 'high' ? '🟢 Élevé' :
-                             range.stock_status === 'medium' ? '🟡 Moyen' : '🔴 Faible'}
-                          </Badge>
-                        </div>
-                      )}
+
+                      {user.role === "pro" &&
+                        enhanced &&
+                        range.average_margin && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">Marge moy.</span>
+                            <span className="font-medium text-green-600">
+                              {range.average_margin}%
+                            </span>
+                          </div>
+                        )}
+
+                      {user.role === "pro" &&
+                        enhanced &&
+                        range.monthly_sales && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">Ventes/mois</span>
+                            <span className="font-medium">
+                              {range.monthly_sales}
+                            </span>
+                          </div>
+                        )}
+
+                      {user.role === "pro" &&
+                        enhanced &&
+                        range.stock_status && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">Stock</span>
+                            <Badge
+                              variant={
+                                range.stock_status === "high"
+                                  ? "default"
+                                  : range.stock_status === "medium"
+                                    ? "secondary"
+                                    : "destructive"
+                              }
+                            >
+                              {range.stock_status === "high"
+                                ? "🟢 Élevé"
+                                : range.stock_status === "medium"
+                                  ? "🟡 Moyen"
+                                  : "🔴 Faible"}
+                            </Badge>
+                          </div>
+                        )}
                     </div>
 
                     {/* Actions */}
@@ -571,7 +653,7 @@ export default function ProductsRangesAdvanced() {
           )}
 
           {/* Gammes en mode liste */}
-          {filters.view === 'list' && (
+          {filters.view === "list" && (
             <Card className="mb-8">
               <CardContent className="p-0">
                 <div className="divide-y">
@@ -585,12 +667,16 @@ export default function ProductsRangesAdvanced() {
                             </h3>
                             <div className="flex items-center gap-2">
                               {range.is_active ? (
-                                <Badge className="bg-success/20 text-success">✅</Badge>
+                                <Badge className="bg-success/20 text-success">
+                                  ✅
+                                </Badge>
                               ) : (
                                 <Badge variant="secondary">❌</Badge>
                               )}
                               {range.is_top && (
-                                <Badge className="bg-warning/20 text-warning">⭐</Badge>
+                                <Badge className="bg-warning/20 text-warning">
+                                  ⭐
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -598,13 +684,21 @@ export default function ProductsRangesAdvanced() {
                             {range.description}
                           </p>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>📦 {range.product_count.toLocaleString()} produits</span>
-                            {user.role === 'pro' && enhanced && range.average_margin && (
-                              <span>💰 {range.average_margin}% marge</span>
-                            )}
-                            {user.role === 'pro' && enhanced && range.monthly_sales && (
-                              <span>📊 {range.monthly_sales} ventes/mois</span>
-                            )}
+                            <span>
+                              📦 {range.product_count.toLocaleString()} produits
+                            </span>
+                            {user.role === "pro" &&
+                              enhanced &&
+                              range.average_margin && (
+                                <span>💰 {range.average_margin}% marge</span>
+                              )}
+                            {user.role === "pro" &&
+                              enhanced &&
+                              range.monthly_sales && (
+                                <span>
+                                  📊 {range.monthly_sales} ventes/mois
+                                </span>
+                              )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
@@ -641,11 +735,15 @@ export default function ProductsRangesAdvanced() {
                     </span>
                     <span>•</span>
                     <span>
-                      {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} 
+                      {(pagination.page - 1) * pagination.limit + 1}-
+                      {Math.min(
+                        pagination.page * pagination.limit,
+                        pagination.total,
+                      )}
                       sur {pagination.total} gammes
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -656,24 +754,31 @@ export default function ProductsRangesAdvanced() {
                       <ChevronLeft className="h-4 w-4" />
                       Précédent
                     </Button>
-                    
+
                     {/* Pages rapides */}
                     <div className="flex gap-1">
-                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                        const pageNum = i + 1;
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={pageNum === pagination.page ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => handlePageChange(pageNum)}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, pagination.totalPages) },
+                        (_, i) => {
+                          const pageNum = i + 1;
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={
+                                pageNum === pagination.page
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() => handlePageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        },
+                      )}
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"

@@ -84,7 +84,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
     // Récupérer les détails de l'utilisateur depuis l'API admin legacy
     const response = await fetch(
-      `http://localhost:3000/api/legacy-users/${userId}`,
+      `http://127.0.0.1:3000/api/legacy-users/${userId}`,
       {
         headers: {
           Cookie: cookie,
@@ -128,7 +128,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
     try {
       const statsResponse = await fetch(
-        `http://localhost:3000/api/legacy-users/${userId}/stats`,
+        `http://127.0.0.1:3000/api/legacy-users/${userId}/stats`,
         {
           headers: {
             Cookie: cookie,
@@ -160,7 +160,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
     try {
       const ordersResponse = await fetch(
-        `http://localhost:3000/api/legacy-users/${userId}/orders?limit=5`,
+        `http://127.0.0.1:3000/api/legacy-users/${userId}/orders?limit=5`,
         {
           headers: {
             Cookie: cookie,

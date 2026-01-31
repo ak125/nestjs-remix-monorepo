@@ -4,6 +4,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -17,7 +18,7 @@ export const handle = {
   }),
 };
 
-const API_URL = process.env.API_URL || "http://localhost:3000";
+const API_URL = getInternalApiUrl("");
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {

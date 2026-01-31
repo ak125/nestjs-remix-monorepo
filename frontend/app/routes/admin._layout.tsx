@@ -1,25 +1,28 @@
 import { type LoaderFunctionArgs, redirect, json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { Alert } from '~/components/ui';
 import { getOptionalUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
+import { Alert } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
   if (!user) throw redirect("/login");
   if (!user.level || user.level < 5) throw redirect("/unauthorized");
-  
+
   // Récupérer les statistiques du dashboard pour le sidebar
   let stats = null;
   try {
-    const statsResponse = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/stats`);
+    const statsResponse = await fetch(
+      `${getInternalApiUrl("")}/api/dashboard/stats`,
+    );
     if (statsResponse.ok) {
       stats = await statsResponse.json();
     }
   } catch (error) {
-    console.log('Erreur récupération stats sidebar:', error);
+    console.log("Erreur récupération stats sidebar:", error);
   }
-  
+
   return json({ user, stats });
 }
 
@@ -32,11 +35,19 @@ export default function AdminLayout() {
         <main className="min-h-screen p-6">
           <div className="mb-4 text-sm text-gray-600 flex items-center justify-between">
             <span>
-              Connecté en tant que: {user.firstName} {user.lastName} ({user.email})
+              Connecté en tant que: {user.firstName} {user.lastName} (
+              {user.email})
             </span>
-            {stats && typeof stats === 'object' && 'seoStats' in stats && (stats as any).seoStats && (
-              <Alert intent="success">🔍 SEO: {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}% optimisé</Alert>
-            )}
+            {stats &&
+              typeof stats === "object" &&
+              "seoStats" in stats &&
+              (stats as any).seoStats && (
+                <Alert intent="success">
+                  🔍 SEO:{" "}
+                  {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}%
+                  optimisé
+                </Alert>
+              )}
           </div>
           <Outlet />
         </main>

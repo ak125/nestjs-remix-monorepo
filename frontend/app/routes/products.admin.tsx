@@ -54,6 +54,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // API Product Interface (from backend)
 interface APIProduct {
@@ -190,7 +191,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     lowStock,
   });
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Appels API pour interface commerciale

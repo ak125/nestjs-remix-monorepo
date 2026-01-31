@@ -30,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Log via l'API interne optimisée
     try {
       await fetch(
-        `${process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"}/api/errors/log`,
+        `${process.env.INTERNAL_API_BASE_URL || "http://127.0.0.1:3000"}/api/errors/log`,
         {
           method: "POST",
           headers: {
@@ -48,7 +48,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 2. Vérifier s'il existe une redirection via API optimisée
     try {
       const redirectResponse = await fetch(
-        `${process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"}/api/redirects/check?url=${encodeURIComponent(pathname)}`,
+        `${process.env.INTERNAL_API_BASE_URL || "http://127.0.0.1:3000"}/api/redirects/check?url=${encodeURIComponent(pathname)}`,
         {
           headers: { "Internal-Call": "true" },
         },
@@ -87,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (pathname.startsWith("/pieces-auto/")) {
       try {
         const legacyResponse = await fetch(
-          `${process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"}/api/redirects/resolve-legacy?url=${encodeURIComponent(pathname)}`,
+          `${process.env.INTERNAL_API_BASE_URL || "http://127.0.0.1:3000"}/api/redirects/resolve-legacy?url=${encodeURIComponent(pathname)}`,
           {
             headers: { "Internal-Call": "true" },
           },
@@ -145,7 +145,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     let suggestions: string[] = [];
     try {
       const suggestionsResponse = await fetch(
-        `${process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"}/api/errors/suggestions?url=${encodeURIComponent(pathname)}`,
+        `${process.env.INTERNAL_API_BASE_URL || "http://127.0.0.1:3000"}/api/errors/suggestions?url=${encodeURIComponent(pathname)}`,
         {
           headers: { "Internal-Call": "true" },
         },

@@ -15,6 +15,7 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => [
   { title: "SEO Dashboard - Admin" },
@@ -64,7 +65,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // Appel à l'API backend
-    const apiUrl = `${process.env.BACKEND_URL || "http://localhost:3000"}/api/seo/metrics/report?startDate=${startDate}&endDate=${endDate}`;
+    const apiUrl = `${getInternalApiUrl("")}/api/seo/metrics/report?startDate=${startDate}&endDate=${endDate}`;
 
     const response = await fetch(apiUrl);
 
@@ -526,6 +527,7 @@ function SimpleBarChart({ data }: { data: DailyMetric[] }) {
               className="w-full bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer group relative"
               style={{ height: `${height}%`, minHeight: "4px" }}
             >
+              {/* eslint-disable-next-line no-restricted-syntax -- Tooltip hidden by default, shown on hover */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
                 {day.date}: {day.clicks} clics ({day.ctr}%)
               </div>

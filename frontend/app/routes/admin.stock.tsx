@@ -1,10 +1,20 @@
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
-import { useState, useEffect } from 'react';
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  useActionData,
+  Form,
+  useNavigation,
+} from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui";
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {
@@ -49,26 +59,26 @@ interface StockFilters {
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const searchParams = url.searchParams;
-  
+
   // Récupérer les filtres de l'URL
   const filters: StockFilters = {
-    search: searchParams.get('search') || undefined,
-    location: searchParams.get('location') || undefined,
-    lowStock: searchParams.get('lowStock') === 'true',
-    outOfStock: searchParams.get('outOfStock') === 'true',
-    page: parseInt(searchParams.get('page') || '1'),
-    limit: parseInt(searchParams.get('limit') || '50'),
+    search: searchParams.get("search") || undefined,
+    location: searchParams.get("location") || undefined,
+    lowStock: searchParams.get("lowStock") === "true",
+    outOfStock: searchParams.get("outOfStock") === "true",
+    page: parseInt(searchParams.get("page") || "1"),
+    limit: parseInt(searchParams.get("limit") || "50"),
   };
 
   try {
     // Appel à la nouvelle API consolidée
-    const baseUrl = process.env.API_URL || 'http://localhost:3000';
-    
+    const baseUrl = getInternalApiUrl("");
+
     // Dashboard et stats
     const statsResponse = await fetch(`${baseUrl}/api/admin/stock/stats`);
-    
+
     const statsData = statsResponse.ok ? await statsResponse.json() : null;
-    
+
     // Construire le dashboard dans le bon format
     const dashboard: StockDashboard = {
       statistics: {
@@ -86,22 +96,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Stock avec filtres - utiliser search si on a une recherche
     let stockParams = new URLSearchParams();
     if (filters.search) {
-      stockParams.append('search', filters.search);
+      stockParams.append("search", filters.search);
     }
-    if (filters.page) stockParams.append('page', filters.page.toString());
-    if (filters.limit) stockParams.append('limit', filters.limit.toString());
+    if (filters.page) stockParams.append("page", filters.page.toString());
+    if (filters.limit) stockParams.append("limit", filters.limit.toString());
 
-    const stockEndpoint = filters.search 
+    const stockEndpoint = filters.search
       ? `${baseUrl}/api/admin/stock/search?${stockParams}`
       : `${baseUrl}/api/admin/stock/dashboard?${stockParams}`;
-    
+
     const stockResponse = await fetch(stockEndpoint);
-    const stockResponseData = stockResponse.ok ? await stockResponse.json() : null;
-    
+    const stockResponseData = stockResponse.ok
+      ? await stockResponse.json()
+      : null;
+
     // Adapter les données au format attendu
     const stockData = {
       items: stockResponseData?.data?.items || stockResponseData?.data || [],
-      total: stockResponseData?.data?.total || stockResponseData?.data?.length || 0,
+      total:
+        stockResponseData?.data?.total || stockResponseData?.data?.length || 0,
       stats: statsData?.data || {},
     };
 
@@ -112,12 +125,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       success: true,
     });
   } catch (error) {
-    console.error('Erreur chargement stock:', error);
+    console.error("Erreur chargement stock:", error);
     return json({
       dashboard: null,
       stockData: { items: [], total: 0, stats: {} },
       filters,
-      error: 'Erreur de chargement des données stock',
+      error: "Erreur de chargement des données stock",
       success: false,
     });
   }
@@ -126,50 +139,56 @@ export async function loader({ request }: LoaderFunctionArgs) {
 // Action pour les actions sur le stock
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const actionType = formData.get('actionType') as string;
-  
-  const baseUrl = process.env.API_URL || 'http://localhost:3000';
+  const actionType = formData.get("actionType") as string;
+
+  const baseUrl = getInternalApiUrl("");
 
   try {
     switch (actionType) {
-      case 'recordMovement': {
+      case "recordMovement": {
         const movement = {
-          productId: formData.get('productId') as string,
-          movementType: formData.get('movementType') as string,
-          quantity: parseInt(formData.get('quantity') as string),
-          reason: formData.get('reason') as string,
-          notes: formData.get('notes') as string,
+          productId: formData.get("productId") as string,
+          movementType: formData.get("movementType") as string,
+          quantity: parseInt(formData.get("quantity") as string),
+          reason: formData.get("reason") as string,
+          notes: formData.get("notes") as string,
         };
 
-        const response = await fetch(`${baseUrl}/api/admin/stock/${movement.productId}/reserve`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(movement),
-        });
+        const response = await fetch(
+          `${baseUrl}/api/admin/stock/${movement.productId}/reserve`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(movement),
+          },
+        );
 
         if (response.ok) {
-          return json({ success: true, message: 'Mouvement enregistré avec succès' });
+          return json({
+            success: true,
+            message: "Mouvement enregistré avec succès",
+          });
         } else {
           const error = await response.json();
           return json({ success: false, error: error.message });
         }
       }
 
-      case 'adjustInventory': {
-        const productId = formData.get('productId') as string;
+      case "adjustInventory": {
+        const productId = formData.get("productId") as string;
         const adjustment = {
-          actualQuantity: parseInt(formData.get('actualQuantity') as string),
-          reason: formData.get('reason') as string,
-          notes: formData.get('notes') as string,
+          actualQuantity: parseInt(formData.get("actualQuantity") as string),
+          reason: formData.get("reason") as string,
+          notes: formData.get("notes") as string,
         };
 
         const response = await fetch(
           `${baseUrl}/api/admin/stock/${productId}/availability`,
           {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(adjustment),
-          }
+          },
         );
 
         if (response.ok) {
@@ -182,56 +201,61 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       default:
-        return json({ success: false, error: 'Action non reconnue' });
+        return json({ success: false, error: "Action non reconnue" });
     }
   } catch (error) {
-    console.error('Erreur action stock:', error);
-    return json({ 
-      success: false, 
-      error: 'Erreur lors de l\'exécution de l\'action' 
+    console.error("Erreur action stock:", error);
+    return json({
+      success: false,
+      error: "Erreur lors de l'exécution de l'action",
     });
   }
 }
 
 // Composant principal
 export default function AdminStock() {
-  const { dashboard, stockData, filters, success } = useLoaderData<typeof loader>();
+  const { dashboard, stockData, filters, success } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  
-  const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null);
+
+  const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(
+    null,
+  );
   const [showMovementModal, setShowMovementModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
 
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state === "submitting";
 
   // Afficher les notifications
   useEffect(() => {
     if (actionData?.success) {
       // Notification de succès
-      console.log('✅ Action réussie');
+      console.log("✅ Action réussie");
     }
   }, [actionData]);
 
   if (!success) {
     return (
       <div className="p-6">
-              {!success && (
-<Alert className="rounded-lg p-4" variant="error">
-          <h2 className="text-lg font-semibold text-red-800">
-            Erreur de chargement
-          </h2>
-          <p className="text-red-600">Impossible de charger les données stock.</p>
-          <div className="mt-4 text-sm text-red-500">
-            <p>Vérifiez que :</p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Le serveur backend est démarré</li>
-              <li>Le service working-stock est activé</li>
-              <li>Les routes /api/admin/stock/* sont disponibles</li>
-            </ul>
-          </div>
-        </Alert>
-      )}
+        {!success && (
+          <Alert className="rounded-lg p-4" variant="error">
+            <h2 className="text-lg font-semibold text-red-800">
+              Erreur de chargement
+            </h2>
+            <p className="text-red-600">
+              Impossible de charger les données stock.
+            </p>
+            <div className="mt-4 text-sm text-red-500">
+              <p>Vérifiez que :</p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Le serveur backend est démarré</li>
+                <li>Le service working-stock est activé</li>
+                <li>Les routes /api/admin/stock/* sont disponibles</li>
+              </ul>
+            </div>
+          </Alert>
+        )}
       </div>
     );
   }
@@ -260,8 +284,8 @@ export default function AdminStock() {
           </button>
           <button
             onClick={() => {
-              const url = `${process.env.API_URL || 'http://localhost:3000'}/api/admin/stock/health`;
-              window.open(url, '_blank');
+              const url = `${getInternalApiUrl("")}/api/admin/stock/health`;
+              window.open(url, "_blank");
             }}
             className="bg-success hover:bg-success/90 text-success-foreground px-4 py-2 rounded-lg transition-colors"
           >
@@ -276,7 +300,9 @@ export default function AdminStock() {
           <div className="bg-white p-6 rounded-lg shadow border">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Produits Total</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Produits Total
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboard.statistics.totalProducts}
                 </p>
@@ -288,7 +314,9 @@ export default function AdminStock() {
           <div className="bg-white p-6 rounded-lg shadow border">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Rupture Stock</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Rupture Stock
+                </p>
                 <p className="text-2xl font-bold text-red-600">
                   {dashboard.statistics.outOfStock}
                 </p>
@@ -300,7 +328,9 @@ export default function AdminStock() {
           <div className="bg-white p-6 rounded-lg shadow border">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Stock Faible</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Stock Faible
+                </p>
                 <p className="text-2xl font-bold text-orange-600">
                   {dashboard.statistics.lowStock}
                 </p>
@@ -380,7 +410,13 @@ export default function AdminStock() {
           </div>
 
           <div className="flex items-end">
-            <Button className="w-full  px-4 py-2 rounded-lg" variant="blue" type="submit">\n  🔍 Filtrer\n</Button>
+            <Button
+              className="w-full  px-4 py-2 rounded-lg"
+              variant="blue"
+              type="submit"
+            >
+              \n 🔍 Filtrer\n
+            </Button>
           </div>
         </Form>
       </div>
@@ -392,7 +428,7 @@ export default function AdminStock() {
             Stock ({stockData.total} produits)
           </h2>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -428,23 +464,19 @@ export default function AdminStock() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Intl.NumberFormat('fr-FR', {
-                      style: 'currency',
-                      currency: 'EUR',
+                    {new Intl.NumberFormat("fr-FR", {
+                      style: "currency",
+                      currency: "EUR",
                     }).format(parseFloat(item.pri_vente_ttc))}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {parseFloat(item.pri_marge).toFixed(1)}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.pri_dispo === '1' ? (
-                      <Badge variant="success">
-                        ✓ Disponible
-                      </Badge>
+                    {item.pri_dispo === "1" ? (
+                      <Badge variant="success">✓ Disponible</Badge>
                     ) : (
-                      <Badge variant="error">
-                        ✗ Indisponible
-                      </Badge>
+                      <Badge variant="error">✗ Indisponible</Badge>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -498,11 +530,15 @@ export default function AdminStock() {
             <p className="text-sm text-gray-600 mb-4">
               {selectedProduct.pri_ref} - {selectedProduct.pri_des}
             </p>
-            
+
             <Form method="post" onSubmit={() => setShowMovementModal(false)}>
               <input type="hidden" name="actionType" value="recordMovement" />
-              <input type="hidden" name="productId" value={selectedProduct.pri_piece_id} />
-              
+              <input
+                type="hidden"
+                name="productId"
+                value={selectedProduct.pri_piece_id}
+              />
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -520,7 +556,7 @@ export default function AdminStock() {
                     <option value="RETURN">Retour</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Quantité
@@ -533,7 +569,7 @@ export default function AdminStock() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Raison
@@ -546,7 +582,7 @@ export default function AdminStock() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Notes (optionnel)
@@ -558,7 +594,7 @@ export default function AdminStock() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
@@ -567,8 +603,14 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="blue" type="submit"
-                  disabled={isSubmitting}>\n  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}\n</Button>
+                <Button
+                  className="px-4 py-2  rounded-lg disabled:opacity-50"
+                  variant="blue"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  \n {isSubmitting ? "Enregistrement..." : "Enregistrer"}\n
+                </Button>
               </div>
             </Form>
           </div>
@@ -586,13 +628,20 @@ export default function AdminStock() {
               {selectedProduct.pri_ref} - {selectedProduct.pri_des}
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              État: {selectedProduct.pri_dispo === '1' ? 'Disponible' : 'Indisponible'}
+              État:{" "}
+              {selectedProduct.pri_dispo === "1"
+                ? "Disponible"
+                : "Indisponible"}
             </p>
-            
+
             <Form method="post" onSubmit={() => setShowAdjustModal(false)}>
               <input type="hidden" name="actionType" value="adjustInventory" />
-              <input type="hidden" name="productId" value={selectedProduct.pri_piece_id} />
-              
+              <input
+                type="hidden"
+                name="productId"
+                value={selectedProduct.pri_piece_id}
+              />
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -607,7 +656,7 @@ export default function AdminStock() {
                     <option value="0">Indisponible</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Raison de l'ajustement
@@ -620,7 +669,7 @@ export default function AdminStock() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Notes (optionnel)
@@ -632,7 +681,7 @@ export default function AdminStock() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
@@ -641,8 +690,14 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="green" type="submit"
-                  disabled={isSubmitting}>\n  {isSubmitting ? 'Ajustement...' : 'Ajuster'}\n</Button>
+                <Button
+                  className="px-4 py-2  rounded-lg disabled:opacity-50"
+                  variant="green"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  \n {isSubmitting ? "Ajustement..." : "Ajuster"}\n
+                </Button>
               </div>
             </Form>
           </div>

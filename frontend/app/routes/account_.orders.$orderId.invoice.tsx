@@ -378,13 +378,13 @@ export default function OrderInvoice() {
             <div className="text-center">
               <form
                 method="post"
-                action={`${process.env.BACKEND_URL || "http://localhost:3000"}/api/payments/proceed-supplement`}
+                action="/api/payments/proceed-supplement"
                 onSubmit={async (e) => {
                   e.preventDefault();
 
                   try {
                     const response = await fetch(
-                      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/payments/proceed-supplement`,
+                      "/api/payments/proceed-supplement",
                       {
                         method: "POST",
                         credentials: "include",

@@ -5,9 +5,17 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
+import {
+  Shield,
+  Users,
+  Crown,
+  Settings,
+  AlertCircle,
+  MessageSquare,
+  Mail,
+} from "lucide-react";
 import { requireUser } from "../auth/unified.server";
+import { Alert } from "~/components/ui/alert";
 
 // Interface pour les données staff basée sur les vraies données users
 interface StaffMember {
@@ -33,28 +41,32 @@ interface StaffData {
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
-  
+
   // Vérifier les permissions admin
   if (!user.level || user.level < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
   }
 
   try {
-    console.log('🔄 Chargement du staff depuis l\'endpoint test-staff...');
-    
+    console.log("🔄 Chargement du staff depuis l'endpoint test-staff...");
+
     // ✅ Utiliser l'endpoint test-staff (public, sans auth)
-    const baseUrl = 'http://localhost:3000';
-    
+    const baseUrl = "http://127.0.0.1:3000";
+
     // 1. Utiliser l'endpoint test-staff qui ne nécessite pas d'authentification
     try {
-      const staffResponse = await fetch(`${baseUrl}/api/legacy-users/test-staff?page=1&limit=100`);
+      const staffResponse = await fetch(
+        `${baseUrl}/api/legacy-users/test-staff?page=1&limit=100`,
+      );
 
       if (staffResponse.ok) {
         const staffData = await staffResponse.json();
 
         if (staffData.success && staffData.data) {
-          console.log(`✅ Endpoint test-staff utilisé avec succès - ${staffData.total} membres trouvés`);
-          
+          console.log(
+            `✅ Endpoint test-staff utilisé avec succès - ${staffData.total} membres trouvés`,
+          );
+
           // Les données sont déjà dans le bon format
           const staffMembers = staffData.data;
 
@@ -63,26 +75,29 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
             total: staffData.total,
             fallbackMode: false,
             messagesEnabled: true,
-            apiSource: 'test-staff-endpoint',
+            apiSource: "test-staff-endpoint",
           } as StaffData);
         }
       }
     } catch (staffApiError) {
-      console.log('ℹ️ Endpoint test-staff non disponible, fallback vers API users:', staffApiError);
+      console.log(
+        "ℹ️ Endpoint test-staff non disponible, fallback vers API users:",
+        staffApiError,
+      );
     }
 
     // 2. Fallback vers l'API users existante (si test-staff échoue)
     const apiUrl = new URL(`${baseUrl}/api/legacy-users`);
-    apiUrl.searchParams.set('limit', '100');
-    apiUrl.searchParams.set('page', '1');
-    
+    apiUrl.searchParams.set("limit", "100");
+    apiUrl.searchParams.set("page", "1");
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
+
     const response = await fetch(apiUrl.toString(), {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       signal: controller.signal,
     });
@@ -91,11 +106,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('📊 Réponse API users reçue:', JSON.stringify(data, null, 2));
-      
+      console.log("📊 Réponse API users reçue:", JSON.stringify(data, null, 2));
+
       // Valider la structure des données users
       let allUsers: any[] = [];
-      
+
       if (data && Array.isArray(data.users)) {
         allUsers = data.users;
       } else if (data && Array.isArray(data.data)) {
@@ -103,59 +118,68 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       } else if (data && Array.isArray(data)) {
         allUsers = data;
       } else {
-        console.warn('⚠️ Structure de données inattendue, utilisation mode minimal');
+        console.warn(
+          "⚠️ Structure de données inattendue, utilisation mode minimal",
+        );
         return json({
           staff: [],
           total: 0,
           fallbackMode: true,
           messagesEnabled: false,
-          apiSource: 'minimal-fallback',
+          apiSource: "minimal-fallback",
         } as StaffData);
       }
-      
+
       // Filtrer pour ne garder que le staff (niveau >= 7)
       const staffMembers = allUsers.filter((member: any) => {
         return member && member.level && Number(member.level) >= 7;
       });
-      
-      console.log(`✅ ${staffMembers.length} membres du staff trouvés sur ${allUsers.length} utilisateurs`);
-      
+
+      console.log(
+        `✅ ${staffMembers.length} membres du staff trouvés sur ${allUsers.length} utilisateurs`,
+      );
+
       return json({
         staff: staffMembers,
         total: staffMembers.length,
         fallbackMode: true,
         messagesEnabled: false,
-        apiSource: 'users-api',
+        apiSource: "users-api",
       } as StaffData);
     } else {
-      console.error('❌ Erreur API:', response.status, response.statusText);
-      
+      console.error("❌ Erreur API:", response.status, response.statusText);
+
       return json({
         staff: [],
         total: 0,
         fallbackMode: true,
         messagesEnabled: false,
-        apiSource: 'error-fallback',
+        apiSource: "error-fallback",
       } as StaffData);
     }
   } catch (error: any) {
-    console.error('❌ Erreur lors du chargement du staff:', error);
-    
+    console.error("❌ Erreur lors du chargement du staff:", error);
+
     // Mode fallback d'urgence
     return json({
-      staff: [{
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        level: typeof user.level === 'number' ? user.level : parseInt(user.level || '9'),
-        isActive: true,
-        department: 'Administration',
-        phone: '',
-        role: 'Super Admin',
-      }],
+      staff: [
+        {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          level:
+            typeof user.level === "number"
+              ? user.level
+              : parseInt(user.level || "9"),
+          isActive: true,
+          department: "Administration",
+          phone: "",
+          role: "Super Admin",
+        },
+      ],
       total: 1,
-      error: 'Erreur de connexion à l\'API',
+      error: "Erreur de connexion à l'API",
       fallbackMode: true,
       messagesEnabled: false,
     } as StaffData);
@@ -163,17 +187,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function AdminStaff() {
-  const { staff, total, error, fallbackMode, messagesEnabled } = useLoaderData<StaffData>();
+  const { staff, total, error, fallbackMode, messagesEnabled } =
+    useLoaderData<StaffData>();
 
   const getRoleColor = (level: number) => {
-    if (level >= 9) return 'warning';
-    if (level >= 8) return 'info';
-    if (level >= 7) return 'success';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (level >= 9) return "warning";
+    if (level >= 8) return "info";
+    if (level >= 7) return "success";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'error';
+    return isActive ? "success" : "error";
   };
 
   return (
@@ -184,10 +209,13 @@ export default function AdminStaff() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Shield className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Gestion du Personnel</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Gestion du Personnel
+              </h1>
             </div>
             <p className="text-gray-600">
-              Personnel administratif depuis les vraies données utilisateur (niveau ≥ 7)
+              Personnel administratif depuis les vraies données utilisateur
+              (niveau ≥ 7)
             </p>
             {messagesEnabled && (
               <p className="text-sm text-green-600 mt-1">
@@ -197,16 +225,16 @@ export default function AdminStaff() {
           </div>
           <div className="flex gap-3">
             {messagesEnabled && (
-              <Link 
-                to="/admin/messages" 
+              <Link
+                to="/admin/messages"
                 className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg"
               >
                 <MessageSquare className="h-4 w-4" />
                 Messages
               </Link>
             )}
-            <Link 
-              to="/admin/users" 
+            <Link
+              to="/admin/users"
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Users className="h-4 w-4" />
@@ -217,9 +245,13 @@ export default function AdminStaff() {
       </div>
 
       {/* Indicateur de source */}
-      <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-        fallbackMode ? 'border-warning bg-warning/10' : 'border-success bg-success/10'
-      }`}>
+      <div
+        className={`mb-6 p-4 rounded-lg border-l-4 ${
+          fallbackMode
+            ? "border-warning bg-warning/10"
+            : "border-success bg-success/10"
+        }`}
+      >
         <div className="flex items-center gap-2">
           {fallbackMode ? (
             <AlertCircle className="h-5 w-5 text-yellow-600" />
@@ -227,16 +259,16 @@ export default function AdminStaff() {
             <Shield className="h-5 w-5 text-green-600" />
           )}
           <span className="font-medium">
-            {fallbackMode 
-              ? 'Mode fallback - Données limitées' 
-              : 'Données en temps réel depuis table ___xtr_customer (staff filtré niveau ≥ 7)'}
+            {fallbackMode
+              ? "Mode fallback - Données limitées"
+              : "Données en temps réel depuis table ___xtr_customer (staff filtré niveau ≥ 7)"}
           </span>
         </div>
       </div>
 
       {/* Erreur */}
       {error && (
-<Alert className="mb-6 p-4    rounded-lg" variant="error">
+        <Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
@@ -262,7 +294,7 @@ export default function AdminStaff() {
             <div>
               <p className="text-sm text-gray-600">Super Admins</p>
               <p className="text-2xl font-bold text-gray-900">
-                {staff.filter(s => s.level >= 9).length}
+                {staff.filter((s) => s.level >= 9).length}
               </p>
               <p className="text-xs text-gray-500">Niveau ≥ 9</p>
             </div>
@@ -275,7 +307,7 @@ export default function AdminStaff() {
             <div>
               <p className="text-sm text-gray-600">Actifs</p>
               <p className="text-2xl font-bold text-gray-900">
-                {staff.filter(s => s.isActive).length}
+                {staff.filter((s) => s.isActive).length}
               </p>
               <p className="text-xs text-gray-500">Connectés</p>
             </div>
@@ -288,7 +320,7 @@ export default function AdminStaff() {
             <div>
               <p className="text-sm text-gray-600">Admins</p>
               <p className="text-2xl font-bold text-gray-900">
-                {staff.filter(s => s.level >= 8 && s.level < 9).length}
+                {staff.filter((s) => s.level >= 8 && s.level < 9).length}
               </p>
               <p className="text-xs text-gray-500">Niveau 8</p>
             </div>
@@ -347,7 +379,8 @@ export default function AdminStaff() {
                       <div className="h-10 w-10 flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
-                            {member.firstName?.[0]}{member.lastName?.[0]}
+                            {member.firstName?.[0]}
+                            {member.lastName?.[0]}
                           </span>
                         </div>
                       </div>
@@ -364,17 +397,23 @@ export default function AdminStaff() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{member.email}</div>
                     {member.phone && (
-                      <div className="text-sm text-gray-500">{member.phone}</div>
+                      <div className="text-sm text-gray-500">
+                        {member.phone}
+                      </div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getRoleColor(member.level)}`}>
+                    <span
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getRoleColor(member.level)}`}
+                    >
                       {member.role} (Niv. {member.level})
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(member.isActive)}`}>
-                      {member.isActive ? 'Actif' : 'Inactif'}
+                    <span
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(member.isActive)}`}
+                    >
+                      {member.isActive ? "Actif" : "Inactif"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -403,7 +442,9 @@ export default function AdminStaff() {
           {staff.length === 0 && (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">Aucun staff trouvé</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                Aucun staff trouvé
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Aucun utilisateur avec un niveau ≥ 7 n'a été trouvé.
               </p>
@@ -422,31 +463,51 @@ export default function AdminStaff() {
                 Système de Messagerie Intégré
               </h3>
               <p className="text-blue-800 mb-4">
-                La table <code className="bg-primary/15 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
+                La table{" "}
+                <code className="bg-primary/15 px-2 py-1 rounded">
+                  ___xtr_msg
+                </code>{" "}
+                est disponible pour la gestion des communications entre clients
+                et staff.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <h4 className="font-medium text-blue-900 mb-2">Fonctionnalités disponibles :</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">
+                    Fonctionnalités disponibles :
+                  </h4>
                   <ul className="space-y-1 text-blue-700">
-                    <li>• Messages client ↔ staff (msg_cst_id ↔ msg_cnfa_id)</li>
+                    <li>
+                      • Messages client ↔ staff (msg_cst_id ↔ msg_cnfa_id)
+                    </li>
                     <li>• Suivi des commandes (msg_ord_id, msg_orl_id)</li>
                     <li>• Fils de discussion (msg_parent_id)</li>
                     <li>• Statuts ouvert/fermé (msg_open, msg_close)</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium text-blue-900 mb-2">Structure des données :</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">
+                    Structure des données :
+                  </h4>
                   <ul className="space-y-1 text-blue-700">
-                    <li>• <code>msg_cnfa_id</code> : Lien vers ce staff admin</li>
-                    <li>• <code>msg_cst_id</code> : Lien vers client (___xtr_customer)</li>
-                    <li>• <code>msg_subject</code> : Sujet du message</li>
-                    <li>• <code>msg_content</code> : Contenu complet</li>
+                    <li>
+                      • <code>msg_cnfa_id</code> : Lien vers ce staff admin
+                    </li>
+                    <li>
+                      • <code>msg_cst_id</code> : Lien vers client
+                      (___xtr_customer)
+                    </li>
+                    <li>
+                      • <code>msg_subject</code> : Sujet du message
+                    </li>
+                    <li>
+                      • <code>msg_content</code> : Contenu complet
+                    </li>
                   </ul>
                 </div>
               </div>
               <div className="mt-4">
-                <Link 
-                  to="/admin/messages" 
+                <Link
+                  to="/admin/messages"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                 >
                   <MessageSquare className="h-4 w-4" />

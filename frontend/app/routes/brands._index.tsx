@@ -28,6 +28,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -117,7 +118,7 @@ interface LoaderData {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Récupérer toutes les marques

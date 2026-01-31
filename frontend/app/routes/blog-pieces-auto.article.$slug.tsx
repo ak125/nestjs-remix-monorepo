@@ -235,7 +235,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     // Récupérer l'article
     const articleResponse = await fetch(
-      `http://localhost:3000/api/blog/article/${encodeURIComponent(slug)}`,
+      `http://127.0.0.1:3000/api/blog/article/${encodeURIComponent(slug)}`,
       {
         method: "GET",
         headers: {
@@ -254,7 +254,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (article) {
       try {
         const similarResponse = await fetch(
-          `http://localhost:3000/api/blog/popular?limit=4`,
+          `http://127.0.0.1:3000/api/blog/popular?limit=4`,
           {
             method: "GET",
             headers: {

@@ -13,6 +13,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -26,7 +27,7 @@ export const handle = {
   }),
 };
 
-const API_URL = process.env.API_URL || "http://localhost:3000";
+const API_URL = getInternalApiUrl("");
 
 interface LegalPageFromDB {
   alias: string;

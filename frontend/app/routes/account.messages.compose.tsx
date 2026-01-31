@@ -63,7 +63,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 
   try {
     // Appel à l'API pour créer le message
-    const response = await fetch("http://localhost:3000/api/messages", {
+    const response = await fetch("http://127.0.0.1:3000/api/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

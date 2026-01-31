@@ -22,6 +22,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -86,7 +87,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Brand ID manquant", { status: 400 });
   }
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Récupérer les modèles de la marque (utilise l'API existante optimisée)

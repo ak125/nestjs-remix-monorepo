@@ -1,6 +1,6 @@
 /**
  * 🔍 RECHERCHE VÉHICULES AVANCÉE
- * 
+ *
  * Interface de recherche multicritères pour véhicules
  * Route: /commercial/vehicles/search
  */
@@ -9,12 +9,24 @@ import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { Car, Filter, RotateCcw, Search } from "lucide-react";
 import { useState } from "react";
-import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface VehicleSearchData {
   user: any;
@@ -54,32 +66,34 @@ interface VehicleSearchData {
 export async function loader({ context, request }: LoaderFunctionArgs) {
   // Vérifier l'authentification
   const user = await requireUser({ context });
-  
+
   // Vérifier le niveau d'accès commercial (niveau 3+)
   if (!user.level || user.level < 3) {
-    throw redirect('/unauthorized');
+    throw redirect("/unauthorized");
   }
 
   const url = new URL(request.url);
   const searchParams = url.searchParams;
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   // Récupérer les filtres de recherche
   const filters = {
-    brandId: searchParams.get('brandId') || '',
-    modelId: searchParams.get('modelId') || '',
-    fuelType: searchParams.get('fuelType') || '',
-    engineCode: searchParams.get('engineCode') || '',
-    year: searchParams.get('year') || '',
-    limit: '50',
-    offset: '0'
+    brandId: searchParams.get("brandId") || "",
+    modelId: searchParams.get("modelId") || "",
+    fuelType: searchParams.get("fuelType") || "",
+    engineCode: searchParams.get("engineCode") || "",
+    year: searchParams.get("year") || "",
+    limit: "50",
+    offset: "0",
   };
 
   try {
     // Récupérer les marques pour le filtre
-    const brandsResponse = await fetch(`${baseUrl}/api/catalog/vehicles/brands`);
+    const brandsResponse = await fetch(
+      `${baseUrl}/api/catalog/vehicles/brands`,
+    );
     let brands = [];
-    
+
     if (brandsResponse.ok) {
       const brandsData = await brandsResponse.json();
       if (brandsData.success) {
@@ -92,16 +106,23 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     let totalResults = 0;
     let error: string | undefined = undefined;
 
-    const hasSearchCriteria = filters.brandId || filters.modelId || filters.fuelType || filters.engineCode || filters.year;
-    
+    const hasSearchCriteria =
+      filters.brandId ||
+      filters.modelId ||
+      filters.fuelType ||
+      filters.engineCode ||
+      filters.year;
+
     if (hasSearchCriteria) {
       const searchQuery = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value) searchQuery.append(key, value);
       });
 
-      const searchResponse = await fetch(`${baseUrl}/api/catalog/vehicles/search?${searchQuery}`);
-      
+      const searchResponse = await fetch(
+        `${baseUrl}/api/catalog/vehicles/search?${searchQuery}`,
+      );
+
       if (searchResponse.ok) {
         const searchData = await searchResponse.json();
         if (searchData.success) {
@@ -111,7 +132,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
           error = searchData.error;
         }
       } else {
-        error = 'Erreur lors de la recherche';
+        error = "Erreur lors de la recherche";
       }
     }
 
@@ -121,44 +142,45 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       searchResults,
       totalResults,
       currentFilters: filters,
-      error
+      error,
     });
   } catch (err) {
-    console.error('Erreur loader recherche véhicules:', err);
+    console.error("Erreur loader recherche véhicules:", err);
     return json<VehicleSearchData>({
       user,
       brands: [],
       searchResults: [],
       totalResults: 0,
       currentFilters: filters,
-      error: 'Erreur serveur'
+      error: "Erreur serveur",
     });
   }
 }
 
 export default function VehiclesSearch() {
-  const { brands, searchResults, totalResults, currentFilters, error } = useLoaderData<typeof loader>();
-  
+  const { brands, searchResults, totalResults, currentFilters, error } =
+    useLoaderData<typeof loader>();
+
   const [filters, setFilters] = useState({
-    brandId: currentFilters.brandId || '',
-    modelId: currentFilters.modelId || '',
-    fuelType: currentFilters.fuelType || '',
-    engineCode: currentFilters.engineCode || '',
-    year: currentFilters.year || ''
+    brandId: currentFilters.brandId || "",
+    modelId: currentFilters.modelId || "",
+    fuelType: currentFilters.fuelType || "",
+    engineCode: currentFilters.engineCode || "",
+    year: currentFilters.year || "",
   });
 
   // Réinitialiser les filtres
   const clearFilters = () => {
     setFilters({
-      brandId: '',
-      modelId: '',
-      fuelType: '',
-      engineCode: '',
-      year: ''
+      brandId: "",
+      modelId: "",
+      fuelType: "",
+      engineCode: "",
+      year: "",
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+  const hasActiveFilters = Object.values(filters).some((value) => value !== "");
   const hasResults = searchResults.length > 0;
 
   return (
@@ -166,7 +188,9 @@ export default function VehiclesSearch() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🔍 Recherche Véhicules</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            🔍 Recherche Véhicules
+          </h1>
           <p className="text-gray-600 mt-1">
             Recherche multicritères dans la base véhicules
           </p>
@@ -191,13 +215,18 @@ export default function VehiclesSearch() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Marque */}
               <div className="space-y-2">
-                <label htmlFor="brandId" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="brandId"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Marque
                 </label>
                 <Select
                   name="brandId"
                   value={filters.brandId}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, brandId: value }))}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, brandId: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner une marque" />
@@ -215,13 +244,18 @@ export default function VehiclesSearch() {
 
               {/* Type de carburant */}
               <div className="space-y-2">
-                <label htmlFor="fuelType" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="fuelType"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Carburant
                 </label>
                 <Select
                   name="fuelType"
                   value={filters.fuelType}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, fuelType: value }))}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, fuelType: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Type de carburant" />
@@ -238,14 +272,22 @@ export default function VehiclesSearch() {
 
               {/* Code moteur */}
               <div className="space-y-2">
-                <label htmlFor="engineCode" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="engineCode"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Code moteur
                 </label>
                 <Input
                   name="engineCode"
                   placeholder="Ex: DV6TED4"
                   value={filters.engineCode}
-                  onChange={(e) => setFilters(prev => ({ ...prev, engineCode: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      engineCode: e.target.value,
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -256,11 +298,11 @@ export default function VehiclesSearch() {
                 <Search className="h-4 w-4" />
                 Rechercher
               </Button>
-              
+
               {hasActiveFilters && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={clearFilters}
                   className="flex items-center gap-2"
                 >
@@ -268,10 +310,11 @@ export default function VehiclesSearch() {
                   Réinitialiser
                 </Button>
               )}
-              
+
               {hasResults && (
                 <span className="text-sm text-gray-600">
-                  {totalResults} véhicule{totalResults > 1 ? 's' : ''} trouvé{totalResults > 1 ? 's' : ''}
+                  {totalResults} véhicule{totalResults > 1 ? "s" : ""} trouvé
+                  {totalResults > 1 ? "s" : ""}
                 </span>
               )}
             </div>
@@ -281,7 +324,9 @@ export default function VehiclesSearch() {
 
       {/* Messages d'erreur */}
       {error && (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       )}
 
       {/* Résultats de recherche */}
@@ -296,21 +341,22 @@ export default function VehiclesSearch() {
           <CardContent>
             <div className="space-y-3">
               {searchResults.map((vehicle, index) => (
-                <div 
+                <div
                   key={`${vehicle.type_id}-${index}`}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
                 >
                   <div className="flex items-center space-x-4">
                     {vehicle.modele?.marque?.marque_logo && (
-                      <img 
-                        src={vehicle.modele.marque.marque_logo} 
+                      <img
+                        src={vehicle.modele.marque.marque_logo}
                         alt={vehicle.modele.marque.marque_name}
                         className="w-8 h-8 object-contain"
                       />
                     )}
                     <div>
                       <div className="font-semibold text-gray-900">
-                        {vehicle.modele?.marque?.marque_name} {vehicle.modele?.modele_name}
+                        {vehicle.modele?.marque?.marque_name}{" "}
+                        {vehicle.modele?.modele_name}
                       </div>
                       <div className="text-sm text-gray-600">
                         {vehicle.type_name}
@@ -322,7 +368,7 @@ export default function VehiclesSearch() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="text-right text-sm">
                     <div className="font-medium capitalize">
                       {vehicle.type_carburant}

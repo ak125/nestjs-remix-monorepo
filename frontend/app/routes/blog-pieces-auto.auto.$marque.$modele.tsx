@@ -18,6 +18,7 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /* ===========================
    Types
@@ -86,7 +87,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     // Récupérer les informations du modèle et ses motorisations
     const modelRes = await fetch(

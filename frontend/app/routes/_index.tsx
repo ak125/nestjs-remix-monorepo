@@ -31,6 +31,7 @@ import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
 // hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -167,13 +168,14 @@ export function links() {
  * ⚡ Utilise RPC optimisée: 1 appel PostgreSQL au lieu de 4 API calls
  * Performance: <150ms au lieu de 400-800ms
  */
-export async function loader(_args: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const startTime = Date.now();
 
   try {
     // ⚡ Single RPC call - replaces 4 API calls
+    // Note: Use request origin to avoid localhost outbound connections (EADDRNOTAVAIL)
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:3000"}/api/catalog/homepage-rpc`,
+      getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request),
     );
 
     if (!response.ok) {

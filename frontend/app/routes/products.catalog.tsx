@@ -46,6 +46,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /**
  * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)
@@ -125,7 +126,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "24"), 100);
   const page = parseInt(url.searchParams.get("page") || "1");
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Build query parameters

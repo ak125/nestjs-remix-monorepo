@@ -34,6 +34,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface Brand {
   marque_id: number;
@@ -80,7 +81,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const enhanced = url.searchParams.get("enhanced") === "true";
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Unified API call for brands

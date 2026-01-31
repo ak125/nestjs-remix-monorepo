@@ -26,6 +26,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
 const RichTextEditor = lazy(() =>
@@ -41,7 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // Récupérer données marque avec SEO
     const brandRes = await fetch(
-      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/brands/brand/${brandSlug}`,
+      `${getInternalApiUrl("")}/api/brands/brand/${brandSlug}`,
     );
     const brandData = await brandRes.json();
 
@@ -51,7 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Liste toutes les marques pour sélecteur
     const brandsRes = await fetch(
-      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/brands?limit=100`,
+      `${getInternalApiUrl("")}/api/brands?limit=100`,
     );
     const brandsData = await brandsRes.json();
 

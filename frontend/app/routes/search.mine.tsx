@@ -24,6 +24,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { VehicleCard } from "~/components/vehicles/VehicleCard";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche code mine
@@ -84,7 +85,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // ✅ URL corrigée pour correspondre à notre API backend
-    const apiUrl = process.env.API_URL || "http://localhost:3000";
+    const apiUrl = getInternalApiUrl("");
     const response = await fetch(
       `${apiUrl}/api/vehicles/search/mine/${encodeURIComponent(mineCode)}`,
       {

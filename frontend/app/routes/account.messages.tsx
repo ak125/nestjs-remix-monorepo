@@ -82,7 +82,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   try {
     // Récupérer les messages de l'utilisateur via l'API
     const messagesResponse = await fetch(
-      `http://localhost:3000/api/messages?customer=${user.id}&page=${filters.page}&status=${filters.status}`,
+      `http://127.0.0.1:3000/api/messages?customer=${user.id}&page=${filters.page}&status=${filters.status}`,
       {
         headers: {
           Cookie: request.headers.get("Cookie") || "",
@@ -92,7 +92,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     // Récupérer les statistiques via l'API
     const statsResponse = await fetch(
-      `http://localhost:3000/api/messages/stats/overview?customer=${user.id}`,
+      `http://127.0.0.1:3000/api/messages/stats/overview?customer=${user.id}`,
       {
         headers: {
           Cookie: request.headers.get("Cookie") || "",

@@ -205,7 +205,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Slug requis", { status: 400 });
   }
 
-  const API_URL = process.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
 
   try {
     const response = await fetch(`${API_URL}/api/seo/diagnostic/${slug}`, {

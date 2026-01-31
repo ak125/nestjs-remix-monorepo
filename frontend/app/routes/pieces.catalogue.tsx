@@ -19,6 +19,7 @@ import {
 } from "../components/catalog/ProductCatalog";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -52,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = 20;
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Charger les catégories et produits en parallèle

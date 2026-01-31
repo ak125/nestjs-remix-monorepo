@@ -47,6 +47,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -173,7 +174,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const enhanced = url.searchParams.get("enhanced") === "true";
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     const response = await fetch(`${baseUrl}/api/products/${productId}`, {

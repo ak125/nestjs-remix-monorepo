@@ -53,6 +53,7 @@ import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -339,7 +340,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
-    const API_URL = process.env.API_URL || "http://localhost:3000";
+    const API_URL = getInternalApiUrl("");
     const currentUrl = new URL(request.url);
     const pathname = currentUrl.pathname;
 

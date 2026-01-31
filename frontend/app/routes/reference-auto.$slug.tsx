@@ -44,6 +44,7 @@ import {
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -146,7 +147,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getInternalApiUrl("");
 
     const res = await fetch(`${backendUrl}/api/seo/reference/${slug}`, {
       headers: { "Content-Type": "application/json" },

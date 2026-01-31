@@ -74,6 +74,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // Types
 interface VLevelItem {
@@ -315,7 +316,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("pgId manquant", { status: 400 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
 
   const response = await fetch(
@@ -347,7 +348,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
 
   try {

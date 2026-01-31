@@ -1,23 +1,23 @@
 /**
  * 🔧 ADMIN PRODUCTS GAMME MANAGEMENT - DASHBOARD AVANCÉ
- * 
+ *
  * Page d'administration pour la gestion des produits par gamme
- * - Pagination avancée 
+ * - Pagination avancée
  * - Recherche administrative
  * - Tri multi-critères
  * - Gestion des stocks/prix
  * - Actions bulk (modification, suppression)
- * 
+ *
  * Route: /admin/products/gammes/:gammeId
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link, Form, useSearchParams } from '@remix-run/react';
-import { 
-  ArrowLeft, 
-  Search, 
-  Filter, 
-  SortAsc, 
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link, Form, useSearchParams } from "@remix-run/react";
+import {
+  ArrowLeft,
+  Search,
+  Filter,
+  SortAsc,
   SortDesc,
   Package,
   Eye,
@@ -29,14 +29,21 @@ import {
   Trash2,
   Plus,
   Download,
-  Upload
-} from 'lucide-react';
-import { requireUser } from '../auth/unified.server';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+  Upload,
+} from "lucide-react";
+import { requireUser } from "../auth/unified.server";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface AdminProduct {
   piece_id: number;
@@ -71,7 +78,7 @@ interface AdminGammeData {
     id: string;
     name: string;
     level: number;
-    role: 'pro' | 'commercial';
+    role: "pro" | "commercial";
   };
   gamme: AdminGamme;
   products: AdminProduct[];
@@ -102,17 +109,17 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   try {
     // Authentification OBLIGATOIRE pour l'admin
     const user = await requireUser({ context });
-    
+
     // Vérifier les permissions admin (niveau 4+)
     if (!user.level || user.level < 4) {
-      throw new Error('Accès non autorisé - Niveau administrateur requis');
+      throw new Error("Accès non autorisé - Niveau administrateur requis");
     }
-    
+
     const { gammeId } = params;
     if (!gammeId) {
-      throw new Error('ID de gamme manquant');
+      throw new Error("ID de gamme manquant");
     }
-    
+
     const url = new URL(request.url);
     const enhanced = url.searchParams.get("enhanced") === "true";
     const search = url.searchParams.get("search") || "";
@@ -121,28 +128,31 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     const sortBy = url.searchParams.get("sortBy") || "piece_name";
     const sortOrder = url.searchParams.get("sortOrder") || "asc";
     const status = url.searchParams.get("status") || "all";
-    
-    const userName = user.name || user.email?.split('@')[0] || 'Administrateur';
+
+    const userName = user.name || user.email?.split("@")[0] || "Administrateur";
     const userLevel = user.level || 4;
-    const userRole = 'pro'; // Toujours pro en admin
-    
-    const baseUrl = process.env.API_URL || "http://localhost:3000";
+    const userRole = "pro"; // Toujours pro en admin
+
+    const baseUrl = getInternalApiUrl("");
 
     // Récupérer les produits avec données admin étendues
-    const response = await fetch(`${baseUrl}/api/products/gammes/${gammeId}/products?search=${encodeURIComponent(search)}&page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}&admin=true`, {
-      headers: { 
-        'internal-call': 'true',
-        'user-role': 'admin',
-        'user-level': userLevel.toString()
-      }
-    });
+    const response = await fetch(
+      `${baseUrl}/api/products/gammes/${gammeId}/products?search=${encodeURIComponent(search)}&page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}&admin=true`,
+      {
+        headers: {
+          "internal-call": "true",
+          "user-role": "admin",
+          "user-level": userLevel.toString(),
+        },
+      },
+    );
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error('Gamme non trouvée');
+        throw new Error("Gamme non trouvée");
       }
       if (response.status === 403) {
-        throw new Error('Accès non autorisé');
+        throw new Error("Accès non autorisé");
       }
       throw new Error(`Erreur API: ${response.status}`);
     }
@@ -156,7 +166,9 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       active: products.filter((p: AdminProduct) => p.piece_activ).length,
       inactive: products.filter((p: AdminProduct) => !p.piece_activ).length,
       with_images: products.filter((p: AdminProduct) => p.has_image).length,
-      low_stock: products.filter((p: AdminProduct) => (p.stock_quantity || 0) < 10).length,
+      low_stock: products.filter(
+        (p: AdminProduct) => (p.stock_quantity || 0) < 10,
+      ).length,
     };
 
     return json<AdminGammeData>({
@@ -164,12 +176,12 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         id: user.id,
         name: userName,
         level: userLevel,
-        role: userRole
+        role: userRole,
       },
       gamme: {
         ...data.gamme,
         total_products: stats.total,
-        active_products: stats.active
+        active_products: stats.active,
       },
       products,
       pagination: data.pagination,
@@ -177,36 +189,39 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         search,
         sortBy,
         sortOrder,
-        status
+        status,
       },
       enhanced,
-      stats
+      stats,
     });
-
   } catch (error) {
     console.error("❌ Erreur loader admin gamme:", error);
-    
+
     return json<AdminGammeData>({
       user: {
-        id: 'error',
-        name: 'Erreur',
+        id: "error",
+        name: "Erreur",
         level: 1,
-        role: 'commercial'
+        role: "commercial",
       },
-      gamme: { id: '', name: 'Erreur', is_active: false },
+      gamme: { id: "", name: "Erreur", is_active: false },
       products: [],
       pagination: { total: 0, page: 1, limit: 20, totalPages: 0 },
-      filters: { search: '', sortBy: 'piece_name', sortOrder: 'asc' },
+      filters: { search: "", sortBy: "piece_name", sortOrder: "asc" },
       enhanced: false,
       stats: { total: 0, active: 0, inactive: 0, with_images: 0, low_stock: 0 },
-      error: error instanceof Error ? error.message : "Impossible de charger la gamme"
+      error:
+        error instanceof Error
+          ? error.message
+          : "Impossible de charger la gamme",
     });
   }
 }
 
 export default function AdminProductsGammeManagement() {
   const data = useLoaderData<typeof loader>();
-  const { user, gamme, products, pagination, filters, enhanced, error, stats } = data;
+  const { user, gamme, products, pagination, filters, enhanced, error, stats } =
+    data;
   const [searchParams] = useSearchParams();
 
   const _viewMode = searchParams.get("view") || "grid";
@@ -222,10 +237,12 @@ export default function AdminProductsGammeManagement() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="text-center">
           <Package className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Erreur Administrative</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Erreur Administrative
+          </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={() => window.location.reload()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -247,13 +264,14 @@ export default function AdminProductsGammeManagement() {
               Retour Admin
             </Link>
           </Button>
-          
+
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               🔧 {gamme.name} - Gestion Admin
             </h1>
             <p className="text-muted-foreground">
-              {stats.total} produits • {stats.active} actifs • {stats.inactive} inactifs
+              {stats.total} produits • {stats.active} actifs • {stats.inactive}{" "}
+              inactifs
             </p>
           </div>
         </div>
@@ -274,35 +292,45 @@ export default function AdminProductsGammeManagement() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.total}
+            </div>
             <div className="text-sm text-gray-600">Total</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.active}
+            </div>
             <div className="text-sm text-gray-600">Actifs</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
+            <div className="text-2xl font-bold text-gray-600">
+              {stats.inactive}
+            </div>
             <div className="text-sm text-gray-600">Inactifs</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.with_images}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {stats.with_images}
+            </div>
             <div className="text-sm text-gray-600">Avec Images</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.low_stock}</div>
+            <div className="text-2xl font-bold text-orange-600">
+              {stats.low_stock}
+            </div>
             <div className="text-sm text-gray-600">Stock Faible</div>
           </CardContent>
         </Card>
@@ -333,7 +361,7 @@ export default function AdminProductsGammeManagement() {
           {/* Filtres Admin Avancés */}
           <Form method="get" className="flex flex-col gap-4">
             {enhanced && <input type="hidden" name="enhanced" value="true" />}
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Recherche */}
               <div className="flex-1">
@@ -347,7 +375,7 @@ export default function AdminProductsGammeManagement() {
                   />
                 </div>
               </div>
-              
+
               {/* Statut */}
               <Select name="status" defaultValue={filters.status}>
                 <SelectTrigger className="w-40">
@@ -361,7 +389,7 @@ export default function AdminProductsGammeManagement() {
                   <SelectItem value="no_image">Sans image</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               {/* Tri */}
               <Select name="sortBy" defaultValue={filters.sortBy}>
                 <SelectTrigger className="w-48">
@@ -376,7 +404,7 @@ export default function AdminProductsGammeManagement() {
                   <SelectItem value="price_ttc">Prix</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select name="sortOrder" defaultValue={filters.sortOrder}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -396,7 +424,7 @@ export default function AdminProductsGammeManagement() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Button type="submit" size="sm" variant="default">
                 <Filter className="h-4 w-4 mr-2" />
                 Appliquer
@@ -411,7 +439,10 @@ export default function AdminProductsGammeManagement() {
         <div className="space-y-4">
           {/* Mode List pour l'admin (plus d'infos) */}
           {products.map((product) => (
-            <Card key={product.piece_id} className="group hover:shadow-md transition-shadow">
+            <Card
+              key={product.piece_id}
+              className="group hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   {/* Image */}
@@ -422,13 +453,13 @@ export default function AdminProductsGammeManagement() {
                       <Package className="h-8 w-8 text-gray-400" />
                     )}
                   </div>
-                  
+
                   {/* Infos Produit */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 mb-1 truncate">
                       {product.piece_name}
                     </h3>
-                    
+
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <Badge variant="outline" className="text-xs">
                         ID: {product.piece_id}
@@ -442,39 +473,45 @@ export default function AdminProductsGammeManagement() {
                         </Badge>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>Stock: {product.stock_quantity || 'N/A'}</span>
-                      <span>Prix: {product.price_ttc ? `${product.price_ttc}€` : 'N/A'}</span>
+                      <span>Stock: {product.stock_quantity || "N/A"}</span>
+                      <span>
+                        Prix:{" "}
+                        {product.price_ttc ? `${product.price_ttc}€` : "N/A"}
+                      </span>
                       {product.last_updated && (
-                        <span>MAJ: {new Date(product.last_updated).toLocaleDateString()}</span>
+                        <span>
+                          MAJ:{" "}
+                          {new Date(product.last_updated).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Statuts */}
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex items-center gap-2">
-                      <Badge 
+                      <Badge
                         variant={product.piece_activ ? "default" : "secondary"}
-                        className={`text-xs ${product.piece_activ ? 'success' : 'error'}`}
+                        className={`text-xs ${product.piece_activ ? "success" : "error"}`}
                       >
-                        {product.piece_activ ? '✅ Actif' : '❌ Inactif'}
+                        {product.piece_activ ? "✅ Actif" : "❌ Inactif"}
                       </Badge>
-                      
+
                       {product.piece_top && (
                         <Badge variant="secondary" className="text-xs">
                           ⭐ Top
                         </Badge>
                       )}
-                      
+
                       {product.has_oem && (
                         <Badge variant="outline" className="text-xs">
                           OEM
                         </Badge>
                       )}
                     </div>
-                    
+
                     {/* Actions Admin */}
                     <div className="flex items-center gap-2">
                       <Button asChild variant="outline" size="sm">
@@ -499,12 +536,18 @@ export default function AdminProductsGammeManagement() {
         <Card>
           <CardContent className="p-8 text-center">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun produit trouvé</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Aucun produit trouvé
+            </h3>
             <p className="text-gray-600 mb-4">
-              {filters.search ? `Aucun produit ne correspond aux critères` : "Cette gamme ne contient pas de produits"}
+              {filters.search
+                ? `Aucun produit ne correspond aux critères`
+                : "Cette gamme ne contient pas de produits"}
             </p>
             <Button asChild variant="default">
-              <Link to={`?${new URLSearchParams({...Object.fromEntries(searchParams.entries()), search: '', status: 'all'})}`}>
+              <Link
+                to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams.entries()), search: "", status: "all" })}`}
+              >
                 Réinitialiser les filtres
               </Link>
             </Button>
@@ -518,34 +561,47 @@ export default function AdminProductsGammeManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Page {pagination.page} sur {pagination.totalPages} • {pagination.total} produits au total
+                Page {pagination.page} sur {pagination.totalPages} •{" "}
+                {pagination.total} produits au total
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   asChild
                   variant="outline"
                   size="sm"
-                  className={pagination.page <= 1 ? "opacity-50 cursor-not-allowed" : ""}
+                  className={
+                    pagination.page <= 1 ? "opacity-50 cursor-not-allowed" : ""
+                  }
                 >
-                  <Link 
-                    to={`?${new URLSearchParams({...Object.fromEntries(searchParams), page: String(pagination.page - 1)})}`}
-                    className={pagination.page <= 1 ? "pointer-events-none" : ""}
+                  <Link
+                    to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams), page: String(pagination.page - 1) })}`}
+                    className={
+                      pagination.page <= 1 ? "pointer-events-none" : ""
+                    }
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Précédent
                   </Link>
                 </Button>
-                
+
                 <Button
                   asChild
                   variant="outline"
                   size="sm"
-                  className={pagination.page >= pagination.totalPages ? "opacity-50 cursor-not-allowed" : ""}
+                  className={
+                    pagination.page >= pagination.totalPages
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }
                 >
-                  <Link 
-                    to={`?${new URLSearchParams({...Object.fromEntries(searchParams), page: String(pagination.page + 1)})}`}
-                    className={pagination.page >= pagination.totalPages ? "pointer-events-none" : ""}
+                  <Link
+                    to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams), page: String(pagination.page + 1) })}`}
+                    className={
+                      pagination.page >= pagination.totalPages
+                        ? "pointer-events-none"
+                        : ""
+                    }
                   >
                     Suivant
                     <ChevronRight className="h-4 w-4" />
@@ -560,8 +616,10 @@ export default function AdminProductsGammeManagement() {
       {/* Toggle Mode */}
       <div className="flex justify-center">
         <Button asChild variant="outline">
-          <Link to={`?${new URLSearchParams({...Object.fromEntries(searchParams), enhanced: enhanced ? 'false' : 'true'})}`}>
-            {enhanced ? 'Mode Simple' : 'Mode Avancé'}
+          <Link
+            to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams), enhanced: enhanced ? "false" : "true" })}`}
+          >
+            {enhanced ? "Mode Simple" : "Mode Avancé"}
           </Link>
         </Button>
       </div>

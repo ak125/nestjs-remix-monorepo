@@ -49,6 +49,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface Product {
   piece_id: number;
@@ -157,7 +158,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     const userLevel = user.level || 1;
     const userRole = userLevel >= 4 ? "pro" : "commercial";
 
-    const baseUrl = process.env.API_URL || "http://localhost:3000";
+    const baseUrl = getInternalApiUrl("");
 
     // Récupérer les données de la gamme via notre nouvelle API REST
     const response = await fetch(`${baseUrl}/api/gamme-rest/${gammeId}`, {

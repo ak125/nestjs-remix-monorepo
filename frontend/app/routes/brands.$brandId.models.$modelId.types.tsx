@@ -27,6 +27,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -87,7 +88,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Brand ID et Model ID requis", { status: 400 });
   }
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Récupérer les types du modèle

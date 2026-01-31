@@ -79,7 +79,7 @@ async function createContact(
   contactData: ContactRequest,
 ): Promise<{ ticketNumber: string; ticket: any }> {
   // TODO: Intégrer avec le vrai API backend
-  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 
   const response = await fetch(`${baseUrl}/api/support/contact`, {
     method: "POST",

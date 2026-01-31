@@ -41,6 +41,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface ProductRange {
   id: string;
@@ -100,7 +101,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const userLevel = user?.level || 1;
     const userRole = userLevel >= 4 ? "pro" : "commercial";
 
-    const baseUrl = process.env.API_URL || "http://localhost:3000";
+    const baseUrl = getInternalApiUrl("");
 
     // Récupérer les VRAIES gammes de produits depuis la base de données
     const rangesResponse = await fetch(`${baseUrl}/api/products/gammes`, {

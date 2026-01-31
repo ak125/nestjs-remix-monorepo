@@ -1,6 +1,6 @@
 /**
  * 🚗 GESTION VÉHICULES COMMERCIAL
- * 
+ *
  * Page de gestion des véhicules pour l'équipe commerciale
  * Route: /commercial/vehicles
  */
@@ -8,11 +8,17 @@
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
-import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 interface VehicleStats {
   totalBrands: number;
@@ -30,13 +36,13 @@ interface LoaderData {
 export async function loader({ context }: LoaderFunctionArgs) {
   // Vérifier l'authentification
   const user = await requireUser({ context });
-  
+
   // Vérifier le niveau d'accès commercial (niveau 3+)
   if (!user.level || user.level < 3) {
-    throw redirect('/unauthorized');
+    throw redirect("/unauthorized");
   }
 
-  const baseUrl = process.env.API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiUrl("");
 
   try {
     // Appeler l'API des statistiques véhicules
@@ -47,31 +53,31 @@ export async function loader({ context }: LoaderFunctionArgs) {
     if (statsResponse.ok) {
       const statsData = await statsResponse.json();
       // L'API retourne directement les données avec vérification
-      if (statsData && typeof statsData.totalBrands === 'number') {
+      if (statsData && typeof statsData.totalBrands === "number") {
         stats = {
           totalBrands: statsData.totalBrands,
           totalModels: statsData.totalModels || 0,
           totalTypes: statsData.totalTypes || 0,
-          lastUpdate: statsData.lastUpdated || new Date().toISOString()
+          lastUpdate: statsData.lastUpdated || new Date().toISOString(),
         } as VehicleStats;
       } else {
-        error = 'Format de données invalide';
+        error = "Format de données invalide";
       }
     } else {
-      error = 'Erreur lors du chargement des statistiques';
+      error = "Erreur lors du chargement des statistiques";
     }
 
-    return json<LoaderData>({ 
+    return json<LoaderData>({
       user,
       stats,
-      error 
+      error,
     });
   } catch (err) {
-    console.error('Erreur loader véhicules:', err);
-    return json<LoaderData>({ 
+    console.error("Erreur loader véhicules:", err);
+    return json<LoaderData>({
       user,
       stats: null,
-      error: 'Erreur serveur'
+      error: "Erreur serveur",
     });
   }
 }
@@ -82,27 +88,35 @@ export default function VehiclesIndex() {
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[
-        { label: "Commercial", href: "/commercial" },
-        { label: "Véhicules" }
-      ]} />
-      
+      <PublicBreadcrumb
+        items={[
+          { label: "Commercial", href: "/commercial" },
+          { label: "Véhicules" },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🚗 Gestion Véhicules</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            🚗 Gestion Véhicules
+          </h1>
           <p className="text-gray-600 mt-1">
             Recherche et compatibilité automobile
           </p>
         </div>
         <div className="text-sm text-gray-500">
-          Connecté en tant que : <span className="font-medium">{user.email}</span> (Niveau {user.level})
+          Connecté en tant que :{" "}
+          <span className="font-medium">{user.email}</span> (Niveau {user.level}
+          )
         </div>
       </div>
 
       {/* Statistiques */}
       {error ? (
-        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
+        <Alert intent="error">
+          <strong>Erreur :</strong> {error}
+        </Alert>
       ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
@@ -114,7 +128,7 @@ export default function VehiclesIndex() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {(stats.totalBrands || 0).toLocaleString('fr-FR')}
+                {(stats.totalBrands || 0).toLocaleString("fr-FR")}
               </div>
               <p className="text-xs text-muted-foreground">
                 Marques référencées
@@ -124,14 +138,12 @@ export default function VehiclesIndex() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Modèles
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Modèles</CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {(stats.totalModels || 0).toLocaleString('fr-FR')}
+                {(stats.totalModels || 0).toLocaleString("fr-FR")}
               </div>
               <p className="text-xs text-muted-foreground">
                 Modèles disponibles
@@ -148,7 +160,7 @@ export default function VehiclesIndex() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {(stats.totalTypes || 0).toLocaleString('fr-FR')}
+                {(stats.totalTypes || 0).toLocaleString("fr-FR")}
               </div>
               <p className="text-xs text-muted-foreground">
                 Motorisations référencées
@@ -193,12 +205,8 @@ export default function VehiclesIndex() {
                   <Settings className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Compatibilité
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Pièces par véhicule
-                  </p>
+                  <h3 className="font-semibold text-gray-900">Compatibilité</h3>
+                  <p className="text-sm text-gray-500">Pièces par véhicule</p>
                 </div>
               </div>
             </CardContent>
@@ -213,12 +221,8 @@ export default function VehiclesIndex() {
                   <Car className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Marques
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Catalogue marques
-                  </p>
+                  <h3 className="font-semibold text-gray-900">Marques</h3>
+                  <p className="text-sm text-gray-500">Catalogue marques</p>
                 </div>
               </div>
             </CardContent>
@@ -236,9 +240,7 @@ export default function VehiclesIndex() {
                   <h3 className="font-semibold text-gray-900">
                     Recherche Pièces
                   </h3>
-                  <p className="text-sm text-gray-500">
-                    Par compatibilité
-                  </p>
+                  <p className="text-sm text-gray-500">Par compatibilité</p>
                 </div>
               </div>
             </CardContent>
@@ -255,7 +257,8 @@ export default function VehiclesIndex() {
                 État du système automobile
               </h3>
               <p className="text-sm text-gray-500">
-                Dernière mise à jour : {new Date(stats.lastUpdate).toLocaleString('fr-FR')}
+                Dernière mise à jour :{" "}
+                {new Date(stats.lastUpdate).toLocaleString("fr-FR")}
               </p>
             </div>
             <div className="flex items-center space-x-2">
