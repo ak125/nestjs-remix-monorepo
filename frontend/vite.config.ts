@@ -1,27 +1,20 @@
 import { resolve } from 'path';
 import { vitePlugin as remix } from '@remix-run/dev';
-import { installGlobals } from '@remix-run/node';
 import { flatRoutes } from 'remix-flat-routes';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 const MODE = process.env.NODE_ENV;
 const isProduction = MODE === 'production';
-installGlobals();
+// Note: installGlobals() supprimé - Node 20+ a fetch natif, évite conflits undici
 
 export default defineConfig({
 	resolve: {
 		preserveSymlinks: true,
 	},
-	// 🚀 Proxy pour dev mode
+	// Proxy /img vers production pour les images Supabase en dev
 	server: {
 		proxy: {
-			// Proxy /api/* vers le backend NestJS (port 3000)
-			'/api': {
-				target: 'http://localhost:3000',
-				changeOrigin: true,
-			},
-			// Proxy /img/* via automecanik.com (Caddy → Supabase)
 			'/img': {
 				target: 'https://www.automecanik.com',
 				changeOrigin: true,
