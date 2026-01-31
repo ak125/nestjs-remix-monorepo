@@ -151,7 +151,7 @@ export default function CommercialStockIndex() {
 
   const handleExport = () => {
     // Logique d'export basée sur l'API existante
-    window.open(`http://127.0.0.1:3000/api/admin/stock/health`, "_blank");
+    window.open(`/api/admin/stock/health`, "_blank");
   };
 
   return (

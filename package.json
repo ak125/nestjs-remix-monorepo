@@ -24,7 +24,8 @@
     "docs:dev": "cd .spec/docs && npm start",
     "docs:build": "cd .spec/docs && npm run build",
     "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:no-client-localhost": "bash scripts/check-no-client-localhost.sh"
   },
   "keywords": [],
   "author": "",
