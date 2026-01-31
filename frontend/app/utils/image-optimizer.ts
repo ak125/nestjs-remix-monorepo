@@ -20,12 +20,14 @@
 /**
  * Configuration centralisée des URLs d'images
  * Identique à backend/src/modules/catalog/utils/image-urls.utils.ts pour cohérence
+ *
+ * ⚠️ CSP: Le domaine DOMAIN doit être dans backend/src/config/csp.config.ts → IMAGE_DOMAINS
  */
 export const IMAGE_CONFIG = {
   // Base URLs
   PROXY_BASE: "/img", // Caddy proxy (prod+dev)
   IMGPROXY_BASE: "/imgproxy", // Transformation imgproxy
-  DOMAIN: "https://www.automecanik.com",
+  DOMAIN: "https://www.automecanik.com", // ← Doit matcher CSP IMAGE_DOMAINS.IMGPROXY
 
   // Buckets Supabase
   BUCKETS: {
