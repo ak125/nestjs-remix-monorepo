@@ -366,27 +366,30 @@ export default function SeoCockpit() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {Object.entries(dashboard.riskBreakdown).map(
-                    ([flag, count]) => (
-                      <div
-                        key={flag}
-                        className="flex justify-between items-center p-2 border rounded"
+                  {(
+                    Object.entries(dashboard.riskBreakdown) as [
+                      string,
+                      number,
+                    ][]
+                  ).map(([flag, count]) => (
+                    <div
+                      key={flag}
+                      className="flex justify-between items-center p-2 border rounded"
+                    >
+                      <span className="font-mono text-sm">{flag}</span>
+                      <Badge
+                        variant={
+                          count > 0
+                            ? flag === "CONFUSION"
+                              ? "destructive"
+                              : "warning"
+                            : "secondary"
+                        }
                       >
-                        <span className="font-mono text-sm">{flag}</span>
-                        <Badge
-                          variant={
-                            count > 0
-                              ? flag === "CONFUSION"
-                                ? "destructive"
-                                : "warning"
-                              : "secondary"
-                          }
-                        >
-                          {(count as number).toLocaleString()}
-                        </Badge>
-                      </div>
-                    ),
-                  )}
+                        {(count as number).toLocaleString()}
+                      </Badge>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             )}
