@@ -3,6 +3,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { LoggerModule } from 'nestjs-pino';
+import { loggerConfig } from './config/logger.config';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
@@ -60,6 +62,8 @@ import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Mod
       envFilePath: '.env',
       expandVariables: true,
     }),
+    // 📝 LOGGER - Pino structuré (JSON prod, pretty dev)
+    LoggerModule.forRoot(loggerConfig),
     // 🛡️ RATE LIMITING - Protection anti-spam/DDoS
     ThrottlerModule.forRoot({
       throttlers: [

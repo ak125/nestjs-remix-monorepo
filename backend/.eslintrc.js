@@ -29,5 +29,7 @@ module.exports = {
         caughtErrorsIgnorePattern: '^_',
       },
     ],
+    // Prévenir les futurs console.log - warn pour migration progressive
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
 };
