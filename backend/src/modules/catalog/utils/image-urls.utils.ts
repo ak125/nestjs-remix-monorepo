@@ -364,7 +364,7 @@ export function buildEquipementierLogoUrl(
  * @example
  * extractBaseModelName('serie-3-e46') // → 'serie-3'
  * extractBaseModelName('clio-ii') // → 'clio'
- * extractBaseModelName('m3-coupe-e36') // → 'm'
+ * extractBaseModelName('m3-coupe-e36') // → 'm3'
  * extractBaseModelName('megane-iii') // → 'megane'
  */
 export function extractBaseModelName(modeleAlias: string): string {
@@ -428,10 +428,10 @@ export function buildModelImageUrl(
     return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.MODELES}/${brandAlias}/${modelPic}`;
   }
 
-  // 2. Sinon, utiliser marques-concepts avec nom de base
+  // 2. Essayer marques-modeles avec l'alias complet (images spécifiques: x5-e53.webp, serie-3-e46.webp)
+  // Le frontend gère le fallback logo via onError si 404
   if (modelAlias) {
-    const baseModel = extractBaseModelName(modelAlias);
-    return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.CONCEPTS}/${brandAlias}/${baseModel}.webp`;
+    return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.MODELES}/${brandAlias}/${modelAlias}.webp`;
   }
 
   return IMAGE_CONFIG.DEFAULT_LOGO;
