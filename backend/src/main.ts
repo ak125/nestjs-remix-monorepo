@@ -10,6 +10,7 @@ validateRequiredEnvVars();
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -26,8 +27,12 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
-      logger: ['error', 'warn', 'log'], // Logs activés pour monitoring RPC V3/V2
+      bufferLogs: true, // Buffer logs jusqu'à ce que Pino soit initialisé
     });
+
+    // 📝 Utiliser Pino comme logger global
+    const logger = app.get(Logger);
+    app.useLogger(logger);
 
     // Les contrôleurs définissent déjà leurs préfixes individuellement
     // (ex: @Controller('api/users'), @Controller('admin/suppliers'))
@@ -40,14 +45,14 @@ async function bootstrap() {
     // Démarrage du serveur Remix uniquement en dev
     if (!isProd) {
       await startDevServer(expressApp);
-      console.log('Serveur de développement démarré.');
+      logger.log('Serveur de développement démarré');
     }
 
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     const redisClient = new Redis(redisUrl);
 
-    redisClient.on('connect', () => console.log('Redis connecté.'));
-    redisClient.on('error', (err) => console.error('Erreur Redis :', err));
+    redisClient.on('connect', () => logger.log('Redis connecté'));
+    redisClient.on('error', (err) => logger.error('Erreur Redis', err));
 
     const redisStore = new redisStoreFactory({
       client: redisClient,
@@ -59,16 +64,14 @@ async function bootstrap() {
       throw new Error('SESSION_SECRET requis en production');
     }
 
-    // ⚠️ SÉCURITÉ: Vérifier que SESSION_SECRET est configuré
+    // SECURITE: Vérifier que SESSION_SECRET est configuré
     const sessionSecret = process.env.SESSION_SECRET;
     if (!sessionSecret || sessionSecret === '123') {
-      console.warn(
-        '⚠️⚠️⚠️ ALERTE SÉCURITÉ: SESSION_SECRET non configuré ou utilise la valeur par défaut! ⚠️⚠️⚠️',
+      logger.warn(
+        'ALERTE SECURITE: SESSION_SECRET non configuré ou utilise la valeur par défaut!',
       );
-      console.warn(
-        '   Générez un secret sécurisé avec: openssl rand -base64 32',
-      );
-      console.warn('   Ajoutez-le dans votre fichier .env');
+      logger.warn('Générez un secret sécurisé avec: openssl rand -base64 32');
+      logger.warn('Ajoutez-le dans votre fichier .env');
 
       if (process.env.NODE_ENV === 'production') {
         throw new Error(
@@ -93,14 +96,14 @@ async function bootstrap() {
         },
       }),
     );
-    console.log('Middleware de session initialisé.');
+    logger.log('Middleware de session initialisé');
 
     expressApp.useStaticAssets(getPublicDir(), {
       immutable: true,
       maxAge: '1y',
       index: false,
     });
-    console.log('Assets statiques configurés.');
+    logger.log('Assets statiques configurés');
 
     app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -111,7 +114,7 @@ async function bootstrap() {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    console.log('Passport initialisé.');
+    logger.log('Passport initialisé');
 
     // Sécurité HTTP avec CSP personnalisée pour Supabase
     expressApp.set('trust proxy', 1);
@@ -132,7 +135,7 @@ async function bootstrap() {
 
       app.use(compression());
     } catch (e) {
-      console.warn('Helmet/compression non chargés:', e);
+      logger.warn({ err: e }, 'Helmet/compression non chargés');
     }
 
     // CORS sécurisé - restreint en production
@@ -199,25 +202,28 @@ async function bootstrap() {
         customCss: '.swagger-ui .topbar { display: none }',
       });
 
-      console.log(
-        `📚 Swagger UI disponible sur http://localhost:${selectedPort}/api/docs`,
+      logger.log(
+        `Swagger UI disponible sur http://localhost:${selectedPort}/api/docs`,
       );
     }
-    console.log(`Démarrage du serveur sur le port ${selectedPort}...`);
+    logger.log(`Démarrage du serveur sur le port ${selectedPort}...`);
 
     await app.listen(selectedPort);
-    console.log(`Serveur opérationnel sur http://localhost:${selectedPort}`);
+    logger.log(`Serveur opérationnel sur http://localhost:${selectedPort}`);
 
     // ✅ HTTP Server Hardening - Évite socket hang up et connexions zombies
     const httpServer = app.getHttpServer();
     httpServer.keepAliveTimeout = 65000; // 65s (doit être > timeout proxies comme Caddy)
     httpServer.headersTimeout = 66000; // 66s (doit être > keepAliveTimeout)
     httpServer.requestTimeout = 300000; // 5 min pour les gros uploads
-    console.log(
-      '✅ HTTP timeouts configurés: keepAlive=65s, headers=66s, request=5min',
+    logger.log(
+      'HTTP timeouts configurés: keepAlive=65s, headers=66s, request=5min',
     );
   } catch (error) {
-    console.error('Erreur lors du démarrage du serveur :', error);
+    // Fallback to console.error if logger not available yet
+    // eslint-disable-next-line no-console
+    console.error('Erreur lors du démarrage du serveur:', error);
+    process.exit(1);
   }
 }
 

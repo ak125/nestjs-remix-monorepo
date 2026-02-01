@@ -8,6 +8,7 @@ import {
   UseGuards,
   Body,
   Param,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -38,6 +39,8 @@ import RegisterSchema, {
 @ApiTags('auth')
 @Controller()
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
@@ -284,11 +287,11 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('authenticate')
   async login(@Req() request: Express.Request, @Res() response: Response) {
-    console.log('--- POST /authenticate - Redirection conditionnelle ---');
-    console.log('User connecté:', request.user);
+    this.logger.debug('POST /authenticate - Redirection conditionnelle');
+    this.logger.debug({ user: request.user ? 'authenticated' : 'none' });
 
     if (!request.user) {
-      console.log('Aucun utilisateur, redirection vers /');
+      this.logger.debug('Aucun utilisateur, redirection vers /');
       return response.redirect('/');
     }
 
@@ -333,7 +336,10 @@ export class AuthController {
     return new Promise<void>((resolve) => {
       (request as any).session.regenerate(async (regenerateErr: any) => {
         if (regenerateErr) {
-          console.error('❌ Erreur régénération session:', regenerateErr);
+          this.logger.error(
+            { err: regenerateErr },
+            'Erreur régénération session',
+          );
           response.redirect('/');
           return resolve();
         }
