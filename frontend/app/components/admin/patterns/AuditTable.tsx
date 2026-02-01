@@ -7,7 +7,6 @@
  * Utilise shadcn/ui Table + lucide-react icons
  */
 
-import { StatusBadge, type StatusType } from "./StatusBadge";
 import { Card, CardContent } from "~/components/ui/card";
 import {
   Table,
@@ -18,6 +17,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { cn } from "~/lib/utils";
+import { StatusBadge, type StatusType } from "./StatusBadge";
 
 export interface AuditColumn<T> {
   /** Clé de la propriété dans l'objet */

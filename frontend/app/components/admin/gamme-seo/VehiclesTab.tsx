@@ -3,14 +3,8 @@
  * Handles vehicle compatibility display by level with search and CSV export
  */
 
-import { Search, Download } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { useState } from "react";
-import { type GammeDetail, type VehicleEntry } from "./types";
-import {
-  filterAndSortVehicles,
-  exportVehiclesToCSV,
-  getFuelBadgeClass,
-} from "./utils";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -21,6 +15,12 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { type GammeDetail, type VehicleEntry } from "./types";
+import {
+  exportVehiclesToCSV,
+  filterAndSortVehicles,
+  getFuelBadgeClass,
+} from "./utils";
 
 interface VehiclesTabProps {
   detail: GammeDetail;

@@ -1,8 +1,8 @@
 import { Copy, ExternalLink } from "lucide-react";
-import { type VLevelItem } from "./types";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { type EnrichedVehicleType } from "~/hooks/useVehicleEnrichment";
+import { type VLevelItem } from "./types";
 
 interface EnrichedVehicleItemProps {
   item: VLevelItem;
