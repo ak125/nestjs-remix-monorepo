@@ -74,6 +74,30 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: 🔍 npm audit (backend)
+        run: cd backend && npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 🔍 npm audit (frontend)
+        run: cd frontend && npm audit --audit-level=high
+        continue-on-error: true
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
