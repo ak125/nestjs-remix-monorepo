@@ -39,6 +39,7 @@ export const IMAGE_CONFIG = {
     LOGOS_MARQUES: 'constructeurs-automobiles/marques-logos',
     LOGOS_EQUIPEMENTIERS: 'equipementiers-automobiles',
     MODELES: 'constructeurs-automobiles/marques-modeles',
+    CONCEPTS: 'constructeurs-automobiles/marques-concepts',
   },
 
   // Images par défaut
@@ -355,25 +356,85 @@ export function buildEquipementierLogoUrl(
 }
 
 /**
+ * Extrait le nom de base d'un modèle (sans génération/châssis)
+ *
+ * @param modeleAlias - Alias complet du modèle (ex: "serie-3-e46", "clio-ii")
+ * @returns Nom de base sans suffixe de génération (ex: "serie-3", "clio")
+ *
+ * @example
+ * extractBaseModelName('serie-3-e46') // → 'serie-3'
+ * extractBaseModelName('clio-ii') // → 'clio'
+ * extractBaseModelName('m3-coupe-e36') // → 'm'
+ * extractBaseModelName('megane-iii') // → 'megane'
+ */
+export function extractBaseModelName(modeleAlias: string): string {
+  let base = modeleAlias
+    // 1. Supprimer variantes (avec ou sans code châssis): m3-coupe-e36 → m3, z3-roadster → z3
+    .replace(
+      /-(coupe|break|cabriolet|berline|touring|compact|gran-coupe|roadster|convertible)(-[a-z0-9-]*)?$/i,
+      '',
+    )
+    // 2. Supprimer codes châssis: serie-3-e46 → serie-3
+    .replace(/-[a-z]\d{2,3}$/i, '')
+    // 3. Supprimer chiffres romains: clio-ii → clio
+    .replace(/-(i{1,3}|iv|v)$/i, '');
+
+  // 4. Cas spéciaux BMW: toutes séries utilisent une image générique
+  // M series: m3, m5, m6 → m
+  // X series: x1, x3, x5, x6, x7 → x
+  // Z series: z1, z3, z4 → z
+  if (/^m\d$/.test(base)) {
+    base = 'm';
+  } else if (/^x\d$/.test(base)) {
+    base = 'x';
+  } else if (/^z\d$/.test(base)) {
+    base = 'z';
+  }
+
+  return base;
+}
+
+/**
  * Construit l'URL d'une image de modèle de véhicule
+ *
+ * Stratégie:
+ * 1. Si modele_pic valide → marques-modeles/{marque}/{modele_pic}
+ * 2. Sinon → marques-concepts/{marque}/{baseModel}.webp
  *
  * @param brandAlias - Alias de la marque (ex: "renault")
  * @param modelPic - Nom de l'image du modèle (ex: "megane-iii.webp")
- * @returns URL via proxy /img/uploads/constructeurs-automobiles/marques-concepts/...
+ * @param modelAlias - Alias du modèle pour fallback (ex: "megane-iii")
+ * @returns URL via proxy /img/uploads/constructeurs-automobiles/...
  *
  * @example
  * buildModelImageUrl('renault', 'megane-iii.webp')
  * // → '/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-iii.webp'
+ *
+ * @example
+ * buildModelImageUrl('bmw', 'no.webp', 'serie-3-e46')
+ * // → '/img/uploads/constructeurs-automobiles/marques-concepts/bmw/serie-3.webp'
  */
 export function buildModelImageUrl(
   brandAlias?: string | null,
   modelPic?: string | null,
+  modelAlias?: string | null,
 ): string {
-  if (!brandAlias || !modelPic || modelPic === 'no.webp') {
+  if (!brandAlias) {
     return IMAGE_CONFIG.DEFAULT_LOGO;
   }
 
-  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.MODELES}/${brandAlias}/${modelPic}`;
+  // 1. Si modele_pic valide (pas no.webp), utiliser marques-modeles
+  if (modelPic && modelPic !== 'no.webp') {
+    return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.MODELES}/${brandAlias}/${modelPic}`;
+  }
+
+  // 2. Sinon, utiliser marques-concepts avec nom de base
+  if (modelAlias) {
+    const baseModel = extractBaseModelName(modelAlias);
+    return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.CONCEPTS}/${brandAlias}/${baseModel}.webp`;
+  }
+
+  return IMAGE_CONFIG.DEFAULT_LOGO;
 }
 
 /**
