@@ -16,6 +16,13 @@ import { GlossaryService } from './services/glossary.service';
 import { BlogCacheService } from './services/blog-cache.service';
 import { HtmlContentSanitizerService } from './services/html-content-sanitizer.service';
 
+// Services refactorisés - Extraction SRP depuis BlogService
+import { BlogArticleTransformService } from './services/blog-article-transform.service';
+import { BlogArticleDataService } from './services/blog-article-data.service';
+import { BlogStatisticsService } from './services/blog-statistics.service';
+import { BlogSeoService } from './services/blog-seo.service';
+import { BlogArticleRelationService } from './services/blog-article-relation.service';
+
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
 import { SeoModule } from '../seo/seo.module';
@@ -66,6 +73,13 @@ import { SeoModule } from '../seo/seo.module';
     BlogService,
     BlogCacheService,
     HtmlContentSanitizerService, // Nettoyage contenu HTML
+
+    // Services refactorisés - Extraction SRP (Single Responsibility Principle)
+    BlogArticleTransformService, // Transformations et mappings
+    BlogArticleDataService, // CRUD et requêtes Supabase
+    BlogStatisticsService, // Métriques et agrégations
+    BlogSeoService, // SEO et liens internes
+    BlogArticleRelationService, // Relations et véhicules compatibles
 
     // Services spécialisés par type de contenu
     AdviceService,
