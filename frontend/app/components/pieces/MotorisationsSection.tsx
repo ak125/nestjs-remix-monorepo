@@ -127,10 +127,23 @@ export default function MotorisationsSection({
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          // ✅ Migration /img/* : Fallback via proxy Caddy
-                          e.currentTarget.src =
-                            "/img/uploads/constructeurs-automobiles/marques-modeles/default.webp";
-                          e.currentTarget.onerror = null; // Éviter les boucles infinies
+                          const img = e.currentTarget;
+                          // Fallback: image modèle → logo marque → placeholder
+                          if (!img.dataset.fallbackUsed) {
+                            img.dataset.fallbackUsed = "true";
+                            // Extraire marque_alias depuis l'URL
+                            const brandAlias = motorisation.image.match(
+                              /marques-modeles\/([^/]+)\//,
+                            )?.[1];
+                            if (brandAlias) {
+                              img.src = `/img/uploads/constructeurs-automobiles/marques-logos/${brandAlias}.webp`;
+                            } else {
+                              img.src = "/images/categories/default.svg";
+                            }
+                          } else {
+                            img.src = "/images/categories/default.svg";
+                            img.onerror = null;
+                          }
                         }}
                       />
                     </div>

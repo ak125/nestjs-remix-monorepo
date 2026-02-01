@@ -219,8 +219,12 @@ export class BrandsController {
             id: marqueId,
             name: brandData.marque_name,
             alias: marqueAlias,
-            // ✅ Utilise fonction centralisée
-            logo: buildBrandLogoUrl(brandData.marque_img),
+            // ✅ Priorité: marque_logo > marque_img > alias.webp
+            logo: brandData.marque_logo
+              ? `/img/uploads/constructeurs-automobiles/marques-logos/${brandData.marque_logo}`
+              : brandData.marque_img
+                ? buildBrandLogoUrl(brandData.marque_img)
+                : `/img/uploads/constructeurs-automobiles/marques-logos/${marqueAlias}.webp`,
           },
           model: {
             id: modeleId,
