@@ -262,9 +262,10 @@ export default function AdminSeoContent() {
   const r5ByCluster = useMemo(() => {
     const grouped: Record<string, R5Draft[]> = {};
     for (const draft of r5Drafts) {
+      if (!draft) continue; // Skip null entries
       const cluster = draft.cluster_id || "autres-pieces";
       if (!grouped[cluster]) grouped[cluster] = [];
-      grouped[cluster].push(draft);
+      grouped[cluster].push(draft as R5Draft);
     }
     // Trier les clusters par label
     return Object.entries(grouped).sort((a, b) =>

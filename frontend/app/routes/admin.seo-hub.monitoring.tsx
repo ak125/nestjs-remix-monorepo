@@ -140,11 +140,14 @@ export default function SeoHubMonitoring() {
   }
 
   // Calculate crawl stats
-  const totalCrawls = crawlActivity.reduce((acc, d) => acc + d.count, 0);
+  const totalCrawls = crawlActivity.reduce(
+    (acc, d) => acc + (d?.count ?? 0),
+    0,
+  );
   const avgResponseMs =
     crawlActivity.length > 0
       ? Math.round(
-          crawlActivity.reduce((acc, d) => acc + d.avgResponseMs, 0) /
+          crawlActivity.reduce((acc, d) => acc + (d?.avgResponseMs ?? 0), 0) /
             crawlActivity.length,
         )
       : 0;

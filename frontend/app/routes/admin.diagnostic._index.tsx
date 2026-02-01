@@ -159,6 +159,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         totalPages,
       },
       filters: { search, inputType, riskLevel },
+      error: undefined as string | undefined,
     });
   } catch (error) {
     console.error("Loader error:", error);
@@ -646,7 +647,9 @@ export default function AdminDiagnosticIndex() {
               <AlertTriangle className="h-8 w-8 text-amber-500" />
               <div>
                 <p className="text-2xl font-bold">
-                  {stats.nodesByType?.Observable || 0}
+                  {(stats.nodesByType as Record<string, number>)?.[
+                    "Observable"
+                  ] || 0}
                 </p>
                 <p className="text-sm text-gray-500">Observables</p>
               </div>
