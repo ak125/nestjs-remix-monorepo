@@ -89,7 +89,10 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
     ? getOptimizedModelImageUrl(
         `constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`,
       )
-    : "/images/placeholder-vehicle.png";
+    : `/img/uploads/constructeurs-automobiles/marques-logos/${vehicle.marque_alias}.webp`;
+
+  // 🔄 Fallback vers logo marque (URL relative pour dev ET prod)
+  const brandLogoUrl = `/img/uploads/constructeurs-automobiles/marques-logos/${vehicle.marque_alias}.webp`;
 
   return (
     <Link
@@ -109,8 +112,14 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             decoding="async"
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
             onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                "/images/placeholder-vehicle.png";
+              const img = e.target as HTMLImageElement;
+              // Fallback: image modèle → logo marque → placeholder
+              if (!img.dataset.fallbackUsed) {
+                img.dataset.fallbackUsed = "true";
+                img.src = brandLogoUrl;
+              } else {
+                img.src = "/images/categories/default.svg";
+              }
             }}
           />
 

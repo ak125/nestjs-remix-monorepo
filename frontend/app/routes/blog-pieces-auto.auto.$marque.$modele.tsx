@@ -338,7 +338,8 @@ export default function BlogPiecesAutoMarqueModele() {
                 <div className="rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50 p-1 shadow-md">
                   <img
                     src={
-                      modelGroup.imageUrl || "/images/categories/default.svg"
+                      modelGroup.imageUrl ||
+                      `/img/uploads/constructeurs-automobiles/marques-logos/${brand.alias}.webp`
                     }
                     alt={`${brand.name} ${modelGroup.name}`}
                     width={400}
@@ -348,8 +349,15 @@ export default function BlogPiecesAutoMarqueModele() {
                     decoding="async"
                     fetchPriority="high"
                     onError={(e) => {
-                      // Fallback si l'image ne charge pas
-                      e.currentTarget.src = "/images/categories/default.svg";
+                      const img = e.currentTarget;
+                      // Fallback: image modèle → logo marque → placeholder
+                      if (!img.dataset.fallbackUsed) {
+                        img.dataset.fallbackUsed = "true";
+                        img.src = `/img/uploads/constructeurs-automobiles/marques-logos/${brand.alias}.webp`;
+                      } else {
+                        img.src = "/images/categories/default.svg";
+                        img.onerror = null;
+                      }
                     }}
                   />
                 </div>
