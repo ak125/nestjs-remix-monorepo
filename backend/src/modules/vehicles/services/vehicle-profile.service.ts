@@ -288,9 +288,13 @@ export class VehicleProfileService extends SupabaseBaseService {
         power_formatted: powerFormatted,
         cylinder_cm3: cylinderCm3,
 
-        // URLs via fonctions centralisées
+        // URLs via fonctions centralisées (avec fallback marques-concepts)
         vehicle_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${typeData.type_alias}-${typeData.type_id}.html`,
-        image_url: buildModelImageUrl(marque.marque_alias, modele.modele_pic),
+        image_url: buildModelImageUrl(
+          marque.marque_alias,
+          modele.modele_pic,
+          modele.modele_alias,
+        ),
         logo_url: buildBrandLogoUrl(marque.marque_logo),
       };
 

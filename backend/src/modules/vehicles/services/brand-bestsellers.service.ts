@@ -207,11 +207,15 @@ export class BrandBestsellersService extends SupabaseBaseService {
   ): Promise<BestsellerVehicle[]> {
     if (rawVehicles.length === 0) return [];
 
-    // Transformer les données de base
+    // Transformer les données de base (avec fallback marques-concepts)
     let vehicles = rawVehicles.map((vehicle: any) => ({
       ...vehicle,
       vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
-      image_url: buildModelImageUrl(vehicle.marque_alias, vehicle.modele_pic),
+      image_url: buildModelImageUrl(
+        vehicle.marque_alias,
+        vehicle.modele_pic,
+        vehicle.modele_alias,
+      ),
     }));
 
     // 🚗 ENRICHISSEMENT SEO VÉHICULES avec __seo_type_switch

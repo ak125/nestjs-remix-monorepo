@@ -204,8 +204,12 @@ export class BrandsController {
         slug: type.type_alias || null,
       }));
 
-      // 5. Générer l'URL de l'image du modèle via fonction centralisée
-      const imageUrl = buildModelImageUrl(marqueAlias, modelData.modele_pic);
+      // 5. Générer l'URL de l'image du modèle via fonction centralisée (avec fallback marques-concepts)
+      const imageUrl = buildModelImageUrl(
+        marqueAlias,
+        modelData.modele_pic,
+        modelData.modele_alias,
+      );
 
       // 6. Préparer la réponse au format attendu par le frontend
       return {

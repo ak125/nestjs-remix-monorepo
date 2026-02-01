@@ -489,10 +489,14 @@ export class VehiclesService extends SupabaseBaseService {
           `📊 Modèles optimisés pour ${brandId} année ${filters.year}: ${data?.length || 0} (total: ${count || 0})`,
         );
 
-        // 🖼️ Enrichir avec image_url via fonction centralisée
+        // 🖼️ Enrichir avec image_url via fonction centralisée (avec fallback marques-concepts)
         const enrichedData = (data || []).map((model: any) => ({
           ...model,
-          image_url: buildModelImageUrl(marqueAlias, model.modele_pic),
+          image_url: buildModelImageUrl(
+            marqueAlias,
+            model.modele_pic,
+            model.modele_alias,
+          ),
         }));
 
         return {
@@ -524,10 +528,14 @@ export class VehiclesService extends SupabaseBaseService {
         throw error;
       }
 
-      // 🖼️ Enrichir avec image_url via fonction centralisée
+      // 🖼️ Enrichir avec image_url via fonction centralisée (avec fallback marques-concepts)
       const enrichedData = (data || []).map((model: any) => ({
         ...model,
-        image_url: buildModelImageUrl(marqueAlias, model.modele_pic),
+        image_url: buildModelImageUrl(
+          marqueAlias,
+          model.modele_pic,
+          model.modele_alias,
+        ),
       }));
 
       // 🎯 Trier : modèles avec images en premier, puis par nom
