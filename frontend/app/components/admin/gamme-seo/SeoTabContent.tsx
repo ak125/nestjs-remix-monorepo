@@ -5,17 +5,15 @@
 
 import { useFetcher } from "@remix-run/react";
 import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Globe,
   Save,
-  CheckCircle2,
-  AlertCircle,
   XCircle,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
-import { type GammeDetail, type SeoFormState } from "./types";
-import { getCharCountClass, getCharCountStatus } from "./utils";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -28,6 +26,8 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import { type GammeDetail, type SeoFormState } from "./types";
+import { getCharCountClass, getCharCountStatus } from "./utils";
 
 interface SeoTabContentProps {
   detail: GammeDetail;
