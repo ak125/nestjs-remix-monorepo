@@ -1,6 +1,9 @@
 export * from './types.js';
 export * from './constants.js';
 export * from './schemas.js';
+export * from './api/index.js';
+export * from './enums/index.js';
+export * from './helpers/index.js';
 import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants.js';
 import { PiecesSchemas, AutoSchemas, AllSchemas, } from './schemas.js';
 export const DatabaseTypes = {

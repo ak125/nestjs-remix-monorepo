@@ -48,6 +48,28 @@ export * from './constants.js';
 export * from './schemas.js';
 
 // ============================================================================
+// 🆕 TYPES API & ENUMS & HELPERS (P4.5 Migration)
+// ============================================================================
+
+/**
+ * Types de réponse API génériques
+ * ApiResponse<T>, ApiError, PaginationInfo, etc.
+ */
+export * from './api/index.js';
+
+/**
+ * Enums métier (véhicules, produits, cache)
+ * VehicleFuelType, PieceQuality, CacheType, etc.
+ */
+export * from './enums/index.js';
+
+/**
+ * Helpers utilitaires
+ * formatPower(), generateVehicleUrl(), etc.
+ */
+export * from './helpers/index.js';
+
+// ============================================================================
 // 🔥 RE-EXPORTS PRATIQUES
 // ============================================================================
 

@@ -1,0 +1,72 @@
+import { z } from 'zod';
+export declare const VehicleFuelTypeSchema: z.ZodEnum<["diesel", "essence", "hybride", "electrique", "gpl", "gnv", "e85", "hydrogene"]>;
+export type VehicleFuelType = z.infer<typeof VehicleFuelTypeSchema>;
+export declare const VEHICLE_FUEL_TYPES: {
+    readonly diesel: "Diesel";
+    readonly essence: "Essence";
+    readonly hybride: "Hybride";
+    readonly electrique: "Electrique";
+    readonly gpl: "GPL";
+    readonly gnv: "GNV";
+    readonly e85: "E85";
+    readonly hydrogene: "Hydrogene";
+};
+export declare const TransmissionTypeSchema: z.ZodEnum<["manuelle", "automatique", "semi-automatique", "cvt", "dsg", "robotisee"]>;
+export type TransmissionType = z.infer<typeof TransmissionTypeSchema>;
+export declare const TRANSMISSION_TYPES: {
+    readonly manuelle: "Manuelle";
+    readonly automatique: "Automatique";
+    readonly 'semi-automatique': "Semi-automatique";
+    readonly cvt: "CVT";
+    readonly dsg: "DSG";
+    readonly robotisee: "Robotisee";
+};
+export declare const VehicleBodyTypeSchema: z.ZodEnum<["berline", "break", "coupe", "cabriolet", "suv", "crossover", "monospace", "pickup", "fourgon", "citadine", "compacte"]>;
+export type VehicleBodyType = z.infer<typeof VehicleBodyTypeSchema>;
+export declare const VEHICLE_BODY_TYPES: {
+    readonly berline: "Berline";
+    readonly break: "Break";
+    readonly coupe: "Coupe";
+    readonly cabriolet: "Cabriolet";
+    readonly suv: "SUV";
+    readonly crossover: "Crossover";
+    readonly monospace: "Monospace";
+    readonly pickup: "Pick-up";
+    readonly fourgon: "Fourgon";
+    readonly citadine: "Citadine";
+    readonly compacte: "Compacte";
+};
+export declare const VehicleDisplayStatusSchema: z.ZodUnion<[z.ZodLiteral<0>, z.ZodLiteral<1>]>;
+export type VehicleDisplayStatus = z.infer<typeof VehicleDisplayStatusSchema>;
+export declare const VehicleSelectionSourceSchema: z.ZodEnum<["user", "api", "cache", "reset", "url", "history"]>;
+export type VehicleSelectionSource = z.infer<typeof VehicleSelectionSourceSchema>;
+export declare const EuroEmissionStandardSchema: z.ZodEnum<["euro1", "euro2", "euro3", "euro4", "euro5", "euro6", "euro6c", "euro6d", "euro6d-temp", "euro7"]>;
+export type EuroEmissionStandard = z.infer<typeof EuroEmissionStandardSchema>;
+export declare const EURO_EMISSION_STANDARDS: {
+    readonly euro1: "Euro 1 (1992)";
+    readonly euro2: "Euro 2 (1996)";
+    readonly euro3: "Euro 3 (2000)";
+    readonly euro4: "Euro 4 (2005)";
+    readonly euro5: "Euro 5 (2009)";
+    readonly euro6: "Euro 6 (2014)";
+    readonly euro6c: "Euro 6c (2017)";
+    readonly euro6d: "Euro 6d (2020)";
+    readonly 'euro6d-temp': "Euro 6d-Temp";
+    readonly euro7: "Euro 7 (2025)";
+};
+export declare const VehicleCountrySchema: z.ZodEnum<["FR", "DE", "IT", "JP", "US", "KR", "GB", "ES", "SE", "CZ", "RO"]>;
+export type VehicleCountry = z.infer<typeof VehicleCountrySchema>;
+export declare const VEHICLE_COUNTRIES: {
+    readonly FR: "France";
+    readonly DE: "Allemagne";
+    readonly IT: "Italie";
+    readonly JP: "Japon";
+    readonly US: "Etats-Unis";
+    readonly KR: "Coree du Sud";
+    readonly GB: "Royaume-Uni";
+    readonly ES: "Espagne";
+    readonly SE: "Suede";
+    readonly CZ: "Republique Tcheque";
+    readonly RO: "Roumanie";
+};
+//# sourceMappingURL=vehicle.d.ts.map

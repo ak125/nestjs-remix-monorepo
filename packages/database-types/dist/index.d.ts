@@ -1,6 +1,9 @@
 export * from './types.js';
 export * from './constants.js';
 export * from './schemas.js';
+export * from './api/index.js';
+export * from './enums/index.js';
+export * from './helpers/index.js';
 import type { Pieces, PiecesPrice, PiecesMarque, PiecesMediaImg, PiecesCriteria, PiecesCriteriaLink, AutoMarque, AutoModele, AutoType, TableName, TableRow, TableInsert, TableUpdate } from './types.js';
 export declare const DatabaseTypes: {
     readonly Pieces: Pieces;
