@@ -98,6 +98,82 @@ jobs:
         run: cd frontend && npm audit --audit-level=high
         continue-on-error: true
 
+  # ============================================
+  # P1.4-P1.5 - Checks Hardening (2026-02-02)
+  # Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
+  # ============================================
+
+  core-build:
+    name: 🔒 Core Build Only
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: 🔒 Build core modules only
+        run: |
+          echo "🔒 Building CORE modules (no DEV ONLY)"
+          npm run build --filter=@fafa/backend --filter=@fafa/frontend --filter=@fafa/ui --filter=@repo/database-types
+
+      - name: ✅ Verify no DEV modules imported
+        run: |
+          echo "Checking app.module.ts for DEV imports..."
+          if grep -E "^\s*(AiContentModule|KnowledgeGraphModule|RagProxyModule|RmModule)" backend/src/app.module.ts; then
+            echo "❌ ERREUR: Modules DEV ONLY détectés dans app.module.ts!"
+            echo "Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md"
+            exit 1
+          fi
+          echo "✅ Aucun module DEV ONLY importé"
+
+  import-firewall:
+    name: 🛡️ Import Firewall
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: 🛡️ Check forbidden imports
+        run: |
+          echo "🛡️ Checking for forbidden imports..."
+          ERRORS=0
+
+          # Check imports from rm module
+          if grep -rn "from.*modules/rm" backend/src --include="*.ts" | grep -v "rm.module.ts" | grep -v "rm.controller.ts" | grep -v "rm-builder.service.ts"; then
+            echo "❌ Import from rm module detected outside rm/"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # Check imports from ai-orchestrator
+          if grep -rn "@repo/ai-orchestrator" backend/src --include="*.ts"; then
+            echo "❌ Import from @repo/ai-orchestrator detected"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # Check imports from contracts
+          if grep -rn "@repo/contracts" backend/src --include="*.ts"; then
+            echo "❌ Import from @repo/contracts detected"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ $ERRORS import firewall violation(s) detected"
+            echo "Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md"
+            exit 1
+          fi
+
+          echo "✅ Import firewall OK - No violations"
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
@@ -108,7 +184,7 @@ jobs:
   deploy:
     name: 🧪 Deploy PREPROD
     runs-on: [self-hosted, Linux, X64]
-    needs: [build, lint, typecheck]
+    needs: [build, lint, typecheck, core-build, import-firewall]
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
 
     steps:
