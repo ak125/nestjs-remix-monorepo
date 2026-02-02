@@ -130,3 +130,4 @@ data/external/*.csv
 *.keywords.csv
 *_volumes.csv
 *_trends.csv
+.local/
