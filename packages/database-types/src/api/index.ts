@@ -3,4 +3,4 @@
  * @package @repo/database-types
  */
 
-export * from './responses';
+export * from './responses.js';

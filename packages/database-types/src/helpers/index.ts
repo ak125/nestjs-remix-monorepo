@@ -3,4 +3,4 @@
  * @package @repo/database-types
  */
 
-export * from './vehicle';
+export * from './vehicle.js';
