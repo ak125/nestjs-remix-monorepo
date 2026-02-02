@@ -12,13 +12,22 @@ PROD_REFS=(
   "cxpojprgwgubzjyqzmoq"
 )
 
-# Exclure docs / gouvernance pour eviter faux positifs
+# Exclure docs / gouvernance / scripts pour eviter faux positifs
 EXCLUDE_GLOBS=(
   "governance/**"
   "docs/**"
   ".spec/**"
   ".local/**"
+  ".archive/**"
   "**/*.md"
+  "**/*.template"
+  "**/*.example"
+  "**/*.sql"                    # Migrations (URLs CDN, pas connexions runtime)
+  "backend/*.js"                # Scripts one-shot
+  "backend/*.mjs"
+  "backend/*.sh"
+  ".vscode/**"
+  "docker-compose.imgproxy.yml" # CDN URL whitelist, pas connexion DB
 )
 
 # Cibles: seulement fichiers trackes pertinents
