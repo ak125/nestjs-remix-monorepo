@@ -349,3 +349,5 @@ Migration progressive vers `tools/scripts/` planifiée.
 | 2026-02-02 | Push governance-vault (DEC-001) | ✅ OK |
 | 2026-02-02 | P2.1 - Créer structure tools/scripts/ | ✅ DONE |
 | 2026-02-02 | P2.2 - Créer tools/README.md (inventaire 76 scripts) | ✅ DONE |
+| 2026-02-02 | Commit P2.1-P2.2 (`a0ea773e`) | ✅ OK |
+| 2026-02-02 | **PHASE P2.1-P2.2 TERMINÉE** | ✅ VALIDÉE |
