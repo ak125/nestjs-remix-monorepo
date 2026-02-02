@@ -30,10 +30,10 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { getAppConfig } from '../../../config/app.config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.service';
 
 // Types
@@ -121,25 +121,18 @@ const STATIC_PAGES = [
 const OBSOLETE_FILES = ['sitemap-constructeurs.xml', 'sitemap-types.xml'];
 
 @Injectable()
-export class SitemapV10Service {
-  private readonly logger = new Logger(SitemapV10Service.name);
-  private readonly supabase: SupabaseClient;
+export class SitemapV10Service extends SupabaseBaseService {
+  protected override readonly logger = new Logger(SitemapV10Service.name);
   private readonly BASE_URL: string;
   private readonly OUTPUT_DIR: string;
   private readonly MAX_URLS_PER_FILE = 50000;
 
-  constructor(private configService: ConfigService) {
-    const appConfig = getAppConfig();
-
-    const supabaseUrl =
-      this.configService.get<string>('SUPABASE_URL') || appConfig.supabase.url;
-    const supabaseKey =
-      this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ||
-      appConfig.supabase.serviceKey;
-
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  constructor(
+    private configService: ConfigService,
+    rpcGate: RpcGateService,
+  ) {
+    super();
+    this.rpcGate = rpcGate;
 
     this.BASE_URL =
       this.configService.get<string>('BASE_URL') ||
@@ -347,9 +340,11 @@ export class SitemapV10Service {
 
     try {
       // 1. Compter le total d'URLs
-      const { data: countData, error: countError } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: countData, error: countError } = await this.callRpc<number>(
         'count_sitemap_urls_by_temperature',
         { p_temperature: bucket },
+        { source: 'cron' },
       );
 
       if (countError) {
@@ -379,13 +374,17 @@ export class SitemapV10Service {
       if (bucket === 'new') {
         // Cas spécial pour 'new': fichier avec date YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
-        const { data: urls, error: urlsError } = await this.supabase.rpc(
+        // 🛡️ RPC Safety Gate
+        const { data: urls, error: urlsError } = await this.callRpc<
+          SitemapUrl[]
+        >(
           'get_sitemap_urls_by_temperature',
           {
             p_temperature: bucket,
             p_limit: this.MAX_URLS_PER_FILE,
             p_offset: 0,
           },
+          { source: 'cron' },
         );
 
         if (urlsError) {
@@ -426,13 +425,17 @@ export class SitemapV10Service {
         const numFiles = Math.ceil(totalUrls / this.MAX_URLS_PER_FILE);
         for (let i = 0; i < numFiles; i++) {
           const offset = i * this.MAX_URLS_PER_FILE;
-          const { data: urls, error: urlsError } = await this.supabase.rpc(
+          // 🛡️ RPC Safety Gate
+          const { data: urls, error: urlsError } = await this.callRpc<
+            SitemapUrl[]
+          >(
             'get_sitemap_urls_by_temperature',
             {
               p_temperature: bucket,
               p_limit: this.MAX_URLS_PER_FILE,
               p_offset: offset,
             },
+            { source: 'cron' },
           );
 
           if (urlsError) {
@@ -1245,8 +1248,11 @@ ${sitemapEntries}
   private async generateDiagnosticSitemap(): Promise<string | null> {
     try {
       // Appeler la RPC function créée dans la migration
-      const { data: diagnostics, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: diagnostics, error } = await this.callRpc<any[]>(
         'get_all_seo_observables_for_sitemap',
+        {},
+        { source: 'cron' },
       );
 
       if (error) {

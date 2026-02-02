@@ -29,8 +29,8 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { getAppConfig } from '../../../config/app.config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 // Types
 export interface EntityInputs {
@@ -103,22 +103,17 @@ const THRESHOLDS = {
 };
 
 @Injectable()
-export class SitemapV10ScoringService {
-  private readonly logger = new Logger(SitemapV10ScoringService.name);
-  private readonly supabase: SupabaseClient;
+export class SitemapV10ScoringService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(
+    SitemapV10ScoringService.name,
+  );
 
-  constructor(private configService: ConfigService) {
-    const appConfig = getAppConfig();
-
-    const supabaseUrl =
-      this.configService.get<string>('SUPABASE_URL') || appConfig.supabase.url;
-    const supabaseKey =
-      this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ||
-      appConfig.supabase.serviceKey;
-
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  constructor(
+    private configService: ConfigService,
+    rpcGate: RpcGateService,
+  ) {
+    super();
+    this.rpcGate = rpcGate;
 
     this.logger.log('📊 SitemapV10ScoringService initialized');
   }
@@ -459,8 +454,11 @@ export class SitemapV10ScoringService {
       }
 
       // 6. Mettre à jour les températures dans __seo_page
-      const { data: refreshResult } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: refreshResult } = await this.callRpc<number>(
         'refresh_temperature_scores',
+        {},
+        { source: 'cron' },
       );
       this.logger.log(
         `   Updated temperatures for ${refreshResult || 0} pages`,

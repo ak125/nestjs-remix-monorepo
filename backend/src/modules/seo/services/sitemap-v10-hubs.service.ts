@@ -17,10 +17,10 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { getAppConfig } from '../../../config/app.config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 // Types
 export type HubType =
@@ -541,27 +541,20 @@ const HUB_CONFIGS: Record<HubType, HubConfig> = {
 };
 
 @Injectable()
-export class SitemapV10HubsService {
-  private readonly logger = new Logger(SitemapV10HubsService.name);
-  private readonly supabase: SupabaseClient;
+export class SitemapV10HubsService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(SitemapV10HubsService.name);
   private readonly BASE_URL: string;
   private readonly OUTPUT_DIR: string;
 
   // Cache global pour déduplication inter-clusters
   private processedHubUrlsCache: Set<string> | null = null;
 
-  constructor(private configService: ConfigService) {
-    const appConfig = getAppConfig();
-
-    const supabaseUrl =
-      this.configService.get<string>('SUPABASE_URL') || appConfig.supabase.url;
-    const supabaseKey =
-      this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ||
-      appConfig.supabase.serviceKey;
-
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  constructor(
+    private configService: ConfigService,
+    rpcGate: RpcGateService,
+  ) {
+    super();
+    this.rpcGate = rpcGate;
 
     this.BASE_URL =
       this.configService.get<string>('BASE_URL') ||
@@ -622,13 +615,15 @@ export class SitemapV10HubsService {
 
       if (config.bucket) {
         // Récupérer par bucket de température
-        const { data, error } = await this.supabase.rpc(
+        // 🛡️ RPC Safety Gate
+        const { data, error } = await this.callRpc<{ url: string }[]>(
           'get_sitemap_urls_by_temperature',
           {
             p_temperature: config.bucket,
             p_limit: config.maxUrls,
             p_offset: 0,
           },
+          { source: 'cron' },
         );
 
         if (error) throw new Error(error.message);
@@ -1611,12 +1606,16 @@ ${clusterLinks}
 
     try {
       // 1. Récupérer les top gammes par volume de recherche via RPC
+      // 🛡️ RPC Safety Gate
       let topGammeIds: string[];
-      const { data: topGammes, error: gammeError } = await this.supabase.rpc(
+      const { data: topGammes, error: gammeError } = await this.callRpc<
+        { gamme_id: number }[]
+      >(
         'get_top_money_gammes',
         {
           p_limit: 10,
         },
+        { source: 'cron' },
       );
 
       if (gammeError || !topGammes || topGammes.length === 0) {
@@ -1783,13 +1782,15 @@ ${links}
 
     try {
       // Appeler la RPC pour récupérer les pages à stabiliser
-      const { data: pages, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: pages, error } = await this.callRpc<any[]>(
         'get_stabilize_pages',
         {
           p_days_min: 6,
           p_days_max: 8,
           p_limit: 2000,
         },
+        { source: 'cron' },
       );
 
       if (error) {
