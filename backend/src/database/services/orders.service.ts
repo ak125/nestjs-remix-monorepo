@@ -753,22 +753,34 @@ export class OrdersService extends SupabaseBaseService {
         .eq('ords_id', orderData.ord_ords_id)
         .single();
 
-      // 7. Enrichir les lignes avec leurs statuts
+      // 7. Enrichir les lignes avec leurs statuts (batch query au lieu de N+1)
       let enrichedOrderLines = orderLines || [];
       if (enrichedOrderLines.length > 0) {
-        enrichedOrderLines = await Promise.all(
-          enrichedOrderLines.map(async (line) => {
-            if (line.orl_orls_id) {
-              const { data: lineStatus } = await this.supabase
-                .from(TABLES.xtr_order_line_status)
-                .select('*')
-                .eq('orls_id', line.orl_orls_id)
-                .single();
-              return { ...line, lineStatus: lineStatus || null };
-            }
-            return { ...line, lineStatus: null };
-          }),
-        );
+        // Collecter tous les IDs de statut en une seule fois
+        const lineStatusIds = enrichedOrderLines
+          .map((line) => line.orl_orls_id)
+          .filter(Boolean);
+
+        // Une seule requête pour tous les statuts
+        let statusMap = new Map<string, any>();
+        if (lineStatusIds.length > 0) {
+          const { data: allStatuses } = await this.supabase
+            .from(TABLES.xtr_order_line_status)
+            .select('*')
+            .in('orls_id', lineStatusIds);
+
+          if (allStatuses) {
+            statusMap = new Map(allStatuses.map((s) => [s.orls_id, s]));
+          }
+        }
+
+        // Jointure locale
+        enrichedOrderLines = enrichedOrderLines.map((line) => ({
+          ...line,
+          lineStatus: line.orl_orls_id
+            ? statusMap.get(line.orl_orls_id) || null
+            : null,
+        }));
       }
 
       this.logger.debug(

@@ -63,6 +63,17 @@ export interface QuotedItem {
 @Injectable()
 export class QuoteService {
   private readonly logger = new Logger(QuoteService.name);
+
+  /**
+   * TODO ARCHITECTURE: Ces Maps sont purement in-memory sans persistance Supabase.
+   * RISQUES:
+   * - Perte de données au redémarrage serveur
+   * - Croissance mémoire non bornée (pas de TTL/cleanup)
+   * - Pas de partage entre instances (scaling horizontal)
+   *
+   * ACTION REQUISE: Migrer vers Supabase avec cache L1 avant mise en prod.
+   * Tables à créer: __quote_requests, __quotes
+   */
   private quoteRequests: Map<string, QuoteRequest> = new Map();
   private quotes: Map<string, Quote> = new Map();
 

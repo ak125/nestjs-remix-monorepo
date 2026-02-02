@@ -84,6 +84,17 @@ export interface ClaimStats {
 @Injectable()
 export class ClaimService {
   private readonly logger = new Logger(ClaimService.name);
+
+  /**
+   * TODO ARCHITECTURE: Map purement in-memory sans persistance Supabase.
+   * RISQUES CRITIQUES:
+   * - Réclamations clients perdues au redémarrage serveur
+   * - Timeline des actions perdues (historique juridique)
+   * - Croissance mémoire non bornée
+   *
+   * ACTION REQUISE: Migrer vers Supabase URGENT avant mise en prod.
+   * Table à créer: __claims (avec JSONB pour timeline)
+   */
   private claims: Map<string, Claim> = new Map();
 
   constructor(private notificationService: NotificationService) {}

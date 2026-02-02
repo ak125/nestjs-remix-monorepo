@@ -166,7 +166,9 @@ export class PayboxCallbackController {
 
   /**
    * GET /api/paybox/callback-test - Test SANS vérification de signature
-   * ⚠️ À utiliser UNIQUEMENT en développement
+   * ⚠️ ATTENTION: Endpoint sans vérification de signature HMAC
+   * Requis pour le fonctionnement du système de paiement Paybox
+   * TODO SÉCURITÉ: Envisager IP whitelisting ou token secret pour sécuriser
    */
   @Get('callback-test')
   async handleCallbackTest(
