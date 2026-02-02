@@ -222,6 +222,7 @@ export class StockService extends SupabaseBaseService {
 
   /**
    * 📊 Récupérer le stock pour plusieurs produits
+   * ✅ P3.3 Optimisé: Batch query au lieu de N requêtes
    */
   async getBulkStock(productIds: (number | string)[]): Promise<
     Record<
@@ -236,17 +237,65 @@ export class StockService extends SupabaseBaseService {
     try {
       const results: Record<string, any> = {};
 
-      // Récupérer le stock pour chaque produit
-      await Promise.all(
-        productIds.map(async (id) => {
-          const stock = await this.getProductStock(id);
+      // 🚀 MODE FLUX TENDU: Retourner stock illimité pour tous
+      if (this.STOCK_MODE === 'UNLIMITED') {
+        productIds.forEach((id) => {
           results[id.toString()] = {
-            available: stock.available,
-            total: stock.total,
-            status: stock.status,
+            available: this.UNLIMITED_DISPLAY_STOCK,
+            total: this.UNLIMITED_DISPLAY_STOCK,
+            status: 'in_stock',
           };
-        }),
+        });
+        return results;
+      }
+
+      // 📊 MODE SUIVI: Batch query en une seule requête
+      const pieceIds = productIds.map((id) =>
+        typeof id === 'string' ? parseInt(id) : id,
       );
+
+      // BATCH: Récupérer tous les stocks en une requête
+      const { data: priceData, error } = await this.client
+        .from(TABLES.pieces_price)
+        .select('pri_piece_id, pri_qte_cond')
+        .in('pri_piece_id', pieceIds);
+
+      if (error) {
+        this.logger.error('Erreur batch stock:', error);
+      }
+
+      // Créer Map pour lookup O(1)
+      const stockMap = new Map<number, number>();
+      (priceData || []).forEach((p) => {
+        const qtyString = p.pri_qte_cond;
+        let stock = this.DEFAULT_STOCK;
+        if (qtyString && qtyString.trim() !== '') {
+          const parsed = parseFloat(qtyString);
+          if (!isNaN(parsed) && parsed > 0) {
+            stock = Math.floor(parsed);
+          }
+        }
+        stockMap.set(p.pri_piece_id, stock);
+      });
+
+      // Assembler les résultats avec Map lookup
+      pieceIds.forEach((pieceId) => {
+        const totalStock = stockMap.get(pieceId) || this.DEFAULT_STOCK;
+        let status: string;
+        if (totalStock <= 0) {
+          status = 'out_of_stock';
+        } else if (totalStock <= this.LOW_STOCK_THRESHOLD) {
+          status = 'low_stock';
+        } else {
+          status = 'in_stock';
+        }
+
+        results[pieceId.toString()] = {
+          available: totalStock,
+          total: totalStock,
+          status,
+        };
+      });
 
       return results;
     } catch (error) {

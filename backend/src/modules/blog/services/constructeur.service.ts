@@ -113,7 +113,8 @@ export class ConstructeurService {
   }
 
   /**
-   * 🚗 Tri par nombre de modèles (requiert une requête supplémentaire)
+   * 🚗 Tri par nombre de modèles
+   * ✅ P3.3 Optimisé: Une seule requête batch au lieu de N
    */
   private async sortByModelCount(
     articles: BlogArticle[],
@@ -121,29 +122,39 @@ export class ConstructeurService {
   ): Promise<void> {
     const client = this.supabaseService.getClient();
 
-    const modelCounts = await Promise.allSettled(
-      articles.map(async (article) => {
-        const { count } = await client
-          .from(TABLES.blog_advice_cross)
-          .select('*', { count: 'exact', head: true })
-          .eq('bac_ba_id', article.legacy_id?.toString() || '0');
+    // BATCH: Collecter tous les legacy_ids
+    const legacyIds = articles
+      .map((a) => a.legacy_id?.toString())
+      .filter((id): id is string => id != null && id !== '0');
 
-        return { id: article.id, count: count || 0 };
-      }),
-    );
+    if (legacyIds.length === 0) {
+      return;
+    }
 
+    // BATCH: Récupérer tous les counts en une requête avec GROUP BY via RPC ou raw count
+    // Supabase ne supporte pas GROUP BY directement, utiliser une requête avec comptage
+    const { data: crossData } = await client
+      .from(TABLES.blog_advice_cross)
+      .select('bac_ba_id')
+      .in('bac_ba_id', legacyIds);
+
+    // Compter les occurrences côté client (plus efficace qu'N requêtes)
     const countMap = new Map<string, number>();
-    modelCounts.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
-        countMap.set(result.value.id, result.value.count);
-      } else {
-        countMap.set(articles[index].id, 0);
-      }
+    (crossData || []).forEach((row) => {
+      const id = row.bac_ba_id;
+      countMap.set(id, (countMap.get(id) || 0) + 1);
+    });
+
+    // Créer Map article.id -> count
+    const articleCountMap = new Map<string, number>();
+    articles.forEach((article) => {
+      const legacyId = article.legacy_id?.toString() || '0';
+      articleCountMap.set(article.id, countMap.get(legacyId) || 0);
     });
 
     articles.sort((a, b) => {
-      const countA = countMap.get(a.id) || 0;
-      const countB = countMap.get(b.id) || 0;
+      const countA = articleCountMap.get(a.id) || 0;
+      const countB = articleCountMap.get(b.id) || 0;
       return descending ? countB - countA : countA - countB;
     });
   }
@@ -247,13 +258,60 @@ export class ConstructeurService {
         return { articles: [], total: 0 };
       }
 
-      // Transformation parallèle en articles
+      // ✅ P3.3 Optimisé: Batch fetch sections au lieu de 3N requêtes
+      const bsmIds = constructeursList.map((c) => c.bsm_id);
+
+      // BATCH: Récupérer toutes les sections H2 en une requête
+      const { data: allH2Sections } = await client
+        .from(TABLES.blog_advice_h2)
+        .select('*')
+        .in('ba2_ba_id', bsmIds)
+        .order('ba2_id');
+
+      // BATCH: Récupérer toutes les sections H3 en une requête
+      const { data: allH3Sections } = await client
+        .from(TABLES.blog_advice_h3)
+        .select('*')
+        .in('bc3_bc_id', bsmIds)
+        .order('ba3_id');
+
+      // BATCH: Récupérer tous les counts de modèles en une requête
+      const { data: allCrossData } = await client
+        .from(TABLES.blog_advice_cross)
+        .select('bac_ba_id')
+        .in('bac_ba_id', bsmIds);
+
+      // Créer Maps pour lookup O(1)
+      const h2Map = new Map<string, any[]>();
+      const h3Map = new Map<string, any[]>();
+      const modelCountMap = new Map<string, number>();
+
+      (allH2Sections || []).forEach((s) => {
+        const key = s.ba2_ba_id;
+        if (!h2Map.has(key)) h2Map.set(key, []);
+        h2Map.get(key)!.push(s);
+      });
+
+      (allH3Sections || []).forEach((s) => {
+        const key = s.bc3_bc_id;
+        if (!h3Map.has(key)) h3Map.set(key, []);
+        h3Map.get(key)!.push(s);
+      });
+
+      (allCrossData || []).forEach((row) => {
+        const id = row.bac_ba_id;
+        modelCountMap.set(id, (modelCountMap.get(id) || 0) + 1);
+      });
+
+      // Transformation synchrone avec Map lookups
       const articles: BlogArticle[] = [];
-      const transformPromises = constructeursList.map(async (constructeur) => {
+      for (const constructeur of constructeursList) {
         try {
-          const article = await this.transformConstructeurToArticle(
-            client,
+          const article = this.transformConstructeurToArticleBatch(
             constructeur,
+            h2Map.get(constructeur.bsm_id) || [],
+            h3Map.get(constructeur.bsm_id) || [],
+            modelCountMap.get(constructeur.bsm_id) || 0,
           );
           if (article) articles.push(article);
         } catch (error) {
@@ -261,9 +319,7 @@ export class ConstructeurService {
             `⚠️ Erreur transformation constructeur ${constructeur.bc_id}: ${(error as Error).message}`,
           );
         }
-      });
-
-      await Promise.allSettled(transformPromises);
+      }
 
       // Tri final si nécessaire
       if (filters.sortBy === 'models' && articles.length > 0) {
@@ -960,6 +1016,98 @@ export class ConstructeurService {
       );
       return false;
     }
+  }
+
+  /**
+   * 🔄 Transformation batch (sans requêtes DB) pour P3.3
+   * ✅ Utilise les données pré-fetchées en batch
+   */
+  private transformConstructeurToArticleBatch(
+    constructeur: any,
+    h2Sections: any[],
+    h3Sections: any[],
+    modelsCount: number,
+  ): BlogArticle {
+    // Construction des sections avec décodage HTML optimisé
+    const sections: BlogSection[] = [
+      ...(h2Sections?.map((s: any) => ({
+        level: 2,
+        title: BlogCacheService.decodeHtmlEntities(s.ba2_h2),
+        content: BlogCacheService.decodeHtmlEntities(s.ba2_content),
+        anchor: this.generateAnchor(s.ba2_h2),
+      })) || []),
+      ...(h3Sections?.map((s: any) => ({
+        level: 3,
+        title: BlogCacheService.decodeHtmlEntities(s.ba3_h3),
+        content: BlogCacheService.decodeHtmlEntities(s.ba3_content),
+        anchor: this.generateAnchor(s.ba3_h3),
+      })) || []),
+    ];
+
+    // Génération des tags intelligents
+    const baseTags = [
+      `constructeur:${constructeur.bc_constructeur?.toLowerCase() || 'unknown'}`,
+    ];
+    const keywordTags = constructeur.bc_keywords
+      ? constructeur.bc_keywords
+          .split(', ')
+          .map((k: string) => k.trim().toLowerCase())
+      : [];
+
+    const popularityTag = this.getPopularityTag(
+      parseInt(constructeur.bc_visit) || 0,
+    );
+    const modelTag = modelsCount > 0 ? `models:${modelsCount}` : 'no-models';
+    const letterTag = `letter:${(constructeur.bc_constructeur || 'A').charAt(0).toLowerCase()}`;
+
+    const allTags = [
+      ...baseTags,
+      ...keywordTags,
+      popularityTag,
+      modelTag,
+      letterTag,
+    ];
+
+    // Construction de l'article
+    const article: BlogArticle = {
+      id: `constructeur_${constructeur.bc_id}`,
+      type: 'constructeur',
+      title: BlogCacheService.decodeHtmlEntities(constructeur.bsm_marque_id),
+      slug:
+        constructeur.bc_alias || this.generateSlug(constructeur.bsm_marque_id),
+      excerpt: BlogCacheService.decodeHtmlEntities(
+        constructeur.bc_preview || constructeur.bc_descrip || '',
+      ),
+      content: BlogCacheService.decodeHtmlEntities(
+        constructeur.bc_content || '',
+      ),
+      h1: BlogCacheService.decodeHtmlEntities(
+        constructeur.bc_h1 || constructeur.bsm_marque_id,
+      ),
+      h2: BlogCacheService.decodeHtmlEntities(constructeur.bc_h2 || ''),
+      keywords: keywordTags,
+      tags: allTags,
+      publishedAt: constructeur.bc_create || new Date().toISOString(),
+      updatedAt:
+        constructeur.bc_update ||
+        constructeur.bc_create ||
+        new Date().toISOString(),
+      viewsCount: parseInt(constructeur.bc_visit) || 0,
+      sections,
+      legacy_id: parseInt(constructeur.bsm_id),
+      legacy_table: '__blog_constructeur',
+      seo_data: {
+        meta_title: BlogCacheService.decodeHtmlEntities(
+          constructeur.bc_h1 || constructeur.bsm_marque_id,
+        ),
+        meta_description: BlogCacheService.decodeHtmlEntities(
+          constructeur.bc_descrip || constructeur.bc_preview || '',
+        ),
+        keywords: keywordTags,
+      },
+    };
+
+    return article;
   }
 
   /**

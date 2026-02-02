@@ -471,6 +471,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
   /**
    * 📈 Obtenir les marques populaires (par nombre de recherches)
    * Note: Nécessiterait un système de tracking des recherches
+   * ✅ P3.3 Optimisé: Batch query au lieu de N requêtes
    */
   async getPopularBrands(limit: number = 10): Promise<VehicleBrand[]> {
     const cacheKey = `popular_brands:${limit}`;
@@ -483,12 +484,31 @@ export class VehicleBrandsService extends SupabaseBaseService {
           // Pour l'instant, retourne les marques avec le plus de modèles
           const topBrands = await this.getTopBrands(limit);
 
-          const brandPromises = topBrands.map(async (brand) => {
-            return await this.getBrandByName(brand.marque_name);
+          if (topBrands.length === 0) return [];
+
+          // BATCH: Récupérer toutes les marques en une seule requête
+          const brandNames = topBrands.map((b) => b.marque_name);
+          const { data: brandsData, error } = await this.client
+            .from(TABLES.auto_marque)
+            .select('*')
+            .in('marque_name', brandNames)
+            .eq('marque_display', 1);
+
+          if (error) {
+            this.logger.error('Erreur batch getPopularBrands:', error);
+            return [];
+          }
+
+          // Créer Map pour conserver l'ordre du tri (par modelCount)
+          const brandMap = new Map<string, VehicleBrand>();
+          (brandsData || []).forEach((brand) => {
+            brandMap.set(brand.marque_name, brand);
           });
 
-          const brands = await Promise.all(brandPromises);
-          return brands.filter((brand) => brand !== null) as VehicleBrand[];
+          // Retourner dans l'ordre original (trié par popularité)
+          return topBrands
+            .map((top) => brandMap.get(top.marque_name))
+            .filter((brand): brand is VehicleBrand => brand != null);
         } catch (error) {
           this.logger.error('Erreur getPopularBrands:', error);
           return [];

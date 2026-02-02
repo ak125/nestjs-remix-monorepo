@@ -42,6 +42,7 @@ export class CartCalculationService extends SupabaseBaseService {
 
   /**
    * Calculer tous les totaux du panier (équivalent shopping_cart.function.php)
+   * ✅ P3.3 Optimisé: Batch query pour remises quantité
    */
   async calculateCart(
     items: CartItem[],
@@ -51,13 +52,62 @@ export class CartCalculationService extends SupabaseBaseService {
     let totalWeight = 0;
     let itemCount = 0;
 
-    // Calculer le sous-total avec remises quantité
+    // BATCH: Récupérer tous les paliers de remise en une requête
+    const productIds = [...new Set(items.map((item) => item.product_id))];
+    const discountMap = new Map<
+      string,
+      {
+        discount_percent?: number;
+        discount_amount?: number;
+        min_quantity: number;
+      }[]
+    >();
+
+    if (productIds.length > 0) {
+      const { data: allDiscounts, error } = await this.supabase
+        .from(TABLES.quantity_discounts)
+        .select('product_id, min_quantity, discount_percent, discount_amount')
+        .in('product_id', productIds)
+        .eq('is_active', true)
+        .order('min_quantity', { ascending: false });
+
+      if (!error && allDiscounts) {
+        // Grouper par product_id
+        allDiscounts.forEach((d) => {
+          const key = d.product_id;
+          if (!discountMap.has(key)) {
+            discountMap.set(key, []);
+          }
+          discountMap.get(key)!.push({
+            discount_percent: d.discount_percent,
+            discount_amount: d.discount_amount,
+            min_quantity: d.min_quantity,
+          });
+        });
+      }
+    }
+
+    // Calculer le sous-total avec Map lookup O(1)
     for (const item of items) {
-      const itemPrice = await this.calculateQuantityDiscount(
-        item.product_id,
-        item.quantity,
-        item.price,
+      let itemPrice = item.price;
+
+      // Appliquer remise quantité depuis Map
+      const discounts = discountMap.get(item.product_id) || [];
+      const applicableDiscount = discounts.find(
+        (d) => item.quantity >= d.min_quantity,
       );
+
+      if (applicableDiscount) {
+        if (applicableDiscount.discount_percent) {
+          itemPrice =
+            item.price * (1 - applicableDiscount.discount_percent / 100);
+        } else if (applicableDiscount.discount_amount) {
+          itemPrice = Math.max(
+            0,
+            item.price - applicableDiscount.discount_amount,
+          );
+        }
+      }
 
       subtotalHT += item.quantity * itemPrice;
       totalWeight += item.quantity * ((item as any).weight || 0);

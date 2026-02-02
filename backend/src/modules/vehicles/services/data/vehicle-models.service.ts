@@ -546,6 +546,7 @@ export class VehicleModelsService extends SupabaseBaseService {
 
   /**
    * 📈 Obtenir les modèles populaires
+   * ✅ P3.3 Optimisé: Batch query au lieu de N requêtes
    */
   async getPopularModels(
     limit: number = 10,
@@ -560,31 +561,47 @@ export class VehicleModelsService extends SupabaseBaseService {
         try {
           const topModels = await this.getTopModels(limit);
 
-          const modelPromises = topModels
-            .filter((model) => !marqueId || model.marque_name) // Filtrer par marque si spécifié
-            .map(async (model) => {
-              // Récupérer le modèle complet
-              const { data } = await this.client
-                .from(TABLES.auto_modele)
-                .select(
-                  `
-                  *,
-                  auto_marque!inner(
-                    marque_id,
-                    marque_name
-                  )
-                `,
-                )
-                .eq('modele_name', model.modele_name)
-                .eq('auto_marque.marque_name', model.marque_name)
-                .eq('modele_display', 1)
-                .single();
+          if (topModels.length === 0) return [];
 
-              return data;
-            });
+          // BATCH: Collecter les noms de modèles uniques
+          const modelNames = [...new Set(topModels.map((m) => m.modele_name))];
 
-          const models = await Promise.all(modelPromises);
-          return models.filter((model) => model !== null) as VehicleModel[];
+          // BATCH: Récupérer tous les modèles en une seule requête
+          const { data: modelsData, error } = await this.client
+            .from(TABLES.auto_modele)
+            .select(
+              `
+              *,
+              auto_marque!inner(
+                marque_id,
+                marque_name
+              )
+            `,
+            )
+            .in('modele_name', modelNames)
+            .eq('modele_display', 1);
+
+          if (error) {
+            this.logger.error('Erreur batch getPopularModels:', error);
+            return [];
+          }
+
+          // Créer Map composite (modele_name + marque_name) pour lookup O(1)
+          const modelMap = new Map<string, VehicleModel>();
+          (modelsData || []).forEach((model) => {
+            const marque = model.auto_marque as any;
+            const key = `${model.modele_name}|${marque?.marque_name || ''}`;
+            modelMap.set(key, model);
+          });
+
+          // Retourner dans l'ordre original (trié par typeCount)
+          return topModels
+            .filter((model) => !marqueId || model.marque_name)
+            .map((top) => {
+              const key = `${top.modele_name}|${top.marque_name}`;
+              return modelMap.get(key);
+            })
+            .filter((model): model is VehicleModel => model != null);
         } catch (error) {
           this.logger.error('Erreur getPopularModels:', error);
           return [];
