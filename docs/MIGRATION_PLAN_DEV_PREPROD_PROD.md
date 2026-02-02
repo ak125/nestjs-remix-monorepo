@@ -252,13 +252,29 @@ curl -s http://localhost:3000/health | jq .status
 
 | # | Action | Effort | Risque | Safe? | Statut |
 |---|--------|--------|--------|-------|--------|
-| P1.1 | Créer script `npm run dev:core` | S | Low | Yes | TODO |
-| P1.2 | Créer script `npm run dev:full` | S | Low | Yes | TODO |
-| P1.3 | Ajouter ESLint import-firewall | M | Low | Yes | TODO |
+| P1.1 | Créer script `npm run dev:core` | S | Low | Yes | ✅ DONE |
+| P1.2 | Créer script `npm run dev:full:all` | S | Low | Yes | ✅ DONE |
+| P1.3 | Ajouter ESLint import-firewall | M | Low | Yes | ✅ DONE |
 | P1.4 | Ajouter CI check `core-build-only` | M | Low | Yes | TODO |
 | P1.5 | Ajouter CI check `import-firewall` | M | Low | Yes | TODO |
 
-*(Détails à compléter après validation P0)*
+#### P1.1-P1.2 — Scripts npm dev:core / dev:full:all
+
+**Fichier**: `package.json`
+
+```json
+"dev:core": "turbo dev --filter=@fafa/backend --filter=@fafa/frontend",
+"dev:full:all": "turbo dev"
+```
+
+#### P1.3 — ESLint Import Firewall
+
+**Fichier**: `backend/.eslintrc.js`
+
+Règle `no-restricted-imports` ajoutée pour bloquer:
+- `**/modules/rm/**` → Crash prod 2026-01-11
+- `@repo/ai-orchestrator` → DEV ONLY
+- `@repo/contracts` → DEV ONLY
 
 ---
 
@@ -294,3 +310,7 @@ curl -s http://localhost:3000/health | jq .status
 | 2026-02-02 | P0.5 - Kill-switch 5 scripts OPS (generate_all_seo_switches, recalculate-vlevel, populate_seo_gamme_car_switch, fix-seo-switches, import_agent2_data) | ✅ DONE |
 | 2026-02-02 | Build TypeScript backend | ✅ OK (0 erreurs) |
 | 2026-02-02 | **PHASE P0 TERMINÉE** | ✅ VALIDÉE |
+| 2026-02-02 | Commit P0 (`7551ea3c`) | ✅ OK |
+| 2026-02-02 | P1.1 - Script `npm run dev:core` ajouté | ✅ DONE |
+| 2026-02-02 | P1.2 - Script `npm run dev:full:all` ajouté | ✅ DONE |
+| 2026-02-02 | P1.3 - ESLint import-firewall ajouté | ✅ DONE |
