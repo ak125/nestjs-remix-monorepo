@@ -65,49 +65,57 @@ export class SeoMonitorProcessor {
   /**
    * URLs critiques à surveiller en priorité
    * Ces URLs génèrent le plus de trafic organique
+   *
+   * ⚠️ IMPORTANT: Les gammeIds corrects sont:
+   * - Filtre à huile = 7 (pas 75)
+   * - Disque de frein = 82 (pas 10)
+   * - Plaquette de frein = 402 (pas 11)
+   * - Amortisseur = 854 (pas 1)
+   *
+   * Combinaisons validées depuis __cross_gamme_car (2026-02-02)
    */
   private readonly CRITICAL_URLS = [
-    // Filtres à huile populaires
+    // Filtres à huile (gamme 7)
     {
-      url: '/pieces/filtre-a-huile-75/renault-140/clio-iii-140004/1-5-dci-19052.html',
-      typeId: 19052,
-      gammeId: 75,
+      url: '/pieces/filtre-a-huile-7/renault-140/scenic-iii-140089/1-5-dci-5853.html',
+      typeId: 5853,
+      gammeId: 7,
     },
     {
-      url: '/pieces/filtre-a-huile-75/peugeot-118/208-118001/1-6-bluehdi-75-18781.html',
-      typeId: 18781,
-      gammeId: 75,
-    },
-    {
-      url: '/pieces/filtre-a-huile-75/citroen-46/c4-picasso-46012/2-0-hdi-19053.html',
-      typeId: 19053,
-      gammeId: 75,
+      url: '/pieces/filtre-a-huile-7/peugeot-128/306-128032/1-4-2480.html',
+      typeId: 2480,
+      gammeId: 7,
     },
 
-    // Plaquettes de frein populaires
+    // Plaquettes de frein (gamme 402)
     {
-      url: '/pieces/plaquettes-de-frein-11/volkswagen-166/golf-v-166005/1-9-tdi-19087.html',
-      typeId: 19087,
-      gammeId: 11,
+      url: '/pieces/plaquette-de-frein-402/renault-140/clio-iii-140004/1-5-dci-19051.html',
+      typeId: 19051,
+      gammeId: 402,
     },
     {
-      url: '/pieces/plaquettes-de-frein-11/audi-11/a3-11001/2-0-tdi-18782.html',
-      typeId: 18782,
-      gammeId: 11,
-    },
-
-    // Disques de frein
-    {
-      url: '/pieces/disque-de-frein-10/bmw-24/serie-3-24003/320d-18783.html',
-      typeId: 18783,
-      gammeId: 10,
+      url: '/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html',
+      typeId: 13100,
+      gammeId: 402,
     },
 
-    // Amortisseurs
+    // Disques de frein (gamme 82)
     {
-      url: '/pieces/amortisseur-1/mercedes-107/classe-c-107003/220-cdi-18784.html',
-      typeId: 18784,
-      gammeId: 1,
+      url: '/pieces/disque-de-frein-82/bmw-33/serie-5-e60-33052/3-0-535-d-18308.html',
+      typeId: 18308,
+      gammeId: 82,
+    },
+    {
+      url: '/pieces/disque-de-frein-82/renault-140/laguna-ii-140028/1-9-dci-15476.html',
+      typeId: 15476,
+      gammeId: 82,
+    },
+
+    // Amortisseurs (gamme 854)
+    {
+      url: '/pieces/amortisseur-854/renault-140/scenic-ii-140088/1-9-dci-17441.html',
+      typeId: 17441,
+      gammeId: 854,
     },
 
     // TODO: Ajouter plus d'URLs critiques basées sur Google Analytics
