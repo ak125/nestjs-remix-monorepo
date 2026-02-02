@@ -45,10 +45,12 @@ import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ
 // import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
-import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
-import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // 🧠 NOUVEAU - Knowledge Graph + Reasoning Engine v2.8.0 !
-import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // 🤖 RAG PROXY - NestJS proxy vers service RAG Python !
-import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Model pour listings optimisés !
+// ⛔ DÉSACTIVÉ P0.1-P0.2 (2026-02-02) - Modules DEV ONLY, ne doivent pas être en PROD
+// Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md pour détails
+// import { AiContentModule } from './modules/ai-content/ai-content.module'; // DEV ONLY - LLM deps
+// import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
+// import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // DEV ONLY - Python dep
+// import { RmModule } from './modules/rm/rm.module'; // ⛔ BLOQUÉ - Crash prod 2026-01-11 (import @monorepo/shared-types échoue en Docker)
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -165,17 +167,12 @@ import { RmModule } from './modules/rm/rm.module'; // 🏗️ NOUVEAU - Read Mod
     // 🔄 WORKERS & BACKGROUND JOBS
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
 
-    // 🤖 AI & CONTENT GENERATION
-    AiContentModule, // 🤖 ACTIVÉ - Module IA pour génération de contenu intelligent !
-
-    // 🧠 KNOWLEDGE GRAPH & REASONING ENGINE
-    KnowledgeGraphModule, // 🧠 ACTIVÉ - Knowledge Graph + Reasoning Engine v2.8.0 !
-
-    // 🤖 RAG PROXY - Service RAG Python
-    RagProxyModule, // 🤖 ACTIVÉ - Proxy NestJS vers service RAG Python (port 8000) !
-
-    // 🏗️ READ MODEL - Listings pré-calculés optimisés
-    RmModule, // 🏗️ ACTIVÉ - Module RM pour accès aux listings optimisés !
+    // ⛔ DÉSACTIVÉ P0.1-P0.2 (2026-02-02) - Modules DEV ONLY
+    // Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
+    // AiContentModule,        // DEV ONLY - LLM deps (Claude/Groq/OpenAI)
+    // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
+    // RagProxyModule,         // DEV ONLY - Python service dependency
+    // RmModule,               // ⛔ BLOQUÉ - Crash prod 2026-01-11
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées
