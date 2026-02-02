@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { fetch as undiciFetch } from 'undici';
 import { getAppConfig } from '../../config/app.config';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { RpcGateContext } from '../../security/rpc-gate/rpc-gate.types';
+import {
+  SupabaseRpcError,
+  RpcBlockedError,
+} from '../../security/rpc-gate/rpc-gate.errors';
 
 interface CircuitBreakerState {
   failures: number;
@@ -68,6 +74,9 @@ export abstract class SupabaseBaseService {
   private readonly maxFailures = 5;
   private readonly resetTimeout = 60000; // 1 minute
   private readonly halfOpenAttempts = 3;
+
+  // RPC Safety Gate - Optional injection by child services
+  protected rpcGate?: RpcGateService;
 
   constructor(protected configService?: ConfigService) {
     // Context7 : Resilient configuration loading
@@ -369,5 +378,81 @@ export abstract class SupabaseBaseService {
    */
   getCircuitBreakerStatus(): CircuitBreakerState {
     return { ...this.circuitBreaker };
+  }
+
+  /**
+   * Safe RPC call with governance check via RPC Safety Gate
+   *
+   * This method wraps supabase.rpc() to:
+   * 1. Evaluate the call against allowlist/denylist
+   * 2. Block dangerous functions based on mode/level
+   * 3. Preserve full Supabase error details
+   * 4. Log decisions with sampling
+   *
+   * @param rpcName - Name of the RPC function to call
+   * @param params - Parameters to pass to the RPC function
+   * @param context - Optional context for gate evaluation (role, userId, source)
+   * @returns Object with data and error (error is SupabaseRpcError or RpcBlockedError)
+   */
+  protected async callRpc<T>(
+    rpcName: string,
+    params: Record<string, unknown>,
+    context: RpcGateContext = {},
+  ): Promise<{
+    data: T | null;
+    error: SupabaseRpcError | RpcBlockedError | null;
+  }> {
+    const startTime = Date.now();
+
+    // Evaluate gate (if injected)
+    const { decision, reason } = this.rpcGate?.evaluate(rpcName, context) ?? {
+      decision: 'ALLOW' as const,
+      reason: 'GATE_NOT_INJECTED',
+    };
+
+    // Block if decision is BLOCK
+    if (decision === 'BLOCK') {
+      const error = new RpcBlockedError(rpcName, reason);
+      this.rpcGate?.log(
+        rpcName,
+        decision,
+        reason,
+        context,
+        Date.now() - startTime,
+        error,
+      );
+      return { data: null, error };
+    }
+
+    // Execute the RPC call
+    try {
+      const { data, error: rawError } = await this.supabase.rpc(
+        rpcName,
+        params,
+      );
+
+      const rpcError = rawError ? new SupabaseRpcError(rawError) : null;
+      this.rpcGate?.log(
+        rpcName,
+        decision,
+        reason,
+        context,
+        Date.now() - startTime,
+        rpcError ?? undefined,
+      );
+
+      return { data: data as T, error: rpcError };
+    } catch (err) {
+      const error = new SupabaseRpcError(err);
+      this.rpcGate?.log(
+        rpcName,
+        decision,
+        reason,
+        context,
+        Date.now() - startTime,
+        error,
+      );
+      return { data: null, error };
+    }
   }
 }
