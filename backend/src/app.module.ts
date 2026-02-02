@@ -8,6 +8,7 @@ import { loggerConfig } from './config/logger.config';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
+import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
@@ -50,7 +51,7 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 // import { AiContentModule } from './modules/ai-content/ai-content.module'; // DEV ONLY - LLM deps
 // import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
 // import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // DEV ONLY - Python dep
-// import { RmModule } from './modules/rm/rm.module'; // ⛔ BLOQUÉ - Crash prod 2026-01-11 (import @monorepo/shared-types échoue en Docker)
+import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -130,6 +131,9 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
     // 🔐 Module crypto centralisé (Global)
     CryptoModule,
 
+    // 🛡️ RPC Safety Gate - Gouvernance des appels Supabase RPC
+    RpcGateModule,
+
     // Modules core fonctionnels
     DatabaseModule,
     OrdersModule,
@@ -178,7 +182,7 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
     // AiContentModule,        // DEV ONLY - LLM deps (Claude/Groq/OpenAI)
     // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
     // RagProxyModule,         // DEV ONLY - Python service dependency
-    // RmModule,               // ⛔ BLOQUÉ - Crash prod 2026-01-11
+    RmModule, // ✅ RÉACTIVÉ - Fix Dockerfile shared-types (2026-02-02)
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

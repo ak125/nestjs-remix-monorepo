@@ -12,6 +12,7 @@ import { createHash } from 'crypto';
 import { HuggingFaceProvider } from './providers/huggingface.provider';
 import { GroqProvider } from './providers/groq.provider';
 import { AnthropicProvider } from './providers/anthropic.provider';
+import { CircuitBreakerService } from './services/circuit-breaker.service';
 
 interface AIProvider {
   generateContent(
@@ -23,104 +24,126 @@ interface AIProvider {
       model?: string;
     },
   ): Promise<string>;
+  checkHealth?(): Promise<boolean>;
 }
 
 @Injectable()
 export class AiContentService {
   private readonly logger = new Logger(AiContentService.name);
-  private aiProvider: AIProvider;
+  private readonly providers = new Map<string, AIProvider>();
+  private currentProvider: string = 'anthropic';
   private cacheService: any; // Will be injected if Redis is available
+  private circuitBreaker: CircuitBreakerService | null = null;
+
+  // Max retries across all providers
+  private readonly MAX_FAILOVER_ATTEMPTS = 3;
 
   constructor(private configService: ConfigService) {
-    this.initializeProvider();
+    this.initializeAllProviders();
+    this.selectInitialProvider();
   }
 
-  private async initializeProvider() {
-    const provider = this.configService.get<string>('AI_PROVIDER', 'auto');
+  /**
+   * 🔧 Initialize all available providers upfront
+   * This allows instant failover without initialization delay
+   */
+  private initializeAllProviders(): void {
+    this.logger.log('🤖 Initializing all AI providers...');
 
-    this.logger.log(`🤖 Initializing AI provider: ${provider}`);
-
-    // Auto-detect: Try providers in order of preference
-    if (provider === 'auto') {
-      // 1. Try Anthropic Claude (meilleur qualité, payant)
-      const anthropicKey = this.configService.get<string>('ANTHROPIC_API_KEY');
-      if (anthropicKey) {
-        const anthropicProvider = new AnthropicProvider(this.configService);
-        if (await anthropicProvider.checkHealth()) {
-          this.aiProvider = anthropicProvider;
-          this.logger.log('✅ Using Anthropic Claude (best quality)');
-          return;
-        }
-      }
-
-      // 2. Try Groq (gratuit, ultra rapide, quota généreux)
-      const groqKey = this.configService.get<string>('GROQ_API_KEY');
-      if (groqKey) {
-        const groqProvider = new GroqProvider(this.configService);
-        if (await groqProvider.checkHealth()) {
-          this.aiProvider = groqProvider;
-          this.logger.log('✅ Using Groq (FREE, ultra fast)');
-          return;
-        }
-      }
-
-      // 3. Try HuggingFace (gratuit, quota limité)
-      const hfKey = this.configService.get<string>('HUGGINGFACE_API_KEY');
-      if (hfKey) {
-        const hfProvider = new HuggingFaceProvider(this.configService);
-        if (await hfProvider.checkHealth()) {
-          this.aiProvider = hfProvider;
-          this.logger.log('✅ Using HuggingFace (FREE)');
-          return;
-        }
-      }
-
-      // 4. Try OpenAI (payant mais fiable)
-      const openaiKey = this.configService.get<string>('OPENAI_API_KEY');
-      if (openaiKey) {
-        this.aiProvider = this.createOpenAIProvider(openaiKey);
-        this.logger.log('✅ Using OpenAI (paid)');
-        return;
-      }
-
-      // Aucun provider disponible
-      this.logger.error(
-        '❌ No AI provider available! Install Ollama or configure an API key.',
+    // 1. Anthropic Claude
+    const anthropicKey = this.configService.get<string>('ANTHROPIC_API_KEY');
+    if (anthropicKey) {
+      this.providers.set(
+        'anthropic',
+        new AnthropicProvider(this.configService),
       );
-      this.aiProvider = this.createMockProvider();
-      return;
+      this.logger.log('   ✅ Anthropic Claude ready');
     }
 
-    // Manuel provider selection
-    switch (provider) {
-      case 'anthropic':
-      case 'claude':
-        this.aiProvider = new AnthropicProvider(this.configService);
-        this.logger.log('✅ Using Anthropic Claude');
-        break;
+    // 2. Groq
+    const groqKey = this.configService.get<string>('GROQ_API_KEY');
+    if (groqKey) {
+      this.providers.set('groq', new GroqProvider(this.configService));
+      this.logger.log('   ✅ Groq ready');
+    }
 
-      case 'groq':
-        this.aiProvider = new GroqProvider(this.configService);
-        this.logger.log('✅ Using Groq');
-        break;
+    // 3. HuggingFace
+    const hfKey = this.configService.get<string>('HUGGINGFACE_API_KEY');
+    if (hfKey) {
+      this.providers.set(
+        'huggingface',
+        new HuggingFaceProvider(this.configService),
+      );
+      this.logger.log('   ✅ HuggingFace ready');
+    }
 
-      case 'huggingface':
-        this.aiProvider = new HuggingFaceProvider(this.configService);
-        this.logger.log('✅ Using HuggingFace');
-        break;
+    // 4. OpenAI
+    const openaiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (openaiKey) {
+      this.providers.set('openai', this.createOpenAIProvider(openaiKey));
+      this.logger.log('   ✅ OpenAI ready');
+    }
 
-      case 'openai':
-        const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-        if (!apiKey) {
-          throw new Error('OPENAI_API_KEY required for OpenAI provider');
+    if (this.providers.size === 0) {
+      this.logger.error('❌ No AI providers configured! Add API keys to .env');
+      this.providers.set('mock', this.createMockProvider());
+    }
+
+    this.logger.log(`🤖 ${this.providers.size} AI providers initialized`);
+  }
+
+  /**
+   * 🎯 Select initial provider based on config or auto-detection
+   */
+  private async selectInitialProvider(): Promise<void> {
+    const configuredProvider = this.configService.get<string>(
+      'AI_PROVIDER',
+      'auto',
+    );
+
+    if (configuredProvider !== 'auto') {
+      // Manual selection
+      if (this.providers.has(configuredProvider)) {
+        this.currentProvider = configuredProvider;
+        this.logger.log(`✅ Using configured provider: ${configuredProvider}`);
+        return;
+      }
+      this.logger.warn(
+        `⚠️ Configured provider '${configuredProvider}' not available`,
+      );
+    }
+
+    // Auto-detection: pick first healthy provider
+    const priorityOrder = ['anthropic', 'groq', 'huggingface', 'openai'];
+
+    for (const providerName of priorityOrder) {
+      const provider = this.providers.get(providerName);
+      if (provider && provider.checkHealth) {
+        try {
+          const healthy = await provider.checkHealth();
+          if (healthy) {
+            this.currentProvider = providerName;
+            this.logger.log(`✅ Auto-selected provider: ${providerName}`);
+            return;
+          }
+        } catch {
+          this.logger.debug(`Provider ${providerName} health check failed`);
         }
-        this.aiProvider = this.createOpenAIProvider(apiKey);
-        this.logger.log('✅ Using OpenAI');
-        break;
+      } else if (provider) {
+        // Provider without health check - assume OK
+        this.currentProvider = providerName;
+        this.logger.log(
+          `✅ Auto-selected provider: ${providerName} (no health check)`,
+        );
+        return;
+      }
+    }
 
-      default:
-        this.logger.warn(`Unknown provider: ${provider}. Using mock.`);
-        this.aiProvider = this.createMockProvider();
+    // Fallback to first available
+    const firstProvider = this.providers.keys().next().value;
+    if (firstProvider) {
+      this.currentProvider = firstProvider;
+      this.logger.warn(`⚠️ Fallback to: ${firstProvider}`);
     }
   }
 
@@ -179,6 +202,105 @@ export class AiContentService {
     return `ai-content:${type}:${hash.digest('hex')}`;
   }
 
+  // ════════════════════════════════════════════════════════════════════════════
+  // 🔌 CIRCUIT BREAKER FAILOVER LOGIC
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Execute AI generation with automatic failover
+   * If current provider fails, try next available provider
+   */
+  private async executeWithFailover(
+    systemPrompt: string,
+    userPrompt: string,
+    options: { temperature?: number; maxTokens?: number },
+  ): Promise<{ content: string; usedProvider: string }> {
+    const priorityOrder = ['anthropic', 'groq', 'huggingface', 'openai'];
+    const triedProviders: string[] = [];
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < this.MAX_FAILOVER_ATTEMPTS; attempt++) {
+      // Find next available provider
+      const providerName = this.findNextProvider(priorityOrder, triedProviders);
+      if (!providerName) {
+        break;
+      }
+
+      triedProviders.push(providerName);
+
+      // Check circuit breaker
+      if (
+        this.circuitBreaker &&
+        !this.circuitBreaker.canRequest(providerName)
+      ) {
+        this.logger.debug(`⚡ Circuit open for ${providerName}, skipping`);
+        continue;
+      }
+
+      const provider = this.providers.get(providerName);
+      if (!provider) continue;
+
+      try {
+        this.logger.debug(`🎯 Trying provider: ${providerName}`);
+
+        const content = await provider.generateContent(
+          systemPrompt,
+          userPrompt,
+          options,
+        );
+
+        // Success! Record it
+        if (this.circuitBreaker) {
+          this.circuitBreaker.recordSuccess(providerName);
+        }
+
+        // Update current provider for future requests
+        this.currentProvider = providerName;
+
+        return { content, usedProvider: providerName };
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.warn(
+          `⚠️ Provider ${providerName} failed: ${error.message}`,
+        );
+
+        // Record failure in circuit breaker
+        if (this.circuitBreaker) {
+          this.circuitBreaker.recordFailure(providerName, error as Error);
+        }
+
+        // Continue to next provider
+      }
+    }
+
+    // All providers failed
+    const availableProviders = this.circuitBreaker
+      ? this.circuitBreaker.getAvailableProviders()
+      : Array.from(this.providers.keys());
+
+    throw new Error(
+      `All AI providers failed. Tried: [${triedProviders.join(', ')}]. ` +
+        `Available: [${availableProviders.join(', ')}]. ` +
+        `Last error: ${lastError?.message || 'Unknown'}`,
+    );
+  }
+
+  private findNextProvider(
+    priorityOrder: string[],
+    exclude: string[],
+  ): string | null {
+    for (const name of priorityOrder) {
+      if (!exclude.includes(name) && this.providers.has(name)) {
+        return name;
+      }
+    }
+    return null;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 📝 CONTENT GENERATION METHODS
+  // ════════════════════════════════════════════════════════════════════════════
+
   async generateContent(dto: GenerateContentDto): Promise<ContentResponse> {
     const startTime = Date.now();
 
@@ -208,11 +330,15 @@ export class AiContentService {
 
       const { system, user } = buildPrompt(dto.type, context, dto.tone);
 
-      // Generate content
-      const content = await this.aiProvider.generateContent(system, user, {
-        temperature: dto.temperature,
-        maxTokens: dto.maxLength,
-      });
+      // Generate content WITH FAILOVER
+      const { content, usedProvider } = await this.executeWithFailover(
+        system,
+        user,
+        {
+          temperature: dto.temperature,
+          maxTokens: dto.maxLength,
+        },
+      );
 
       const response: ContentResponse = {
         id: this.generateContentId(),
@@ -222,8 +348,9 @@ export class AiContentService {
           generatedAt: new Date(),
           cached: false,
           tokens: Math.ceil(content.length / 4), // Rough estimate
-          model: this.getProviderModelName(),
+          model: this.getProviderModelName(usedProvider),
           language: dto.language || 'fr',
+          provider: usedProvider, // Track which provider was used
         },
       };
 
@@ -238,7 +365,9 @@ export class AiContentService {
       }
 
       const duration = Date.now() - startTime;
-      this.logger.log(`Generated ${dto.type} content in ${duration}ms`);
+      this.logger.log(
+        `Generated ${dto.type} content in ${duration}ms (provider: ${usedProvider})`,
+      );
 
       return response;
     } catch (error) {
@@ -324,43 +453,123 @@ export class AiContentService {
     return `content_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   }
 
-  private getProviderModelName(): string {
-    const provider = this.configService.get<string>('AI_PROVIDER', 'auto');
+  private getProviderModelName(providerName?: string): string {
+    const provider = providerName || this.currentProvider;
 
-    if (
-      provider === 'anthropic' ||
-      provider === 'claude' ||
-      (provider === 'auto' && this.aiProvider instanceof AnthropicProvider)
-    ) {
-      return this.configService.get<string>(
-        'ANTHROPIC_MODEL',
-        'claude-sonnet-4-20250514',
-      );
+    switch (provider) {
+      case 'anthropic':
+      case 'claude':
+        return this.configService.get<string>(
+          'ANTHROPIC_MODEL',
+          'claude-sonnet-4-20250514',
+        );
+
+      case 'groq':
+        return this.configService.get<string>(
+          'GROQ_MODEL',
+          'llama-3.3-70b-versatile',
+        );
+
+      case 'huggingface':
+        return this.configService.get<string>(
+          'HUGGINGFACE_MODEL',
+          'mistralai/Mistral-7B-Instruct-v0.2',
+        );
+
+      case 'openai':
+        return this.configService.get<string>('OPENAI_MODEL', 'gpt-4o-mini');
+
+      default:
+        return 'unknown';
     }
-
-    if (
-      provider === 'groq' ||
-      (provider === 'auto' && this.aiProvider instanceof GroqProvider)
-    ) {
-      return this.configService.get<string>(
-        'GROQ_MODEL',
-        'llama-3.3-70b-versatile',
-      );
-    }
-
-    if (
-      provider === 'huggingface' ||
-      (provider === 'auto' && this.aiProvider instanceof HuggingFaceProvider)
-    ) {
-      return 'meta-llama/Meta-Llama-3-8B-Instruct';
-    }
-
-    return 'gpt-4o-mini'; // OpenAI fallback
   }
 
-  // Method to inject cache service if available
-  setCacheService(cacheService: any) {
+  // ════════════════════════════════════════════════════════════════════════════
+  // 🔧 SERVICE INJECTION & CONFIGURATION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Inject cache service if available
+   */
+  setCacheService(cacheService: any): void {
     this.cacheService = cacheService;
-    this.logger.log('Cache service configured for AI content generation');
+    this.logger.log('✅ Cache service configured for AI content generation');
+  }
+
+  /**
+   * Inject circuit breaker service
+   */
+  setCircuitBreaker(circuitBreaker: CircuitBreakerService): void {
+    this.circuitBreaker = circuitBreaker;
+    this.logger.log('✅ Circuit breaker configured for AI failover');
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 📊 MONITORING & HEALTH
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get current provider status and circuit breaker metrics
+   */
+  getProviderStatus(): {
+    currentProvider: string;
+    availableProviders: string[];
+    circuitBreakerMetrics: ReturnType<
+      CircuitBreakerService['getMetrics']
+    > | null;
+  } {
+    return {
+      currentProvider: this.currentProvider,
+      availableProviders: Array.from(this.providers.keys()),
+      circuitBreakerMetrics: this.circuitBreaker?.getMetrics() || null,
+    };
+  }
+
+  /**
+   * Check health of all providers
+   */
+  async checkAllProvidersHealth(): Promise<
+    Record<string, { available: boolean; healthy: boolean }>
+  > {
+    const results: Record<string, { available: boolean; healthy: boolean }> =
+      {};
+
+    for (const [name, provider] of this.providers) {
+      const available = true;
+      let healthy = false;
+
+      if (provider.checkHealth) {
+        try {
+          healthy = await provider.checkHealth();
+        } catch {
+          healthy = false;
+        }
+      } else {
+        healthy = true; // Assume healthy if no check available
+      }
+
+      results[name] = { available, healthy };
+    }
+
+    return results;
+  }
+
+  /**
+   * Force reset circuit for a provider (manual recovery)
+   */
+  resetProviderCircuit(providerName: string): void {
+    if (this.circuitBreaker) {
+      this.circuitBreaker.resetCircuit(providerName);
+      this.logger.log(`🔄 Circuit reset for provider: ${providerName}`);
+    }
+  }
+
+  /**
+   * Reset all circuits
+   */
+  resetAllCircuits(): void {
+    if (this.circuitBreaker) {
+      this.circuitBreaker.resetAllCircuits();
+    }
   }
 }

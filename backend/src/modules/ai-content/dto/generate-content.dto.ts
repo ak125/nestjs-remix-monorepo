@@ -72,6 +72,7 @@ export const ContentResponseSchema = z.object({
     tokens: z.number().optional(),
     model: z.string(),
     language: z.string(),
+    provider: z.string().optional(), // Track which AI provider was used
   }),
 });
 

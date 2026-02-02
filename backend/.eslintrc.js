@@ -37,15 +37,13 @@ module.exports = {
     // Empêche les imports apps -> tools
     // Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
     // ============================================
+    // NOTE: RmModule restriction removed (2026-02-02)
+    // - P4.2 fixed Dockerfile to copy packages/shared-types
+    // - RmModule is now safe to use in production
     'no-restricted-imports': [
       'error',
       {
         patterns: [
-          {
-            group: ['**/modules/rm/**'],
-            message:
-              '⛔ RmModule est DEV ONLY - Crash prod 2026-01-11. Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md',
-          },
           {
             group: ['@repo/ai-orchestrator', '@repo/ai-orchestrator/**'],
             message:
