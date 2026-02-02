@@ -19,15 +19,17 @@ if [ "${#NOTES[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# Build reference set from all notes (including MOCs)
-ALL_CONTENT=$(find "$VAULT_PATH" -type f -name "*.md" -print0 2>/dev/null | xargs -0 cat 2>/dev/null || true)
+# Build reference file from all notes (using temp file for large content)
+CONTENT_FILE=$(mktemp)
+trap "rm -f $CONTENT_FILE" EXIT
+find "$VAULT_PATH" -type f -name "*.md" -print0 2>/dev/null | xargs -0 cat > "$CONTENT_FILE" 2>/dev/null || true
 
 ORPHANS=()
 
 for note in "${NOTES[@]}"; do
   base="$(basename "$note" .md)"
   # Match [[NoteName]] or [[NoteName|alias]]
-  if ! printf "%s" "$ALL_CONTENT" | grep -Eq "\[\[$base(\||\]\])"; then
+  if ! grep -Eq "\[\[$base(\||\]\])" "$CONTENT_FILE"; then
     ORPHANS+=("$note")
   fi
 done
