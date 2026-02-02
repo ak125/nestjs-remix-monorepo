@@ -464,9 +464,15 @@ export class AuthController {
   /**
    * POST /auth/test-login
    * Endpoint pour créer une session de test (développement uniquement)
+   * SECURITY: Bloqué en production
    */
   @Post('auth/test-login')
   async createTestSession(@Req() request: Express.Request) {
+    // SECURITY: Bloquer en production - vulnérabilité critique
+    if (process.env.NODE_ENV === 'production') {
+      return { success: false, error: 'Endpoint disabled in production' };
+    }
+
     const testUser = {
       id: '1',
       email: 'admin@test.com',
@@ -508,9 +514,15 @@ export class AuthController {
   /**
    * POST /auth/reset-password
    * Endpoint pour réinitialiser un mot de passe (développement uniquement)
+   * SECURITY: Bloqué en production
    */
   @Post('auth/reset-password')
   async resetPassword(@Body() body: { email: string; newPassword: string }) {
+    // SECURITY: Bloquer en production - vulnérabilité critique
+    if (process.env.NODE_ENV === 'production') {
+      return { success: false, error: 'Endpoint disabled in production' };
+    }
+
     try {
       // Utiliser l'AuthService pour réinitialiser le mot de passe
       const result = await this.authService.updateUserProfile(body.email, {
@@ -573,9 +585,15 @@ export class AuthController {
   /**
    * GET /auth/test-login
    * Créer une session de test pour le développement
+   * SECURITY: Bloqué en production
    */
   @Get('auth/test-login')
   async testLogin(@Req() request: Express.Request) {
+    // SECURITY: Bloquer en production - vulnérabilité critique
+    if (process.env.NODE_ENV === 'production') {
+      return { success: false, error: 'Endpoint disabled in production' };
+    }
+
     try {
       // Créer un utilisateur de test
       const testUser = {

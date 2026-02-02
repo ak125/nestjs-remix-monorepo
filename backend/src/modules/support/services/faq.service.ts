@@ -39,6 +39,16 @@ export interface FAQStats {
 @Injectable()
 export class FaqService {
   private readonly logger = new Logger(FaqService.name);
+
+  /**
+   * TODO ARCHITECTURE: Maps in-memory avec compteurs mutables.
+   * RISQUES:
+   * - Compteurs views/helpful/notHelpful perdus au redémarrage
+   * - Pas de persistance des FAQs personnalisées
+   *
+   * ACTION RECOMMANDÉE: Flush vers Supabase périodique ou sur mutation.
+   * Tables suggérées: __faqs, __faq_categories
+   */
   private faqs: Map<string, FAQ> = new Map();
   private categories: Map<string, FAQCategory> = new Map();
 
