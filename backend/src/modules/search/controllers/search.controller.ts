@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { SearchSimpleService } from '../services/search-simple.service';
 import { SearchMonitoringService } from '../services/search-monitoring.service';
+import { RateLimitSearch } from '../../../../common/decorators/rate-limit.decorator';
 
 @ApiTags('search')
-@Throttle({ medium: { ttl: 60000, limit: 30 } }) // 🛡️ Anti-bot: 30 req/min max par IP
+@RateLimitSearch() // 🛡️ 20 req/min - Full-text search is resource-intensive
 @Controller('api/search')
 export class SearchController {
   constructor(

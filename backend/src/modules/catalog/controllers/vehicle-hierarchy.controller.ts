@@ -3,7 +3,9 @@
 
 import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RateLimitModerate } from '../../../../common/decorators/rate-limit.decorator';
 
+@RateLimitModerate() // 🛡️ 30 req/min - Vehicle hierarchy lookups
 @Controller('api/hierarchy')
 export class VehicleHierarchyController extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleHierarchyController.name);
