@@ -298,12 +298,23 @@ Ces checks sont **requis** avant le deploy PREPROD.
 
 | # | Action | Effort | Risque | Safe? | Statut |
 |---|--------|--------|--------|-------|--------|
-| P2.1 | Déplacer scripts vers `tools/scripts/` | M | Medium | Yes | TODO |
-| P2.2 | Créer `tools/README.md` avec inventaire | S | Low | Yes | TODO |
+| P2.1 | Créer structure `tools/scripts/` | S | Low | Yes | ✅ DONE |
+| P2.2 | Créer `tools/README.md` avec inventaire (76 scripts) | S | Low | Yes | ✅ DONE |
 | P2.3 | Déplacer CSV vers stockage externe (S3) | L | Medium | Yes | TODO |
 | P2.4 | Convertir top 10 scripts en migrations SQL | L | Medium | No | TODO |
 
-*(Détails à compléter après validation P1)*
+#### P2.1-P2.2 — Structure tools/ et inventaire
+
+**Fichier**: `tools/README.md`
+
+Inventaire complet des 76 scripts avec :
+- Catégorisation (SEO, V-Level, Data, Diagnostic, Deploy, Clio)
+- Niveau de risque (HIGH/MEDIUM/LOW)
+- Description courte
+- Instructions d'usage avec kill-switch
+
+**Note**: Les scripts restent dans `backend/` pour éviter un big bang.
+Migration progressive vers `tools/scripts/` planifiée.
 
 ---
 
@@ -334,3 +345,7 @@ Ces checks sont **requis** avant le deploy PREPROD.
 | 2026-02-02 | P1.4 - CI check `core-build-only` ajouté | ✅ DONE |
 | 2026-02-02 | P1.5 - CI check `import-firewall` ajouté | ✅ DONE |
 | 2026-02-02 | **PHASE P1 TERMINÉE** | ✅ VALIDÉE |
+| 2026-02-02 | Merge P0+P1 sur main (`431b7029`) | ✅ OK |
+| 2026-02-02 | Push governance-vault (DEC-001) | ✅ OK |
+| 2026-02-02 | P2.1 - Créer structure tools/scripts/ | ✅ DONE |
+| 2026-02-02 | P2.2 - Créer tools/README.md (inventaire 76 scripts) | ✅ DONE |
