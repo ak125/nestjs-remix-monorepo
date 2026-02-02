@@ -117,3 +117,16 @@ public/sitemaps/
 *.xml.gz
 frontend/public/sitemap*.xml
 frontend/public/sitemaps
+
+# ============================================
+# P0.4 - Exclusions CSV/Data (2026-02-02)
+# Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
+# ============================================
+
+# CSV exports (Google Ads, Keyword Stats, etc.)
+Keyword Stats*.csv
+backend/*.csv
+data/external/*.csv
+*.keywords.csv
+*_volumes.csv
+*_trends.csv

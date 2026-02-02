@@ -5,6 +5,8 @@
   "scripts": {
     "test": "turbo test",
     "dev": "turbo dev",
+    "dev:core": "echo '🚀 DEV CORE - Modules essentiels uniquement' && turbo dev --filter=@fafa/backend --filter=@fafa/frontend",
+    "dev:full:all": "echo '🔧 DEV FULL - Cockpit complet + workers' && turbo dev",
     "lint": "turbo lint",
     "build": "turbo build",
     "typecheck": "turbo typecheck",

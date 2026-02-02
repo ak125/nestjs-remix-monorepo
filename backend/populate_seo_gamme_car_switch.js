@@ -1,10 +1,21 @@
 #!/usr/bin/env node
+// ============================================
+// KILL-SWITCH PRODUCTION (P0.5 - 2026-02-02)
+// ============================================
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PROD_MUTATION !== '1') {
+  console.error('\n⛔ ERREUR: Ce script ne peut pas s\'exécuter en production.');
+  console.error('   Pour forcer: ALLOW_PROD_MUTATION=1 node script.js');
+  console.error('   Environnement détecté: NODE_ENV=' + process.env.NODE_ENV);
+  process.exit(1);
+}
+// ============================================
+
 /**
  * Script de population de la table __seo_gamme_car_switch
- * 
+ *
  * Ce script génère des switches SEO de qualité pour les gammes identifiées
  * dans le template comme nécessitant des switches SGCS (alias 1, 2, 3)
- * 
+ *
  * Exécuter: cd backend && node populate_seo_gamme_car_switch.js
  */
 

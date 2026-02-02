@@ -1,8 +1,19 @@
 #!/usr/bin/env node
+// ============================================
+// KILL-SWITCH PRODUCTION (P0.5 - 2026-02-02)
+// ============================================
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PROD_MUTATION !== '1') {
+  console.error('\n⛔ ERREUR: Ce script ne peut pas s\'exécuter en production.');
+  console.error('   Pour forcer: ALLOW_PROD_MUTATION=1 node script.js');
+  console.error('   Environnement détecté: NODE_ENV=' + process.env.NODE_ENV);
+  process.exit(1);
+}
+// ============================================
+
 /**
  * Script de correction des switches Alias 3
  * Supprime les préfixes de motorisation (CDTI, Essence, TDI, etc.)
- * 
+ *
  * Exécuter: cd backend && node fix-seo-switches.js
  */
 
