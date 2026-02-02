@@ -1,29 +1,29 @@
 /**
  * 🌐 SERVICE API UNIFIÉ
- * 
+ *
  * Service centralisé pour toutes les requêtes API
  * Utilise les types partagés du monorepo
- * 
+ *
  * @version 2.0.0
  * @package frontend
  */
 
-import  { type ApiResponse } from '@monorepo/shared-types';
+import { type ApiResponse } from "@repo/database-types";
 
 // ====================================
 // 🔧 CONFIGURATION API
 // ====================================
 
-const API_BASE_URL = '/api'; // Grâce au proxy Vite
+const API_BASE_URL = "/api"; // Grâce au proxy Vite
 
 /**
  * Configuration par défaut pour les requêtes fetch
  */
 const defaultFetchOptions: RequestInit = {
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-  credentials: 'include', // Important pour les cookies de session
+  credentials: "include", // Important pour les cookies de session
 };
 
 // ====================================
@@ -35,10 +35,10 @@ const defaultFetchOptions: RequestInit = {
  */
 async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const response = await fetch(url, {
     ...defaultFetchOptions,
     ...options,
@@ -67,15 +67,15 @@ export const cartApi = {
    * Récupère le panier de l'utilisateur
    */
   async getCart() {
-    return apiRequest('/cart');
+    return apiRequest("/cart");
   },
 
   /**
    * Ajoute un produit au panier
    */
   async addItem(pieceId: number, quantity: number = 1) {
-    return apiRequest('/cart/add', {
-      method: 'POST',
+    return apiRequest("/cart/add", {
+      method: "POST",
       body: JSON.stringify({ pieceId, quantity }),
     });
   },
@@ -84,8 +84,8 @@ export const cartApi = {
    * Met à jour la quantité d'un produit
    */
   async updateQuantity(pieceId: number, quantity: number) {
-    return apiRequest('/cart/update', {
-      method: 'PATCH',
+    return apiRequest("/cart/update", {
+      method: "PATCH",
       body: JSON.stringify({ pieceId, quantity }),
     });
   },
@@ -95,7 +95,7 @@ export const cartApi = {
    */
   async removeItem(pieceId: number) {
     return apiRequest(`/cart/remove/${pieceId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   },
 
@@ -103,8 +103,8 @@ export const cartApi = {
    * Vide complètement le panier
    */
   async clearCart() {
-    return apiRequest('/cart', {
-      method: 'DELETE',
+    return apiRequest("/cart", {
+      method: "DELETE",
     });
   },
 };
@@ -125,7 +125,7 @@ export const piecesApi = {
    */
   async searchPieces(query: string, filters?: Record<string, any>) {
     const searchParams = new URLSearchParams({ q: query });
-    
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         searchParams.append(key, String(value));
@@ -166,7 +166,7 @@ export const api = {
   cart: cartApi,
   pieces: piecesApi,
   vehicles: vehiclesApi,
-  
+
   // Fonction générique pour des cas spéciaux
   request: apiRequest,
 };

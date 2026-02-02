@@ -2,20 +2,19 @@
  * Enhanced Vehicle API Service - Migration vers types unifiés
  */
 
-import  {
+import {
   type VehicleBrand,
-  type VehicleModel, 
+  type VehicleModel,
   type VehicleType,
-  type ApiResponse
-} from '@monorepo/shared-types';
+} from "@monorepo/shared-types";
+import { type ApiResponse } from "@repo/database-types";
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = "/api";
 
 /**
  * Service API pour les véhicules avec types unifiés
  */
 export const enhancedVehicleApi = {
-  
   /**
    * Récupère toutes les marques
    */
@@ -23,20 +22,20 @@ export const enhancedVehicleApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/vehicles/brands`);
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Marques récupérées'
+        message: "Marques récupérées",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   },
@@ -44,24 +43,28 @@ export const enhancedVehicleApi = {
   /**
    * Récupère les modèles d'une marque
    */
-  async getModelsByBrand(brandId: number): Promise<ApiResponse<VehicleModel[]>> {
+  async getModelsByBrand(
+    brandId: number,
+  ): Promise<ApiResponse<VehicleModel[]>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/brands/${brandId}/models`);
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/brands/${brandId}/models`,
+      );
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Modèles récupérés'
+        message: "Modèles récupérés",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   },
@@ -71,22 +74,24 @@ export const enhancedVehicleApi = {
    */
   async getTypesByModel(modelId: number): Promise<ApiResponse<VehicleType[]>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/models/${modelId}/types`);
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/models/${modelId}/types`,
+      );
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Types récupérés'
+        message: "Types récupérés",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   },
@@ -96,75 +101,87 @@ export const enhancedVehicleApi = {
    */
   async getYearsByBrand(brandId: number): Promise<ApiResponse<number[]>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/brands/${brandId}/years`);
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/brands/${brandId}/years`,
+      );
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Années récupérées'
+        message: "Années récupérées",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   },
 
-  async getModels(brandId: number, options?: { year?: number }): Promise<ApiResponse<VehicleModel[]>> {
+  async getModels(
+    brandId: number,
+    options?: { year?: number },
+  ): Promise<ApiResponse<VehicleModel[]>> {
     try {
       const params = new URLSearchParams();
-      if (options?.year) params.append('year', options.year.toString());
-      
-      const response = await fetch(`${API_BASE_URL}/vehicles/brands/${brandId}/models?${params}`);
+      if (options?.year) params.append("year", options.year.toString());
+
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/brands/${brandId}/models?${params}`,
+      );
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Modèles récupérés'
+        message: "Modèles récupérés",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   },
 
-  async getTypes(modelId: number, options?: { year?: number }): Promise<ApiResponse<VehicleType[]>> {
+  async getTypes(
+    modelId: number,
+    options?: { year?: number },
+  ): Promise<ApiResponse<VehicleType[]>> {
     try {
       const params = new URLSearchParams();
-      if (options?.year) params.append('year', options.year.toString());
-      
-      const response = await fetch(`${API_BASE_URL}/vehicles/models/${modelId}/types?${params}`);
+      if (options?.year) params.append("year", options.year.toString());
+
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/models/${modelId}/types?${params}`,
+      );
       const data = await response.json();
-      
+
       return {
         success: true,
         data: data.data || [],
-        message: 'Types récupérés'
+        message: "Types récupérés",
       };
     } catch (error) {
       return {
         success: false,
         error: {
-          code: 'FETCH_ERROR',
-          message: error instanceof Error ? error.message : 'Erreur',
-          timestamp: new Date().toISOString()
-        }
+          code: "FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Erreur",
+          timestamp: new Date().toISOString(),
+        },
       };
     }
-  }
+  },
 };
 
 export default enhancedVehicleApi;
