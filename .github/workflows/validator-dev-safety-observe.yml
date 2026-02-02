@@ -1,0 +1,37 @@
+name: 🔒 DEV Safety Gates (Observe)
+
+on:
+  pull_request:
+
+jobs:
+  dev-safety-observe:
+    name: 🔍 DEV Safety Observation
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Non-bloquant en mode observe
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Make scripts executable
+        run: chmod +x tools/validator-gates/*.sh
+
+      - name: 🔒 Run DEV Safety Gates (MODE=observe)
+        env:
+          MODE: observe
+        run: bash tools/validator-gates/run-all.sh
+
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## DEV Safety Gates Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Mode:** observe (non-blocking)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Gates executed:" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-1: No PROD Supabase in DEV" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-2: MCP Permissions Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-3: Runner Blast-Radius Control" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-4: Secrets Hygiene Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **This is observation mode only - violations are reported but do not block the PR.**" >> $GITHUB_STEP_SUMMARY

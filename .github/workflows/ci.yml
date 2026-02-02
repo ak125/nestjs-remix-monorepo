@@ -209,11 +209,12 @@ jobs:
           # Copier docker-compose.preprod.yml
           cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
 
-          # Copier le .env de prod (meme DB)
-          if [ -f ~/production/.env ]; then
-            cp ~/production/.env $PREPROD_DIR/.env
+          # Copier le .env de prod (controle par flag)
+          if [ "${ALLOW_PROD_ENV_COPY:-0}" = "1" ] && [ -f ~/production/.env ]; then
+            echo "⚠️  ALLOW_PROD_ENV_COPY=1 enabled: copying production env (should be temporary)"
+            cp ~/production/.env "$PREPROD_DIR/.env"
           else
-            echo "⚠️ Warning: ~/production/.env not found, preprod may fail"
+            echo "ℹ️  Skipping prod env copy (default safe mode)"
           fi
 
           cd $PREPROD_DIR

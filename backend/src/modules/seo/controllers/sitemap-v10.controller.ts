@@ -88,7 +88,8 @@ export class SitemapV10Controller {
 
   /**
    * POST /api/sitemap/v10/generate-fusion
-   * Génère tous les sitemaps avec source V9 (714k URLs) + features V10
+   * @deprecated Utilisez POST /api/sitemap/v10/generate-all à la place
+   * Redirige maintenant vers generateAll()
    */
   @Post('generate-fusion')
   async generateFusion(): Promise<{
@@ -108,39 +109,12 @@ export class SitemapV10Controller {
       }>;
     };
   }> {
-    this.logger.log(
-      '🔥 POST /api/sitemap/v10/generate-fusion (V9 source + V10 features)',
+    this.logger.warn(
+      '⚠️ DEPRECATED: /generate-fusion → Use /generate-all instead',
     );
 
-    try {
-      const result = await this.sitemapService.generateAllFromV9Source();
-
-      return {
-        success: result.success,
-        message: result.success
-          ? 'V10 FUSION sitemaps generated (714k URLs from V9 source)'
-          : 'Some sitemaps failed to generate',
-        data: {
-          totalUrls: result.totalUrls,
-          totalFiles: result.totalFiles,
-          durationMs: result.totalDurationMs,
-          indexPath: result.indexPath,
-          buckets: result.results.map((r) => ({
-            bucket: r.bucket,
-            success: r.success,
-            urlCount: r.urlCount,
-            filesGenerated: r.filesGenerated,
-            error: r.error,
-          })),
-        },
-      };
-    } catch (error: any) {
-      this.logger.error(`Generate fusion failed: ${error.message}`);
-      return {
-        success: false,
-        message: `Generation failed: ${error.message}`,
-      };
-    }
+    // Redirect to unified generateAll()
+    return this.generateAll();
   }
 
   /**
