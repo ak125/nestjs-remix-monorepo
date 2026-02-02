@@ -6,7 +6,7 @@ import {
   VehicleSearchResult,
   CompatibilityStats,
 } from '../services/compatibility.service';
-import { RateLimitModerate } from '../../../../common/decorators/rate-limit.decorator';
+import { RateLimitModerate } from '../../../common/decorators/rate-limit.decorator';
 
 /**
  * 🎯 COMPATIBILITY CONTROLLER V2

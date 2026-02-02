@@ -3,7 +3,7 @@
 
 import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { CatalogGammeService } from '../services/catalog-gamme.service';
-import { RateLimitModerate } from '../../../../common/decorators/rate-limit.decorator';
+import { RateLimitModerate } from '../../../common/decorators/rate-limit.decorator';
 
 @RateLimitModerate() // 🛡️ 30 req/min - Catalog queries can be heavy
 @Controller('api/catalog/gammes')

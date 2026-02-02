@@ -5,7 +5,7 @@
 
 import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
 import { SitemapDeltaService } from '../services/sitemap-delta.service';
-import { RateLimitSitemap } from '../../../../common/decorators/rate-limit.decorator';
+import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('sitemap-v2/delta')

@@ -18,7 +18,7 @@ import {
 } from '../services/sitemap-v10.service';
 import { SitemapV10ScoringService } from '../services/sitemap-v10-scoring.service';
 import { SitemapV10HubsService } from '../services/sitemap-v10-hubs.service';
-import { RateLimitSitemap } from '../../../../common/decorators/rate-limit.decorator';
+import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap/v10')
