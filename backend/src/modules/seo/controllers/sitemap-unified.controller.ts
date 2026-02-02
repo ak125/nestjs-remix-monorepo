@@ -9,7 +9,9 @@
 
 import { Controller, Post, Get, Logger } from '@nestjs/common';
 import { SitemapV10Service } from '../services/sitemap-v10.service';
+import { RateLimitSitemap } from '../../../../common/decorators/rate-limit.decorator';
 
+@RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap')
 export class SitemapUnifiedController {
   private readonly logger = new Logger(SitemapUnifiedController.name);

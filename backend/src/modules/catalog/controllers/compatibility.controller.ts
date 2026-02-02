@@ -6,6 +6,7 @@ import {
   VehicleSearchResult,
   CompatibilityStats,
 } from '../services/compatibility.service';
+import { RateLimitModerate } from '../../../../common/decorators/rate-limit.decorator';
 
 /**
  * 🎯 COMPATIBILITY CONTROLLER V2
@@ -35,6 +36,7 @@ type CheckCompatibilityDto = z.infer<typeof CheckCompatibilitySchema>;
 // Controller
 // ============================================================================
 
+@RateLimitModerate() // 🛡️ 30 req/min - Compatibility checks
 @Controller()
 export class CompatibilityController {
   constructor(private readonly compatibilityService: CompatibilityService) {}

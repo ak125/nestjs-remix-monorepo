@@ -1,73 +1,84 @@
-import { useFetcher, Link } from "@remix-run/react";
+/**
+ * 🛒 CartIcon - Icône panier avec compteur
+ *
+ * Version corrigée:
+ * - Utilise useRootCart() pour l'initialisation (SSR)
+ * - Debounce sur le listener cart:updated (1 seconde)
+ * - Pas de fetch au montage (évite la boucle infinie)
+ */
+import { Link } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Badge } from "../ui/badge";
 
-// Type pour les données du fetcher
-interface CartFetcherData {
-  success: boolean;
-  cart?: {
-    summary?: {
-      total_items?: number;
-    };
-  };
-}
+import { useRootCart } from "../../root";
+import { Badge } from "../ui/badge";
 
 interface CartIconProps {
   className?: string;
 }
 
 export function CartIcon({ className = "" }: CartIconProps) {
+  const rootCart = useRootCart(); // Données SSR du root loader
   const [itemCount, setItemCount] = useState(0);
-  const fetcher = useFetcher();
 
-  // ✅ APPROCHE OPTIMISÉE : Utiliser useFetcher pour récupérer via notre nouveau service
+  // Initialiser depuis SSR - pas de fetch au montage
   useEffect(() => {
-    const fetchCartCount = () => {
-      // Utiliser fetcher pour appeler le loader de /cart
-      fetcher.load('/cart');
-    };
+    if (rootCart?.summary?.total_items !== undefined) {
+      setItemCount(rootCart.summary.total_items);
+    }
+  }, [rootCart?.summary?.total_items]);
 
-    // Charger une fois au montage
-    fetchCartCount();
+  // Listener avec debounce pour mise à jour après actions panier
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let isMounted = true;
 
-    // Écouter les événements de mise à jour du panier
     const handleCartUpdate = () => {
-      console.log('🔄 CartIcon: Événement cart:updated reçu');
-      fetchCartCount();
+      // Debounce 1 seconde pour éviter les appels multiples
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        if (!isMounted) return;
+        try {
+          const response = await fetch("/api/cart", {
+            credentials: "include",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (isMounted) {
+              // Supporter les deux formats de réponse
+              const count =
+                data.cart?.summary?.total_items ||
+                data.summary?.total_items ||
+                0;
+              setItemCount(count);
+            }
+          }
+        } catch (error) {
+          console.error("CartIcon: erreur fetch cart", error);
+        }
+      }, 1000);
     };
 
-    window.addEventListener('cart:updated', handleCartUpdate);
+    window.addEventListener("cart:updated", handleCartUpdate);
 
     return () => {
-      window.removeEventListener('cart:updated', handleCartUpdate);
+      isMounted = false;
+      window.removeEventListener("cart:updated", handleCartUpdate);
+      if (timeoutId) clearTimeout(timeoutId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Fetcher utilisé via closure - setup une seule fois au mount
-
-  // Mettre à jour le compteur quand les données arrivent
-  useEffect(() => {
-    if (fetcher.data) {
-      const data = fetcher.data as CartFetcherData;
-      if (data.success && data.cart?.summary?.total_items) {
-        setItemCount(data.cart.summary.total_items);
-      } else {
-        setItemCount(0);
-      }
-    }
-  }, [fetcher.data]);
+  }, []);
 
   return (
-    <Link 
-      to="/cart" 
+    <Link
+      to="/cart"
       rel="nofollow"
       className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >
       <ShoppingCart className="flex-shrink-0" size={20} />
       {itemCount > 0 && (
-        <Badge 
-          variant="destructive" 
+        <Badge
+          variant="destructive"
           className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
         >
           {itemCount}

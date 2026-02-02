@@ -11,7 +11,9 @@ import {
   DownloadInfo,
   StreamingConfig,
 } from '../interfaces/sitemap-streaming.interface';
+import { RateLimitSitemap } from '../../../../common/decorators/rate-limit.decorator';
 
+@RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('sitemap-v2/streaming')
 export class SitemapStreamingController {
   private readonly logger = new Logger(SitemapStreamingController.name);

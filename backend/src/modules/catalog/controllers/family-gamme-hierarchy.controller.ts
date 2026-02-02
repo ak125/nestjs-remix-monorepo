@@ -4,7 +4,9 @@
 import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { FamilyGammeHierarchyService } from '../services/family-gamme-hierarchy.service';
 import { CatalogFamilyService } from '../services/catalog-family.service';
+import { RateLimitModerate } from '../../../../common/decorators/rate-limit.decorator';
 
+@RateLimitModerate() // 🛡️ 30 req/min - Catalog hierarchy lookups
 @Controller('api/catalog/hierarchy')
 export class FamilyGammeHierarchyController {
   private readonly logger = new Logger(FamilyGammeHierarchyController.name);

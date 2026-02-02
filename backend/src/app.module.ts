@@ -85,10 +85,16 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
           limit: 2000, // 2000 req/heure par IP
         },
       ],
-      // 🛡️ Skip internal calls (Remix SSR + Docker containers)
+      // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
       skipIf: (context) => {
         const request = context.switchToHttp().getRequest();
         const ip = request.ip || request.connection?.remoteAddress;
+        const user = request.user;
+
+        // Skip for admin users (level >= 7)
+        if (user?.isAdmin === true || parseInt(user?.level) >= 7) {
+          return true;
+        }
 
         // Skip localhost/127.0.0.1/::1 (internal SSR calls)
         if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
