@@ -144,26 +144,4 @@ export class SitemapStreamingController {
       };
     }
   }
-
-  /**
-   * POST /sitemap-v2/streaming/generate-static
-   * @deprecated Utiliser POST /api/sitemap/generate-all à la place
-   *
-   * Cette route est dépréciée et redirige vers le nouveau service unifié.
-   */
-  @Post('generate-static')
-  async generateStaticSitemaps(): Promise<{
-    success: boolean;
-    message: string;
-  }> {
-    this.logger.warn(
-      '⚠️ DEPRECATED: /sitemap-v2/streaming/generate-static is deprecated. Use POST /api/sitemap/generate-all instead.',
-    );
-
-    return {
-      success: false,
-      message:
-        'DEPRECATED: Cette route est obsolète. Utilisez POST /api/sitemap/generate-all à la place pour générer tous les sitemaps (categories, vehicules, produits, blog, pages).',
-    };
-  }
 }
