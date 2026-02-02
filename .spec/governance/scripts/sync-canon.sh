@@ -4,7 +4,7 @@
 set -euo pipefail
 
 MONOREPO_PATH="${MONOREPO_PATH:-$(pwd)}"
-VAULT_PATH="${VAULT_PATH:-$MONOREPO_PATH/.local/governance-vault}"
+VAULT_PATH="${VAULT_PATH:-/opt/automecanik/governance-vault}"
 CANON_PATH="$MONOREPO_PATH/.spec/00-canon"
 
 SYNC_DIR="$VAULT_PATH/99-meta"

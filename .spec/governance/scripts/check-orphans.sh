@@ -3,7 +3,7 @@
 # Un doc est "non orphelin" s'il est dans 00-index/ OU reference via [[...]]
 set -euo pipefail
 
-VAULT_PATH="${1:-.local/governance-vault}"
+VAULT_PATH="${1:-/opt/automecanik/governance-vault}"
 
 # Collect all markdown notes (excluding MOCs, meta, assets, and templates)
 mapfile -t NOTES < <(find "$VAULT_PATH" -type f -name "*.md" \
