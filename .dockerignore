@@ -49,3 +49,37 @@ docs/
 .turbo/
 .cache/
 .parcel-cache/
+
+# ============================================
+# P0.3 - Exclusions DEV/TOOLING (2026-02-02)
+# Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
+# ============================================
+
+# Scripts OPS (ne doivent jamais être en prod)
+backend/*.js
+backend/*.csv
+scripts/
+
+# Packages AI non utilisés en prod
+packages/ai-orchestrator/
+packages/contracts/
+
+# Tooling Python
+ai-agents-python/
+
+# Claude Code skills
+.claude/
+
+# Specs et documentation interne
+.spec/
+
+# Data artifacts
+data/external/
+data/*.csv
+*.csv
+
+# UX research
+ux-*/
+
+# Screenshots et captures
+screenshots/
