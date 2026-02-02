@@ -1,7 +1,8 @@
 {
   "name": "@monorepo/shared-types",
   "version": "1.0.0",
-  "description": "Types TypeScript partagés entre backend et frontend",
+  "deprecated": "This package is deprecated. Use @repo/database-types instead. See P4.5 migration guide.",
+  "description": "Types TypeScript partagés entre backend et frontend - DEPRECATED: use @repo/database-types",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
