@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚀 Service RPC optimisé pour la page d'accueil
@@ -27,8 +28,12 @@ export class HomepageRpcService extends SupabaseBaseService {
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -73,21 +78,32 @@ export class HomepageRpcService extends SupabaseBaseService {
   }
 
   /**
-   * 🔄 Appel RPC avec timeout strict
+   * 🔄 Appel RPC avec timeout strict via RPC Safety Gate
    */
   private async fetchRpcWithTimeout(startTime: number) {
     // Créer une Promise avec timeout
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
-    const rpcPromise = this.client.rpc('get_homepage_data_optimized');
+    // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    const rpcPromise = this.callRpc<any>(
+      'get_homepage_data_optimized',
+      {},
+      {
+        source: 'api',
+        role: 'service_role',
+      },
+    );
 
     // Race entre RPC et timeout
-    const { data, error: rpcError } = (await Promise.race([
+    const { data, error: rpcError } = await Promise.race([
       rpcPromise,
-      timeoutPromise,
-    ])) as any;
+      timeoutPromise.then(() => ({
+        data: null,
+        error: new Error('RPC_TIMEOUT'),
+      })),
+    ]);
 
     if (rpcError) {
       this.logger.error('RPC homepage error:', rpcError);

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { PageRole } from '../types/page-role.types';
 import {
   WeeklyReport,
@@ -43,23 +43,67 @@ export interface AutoDiagnosticsReport {
  * Source des données: tables __seo_*, GSC (via logs), index status.
  */
 @Injectable()
-export class SeoPilotageService {
-  private readonly logger = new Logger(SeoPilotageService.name);
-  private readonly supabase: SupabaseClient;
+export class SeoPilotageService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(SeoPilotageService.name);
 
-  constructor(private readonly configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
+  }
 
-    if (!supabaseUrl || !supabaseKey) {
+  /**
+   * 🛡️ SÉCURITÉ: Valide que la requête SQL est READ-ONLY
+   * Refuse: DELETE, UPDATE, INSERT, DROP, TRUNCATE, ALTER, GRANT, REVOKE
+   * Refuse: Multiple statements (;)
+   * Limite: 5000 caractères max
+   */
+  private validateReadOnlyQuery(sql: string): void {
+    const MAX_QUERY_LENGTH = 5000;
+
+    // 1. Vérifier longueur
+    if (sql.length > MAX_QUERY_LENGTH) {
       throw new Error(
-        'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
+        `SQL query exceeds max length (${MAX_QUERY_LENGTH} chars)`,
       );
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    // 2. Vérifier statements multiples (après suppression des strings)
+    const sqlWithoutStrings = sql.replace(/'[^']*'/g, '');
+    if (sqlWithoutStrings.includes(';')) {
+      throw new Error('Multiple SQL statements are not allowed');
+    }
+
+    // 3. Vérifier que c'est SELECT ou EXPLAIN uniquement
+    const trimmedSql = sql.trim().toUpperCase();
+    const allowedPrefixes = ['SELECT', 'EXPLAIN', 'WITH'];
+    const startsWithAllowed = allowedPrefixes.some((prefix) =>
+      trimmedSql.startsWith(prefix),
+    );
+
+    if (!startsWithAllowed) {
+      throw new Error('Only SELECT, EXPLAIN, and WITH queries are allowed');
+    }
+
+    // 4. Vérifier absence de mots-clés dangereux
+    const dangerousKeywords = [
+      'DELETE',
+      'UPDATE',
+      'INSERT',
+      'DROP',
+      'TRUNCATE',
+      'ALTER',
+      'GRANT',
+      'REVOKE',
+      'CREATE',
+    ];
+
+    for (const keyword of dangerousKeywords) {
+      // Regex: mot-clé comme token isolé (pas dans un identifiant)
+      const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+      if (regex.test(sqlWithoutStrings)) {
+        throw new Error(`Dangerous SQL keyword detected: ${keyword}`);
+      }
+    }
   }
 
   // =====================================================
@@ -121,6 +165,7 @@ export class SeoPilotageService {
 
   /**
    * Récupère la santé par rôle depuis la DB
+   * 🛡️ Utilise callRpc() via RPC Safety Gate avec validation SQL
    */
   private async getRoleHealthSummary(): Promise<
     Array<{
@@ -133,9 +178,20 @@ export class SeoPilotageService {
       avg_score: number;
     }>
   > {
-    const { data, error } = await this.supabase.rpc('exec_sql', {
-      sql: PILOTAGE_QUERIES.roleHealthSummary,
-    });
+    const sql = PILOTAGE_QUERIES.roleHealthSummary;
+
+    // 🛡️ Validation AVANT envoi - refuse requêtes non-SELECT
+    this.validateReadOnlyQuery(sql);
+
+    // 🛡️ Appel via RPC Safety Gate
+    const { data, error } = await this.callRpc<any>(
+      'exec_sql',
+      { sql },
+      {
+        source: 'admin',
+        role: 'service_role',
+      },
+    );
 
     if (error) {
       this.logger.error('Erreur récupération santé par rôle:', error);

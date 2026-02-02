@@ -34,6 +34,12 @@ const OPTIONAL_ENV_VARS_WITH_DEFAULTS: Record<string, string> = {
   USE_UNIFIED_RPC: 'true',
   USE_RM_API: 'false',
   RAG_SERVICE_URL: 'http://disabled:8000',
+  // RPC Safety Gate - Governance for Supabase RPC calls
+  RPC_GATE_MODE: 'observe', // 'observe' | 'enforce' | 'disabled'
+  RPC_GATE_ENFORCE_LEVEL: 'P0', // 'P0' | 'P1' | 'P2' | 'ALL'
+  RPC_GATE_GOV_DIR: './governance/rpc', // Path relative to process.cwd()
+  RPC_GATE_LOG_ALLOW: 'false', // Log ALLOW decisions (noisy)
+  RPC_ADMIN_TOKEN: '(optional override token)',
 };
 
 /**

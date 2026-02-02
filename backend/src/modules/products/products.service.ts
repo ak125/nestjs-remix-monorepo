@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 
 // DTOs comme interfaces simples (pas de dépendances externes)
 interface CreateProductDto {
@@ -40,8 +41,11 @@ interface SearchProductDto {
  */
 @Injectable()
 export class ProductsService extends SupabaseBaseService {
-  // Pas de constructeur - utilise celui du parent sans ConfigService
-  // Cela évite les dépendances circulaires
+  // 🛡️ Constructeur ajouté pour injection RpcGateService
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
+  }
 
   /**
    * Récupérer toutes les pièces avec filtres et pagination
@@ -677,8 +681,11 @@ export class ProductsService extends SupabaseBaseService {
         .limit(10);
 
       // Compter par ranges de stock - Optimisé: single query au lieu de 5 (5x plus rapide)
-      const { data: rangeData } = await this.client.rpc(
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data: rangeData } = await this.callRpc<any>(
         'get_stock_distribution',
+        {},
+        { source: 'admin', role: 'service_role' },
       );
 
       // Fallback si RPC n'existe pas: utiliser requête unique avec calcul côté client
@@ -1662,9 +1669,10 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🔍 Récupération gammes avec pièces (RPC)');
 
       // Utiliser la fonction PostgreSQL optimisée
-      const { data: gammesData, error: gammesError } = await this.client.rpc(
-        'get_gammes_with_pieces',
-      );
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data: gammesData, error: gammesError } = await this.callRpc<
+        any[]
+      >('get_gammes_with_pieces', {}, { source: 'api', role: 'service_role' });
 
       if (gammesError) {
         this.logger.error('Erreur getGammesForFilters (RPC):', gammesError);
@@ -1695,9 +1703,10 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🔍 Récupération marques avec pièces (RPC)');
 
       // Utiliser la fonction PostgreSQL optimisée
-      const { data: brandsData, error: brandsError } = await this.client.rpc(
-        'get_brands_with_pieces',
-      );
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data: brandsData, error: brandsError } = await this.callRpc<
+        any[]
+      >('get_brands_with_pieces', {}, { source: 'api', role: 'service_role' });
 
       if (brandsError) {
         this.logger.error(

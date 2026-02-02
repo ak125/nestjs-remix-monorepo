@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { TABLES } from '@repo/database-types';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -49,8 +50,10 @@ export class CatalogService
     private readonly catalogFamilyService: CatalogFamilyService,
     private readonly catalogGammeService: CatalogGammeService,
     private readonly gammeUnifiedService: GammeUnifiedService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -270,10 +273,11 @@ export class CatalogService
    */
   private async getQuickAccessItems(): Promise<any[]> {
     try {
-      // Essayer d'abord la fonction RPC si disponible
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_popular_catalog_items',
         { limit_count: 10 },
+        { source: 'api', role: 'service_role' },
       );
 
       if (error || !data) {
@@ -323,11 +327,11 @@ export class CatalogService
     try {
       const categoryIds = categories.map((cat) => cat.id);
 
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_products_count_by_gamme',
-        {
-          gamme_ids: categoryIds,
-        },
+        { gamme_ids: categoryIds },
+        { source: 'api', role: 'service_role' },
       );
 
       if (error || !data) {
