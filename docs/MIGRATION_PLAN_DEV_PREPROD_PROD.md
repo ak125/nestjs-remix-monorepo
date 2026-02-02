@@ -255,8 +255,8 @@ curl -s http://localhost:3000/health | jq .status
 | P1.1 | Créer script `npm run dev:core` | S | Low | Yes | ✅ DONE |
 | P1.2 | Créer script `npm run dev:full:all` | S | Low | Yes | ✅ DONE |
 | P1.3 | Ajouter ESLint import-firewall | M | Low | Yes | ✅ DONE |
-| P1.4 | Ajouter CI check `core-build-only` | M | Low | Yes | TODO |
-| P1.5 | Ajouter CI check `import-firewall` | M | Low | Yes | TODO |
+| P1.4 | Ajouter CI check `core-build-only` | M | Low | Yes | ✅ DONE |
+| P1.5 | Ajouter CI check `import-firewall` | M | Low | Yes | ✅ DONE |
 
 #### P1.1-P1.2 — Scripts npm dev:core / dev:full:all
 
@@ -275,6 +275,22 @@ Règle `no-restricted-imports` ajoutée pour bloquer:
 - `**/modules/rm/**` → Crash prod 2026-01-11
 - `@repo/ai-orchestrator` → DEV ONLY
 - `@repo/contracts` → DEV ONLY
+
+#### P1.4-P1.5 — CI Checks
+
+**Fichier**: `.github/workflows/ci.yml`
+
+Deux nouveaux jobs ajoutés:
+
+1. **core-build**: Build uniquement les modules PROD_RUNTIME
+   - Vérifie que app.module.ts ne contient pas de modules DEV
+   - Bloque le deploy si modules DEV détectés
+
+2. **import-firewall**: Vérifie les imports interdits
+   - Scan de `backend/src/**/*.ts`
+   - Bloque si imports vers rm/, ai-orchestrator, contracts
+
+Ces checks sont **requis** avant le deploy PREPROD.
 
 ---
 
@@ -314,3 +330,7 @@ Règle `no-restricted-imports` ajoutée pour bloquer:
 | 2026-02-02 | P1.1 - Script `npm run dev:core` ajouté | ✅ DONE |
 | 2026-02-02 | P1.2 - Script `npm run dev:full:all` ajouté | ✅ DONE |
 | 2026-02-02 | P1.3 - ESLint import-firewall ajouté | ✅ DONE |
+| 2026-02-02 | Commit P1 (`b1ce836b`) | ✅ OK |
+| 2026-02-02 | P1.4 - CI check `core-build-only` ajouté | ✅ DONE |
+| 2026-02-02 | P1.5 - CI check `import-firewall` ajouté | ✅ DONE |
+| 2026-02-02 | **PHASE P1 TERMINÉE** | ✅ VALIDÉE |
