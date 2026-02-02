@@ -468,40 +468,53 @@ export class PricingService extends SupabaseBaseService {
       // 2. Si trouvé dans prices, récupérer le pricing complet ET la vraie marque
       const results = [];
       if (priceData && priceData.length > 0) {
-        for (const piece of priceData) {
-          const pieceId = piece.pri_piece_id;
-          const pmId = piece.pri_pm_id;
+        // 2a. BATCH: Collecter tous les pmIds uniques
+        const pmIds = [
+          ...new Set(
+            priceData
+              .map((p) => p.pri_pm_id)
+              .filter((id): id is number => id != null),
+          ),
+        ];
 
-          // 2a. Récupération de la vraie marque depuis pieces_marque
-          let realBrand = 'Marque inconnue';
-          if (pmId) {
-            const { data: brandData } = await this.client
-              .from(TABLES.pieces_marque)
-              .select('pm_name, pm_alias')
-              .eq('pm_id', pmId)
-              .limit(1);
+        // 2b. BATCH: Récupérer toutes les marques en une seule requête
+        const brandMap = new Map<number, string>();
+        if (pmIds.length > 0) {
+          const { data: brandsData } = await this.client
+            .from(TABLES.pieces_marque)
+            .select('pm_id, pm_name, pm_alias')
+            .in('pm_id', pmIds);
 
-            realBrand =
-              brandData?.[0]?.pm_name ||
-              brandData?.[0]?.pm_alias ||
-              'Marque inconnue';
-          }
+          (brandsData || []).forEach((brand) => {
+            brandMap.set(
+              brand.pm_id,
+              brand.pm_name || brand.pm_alias || 'Marque inconnue',
+            );
+          });
+        }
 
-          // 2b. Récupérer le pricing avancé
-          const advancedPricing = await this.getAdvancedPricing(pieceId);
+        // 2c. PARALLEL: Récupérer tous les pricing avancés en parallèle (cache interne)
+        const pieceIds = priceData.map((p) => p.pri_piece_id);
+        const advancedPricings = await Promise.all(
+          pieceIds.map((id) => this.getAdvancedPricing(id)),
+        );
+
+        // 2d. Assembler les résultats avec Map lookup O(1)
+        priceData.forEach((piece, index) => {
+          const realBrand = brandMap.get(piece.pri_pm_id) || 'Marque inconnue';
 
           results.push({
-            piece_id: pieceId,
+            piece_id: piece.pri_piece_id,
             reference: piece.pri_ref,
-            supplier: piece.pri_frs || 'N/A', // Fournisseur (ACR, DCA, etc.)
-            brand: realBrand, // Vraie marque (DAYCO, etc.) depuis pieces_marque
+            supplier: piece.pri_frs || 'N/A',
+            brand: realBrand,
             designation: piece.pri_des || 'N/A',
             stock_status: piece.pri_dispo === '1' ? 'En stock' : 'Hors stock',
             raw_price_ht: piece.pri_public_ht,
             raw_price_ttc: piece.pri_vente_ttc,
-            enhanced_pricing: advancedPricing?.pricing || null,
+            enhanced_pricing: advancedPricings[index]?.pricing || null,
           });
-        }
+        });
       }
 
       const responseTime = performance.now() - startTime;

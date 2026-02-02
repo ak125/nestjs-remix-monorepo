@@ -454,101 +454,134 @@ export class ShippingService extends SupabaseBaseService {
         throw new Error(`Database error: ${ordersError.message}`);
       }
 
-      const trackingData = await Promise.all(
-        (orders || []).map(async (order) => {
-          // Récupérer les infos client si possible
-          const { data: customer } = await this.supabase
-            .from(TABLES.xtr_customer)
-            .select('cst_firstname, cst_lastname, cst_company')
-            .eq('cst_id', order.ord_cst_id)
-            .single();
+      // BATCH: Collecter IDs uniques pour customers et addresses
+      const customerIds = [
+        ...new Set(
+          (orders || [])
+            .map((o) => o.ord_cst_id)
+            .filter((id): id is number => id != null),
+        ),
+      ];
+      const addressIds = [
+        ...new Set(
+          (orders || [])
+            .map((o) => o.ord_shipping_address_id)
+            .filter((id): id is number => id != null),
+        ),
+      ];
 
-          // Récupérer l'adresse de livraison
-          let shippingAddress = { city: 'Non défini', country: 'FR' };
-          if (order.ord_shipping_address_id) {
-            const { data: address } = await this.supabase
-              .from(TABLES.xtr_customer_delivery_address)
-              .select('cda_city, cda_country')
-              .eq('cda_id', order.ord_shipping_address_id)
-              .single();
+      // BATCH: Fetch all customers in one query
+      const customerMap = new Map<
+        number,
+        { cst_firstname: string; cst_lastname: string; cst_company: string }
+      >();
+      if (customerIds.length > 0) {
+        const { data: customersData } = await this.supabase
+          .from(TABLES.xtr_customer)
+          .select('cst_id, cst_firstname, cst_lastname, cst_company')
+          .in('cst_id', customerIds);
 
-            if (address) {
-              shippingAddress = {
-                city: address.cda_city || 'Non défini',
-                country: address.cda_country || 'FR',
-              };
+        (customersData || []).forEach((c) => {
+          customerMap.set(c.cst_id, c);
+        });
+      }
+
+      // BATCH: Fetch all addresses in one query
+      const addressMap = new Map<number, { city: string; country: string }>();
+      if (addressIds.length > 0) {
+        const { data: addressesData } = await this.supabase
+          .from(TABLES.xtr_customer_delivery_address)
+          .select('cda_id, cda_city, cda_country')
+          .in('cda_id', addressIds);
+
+        (addressesData || []).forEach((a) => {
+          addressMap.set(a.cda_id, {
+            city: a.cda_city || 'Non défini',
+            country: a.cda_country || 'FR',
+          });
+        });
+      }
+
+      // Assembler les résultats avec Map lookup O(1)
+      const trackingData = (orders || []).map((order) => {
+        // O(1) lookup pour customer
+        const customer = customerMap.get(order.ord_cst_id);
+
+        // O(1) lookup pour address
+        const shippingAddress = order.ord_shipping_address_id
+          ? addressMap.get(order.ord_shipping_address_id) || {
+              city: 'Non défini',
+              country: 'FR',
             }
-          }
+          : { city: 'Non défini', country: 'FR' };
 
-          // Générer des données de tracking réalistes
-          const carriers = ['Chronopost', 'DHL', 'UPS', 'Colissimo'];
-          const statuses = [
-            'in_transit',
-            'out_for_delivery',
-            'shipped',
-            'delivered',
-          ];
-          const locations = [
-            'Lyon',
-            'Paris',
-            'Marseille',
-            'Toulouse',
-            'Bordeaux',
-          ];
+        // Générer des données de tracking réalistes
+        const carriers = ['Chronopost', 'DHL', 'UPS', 'Colissimo'];
+        const statuses = [
+          'in_transit',
+          'out_for_delivery',
+          'shipped',
+          'delivered',
+        ];
+        const locations = [
+          'Lyon',
+          'Paris',
+          'Marseille',
+          'Toulouse',
+          'Bordeaux',
+        ];
 
-          const carrierId = Math.abs(parseInt(order.ord_id)) % carriers.length;
-          const statusId = Math.abs(parseInt(order.ord_id)) % statuses.length;
-          const locationId =
-            Math.abs(parseInt(order.ord_id)) % locations.length;
+        const carrierId = Math.abs(parseInt(order.ord_id)) % carriers.length;
+        const statusId = Math.abs(parseInt(order.ord_id)) % statuses.length;
+        const locationId = Math.abs(parseInt(order.ord_id)) % locations.length;
 
-          const customerName = customer
-            ? `${customer.cst_firstname || ''} ${customer.cst_lastname || ''}`.trim()
-            : `Client #${order.ord_cst_id}`;
+        const customerName = customer
+          ? `${customer.cst_firstname || ''} ${customer.cst_lastname || ''}`.trim()
+          : `Client #${order.ord_cst_id}`;
 
-          return {
-            id: order.ord_id.toString(),
-            trackingNumber: `${carriers[carrierId].substring(0, 2).toUpperCase()}${order.ord_id}${Date.now().toString().slice(-4)}FR`,
-            orderNumber: order.ord_ref || `CMD-${order.ord_id}`,
-            customerName: customerName || `Client #${order.ord_cst_id}`,
-            carrier: {
-              name: carriers[carrierId],
-              logo: `/images/carriers/${carriers[carrierId].toLowerCase()}.png`,
+        return {
+          id: order.ord_id.toString(),
+          trackingNumber: `${carriers[carrierId].substring(0, 2).toUpperCase()}${order.ord_id}${Date.now().toString().slice(-4)}FR`,
+          orderNumber: order.ord_ref || `CMD-${order.ord_id}`,
+          customerName: customerName || `Client #${order.ord_cst_id}`,
+          carrier: {
+            name: carriers[carrierId],
+            logo: `/images/carriers/${carriers[carrierId].toLowerCase()}.png`,
+          },
+          status: statuses[statusId],
+          estimatedDelivery: new Date(
+            Date.now() + (carrierId + 1) * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+          currentLocation: {
+            city: locations[locationId],
+            country: 'France',
+            coordinates: [2.3522, 48.8566],
+          },
+          shippingAddress,
+          lastUpdate: order.ord_date_modified || new Date().toISOString(),
+          totalAmount: parseFloat(order.ord_total_ttc || '0'),
+          events: [
+            {
+              id: '1',
+              timestamp: new Date(
+                Date.now() - 2 * 60 * 60 * 1000,
+              ).toISOString(),
+              location: `Centre de tri ${locations[locationId]}`,
+              status: 'EN_TRANSIT',
+              description: 'Colis en cours de transport vers la destination',
             },
-            status: statuses[statusId],
-            estimatedDelivery: new Date(
-              Date.now() + (carrierId + 1) * 24 * 60 * 60 * 1000,
-            ).toISOString(),
-            currentLocation: {
-              city: locations[locationId],
-              country: 'France',
-              coordinates: [2.3522, 48.8566],
+            {
+              id: '2',
+              timestamp: new Date(
+                Date.now() - 6 * 60 * 60 * 1000,
+              ).toISOString(),
+              location: 'Hub de départ',
+              status: 'DEPARTED',
+              description: 'Colis parti du centre de tri',
             },
-            shippingAddress,
-            lastUpdate: order.ord_date_modified || new Date().toISOString(),
-            totalAmount: parseFloat(order.ord_total_ttc || '0'),
-            events: [
-              {
-                id: '1',
-                timestamp: new Date(
-                  Date.now() - 2 * 60 * 60 * 1000,
-                ).toISOString(),
-                location: `Centre de tri ${locations[locationId]}`,
-                status: 'EN_TRANSIT',
-                description: 'Colis en cours de transport vers la destination',
-              },
-              {
-                id: '2',
-                timestamp: new Date(
-                  Date.now() - 6 * 60 * 60 * 1000,
-                ).toISOString(),
-                location: 'Hub de départ',
-                status: 'DEPARTED',
-                description: 'Colis parti du centre de tri',
-              },
-            ],
-          };
-        }),
-      );
+          ],
+        };
+      });
 
       this.logger.log(
         `Retrieved ${trackingData.length} shipments with tracking`,

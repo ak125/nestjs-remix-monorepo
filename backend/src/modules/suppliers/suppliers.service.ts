@@ -658,61 +658,96 @@ export class SuppliersService extends SupabaseBaseService {
         return [];
       }
 
-      // Récupérer les informations des produits pour chaque lien
-      const enrichedLinks = await Promise.all(
-        linksData.map(async (link) => {
-          // Récupérer les info du produit depuis la table pieces
-          const { data: pieceData } = await this.supabase
-            .from(TABLES.pieces)
-            .select(
-              'piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id',
-            )
-            .eq('piece_id', parseInt(link.slpm_pm_id))
-            .single();
+      // BATCH 1: Collecter tous les piece IDs uniques
+      const pieceIds = [
+        ...new Set(
+          linksData
+            .map((link) => parseInt(link.slpm_pm_id))
+            .filter((id) => !isNaN(id)),
+        ),
+      ];
 
-          // Si on a une pièce et un piece_pg_id, essayer de récupérer la gamme/marque
-          let brandName = 'À déterminer';
-          if (pieceData && pieceData.piece_pg_id) {
-            const { data: gammeData } = await this.supabase
-              .from(TABLES.pieces_gamme)
-              .select('pg_name')
-              .eq('pg_id', pieceData.piece_pg_id)
-              .single();
+      // BATCH 1: Fetch all pieces in one query
+      const pieceMap = new Map<
+        number,
+        {
+          piece_id: number;
+          piece_des: string;
+          piece_ref: string;
+          piece_name: string;
+          piece_display: string;
+          piece_pg_id: number;
+        }
+      >();
+      if (pieceIds.length > 0) {
+        const { data: piecesData } = await this.supabase
+          .from(TABLES.pieces)
+          .select(
+            'piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id',
+          )
+          .in('piece_id', pieceIds);
 
-            if (gammeData) {
-              brandName = gammeData.pg_name || 'À déterminer';
-            }
-          }
+        (piecesData || []).forEach((p) => {
+          pieceMap.set(p.piece_id, p);
+        });
+      }
 
-          return {
-            id: link.slpm_id,
-            supplierId: link.slpm_spl_id,
-            pieceMarketId: link.slpm_pm_id,
-            display: link.slpm_display,
-            isActive: link.slpm_display === '1',
-            type: 'piece',
-            // Ajouter les informations du produit
-            productInfo: pieceData
-              ? {
-                  id: pieceData.piece_id,
-                  designation:
-                    pieceData.piece_des ||
-                    pieceData.piece_name ||
-                    'Produit sans nom',
-                  reference: pieceData.piece_ref || '',
-                  brand: brandName,
-                  isActive: pieceData.piece_display === '1',
-                }
-              : {
-                  id: link.slpm_pm_id,
-                  designation: `Produit #${link.slpm_pm_id}`,
-                  reference: '',
-                  brand: 'Marque inconnue',
-                  isActive: true,
-                },
-          };
-        }),
-      );
+      // BATCH 2: Collecter tous les pg_ids uniques des pieces trouvées
+      const pgIds = [
+        ...new Set(
+          Array.from(pieceMap.values())
+            .map((p) => p.piece_pg_id)
+            .filter((id): id is number => id != null),
+        ),
+      ];
+
+      // BATCH 2: Fetch all gammes in one query
+      const gammeMap = new Map<number, string>();
+      if (pgIds.length > 0) {
+        const { data: gammesData } = await this.supabase
+          .from(TABLES.pieces_gamme)
+          .select('pg_id, pg_name')
+          .in('pg_id', pgIds);
+
+        (gammesData || []).forEach((g) => {
+          gammeMap.set(g.pg_id, g.pg_name || 'À déterminer');
+        });
+      }
+
+      // Assembler les résultats avec Map lookup O(1)
+      const enrichedLinks = linksData.map((link) => {
+        const pieceData = pieceMap.get(parseInt(link.slpm_pm_id));
+        const brandName = pieceData?.piece_pg_id
+          ? gammeMap.get(pieceData.piece_pg_id) || 'À déterminer'
+          : 'À déterminer';
+
+        return {
+          id: link.slpm_id,
+          supplierId: link.slpm_spl_id,
+          pieceMarketId: link.slpm_pm_id,
+          display: link.slpm_display,
+          isActive: link.slpm_display === '1',
+          type: 'piece',
+          productInfo: pieceData
+            ? {
+                id: pieceData.piece_id,
+                designation:
+                  pieceData.piece_des ||
+                  pieceData.piece_name ||
+                  'Produit sans nom',
+                reference: pieceData.piece_ref || '',
+                brand: brandName,
+                isActive: pieceData.piece_display === '1',
+              }
+            : {
+                id: link.slpm_pm_id,
+                designation: `Produit #${link.slpm_pm_id}`,
+                reference: '',
+                brand: 'Marque inconnue',
+                isActive: true,
+              },
+        };
+      });
 
       this.logger.log(
         `Trouvé ${enrichedLinks.length} liens enrichis pour fournisseur ${supplierId}`,
