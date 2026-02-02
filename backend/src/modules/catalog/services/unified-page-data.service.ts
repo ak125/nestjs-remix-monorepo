@@ -5,6 +5,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import {
   decodeHtmlEntities,
   stripHtmlForMeta,
@@ -170,8 +171,12 @@ export interface UnifiedPageData {
 export class UnifiedPageDataService extends SupabaseBaseService {
   protected readonly logger = new Logger(UnifiedPageDataService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
     this.logger.log('🚀 UnifiedPageDataService initialisé - Mode RPC V3 Only');
   }
 
@@ -257,12 +262,14 @@ export class UnifiedPageDataService extends SupabaseBaseService {
   ): Promise<UnifiedPageData> {
     this.logger.log(`🚀 Appel RPC V3 pour type=${typeId} pg=${pgId}`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    const { data, error } = await this.callRpc<RpcV3Result>(
       'get_pieces_for_type_gamme_v3',
       {
         p_type_id: typeId,
         p_pg_id: pgId,
       },
+      { source: 'api' },
     );
 
     if (error) {

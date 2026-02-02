@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚀 Service RPC optimisé pour les pages véhicules /constructeurs/.../type.html
@@ -24,8 +25,12 @@ export class VehicleRpcService extends SupabaseBaseService {
   // Timeout RPC avant fallback sur cache stale (optimisé pour LCP)
   private readonly RPC_TIMEOUT_MS = 1500;
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -93,9 +98,12 @@ export class VehicleRpcService extends SupabaseBaseService {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
-    const rpcPromise = this.client.rpc('get_vehicle_page_data_optimized', {
-      p_type_id: typeId,
-    });
+    // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    const rpcPromise = this.callRpc<any>(
+      'get_vehicle_page_data_optimized',
+      { p_type_id: typeId },
+      { source: 'api' },
+    );
 
     // Race entre RPC et timeout
     const { data, error: rpcError } = (await Promise.race([

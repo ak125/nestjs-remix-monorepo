@@ -9,6 +9,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { TABLES } from '@repo/database-types';
 import {
   buildModelImageUrl,
@@ -94,8 +95,12 @@ export class BrandBestsellersService extends SupabaseBaseService {
 
   private readonly CACHE_TTL = CACHE_STRATEGIES.VEHICLES.BRANDS.ttl;
 
-  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
+  constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -136,13 +141,15 @@ export class BrandBestsellersService extends SupabaseBaseService {
       }
 
       // 2️⃣ Appeler la fonction RPC optimisée
-      const { data: bestsellers, error: rpcError } = await this.client.rpc(
+      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+      const { data: bestsellers, error: rpcError } = await this.callRpc<any>(
         'get_brand_bestsellers_optimized',
         {
           p_marque_id: brand.marque_id,
           p_limit_vehicles: limitVehicles,
           p_limit_parts: limitParts,
         },
+        { source: 'api' },
       );
 
       if (rpcError) {

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚀 Service RPC optimisé pour les pages marques constructeurs
@@ -29,8 +30,12 @@ export class BrandRpcService extends SupabaseBaseService {
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -85,9 +90,12 @@ export class BrandRpcService extends SupabaseBaseService {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
-    const rpcPromise = this.client.rpc('get_brand_page_data_optimized', {
-      p_marque_id: marqueId,
-    });
+    // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    const rpcPromise = this.callRpc<any>(
+      'get_brand_page_data_optimized',
+      { p_marque_id: marqueId },
+      { source: 'api' },
+    );
 
     // Race entre RPC et timeout
     const { data, error: rpcError } = (await Promise.race([

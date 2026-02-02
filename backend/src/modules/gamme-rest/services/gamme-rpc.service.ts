@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { CacheService } from '../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚀 Service pour les appels RPC optimisés avec cache Redis
@@ -26,8 +27,10 @@ export class GammeRpcService extends SupabaseBaseService {
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -105,9 +108,12 @@ export class GammeRpcService extends SupabaseBaseService {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
-    const rpcPromise = this.client.rpc('get_gamme_page_data_optimized', {
-      p_pg_id: pgIdNum,
-    });
+    // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    const rpcPromise = this.callRpc<any>(
+      'get_gamme_page_data_optimized',
+      { p_pg_id: pgIdNum },
+      { source: 'api' },
+    );
 
     // Race entre RPC et timeout
     const { data: aggregatedData, error: rpcError } = (await Promise.race([
