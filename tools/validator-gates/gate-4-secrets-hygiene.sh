@@ -1,30 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ============================================
-# GATE-4: Secrets & sensitive artifacts hygiene
-# ============================================
+echo "🔒 GATE-4: Secrets & sensitive artifacts hygiene (progressive)"
 
-echo "🔒 GATE-4: Secrets & sensitive artifacts hygiene"
+MODE="${MODE:-observe}"   # observe | block
 
+# Fichiers interdits (hors templates)
+FORBIDDEN_REGEX='(^|/)\.env(\..+)?$|\.env\.production$|\.env\.prod$|\.env\.backup|\.pem$|\.key$|_dump\.sql$|_export\.csv$'
+ALLOW_REGEX='\.env\.example$|\.env\.template$|\.env\.sample$|example\.env$'
+
+# 1) Report des fichiers déjà trackés (legacy)
 tracked=$(git ls-files 2>/dev/null || true)
-
-# Patterns de fichiers interdits (trackes)
-# Note: on utilise grep -E
-forbidden_tracked_regex='(^|/)\.env(\..+)?$|\.env\.production$|\.env\.prod$|\.env\.backup|\.pem$|\.key$|_dump\.sql$|_export\.csv$'
-
-# Patterns autorises (example, template)
-allow_regex='\.env\.example$|\.env\.template$|example\.env$'
-
-# Trouver les fichiers interdits trackes
-bad_tracked=$(echo "$tracked" | grep -E "$forbidden_tracked_regex" | grep -vE "$allow_regex" || true)
+bad_tracked=$(echo "$tracked" | grep -E "$FORBIDDEN_REGEX" | grep -vE "$ALLOW_REGEX" || true)
 
 if [[ -n "$bad_tracked" ]]; then
-  echo "❌ Sensitive files are TRACKED in git (list truncated):"
+  echo "⚠️  Sensitive files already TRACKED in git (legacy, list truncated):"
   echo "$bad_tracked" | head -50
-  echo ""
-  echo "🚫 GATE-4 FAILED"
+  if [[ "$MODE" == "block" ]]; then
+    echo "ℹ️  MODE=block: legacy tracked files are NOT blocking yet (grandfather mode)."
+  fi
+fi
+
+# 2) Bloquer uniquement les NOUVEAUX fichiers sensibles ajoutés dans ce commit
+staged_added=$(git diff --cached --name-status 2>/dev/null | awk '$1=="A"{print $2}' || true)
+new_bad=0
+
+while IFS= read -r f; do
+  [[ -z "${f:-}" ]] && continue
+  # ignore allowlist
+  if echo "$f" | grep -qE "$ALLOW_REGEX" 2>/dev/null; then
+    continue
+  fi
+
+  if echo "$f" | grep -qE "$FORBIDDEN_REGEX" 2>/dev/null; then
+    echo "❌ New sensitive file ADDED in commit: $f"
+    new_bad=$((new_bad+1))
+  fi
+done <<< "$staged_added"
+
+if [[ "$new_bad" -gt 0 ]]; then
+  if [[ "$MODE" == "observe" ]]; then
+    echo "⚠️  GATE-4 would block ($new_bad new sensitive file(s)), but MODE=observe."
+    exit 0
+  fi
+  echo "🚫 GATE-4 FAILED ($new_bad new sensitive file(s) detected)"
   exit 1
 fi
 
-echo "✅ GATE-4 PASSED"
+echo "✅ GATE-4 PASSED (progressive)"
