@@ -14,6 +14,9 @@ services:
       - USE_UNIFIED_RPC=true
       - USE_RM_API=true
       - USE_RM_PAGE=true
+      # 🛡️ RPC Safety Gate - ENFORCE P0 (2026-02-03)
+      - RPC_GATE_MODE=enforce
+      - RPC_GATE_ENFORCE_LEVEL=P0
 
 
     container_name: nestjs-remix-monorepo-prod
