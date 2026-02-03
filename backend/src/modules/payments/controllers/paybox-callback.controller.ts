@@ -6,10 +6,12 @@ import {
   Body,
   Logger,
   Res,
+  Req,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
+import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
 
 /**
  * Contrôleur pour les callbacks Paybox (IPN - Instant Payment Notification)
@@ -22,6 +24,7 @@ export class PayboxCallbackController {
   constructor(
     private readonly payboxService: PayboxService,
     private readonly paymentDataService: PaymentDataService,
+    private readonly callbackGate: PayboxCallbackGateService,
   ) {}
 
   /**
@@ -31,12 +34,18 @@ export class PayboxCallbackController {
   @Post('callback')
   async handleCallback(
     @Query() query: Record<string, string>,
-    @Body() body: string,
+    @Body() _body: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      this.logger.log('🔔 Callback IPN Paybox reçu');
-      this.logger.log(`📦 Query params:`, query);
+      this.logger.log('Callback IPN Paybox recu');
+      this.logger.log(`Query params:`, query);
+
+      // Récupérer la querystring brute pour calcul signature ordre réception
+      const rawQueryString = req.originalUrl.includes('?')
+        ? req.originalUrl.split('?')[1]
+        : '';
 
       // Parser la réponse Paybox
       const params = this.payboxService.parsePayboxResponse(
@@ -45,7 +54,28 @@ export class PayboxCallbackController {
           .join('&'),
       );
 
-      this.logger.log(`💰 Montant: ${params.amount}`);
+      // SAFE CHANGE: Appel au Callback Gate AVANT traitement
+      const gateDecision = await this.callbackGate.validateCallback(
+        rawQueryString,
+        query,
+        params,
+      );
+
+      // SAFE CHANGE: Idempotence - si déjà payé, retourner OK immédiatement
+      if (gateDecision.isIdempotent) {
+        this.logger.log(
+          `Callback idempotent - Commande deja payee: ${params.orderReference}`,
+        );
+        return res.status(200).send('OK');
+      }
+
+      // SAFE CHANGE: En mode strict, rejeter si invalide
+      if (gateDecision.reject) {
+        this.logger.error(`GATE REJECT: ${gateDecision.result.correlationId}`);
+        return res.status(403).send('Validation failed');
+      }
+
+      this.logger.log(`Montant: ${params.amount}`);
       this.logger.log(`📦 Référence: ${params.orderReference}`);
       this.logger.log(`🔐 Autorisation: ${params.authorization}`);
       this.logger.log(`⚠️  Erreur: ${params.errorCode}`);
@@ -158,10 +188,11 @@ export class PayboxCallbackController {
   @Get('callback')
   async handleCallbackGet(
     @Query() query: Record<string, string>,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
-    this.logger.log('🔔 Callback Paybox GET (test)');
-    return this.handleCallback(query, '', res);
+    this.logger.log('Callback Paybox GET (test)');
+    return this.handleCallback(query, '', req, res);
   }
 
   /**

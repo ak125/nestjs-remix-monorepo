@@ -18,6 +18,7 @@ import { PaymentService } from './services/payment.service';
 import { CyberplusService } from './services/cyberplus.service';
 import { PayboxService } from './services/paybox.service';
 import { PaymentValidationService } from './services/payment-validation.service';
+import { PayboxCallbackGateService } from './services/paybox-callback-gate.service';
 import { PaymentDataService } from './repositories/payment-data.service';
 
 /**
@@ -62,6 +63,7 @@ import { PaymentDataService } from './repositories/payment-data.service';
     CyberplusService,
     PayboxService,
     PaymentValidationService,
+    PayboxCallbackGateService, // SAFE CHANGE: Callback Gate (shadow/strict)
 
     // Data Services
     PaymentDataService,
