@@ -17,7 +17,7 @@ import {
   useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -163,29 +163,42 @@ declare module "@remix-run/node" {
   }
 }
 
-// Create QueryClient with SSR-safe configuration
-// Using useState ensures each request gets its own client (important for SSR)
-function useQueryClient() {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // Disable automatic refetching on window focus in admin
-            refetchOnWindowFocus: false,
-            // Retry once on failure
-            retry: 1,
-            // Keep data fresh for 5 minutes
-            staleTime: 5 * 60 * 1000,
-          },
-        },
-      }),
-  );
-  return queryClient;
+// SSR-safe QueryClient singleton (no hooks - fixes Remix 2.15 context timing issue)
+// Server: creates new client per request, Browser: reuses singleton
+let browserQueryClient: QueryClient | undefined = undefined;
+
+function getQueryClient() {
+  const config = {
+    defaultOptions: {
+      queries: {
+        // Disable automatic refetching on window focus in admin
+        refetchOnWindowFocus: false,
+        // Retry once on failure
+        retry: 1,
+        // Keep data fresh for 5 minutes
+        staleTime: 5 * 60 * 1000,
+      },
+    },
+  };
+
+  if (typeof window === "undefined") {
+    // Server: always create new QueryClient per request
+    return new QueryClient(config);
+  }
+
+  // Browser: reuse singleton to preserve cache across navigations
+  if (!browserQueryClient) {
+    browserQueryClient = new QueryClient(config);
+  }
+  return browserQueryClient;
 }
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
+/**
+ * AppShell - Inner component that safely uses hooks
+ * Rendered inside providers where React/Remix context is available
+ * (Fixes Remix 2.15 hook context timing issue)
+ */
+function AppShell({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData("root") as
     | { user: any; cart: CartData | null }
     | undefined;
@@ -310,6 +323,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
+    <div className="min-h-screen flex flex-col" {...pageRoleAttrs}>
+      <Navbar logo={logo} />
+      <main className="flex-grow flex flex-col">
+        <div className="flex-grow">{children}</div>
+      </main>
+      <Footer />
+      <NotificationContainer />
+    </div>
+  );
+}
+
+/**
+ * Layout - Hook-free wrapper component
+ * Provides HTML structure and context providers only
+ * All hook logic is delegated to AppShell (rendered inside providers)
+ */
+export function Layout({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
+
+  return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
       <head suppressHydrationWarning>
         <Meta />
@@ -388,22 +421,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body
-        className="h-full bg-gray-100"
-        suppressHydrationWarning
-        {...pageRoleAttrs}
-      >
+      <body className="h-full bg-gray-100" suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
           <VehicleProvider>
             <NotificationProvider>
-              <div className="min-h-screen flex flex-col">
-                <Navbar logo={logo} />
-                <main className="flex-grow flex flex-col">
-                  <div className="flex-grow">{children}</div>
-                </main>
-              </div>
-              <Footer />
-              <NotificationContainer />
+              <AppShell>{children}</AppShell>
             </NotificationProvider>
           </VehicleProvider>
         </QueryClientProvider>
