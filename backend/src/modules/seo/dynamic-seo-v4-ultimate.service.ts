@@ -1027,10 +1027,19 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   }
 
   /**
-   * 🔧 Process GammeSwitches - Placeholder for future implementation
+   * 🔧 Process GammeSwitches - No-op intentionnel
+   *
+   * Pattern: #GammeSwitch_X# (non utilisé dans templates actuels)
+   *
+   * Note: Cette méthode est un point d'extension pour support futur
+   * des switches de gamme spécifiques. Actuellement aucun template
+   * n'utilise ce pattern (vérifié 2026-02-03 via grep).
+   *
+   * Pour activer: Ajouter logique de récupération switches + replacement
+   * similaire à processSingleGammeSwitch() ou processCompSwitch()
    */
   private async processGammeSwitches(processed: string): Promise<string> {
-    // TODO: Implement GammeSwitches logic
+    // No-op: Pattern #GammeSwitch_X# non utilisé dans les templates actuels
     return processed;
   }
 
@@ -1082,10 +1091,24 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   }
 
   /**
-   * 🔧 Process AllLinksEnhanced - Placeholder for future implementation
+   * 🔧 Process AllLinksEnhanced - No-op intentionnel
+   *
+   * Pattern: #AllLinks# (non utilisé dans templates actuels)
+   *
+   * Note: Cette méthode est un point d'extension pour génération
+   * automatique de tous les liens internes en une seule passe.
+   * Actuellement chaque type de lien est géré individuellement:
+   * - LinkGammeCar → processLinkGammeCar()
+   * - CompSwitch → processCompSwitch()
+   * - FamilySwitch → processFamilySwitchesEnhanced()
+   *
+   * Vérifié 2026-02-03: grep #AllLinks# → 0 matches
+   *
+   * Pour activer: Combiner toutes les logiques de liens ici
    */
   private async processAllLinksEnhanced(processed: string): Promise<string> {
-    // TODO: Implement AllLinksEnhanced logic
+    // No-op: Pattern #AllLinks# non utilisé dans les templates actuels
+    // Les liens sont gérés individuellement par processLinkGammeCar(), processCompSwitch(), etc.
     return processed;
   }
 
