@@ -10,8 +10,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 export type RiskFlag =
   | 'CONFUSION'
@@ -90,21 +90,12 @@ export interface RefreshResult {
 }
 
 @Injectable()
-export class RiskFlagsEngineService {
-  private readonly logger = new Logger(RiskFlagsEngineService.name);
-  private readonly supabase: SupabaseClient;
+export class RiskFlagsEngineService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(RiskFlagsEngineService.name);
 
-  constructor(private configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn('Supabase credentials not configured');
-    }
-
-    this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -222,8 +213,11 @@ export class RiskFlagsEngineService {
       this.logger.log('Starting risk flags refresh...');
 
       // First sync from entity_score_v10
-      const { data: syncResult, error: syncError } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: syncResult, error: syncError } = await this.callRpc<number>(
         'sync_entity_health_from_scores',
+        {},
+        { source: 'cron' },
       );
 
       if (syncError) {
@@ -233,7 +227,12 @@ export class RiskFlagsEngineService {
       }
 
       // Then calculate risk flags
-      const { data, error } = await this.supabase.rpc('calculate_risk_flags');
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
+        'calculate_risk_flags',
+        {},
+        { source: 'cron' },
+      );
 
       if (error) {
         this.logger.error(`Failed to refresh risk flags: ${error.message}`);
@@ -284,11 +283,16 @@ export class RiskFlagsEngineService {
     riskFlag?: RiskFlag,
   ): Promise<RiskAlert[]> {
     try {
-      const { data, error } = await this.supabase.rpc('get_urls_at_risk', {
-        p_limit: limit,
-        p_offset: offset,
-        p_risk_flag: riskFlag || null,
-      });
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
+        'get_urls_at_risk',
+        {
+          p_limit: limit,
+          p_offset: offset,
+          p_risk_flag: riskFlag || null,
+        },
+        { source: 'admin' },
+      );
 
       if (error) {
         this.logger.error(`Failed to get URLs at risk: ${error.message}`);

@@ -15,8 +15,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { createClient } from '@supabase/supabase-js';
+import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 
 // Types pour le tracking
 export interface LinkClickEvent {
@@ -84,22 +84,13 @@ export interface LinkPerformanceReport {
 }
 
 @Injectable()
-export class SeoLinkTrackingService {
-  private readonly logger = new Logger(SeoLinkTrackingService.name);
-  private supabase: SupabaseClient;
+export class SeoLinkTrackingService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(SeoLinkTrackingService.name);
 
-  constructor() {
-    // Initialiser le client Supabase
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseKey) {
-      this.supabase = createClient(supabaseUrl, supabaseKey);
-      this.logger.log('✅ SeoLinkTrackingService initialisé avec Supabase');
-    } else {
-      this.logger.warn('⚠️ Supabase non configuré - tracking désactivé');
-    }
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
+    this.logger.log('✅ SeoLinkTrackingService initialisé avec Supabase');
   }
 
   /**
@@ -420,7 +411,12 @@ export class SeoLinkTrackingService {
       this.logger.log(`📊 Début agrégation métriques pour ${yesterdayStr}...`);
 
       // Appeler la fonction SQL via RPC
-      const { error } = await this.supabase.rpc('aggregate_seo_link_metrics');
+      // 🛡️ RPC Safety Gate
+      const { error } = await this.callRpc<void>(
+        'aggregate_seo_link_metrics',
+        {},
+        { source: 'cron' },
+      );
 
       if (error) {
         this.logger.error(`❌ Erreur agrégation: ${error.message}`);

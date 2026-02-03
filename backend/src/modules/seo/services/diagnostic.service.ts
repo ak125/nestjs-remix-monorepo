@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { ConfigService } from '@nestjs/config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * Interface pour un diagnostic SEO (R5) - format complet
@@ -60,23 +60,12 @@ export interface SeoDiagnosticListItem {
  * Observable Pro : Symptom (60%) / Sign (85%) / DTC (95%)
  */
 @Injectable()
-export class DiagnosticService {
-  private readonly logger = new Logger(DiagnosticService.name);
-  private readonly supabase: SupabaseClient;
+export class DiagnosticService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(DiagnosticService.name);
 
-  constructor(private readonly configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error(
-        'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
-      );
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -87,11 +76,11 @@ export class DiagnosticService {
   async getBySlug(slug: string): Promise<SeoDiagnostic | null> {
     this.logger.debug(`Fetching diagnostic: ${slug}`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any>(
       'get_seo_observable_by_slug',
-      {
-        p_slug: slug,
-      },
+      { p_slug: slug },
+      { source: 'api' },
     );
 
     if (error) {
@@ -116,11 +105,11 @@ export class DiagnosticService {
   async getFeatured(limit: number = 10): Promise<SeoDiagnosticListItem[]> {
     this.logger.debug(`Fetching featured diagnostics (limit: ${limit})`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
       'get_seo_observable_featured',
-      {
-        p_limit: limit,
-      },
+      { p_limit: limit },
+      { source: 'api' },
     );
 
     if (error) {
@@ -149,12 +138,11 @@ export class DiagnosticService {
   ): Promise<SeoDiagnosticListItem[]> {
     this.logger.debug(`Fetching diagnostics for cluster: ${clusterId}`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
       'get_seo_observables_by_cluster',
-      {
-        p_cluster_id: clusterId,
-        p_limit: limit,
-      },
+      { p_cluster_id: clusterId, p_limit: limit },
+      { source: 'api' },
     );
 
     if (error) {
@@ -182,11 +170,11 @@ export class DiagnosticService {
   async searchByDtc(dtcCode: string): Promise<SeoDiagnosticListItem[]> {
     this.logger.debug(`Searching diagnostics by DTC: ${dtcCode}`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
       'search_seo_observable_by_dtc',
-      {
-        p_dtc_code: dtcCode.toUpperCase(),
-      },
+      { p_dtc_code: dtcCode.toUpperCase() },
+      { source: 'api' },
     );
 
     if (error) {

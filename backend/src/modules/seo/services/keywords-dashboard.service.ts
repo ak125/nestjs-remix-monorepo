@@ -9,8 +9,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 export interface GammeStats {
   gamme: string;
@@ -66,22 +66,14 @@ export interface TopKeyword {
 }
 
 @Injectable()
-export class KeywordsDashboardService {
-  private readonly logger = new Logger(KeywordsDashboardService.name);
-  private readonly supabase: SupabaseClient;
+export class KeywordsDashboardService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(
+    KeywordsDashboardService.name,
+  );
 
-  constructor(private readonly configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      this.logger.error('Supabase credentials not configured');
-      throw new Error('Supabase credentials not configured');
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -90,7 +82,12 @@ export class KeywordsDashboardService {
   async listGammes(): Promise<GammeStats[]> {
     this.logger.log('Fetching all gammes stats');
 
-    const { data, error } = await this.supabase.rpc('get_seo_keywords_gammes');
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
+      'get_seo_keywords_gammes',
+      {},
+      { source: 'admin' },
+    );
 
     if (error) {
       this.logger.error(`Error fetching gammes: ${error.message}`);

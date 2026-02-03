@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { ConfigService } from '@nestjs/config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * Interface pour une référence SEO (R4)
@@ -49,23 +49,12 @@ export interface SeoReferenceListItem {
  * Ces pages contiennent les définitions canoniques des pièces auto
  */
 @Injectable()
-export class ReferenceService {
-  private readonly logger = new Logger(ReferenceService.name);
-  private readonly supabase: SupabaseClient;
+export class ReferenceService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(ReferenceService.name);
 
-  constructor(private readonly configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error(
-        'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
-      );
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  constructor(rpcGate: RpcGateService) {
+    super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -76,11 +65,11 @@ export class ReferenceService {
   async getBySlug(slug: string): Promise<SeoReference | null> {
     this.logger.debug(`🔍 Fetching reference: ${slug}`);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
       'get_seo_reference_by_slug',
-      {
-        p_slug: slug,
-      },
+      { p_slug: slug },
+      { source: 'api' },
     );
 
     if (error) {
@@ -104,7 +93,12 @@ export class ReferenceService {
   async getAll(): Promise<SeoReferenceListItem[]> {
     this.logger.debug('📚 Fetching all references');
 
-    const { data, error } = await this.supabase.rpc('get_all_seo_references');
+    // 🛡️ RPC Safety Gate
+    const { data, error } = await this.callRpc<any[]>(
+      'get_all_seo_references',
+      {},
+      { source: 'api' },
+    );
 
     if (error) {
       this.logger.error('❌ Error fetching all references:', error);
