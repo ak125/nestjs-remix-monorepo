@@ -6,6 +6,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { CatalogFamily } from '../interfaces/catalog-family.interface';
 import { CatalogGamme, CatalogGammeService } from './catalog-gamme.service';
 import { GammeUnifiedService } from './gamme-unified.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 export interface FamilyWithGammes extends CatalogFamily {
   gammes: CatalogGamme[];
@@ -35,8 +36,10 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
   constructor(
     private readonly catalogGammeService: CatalogGammeService,
     private readonly gammeUnifiedService: GammeUnifiedService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -50,8 +53,11 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
       this.logger.log('🏗️ Construction hiérarchie Familles → Gammes...');
 
       // 🚀 OPTIMISATION: Une seule requête avec jointure SQL native
-      const { data: results, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data: results, error } = await this.callRpc<any[]>(
         'get_catalog_hierarchy_optimized',
+        {},
+        { source: 'api' },
       );
 
       if (error) {

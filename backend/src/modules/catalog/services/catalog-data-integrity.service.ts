@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🛡️ Service de validation de l'intégrité des données du catalogue
@@ -17,8 +18,12 @@ import { CacheService } from '../../../cache/cache.service';
 export class CatalogDataIntegrityService extends SupabaseBaseService {
   protected readonly logger = new Logger(CatalogDataIntegrityService.name);
 
-  constructor(@Optional() private readonly cacheService?: CacheService) {
+  constructor(
+    rpcGate: RpcGateService,
+    @Optional() private readonly cacheService?: CacheService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
     if (!cacheService) {
       this.logger.warn('⚠️ Cache Redis non disponible - validation sans cache');
     } else {
@@ -232,9 +237,11 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
 
     // 3. Vérifier les relations dans pieces_relation_type AVEC FILTRES PHP
     // Utilise la même RPC function que le catalogue pour garantir la cohérence
-    const { data: rpcData, error: rpcError } = await this.client.rpc(
+    // 🛡️ RPC Safety Gate
+    const { data: rpcData, error: rpcError } = await this.callRpc<any[]>(
       'get_vehicle_compatible_gammes_php',
       { p_type_id: typeId },
+      { source: 'api' },
     );
 
     if (rpcError) {

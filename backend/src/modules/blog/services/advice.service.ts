@@ -7,6 +7,7 @@ import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
 import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 export interface BlogAdvice {
   id?: number;
@@ -62,6 +63,7 @@ export class AdviceService {
     private readonly blogService: BlogService,
     private readonly supabaseService: SupabaseIndexationService,
     private readonly blogCacheService: BlogCacheService,
+    private readonly rpcGate: RpcGateService,
   ) {}
 
   /**
@@ -748,9 +750,23 @@ export class AdviceService {
 
   /**
    * 🔢 Incrémenter les vues de manière atomique
+   * 🛡️ RPC Safety Gate: Évalue via rpcGate avant appel
    */
   private async incrementViews(adviceId: number): Promise<void> {
     try {
+      // 🛡️ Évaluation RPC Safety Gate
+      const { decision, reason } = this.rpcGate.evaluate(
+        'increment_advice_views',
+        {
+          source: 'api',
+        },
+      );
+
+      if (decision === 'BLOCK') {
+        this.logger.warn(`🛡️ RPC blocked: increment_advice_views (${reason})`);
+        return;
+      }
+
       await this.supabaseService.client.rpc('increment_advice_views', {
         advice_id: adviceId,
       });

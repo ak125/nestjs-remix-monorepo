@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { OemPlatformMappingService } from './oem-platform-mapping.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES
@@ -16,8 +17,10 @@ import { OemPlatformMappingService } from './oem-platform-mapping.service';
 export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   constructor(
     private readonly oemPlatformMappingService: OemPlatformMappingService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
   /**
    * 🚀 MÉTHODE PRINCIPALE: Appel RPC optimisé
@@ -34,12 +37,14 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
     this.logger.log(`🚀 [RPC] get_pieces_for_type_gamme(${typeId}, ${pgId})`);
 
     try {
-      const { data, error } = await this.client.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any>(
         'get_pieces_for_type_gamme',
         {
           p_type_id: typeId,
           p_pg_id: pgId,
         },
+        { source: 'api' },
       );
 
       if (error) {
@@ -114,13 +119,15 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
     );
 
     try {
-      const { data, error } = await this.client.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any>(
         'get_oem_refs_for_vehicle',
         {
           p_type_id: typeId,
           p_pg_id: pgId,
           p_marque_name: marqueName,
         },
+        { source: 'api' },
       );
 
       if (error) {

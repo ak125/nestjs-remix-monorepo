@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
 interface CatalogMetrics {
   responseTime: number;
@@ -50,8 +51,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     topVehicles: [] as number[],
   };
 
-  constructor() {
+  constructor(rpcGate: RpcGateService) {
     super();
+    this.rpcGate = rpcGate;
     this.logger.log('🚀 V4 Hybrid Service initialized with memory cache');
   }
 
@@ -194,9 +196,10 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       // JOIN pieces_gamme ON pg_id = piece_pg_id
       // WHERE rtp_type_id = ? AND piece_display = true AND pg_display = '1' AND pg_level IN ('1','2')
 
-      const { data: rpcData, error: rpcError } = await this.supabase.rpc(
+      const { data: rpcData, error: rpcError } = await this.callRpc<any[]>(
         'get_vehicle_compatible_gammes_php',
         { p_type_id: typeId },
+        { source: 'api' },
       );
 
       const indexDuration = Date.now() - indexStartTime;
