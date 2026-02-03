@@ -501,4 +501,40 @@ export class PaymentDataService extends SupabaseBaseService {
       throw error;
     }
   }
+
+  /**
+   * 🔐 Récupérer une commande pour vérification avant paiement
+   * Utilisé pour valider que le montant demandé correspond au montant stocké
+   *
+   * @param orderId - ID de la commande (sera normalisé automatiquement)
+   * @returns Les données essentielles de la commande ou null si non trouvée
+   */
+  async getOrderForPayment(orderId: string): Promise<{
+    ord_id: string;
+    ord_total_ttc: string;
+    ord_is_pay: string;
+    ord_cst_id: string;
+  } | null> {
+    try {
+      const safeOrderId = normalizeOrderId(orderId);
+
+      const { data: order, error } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_id, ord_total_ttc, ord_is_pay, ord_cst_id')
+        .eq('ord_id', safeOrderId)
+        .single();
+
+      if (error || !order) {
+        this.logger.warn(
+          `Order not found for payment verification: ${safeOrderId}`,
+        );
+        return null;
+      }
+
+      return order;
+    } catch (error) {
+      this.logger.error('Error in getOrderForPayment:', error);
+      return null;
+    }
+  }
 }

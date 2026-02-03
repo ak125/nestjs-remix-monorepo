@@ -45,6 +45,7 @@ export class PaymentService {
 
   /**
    * Créer un nouveau paiement
+   * 🔐 SECURITY: Vérifie que le montant correspond à la commande stockée
    */
   async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     try {
@@ -52,6 +53,47 @@ export class PaymentService {
 
       // Validation des données
       this.validationService.validateAmountLimits(createPaymentDto.amount);
+
+      // 🔐 SECURITY: Vérification du montant contre la commande stockée
+      if (createPaymentDto.orderId) {
+        const order = await this.paymentDataService.getOrderForPayment(
+          createPaymentDto.orderId,
+        );
+
+        if (!order) {
+          this.logger.error(
+            `⚠️ Payment attempt for non-existent order: ${createPaymentDto.orderId}`,
+          );
+          throw new BadRequestException('Commande introuvable');
+        }
+
+        // Vérifier que la commande n'est pas déjà payée
+        if (order.ord_is_pay === '1') {
+          this.logger.warn(
+            `⚠️ Payment attempt for already paid order: ${order.ord_id}`,
+          );
+          throw new BadRequestException('Commande déjà payée');
+        }
+
+        // Vérifier que le montant correspond au snapshot stocké (en centimes pour éviter erreurs d'arrondi)
+        const storedAmountCents = Math.round(
+          parseFloat(order.ord_total_ttc || '0') * 100,
+        );
+        const requestedAmountCents = Math.round(createPaymentDto.amount * 100);
+
+        if (storedAmountCents !== requestedAmountCents) {
+          this.logger.error(
+            `⚠️ Amount mismatch! Order ${order.ord_id}: stored=${storedAmountCents}c, requested=${requestedAmountCents}c`,
+          );
+          throw new BadRequestException(
+            'Le montant ne correspond pas à la commande',
+          );
+        }
+
+        this.logger.log(
+          `✅ Order ${order.ord_id} verified: amount=${storedAmountCents}c, not paid yet`,
+        );
+      }
 
       // Génération de la référence de paiement
       const paymentReference = PaymentHelper.generatePaymentReference();
