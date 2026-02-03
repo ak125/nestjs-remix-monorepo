@@ -40,6 +40,9 @@ const OPTIONAL_ENV_VARS_WITH_DEFAULTS: Record<string, string> = {
   RPC_GATE_GOV_DIR: './governance/rpc', // Path relative to process.cwd()
   RPC_GATE_LOG_ALLOW: 'false', // Log ALLOW decisions (noisy)
   RPC_ADMIN_TOKEN: '(optional override token)',
+  // Kill-switch DEV - Read-only isolation for development environment
+  DEV_KILL_SWITCH: 'false', // 'true' | 'false' - Enable read-only mode in DEV
+  DEV_SUPABASE_KEY: '(dev_readonly role key)', // Supabase key for dev_readonly PostgreSQL role
 };
 
 /**
@@ -82,6 +85,21 @@ export function validateRequiredEnvVars(): void {
   // Log success in non-test environments
   if (process.env.NODE_ENV !== 'test') {
     console.log('✅ All required environment variables present');
+
+    // Log Kill-switch DEV status
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      process.env.DEV_KILL_SWITCH === 'true'
+    ) {
+      console.log('🔒 Kill-switch DEV: ENABLED (read-only mode)');
+      if (process.env.DEV_SUPABASE_KEY) {
+        console.log('   Using dev_readonly Supabase key');
+      } else {
+        console.warn(
+          '   ⚠️ DEV_SUPABASE_KEY not set - falling back to service_role',
+        );
+      }
+    }
   }
 }
 

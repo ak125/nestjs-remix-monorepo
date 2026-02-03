@@ -78,6 +78,9 @@ export abstract class SupabaseBaseService {
   // RPC Safety Gate - Optional injection by child services
   protected rpcGate?: RpcGateService;
 
+  // Kill-switch DEV: Track if running in read-only mode
+  protected readonly isDevKillSwitchEnabled: boolean;
+
   constructor(protected configService?: ConfigService) {
     // Context7 : Resilient configuration loading
     const appConfig = getAppConfig();
@@ -104,12 +107,26 @@ export abstract class SupabaseBaseService {
       );
     }
 
+    // 🔒 Kill-switch DEV: Use dev_readonly key in non-production when enabled
+    this.isDevKillSwitchEnabled =
+      process.env.NODE_ENV !== 'production' &&
+      process.env.DEV_KILL_SWITCH === 'true';
+
+    let effectiveKey = this.supabaseServiceKey;
+    if (this.isDevKillSwitchEnabled && process.env.DEV_SUPABASE_KEY) {
+      effectiveKey = process.env.DEV_SUPABASE_KEY;
+      this.logger.warn(
+        '🔒 Kill-switch DEV: Using dev_readonly key (READ-ONLY mode)',
+      );
+    }
+
     this.baseUrl = `${this.supabaseUrl}/rest/v1`;
 
-    // Créer le client Supabase avec bypass RLS
-    // 🔥 CRITIQUE: service_role bypasse automatiquement RLS, pas besoin d'options spéciales
+    // Créer le client Supabase
+    // 🔥 CRITIQUE: service_role bypasse automatiquement RLS
+    // 🔒 Kill-switch DEV: dev_readonly key = SELECT-only, pas de bypass RLS
     // 🚀 AMÉLIORATION: Timeout augmenté à 30s et keepAlive activé pour éviter ETIMEDOUT
-    this.supabase = createClient(this.supabaseUrl, this.supabaseServiceKey, {
+    this.supabase = createClient(this.supabaseUrl, effectiveKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
@@ -180,7 +197,12 @@ export abstract class SupabaseBaseService {
     this.logger.log(
       `🔑 Service key present: ${this.supabaseServiceKey ? 'Yes' : 'No'}`,
     );
-    this.logger.log(`🔓 RLS: Bypassed automatically with service_role key`);
+    if (this.isDevKillSwitchEnabled) {
+      this.logger.warn(`🔒 Kill-switch DEV: ACTIVE - READ-ONLY mode enabled`);
+      this.logger.warn(`🔓 RLS: NOT bypassed (using dev_readonly role)`);
+    } else {
+      this.logger.log(`🔓 RLS: Bypassed automatically with service_role key`);
+    }
   }
 
   /**
