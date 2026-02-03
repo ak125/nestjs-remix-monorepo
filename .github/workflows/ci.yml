@@ -150,11 +150,9 @@ jobs:
           echo "🛡️ Checking for forbidden imports..."
           ERRORS=0
 
-          # Check imports from rm module
-          if grep -rn "from.*modules/rm" backend/src --include="*.ts" | grep -v "rm.module.ts" | grep -v "rm.controller.ts" | grep -v "rm-builder.service.ts"; then
-            echo "❌ Import from rm module detected outside rm/"
-            ERRORS=$((ERRORS+1))
-          fi
+          # RmModule is PROD: provides /api/rm/* endpoints used by frontend
+          # (pieces.$gamme.$marque.$modele.$type.html → fetchRmPageV2)
+          # No longer blocked - see P5.3 analysis (2026-02-03)
 
           # Check imports from ai-orchestrator
           if grep -rn "@repo/ai-orchestrator" backend/src --include="*.ts"; then
