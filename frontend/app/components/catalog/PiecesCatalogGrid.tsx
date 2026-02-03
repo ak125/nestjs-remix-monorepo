@@ -460,27 +460,7 @@ export default function PiecesCatalogGrid({
                               )}
                             </div>
 
-                            <div className="mt-1">
-                              <Badge
-                                className="text-xs px-2 py-1 rounded-full font-medium "
-                                variant={
-                                  piece.stock_status === "in_stock"
-                                    ? "success"
-                                    : piece.stock_status === "low_stock"
-                                      ? "warning"
-                                      : "error"
-                                }
-                              >
-                                \n{" "}
-                                {piece.stock_status === "in_stock" &&
-                                  "En stock"}
-                                {piece.stock_status === "low_stock" &&
-                                  "Stock faible"}
-                                {piece.stock_status === "out_of_stock" &&
-                                  "Rupture"}
-                                \n
-                              </Badge>
-                            </div>
+                            {/* Stock badges supprimés - flux tendu */}
                           </Link>
                         );
                       })}

@@ -19,16 +19,16 @@
  * />
  */
 
-import { X, Check, DollarSign, Tag, Package, Layers } from 'lucide-react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Check, DollarSign, Tag, Package, Layers } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-import { debounce } from '../../utils/performance.utils';
+import { debounce } from "../../utils/performance.utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '../ui/accordion';
+} from "../ui/accordion";
 
 export interface FilterOption {
   id: string;
@@ -69,7 +69,7 @@ export function FilterAccordion({
   onFilterChange,
   activeFiltersCount = 0,
   onResetAll,
-  className = '',
+  className = "",
 }: FilterAccordionProps) {
   const [localFilters, setLocalFilters] = useState<FilterData>(filters);
 
@@ -94,7 +94,7 @@ export function FilterAccordion({
     debounce((newFilters: FilterData) => {
       setLocalFilters(newFilters);
       onFilterChange?.(newFilters);
-    }, 150)
+    }, 150),
   );
 
   // Cleanup du debounce au démontage
@@ -111,49 +111,51 @@ export function FilterAccordion({
   };
 
   // ⚡ Handler optimisé pour le slider min
-  const handleMinPriceChange = useCallback((value: number) => {
-    // Feedback visuel immédiat
-    setSliderValues(prev => ({ ...prev, min: value }));
+  const handleMinPriceChange = useCallback(
+    (value: number) => {
+      // Feedback visuel immédiat
+      setSliderValues((prev) => ({ ...prev, min: value }));
 
-    // Mise à jour debouncée vers le parent
-    debouncedPriceUpdateRef.current({
-      ...localFilters,
-      priceRange: {
-        ...localFilters.priceRange!,
-        currentMin: value,
-      },
-    });
-  }, [localFilters]);
+      // Mise à jour debouncée vers le parent
+      debouncedPriceUpdateRef.current({
+        ...localFilters,
+        priceRange: {
+          ...localFilters.priceRange!,
+          currentMin: value,
+        },
+      });
+    },
+    [localFilters],
+  );
 
   // ⚡ Handler optimisé pour le slider max
-  const handleMaxPriceChange = useCallback((value: number) => {
-    // Feedback visuel immédiat
-    setSliderValues(prev => ({ ...prev, max: value }));
+  const handleMaxPriceChange = useCallback(
+    (value: number) => {
+      // Feedback visuel immédiat
+      setSliderValues((prev) => ({ ...prev, max: value }));
 
-    // Mise à jour debouncée vers le parent
-    debouncedPriceUpdateRef.current({
-      ...localFilters,
-      priceRange: {
-        ...localFilters.priceRange!,
-        currentMax: value,
-      },
-    });
-  }, [localFilters]);
+      // Mise à jour debouncée vers le parent
+      debouncedPriceUpdateRef.current({
+        ...localFilters,
+        priceRange: {
+          ...localFilters.priceRange!,
+          currentMax: value,
+        },
+      });
+    },
+    [localFilters],
+  );
 
   const toggleBrand = (brandId: string) => {
     const updatedBrands = localFilters.brands?.map((brand) =>
-      brand.id === brandId
-        ? { ...brand, selected: !brand.selected }
-        : brand
+      brand.id === brandId ? { ...brand, selected: !brand.selected } : brand,
     );
     updateFilters({ ...localFilters, brands: updatedBrands as any });
   };
 
   const toggleCategory = (categoryId: string) => {
     const updatedCategories = localFilters.categories?.map((cat) =>
-      cat.id === categoryId
-        ? { ...cat, selected: !cat.selected }
-        : cat
+      cat.id === categoryId ? { ...cat, selected: !cat.selected } : cat,
     );
     updateFilters({ ...localFilters, categories: updatedCategories as any });
   };
@@ -201,7 +203,11 @@ export function FilterAccordion({
       </div>
 
       {/* Accordéons de filtres */}
-      <Accordion type="multiple" defaultValue={['price', 'brands']} className="space-y-2">
+      <Accordion
+        type="multiple"
+        defaultValue={["price", "brands"]}
+        className="space-y-2"
+      >
         {/* Filtre Prix */}
         {localFilters.priceRange && (
           <AccordionItem
@@ -233,7 +239,9 @@ export function FilterAccordion({
                     min={localFilters.priceRange.min}
                     max={localFilters.priceRange.max}
                     value={sliderValues.min}
-                    onChange={(e) => handleMinPriceChange(parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleMinPriceChange(parseInt(e.target.value))
+                    }
                     className="w-full"
                   />
                   {/* ⚡ Slider max avec handler debouncé */}
@@ -242,7 +250,9 @@ export function FilterAccordion({
                     min={localFilters.priceRange.min}
                     max={localFilters.priceRange.max}
                     value={sliderValues.max}
-                    onChange={(e) => handleMaxPriceChange(parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleMaxPriceChange(parseInt(e.target.value))
+                    }
                     className="w-full"
                   />
                 </div>
@@ -270,7 +280,8 @@ export function FilterAccordion({
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-purple-600" />
                 <span className="font-medium text-gray-900">Marques</span>
-                {localFilters.brands.filter((b: any) => b.selected).length > 0 && (
+                {localFilters.brands.filter((b: any) => b.selected).length >
+                  0 && (
                   <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-xs font-semibold text-purple-600">
                     {localFilters.brands.filter((b: any) => b.selected).length}
                   </span>
@@ -287,8 +298,8 @@ export function FilterAccordion({
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
                         (brand as any).selected
-                          ? 'border-purple-600 bg-purple-600'
-                          : 'border-gray-300'
+                          ? "border-purple-600 bg-purple-600"
+                          : "border-gray-300"
                       }`}
                     >
                       {(brand as any).selected && (
@@ -338,8 +349,8 @@ export function FilterAccordion({
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
                         (category as any).selected
-                          ? 'border-green-600 bg-green-600'
-                          : 'border-gray-300'
+                          ? "border-green-600 bg-green-600"
+                          : "border-gray-300"
                       }`}
                     >
                       {(category as any).selected && (
@@ -367,51 +378,7 @@ export function FilterAccordion({
           </AccordionItem>
         )}
 
-        {/* Filtre Disponibilité */}
-        {localFilters.availability && (
-          <AccordionItem
-            value="availability"
-            className="rounded-lg border border-gray-200 bg-white px-4"
-          >
-            <AccordionTrigger className="py-4 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-orange-600" />
-                <span className="font-medium text-gray-900">Disponibilité</span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <label className="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-gray-50">
-                <div
-                  className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-                    localFilters.availability.inStockOnly
-                      ? 'border-orange-600 bg-orange-600'
-                      : 'border-gray-300'
-                  }`}
-                >
-                  {localFilters.availability.inStockOnly && (
-                    <Check className="h-3 w-3 text-white" />
-                  )}
-                </div>
-                <input
-                  type="checkbox"
-                  checked={localFilters.availability.inStockOnly}
-                  onChange={(e) =>
-                    updateFilters({
-                      ...localFilters,
-                      availability: {
-                        inStockOnly: e.target.checked,
-                      },
-                    })
-                  }
-                  className="sr-only"
-                />
-                <span className="text-sm text-gray-700">
-                  En stock uniquement
-                </span>
-              </label>
-            </AccordionContent>
-          </AccordionItem>
-        )}
+        {/* Filtre Disponibilité - DÉSACTIVÉ (flux tendu) */}
       </Accordion>
     </div>
   );

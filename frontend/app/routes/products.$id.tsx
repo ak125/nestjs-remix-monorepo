@@ -444,28 +444,7 @@ export default function ProductDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Stock Information */}
-          {product.piece_stock !== undefined && (
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {product.piece_stock}
-                  </div>
-                  <div className="text-sm text-gray-600">Unités en stock</div>
-                  {product.piece_stock > 0 ? (
-                    <Badge variant="secondary" className="mt-2">
-                      Disponible
-                    </Badge>
-                  ) : (
-                    <Badge variant="destructive" className="mt-2">
-                      Rupture de stock
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Stock Information - DÉSACTIVÉ (flux tendu) */}
 
           {/* Price Information */}
           {product.pieces_price && (

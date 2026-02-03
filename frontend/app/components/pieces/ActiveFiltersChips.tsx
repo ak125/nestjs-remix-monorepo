@@ -14,8 +14,8 @@
  * ```
  */
 
-import { X, RotateCcw } from 'lucide-react';
-import { type PiecesFilters } from '../../types/pieces-route.types';
+import { X, RotateCcw } from "lucide-react";
+import { type PiecesFilters } from "../../types/pieces-route.types";
 
 interface ActiveFiltersChipsProps {
   filters: PiecesFilters;
@@ -25,32 +25,32 @@ interface ActiveFiltersChipsProps {
 
 // Labels pour les filtres prix
 const PRICE_LABELS: Record<string, string> = {
-  low: '< 50€',
-  medium: '50€ - 150€',
-  high: '> 150€',
+  low: "< 50€",
+  medium: "50€ - 150€",
+  high: "> 150€",
 };
 
 // Labels pour les filtres qualité
 const QUALITY_LABELS: Record<string, string> = {
-  OES: 'Qualité OES',
-  OEM: 'Qualité OEM',
-  aftermarket: 'Aftermarket',
+  OES: "Qualité OES",
+  OEM: "Qualité OEM",
+  aftermarket: "Aftermarket",
 };
 
 // Labels pour les positions
 const POSITION_LABELS: Record<string, string> = {
-  avant: 'Avant',
-  arriere: 'Arrière',
-  gauche: 'Gauche',
-  droite: 'Droite',
+  avant: "Avant",
+  arriere: "Arrière",
+  gauche: "Gauche",
+  droite: "Droite",
 };
 
 // Labels pour les notes
 const NOTE_LABELS: Record<number, string> = {
-  5: '★★★★★ 5+',
-  7: '★★★★ 7+',
-  8: '★★★★ 8+',
-  9: '★★★★★ 9+',
+  5: "★★★★★ 5+",
+  7: "★★★★ 7+",
+  8: "★★★★ 8+",
+  9: "★★★★★ 9+",
 };
 
 export function ActiveFiltersChips({
@@ -69,7 +69,7 @@ export function ActiveFiltersChips({
   if (filters.brands && filters.brands.length > 0) {
     filters.brands.forEach((brand) => {
       activeChips.push({
-        type: 'brands',
+        type: "brands",
         value: brand,
         label: brand,
       });
@@ -77,25 +77,25 @@ export function ActiveFiltersChips({
   }
 
   // Prix
-  if (filters.priceRange && filters.priceRange !== 'all') {
+  if (filters.priceRange && filters.priceRange !== "all") {
     activeChips.push({
-      type: 'priceRange',
+      type: "priceRange",
       label: PRICE_LABELS[filters.priceRange] || filters.priceRange,
     });
   }
 
   // Qualité
-  if (filters.quality && filters.quality !== 'all') {
+  if (filters.quality && filters.quality !== "all") {
     activeChips.push({
-      type: 'quality',
+      type: "quality",
       label: QUALITY_LABELS[filters.quality] || filters.quality,
     });
   }
 
   // Position
-  if (filters.position && filters.position !== 'all') {
+  if (filters.position && filters.position !== "all") {
     activeChips.push({
-      type: 'position',
+      type: "position",
       label: POSITION_LABELS[filters.position] || filters.position,
     });
   }
@@ -103,18 +103,13 @@ export function ActiveFiltersChips({
   // Note minimale
   if (filters.minNote && filters.minNote > 0) {
     activeChips.push({
-      type: 'minNote',
+      type: "minNote",
       label: NOTE_LABELS[filters.minNote] || `Note ≥ ${filters.minNote}`,
     });
   }
 
-  // Disponibilité
-  if (filters.availability && filters.availability === 'stock') {
-    activeChips.push({
-      type: 'availability',
-      label: 'En stock',
-    });
-  }
+  // Disponibilité - DÉSACTIVÉ (flux tendu)
+  // Stock non fiable, ne pas afficher de chip
 
   // Ne rien afficher si pas de filtres actifs
   if (activeChips.length === 0) {
@@ -124,9 +119,7 @@ export function ActiveFiltersChips({
   return (
     <div className="flex flex-wrap items-center gap-2 py-3">
       {/* Label "Filtres:" */}
-      <span className="text-sm text-gray-500 font-medium mr-1">
-        Filtres :
-      </span>
+      <span className="text-sm text-gray-500 font-medium mr-1">Filtres :</span>
 
       {/* Chips */}
       {activeChips.map((chip, index) => (

@@ -522,11 +522,8 @@ export default function SearchPage() {
             if (activeFilters.priceRange === "high" && price < 150)
               return false;
           }
-          if (
-            activeFilters.availability === "stock" &&
-            piece.stock !== "En stock"
-          )
-            return false;
+          // Filtre stock DÉSACTIVÉ (flux tendu)
+          // Stock non fiable, ne pas filtrer
           if (activeFilters.minNote) {
             const stars = piece.stars || 3;
             const note = Math.round((stars / 6) * 10);

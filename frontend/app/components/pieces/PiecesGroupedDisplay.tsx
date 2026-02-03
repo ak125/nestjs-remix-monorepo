@@ -94,13 +94,8 @@ function applyFilters(
         if (activeFilters.priceRange === "high" && price < 150) return false;
       }
 
-      // Filtre par disponibilité
-      if (
-        activeFilters.availability === "stock" &&
-        pieceData.stock !== "En stock"
-      ) {
-        return false;
-      }
+      // Filtre par disponibilité - DÉSACTIVÉ (flux tendu)
+      // Stock non fiable, ne pas filtrer
 
       // Filtre par note minimale (sur 10)
       if (activeFilters.minNote && activeFilters.minNote > 0) {

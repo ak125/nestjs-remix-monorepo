@@ -606,28 +606,7 @@ export default function ProductsRangesAdvanced() {
                           </div>
                         )}
 
-                      {user.role === "pro" &&
-                        enhanced &&
-                        range.stock_status && (
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Stock</span>
-                            <Badge
-                              variant={
-                                range.stock_status === "high"
-                                  ? "default"
-                                  : range.stock_status === "medium"
-                                    ? "secondary"
-                                    : "destructive"
-                              }
-                            >
-                              {range.stock_status === "high"
-                                ? "🟢 Élevé"
-                                : range.stock_status === "medium"
-                                  ? "🟡 Moyen"
-                                  : "🔴 Faible"}
-                            </Badge>
-                          </div>
-                        )}
+                      {/* Stock badges supprimés - flux tendu */}
                     </div>
 
                     {/* Actions */}

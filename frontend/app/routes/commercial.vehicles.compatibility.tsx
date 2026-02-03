@@ -423,11 +423,7 @@ export default function VehiclesCompatibility() {
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline">{part.piece_gamme}</Badge>
-                        <span
-                          className={`text-xs ${part.piece_stock > 0 ? "text-green-600" : "text-red-600"}`}
-                        >
-                          Stock: {part.piece_stock}
-                        </span>
+                        {/* Stock supprimé - flux tendu */}
                       </div>
                     </div>
                     <div className="text-right">

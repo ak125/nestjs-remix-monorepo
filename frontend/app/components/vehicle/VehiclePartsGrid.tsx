@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button } from '~/components/ui/button';
-import  { type VehicleData } from "~/types/vehicle.types";
+import { Button } from "~/components/ui/button";
+import { type VehicleData } from "~/types/vehicle.types";
 
 interface VehiclePart {
   id: number;
@@ -9,7 +9,7 @@ interface VehiclePart {
   price: number;
   currency: string;
   imageUrl?: string;
-  availability: 'in-stock' | 'low-stock' | 'out-of-stock';
+  availability: "in-stock" | "low-stock" | "out-of-stock";
   brand: string;
   partNumber: string;
   category: string;
@@ -21,55 +21,35 @@ interface VehiclePartsGridProps {
   loading?: boolean;
 }
 
-export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: VehiclePartsGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'price' | 'name' | 'availability'>('name');
+export function VehiclePartsGrid({
+  vehicle,
+  parts = [],
+  loading = false,
+}: VehiclePartsGridProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"price" | "name">("name");
 
   // Catégories disponibles
-  const categories = ['all', ...new Set(parts.map(part => part.category))];
-  
-  // Filtrage et tri des pièces
+  const categories = ["all", ...new Set(parts.map((part) => part.category))];
+
+  // Filtrage et tri des pièces (tri par disponibilité supprimé - flux tendu)
   const filteredParts = parts
-    .filter(part => selectedCategory === 'all' || part.category === selectedCategory)
+    .filter(
+      (part) =>
+        selectedCategory === "all" || part.category === selectedCategory,
+    )
     .sort((a, b) => {
       switch (sortBy) {
-        case 'price':
+        case "price":
           return a.price - b.price;
-        case 'name':
+        case "name":
           return a.name.localeCompare(b.name);
-        case 'availability':
-          const order = { 'in-stock': 0, 'low-stock': 1, 'out-of-stock': 2 };
-          return order[a.availability] - order[b.availability];
         default:
           return 0;
       }
     });
 
-  const getAvailabilityColor = (availability: string) => {
-    switch (availability) {
-      case 'in-stock':
-        return 'text-success bg-success/20';
-      case 'low-stock':
-        return 'text-warning bg-warning/20';
-      case 'out-of-stock':
-        return 'text-destructive bg-destructive/20';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getAvailabilityText = (availability: string) => {
-    switch (availability) {
-      case 'in-stock':
-        return 'En stock';
-      case 'low-stock':
-        return 'Stock limité';
-      case 'out-of-stock':
-        return 'Rupture de stock';
-      default:
-        return 'Non disponible';
-    }
-  };
+  // Fonctions stock supprimées - flux tendu
 
   if (loading) {
     return (
@@ -98,14 +78,18 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
           Pièces disponibles pour {vehicle.brand} {vehicle.model}
         </h2>
         <div className="text-sm text-gray-600">
-          {filteredParts.length} pièce{filteredParts.length > 1 ? 's' : ''} trouvée{filteredParts.length > 1 ? 's' : ''}
+          {filteredParts.length} pièce{filteredParts.length > 1 ? "s" : ""}{" "}
+          trouvée{filteredParts.length > 1 ? "s" : ""}
         </div>
       </div>
 
       {/* Filtres et tri */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Catégorie
           </label>
           <select
@@ -115,27 +99,31 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="all">Toutes les catégories</option>
-            {categories.filter(cat => cat !== 'all').map(category => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
+            {categories
+              .filter((cat) => cat !== "all")
+              .map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
           </select>
         </div>
 
         <div className="flex-1">
-          <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="sort"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Trier par
           </label>
           <select
             id="sort"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'price' | 'name' | 'availability')}
+            onChange={(e) => setSortBy(e.target.value as "price" | "name")}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="name">Nom</option>
             <option value="price">Prix</option>
-            <option value="availability">Disponibilité</option>
           </select>
         </div>
       </div>
@@ -158,7 +146,8 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
           </svg>
           <p className="mt-4 text-lg text-gray-500">Aucune pièce trouvée</p>
           <p className="text-sm text-gray-400">
-            Essayez de modifier vos filtres ou contactez-nous pour plus d'informations
+            Essayez de modifier vos filtres ou contactez-nous pour plus
+            d'informations
           </p>
         </div>
       ) : (
@@ -179,8 +168,16 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    <svg
+                      className="w-16 h-16 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                 )}
@@ -192,9 +189,7 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
                   <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
                     {part.name}
                   </h3>
-                  <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(part.availability)}`}>
-                    {getAvailabilityText(part.availability)}
-                  </span>
+                  {/* Stock badge supprimé - flux tendu */}
                 </div>
 
                 {part.description && (
@@ -207,17 +202,20 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
                   <span className="text-sm text-gray-500">
                     Réf: {part.partNumber}
                   </span>
-                  <span className="text-sm text-gray-500">
-                    {part.brand}
-                  </span>
+                  <span className="text-sm text-gray-500">{part.brand}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-bold text-gray-900">
                     {part.price.toFixed(2)} {part.currency}
                   </span>
-                  <Button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-muted/50 disabled:cursor-not-allowed" variant="blue" type="button"
-                    disabled={part.availability === 'out-of-stock'}>\n  {part.availability === 'out-of-stock' ? 'Indisponible' : 'Ajouter'}\n</Button>
+                  <Button
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    variant="blue"
+                    type="button"
+                  >
+                    Ajouter
+                  </Button>
                 </div>
               </div>
             </div>
