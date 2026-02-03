@@ -211,10 +211,11 @@ export class SitemapV10Service extends SupabaseBaseService {
         const runId = crypto.randomUUID();
 
         try {
-          const { urls } =
+          // 🚀 P7.4: Streaming batch - files are written directly by the method
+          const { filePaths, totalCount } =
             await this.generatePiecesSitemapsFromV9Source(bucket);
 
-          if (urls.length === 0) {
+          if (totalCount === 0) {
             results.push({
               success: true,
               bucket,
@@ -226,41 +227,15 @@ export class SitemapV10Service extends SupabaseBaseService {
             continue;
           }
 
-          // Sharding si nécessaire (>50k URLs)
-          const filePaths: string[] = [];
-          const numShards = Math.ceil(urls.length / this.MAX_URLS_PER_FILE);
-
-          for (let shard = 0; shard < numShards; shard++) {
-            const shardUrls = urls.slice(
-              shard * this.MAX_URLS_PER_FILE,
-              (shard + 1) * this.MAX_URLS_PER_FILE,
-            );
-
-            // Format simplifié: sitemap-pieces-*.xml à la racine (cohérent avec categories, vehicules)
-            const fileName =
-              numShards === 1
-                ? `sitemap-pieces.xml`
-                : `sitemap-pieces-${shard + 1}.xml`;
-
-            const filePath = await this.writeSitemapFile(
-              bucket,
-              fileName,
-              shardUrls,
-              true, // writeToRoot: écrire à la racine pour cohérence avec autres sitemaps
-            );
-            filePaths.push(filePath);
-            allFilePaths.push(filePath);
-            this.logger.log(
-              `   ✓ Generated ${fileName} (${shardUrls.length.toLocaleString()} URLs)`,
-            );
-          }
+          // 🚀 P7.4: Files already written by streaming batch, just collect paths
+          allFilePaths.push(...filePaths);
 
           const durationMs = Date.now() - bucketStart;
           await this.logGeneration(
             runId,
             bucket,
             'success',
-            urls.length,
+            totalCount,
             filePaths.length,
             durationMs,
           );
@@ -268,7 +243,7 @@ export class SitemapV10Service extends SupabaseBaseService {
           results.push({
             success: true,
             bucket,
-            urlCount: urls.length,
+            urlCount: totalCount,
             filesGenerated: filePaths.length,
             durationMs,
             filePaths,
@@ -308,6 +283,10 @@ export class SitemapV10Service extends SupabaseBaseService {
     const totalDurationMs = Date.now() - startTime;
     const totalUrls = results.reduce((sum, r) => sum + r.urlCount, 0);
     const totalFiles = allFilePaths.length;
+
+    // 🚀 P7.4 PERF: Clear caches after generation to free memory
+    this.indexPgIdsCache = null;
+    this.processedUrlsCache = null;
 
     this.logger.log(`✅ V10 UNIFIED generation complete:`);
     this.logger.log(`   Total URLs: ${totalUrls.toLocaleString()}`);
@@ -831,28 +810,29 @@ ${sitemapEntries}
 
   /**
    * 📦 Génère les sitemaps pièces avec source V9 (__sitemap_p_link)
-   * ⚠️ CORRIGÉ: Pagination COMPLÈTE sans limite (comme cluster hubs)
+   * 🚀 P7.4 PERF: Streaming batch processing - écrit les fichiers par shard de 50k
+   *    pour réduire peak memory de ~270MB à <50MB
    * Combine: filtres V9 (thin content, INDEX) + température V10
    */
   async generatePiecesSitemapsFromV9Source(
     bucket: TemperatureBucket,
-  ): Promise<{ urls: SitemapUrl[]; totalCount: number }> {
+  ): Promise<{ filePaths: string[]; totalCount: number }> {
     // Seul le bucket 'stable' génère les URLs pour éviter les doublons
     // hot et cold retournent vide (pas de scoring température implémenté)
     if (bucket !== 'stable') {
       this.logger.log(`⏭️ Skipping ${bucket} bucket (all URLs go to stable)`);
-      return { urls: [], totalCount: 0 };
+      return { filePaths: [], totalCount: 0 };
     }
 
     this.logger.log(
-      `📦 Fetching ALL pieces from V9 source (pagination complète)...`,
+      `📦 Streaming batch generation from V9 source (50k URLs per shard)...`,
     );
 
     // 1. Récupérer les gammes INDEX
     const indexPgIds = await this.getIndexGammeIds();
     if (indexPgIds.size === 0) {
       this.logger.warn('⚠️ Aucune gamme INDEX trouvée');
-      return { urls: [], totalCount: 0 };
+      return { filePaths: [], totalCount: 0 };
     }
 
     // Type pour les pièces V9
@@ -867,15 +847,21 @@ ${sitemapEntries}
       map_type_id: string;
     }
 
-    // 2. Pagination COMPLÈTE - récupérer TOUTES les URLs INDEX
+    // 🚀 P7.4: Streaming batch - écrire les fichiers sitemap par shard
     const PAGE_SIZE = 1000;
-    const allPieces: PieceV9[] = [];
-    let offset = 0;
-    let hasMore = true;
+    const SHARD_SIZE = this.MAX_URLS_PER_FILE; // 50000
+    const config = BUCKET_CONFIG[bucket];
     const pgIdsArray = Array.from(indexPgIds);
 
+    let currentBatch: PieceV9[] = [];
+    let shardIndex = 0;
+    let offset = 0;
+    let hasMore = true;
+    let totalCount = 0;
+    const filePaths: string[] = [];
+
     this.logger.log(
-      `  🎯 Fetching pieces for ${pgIdsArray.length} gammes INDEX...`,
+      `  🎯 Streaming pieces for ${pgIdsArray.length} gammes INDEX...`,
     );
 
     while (hasMore) {
@@ -896,14 +882,44 @@ ${sitemapEntries}
       }
 
       if (pieces && pieces.length > 0) {
-        allPieces.push(...(pieces as PieceV9[]));
+        currentBatch.push(...(pieces as PieceV9[]));
         offset += PAGE_SIZE;
+        totalCount += pieces.length;
         hasMore = pieces.length === PAGE_SIZE;
 
-        // Log progress every 50k URLs
-        if (allPieces.length % 50000 < PAGE_SIZE) {
+        // 🚀 P7.4: Quand on atteint SHARD_SIZE, écrire le fichier et libérer la mémoire
+        while (currentBatch.length >= SHARD_SIZE) {
+          const shardPieces = currentBatch.slice(0, SHARD_SIZE);
+          currentBatch = currentBatch.slice(SHARD_SIZE); // Keep remainder
+
+          // Construire les URLs pour ce shard
+          const shardUrls: SitemapUrl[] = shardPieces.map((p) => ({
+            url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+            page_type: 'piece',
+            changefreq: config.changefreq,
+            priority: config.priority,
+            last_modified_at: null,
+          }));
+
+          // Écrire le fichier sitemap immédiatement
+          shardIndex++;
+          const fileName = `sitemap-pieces-${shardIndex}.xml`;
+          const filePath = await this.writeSitemapFile(
+            bucket,
+            fileName,
+            shardUrls,
+            true, // writeToRoot
+          );
+          filePaths.push(filePath);
           this.logger.log(
-            `  📊 Progress: ${allPieces.length.toLocaleString()} URLs fetched...`,
+            `   ✅ Written ${fileName} (${shardUrls.length.toLocaleString()} URLs) - Memory freed`,
+          );
+        }
+
+        // Log progress every 100k URLs
+        if (totalCount % 100000 < PAGE_SIZE) {
+          this.logger.log(
+            `  📊 Progress: ${totalCount.toLocaleString()} URLs processed, ${filePaths.length} files written...`,
           );
         }
       } else {
@@ -911,26 +927,43 @@ ${sitemapEntries}
       }
     }
 
-    if (allPieces.length === 0) {
-      this.logger.warn('⚠️ No pieces found');
-      return { urls: [], totalCount: 0 };
+    // 🚀 P7.4: Écrire le dernier shard partiel (si reste des données)
+    if (currentBatch.length > 0) {
+      const shardUrls: SitemapUrl[] = currentBatch.map((p) => ({
+        url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+        page_type: 'piece',
+        changefreq: config.changefreq,
+        priority: config.priority,
+        last_modified_at: null,
+      }));
+
+      shardIndex++;
+      const fileName =
+        filePaths.length === 0
+          ? `sitemap-pieces.xml` // Single file if total < 50k
+          : `sitemap-pieces-${shardIndex}.xml`;
+      const filePath = await this.writeSitemapFile(
+        bucket,
+        fileName,
+        shardUrls,
+        true,
+      );
+      filePaths.push(filePath);
+      this.logger.log(
+        `   ✅ Written ${fileName} (${shardUrls.length.toLocaleString()} URLs) - Final shard`,
+      );
     }
 
-    // 3. Construire les URLs avec config température
-    const config = BUCKET_CONFIG[bucket];
-    const urls: SitemapUrl[] = allPieces.map((p) => ({
-      url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
-      page_type: 'piece',
-      changefreq: config.changefreq,
-      priority: config.priority,
-      last_modified_at: null,
-    }));
+    if (totalCount === 0) {
+      this.logger.warn('⚠️ No pieces found');
+      return { filePaths: [], totalCount: 0 };
+    }
 
     this.logger.log(
-      `  ✅ ${urls.length.toLocaleString()} URLs pièces INDEX (pagination complète)`,
+      `  ✅ ${totalCount.toLocaleString()} URLs pièces INDEX → ${filePaths.length} files (streaming batch)`,
     );
 
-    return { urls, totalCount: urls.length };
+    return { filePaths, totalCount };
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1769,6 +1802,10 @@ ${urlEntries}
     const totalDurationMs = Date.now() - startTime;
     const totalUrls = results.reduce((sum, r) => sum + r.urlCount, 0);
     const totalFiles = allFilePaths.length;
+
+    // 🚀 P7.4 PERF: Clear caches after generation to free memory
+    this.indexPgIdsCache = null;
+    this.processedUrlsCache = null;
 
     this.logger.log(`✅ V10 FAMILY generation complete:`);
     this.logger.log(`   Total URLs: ${totalUrls.toLocaleString()}`);
