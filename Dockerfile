@@ -68,9 +68,10 @@ COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./pac
 COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
 COPY --chown=remix-api:nodejs --from=installer /app/packages/shared-types ./packages/shared-types
 
-# 🛡️ RPC Safety Gate - Governance files (at /app/governance/rpc/)
-# IMPORTANT: Copy from builder (not installer) because turbo prune excludes non-package dirs
-COPY --chown=remix-api:nodejs --from=builder /app/backend/governance ./governance
+# 🛡️ RPC Safety Gate - Governance files
+# IMPORTANT: Copy to /app/backend/governance/ because start.sh does "cd backend"
+# and rpc-gate.service.ts uses process.cwd()/governance/rpc
+COPY --chown=remix-api:nodejs --from=builder /app/backend/governance ./backend/governance
 
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
