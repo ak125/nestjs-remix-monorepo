@@ -68,6 +68,9 @@ COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./pac
 COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
 COPY --chown=remix-api:nodejs --from=installer /app/packages/shared-types ./packages/shared-types
 
+# 🛡️ RPC Safety Gate - Governance files (at /app/governance/rpc/)
+COPY --chown=remix-api:nodejs --from=installer /app/backend/governance ./governance
+
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
 
