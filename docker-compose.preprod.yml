@@ -11,9 +11,9 @@ services:
       - SUPABASE_SERVICE_ROLE_KEY
       - SUPABASE_URL
       - USE_UNIFIED_RPC=true
-      # 🛡️ RPC Safety Gate - ENFORCE P0 (2026-02-03)
+      # 🛡️ RPC Safety Gate - ENFORCE P1 (2026-02-03)
       - RPC_GATE_MODE=enforce
-      - RPC_GATE_ENFORCE_LEVEL=P0
+      - RPC_GATE_ENFORCE_LEVEL=P1
 
     container_name: nestjs-remix-monorepo-preprod
     image: massdoc/nestjs-remix-monorepo:preprod
