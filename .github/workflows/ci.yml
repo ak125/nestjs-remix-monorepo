@@ -129,7 +129,9 @@ jobs:
       - name: ✅ Verify no DEV modules imported
         run: |
           echo "Checking app.module.ts for DEV imports..."
-          if grep -E "^\s*(AiContentModule|KnowledgeGraphModule|RagProxyModule|RmModule)" backend/src/app.module.ts; then
+          # RmModule ALLOWED: provides /api/rm/* endpoints used by frontend product pages
+          # (pieces.$gamme.$marque.$modele.$type.html → fetchRmPageV2)
+          if grep -E "^\s*(AiContentModule|KnowledgeGraphModule|RagProxyModule)" backend/src/app.module.ts; then
             echo "❌ ERREUR: Modules DEV ONLY détectés dans app.module.ts!"
             echo "Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md"
             exit 1
