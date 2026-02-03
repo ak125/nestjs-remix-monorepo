@@ -46,6 +46,10 @@ lerna-debug.log*
 backend/.env*
 frontend/.env*
 
+# MCP configuration (contains tokens)
+.mcp.json
+.mcp/
+
 # allow templates/examples only
 !**/.env.example
 !**/.env.template
