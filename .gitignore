@@ -140,3 +140,8 @@ data/external/*.csv
 *.keywords.csv
 *_volumes.csv
 *_trends.csv
+
+# ============================================
+# Local files (not for git)
+# ============================================
+.local/
