@@ -123,30 +123,40 @@ export class OrderActionsService extends SupabaseBaseService {
         `🔄 Proposer équiv ligne ${originalLineId} → produit ${equivalentProductId}`,
       );
 
-      // 1. Récupérer infos produit équivalent depuis table PIECES
-      const { data: product, error: productError } = await this.supabase
-        .from(TABLES.pieces)
-        .select(
-          `
-          piece_id,
-          piece_ref,
-          piece_ref_clean,
-          piece_pg_id,
-          piece_name,
-          piece_pm_id,
-          pieces_price!inner(
-            pri_vente_ttc,
-            pri_consigne_ttc,
-            pri_achat_ht,
-            pri_marge,
-            pri_remise
-          ),
-          pieces_marque!inner(pm_name)
-        `,
-        )
-        .eq('piece_id', equivalentProductId)
-        .eq('piece_display', 1)
-        .single();
+      // 🚀 P7.2 PERF: Paralléliser product + order lookups (indépendants)
+      const [productResult, orderResult] = await Promise.all([
+        this.supabase
+          .from(TABLES.pieces)
+          .select(
+            `
+            piece_id,
+            piece_ref,
+            piece_ref_clean,
+            piece_pg_id,
+            piece_name,
+            piece_pm_id,
+            pieces_price!inner(
+              pri_vente_ttc,
+              pri_consigne_ttc,
+              pri_achat_ht,
+              pri_marge,
+              pri_remise
+            ),
+            pieces_marque!inner(pm_name)
+          `,
+          )
+          .eq('piece_id', equivalentProductId)
+          .eq('piece_display', 1)
+          .single(),
+        this.supabase
+          .from(TABLES.xtr_order)
+          .select('ord_cst_id')
+          .eq('ord_id', orderId)
+          .single(),
+      ]);
+
+      const { data: product, error: productError } = productResult;
+      const { data: order } = orderResult;
 
       if (productError || !product) {
         throw new BadRequestException('Produit équivalent introuvable');
@@ -189,30 +199,25 @@ export class OrderActionsService extends SupabaseBaseService {
         throw new BadRequestException('Erreur création ligne équivalente');
       }
 
-      // 3. Mettre à jour ligne originale avec equiv_id
-      await this.supabase
+      // 🚀 P7.2 PERF: Paralléliser update ligne + insert message
+      const updatePromise = this.supabase
         .from(TABLES.xtr_order_line)
         .update({ orl_equiv_id: createdLine.orl_id })
         .eq('orl_id', originalLineId);
 
-      // 4. Envoyer message client
-      const { data: order } = await this.supabase
-        .from(TABLES.xtr_order)
-        .select('ord_cst_id')
-        .eq('ord_id', orderId)
-        .single();
+      const messagePromise = order
+        ? this.supabase.from(TABLES.xtr_msg).insert({
+            msg_cst_id: order.ord_cst_id,
+            msg_ord_id: orderId,
+            msg_cnfa_id: userId,
+            msg_date: new Date().toISOString(),
+            msg_subject: 'Support Technique : Proposition équivalence',
+            msg_content: "Une proposition d'équivalence a été envoyée",
+            msg_open: 0,
+          })
+        : Promise.resolve();
 
-      if (order) {
-        await this.supabase.from(TABLES.xtr_msg).insert({
-          msg_cst_id: order.ord_cst_id,
-          msg_ord_id: orderId,
-          msg_cnfa_id: userId,
-          msg_date: new Date().toISOString(),
-          msg_subject: 'Support Technique : Proposition équivalence',
-          msg_content: "Une proposition d'équivalence a été envoyée",
-          msg_open: 0,
-        });
-      }
+      await Promise.all([updatePromise, messagePromise]);
 
       this.logger.log(`✅ Équivalence proposée: ligne ${createdLine.orl_id}`);
       return { success: true, equivalentLineId: createdLine.orl_id };
@@ -296,19 +301,23 @@ export class OrderActionsService extends SupabaseBaseService {
     equivalentLineId: number,
   ): Promise<any> {
     try {
-      // Récupérer ligne équiv + originale
-      const { data: equivLine } = await this.supabase
-        .from(TABLES.xtr_order_line)
-        .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
-        .eq('orl_ord_id', orderId)
-        .eq('orl_equiv_id', equivalentLineId)
-        .single();
+      // 🚀 P7.2 PERF: Paralléliser les lectures
+      const [equivResult, origResult] = await Promise.all([
+        this.supabase
+          .from(TABLES.xtr_order_line)
+          .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
+          .eq('orl_ord_id', orderId)
+          .eq('orl_equiv_id', equivalentLineId)
+          .single(),
+        this.supabase
+          .from(TABLES.xtr_order_line)
+          .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
+          .eq('orl_id', equivalentLineId)
+          .single(),
+      ]);
 
-      const { data: origLine } = await this.supabase
-        .from(TABLES.xtr_order_line)
-        .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
-        .eq('orl_id', equivalentLineId)
-        .single();
+      const equivLine = equivResult.data;
+      const origLine = origResult.data;
 
       if (!equivLine || !origLine) {
         throw new BadRequestException('Lignes introuvables');
@@ -321,25 +330,26 @@ export class OrderActionsService extends SupabaseBaseService {
         origLine.orl_art_price_sell_ttc + origLine.orl_art_deposit_ttc;
       const amountDiff = totalNew - totalOld;
 
-      // 1. Passer équiv en statut 5 (PD)
-      await this.supabase
-        .from(TABLES.xtr_order_line)
-        .update({ orl_orls_id: 5 })
-        .eq('orl_id', equivalentLineId);
-
-      // 2. Passer originale en statut 2 (Annulée)
-      await this.supabase
-        .from(TABLES.xtr_order_line)
-        .update({ orl_orls_id: 2 })
-        .eq('orl_id', equivLine.orl_id);
-
-      // 3. Créer ticket paiement/remboursement
-      await this.supabase.from('___xtr_order_line_equiv_ticket').insert({
-        orlet_ord_id: orderId,
-        orlet_orl_id: equivLine.orl_id,
-        orlet_equiv_id: equivalentLineId,
-        orlet_amount_ttc: amountDiff,
-      });
+      // 🚀 P7.2 PERF: Paralléliser les écritures indépendantes
+      await Promise.all([
+        // 1. Passer équiv en statut 5 (PD)
+        this.supabase
+          .from(TABLES.xtr_order_line)
+          .update({ orl_orls_id: 5 })
+          .eq('orl_id', equivalentLineId),
+        // 2. Passer originale en statut 2 (Annulée)
+        this.supabase
+          .from(TABLES.xtr_order_line)
+          .update({ orl_orls_id: 2 })
+          .eq('orl_id', equivLine.orl_id),
+        // 3. Créer ticket paiement/remboursement
+        this.supabase.from('___xtr_order_line_equiv_ticket').insert({
+          orlet_ord_id: orderId,
+          orlet_orl_id: equivLine.orl_id,
+          orlet_equiv_id: equivalentLineId,
+          orlet_amount_ttc: amountDiff,
+        }),
+      ]);
 
       this.logger.log(`✅ Équivalence validée, ticket généré: ${amountDiff}€`);
       return { success: true, amountDiff };

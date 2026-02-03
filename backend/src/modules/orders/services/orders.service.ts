@@ -232,30 +232,33 @@ export class OrdersService extends SupabaseBaseService {
 
   /**
    * Récupérer une commande par ID
+   * 🚀 P7.2 PERF: Paralléliser order + lines, puis customer
    */
   async getOrderById(orderId: string): Promise<any> {
     try {
-      // Simplifier sans JOIN pour éviter erreurs de relation
-      const { data: order, error } = await this.supabase
-        .from(TABLES.xtr_order)
-        .select('*')
-        .eq('ord_id', orderId)
-        .single();
+      // 🚀 P7.2 PERF: Paralléliser order et lines (indépendants)
+      const [orderResult, linesResult] = await Promise.all([
+        this.supabase
+          .from(TABLES.xtr_order)
+          .select('*')
+          .eq('ord_id', orderId)
+          .single(),
+        this.supabase
+          .from(TABLES.xtr_order_line)
+          .select('*')
+          .eq('orl_ord_id', orderId),
+      ]);
+
+      const { data: order, error } = orderResult;
+      const { data: lines } = linesResult;
 
       if (error || !order) {
         throw new NotFoundException(`Commande #${orderId} introuvable`);
       }
 
-      // Récupérer lignes
-      const { data: lines } = await this.supabase
-        .from(TABLES.xtr_order_line)
-        .select('*')
-        .eq('orl_ord_id', orderId);
-
-      // ✅ Récupérer les données client
+      // Customer dépend de order.ord_cst_id - doit rester séquentiel
       let customer = null;
       if (order.ord_cst_id) {
-        this.logger.log(`🔍 Fetching customer with ID: ${order.ord_cst_id}`);
         const { data: customerData, error: customerError } = await this.supabase
           .from(TABLES.xtr_customer)
           .select(
@@ -264,25 +267,16 @@ export class OrdersService extends SupabaseBaseService {
           .eq('cst_id', order.ord_cst_id)
           .single();
 
-        if (customerError) {
-          this.logger.error(`❌ Error fetching customer:`, customerError);
-        } else {
-          this.logger.log(`✅ Customer found:`, customerData);
+        if (!customerError) {
           customer = customerData;
         }
-      } else {
-        this.logger.warn(`⚠️ No ord_cst_id in order ${orderId}`);
       }
-
-      // TODO: Récupérer historique statuts
-      // Note: ___xtr_order_status est une table de référence, pas d'historique
-      // const statusHistory = await this.statusService.getOrderStatusHistory(orderId);
 
       return {
         ...order,
-        customer, // ✅ Ajouter les données client
+        customer,
         lines: lines || [],
-        statusHistory: [], // Temporaire - à implémenter avec une vraie table d'historique
+        statusHistory: [],
       };
     } catch (error: any) {
       this.logger.error(`Erreur getOrderById(${orderId}):`, error);

@@ -454,13 +454,18 @@ export class ConstructeurService {
 
       if (!constructeursList) return [];
 
+      // 🚀 P7.1 PERF: Paralléliser avec batch de 10 (au lieu de séquentiel)
+      const BATCH_SIZE = 10;
       const articles: BlogArticle[] = [];
-      for (const constructeur of constructeursList) {
-        const article = await this.transformConstructeurToArticle(
-          client,
-          constructeur,
+
+      for (let i = 0; i < constructeursList.length; i += BATCH_SIZE) {
+        const batch = constructeursList.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map((constructeur) =>
+            this.transformConstructeurToArticle(client, constructeur),
+          ),
         );
-        if (article) articles.push(article);
+        articles.push(...batchResults.filter(Boolean));
       }
 
       await this.cacheService.set(cacheKey, articles, 3600);
@@ -496,22 +501,43 @@ export class ConstructeurService {
 
       if (!constructeursList) return {};
 
-      const constructeursByLetter: { [letter: string]: BlogArticle[] } = {};
+      // 🚀 P7.1 PERF: Paralléliser avec batch de 10
+      const BATCH_SIZE = 10;
+      const articlesWithLetters: { article: BlogArticle; letter: string }[] =
+        [];
 
-      for (const constructeur of constructeursList) {
-        const article = await this.transformConstructeurToArticle(
-          client,
-          constructeur,
+      for (let i = 0; i < constructeursList.length; i += BATCH_SIZE) {
+        const batch = constructeursList.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map(async (constructeur) => {
+            const article = await this.transformConstructeurToArticle(
+              client,
+              constructeur,
+            );
+            if (article) {
+              const letter = constructeur.bc_constructeur
+                .charAt(0)
+                .toUpperCase();
+              return { article, letter };
+            }
+            return null;
+          }),
         );
-        if (article) {
-          const firstLetter = constructeur.bc_constructeur
-            .charAt(0)
-            .toUpperCase();
-          if (!constructeursByLetter[firstLetter]) {
-            constructeursByLetter[firstLetter] = [];
-          }
-          constructeursByLetter[firstLetter].push(article);
+        articlesWithLetters.push(
+          ...(batchResults.filter(Boolean) as {
+            article: BlogArticle;
+            letter: string;
+          }[]),
+        );
+      }
+
+      // Organiser par lettre
+      const constructeursByLetter: { [letter: string]: BlogArticle[] } = {};
+      for (const { article, letter } of articlesWithLetters) {
+        if (!constructeursByLetter[letter]) {
+          constructeursByLetter[letter] = [];
         }
+        constructeursByLetter[letter].push(article);
       }
 
       await this.cacheService.set(cacheKey, constructeursByLetter, 7200); // 2h
@@ -620,29 +646,25 @@ export class ConstructeurService {
           avgViews: Math.round(stats.totalViews / stats.count),
         }));
 
-      // Transformation des articles les plus populaires
-      const mostPopular: BlogArticle[] = [];
-      if (popularConstructeurs) {
-        for (const constructeur of popularConstructeurs) {
-          const article = await this.transformConstructeurToArticle(
-            client,
-            constructeur,
-          );
-          if (article) mostPopular.push(article);
-        }
-      }
-
-      // Articles récemment mis à jour
-      const recentlyUpdated: BlogArticle[] = [];
-      if (recentConstructeurs) {
-        for (const constructeur of recentConstructeurs) {
-          const article = await this.transformConstructeurToArticle(
-            client,
-            constructeur,
-          );
-          if (article) recentlyUpdated.push(article);
-        }
-      }
+      // 🚀 P7.1 PERF: Paralléliser les transformations
+      const [mostPopular, recentlyUpdated] = await Promise.all([
+        // Articles les plus populaires
+        popularConstructeurs
+          ? Promise.all(
+              popularConstructeurs.map((c) =>
+                this.transformConstructeurToArticle(client, c),
+              ),
+            ).then((articles) => articles.filter(Boolean) as BlogArticle[])
+          : [],
+        // Articles récemment mis à jour
+        recentConstructeurs
+          ? Promise.all(
+              recentConstructeurs.map((c) =>
+                this.transformConstructeurToArticle(client, c),
+              ),
+            ).then((articles) => articles.filter(Boolean) as BlogArticle[])
+          : [],
+      ]);
 
       // Métriques de performance
       const cacheHitRate =
@@ -804,17 +826,14 @@ export class ConstructeurService {
         return { results: [], total: 0, searchTime: 0 };
       }
 
-      // Transformation en articles
-      const articles: BlogArticle[] = [];
-      for (const constructeur of results) {
-        const article = await this.transformConstructeurToArticle(
-          client,
-          constructeur,
-        );
-        if (article) {
-          articles.push(article);
-        }
-      }
+      // 🚀 P7.1 PERF: Paralléliser les transformations
+      const articles = (
+        await Promise.all(
+          results.map((constructeur) =>
+            this.transformConstructeurToArticle(client, constructeur),
+          ),
+        )
+      ).filter(Boolean) as BlogArticle[];
 
       // Tri final par pertinence (vues d'abord, puis alphabétique)
       articles.sort((a, b) => {

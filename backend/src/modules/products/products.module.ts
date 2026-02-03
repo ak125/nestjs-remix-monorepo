@@ -16,6 +16,7 @@
 
 import { Module, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Consolidés Phase 3
 import { ProductsController } from './products.controller';
@@ -32,6 +33,8 @@ import { StockService } from './services/stock.service';
 
 @Module({
   imports: [
+    // 🚀 P7.1 PERF: DatabaseModule pour accès RedisCacheService
+    DatabaseModule,
     // Cache Redis pour améliorer les performances + V4 Ultimate
     CacheModule.register({
       ttl: 300, // 5 minutes par défaut

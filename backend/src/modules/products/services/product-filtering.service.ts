@@ -73,11 +73,13 @@ export class ProductFilteringService extends SupabaseBaseService {
       );
 
       // ✅ ÉTAPE 1: Récupérer les IDs de pièces affichables pour ce type/gamme
+      // 🚀 P7.1 PERF: Limit 5000 pour éviter chargement mémoire excessif (table 470k+ rows)
       const { data: displayedPieces, error: piecesError } = await this.client
         .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id')
         .eq('rtp_type_id', typeId)
-        .eq('rtp_pg_id', pgId);
+        .eq('rtp_pg_id', pgId)
+        .limit(5000);
 
       if (piecesError || !displayedPieces || displayedPieces.length === 0) {
         this.logger.warn(

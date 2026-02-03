@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RedisCacheService } from '../../../database/services/redis-cache.service';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
@@ -89,6 +90,15 @@ type CrossSellingResult = {
 export class CrossSellingService extends SupabaseBaseService {
   protected readonly logger = new Logger(CrossSellingService.name);
 
+  // 🚀 P7.1 PERF: Injection optionnelle Redis pour cache rapide
+  constructor(
+    @Optional()
+    @Inject(RedisCacheService)
+    private redisCache?: RedisCacheService,
+  ) {
+    super();
+  }
+
   // 🎯 CACHE ADAPTATIF - Inspiré des patterns RobotsV5Ultimate
   private readonly cacheKeys = {
     familyCross: (pgId: number, mfId: number, typeId: number) =>
@@ -133,24 +143,34 @@ export class CrossSellingService extends SupabaseBaseService {
         `🎯 [CrossSellingV5] Analyse multi-sources pour pgId=${pgId}, typeId=${typeId}, mfId=${mfId}`,
       );
 
-      // 🚀 VÉRIFICATION CACHE - Pattern optimisé avec Redis
+      // 🚀 P7.1 PERF: Cache Redis direct (au lieu de table _cache_redis)
       const cacheKey = this.cacheKeys.result(pgId, typeId, mfId);
       try {
-        const cached = await this.supabase
-          .from('_cache_redis')
-          .select('value')
-          .eq('key', cacheKey)
-          .gt('expires_at', new Date().toISOString())
-          .single();
+        // Utiliser Redis si disponible, sinon fallback table (pour compatibilité)
+        let cachedData: CrossSellingResult | null = null;
 
-        if (cached.data?.value) {
+        if (this.redisCache) {
+          cachedData = await this.redisCache.get(cacheKey);
+        } else {
+          // Fallback: table _cache_redis (pattern legacy)
+          const cached = await this.supabase
+            .from('_cache_redis')
+            .select('value')
+            .eq('key', cacheKey)
+            .gt('expires_at', new Date().toISOString())
+            .single();
+          if (cached.data?.value) {
+            cachedData = JSON.parse(cached.data.value);
+          }
+        }
+
+        if (cachedData) {
           this.logger.log(
             `⚡ Cache HIT cross-selling - pgId=${pgId}, typeId=${typeId}`,
           );
-          const cachedResult = JSON.parse(cached.data.value);
-          cachedResult.performance.cache_hit = true;
-          cachedResult.performance.response_time = Date.now() - startTime;
-          return cachedResult;
+          cachedData.performance.cache_hit = true;
+          cachedData.performance.response_time = Date.now() - startTime;
+          return cachedData;
         }
       } catch (cacheError) {
         this.logger.debug('Cache MISS ou erreur:', cacheError.message);
@@ -228,17 +248,23 @@ export class CrossSellingService extends SupabaseBaseService {
           'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE',
       };
 
-      // 🎯 MISE EN CACHE INTELLIGENTE (TTL: 5min - données dynamiques)
+      // 🚀 P7.1 PERF: Cache Redis direct (au lieu de table _cache_redis)
       try {
-        const expiresAt = new Date(
-          Date.now() + this.cacheTTL.result * 1000,
-        ).toISOString();
-        await this.supabase.from('_cache_redis').upsert({
-          key: cacheKey,
-          value: JSON.stringify(result),
-          expires_at: expiresAt,
-          created_at: new Date().toISOString(),
-        });
+        if (this.redisCache) {
+          // Redis direct - beaucoup plus rapide
+          await this.redisCache.set(cacheKey, result, this.cacheTTL.result);
+        } else {
+          // Fallback: table _cache_redis (pattern legacy)
+          const expiresAt = new Date(
+            Date.now() + this.cacheTTL.result * 1000,
+          ).toISOString();
+          await this.supabase.from('_cache_redis').upsert({
+            key: cacheKey,
+            value: JSON.stringify(result),
+            expires_at: expiresAt,
+            created_at: new Date().toISOString(),
+          });
+        }
         this.logger.log(
           `💾 Cross-selling mis en cache (TTL: ${this.cacheTTL.result}s)`,
         );
