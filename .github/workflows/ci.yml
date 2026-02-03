@@ -174,6 +174,53 @@ jobs:
 
           echo "✅ Import firewall OK - No violations"
 
+  rpc-gate-check:
+    name: 🛡️ RPC Safety Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: 🛡️ Check direct supabase.rpc() usage
+        run: |
+          echo "🛡️ Checking for direct .rpc() calls (should use callRpc)..."
+
+          # Install ripgrep
+          sudo apt-get update && sudo apt-get install -y ripgrep
+
+          # Count direct .rpc() calls excluding allowed patterns
+          DIRECT_RPC=$(rg -l "\.rpc\(" backend/src --type ts 2>/dev/null | \
+            rg -v "supabase-base.service|callRpc" | wc -l || echo "0")
+
+          echo "Found $DIRECT_RPC files with direct .rpc() calls"
+
+          # List them for visibility
+          if [ "$DIRECT_RPC" -gt 0 ]; then
+            echo ""
+            echo "📋 Files with direct .rpc() calls:"
+            rg -n "\.rpc\(" backend/src --type ts 2>/dev/null | \
+              rg -v "supabase-base.service|callRpc" || true
+            echo ""
+
+            # Known bypass files (debug/internal)
+            BYPASS_COUNT=$(rg -l "\.rpc\(" backend/src --type ts 2>/dev/null | \
+              rg -v "supabase-base.service|callRpc" | \
+              rg "googlebot-detector|enhanced-config|products.service|advice.service" | wc -l || echo "0")
+
+            UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
+
+            if [ "$UNEXPECTED" -gt 0 ]; then
+              echo "⚠️ WARNING: $UNEXPECTED unexpected files with direct .rpc() calls"
+              echo "All RPC calls should go through callRpc() for governance"
+              # Warning only for now (observe mode)
+              # exit 1
+            else
+              echo "✅ Only bypass-allowed files have direct .rpc() calls ($BYPASS_COUNT files)"
+            fi
+          else
+            echo "✅ All RPC calls go through callRpc()"
+          fi
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
@@ -184,7 +231,7 @@ jobs:
   deploy:
     name: 🧪 Deploy PREPROD
     runs-on: [self-hosted, Linux, X64]
-    needs: [build, lint, typecheck, core-build, import-firewall]
+    needs: [build, lint, typecheck, core-build, import-firewall, rpc-gate-check]
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
 
     steps:
