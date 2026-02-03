@@ -108,11 +108,8 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
     SitemapV10ScoringService.name,
   );
 
-  constructor(
-    private configService: ConfigService,
-    rpcGate: RpcGateService,
-  ) {
-    super();
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+    super(configService);
     this.rpcGate = rpcGate;
 
     this.logger.log('📊 SitemapV10ScoringService initialized');

@@ -127,11 +127,8 @@ export class SitemapV10Service extends SupabaseBaseService {
   private readonly OUTPUT_DIR: string;
   private readonly MAX_URLS_PER_FILE = 50000;
 
-  constructor(
-    private configService: ConfigService,
-    rpcGate: RpcGateService,
-  ) {
-    super();
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+    super(configService);
     this.rpcGate = rpcGate;
 
     this.BASE_URL =

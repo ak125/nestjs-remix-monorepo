@@ -549,11 +549,8 @@ export class SitemapV10HubsService extends SupabaseBaseService {
   // Cache global pour déduplication inter-clusters
   private processedHubUrlsCache: Set<string> | null = null;
 
-  constructor(
-    private configService: ConfigService,
-    rpcGate: RpcGateService,
-  ) {
-    super();
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+    super(configService);
     this.rpcGate = rpcGate;
 
     this.BASE_URL =
