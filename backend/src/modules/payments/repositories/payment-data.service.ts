@@ -9,6 +9,7 @@ import {
   Transaction,
   PaymentPostback,
 } from '../entities/payment.entity';
+import { normalizeOrderId } from '../utils/normalize-order-id';
 
 @Injectable()
 export class PaymentDataService extends SupabaseBaseService {
@@ -87,11 +88,17 @@ export class PaymentDataService extends SupabaseBaseService {
    */
   async createPayment(paymentData: Partial<Payment>): Promise<Payment> {
     try {
+      // Defense-in-depth: normaliser orderId même si l'appelant l'a déjà fait
+      // Cela garantit que l'ID dans la DB sera toujours le format numérique attendu
+      const safeOrderId = normalizeOrderId(paymentData.orderId || '');
+
       const paymentReference =
         paymentData.paymentReference ||
         `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-      this.logger.log(`Creating payment with reference: ${paymentReference}`);
+      this.logger.log(
+        `Creating payment with reference: ${paymentReference}, orderId: ${safeOrderId}`,
+      );
 
       // 1. Enregistrer dans ic_postback pour tracking paiement
       // Note: Les consignes sont stockées dans ___xtr_order.ord_deposit_ttc, pas ici
@@ -99,14 +106,14 @@ export class PaymentDataService extends SupabaseBaseService {
         .from('ic_postback')
         .insert({
           id_ic_postback: paymentReference,
-          id_com: paymentData.orderId || '',
-          orderid: paymentData.orderId || '',
+          id_com: safeOrderId,
+          orderid: safeOrderId,
           paymentid: paymentReference,
           transactionid: paymentData.providerTransactionId || '',
           amount: paymentData.amount?.toString() || '0',
           currency: paymentData.currency || 'EUR',
           paymentmethod: paymentData.method || 'card',
-          status: 'pending',
+          status: paymentData.status || 'pending',
           statuscode: '00',
           datepayment: new Date().toISOString(),
         })
@@ -122,22 +129,35 @@ export class PaymentDataService extends SupabaseBaseService {
         `✅ Payment postback created: ${postback.id_ic_postback}`,
       );
 
-      // 2. Si orderId fourni, mettre à jour ___xtr_order
-      if (paymentData.orderId) {
+      // 2. Si orderId fourni, mettre à jour ___xtr_order selon le statut
+      if (safeOrderId) {
+        const isCompleted = paymentData.status === 'completed';
+        const orderUpdate: Record<string, any> = isCompleted
+          ? {
+              ord_is_pay: '1', // 1 = payé
+              ord_date_pay: new Date().toISOString(),
+              ord_ords_id: '3', // Statut "Validée"
+            }
+          : {
+              ord_is_pay: '0', // 0 = en attente de paiement
+              ord_date_pay: null,
+            };
+
         const { error: orderError } = await this.supabase
           .from(TABLES.xtr_order)
-          .update({
-            ord_is_pay: '0', // 0 = en attente de paiement
-            ord_date_pay: null,
-          })
-          .eq('ord_id', paymentData.orderId);
+          .update(orderUpdate)
+          .eq('ord_id', safeOrderId);
 
         if (orderError) {
           this.logger.warn(
-            `Failed to update order payment status: ${orderError.message}`,
+            `Failed to update order ${safeOrderId}: ${orderError.message}`,
+          );
+        } else if (isCompleted) {
+          this.logger.log(
+            `✅ Order ${safeOrderId} marked as PAID (ord_is_pay=1, ord_ords_id=3)`,
           );
         } else {
-          this.logger.log(`✅ Order ${paymentData.orderId} marked as unpaid`);
+          this.logger.log(`✅ Order ${safeOrderId} marked as unpaid`);
         }
       }
 

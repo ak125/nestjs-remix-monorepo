@@ -12,6 +12,7 @@ import { Request, Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
+import { normalizeOrderId } from '../utils/normalize-order-id';
 
 /**
  * Contrôleur pour les callbacks Paybox (IPN - Instant Payment Notification)
@@ -105,11 +106,17 @@ export class PayboxCallbackController {
 
         // Mise à jour du paiement en base de données
         try {
+          // Normaliser l'ID commande (ORD-1762010061177-879 → 1762010061177)
+          const numericOrderId = normalizeOrderId(params.orderReference);
+          this.logger.log(
+            `📋 ID commande normalisé: ${numericOrderId} (depuis ${params.orderReference})`,
+          );
+
           // Créer ou mettre à jour le paiement avec le bon enum
           const amountInEuros = parseFloat(params.amount) / 100;
 
           await this.paymentDataService.createPayment({
-            orderId: params.orderReference,
+            orderId: numericOrderId,
             amount: amountInEuros,
             currency: 'EUR',
             status: 'completed' as any, // PaymentStatus.COMPLETED
@@ -145,10 +152,13 @@ export class PayboxCallbackController {
 
         // Enregistrer l'échec du paiement
         try {
+          // Normaliser l'ID commande (même logique que pour succès)
+          const numericOrderId = normalizeOrderId(params.orderReference);
+
           const amountInEuros = parseFloat(params.amount) / 100;
 
           await this.paymentDataService.createPayment({
-            orderId: params.orderReference,
+            orderId: numericOrderId,
             amount: amountInEuros,
             currency: 'EUR',
             status: 'failed' as any, // PaymentStatus.FAILED
@@ -183,7 +193,8 @@ export class PayboxCallbackController {
   }
 
   /**
-   * GET /api/paybox/callback - Pour les tests
+   * GET /api/paybox/callback - Alias GET pour le callback POST
+   * Note: Paybox utilise principalement POST, mais GET peut être utile pour tests
    */
   @Get('callback')
   async handleCallbackGet(
@@ -191,134 +202,11 @@ export class PayboxCallbackController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    this.logger.log('Callback Paybox GET (test)');
+    this.logger.log('Callback Paybox GET');
     return this.handleCallback(query, '', req, res);
   }
 
-  /**
-   * GET /api/paybox/callback-test - Test SANS vérification de signature
-   * ⚠️ ATTENTION: Endpoint sans vérification de signature HMAC
-   * Requis pour le fonctionnement du système de paiement Paybox
-   * TODO SÉCURITÉ: Envisager IP whitelisting ou token secret pour sécuriser
-   */
-  @Get('callback-test')
-  async handleCallbackTest(
-    @Query() query: Record<string, string>,
-    @Res() res: Response,
-  ) {
-    try {
-      this.logger.log('🧪 TEST Callback Paybox (sans vérification signature)');
-      this.logger.log(`📦 Paramètres reçus:`, query);
-
-      const Mt = query.Mt || '0';
-      const Ref = query.Ref || 'TEST-000';
-      const Auto = query.Auto || 'XXXXXX';
-      const Erreur = query.Erreur || '00000';
-
-      this.logger.log(`💰 Montant: ${Mt} centimes`);
-      this.logger.log(`📦 Référence: ${Ref}`);
-      this.logger.log(`🔐 Autorisation: ${Auto}`);
-      this.logger.log(`⚠️  Code erreur: ${Erreur}`);
-
-      // Vérifier si le paiement est réussi
-      const isSuccess = Erreur === '00000';
-
-      if (isSuccess) {
-        this.logger.log('✅ TEST: Paiement réussi !');
-
-        // Créer le paiement en base
-        try {
-          const amountInEuros = parseFloat(Mt) / 100;
-
-          await this.paymentDataService.createPayment({
-            orderId: Ref,
-            amount: amountInEuros,
-            currency: 'EUR',
-            status: 'completed' as any,
-            method: 'credit_card' as any,
-            providerTransactionId: Auto || Ref,
-            providerReference: Ref,
-            description: `TEST Paiement Paybox - Commande ${Ref}`,
-            metadata: {
-              gateway: 'paybox',
-              authorization: Auto,
-              errorCode: Erreur,
-              testMode: true,
-            },
-            processedAt: new Date(),
-          });
-
-          this.logger.log(
-            `✅ TEST: Paiement enregistré - Commande #${Ref} - ${amountInEuros}€`,
-          );
-
-          // Mettre à jour le statut de la commande (structure réelle de la DB)
-          try {
-            // Extraire l'ID numérique de la référence (ex: ORD-1762010061177-879 → 1762010061177)
-            const orderIdMatch = Ref.match(/ORD-(\d+)/);
-            if (orderIdMatch) {
-              const numericOrderId = orderIdMatch[1]; // Garder en string car ord_id est text
-
-              // Mise à jour avec les vrais noms de colonnes
-              const { error } = await this.paymentDataService['client']
-                .from('___xtr_order')
-                .update({
-                  ord_is_pay: '1', // Marquer comme payé
-                  ord_date_pay: new Date().toISOString(), // Date de paiement
-                  ord_ords_id: '3', // Statut 3 = "Validée"
-                })
-                .eq('ord_id', numericOrderId)
-                .select();
-
-              if (error) {
-                this.logger.error(`❌ TEST: Erreur Supabase: ${error.message}`);
-              } else {
-                this.logger.log(
-                  `✅ TEST: Commande #${numericOrderId} mise à jour → Payée (ord_is_pay=1, ord_ords_id=3)`,
-                );
-              }
-            } else {
-              this.logger.warn(
-                `⚠️  TEST: Impossible d'extraire l'ID de commande de ${Ref}`,
-              );
-            }
-          } catch (orderError: any) {
-            this.logger.error(
-              `❌ TEST: Erreur mise à jour commande: ${orderError.message}`,
-            );
-          }
-
-          return res.status(200).json({
-            success: true,
-            message: 'Paiement test enregistré avec succès',
-            data: {
-              orderId: Ref,
-              amount: amountInEuros,
-              authorization: Auto,
-              status: 'completed',
-            },
-          });
-        } catch (error: any) {
-          this.logger.error(`❌ TEST: Erreur enregistrement: ${error.message}`);
-          return res.status(500).json({
-            success: false,
-            error: error.message,
-          });
-        }
-      } else {
-        this.logger.warn(`⚠️  TEST: Paiement échoué - Code: ${Erreur}`);
-        return res.status(200).json({
-          success: false,
-          message: 'Paiement échoué',
-          errorCode: Erreur,
-        });
-      }
-    } catch (error: any) {
-      this.logger.error('❌ TEST: Erreur:', error);
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
+  // NOTE: L'endpoint /callback-test a été supprimé pour raisons de sécurité.
+  // Il permettait de créer des paiements sans vérification de signature HMAC.
+  // Pour tester, utiliser l'environnement sandbox Paybox avec des signatures valides.
 }

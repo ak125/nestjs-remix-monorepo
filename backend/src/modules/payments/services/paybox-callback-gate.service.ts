@@ -15,6 +15,7 @@ import {
   buildSignatureStringFromOrdered,
 } from '../utils/querystring-order-preserving';
 import { PaymentDataService } from '../repositories/payment-data.service';
+import { normalizeOrderId } from '../utils/normalize-order-id';
 
 export type CallbackMode = 'shadow' | 'strict';
 
@@ -421,12 +422,8 @@ export class PayboxCallbackGateService {
     orderRef: string,
   ): Promise<{ result: CheckResult; order?: any }> {
     try {
-      // Extraire l'ID numérique si format ORD-xxx
-      let orderId = orderRef;
-      const match = orderRef.match(/ORD-(\d+)/);
-      if (match) {
-        orderId = match[1];
-      }
+      // Utiliser le helper centralisé pour normaliser l'ID
+      const orderId = normalizeOrderId(orderRef);
 
       // Utiliser le client Supabase du service existant
       const { data: order, error } = await this.paymentDataService['supabase']
