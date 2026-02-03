@@ -17,6 +17,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '../../database/database.module';
 
 // Services monitoring (import depuis seo/ pour compatibilité)
 import { SeoMonitoringService } from '../seo/services/seo-monitoring.service';
@@ -35,7 +36,10 @@ import { SeoPilotageController } from '../seo/controllers/seo-pilotage.controlle
 import { SeoLogsController } from '../seo/controllers/seo-logs.controller';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [
+    ConfigModule,
+    DatabaseModule, // 🚀 P7.3 PERF: Fournit RedisCacheService pour keywords-dashboard
+  ],
 
   controllers: [
     SeoMonitoringController,

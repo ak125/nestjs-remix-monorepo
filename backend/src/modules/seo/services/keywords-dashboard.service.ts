@@ -8,9 +8,10 @@
  * - Top keywords par volume
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { RedisCacheService } from '../../../database/services/redis-cache.service';
 
 export interface GammeStats {
   gamme: string;
@@ -71,15 +72,40 @@ export class KeywordsDashboardService extends SupabaseBaseService {
     KeywordsDashboardService.name,
   );
 
-  constructor(rpcGate: RpcGateService) {
+  // 🚀 P7.3 PERF: Cache TTL en secondes (15 minutes)
+  private readonly CACHE_TTL = 900;
+
+  constructor(
+    rpcGate: RpcGateService,
+    @Optional()
+    @Inject(RedisCacheService)
+    private redisCache?: RedisCacheService,
+  ) {
     super();
     this.rpcGate = rpcGate;
   }
 
   /**
    * Liste toutes les gammes avec leurs statistiques
+   * 🚀 P7.3 PERF: Cache Redis 15min (table 500k+ rows)
    */
   async listGammes(): Promise<GammeStats[]> {
+    // 🚀 P7.3: Cache wrapper
+    if (this.redisCache) {
+      return this.redisCache.cached(
+        'gammes',
+        () => this.listGammesInternal(),
+        this.CACHE_TTL,
+        'seo:keywords',
+      );
+    }
+    return this.listGammesInternal();
+  }
+
+  /**
+   * Implementation interne sans cache
+   */
+  private async listGammesInternal(): Promise<GammeStats[]> {
     this.logger.log('Fetching all gammes stats');
 
     // 🛡️ RPC Safety Gate
@@ -218,8 +244,27 @@ export class KeywordsDashboardService extends SupabaseBaseService {
 
   /**
    * Statistiques détaillées pour une gamme
+   * 🚀 P7.3 PERF: Cache Redis 15min par gamme
    */
   async getGammeStats(gamme: string): Promise<GammeDetailStats | null> {
+    // 🚀 P7.3: Cache wrapper
+    if (this.redisCache) {
+      return this.redisCache.cached(
+        `stats:${gamme}`,
+        () => this.getGammeStatsInternal(gamme),
+        this.CACHE_TTL,
+        'seo:keywords',
+      );
+    }
+    return this.getGammeStatsInternal(gamme);
+  }
+
+  /**
+   * Implementation interne sans cache
+   */
+  private async getGammeStatsInternal(
+    gamme: string,
+  ): Promise<GammeDetailStats | null> {
     this.logger.log(`Fetching detailed stats for gamme: ${gamme}`);
 
     const { data, error } = await this.supabase
@@ -303,8 +348,25 @@ export class KeywordsDashboardService extends SupabaseBaseService {
 
   /**
    * Top keywords global par volume
+   * 🚀 P7.3 PERF: Cache Redis 15min
    */
   async getTopKeywords(limit = 100): Promise<TopKeyword[]> {
+    // 🚀 P7.3: Cache wrapper
+    if (this.redisCache) {
+      return this.redisCache.cached(
+        `top:${limit}`,
+        () => this.getTopKeywordsInternal(limit),
+        this.CACHE_TTL,
+        'seo:keywords',
+      );
+    }
+    return this.getTopKeywordsInternal(limit);
+  }
+
+  /**
+   * Implementation interne sans cache
+   */
+  private async getTopKeywordsInternal(limit = 100): Promise<TopKeyword[]> {
     this.logger.log(`Fetching top ${limit} keywords by volume`);
 
     const { data, error } = await this.supabase
