@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-02-02T12:00:00Z",
+  "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 137,
+  "total": 154,
   "functions": [
     {"name": "calc_article_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
     {"name": "calc_brand_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
@@ -145,6 +145,18 @@
     {"name": "validate_lexique_freinage", "volatility": "VOLATILE", "reason": "Validation only"},
     {"name": "validate_lexique_support_moteur", "volatility": "VOLATILE", "reason": "Validation only"},
     {"name": "validate_seo_content", "volatility": "VOLATILE", "reason": "Validation only"},
-    {"name": "validate_staging_brands", "volatility": "VOLATILE", "reason": "Validation only"}
+    {"name": "validate_staging_brands", "volatility": "VOLATILE", "reason": "Validation only"},
+    {"name": "get_homepage_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_brand_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_vehicle_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_gamme_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_brand_bestsellers_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_pieces_for_type_gamme", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_pieces_for_type_gamme_v3", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_oem_refs_for_vehicle", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "get_substitution_data", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "rm_get_listing_page", "volatility": "VOLATILE", "reason": "Read-only cache (migrated from P2)"},
+    {"name": "rm_get_page_complete", "volatility": "VOLATILE", "reason": "Read-only cache (migrated from P2)"},
+    {"name": "rm_get_page_complete_v2", "volatility": "VOLATILE", "reason": "Read-only cache (migrated from P2)"}
   ]
 }

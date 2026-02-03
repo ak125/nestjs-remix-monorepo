@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-02-02T12:00:00Z",
+  "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC DANGEROUS - Bloquer selon niveau enforce",
-  "total": 96,
+  "total": 64,
   "categories": {
     "P0_CRITICAL": {
       "count": 7,
@@ -41,9 +41,9 @@
       ]
     },
     "P2_MEDIUM": {
-      "count": 52,
+      "count": 40,
       "access": "SERVICE_ROLE_ALLOWLIST",
-      "reason": "SECURITY_DEFINER - fonctions avec elevation de privileges",
+      "reason": "SECURITY_DEFINER - fonctions avec elevation de privileges (12 read-only migrees vers allowlist 2026-02-03)",
       "functions": [
         "acquire_import_lock",
         "add_to_quarantine",
@@ -66,35 +66,23 @@
         "diagnose_symptoms",
         "fail_pipeline_step",
         "get_batch_report",
-        "get_brand_bestsellers_optimized",
-        "get_brand_page_data_optimized",
         "get_context_questions",
         "get_decision_report",
-        "get_gamme_page_data_optimized",
-        "get_homepage_data_optimized",
         "get_import_gate_report",
         "get_listing_products_for_build",
         "get_nk_stats",
-        "get_oem_refs_for_vehicle",
-        "get_pieces_for_type_gamme",
         "get_pieces_for_type_gamme_v2",
-        "get_pieces_for_type_gamme_v3",
         "get_pieces_for_type_gamme_v4",
         "get_purchase_excluded_ids",
         "get_quarantine_dashboard",
         "get_quarantine_stats",
         "get_seo_excluded_ids",
-        "get_substitution_data",
         "get_symptoms_by_subsystem",
-        "get_vehicle_page_data_optimized",
         "init_import_gates",
         "is_quarantined",
         "log_pipeline_event",
         "populate_golden_set",
         "release_import_lock",
-        "rm_get_listing_page",
-        "rm_get_page_complete",
-        "rm_get_page_complete_v2",
         "rm_health",
         "update_batch_contract"
       ]
