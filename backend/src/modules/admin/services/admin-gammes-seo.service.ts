@@ -9,6 +9,7 @@
 
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { CacheService } from '../../../cache/cache.service';
 import {
   GammeSeoThresholdsService,
@@ -159,8 +160,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     private readonly thresholdsService: GammeSeoThresholdsService,
     @Inject(forwardRef(() => GammeSeoAuditService))
     private readonly auditService: GammeSeoAuditService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -1789,11 +1792,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         `🔄 refreshAggregates(${pgId ? `pg_id=${pgId}` : 'all gammes'})`,
       );
 
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'refresh_gamme_aggregates',
-        {
-          p_pg_id: pgId || null,
-        },
+        { p_pg_id: pgId || null },
+        { source: 'admin' },
       );
 
       if (error) {
@@ -1949,9 +1952,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     this.logger.log(`📊 getSectionKMetrics(pgId=${pgId || 'all'})`);
 
     try {
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_vlevel_section_k_metrics',
         { p_pg_id: pgId || null },
+        { source: 'admin' },
       );
 
       if (error) {
@@ -2009,9 +2014,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     try {
       // Get type_ids expected (in catalog, not covered by V2/V3)
       // minus type_ids with V4
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_vlevel_section_k_missing',
         { p_pg_id: pgId },
+        { source: 'admin' },
       );
 
       if (error) {
@@ -2035,9 +2042,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
     try {
       // Get V4 type_ids that are not expected
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_vlevel_section_k_extras',
         { p_pg_id: pgId },
+        { source: 'admin' },
       );
 
       if (error) {

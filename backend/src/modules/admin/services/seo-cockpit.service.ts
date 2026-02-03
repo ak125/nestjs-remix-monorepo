@@ -12,6 +12,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { SeoMonitorSchedulerService } from '../../../workers/services/seo-monitor-scheduler.service';
 import { RiskFlagsEngineService } from '../../seo/services/risk-flags-engine.service';
 import { GooglebotDetectorService } from '../../seo/services/googlebot-detector.service';
@@ -98,8 +99,10 @@ export class SeoCockpitService extends SupabaseBaseService {
     private readonly riskFlagsEngine: RiskFlagsEngineService,
     private readonly googlebotDetector: GooglebotDetectorService,
     private readonly gammeSeoAudit: GammeSeoAuditService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   // ============================================================
@@ -173,9 +176,14 @@ export class SeoCockpitService extends SupabaseBaseService {
    * Récupère l'activité de crawl sur N jours
    */
   async getCrawlActivity(days: number = 30): Promise<CrawlActivityDay[]> {
-    const { data } = await this.supabase.rpc('get_crawl_activity_by_day', {
-      p_days: days,
-    });
+    // 🛡️ RPC Safety Gate
+    const { data } = await this.callRpc<any[]>(
+      'get_crawl_activity_by_day',
+      {
+        p_days: days,
+      },
+      { source: 'admin' },
+    );
 
     if (!data) return [];
 
@@ -378,6 +386,7 @@ export class SeoCockpitService extends SupabaseBaseService {
       1,
     ).toISOString();
 
+    // 🛡️ RPC Safety Gate
     const [todayRes, weekRes, monthRes, byAdminRes, byTypeRes] =
       await Promise.all([
         this.supabase
@@ -392,8 +401,12 @@ export class SeoCockpitService extends SupabaseBaseService {
           .from('gamme_seo_audit')
           .select('id', { count: 'exact', head: true })
           .gte('created_at', startOfMonth),
-        this.supabase.rpc('get_audit_stats_by_admin'),
-        this.supabase.rpc('get_audit_stats_by_type'),
+        this.callRpc<any[]>(
+          'get_audit_stats_by_admin',
+          {},
+          { source: 'admin' },
+        ),
+        this.callRpc<any[]>('get_audit_stats_by_type', {}, { source: 'admin' }),
       ]);
 
     return {
@@ -504,6 +517,7 @@ export class SeoCockpitService extends SupabaseBaseService {
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
+    // 🛡️ RPC Safety Gate
     const [last24hRes, last7dRes, avgRes, lastCrawlRes] = await Promise.all([
       this.supabase
         .from('__seo_crawl_log')
@@ -513,7 +527,11 @@ export class SeoCockpitService extends SupabaseBaseService {
         .from('__seo_crawl_log')
         .select('id', { count: 'exact', head: true })
         .gte('crawled_at', lastWeek.toISOString()),
-      this.supabase.rpc('get_avg_crawl_response_time'),
+      this.callRpc<number>(
+        'get_avg_crawl_response_time',
+        {},
+        { source: 'admin' },
+      ),
       this.supabase
         .from('__seo_crawl_log')
         .select('crawled_at')
