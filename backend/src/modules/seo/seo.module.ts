@@ -161,7 +161,9 @@ export class SeoModule {
     this.logger.log('   • SeoMonitoringModule (7 services)');
     this.logger.log('   • SeoSitemapModule (7 services)');
     this.logger.log('   • SeoContentModule (3 services)');
-    this.logger.log('🎯 Services CORE: 8 (SeoService, DynamicSeoV4Ultimate, etc.)');
+    this.logger.log(
+      '🎯 Services CORE: 8 (SeoService, DynamicSeoV4Ultimate, etc.)',
+    );
   }
 }
 
