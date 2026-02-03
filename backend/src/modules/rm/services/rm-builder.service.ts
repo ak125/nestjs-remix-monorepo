@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { CacheService } from '../../../cache/cache.service';
 import {
   RmProduct,
@@ -34,8 +35,12 @@ const CACHE_TTL = 3600;
 export class RmBuilderService extends SupabaseBaseService {
   protected override readonly logger = new Logger(RmBuilderService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -81,13 +86,15 @@ export class RmBuilderService extends SupabaseBaseService {
     );
 
     try {
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<RmProduct[]>(
         'get_listing_products_for_build_v2',
         {
           p_gamme_id: gamme_id,
           p_vehicle_id: vehicle_id,
           p_limit: limit,
         },
+        { source: 'api' },
       );
 
       const duration_ms = Math.round(performance.now() - startTime);
@@ -169,10 +176,15 @@ export class RmBuilderService extends SupabaseBaseService {
     );
 
     try {
-      const { data, error } = await this.supabase.rpc('rm_get_listing_page', {
-        p_gamme_id: gamme_id,
-        p_vehicle_id: vehicle_id,
-      });
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<ListingPageData>(
+        'rm_get_listing_page',
+        {
+          p_gamme_id: gamme_id,
+          p_vehicle_id: vehicle_id,
+        },
+        { source: 'api' },
+      );
 
       if (error) {
         this.logger.error(`RPC error: ${error.message}`);
@@ -271,7 +283,12 @@ export class RmBuilderService extends SupabaseBaseService {
    */
   async getHealth(): Promise<Record<string, unknown>> {
     try {
-      const { data, error } = await this.supabase.rpc('rm_health');
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<Record<string, unknown>>(
+        'rm_health',
+        {},
+        { source: 'admin' },
+      );
 
       if (error) {
         return {
@@ -394,11 +411,16 @@ export class RmBuilderService extends SupabaseBaseService {
     );
 
     try {
-      const { data, error } = await this.supabase.rpc('rm_get_page_complete', {
-        p_gamme_id: gamme_id,
-        p_vehicle_id: vehicle_id,
-        p_limit: limit,
-      });
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any>(
+        'rm_get_page_complete',
+        {
+          p_gamme_id: gamme_id,
+          p_vehicle_id: vehicle_id,
+          p_limit: limit,
+        },
+        { source: 'api' },
+      );
 
       const duration_ms = Math.round(performance.now() - startTime);
 
@@ -500,13 +522,15 @@ export class RmBuilderService extends SupabaseBaseService {
     );
 
     try {
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<RmPageCompleteV2Response>(
         'rm_get_page_complete_v2',
         {
           p_gamme_id: gamme_id,
           p_vehicle_id: vehicle_id,
           p_limit: limit,
         },
+        { source: 'api' },
       );
 
       const duration_ms = Math.round(performance.now() - startTime);

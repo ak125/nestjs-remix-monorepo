@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { IntentExtractorService } from './intent-extractor.service';
 import { SubstitutionLoggerService } from './substitution-logger.service';
 import {
@@ -31,8 +32,10 @@ export class SubstitutionService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly intentExtractor: IntentExtractorService,
     private readonly substitutionLogger: SubstitutionLoggerService,
+    rpcGate: RpcGateService,
   ) {
     super(configService);
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -92,13 +95,18 @@ export class SubstitutionService extends SupabaseBaseService {
     intent: ExtractedIntent,
   ): Promise<SubstitutionDataResponse> {
     try {
-      const { data, error } = await this.supabase.rpc('get_substitution_data', {
-        p_gamme_alias: intent.gammeAlias || null,
-        p_gamme_id: intent.gammeId || null,
-        p_marque_alias: intent.marqueAlias || null,
-        p_modele_alias: intent.modeleAlias || null,
-        p_type_alias: intent.typeAlias || null,
-      });
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<SubstitutionDataResponse>(
+        'get_substitution_data',
+        {
+          p_gamme_alias: intent.gammeAlias || null,
+          p_gamme_id: intent.gammeId || null,
+          p_marque_alias: intent.marqueAlias || null,
+          p_modele_alias: intent.modeleAlias || null,
+          p_type_alias: intent.typeAlias || null,
+        },
+        { source: 'api' },
+      );
 
       if (error) {
         this.logger.error(`RPC error: ${error.message}`);

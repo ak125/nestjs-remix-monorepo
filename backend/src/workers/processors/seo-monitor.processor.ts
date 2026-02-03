@@ -11,8 +11,9 @@
 import { Processor, Process, OnQueueError, OnQueueFailed } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 
 interface SeoMonitorJobData {
   taskType: 'check-critical-urls' | 'check-random-sample';
@@ -39,27 +40,12 @@ interface MonitoringResult {
 }
 
 @Processor('seo-monitor')
-export class SeoMonitorProcessor {
-  private readonly logger = new Logger(SeoMonitorProcessor.name);
-  private readonly supabase: SupabaseClient;
+export class SeoMonitorProcessor extends SupabaseBaseService {
+  protected override readonly logger = new Logger(SeoMonitorProcessor.name);
 
-  constructor(private readonly configService: ConfigService) {
-    // Initialiser client Supabase
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant');
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+    super(configService);
+    this.rpcGate = rpcGate;
   }
 
   /**
@@ -290,12 +276,11 @@ export class SeoMonitorProcessor {
     limit: number = 20,
   ): Promise<Array<{ url: string; typeId: number; gammeId: number }>> {
     try {
-      // Requête pour récupérer 20 combinaisons type+gamme aléatoires
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'get_random_vehicle_gamme_combinations',
-        {
-          sample_size: limit,
-        },
+        { sample_size: limit },
+        { source: 'cron' },
       );
 
       if (error || !data) {

@@ -7,9 +7,10 @@
  * Principle: L'IA NE CREE PAS LA VERITE (AI-COS Axiome Zero)
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import {
   McpVerifyContext,
   McpQueryRegistry,
@@ -30,26 +31,12 @@ import {
 } from '../types/mcp-verify.types';
 
 @Injectable()
-export class McpQueryService implements OnModuleInit {
-  private readonly logger = new Logger(McpQueryService.name);
-  private supabase: SupabaseClient;
+export class McpQueryService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(McpQueryService.name);
 
-  constructor(private readonly configService: ConfigService) {}
-
-  onModuleInit() {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
-
-    if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn(
-        'Supabase credentials not configured - MCP queries will return null',
-      );
-      return;
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+    super(configService);
+    this.rpcGate = rpcGate;
     this.logger.log('MCP Query Service initialized with Supabase connection');
   }
 
@@ -128,13 +115,14 @@ export class McpQueryService implements OnModuleInit {
         };
       }
 
-      // Check TecDoc linkage via RPC
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any>(
         'check_piece_vehicle_compatibility',
         {
           p_piece_id: resolvedPieceId,
           p_ktypnr: resolvedKtypnr,
         },
+        { source: 'api' },
       );
 
       if (error) {
@@ -409,13 +397,11 @@ export class McpQueryService implements OnModuleInit {
     input: DiagnoseInput,
     _context: McpVerifyContext,
   ): Promise<DiagnoseOutput | null> {
-    if (!this.supabase) return null;
-
     try {
       const { observable_ids, vehicle_context } = input;
 
-      // Call KG diagnostic RPC (correct name: kg_diagnose_with_explainable_score)
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'kg_diagnose_with_explainable_score',
         {
           p_observable_ids: observable_ids,
@@ -428,6 +414,7 @@ export class McpQueryService implements OnModuleInit {
           p_ctx_speed: null,
           p_limit: 10,
         },
+        { source: 'api' },
       );
 
       if (error) {
@@ -613,18 +600,15 @@ export class McpQueryService implements OnModuleInit {
     input: CheckSafetyGateInput,
     context: McpVerifyContext,
   ): Promise<CheckSafetyGateOutput | null> {
-    if (!this.supabase) {
-      this.logger.warn('checkSafetyGate: Supabase not configured');
-      return null;
-    }
-
     try {
       const { observable_ids } = input;
 
-      // Call the safety gate RPC
-      const { data, error } = await this.supabase.rpc('kg_check_safety_gate', {
-        p_observable_ids: observable_ids,
-      });
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
+        'kg_check_safety_gate',
+        { p_observable_ids: observable_ids },
+        { source: 'api' },
+      );
 
       if (error) {
         this.logger.error('checkSafetyGate RPC failed', { error, context });

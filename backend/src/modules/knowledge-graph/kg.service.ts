@@ -14,6 +14,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 import { KgDataService } from './kg-data.service';
 import {
   KgNode,
@@ -37,8 +38,10 @@ export class KgService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly kgDataService: KgDataService,
+    rpcGate: RpcGateService,
   ) {
     super(configService);
+    this.rpcGate = rpcGate;
     this.logger.log('🧠 KgService (Reasoning Engine) initialized');
   }
 
@@ -182,12 +185,11 @@ export class KgService extends SupabaseBaseService {
     observableNodeIds: string[],
   ): Promise<FaultCandidate[]> {
     const result = await this.executeWithRetry(async () => {
-      // Utiliser la RPC function pour performance
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<FaultCandidate[]>(
         'kg_find_faults_from_observables',
-        {
-          p_observable_ids: observableNodeIds,
-        },
+        { p_observable_ids: observableNodeIds },
+        { source: 'api' },
       );
 
       if (error) {
@@ -352,12 +354,11 @@ export class KgService extends SupabaseBaseService {
 
   private async findPartsForFault(faultId: string): Promise<DiagnosticPart[]> {
     const result = await this.executeWithRetry(async () => {
-      // Essayer RPC d'abord
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'kg_find_parts_for_fault',
-        {
-          p_fault_id: faultId,
-        },
+        { p_fault_id: faultId },
+        { source: 'api' },
       );
 
       if (error) {
@@ -409,11 +410,11 @@ export class KgService extends SupabaseBaseService {
     faultId: string,
   ): Promise<DiagnosticAction[]> {
     const result = await this.executeWithRetry(async () => {
-      const { data, error } = await this.supabase.rpc(
+      // 🛡️ RPC Safety Gate
+      const { data, error } = await this.callRpc<any[]>(
         'kg_find_actions_for_fault',
-        {
-          p_fault_id: faultId,
-        },
+        { p_fault_id: faultId },
+        { source: 'api' },
       );
 
       if (error) {
@@ -595,6 +596,11 @@ export class KgService extends SupabaseBaseService {
   }
 
   private async incrementCacheHit(queryHash: string): Promise<void> {
-    await this.supabase.rpc('increment_cache_hit', { p_query_hash: queryHash });
+    // 🛡️ RPC Safety Gate
+    await this.callRpc<void>(
+      'increment_cache_hit',
+      { p_query_hash: queryHash },
+      { source: 'api' },
+    );
   }
 }
