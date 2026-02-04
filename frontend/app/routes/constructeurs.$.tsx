@@ -18,6 +18,7 @@ import {
 } from "@remix-run/react";
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
+import { Error410 } from "~/components/errors/Error410";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 
@@ -514,26 +515,13 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    // 410 = Gone
+    // 410 = Gone - Utiliser le composant Error410 standard
     if (error.status === 410) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full text-center p-6">
-            <div className="text-6xl mb-4">🚗</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Véhicule retiré du catalogue
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Ce véhicule n'est plus disponible dans notre catalogue.
-            </p>
-            <a
-              href="/constructeurs"
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Voir tous les constructeurs
-            </a>
-          </div>
-        </div>
+        <Error410
+          url={typeof window !== "undefined" ? window.location.href : undefined}
+          isOldLink={false}
+        />
       );
     }
   }
