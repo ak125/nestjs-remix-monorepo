@@ -40,6 +40,7 @@ export class VehicleHierarchyController extends SupabaseBaseService {
           'type_id, type_name, type_alias, type_fuel, type_power_ps, type_year_from, type_year_to, type_body',
         )
         .eq('type_modele_id', modeleId)
+        .eq('type_display', '1') // Filtrer uniquement les types actifs
         .order('type_name', { ascending: true })
         .limit(50);
 
@@ -95,6 +96,7 @@ export class VehicleHierarchyController extends SupabaseBaseService {
         .from('auto_modele')
         .select('modele_id, modele_name, modele_alias')
         .eq('modele_marque_id', marqueId)
+        .eq('modele_display', '1') // Filtrer uniquement les modèles actifs
         .order('modele_name', { ascending: true })
         .limit(100);
 
