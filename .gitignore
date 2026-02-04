@@ -145,3 +145,20 @@ data/external/*.csv
 # Local files (not for git)
 # ============================================
 .local/
+
+# ============================================
+# Build artifacts (2026-02-04)
+# ============================================
+*.bundled_*.mjs
+tsconfig.tsbuildinfo
+backend/tsconfig.tsbuildinfo
+
+# ============================================
+# Local data/screenshots (2026-02-04)
+# ============================================
+data/
+screenshots/
+ux-capture/
+ux-debt/
+ux-prompts/
+ux-roadmap/
