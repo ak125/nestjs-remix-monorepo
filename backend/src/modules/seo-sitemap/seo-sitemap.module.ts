@@ -26,6 +26,10 @@ import { CatalogModule } from '../catalog/catalog.module';
 
 // Services sitemap (import depuis seo/ pour compatibilité)
 import { SitemapV10Service } from '../seo/services/sitemap-v10.service';
+import { SitemapV10XmlService } from '../seo/services/sitemap-v10-xml.service';
+import { SitemapV10DataService } from '../seo/services/sitemap-v10-data.service';
+import { SitemapV10StaticService } from '../seo/services/sitemap-v10-static.service';
+import { SitemapV10PiecesService } from '../seo/services/sitemap-v10-pieces.service';
 import { SitemapV10HubsService } from '../seo/services/sitemap-v10-hubs.service';
 import { HubsClusterService } from '../seo/services/sitemap-v10-hubs-cluster.service';
 import { HubsPriorityService } from '../seo/services/sitemap-v10-hubs-priority.service';
@@ -57,7 +61,15 @@ import { SitemapDeltaController } from '../seo/controllers/sitemap-delta.control
   ],
 
   providers: [
+    // Leaf services (no cross-dependencies)
+    SitemapV10XmlService,
+    SitemapV10DataService,
+    // Generator services (depend on leaf services)
+    SitemapV10StaticService,
+    SitemapV10PiecesService,
+    // Orchestrator (depends on all above)
     SitemapV10Service,
+    // Hub services
     HubsClusterService,
     HubsPriorityService,
     HubsVehicleService,
@@ -82,4 +94,4 @@ import { SitemapDeltaController } from '../seo/controllers/sitemap-delta.control
 export class SeoSitemapModule {}
 
 // Re-export types
-export { TemperatureBucket } from '../seo/services/sitemap-v10.service';
+export { TemperatureBucket } from '../seo/services/sitemap-v10.types';

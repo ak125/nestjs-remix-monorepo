@@ -51,6 +51,12 @@ export class SitemapV10Controller {
         filesGenerated: number;
         error?: string;
       }>;
+      hubResult?: {
+        success: boolean;
+        totalUrls: number;
+        totalFiles: number;
+        error?: string;
+      };
     };
   }> {
     this.logger.log('📝 POST /api/sitemap/v10/generate-all');
@@ -75,6 +81,7 @@ export class SitemapV10Controller {
             filesGenerated: r.filesGenerated,
             error: r.error,
           })),
+          hubResult: result.hubResult,
         },
       };
     } catch (error: any) {
@@ -107,6 +114,12 @@ export class SitemapV10Controller {
         filesGenerated: number;
         error?: string;
       }>;
+      hubResult?: {
+        success: boolean;
+        totalUrls: number;
+        totalFiles: number;
+        error?: string;
+      };
     };
   }> {
     this.logger.warn(
