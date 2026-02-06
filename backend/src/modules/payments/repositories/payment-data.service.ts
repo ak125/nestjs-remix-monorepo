@@ -9,7 +9,10 @@ import {
   Transaction,
   PaymentPostback,
 } from '../entities/payment.entity';
-import { normalizeOrderId } from '../utils/normalize-order-id';
+import {
+  normalizeOrderId,
+  extractNumericPart,
+} from '../utils/normalize-order-id';
 
 @Injectable()
 export class PaymentDataService extends SupabaseBaseService {
@@ -83,13 +86,70 @@ export class PaymentDataService extends SupabaseBaseService {
   }
 
   /**
+   * Résout un orderId vers le vrai ord_id en BDD.
+   * Stratégie multi-format : exact match → LIKE sur partie numérique → null.
+   *
+   * Gère les deux formats historiques :
+   * - Ancien (2020-2024) : "278383" (numérique)
+   * - Nouveau (2025+) : "ORD-1770396202649-628" (ORD-timestamp-random)
+   */
+  async resolveOrderId(inputId: string): Promise<string | null> {
+    if (!inputId) return null;
+
+    const safeId = normalizeOrderId(inputId);
+
+    // Étape 1 : Match exact
+    const { data: exactMatch } = await this.supabase
+      .from(TABLES.xtr_order)
+      .select('ord_id')
+      .eq('ord_id', safeId)
+      .maybeSingle();
+
+    if (exactMatch?.ord_id) return exactMatch.ord_id;
+
+    // Étape 2 : Fallback LIKE sur la partie numérique (timestamp)
+    // Ex: inputId="1770396202649" → cherche ord_id LIKE 'ORD-1770396202649%'
+    const numericPart = extractNumericPart(inputId);
+    if (numericPart && numericPart !== safeId) {
+      // Essayer le numérique seul (ancien format)
+      const { data: numericMatch } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_id')
+        .eq('ord_id', numericPart)
+        .maybeSingle();
+
+      if (numericMatch?.ord_id) return numericMatch.ord_id;
+    }
+
+    // Étape 3 : Si l'input est numérique, chercher le format ORD-{numeric}-%
+    if (numericPart) {
+      const { data: likeMatch } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_id')
+        .like('ord_id', `ORD-${numericPart}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (likeMatch?.ord_id) {
+        this.logger.warn(
+          `resolveOrderId: fallback LIKE match "${inputId}" → "${likeMatch.ord_id}"`,
+        );
+        return likeMatch.ord_id;
+      }
+    }
+
+    this.logger.error(
+      `resolveOrderId: aucune commande trouvée pour "${inputId}"`,
+    );
+    return null;
+  }
+
+  /**
    * Créer un nouveau paiement
    * Utilise ic_postback + ___xtr_order pour stocker les informations
    */
   async createPayment(paymentData: Partial<Payment>): Promise<Payment> {
     try {
-      // Defense-in-depth: normaliser orderId même si l'appelant l'a déjà fait
-      // Cela garantit que l'ID dans la DB sera toujours le format numérique attendu
       const safeOrderId = normalizeOrderId(paymentData.orderId || '');
 
       const paymentReference =
@@ -101,7 +161,6 @@ export class PaymentDataService extends SupabaseBaseService {
       );
 
       // 1. Enregistrer dans ic_postback pour tracking paiement
-      // Note: Les consignes sont stockées dans ___xtr_order.ord_deposit_ttc, pas ici
       const { data: postback, error: postbackError } = await this.supabase
         .from('ic_postback')
         .insert({
@@ -134,30 +193,41 @@ export class PaymentDataService extends SupabaseBaseService {
         const isCompleted = paymentData.status === 'completed';
         const orderUpdate: Record<string, any> = isCompleted
           ? {
-              ord_is_pay: '1', // 1 = payé
+              ord_is_pay: '1',
               ord_date_pay: new Date().toISOString(),
               ord_ords_id: '3', // Statut "Validée"
             }
           : {
-              ord_is_pay: '0', // 0 = en attente de paiement
+              ord_is_pay: '0',
               ord_date_pay: null,
             };
 
-        const { error: orderError } = await this.supabase
-          .from(TABLES.xtr_order)
-          .update(orderUpdate)
-          .eq('ord_id', safeOrderId);
+        // Résolution robuste : cherche le vrai ord_id en BDD
+        const resolvedId = await this.resolveOrderId(safeOrderId);
 
-        if (orderError) {
-          this.logger.warn(
-            `Failed to update order ${safeOrderId}: ${orderError.message}`,
-          );
-        } else if (isCompleted) {
-          this.logger.log(
-            `✅ Order ${safeOrderId} marked as PAID (ord_is_pay=1, ord_ords_id=3)`,
-          );
+        if (!resolvedId) {
+          const msg = `CRITICAL: Order not found in DB for id="${safeOrderId}" (payment=${paymentReference})`;
+          this.logger.error(msg);
+          if (isCompleted) {
+            throw new Error(msg);
+          }
         } else {
-          this.logger.log(`✅ Order ${safeOrderId} marked as unpaid`);
+          const { error: orderError } = await this.supabase
+            .from(TABLES.xtr_order)
+            .update(orderUpdate)
+            .eq('ord_id', resolvedId);
+
+          if (orderError) {
+            const msg = `CRITICAL: Failed to update order ${resolvedId}: ${orderError.message}`;
+            this.logger.error(msg);
+            if (isCompleted) {
+              throw new Error(msg);
+            }
+          } else if (isCompleted) {
+            this.logger.log(
+              `✅ Order ${resolvedId} marked as PAID (ord_is_pay=1, ord_ords_id=3)`,
+            );
+          }
         }
       }
 
@@ -249,13 +319,26 @@ export class PaymentDataService extends SupabaseBaseService {
 
       // Si paiement completé et orderId existe, mettre à jour ___xtr_order
       if (status === 'completed' && data.orderid) {
-        await this.supabase
-          .from(TABLES.xtr_order)
-          .update({
-            ord_is_pay: '1',
-            ord_date_pay: new Date().toISOString(),
-          })
-          .eq('ord_id', data.orderid);
+        const resolvedId = await this.resolveOrderId(data.orderid);
+        if (resolvedId) {
+          const { error: orderError } = await this.supabase
+            .from(TABLES.xtr_order)
+            .update({
+              ord_is_pay: '1',
+              ord_date_pay: new Date().toISOString(),
+            })
+            .eq('ord_id', resolvedId);
+
+          if (orderError) {
+            this.logger.error(
+              `CRITICAL: Failed to update order ${resolvedId} on status change: ${orderError.message}`,
+            );
+          }
+        } else {
+          this.logger.error(
+            `CRITICAL: Order not found for orderid="${data.orderid}" during status update`,
+          );
+        }
       }
 
       return this.mapPostbackToPayment(data);
@@ -512,17 +595,21 @@ export class PaymentDataService extends SupabaseBaseService {
     cst_name: string;
   } | null> {
     try {
-      const safeOrderId = normalizeOrderId(orderId);
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) {
+        this.logger.warn(`getCustomerForOrder: order "${orderId}" not found`);
+        return null;
+      }
 
       // 1. Récupérer l'ordre pour avoir le cst_id
       const { data: order, error: orderError } = await this.supabase
         .from(TABLES.xtr_order)
         .select('ord_cst_id')
-        .eq('ord_id', safeOrderId)
+        .eq('ord_id', resolvedId)
         .single();
 
       if (orderError || !order?.ord_cst_id) {
-        this.logger.warn(`Order ${safeOrderId} not found for customer lookup`);
+        this.logger.warn(`Order ${resolvedId} not found for customer lookup`);
         return null;
       }
 
@@ -559,17 +646,23 @@ export class PaymentDataService extends SupabaseBaseService {
     ord_cst_id: string;
   } | null> {
     try {
-      const safeOrderId = normalizeOrderId(orderId);
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) {
+        this.logger.warn(
+          `Order not found for payment verification: "${orderId}"`,
+        );
+        return null;
+      }
 
       const { data: order, error } = await this.supabase
         .from(TABLES.xtr_order)
         .select('ord_id, ord_total_ttc, ord_is_pay, ord_cst_id')
-        .eq('ord_id', safeOrderId)
+        .eq('ord_id', resolvedId)
         .single();
 
       if (error || !order) {
         this.logger.warn(
-          `Order not found for payment verification: ${safeOrderId}`,
+          `Order not found for payment verification: ${resolvedId}`,
         );
         return null;
       }

@@ -9,6 +9,7 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  HttpException,
   Logger,
   BadRequestException,
   NotFoundException,
@@ -574,23 +575,30 @@ export class PaymentsController {
    * ⚠️ PUBLIC (mais sécurisé par signature)
    */
   @Post('callback/cyberplus')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Callback Cyberplus pour notifications de paiement',
     description:
-      'Endpoint webhook appelé par Cyberplus/BNP pour notifier le statut des paiements',
+      'Endpoint webhook appele par Cyberplus/BNP pour notifier le statut des paiements',
   })
-  @ApiResponse({ status: 200, description: 'Callback traité avec succès' })
+  @ApiResponse({ status: 200, description: 'Callback traite avec succes' })
   @ApiResponse({
     status: 400,
-    description: 'Signature invalide ou données manquantes',
+    description: 'Signature invalide ou donnees manquantes',
   })
   async handleCyberplusCallback(@Body() body: any) {
+    // SystemPay envoie des champs vads_* — mapper correctement
+    const orderId = body.vads_order_id || body.order_id || body.orderid || '';
+    const transactionId =
+      body.vads_trans_id || body.transaction_id || body.transactionid || '';
+    const status =
+      body.vads_trans_status || body.status || body.statuscode || '';
+    const amount = parseFloat(body.vads_amount || body.amount) || 0;
+
     try {
-      this.logger.log('🔔 Received Cyberplus callback', {
-        transactionId: body.transaction_id || body.transactionid,
-        orderId: body.order_id || body.orderid,
-        status: body.status || body.statuscode,
+      this.logger.log('Received Cyberplus/SystemPay callback', {
+        transactionId,
+        orderId,
+        status,
       });
 
       // Enregistrer le callback dans ic_postback pour audit
@@ -599,20 +607,18 @@ export class PaymentsController {
       // Validation de la signature
       const isValid = this.cyberplusService.validateCallback(body);
       if (!isValid) {
-        this.logger.warn('⚠️ Invalid callback signature', body);
-        return {
-          success: false,
-          message: 'Invalid signature',
-          paymentId: body.order_id || body.orderid || '',
-        };
+        this.logger.error(
+          `REJECT: Invalid SystemPay callback signature for order ${orderId}`,
+        );
+        throw new BadRequestException('Invalid signature');
       }
 
       // Normaliser les données du callback
       const callbackData = {
-        transactionId: body.transaction_id || body.transactionid || '',
-        paymentReference: body.order_id || body.orderid || body.paymentid || '',
-        status: body.status || body.statuscode || '',
-        amount: parseFloat(body.amount) || 0,
+        transactionId,
+        paymentReference: orderId,
+        status,
+        amount,
         signature: body.signature || '',
       };
 
@@ -621,7 +627,7 @@ export class PaymentsController {
         await this.paymentService.handlePaymentCallback(callbackData);
 
       this.logger.log(
-        `✅ Callback processed successfully: ${payment.id} -> ${payment.status}`,
+        `Callback processed successfully: ${payment.id} -> ${payment.status}`,
       );
 
       return {
@@ -633,16 +639,15 @@ export class PaymentsController {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `❌ Failed to process callback: ${errorMessage}`,
+        `CRITICAL: Failed to process SystemPay callback for order ${orderId}: ${errorMessage}`,
         error instanceof Error ? error.stack : '',
       );
 
-      return {
-        success: false,
-        message: 'Internal error',
-        paymentId: body.order_id || body.orderid || '',
-        error: errorMessage,
-      };
+      // Retourner 500 pour que SystemPay re-essaie le callback
+      throw new HttpException(
+        'Payment callback processing failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

@@ -219,9 +219,7 @@ ${formFields}
    * Alternative SHA-1 : Si HMAC ne fonctionne pas, utilisez :
    * SHA-1(valeur1+valeur2+...+valeurN+certificat)
    */
-  private generateSystemPaySignature(
-    parameters: Record<string, string>,
-  ): string {
+  generateSystemPaySignature(parameters: Record<string, string>): string {
     // Trier les clés par ordre alphabétique et extraire les valeurs
     const sortedKeys = Object.keys(parameters)
       .filter((key) => key.startsWith('vads_'))
@@ -314,34 +312,34 @@ ${formFields}
   }
 
   /**
-   * Validation renforcée des callbacks Cyberplus
+   * Validation des callbacks SystemPay/Cyberplus
+   * Verifie les champs vads_* obligatoires et la signature HMAC
    */
   validateCallback(callbackData: any): boolean {
     try {
-      // Vérification des champs obligatoires
-      const requiredFields = [
-        'transaction_id',
-        'status',
-        'amount',
-        'order_id',
-        'signature',
-      ];
+      // SystemPay envoie des champs vads_* — verifier leur presence
+      const vadsOrderId = callbackData.vads_order_id;
+      const vadsTransStatus = callbackData.vads_trans_status;
+      const vadsAmount = callbackData.vads_amount;
+      const signature = callbackData.signature;
 
-      for (const field of requiredFields) {
-        if (!callbackData[field]) {
-          this.logger.warn(`Missing required field: ${field}`);
-          return false;
-        }
+      if (!vadsOrderId || !vadsTransStatus || !vadsAmount || !signature) {
+        this.logger.warn(
+          `SystemPay callback missing required vads_* fields: ` +
+            `order_id=${!!vadsOrderId}, status=${!!vadsTransStatus}, ` +
+            `amount=${!!vadsAmount}, signature=${!!signature}`,
+        );
+        return false;
       }
 
-      // Vérification de la signature
-      const { signature, ...dataWithoutSignature } = callbackData;
-      const expectedSignature = this.generateSignature(dataWithoutSignature);
-
+      // Verifier la signature avec le protocole SystemPay (vads_* tries + certificat)
+      const expectedSignature = this.generateSystemPaySignature(callbackData);
       const isValid = expectedSignature === signature;
 
       if (!isValid) {
-        this.logger.warn('Invalid signature in callback');
+        this.logger.warn(
+          `SystemPay callback signature mismatch for order ${vadsOrderId}`,
+        );
       }
 
       return isValid;

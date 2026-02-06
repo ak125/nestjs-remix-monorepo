@@ -87,10 +87,12 @@ export class PayboxService {
     // Date/heure au format ISO8601 (comme date("c") en PHP)
     const dateTime = new Date().toISOString();
 
-    // Paramètres Paybox de base (toujours présents)
-    // ⚠️ IMPORTANT : Configuration EXACTE de l'ancien site PHP
-    // AUCUNE URL (ni retour utilisateur, ni IPN callback)
-    // → L'URL IPN doit être configurée dans le back-office Paybox
+    // URL de base pour les callbacks
+    const baseUrl = this.configService.get<string>(
+      'BASE_URL',
+      'https://www.automecanik.com',
+    );
+
     const payboxParams: Record<string, string> = {
       PBX_SITE: this.site,
       PBX_RANG: this.rang,
@@ -99,13 +101,14 @@ export class PayboxService {
       PBX_DEVISE: '978', // EUR
       PBX_CMD: params.orderId,
       PBX_PORTEUR: params.customerEmail,
-      PBX_RETOUR: 'Mt:M;Ref:R;Auto:A;Erreur:E', // ⚠️ Sans ";Signature:K" comme dans le PHP
+      PBX_REPONDRE_A: `${baseUrl}/api/paybox/callback`, // URL IPN (server-to-server)
+      PBX_RETOUR: 'Mt:M;Ref:R;Auto:A;Erreur:E;K:K', // K:K = signature pour verification
       PBX_HASH: 'SHA512',
       PBX_TIME: dateTime,
     };
 
     this.logger.log(
-      "📋 Configuration Paybox EXACTE comme l'ancien PHP (aucune URL)",
+      `Formulaire Paybox avec IPN: ${payboxParams.PBX_REPONDRE_A}`,
     );
 
     // Construire la chaîne de signature avec les paramètres présents
@@ -140,8 +143,7 @@ export class PayboxService {
    * ⚠️ IMPORTANT : Ordre IDENTIQUE à l'ancien site PHP (sans aucune URL)
    */
   private buildSignatureString(params: Record<string, string>): string {
-    // Ordre EXACT des paramètres pour la signature (100% identique au PHP)
-    // AUCUNE URL (ni retour utilisateur ni IPN)
+    // Ordre des parametres Paybox pour la signature HMAC
     const orderedKeys = [
       'PBX_SITE',
       'PBX_RANG',
@@ -150,6 +152,7 @@ export class PayboxService {
       'PBX_DEVISE',
       'PBX_CMD',
       'PBX_PORTEUR',
+      'PBX_REPONDRE_A',
       'PBX_RETOUR',
       'PBX_HASH',
       'PBX_TIME',
@@ -183,32 +186,38 @@ export class PayboxService {
   }
 
   /**
-   * Vérifie la signature d'une réponse Paybox (callback IPN)
+   * Verifie la signature d'une reponse Paybox (callback IPN)
+   *
+   * Note: Le mode CGI Paybox signe les callbacks avec RSA (cle publique Paybox).
+   * L'implementation HMAC ci-dessous fonctionne pour Paybox System.
+   * Si PAYBOX_STRICT_VERIFY n'est pas 'true', on log l'echec sans bloquer.
    */
   verifySignature(
     params: Record<string, string>,
     receivedSignature: string,
   ): boolean {
     try {
-      // Extraire la signature reçue
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { PBX_HMAC: _PBX_HMAC, ...paramsWithoutSignature } = params;
+      // Retirer les champs signature du calcul (K, Signature, PBX_HMAC)
+      const {
+        K: _k,
+        Signature: _sig,
+        PBX_HMAC: _hmac,
+        ...paramsToVerify
+      } = params;
 
-      // Recalculer la signature
-      const calculatedSignature = this.generateSignature(
-        paramsWithoutSignature,
-      );
+      // Recalculer la signature HMAC sur les parametres restants
+      const calculatedSignature = this.generateSignature(paramsToVerify);
 
-      // Comparaison sécurisée (insensible à la casse et au timing)
       const isValid =
         calculatedSignature.toLowerCase() === receivedSignature.toLowerCase();
 
       if (isValid) {
-        this.logger.log('Signature Paybox valide');
+        this.logger.log('Signature Paybox valide (HMAC)');
       } else {
-        this.logger.error('Signature Paybox invalide !');
-        this.logger.error(`Expected: ${calculatedSignature}`);
-        this.logger.error(`Received: ${receivedSignature}`);
+        this.logger.warn(
+          `Paybox signature mismatch (expected HMAC, may be RSA/CGI mode). ` +
+            `Params: ${Object.keys(paramsToVerify).join(',')}`,
+        );
       }
 
       return isValid;

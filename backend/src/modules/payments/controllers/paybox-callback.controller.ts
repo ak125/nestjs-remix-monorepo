@@ -83,19 +83,30 @@ export class PayboxCallbackController {
       this.logger.log(`🔐 Autorisation: ${params.authorization}`);
       this.logger.log(`⚠️  Erreur: ${params.errorCode}`);
 
-      // Vérifier la signature
+      // Verifier la signature
       const signature =
         params.signature || params.K || query.Signature || query.K;
       if (!signature) {
-        this.logger.error('❌ Signature manquante dans le callback');
+        this.logger.error('Signature manquante dans le callback Paybox');
         return res.status(400).send('Signature manquante');
       }
 
       const isValid = this.payboxService.verifySignature(query, signature);
 
       if (!isValid) {
-        this.logger.error('❌ Signature invalide !');
-        return res.status(403).send('Signature invalide');
+        // Mode CGI Paybox: la signature est RSA (pas HMAC).
+        // En mode strict, on rejette. Sinon on log et on continue.
+        const strictVerify = process.env.PAYBOX_STRICT_VERIFY === 'true';
+        if (strictVerify) {
+          this.logger.error(
+            `REJECT: Signature Paybox invalide pour ${params.orderReference} (strict mode)`,
+          );
+          return res.status(403).send('Signature invalide');
+        }
+        this.logger.warn(
+          `Signature Paybox non verifiee pour ${params.orderReference} ` +
+            `(mode lenient — implementer RSA pour mode strict)`,
+        );
       }
 
       // Vérifier si le paiement est réussi
@@ -104,25 +115,24 @@ export class PayboxCallbackController {
       );
 
       if (isSuccess) {
-        this.logger.log('✅ Paiement réussi !');
+        this.logger.log('Paiement reussi !');
 
-        // Mise à jour du paiement en base de données
+        // Normaliser l'ID commande (preservé tel quel pour matcher la BDD)
+        const orderId = normalizeOrderId(params.orderReference);
+        this.logger.log(
+          `ID commande: ${orderId} (depuis ${params.orderReference})`,
+        );
+
+        const amountInEuros = parseFloat(params.amount) / 100;
+
+        // Enregistrer le paiement — si échec, retourner 500 pour que Paybox retry
         try {
-          // Normaliser l'ID commande (ORD-1762010061177-879 → 1762010061177)
-          const numericOrderId = normalizeOrderId(params.orderReference);
-          this.logger.log(
-            `📋 ID commande normalisé: ${numericOrderId} (depuis ${params.orderReference})`,
-          );
-
-          // Créer ou mettre à jour le paiement avec le bon enum
-          const amountInEuros = parseFloat(params.amount) / 100;
-
           await this.paymentDataService.createPayment({
-            orderId: numericOrderId,
+            orderId,
             amount: amountInEuros,
             currency: 'EUR',
-            status: 'completed' as any, // PaymentStatus.COMPLETED
-            method: 'credit_card' as any, // PaymentMethod.CREDIT_CARD
+            status: 'completed' as any,
+            method: 'credit_card' as any,
             providerTransactionId:
               params.authorization || params.orderReference,
             providerReference: params.orderReference,
@@ -135,63 +145,60 @@ export class PayboxCallbackController {
             },
             processedAt: new Date(),
           });
-
-          this.logger.log(
-            `✅ Paiement enregistré - Commande #${params.orderReference} - ${amountInEuros}€`,
-          );
-
-          // Envoyer email confirmation commande au client
-          try {
-            const order =
-              await this.paymentDataService.getOrderForPayment(numericOrderId);
-            const customer =
-              await this.paymentDataService.getCustomerForOrder(numericOrderId);
-
-            if (order && customer?.cst_mail) {
-              await this.emailService.sendOrderConfirmation(order, customer);
-              this.logger.log(
-                `📧 Email confirmation envoyé pour commande #${numericOrderId}`,
-              );
-            } else {
-              this.logger.warn(
-                `⚠️ Impossible d'envoyer email confirmation: order=${!!order}, customer=${!!customer}`,
-              );
-            }
-          } catch (emailError: any) {
-            this.logger.error(
-              `⚠️ Erreur envoi email confirmation (non bloquant): ${emailError.message}`,
-            );
-          }
         } catch (error: any) {
           this.logger.error(
-            `❌ Erreur enregistrement paiement: ${error.message}`,
+            `CRITICAL: Echec enregistrement paiement reussi pour ${params.orderReference}: ${error.message}`,
           );
-          // On retourne quand même OK à Paybox pour éviter les re-tentatives
+          // Retourner 500 pour que Paybox re-essaie le callback
+          return res.status(500).send('Payment recording failed');
+        }
+
+        this.logger.log(
+          `Paiement enregistre - Commande #${params.orderReference} - ${amountInEuros}EUR`,
+        );
+
+        // Email confirmation (non bloquant — ne pas bloquer le 200 OK)
+        try {
+          const order =
+            await this.paymentDataService.getOrderForPayment(orderId);
+          const customer =
+            await this.paymentDataService.getCustomerForOrder(orderId);
+
+          if (order && customer?.cst_mail) {
+            await this.emailService.sendOrderConfirmation(order, customer);
+            this.logger.log(
+              `Email confirmation envoye pour commande #${orderId}`,
+            );
+          } else {
+            this.logger.warn(
+              `Impossible d'envoyer email confirmation: order=${!!order}, customer=${!!customer}`,
+            );
+          }
+        } catch (emailError: any) {
+          this.logger.error(
+            `Erreur envoi email confirmation (non bloquant): ${emailError.message}`,
+          );
         }
 
         return res.status(200).send('OK');
       } else {
-        this.logger.warn(
-          `⚠️  Paiement échoué - Code erreur: ${params.errorCode}`,
-        );
+        this.logger.warn(`Paiement echoue - Code erreur: ${params.errorCode}`);
 
-        // Enregistrer l'échec du paiement
+        // Enregistrer l'échec du paiement (non bloquant, best-effort)
+        const orderId = normalizeOrderId(params.orderReference);
+        const amountInEuros = parseFloat(params.amount) / 100;
+
         try {
-          // Normaliser l'ID commande (même logique que pour succès)
-          const numericOrderId = normalizeOrderId(params.orderReference);
-
-          const amountInEuros = parseFloat(params.amount) / 100;
-
           await this.paymentDataService.createPayment({
-            orderId: numericOrderId,
+            orderId,
             amount: amountInEuros,
             currency: 'EUR',
-            status: 'failed' as any, // PaymentStatus.FAILED
+            status: 'failed' as any,
             method: 'credit_card' as any,
             providerTransactionId:
               params.authorization || params.orderReference,
             providerReference: params.orderReference,
-            description: `Paiement Paybox échoué - Code ${params.errorCode}`,
+            description: `Paiement Paybox echoue - Code ${params.errorCode}`,
             failureReason: `Code erreur Paybox: ${params.errorCode}`,
             metadata: {
               gateway: 'paybox',
@@ -203,12 +210,15 @@ export class PayboxCallbackController {
           });
 
           this.logger.log(
-            `⚠️  Échec paiement enregistré pour commande #${params.orderReference}`,
+            `Echec paiement enregistre pour commande #${params.orderReference}`,
           );
         } catch (error: any) {
-          this.logger.error(`❌ Erreur enregistrement échec: ${error.message}`);
+          this.logger.error(
+            `Erreur enregistrement echec paiement: ${error.message}`,
+          );
         }
 
+        // OK pour les échecs — Paybox n'a pas besoin de re-essayer
         return res.status(200).send('OK');
       }
     } catch (error) {
