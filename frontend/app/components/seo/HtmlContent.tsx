@@ -12,15 +12,16 @@
  * ```
  */
 
-import { Link, useLocation } from '@remix-run/react';
+import { Link, useLocation } from "@remix-run/react";
 import parse, {
   domToReact,
   type HTMLReactParserOptions,
   Element,
   type DOMNode,
-} from 'html-react-parser';
+} from "html-react-parser";
+import DOMPurify from "isomorphic-dompurify";
 
-import { useSeoLinkTracking } from '~/hooks/useSeoLinkTracking';
+import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
 
 // =====================================================
 // Types
@@ -53,13 +54,13 @@ export interface SeoLinkData {
  * Check if a URL is internal (same domain or relative)
  * SSR-safe: utilise domaine hardcodé pour éviter mismatch hydratation
  */
-const SITE_ORIGIN = 'https://www.automecanik.com';
+const SITE_ORIGIN = "https://www.automecanik.com";
 
 function isInternalLink(href: string | undefined): boolean {
   if (!href) return false;
 
   // Relative URLs are internal
-  if (href.startsWith('/') && !href.startsWith('//')) {
+  if (href.startsWith("/") && !href.startsWith("//")) {
     return true;
   }
 
@@ -78,15 +79,15 @@ function isInternalLink(href: string | undefined): boolean {
 function getTextContent(nodes: DOMNode[]): string {
   return nodes
     .map((node) => {
-      if (node.type === 'text') {
+      if (node.type === "text") {
         return (node as unknown as { data: string }).data;
       }
-      if ('children' in node && node.children) {
+      if ("children" in node && node.children) {
         return getTextContent(node.children as DOMNode[]);
       }
-      return '';
+      return "";
     })
-    .join('');
+    .join("");
 }
 
 /**
@@ -94,33 +95,85 @@ function getTextContent(nodes: DOMNode[]): string {
  * Fixes issues like: <spancalibri","sans-serif""> becoming valid HTML
  */
 function cleanHtml(html: string): string {
-  if (!html) return '';
-  
+  if (!html) return "";
+
   let cleaned = html;
-  
+
   // Remove invalid Microsoft Word tags like <spancalibri...>, <spanTimes...>, etc.
   // These are malformed tags from copy-paste from Word
-  cleaned = cleaned.replace(/<span[a-zA-Z][^>]*>/gi, '<span>');
-  
+  cleaned = cleaned.replace(/<span[a-zA-Z][^>]*>/gi, "<span>");
+
   // Remove tags with quotes/special chars in name (invalid HTML)
-  cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, '');
-  
+  cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, "");
+
   // 🛡️ SSR FIX: Supprimer TOUS les attributs style inline
   // React SSR échoue si html-react-parser passe style comme string au lieu d'objet
-  cleaned = cleaned.replace(/\s+style="[^"]*"/gi, '');
-  
+  cleaned = cleaned.replace(/\s+style="[^"]*"/gi, "");
+
   // Remove Word-specific XML namespaces and tags
-  cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, '');
-  cleaned = cleaned.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, '');
-  cleaned = cleaned.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, '');
-  cleaned = cleaned.replace(/<!\[if[^>]*>[\s\S]*?<!\[endif\]>/gi, '');
-  
+  cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, "");
+  cleaned = cleaned.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, "");
+  cleaned = cleaned.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, "");
+  cleaned = cleaned.replace(/<!\[if[^>]*>[\s\S]*?<!\[endif\]>/gi, "");
+
   // Remove empty spans
-  cleaned = cleaned.replace(/<span>\s*<\/span>/gi, '');
-  
+  cleaned = cleaned.replace(/<span>\s*<\/span>/gi, "");
+
   // Clean up multiple spaces
-  cleaned = cleaned.replace(/\s+/g, ' ');
-  
+  cleaned = cleaned.replace(/\s+/g, " ");
+
+  // Sanitize against XSS (strips scripts, event handlers, iframes, etc.)
+  cleaned = DOMPurify.sanitize(cleaned, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "b",
+      "i",
+      "u",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "h2",
+      "h3",
+      "h4",
+      "span",
+      "div",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "img",
+      "blockquote",
+      "pre",
+      "code",
+      "hr",
+      "sup",
+      "sub",
+      "dl",
+      "dt",
+      "dd",
+    ],
+    ALLOWED_ATTR: [
+      "href",
+      "class",
+      "data-link-type",
+      "data-formula",
+      "data-target-gamme",
+      "target",
+      "rel",
+      "src",
+      "alt",
+      "width",
+      "height",
+      "title",
+    ],
+  });
+
   return cleaned.trim();
 }
 
@@ -146,22 +199,22 @@ export function HtmlContent({
       }
 
       // Only process <a> tags
-      if (domNode.name !== 'a') {
+      if (domNode.name !== "a") {
         return;
       }
 
       const href = domNode.attribs.href;
-      const linkType = domNode.attribs['data-link-type'] || null;
-      const formula = domNode.attribs['data-formula'] || null;
-      const targetGamme = domNode.attribs['data-target-gamme'] || null;
+      const linkType = domNode.attribs["data-link-type"] || null;
+      const formula = domNode.attribs["data-formula"] || null;
+      const targetGamme = domNode.attribs["data-target-gamme"] || null;
 
       // Extract class and other attributes
       const { class: cssClass, ...otherAttribs } = domNode.attribs;
       const cleanAttribs = { ...otherAttribs };
       delete cleanAttribs.href;
-      delete cleanAttribs['data-link-type'];
-      delete cleanAttribs['data-formula'];
-      delete cleanAttribs['data-target-gamme'];
+      delete cleanAttribs["data-link-type"];
+      delete cleanAttribs["data-formula"];
+      delete cleanAttribs["data-target-gamme"];
 
       // Get anchor text for tracking
       const anchorText = getTextContent(domNode.children as DOMNode[]);
@@ -181,7 +234,7 @@ export function HtmlContent({
 
         // Custom handler
         if (onLinkClick) {
-          onLinkClick(href, linkType || 'unknown', formula || undefined);
+          onLinkClick(href, linkType || "unknown", formula || undefined);
         }
       };
 
@@ -221,7 +274,7 @@ export function HtmlContent({
   };
 
   // Handle empty or invalid HTML
-  if (!html || typeof html !== 'string') {
+  if (!html || typeof html !== "string") {
     return null;
   }
 

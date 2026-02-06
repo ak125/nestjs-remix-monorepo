@@ -15,6 +15,10 @@
       "lint": {
         "cache": false
       },
+      "test": {
+        "dependsOn": ["^build"],
+        "cache": false
+      },
       "spec:validate": {
         "cache": false,
         "outputs": [".spec/reports/**"]

@@ -17,9 +17,20 @@
  * {modelContentV1 && <ModelContentV1Display content={modelContentV1} />}
  */
 
-import { Book, History, Car, Wrench, FileText, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { MotorisationsTable, type MotorisationEntry } from './MotorisationsTable';
+import {
+  Book,
+  History,
+  Car,
+  Wrench,
+  FileText,
+  ChevronDown,
+} from "lucide-react";
+import { useState } from "react";
+import {
+  MotorisationsTable,
+  type MotorisationEntry,
+} from "./MotorisationsTable";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 
 export interface ModelContentV1Data {
   id: number;
@@ -67,7 +78,7 @@ interface ModelContentV1DisplayProps {
 export function ModelContentV1Display({
   content,
   collapsedByDefault = false,
-  className = '',
+  className = "",
 }: ModelContentV1DisplayProps) {
   const [isExpanded, setIsExpanded] = useState(!collapsedByDefault);
 
@@ -77,7 +88,9 @@ export function ModelContentV1Display({
   }
 
   const modelName = `${content.marque.name} ${content.modele.name}`;
-  const generation = content.modele.generation ? ` ${content.modele.generation}` : '';
+  const generation = content.modele.generation
+    ? ` ${content.modele.generation}`
+    : "";
 
   return (
     <section
@@ -107,7 +120,7 @@ export function ModelContentV1Display({
           </div>
           <ChevronDown
             className={`w-6 h-6 text-white transition-transform duration-300 ${
-              isExpanded ? 'rotate-180' : ''
+              isExpanded ? "rotate-180" : ""
             }`}
           />
         </div>
@@ -152,9 +165,9 @@ export function ModelContentV1Display({
                       <span className="w-2 h-2 rounded-full bg-gray-700"></span>
                       Motorisations Diesel
                     </h3>
-                    <div
+                    <HtmlContent
+                      html={content.dieselSection}
                       className="prose prose-sm prose-gray max-w-none"
-                      dangerouslySetInnerHTML={{ __html: content.dieselSection }}
                     />
                   </div>
                 )}
@@ -164,9 +177,9 @@ export function ModelContentV1Display({
                       <span className="w-2 h-2 rounded-full bg-red-500"></span>
                       Motorisations Essence
                     </h3>
-                    <div
+                    <HtmlContent
+                      html={content.essenceSection}
                       className="prose prose-sm prose-gray max-w-none"
-                      dangerouslySetInnerHTML={{ __html: content.essenceSection }}
                     />
                   </div>
                 )}
@@ -202,9 +215,9 @@ export function ModelContentV1Display({
                     <span className="text-lg">✓</span>
                     Points forts
                   </h3>
-                  <div
+                  <HtmlContent
+                    html={content.pointsForts}
                     className="prose prose-sm prose-green max-w-none"
-                    dangerouslySetInnerHTML={{ __html: content.pointsForts }}
                   />
                 </div>
               )}
@@ -214,9 +227,9 @@ export function ModelContentV1Display({
                     <span className="text-lg">✗</span>
                     Points faibles
                   </h3>
-                  <div
+                  <HtmlContent
+                    html={content.pointsFaibles}
                     className="prose prose-sm prose-red max-w-none"
-                    dangerouslySetInnerHTML={{ __html: content.pointsFaibles }}
                   />
                 </div>
               )}
@@ -247,9 +260,9 @@ export function ModelContentV1Display({
           {content.conclusion && (
             <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-3">En résumé</h3>
-              <div
+              <HtmlContent
+                html={content.conclusion}
                 className="prose prose-sm prose-gray max-w-none"
-                dangerouslySetInnerHTML={{ __html: content.conclusion }}
               />
             </div>
           )}
@@ -257,14 +270,14 @@ export function ModelContentV1Display({
           {/* Footer avec date de mise à jour */}
           <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-200">
             <span>
-              Mis à jour le{' '}
-              {new Date(content.updatedAt).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
+              Mis à jour le{" "}
+              {new Date(content.updatedAt).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
               })}
             </span>
-            <span>{content.views.toLocaleString('fr-FR')} consultations</span>
+            <span>{content.views.toLocaleString("fr-FR")} consultations</span>
           </div>
         </div>
       )}
@@ -277,7 +290,7 @@ function ContentSection({
   icon,
   title,
   content,
-  bgColor = 'bg-gray-50',
+  bgColor = "bg-gray-50",
 }: {
   icon: React.ReactNode;
   title: string;
@@ -290,9 +303,9 @@ function ContentSection({
         <span className="text-blue-600">{icon}</span>
         {title}
       </h3>
-      <div
+      <HtmlContent
+        html={content}
         className="prose prose-sm prose-gray max-w-none"
-        dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>
   );
