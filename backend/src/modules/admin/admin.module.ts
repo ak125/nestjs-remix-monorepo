@@ -28,7 +28,11 @@ import { UserManagementController } from './controllers/user-management.controll
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
 import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO (DEPRECATED)
-import { AdminGammesSeoController } from './controllers/admin-gammes-seo.controller'; // 🎯 Gammes SEO G-Level
+import { AdminGammesSeoListController } from './controllers/admin-gammes-seo-list.controller'; // 📋 Gammes SEO - Liste & Stats
+import { AdminGammesSeoUpdateController } from './controllers/admin-gammes-seo-update.controller'; // 🔧 Gammes SEO - Mises à jour
+import { AdminGammesSeoThresholdsController } from './controllers/admin-gammes-seo-thresholds.controller'; // 🔧 Gammes SEO - Seuils
+import { AdminGammesSeoVlevelController } from './controllers/admin-gammes-seo-vlevel.controller'; // 📊 Gammes SEO - V-Level & Section K
+import { AdminGammesSeoAggregatesController } from './controllers/admin-gammes-seo-aggregates.controller'; // 🏷️ Gammes SEO - Agrégats
 import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
@@ -79,7 +83,11 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     AdminStaffController,
     AdminProductsController,
     AdminSeoController, // 📊 Dashboard monitoring SEO (DEPRECATED - use SeoCockpitController)
-    AdminGammesSeoController, // 🎯 Gammes SEO G-Level classification
+    AdminGammesSeoListController, // 📋 Gammes SEO - Liste, stats, export, audit
+    AdminGammesSeoUpdateController, // 🔧 Gammes SEO - Update, batch, actions
+    AdminGammesSeoThresholdsController, // 🔧 Gammes SEO - Seuils Smart Action
+    AdminGammesSeoVlevelController, // 📊 Gammes SEO - V-Level & Section K
+    AdminGammesSeoAggregatesController, // 🏷️ Gammes SEO - Agrégats badges
     SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
   ],
   providers: [

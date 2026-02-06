@@ -5,8 +5,11 @@ import { DatabaseModule } from '../../database/database.module';
 // Configuration
 import paymentConfig from '../../config/payment.config';
 
-// Controllers
-import { PaymentsController } from './controllers/payments.controller';
+// Controllers (split from payments.controller.ts — order matters for route resolution)
+import { PaymentAdminController } from './controllers/payment-admin.controller';
+import { PaymentMethodsController } from './controllers/payment-methods.controller';
+import { PaymentCallbackController as PaymentCallbackCtrl } from './controllers/payment-callback.controller';
+import { PaymentCoreController } from './controllers/payment-core.controller';
 import { SystemPayRedirectController } from './controllers/systempay-redirect.controller';
 import { PayboxRedirectController } from './controllers/paybox-redirect.controller';
 import { PayboxCallbackController } from './controllers/paybox-callback.controller';
@@ -38,8 +41,8 @@ import { EmailService } from '../../services/email.service';
  * - Users module (clients)
  * - Admin module (gestion)
  *
- * VERSION : 1.0.0 (Refactoring 2025-10-05)
- * CONTRÔLEURS : 3 → 1 (-66%)
+ * VERSION : 2.0.0 (Split 2026-02-07)
+ * CONTRÔLEURS : 1 → 4 (admin, methods, callback, core) + 5 existants
  *
  * CONFIGURATION :
  * - Variables d'environnement via ConfigModule
@@ -51,12 +54,16 @@ import { EmailService } from '../../services/email.service';
     ConfigModule.forFeature(paymentConfig), // ✅ Configuration dédiée aux paiements
   ],
   controllers: [
-    PaymentsController, // ✅ Contrôleur unifié activé
-    SystemPayRedirectController, // ✅ Redirection SystemPay
-    PayboxRedirectController, // ✅ Redirection Paybox (PRODUCTION)
-    PayboxCallbackController, // ✅ Callback IPN Paybox
-    PayboxTestController, // ✅ Page de test Paybox (PHP → TS)
-    PayboxMonitoringController, // ✅ Monitoring admin Paybox
+    // Ordre critique : routes statiques AVANT wildcard /:id
+    PaymentAdminController, // GET /stats, /stats/global (statique)
+    PaymentMethodsController, // GET /methods/available (statique)
+    PaymentCallbackCtrl, // POST /callback/* (statique)
+    PaymentCoreController, // GET /:id (wildcard EN DERNIER)
+    SystemPayRedirectController,
+    PayboxRedirectController,
+    PayboxCallbackController,
+    PayboxTestController,
+    PayboxMonitoringController,
   ],
   providers: [
     // Services
