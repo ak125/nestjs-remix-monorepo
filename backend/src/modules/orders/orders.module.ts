@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { ApiModule } from '../api.module';
+import { AuthModule } from '../../auth/auth.module';
 
 // 🆕 Contrôleur unifié Phase 3
 import { OrdersController } from './controllers/orders.controller';
@@ -54,6 +55,7 @@ import { EmailService } from '../../services/email.service';
     forwardRef(() => DatabaseModule),
     ShippingModule,
     ApiModule, // Pour accéder au LegacyOrderService si besoin
+    AuthModule, // Pour guest checkout (AuthService)
   ],
   controllers: [
     // 🆕 Phase 3: Contrôleur unifié principal

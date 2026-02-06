@@ -33,8 +33,10 @@ import {
   ParseIntPipe,
   Request,
   BadRequestException,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import {
   ApiTags,
   ApiOperation,
@@ -45,6 +47,8 @@ import {
 } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { AuthService } from '../../../auth/auth.service';
 import {
   OrdersService,
   CreateOrderData,
@@ -56,7 +60,10 @@ import {
 export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
 
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly authService: AuthService,
+  ) {}
 
   // ═══════════════════════════════════════════════════════════════════════
   // 🔵 SECTION 1: ROUTES CLIENT (Authentification requise)
@@ -179,6 +186,92 @@ export class OrdersController {
       return await this.ordersService.createOrder(dataWithUserId);
     } catch (error) {
       this.logger.error('Error creating order:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🆕 Guest checkout - Créer commande sans compte
+   * POST /api/orders/guest
+   */
+  @Post('guest')
+  @UseGuards(OptionalAuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Créer une commande en tant qu'invité (guest checkout)",
+  })
+  @ApiResponse({ status: 201, description: 'Commande créée avec succès' })
+  @ApiResponse({ status: 400, description: 'Email invalide' })
+  @ApiResponse({
+    status: 409,
+    description: 'Email déjà enregistré - connexion requise',
+  })
+  async createGuestOrder(
+    @Body() body: CreateOrderData & { guestEmail?: string },
+    @Request() req: any,
+  ) {
+    try {
+      // Si déjà authentifié, déléguer au flow normal
+      const existingUserId = req.user?.id || req.session?.passport?.user?.id;
+      if (existingUserId) {
+        this.logger.log(
+          `Guest checkout: user already authenticated (${existingUserId}), delegating to normal flow`,
+        );
+        return this.createOrder(body, req);
+      }
+
+      const { guestEmail, ...orderData } = body;
+
+      if (!guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+        throw new BadRequestException('Adresse email invalide');
+      }
+
+      this.logger.log(`Guest checkout for email: ${guestEmail}`);
+
+      // Vérifier si l'email existe déjà
+      const existingUser = await this.authService.checkIfUserExists({
+        email: guestEmail,
+      });
+      if (existingUser) {
+        throw new ConflictException(
+          'Un compte existe déjà avec cet email. Veuillez vous connecter.',
+        );
+      }
+
+      // Créer un compte silencieux avec mot de passe aléatoire
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const newUser = await this.authService.register({
+        email: guestEmail,
+        password: randomPassword,
+        firstName: 'Invité',
+        lastName: '',
+      });
+
+      this.logger.log(`Guest account created: ${newUser.id} for ${guestEmail}`);
+
+      // Connecter l'utilisateur dans la session courante
+      await new Promise<void>((resolve, reject) => {
+        req.login({ id: newUser.id, email: newUser.email }, (err: any) =>
+          err ? reject(err) : resolve(),
+        );
+      });
+
+      // Flush la session vers Redis
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err: any) => (err ? reject(err) : resolve()));
+      });
+
+      this.logger.log(`Guest session established for user ${newUser.id}`);
+
+      // Créer la commande avec le nouveau userId
+      const dataWithUserId = {
+        ...orderData,
+        customerId: newUser.id as any,
+      };
+
+      return await this.ordersService.createOrder(dataWithUserId);
+    } catch (error) {
+      this.logger.error('Error in guest checkout:', error);
       throw error;
     }
   }

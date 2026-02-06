@@ -388,7 +388,24 @@ export class AuthController {
             }
           }
 
-          // Redirection selon le type et niveau d'utilisateur
+          // ✅ Vérifier redirectTo (query ou body) avant la redirection par défaut
+          const redirectTo =
+            (request as any).body?.redirectTo ||
+            (request as any).query?.redirectTo;
+
+          if (
+            redirectTo &&
+            typeof redirectTo === 'string' &&
+            redirectTo.startsWith('/') &&
+            !redirectTo.startsWith('//')
+          ) {
+            console.log(`✅ Redirection vers: ${redirectTo}`);
+            response.redirect(redirectTo);
+            resolve();
+            return;
+          }
+
+          // Redirection par défaut selon le type et niveau d'utilisateur
           if (user.isAdmin && userLevel >= 7) {
             console.log(
               `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,

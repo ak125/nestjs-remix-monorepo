@@ -15,13 +15,14 @@ import {
   useLoaderData,
   useNavigation,
   useActionData,
+  useSubmit,
   Link,
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { requireUserWithRedirect } from "../auth/unified.server";
+import { getOptionalUser } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
 import { Error404 } from "~/components/errors/Error404";
 
@@ -55,11 +56,11 @@ export const meta: MetaFunction = () => [
 ];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // ✅ Authentification requise - redirige vers /login?redirectTo=/checkout
-  const user = await requireUserWithRedirect({ request, context });
-  const userId = user.id;
+  // ✅ Auth optionnelle - guest checkout autorisé
+  const user = await getOptionalUser({ context });
+  const userId = user?.id || null;
 
-  console.log("🔍 Checkout loader - User:", userId);
+  console.log("🔍 Checkout loader - User:", userId || "guest");
 
   try {
     const cart = await getCart(request, context);
@@ -105,7 +106,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalItems,
       "articles total",
     );
-    return json({ cart });
+    return json({ cart, user });
   } catch (error) {
     console.error("❌ Erreur chargement panier checkout:", error);
     console.error(
@@ -130,9 +131,13 @@ export async function action({ request }: ActionFunctionArgs) {
   console.log("🔵 [Checkout Action] Request method:", request.method);
 
   try {
-    // Note: On ne lit pas le formData pour éviter les timeouts
-    // Les champs guestEmail et createAccount ne sont pas utilisés dans la création de commande
-    // L'authentification est déjà gérée par le requireUser() du loader
+    // Lire guestEmail depuis l'URL (query param) car formData() bloque avec NestJS middleware
+    const url = new URL(request.url);
+    const guestEmail = url.searchParams.get("guestEmail") || null;
+    console.log(
+      "🔵 [Checkout Action] guestEmail:",
+      guestEmail || "none (authenticated user)",
+    );
 
     // 1. Récupérer le panier
     console.log("🛒 [Checkout Action] Récupération du panier...");
@@ -224,15 +229,26 @@ export async function action({ request }: ActionFunctionArgs) {
       "🍪 [Checkout Action] Cookie header:",
       cookieHeader ? `${cookieHeader.substring(0, 50)}...` : "VIDE",
     );
-    console.log("🚀 [Checkout Action] Envoi requête création commande...");
 
-    const response = await fetch("http://127.0.0.1:3000/api/orders", {
+    // Choisir l'endpoint selon le mode (guest ou authentifié)
+    const isGuest = !!guestEmail;
+    const orderUrl = isGuest
+      ? "http://127.0.0.1:3000/api/orders/guest"
+      : "http://127.0.0.1:3000/api/orders";
+
+    const payload = isGuest ? { ...orderPayload, guestEmail } : orderPayload;
+
+    console.log(
+      `🚀 [Checkout Action] Envoi requête ${isGuest ? "guest" : "auth"} création commande...`,
+    );
+
+    const response = await fetch(orderUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Cookie: cookieHeader,
       },
-      body: JSON.stringify(orderPayload),
+      body: JSON.stringify(payload),
     });
 
     console.log(
@@ -245,9 +261,21 @@ export async function action({ request }: ActionFunctionArgs) {
         "❌ [Checkout Action] Erreur création commande, statut:",
         response.status,
       );
-      // ✅ Détecter si l'erreur est due à un manque d'authentification
+
+      // Guest checkout: email déjà enregistré → rediriger vers login
+      if (response.status === 409 && isGuest) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set(
+          "message",
+          "Un compte existe déjà avec cet email. Connectez-vous pour continuer.",
+        );
+        loginUrl.searchParams.set("redirectTo", "/checkout");
+        loginUrl.searchParams.set("email", guestEmail);
+        return redirect(loginUrl.toString());
+      }
+
+      // Détecter si l'erreur est due à un manque d'authentification
       if (response.status === 403 || response.status === 401) {
-        // Rediriger vers la page de connexion avec un message
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set(
           "message",
@@ -312,11 +340,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart } = data;
+  const { cart, user } = data as any;
   const loaderError = "error" in data ? data.error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const submit = useSubmit();
+  const [guestEmail, setGuestEmail] = useState("");
+
+  const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Envoyer POST vide avec guestEmail en query param (formData() bloque avec NestJS)
+    const action = guestEmail
+      ? `/checkout?guestEmail=${encodeURIComponent(guestEmail)}`
+      : "/checkout";
+    submit(null, { method: "post", action });
+  };
 
   console.log(
     "🔍 CheckoutPage render, actionData:",
@@ -373,6 +412,8 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       <Form
         method="post"
+        id="checkout-form"
+        onSubmit={handleCheckoutSubmit}
         className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8"
       >
         {/* Header avec breadcrumb */}
@@ -422,76 +463,77 @@ export default function CheckoutPage() {
           {/* Informations client */}
           <div className="lg:col-span-2 space-y-6">
             {/* ✅ Email invité - Seulement si non connecté */}
-            {!cart.metadata?.user_id &&
-              !cart.metadata?.session_id?.includes("usr_") && (
-                <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-slate-900">
-                        Votre email
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        Pour recevoir la confirmation de commande
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="guestEmail"
-                        className="block text-sm font-medium text-slate-700 mb-2"
-                      >
-                        Adresse email *
-                      </label>
-                      <input
-                        type="email"
-                        id="guestEmail"
-                        name="guestEmail"
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="votre.email@exemple.com"
+            {!user && (
+              <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
                       />
-                    </div>
-
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="createAccount"
-                          defaultChecked
-                          className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-blue-900">
-                            ✨ Créer un compte pour suivre mes commandes
-                          </p>
-                          <p className="text-xs text-blue-700 mt-1">
-                            Recommandé : Un mot de passe vous sera envoyé par
-                            email. Vous pourrez consulter l'historique de vos
-                            commandes et gérer vos informations.
-                          </p>
-                        </div>
-                      </label>
-                    </div>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      Votre email
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      Pour recevoir la confirmation de commande
+                    </p>
                   </div>
                 </div>
-              )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="guestEmail"
+                      className="block text-sm font-medium text-slate-700 mb-2"
+                    >
+                      Adresse email *
+                    </label>
+                    <input
+                      type="email"
+                      id="guestEmail"
+                      name="guestEmail"
+                      required
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="votre.email@exemple.com"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="createAccount"
+                        defaultChecked
+                        className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-blue-900">
+                          ✨ Créer un compte pour suivre mes commandes
+                        </p>
+                        <p className="text-xs text-blue-700 mt-1">
+                          Recommandé : Un mot de passe vous sera envoyé par
+                          email. Vous pourrez consulter l'historique de vos
+                          commandes et gérer vos informations.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -814,9 +856,10 @@ export default function CheckoutPage() {
       {/* Mobile Bottom Bar - Sticky CTA */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>
-        <Form method="post" className="flex-1">
+        <div className="flex-1">
           <button
             type="submit"
+            form="checkout-form"
             disabled={isSubmitting}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -862,7 +905,7 @@ export default function CheckoutPage() {
               </>
             )}
           </button>
-        </Form>
+        </div>
       </MobileBottomBar>
     </div>
   );

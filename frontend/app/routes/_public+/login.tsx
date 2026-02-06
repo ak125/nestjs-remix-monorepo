@@ -77,7 +77,9 @@ export default function LoginPage() {
     // Soumettre directement au backend via navigation native
     const tempForm = document.createElement("form");
     tempForm.method = "POST";
-    tempForm.action = "/authenticate";
+    tempForm.action = redirectTo
+      ? `/authenticate?redirectTo=${encodeURIComponent(redirectTo)}`
+      : "/authenticate";
     tempForm.style.display = "none";
 
     const emailInput = document.createElement("input");
