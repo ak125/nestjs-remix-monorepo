@@ -4,7 +4,7 @@
  * Module products après consolidation Phase 2 & 3 :
  * ✅ Services consolidés : 13 → 7 (-46%)
  * ✅ Code nettoyé : 8,190 → 4,137 lignes (-49%)
- * ✅ Controllers consolidés : 8 → 4 (-50%)
+ * ✅ Controllers split Phase 5 : 1 monolithique → 5 focalisés (max ~220L)
  * ✅ Noms clairs et explicites
  * ✅ 0 duplication, 0 code mort
  * ✅ Architecture Domain-Driven
@@ -18,8 +18,12 @@ import { Module, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 
-// Controllers - Consolidés Phase 3
-import { ProductsController } from './products.controller';
+// Controllers - Split Phase 5 (février 2026)
+import { ProductsAdminController } from './controllers/products-admin.controller';
+import { ProductsSearchController } from './controllers/products-search.controller';
+import { ProductsInventoryController } from './controllers/products-inventory.controller';
+import { ProductsCatalogController } from './controllers/products-catalog.controller';
+import { ProductsCoreController } from './controllers/products-core.controller';
 import { FilteringController } from './filtering.controller';
 import { CrossSellingController } from './cross-selling.controller';
 
@@ -46,9 +50,14 @@ import { StockService } from './services/stock.service';
     }),
   ],
   controllers: [
-    ProductsController, // ✅ API REST principale pour produits
-    FilteringController, // ✅ API filtrage produits
-    CrossSellingController, // ✅ API ventes croisées
+    // Ordre CRITIQUE : routes statiques avant /:id (ProductsCoreController en dernier)
+    ProductsAdminController, // /admin/*, /debug/*, /filters/*, /:id/status
+    ProductsSearchController, // /search, /search/vehicle, /search/:reference, /popular
+    ProductsInventoryController, // /inventory/*
+    ProductsCatalogController, // /gammes, /brands, /models, /stats
+    ProductsCoreController, // /, /pieces, /pieces-catalog, /:id (catch-all — LAST)
+    FilteringController, // api/products/filters/*
+    CrossSellingController, // api/cross-selling/*
   ],
   providers: [
     // Services principaux - Split Phase 4
@@ -79,7 +88,7 @@ export class ProductsModule {
 
   constructor() {
     this.logger.log(
-      '🎯 Products Module - Phase 4 Split (9 services, 3 controllers)',
+      '🎯 Products Module - Phase 5 Split (9 services, 7 controllers)',
     );
     this.logger.log('✅ Services actifs (9):');
     this.logger.log('   • ProductsService - CRUD + Search core (~570L)');
