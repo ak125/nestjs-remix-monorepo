@@ -42,6 +42,8 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 import { SeoService } from './seo.service';
 import { SeoEnhancedService } from './seo-enhanced.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
+import { SeoV4SwitchEngineService } from './services/seo-v4-switch-engine.service';
+import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import { HreflangService } from './services/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
 import { RobotsTxtService } from './services/robots-txt.service';
@@ -103,6 +105,8 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     // 🎯 Services CORE uniquement
     SeoService,
     SeoEnhancedService,
+    SeoV4SwitchEngineService,
+    SeoV4MonitoringService,
     DynamicSeoV4UltimateService,
     HreflangService,
     ProductImageService,
@@ -170,7 +174,7 @@ export class SeoModule {
 /**
  * 📊 EXPORTS POUR V4 ULTIMATE
  */
-export { SeoVariables } from './dynamic-seo-v4-ultimate.service';
+export { SeoVariables } from './seo-v4.types';
 
 /**
  * 🎯 EXPORTS POUR RÔLES DE PAGES (Phase 0)
