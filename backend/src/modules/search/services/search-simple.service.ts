@@ -157,6 +157,37 @@ export class SearchSimpleService extends SupabaseBaseService {
       `🔍 Recherche: "${refQuery}" → variantes: ${uniqueVariants.join(', ')}`,
     );
 
+    // 🆕 SHORT-CIRCUIT: Si refQuery est vide (la requête entière est un mot-clé catégorie),
+    // aller directement au fallback gamme-name au lieu de chercher "" dans les refs
+    if (cleanedForSearch === '' && categoryFilter) {
+      this.logger.log(
+        `🎯 Requête catégorielle pure: "${cleanQuery}" → fallback gamme-name direct`,
+      );
+      const gammeResult = await this.searchByGammeName(categoryFilter);
+
+      if (gammeResult.pieces.length > 0) {
+        this.logger.log(
+          `✅ Gamme-name direct: ${gammeResult.matchedGammes.map((g) => g.name).join(', ')} (${gammeResult.pieces.length} pièces)`,
+        );
+        const result = await this.processResults(
+          gammeResult.pieces,
+          cleanQuery,
+          filters,
+          page,
+          limit,
+          offset,
+          startTime,
+          null, // pas de categoryFilter ici, les pièces sont déjà filtrées par gamme
+          cacheKey,
+        );
+        if (result.data) {
+          (result.data as any).fallbackType = 'gamme-name';
+          (result.data as any).matchedGammes = gammeResult.matchedGammes;
+        }
+        return result;
+      }
+    }
+
     // 1) refs dans pieces_ref_search
     const searchRefsResult = await this.client
       .from(TABLES.pieces_ref_search)
@@ -204,6 +235,31 @@ export class SearchSimpleService extends SupabaseBaseService {
       );
 
       if (priceMatches.length === 0) {
+        // 🆕 Fallback 3: Recherche par nom de gamme (dernière chance)
+        const gammeResult = await this.searchByGammeName(cleanQuery);
+
+        if (gammeResult.pieces.length > 0) {
+          this.logger.log(
+            `🔍 Fallback gamme-name: "${cleanQuery}" → ${gammeResult.matchedGammes.map((g) => g.name).join(', ')} (${gammeResult.pieces.length} pièces)`,
+          );
+          const result = await this.processResults(
+            gammeResult.pieces,
+            refQuery,
+            filters,
+            page,
+            limit,
+            offset,
+            startTime,
+            categoryFilter,
+            cacheKey,
+          );
+          if (result.data) {
+            (result.data as any).fallbackType = 'gamme-name';
+            (result.data as any).matchedGammes = gammeResult.matchedGammes;
+          }
+          return result;
+        }
+
         return this.processResults(
           [],
           refQuery,
@@ -681,6 +737,125 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     return result;
+  }
+
+  /**
+   * 🆕 Fallback: Recherche par nom de gamme (text search)
+   * Quand la recherche par référence retourne 0 résultats,
+   * on cherche dans pieces_gamme.pg_name pour trouver des catégories correspondantes.
+   */
+  private async searchByGammeName(
+    query: string,
+    limit: number = 200,
+  ): Promise<{
+    pieces: any[];
+    matchedGammes: { id: number; name: string; alias: string }[];
+  }> {
+    this.logger.log(`🔍 Fallback gamme-name: "${query}"`);
+
+    // 1) Chercher gammes correspondantes - priorité aux catégories principales (pg_level=1)
+    //    pg_level='1' = catégories principales (Amortisseur, Plaquette de frein, Filtre à air...)
+    //    pg_level='0' = sous-catégories obscures (Kit adaptateur-amortisseur...)
+    const gammesResult = await this.client
+      .from(TABLES.pieces_gamme)
+      .select('pg_id, pg_name, pg_alias, pg_level')
+      .ilike('pg_name', `%${query}%`)
+      .eq('pg_display', '1')
+      .order('pg_level', { ascending: false }) // Level 1 (main) avant level 0 (obscur)
+      .limit(10);
+
+    if (gammesResult.error) {
+      this.logger.error(
+        `❌ Erreur Supabase gamme: ${JSON.stringify(gammesResult.error)}`,
+      );
+      return { pieces: [], matchedGammes: [] };
+    }
+
+    const gammes = gammesResult.data;
+    this.logger.log(`📊 Gammes brutes: ${JSON.stringify(gammes?.slice(0, 3))}`);
+
+    if (!gammes?.length) {
+      this.logger.log(`❌ Aucune gamme trouvée pour "${query}"`);
+      return { pieces: [], matchedGammes: [] };
+    }
+
+    this.logger.log(
+      `📋 ${gammes.length} gamme(s): ${gammes.map((g: any) => g.pg_name).join(', ')}`,
+    );
+
+    const gammeIds = gammes.map((g: any) => g.pg_id);
+
+    // 2) Charger pièces visibles de ces gammes
+    const { data: pieces } = await this.client
+      .from(TABLES.pieces)
+      .select(
+        'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
+      )
+      .in('piece_pg_id', gammeIds)
+      .eq('piece_display', true)
+      .limit(limit);
+
+    if (!pieces?.length) {
+      this.logger.log(`❌ Aucune pièce visible dans ces gammes`);
+      return { pieces: [], matchedGammes: [] };
+    }
+
+    this.logger.log(`📦 ${pieces.length} pièces trouvées dans ces gammes`);
+
+    // 3) Charger les prix disponibles
+    const { data: prices } = await this.client
+      .from(TABLES.pieces_price)
+      .select(
+        'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+      )
+      .in(
+        'pri_piece_id',
+        pieces.map((p: any) => String(p.piece_id)),
+      )
+      .eq('pri_dispo', '1');
+
+    const priceMap = new Map<string, any>();
+    for (const pr of prices || []) {
+      priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
+    }
+
+    // 4) Enrichir et filtrer (garder uniquement celles avec prix)
+    const enrichedPieces = pieces
+      .map((p: any) => {
+        const key = `${p.piece_id}-${p.piece_pm_id}`;
+        const price = priceMap.get(key);
+        if (!price) return null;
+
+        return {
+          ...p,
+          _prsKind: 0,
+          _priceVenteTTC: parseFloat(price.pri_vente_ttc || '0'),
+          _priceConsigneTTC: parseFloat(price.pri_consigne_ttc || '0'),
+          _isOEM: false,
+          _oemRef: null,
+        };
+      })
+      .filter(Boolean);
+
+    // 5) Tri par prix décroissant
+    enrichedPieces.sort((a: any, b: any) => {
+      const priceA = (a._priceVenteTTC || 0) * (a.piece_qty_sale || 1);
+      const priceB = (b._priceVenteTTC || 0) * (b.piece_qty_sale || 1);
+      return priceB - priceA;
+    });
+
+    this.logger.log(
+      `✅ Fallback gamme-name: ${enrichedPieces.length} pièces enrichies`,
+    );
+
+    return {
+      pieces: enrichedPieces,
+      matchedGammes: gammes.map((g: any) => ({
+        id: g.pg_id,
+        name: g.pg_name,
+        alias: g.pg_alias,
+      })),
+    };
   }
 
   private generateFacets(

@@ -635,6 +635,26 @@ export default function SearchPage() {
           </div>
         )}
 
+        {/* Banner fallback gamme-name */}
+        {results &&
+          !hasError &&
+          (results as any).fallbackType === "gamme-name" &&
+          (results as any).matchedGammes?.length > 0 && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-blue-800">
+                Aucune référence exacte trouvée pour &quot;
+                <strong>{query}</strong>&quot;. Voici les pièces de la gamme{" "}
+                <a
+                  href={`/pieces/${(results as any).matchedGammes[0].alias}-${(results as any).matchedGammes[0].id}.html`}
+                  className="font-semibold underline hover:text-blue-900"
+                >
+                  {(results as any).matchedGammes[0].name}
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
         {/* Zone de résultats */}
         {results && !hasError && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
