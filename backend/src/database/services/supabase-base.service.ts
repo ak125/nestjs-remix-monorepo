@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { fetch as undiciFetch } from 'undici';
+import { fetch as undiciFetch, RequestInit as UndiciRequestInit } from 'undici';
 import { getAppConfig } from '../../config/app.config';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 import { RpcGateContext } from '../../security/rpc-gate/rpc-gate.types';
@@ -172,14 +172,15 @@ export abstract class SupabaseBaseService {
               {
                 ...init,
                 signal: signal,
-              } as any,
+              } as UndiciRequestInit,
             );
             return response as unknown as Response;
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const err = error as { name?: string; code?: string };
             if (
-              error.name === 'TimeoutError' ||
-              error.name === 'AbortError' ||
-              error.code === 'UND_ERR_CONNECT_TIMEOUT'
+              err.name === 'TimeoutError' ||
+              err.name === 'AbortError' ||
+              err.code === 'UND_ERR_CONNECT_TIMEOUT'
             ) {
               this.logger.error(`❌ Supabase Request Timeout (15s) for ${url}`);
               throw new Error('Supabase Request Timeout (15s)');
@@ -258,7 +259,7 @@ export abstract class SupabaseBaseService {
       return null;
     }
 
-    let lastError: any;
+    let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -267,25 +268,31 @@ export abstract class SupabaseBaseService {
         // Succès - réinitialiser le circuit breaker
         this.onSuccess();
         return result;
-      } catch (error: any) {
-        lastError = error;
+      } catch (error: unknown) {
+        const err = error as {
+          message?: string;
+          code?: string;
+          errno?: string;
+          type?: string;
+        };
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         // Vérifier le type d'erreur pour décider si on retry
         const isCloudflareError =
-          error?.message?.includes('500 Internal Server Error') ||
-          error?.message?.includes('cloudflare');
+          err.message?.includes('500 Internal Server Error') ||
+          err.message?.includes('cloudflare');
 
         const isTimeoutError =
-          error?.code === 'ETIMEDOUT' ||
-          error?.errno === 'ETIMEDOUT' ||
-          error?.type === 'system' ||
-          error?.message?.includes('ETIMEDOUT') ||
-          error?.message?.includes('timeout');
+          err.code === 'ETIMEDOUT' ||
+          err.errno === 'ETIMEDOUT' ||
+          err.type === 'system' ||
+          err.message?.includes('ETIMEDOUT') ||
+          err.message?.includes('timeout');
 
         const isNetworkError =
-          error?.code === 'ECONNRESET' ||
-          error?.code === 'ECONNREFUSED' ||
-          error?.code === 'ENOTFOUND';
+          err.code === 'ECONNRESET' ||
+          err.code === 'ECONNREFUSED' ||
+          err.code === 'ENOTFOUND';
 
         const shouldRetry =
           isCloudflareError || isTimeoutError || isNetworkError;
@@ -298,7 +305,7 @@ export abstract class SupabaseBaseService {
               : 'CLOUDFLARE';
 
           this.logger.warn(
-            `⚠️ ${errorType} error lors de ${operationName} (tentative ${attempt}/${maxRetries}): ${error?.message}`,
+            `⚠️ ${errorType} error lors de ${operationName} (tentative ${attempt}/${maxRetries}): ${err.message}`,
           );
           this.onFailure();
 

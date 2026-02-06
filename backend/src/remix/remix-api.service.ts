@@ -9,6 +9,18 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { OrdersService } from '../database/services/orders.service';
 
+interface StaffMember {
+  status: string;
+  department: string;
+  [key: string]: unknown;
+}
+
+interface UsersApiResponse {
+  data?: Record<string, unknown>[];
+  users?: Record<string, unknown>[];
+  total?: number;
+}
+
 @Injectable()
 export class RemixApiService {
   private readonly baseUrl = 'http://localhost:3000';
@@ -21,7 +33,7 @@ export class RemixApiService {
   /**
    * 🚀 Helper HTTP simplifié - L'auth passe par le contexte Remix
    */
-  private async makeApiCall<T = any>(endpoint: string): Promise<T> {
+  private async makeApiCall<T = unknown>(endpoint: string): Promise<T> {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'GET',
@@ -89,17 +101,17 @@ export class RemixApiService {
    */
   async getStaff(params?: { status?: string; department?: string }) {
     // Utiliser l'endpoint qui fonctionne déjà
-    const result = await this.makeApiCall<{ data: any[] }>(
+    const result = await this.makeApiCall<{ data: StaffMember[] }>(
       '/api/users/test-staff?page=1&limit=100',
     );
 
     // Filtrer si nécessaire
     let staff = result.data || [];
     if (params?.status) {
-      staff = staff.filter((s: any) => s.status === params.status);
+      staff = staff.filter((s) => s.status === params.status);
     }
     if (params?.department) {
-      staff = staff.filter((s: any) => s.department === params.department);
+      staff = staff.filter((s) => s.department === params.department);
     }
 
     return staff;
@@ -109,16 +121,16 @@ export class RemixApiService {
    * 📊 STAFF STATISTICS
    */
   async getStaffStatistics() {
-    const result = await this.makeApiCall<{ data: any[] }>(
+    const result = await this.makeApiCall<{ data: StaffMember[] }>(
       '/api/users/test-staff?page=1&limit=100',
     );
     const staff = result.data || [];
 
     return {
       total: staff.length,
-      active: staff.filter((s: any) => s.status === 'active').length,
-      inactive: staff.filter((s: any) => s.status === 'inactive').length,
-      departments: [...new Set(staff.map((s: any) => s.department))].length,
+      active: staff.filter((s) => s.status === 'active').length,
+      inactive: staff.filter((s) => s.status === 'inactive').length,
+      departments: [...new Set(staff.map((s) => s.department))].length,
     };
   }
 
@@ -159,7 +171,8 @@ export class RemixApiService {
         })),
       ]);
 
-      const ordersTotal = (ordersResult as any).data?.total || 0;
+      const ordersTotal =
+        (ordersResult as { data?: { total?: number } }).data?.total || 0;
 
       return {
         success: true,
@@ -197,12 +210,22 @@ export class RemixApiService {
   /**
    * 📦 Méthodes de compatibilité ForRemix
    */
-  async getOrdersForRemix(params: any) {
+  async getOrdersForRemix(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }) {
     return this.getOrders(params);
   }
 
-  async getUsersForRemix(params: any) {
-    const result: any = await this.getUsers(params);
+  async getUsersForRemix(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    level?: number;
+  }) {
+    const result: UsersApiResponse = await this.getUsers(params);
     return {
       success: true,
       users: result.data || result.users || [],
@@ -225,7 +248,12 @@ export class RemixApiService {
     };
   }
 
-  async getPaymentsForRemix(params: any) {
+  async getPaymentsForRemix(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }) {
     return this.getPayments(params);
   }
 

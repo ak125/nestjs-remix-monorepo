@@ -16,6 +16,19 @@ export interface User {
   updatedAt?: Date;
 }
 
+interface CustomerRow {
+  customer_id: string;
+  customer_email: string;
+  customer_firstname?: string;
+  customer_lastname?: string;
+  customer_phone?: string;
+  customer_is_active: boolean;
+  customer_is_pro: boolean;
+  customer_level: number;
+  customer_created_at?: Date;
+  customer_updated_at?: Date;
+}
+
 @Injectable()
 export class UserDataService extends SupabaseBaseService {
   constructor(configService: ConfigService) {
@@ -100,7 +113,7 @@ export class UserDataService extends SupabaseBaseService {
    */
   async updateUser(userId: string, updates: Partial<User>): Promise<User> {
     try {
-      const updateData: any = {};
+      const updateData: Record<string, string | number | boolean> = {};
 
       if (updates.email) updateData.customer_email = updates.email;
       if (updates.firstName) updateData.customer_firstname = updates.firstName;
@@ -133,7 +146,7 @@ export class UserDataService extends SupabaseBaseService {
   /**
    * Mappe les données de la DB vers le modèle User
    */
-  private mapToUser(dbData: any): User {
+  private mapToUser(dbData: CustomerRow): User {
     return {
       id: dbData.customer_id,
       email: dbData.customer_email,

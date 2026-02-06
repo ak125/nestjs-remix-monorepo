@@ -18,7 +18,7 @@ interface NotificationData {
   timestamp: string;
   priority: 'low' | 'normal' | 'high' | 'urgent';
   persistent?: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 @WebSocketGateway({
@@ -77,7 +77,10 @@ export class NotificationsGateway
   }
 
   @SubscribeMessage('subscribe')
-  handleSubscribe(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+  handleSubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { userId?: string; interests?: string[] },
+  ) {
     this.logger.log(`Client ${client.id} subscribed with data:`, data);
 
     // Join specific rooms based on user preferences
@@ -101,7 +104,7 @@ export class NotificationsGateway
   @SubscribeMessage('unsubscribe')
   handleUnsubscribe(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: any,
+    @MessageBody() data: { room: string },
   ) {
     if (data.room) {
       client.leave(data.room);
@@ -159,7 +162,7 @@ export class NotificationsGateway
   @SubscribeMessage('test-notification')
   handleTestNotification(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: any,
+    @MessageBody() data: { type?: NotificationData['type'] },
   ) {
     const testNotifications: NotificationData[] = [
       {
@@ -235,7 +238,7 @@ export class NotificationsGateway
         demoMessages[Math.floor(Math.random() * demoMessages.length)];
       const notification: NotificationData = {
         id: `demo-${Date.now()}`,
-        type: randomMessage.type as any,
+        type: randomMessage.type as NotificationData['type'],
         title: randomMessage.title,
         message: randomMessage.message,
         timestamp: new Date().toISOString(),
