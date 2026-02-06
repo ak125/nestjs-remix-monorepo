@@ -1,16 +1,17 @@
 import { Link, NavLink } from "@remix-run/react";
 import {
   Facebook,
+  Home,
   Instagram,
+  LayoutGrid,
   Linkedin,
   Mail,
   MapPin,
   Phone,
-  Plus,
   Search,
-  Star,
+  ShoppingCart,
   Twitter,
-  Users,
+  User,
   Youtube,
 } from "lucide-react";
 export const Footer = () => {
@@ -82,7 +83,7 @@ export const Footer = () => {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    to="/pieces"
+                    to="/#catalogue"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Catalogue pièces
@@ -90,7 +91,7 @@ export const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    to="/constructeurs"
+                    to="/#toutes-les-marques"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Constructeurs
@@ -113,12 +114,12 @@ export const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <a
-                    href="/plan-du-site"
+                  <Link
+                    to="/plan-du-site"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Plan du site
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -244,11 +245,15 @@ export const Footer = () => {
 
       {/* Navigation mobile en bas (conservée pour mobile) */}
       <footer className="md:hidden overflow-x-auto px-3 py-2 flex items-center justify-between gap-4 mt-auto bg-lightTurquoise">
-        <FooterLinkItem href="/" icon={<Search />} label="Rechercher" />
-        <FooterLinkItem href="/" icon={<Users />} label="Offreurs" />
-        <FooterLinkItem href="/" icon={<Plus />} label="Demandes" />
-        <FooterLinkItem href="/" icon={<Star />} label="Favoris" />
-        <FooterLinkItem href="/" icon={<Mail />} label="Message" />
+        <FooterLinkItem href="/" icon={<Home />} label="Accueil" />
+        <FooterLinkItem
+          href="/#catalogue"
+          icon={<LayoutGrid />}
+          label="Catalogue"
+        />
+        <FooterLinkItem href="/search" icon={<Search />} label="Recherche" />
+        <FooterLinkItem href="/login" icon={<User />} label="Compte" />
+        <FooterLinkItem href="/cart" icon={<ShoppingCart />} label="Panier" />
       </footer>
     </>
   );

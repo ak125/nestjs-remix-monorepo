@@ -80,6 +80,57 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
+const quickNav = [
+  { href: "#pages", label: "Pages principales" },
+  { href: "#catalogue", label: "Catalogue pièces" },
+  { href: "#constructeurs", label: "Constructeurs" },
+  { href: "#blog", label: "Blog & Contenu" },
+  { href: "#aide", label: "Aide & Services" },
+  { href: "#legal", label: "Informations légales" },
+];
+
+const mainPages = [
+  { to: "/", label: "Accueil" },
+  { to: "/#catalogue", label: "Catalogue pièces" },
+  { to: "/#toutes-les-marques", label: "Marques automobiles" },
+  { to: "/blog-pieces-auto", label: "Blog & Conseils" },
+  { to: "/contact", label: "Contact" },
+];
+
+const blogLinks = [
+  { to: "/blog-pieces-auto", label: "Articles & Actualités" },
+  { to: "/blog-pieces-auto/conseils", label: "Conseils par catégorie" },
+  { to: "/blog-pieces-auto/guide", label: "Guides pratiques" },
+  {
+    to: "/blog-pieces-auto/constructeurs",
+    label: "Fiches constructeurs",
+  },
+  { to: "/blog-pieces-auto/auto", label: "Par marque automobile" },
+  { to: "/diagnostic-auto", label: "Diagnostic auto" },
+  { to: "/reference-auto", label: "Référence technique" },
+];
+
+const aideLinks = [
+  { to: "/legal/faq", label: "FAQ" },
+  { to: "/legal/shipping", label: "Livraison" },
+  { to: "/legal/warranty", label: "Garantie & Retours" },
+  { to: "/legal/suivi", label: "Suivi de commande" },
+  { to: "/legal/paiement", label: "Paiement" },
+  { to: "/legal/devis", label: "Devis" },
+  { to: "/legal/reclamations", label: "Réclamations" },
+];
+
+const legalLinks = [
+  { to: "/legal/cgv", label: "Conditions générales de vente" },
+  { to: "/legal/legal-notice", label: "Mentions légales" },
+  {
+    to: "/legal/privacy",
+    label: "Politique de confidentialité",
+  },
+  { to: "/legal/cookies", label: "Gestion des cookies" },
+  { to: "/legal/about", label: "Qui sommes-nous" },
+];
+
 export default function PlanDuSite() {
   const { families, brands, totalGammes } = useLoaderData<typeof loader>();
 
@@ -103,30 +154,15 @@ export default function PlanDuSite() {
             Accès rapide
           </h2>
           <div className="flex flex-wrap gap-2">
-            <a
-              href="#pages"
-              className="px-3 py-1.5 text-sm bg-white border rounded-full hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            >
-              Pages principales
-            </a>
-            <a
-              href="#catalogue"
-              className="px-3 py-1.5 text-sm bg-white border rounded-full hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            >
-              Catalogue pièces
-            </a>
-            <a
-              href="#constructeurs"
-              className="px-3 py-1.5 text-sm bg-white border rounded-full hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            >
-              Constructeurs
-            </a>
-            <a
-              href="#informations"
-              className="px-3 py-1.5 text-sm bg-white border rounded-full hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            >
-              Informations
-            </a>
+            {quickNav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="px-3 py-1.5 text-sm bg-white border rounded-full hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
           </div>
         </nav>
 
@@ -136,45 +172,13 @@ export default function PlanDuSite() {
             Pages principales
           </h2>
           <ul className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <li>
-              <Link to="/" className="text-blue-600 hover:underline">
-                Accueil
-              </Link>
-            </li>
-            <li>
-              <Link to="/marques" className="text-blue-600 hover:underline">
-                Marques de pièces
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/blog-pieces-auto"
-                className="text-blue-600 hover:underline"
-              >
-                Blog & Conseils
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/diagnostic-auto"
-                className="text-blue-600 hover:underline"
-              >
-                Diagnostic auto
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/reference-auto"
-                className="text-blue-600 hover:underline"
-              >
-                Recherche par référence
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" className="text-blue-600 hover:underline">
-                Contact
-              </Link>
-            </li>
+            {mainPages.map((page) => (
+              <li key={page.to}>
+                <Link to={page.to} className="text-blue-600 hover:underline">
+                  {page.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
 
@@ -248,38 +252,51 @@ export default function PlanDuSite() {
           </section>
         )}
 
-        {/* Informations */}
-        <section id="informations" className="mb-12 scroll-mt-20">
+        {/* Blog & Contenu */}
+        <section id="blog" className="mb-12 scroll-mt-20">
           <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">
-            Informations
+            Blog & Contenu
           </h2>
           <ul className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <li>
-              <Link to="/cgv" className="text-blue-600 hover:underline">
-                Conditions générales de vente
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/mentions-legales"
-                className="text-blue-600 hover:underline"
-              >
-                Mentions légales
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/politique-de-confidentialite"
-                className="text-blue-600 hover:underline"
-              >
-                Politique de confidentialité
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" className="text-blue-600 hover:underline">
-                Nous contacter
-              </Link>
-            </li>
+            {blogLinks.map((link) => (
+              <li key={link.to}>
+                <Link to={link.to} className="text-blue-600 hover:underline">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Aide & Services */}
+        <section id="aide" className="mb-12 scroll-mt-20">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">
+            Aide & Services
+          </h2>
+          <ul className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            {aideLinks.map((link) => (
+              <li key={link.to}>
+                <Link to={link.to} className="text-blue-600 hover:underline">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Informations légales */}
+        <section id="legal" className="mb-12 scroll-mt-20">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">
+            Informations légales
+          </h2>
+          <ul className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            {legalLinks.map((link) => (
+              <li key={link.to}>
+                <Link to={link.to} className="text-blue-600 hover:underline">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       </div>
