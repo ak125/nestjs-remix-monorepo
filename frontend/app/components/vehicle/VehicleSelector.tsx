@@ -389,7 +389,7 @@ export default function VehicleSelector({
         <select
           value={selectedBrand?.marque_id || ""}
           onChange={(e) => handleBrandChange(Number(e.target.value))}
-          className="flex-1 p-2 border rounded"
+          className="flex-1 p-2 border rounded text-base"
           aria-label="Sélectionner la marque"
         >
           <option value="">Marque</option>
@@ -405,7 +405,7 @@ export default function VehicleSelector({
           value={selectedYear || ""}
           onChange={(e) => handleYearChange(Number(e.target.value))}
           disabled={!selectedBrand || loadingYears}
-          className="p-2 border rounded"
+          className="p-2 border rounded text-base"
           aria-label="Sélectionner l'année"
         >
           <option value="">Année</option>
@@ -421,7 +421,7 @@ export default function VehicleSelector({
           value={selectedModel?.modele_id || ""}
           onChange={(e) => handleModelChange(Number(e.target.value))}
           disabled={!selectedYear || loadingModels}
-          className="flex-1 p-2 border rounded"
+          className="flex-1 p-2 border rounded text-base"
           aria-label="Sélectionner le modèle"
         >
           <option value="">Modèle</option>
@@ -442,7 +442,7 @@ export default function VehicleSelector({
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!selectedModel || loadingTypes}
-          className="p-2 border rounded"
+          className="p-2 border rounded text-base"
           aria-label="Sélectionner la motorisation"
         >
           <option value="">Motorisation</option>
@@ -535,7 +535,7 @@ export default function VehicleSelector({
                       !brands.length && !loadingBrands && loadBrands()
                     }
                     disabled={loadingBrands}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
                     <option value="">
                       {loadingBrands ? "Chargement..." : "Constructeur"}
@@ -562,7 +562,7 @@ export default function VehicleSelector({
                     value={selectedYear || ""}
                     onChange={(e) => handleYearChange(Number(e.target.value))}
                     disabled={!selectedBrand || loadingYears}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
                     <option value="">
                       {loadingYears ? "Chargement..." : "Année"}
@@ -589,7 +589,7 @@ export default function VehicleSelector({
                     value={selectedModel?.modele_id || ""}
                     onChange={(e) => handleModelChange(Number(e.target.value))}
                     disabled={!selectedYear || loadingModels}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
                     <option value="">
                       {loadingModels ? "Chargement..." : "Modèle"}
@@ -621,7 +621,7 @@ export default function VehicleSelector({
                       if (selectedType) handleTypeSelect(selectedType);
                     }}
                     disabled={!selectedModel || loadingTypes}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
                     <option value="">
                       {loadingTypes ? "Chargement..." : "Motorisation"}

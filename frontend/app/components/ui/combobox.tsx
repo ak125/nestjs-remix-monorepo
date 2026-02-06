@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
-import { cn } from "~/lib/utils";
 import { Input } from "./input";
+import { cn } from "~/lib/utils";
 
 export interface ComboboxItem {
   value: string;
@@ -37,22 +37,23 @@ export function Combobox({
   disabled = false,
   className,
   allowClear = true,
-  maxHeight = 200
+  maxHeight,
 }: ComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   // Trouve l'item sélectionné
-  const selectedItem = items.find(item => item.value === value);
+  const selectedItem = items.find((item) => item.value === value);
 
   // Filtre les items selon la recherche
   const filteredItems = React.useMemo(() => {
     if (!searchQuery.trim()) return items;
-    
-    return items.filter(item =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.value.toLowerCase().includes(searchQuery.toLowerCase())
+
+    return items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.value.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [items, searchQuery]);
 
@@ -60,7 +61,7 @@ export function Combobox({
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setHighlightedIndex(-1);
-    
+
     if (onSearch) {
       onSearch(query);
     }
@@ -69,7 +70,7 @@ export function Combobox({
   // Sélection d'un item
   const handleSelect = (item: ComboboxItem) => {
     if (item.disabled) return;
-    
+
     onValueChange?.(item.value, item);
     setIsOpen(false);
     setSearchQuery("");
@@ -94,13 +95,13 @@ export function Combobox({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex(prev => 
-          Math.min(prev + 1, filteredItems.length - 1)
+        setHighlightedIndex((prev) =>
+          Math.min(prev + 1, filteredItems.length - 1),
         );
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex(prev => Math.max(prev - 1, -1));
+        setHighlightedIndex((prev) => Math.max(prev - 1, -1));
         break;
       case "Enter":
         e.preventDefault();
@@ -125,18 +126,20 @@ export function Combobox({
           onKeyDown={handleKeyDown}
           disabled={disabled}
           className={cn(
-            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+            "flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
             "placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            isOpen && "ring-2 ring-ring ring-offset-2"
+            isOpen && "ring-2 ring-ring ring-offset-2",
           )}
         >
-          <span className={cn(
-            selectedItem ? "text-foreground" : "text-muted-foreground"
-          )}>
+          <span
+            className={cn(
+              selectedItem ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
             {selectedItem?.label || placeholder}
           </span>
-          
+
           <div className="flex items-center gap-1">
             {allowClear && selectedItem && !disabled && (
               <button
@@ -145,7 +148,7 @@ export function Combobox({
                   e.stopPropagation();
                   handleClear();
                 }}
-                className="h-4 w-4 rounded-sm hover:bg-muted flex items-center justify-center"
+                className="h-7 w-7 rounded-sm hover:bg-muted flex items-center justify-center -mr-1"
               >
                 ✕
               </button>
@@ -153,7 +156,7 @@ export function Combobox({
             <svg
               className={cn(
                 "h-4 w-4 opacity-50 transition-transform",
-                isOpen && "rotate-180"
+                isOpen && "rotate-180",
               )}
               fill="none"
               stroke="currentColor"
@@ -180,14 +183,17 @@ export function Combobox({
               onChange={(e) => handleSearch(e.target.value)}
               placeholder={searchPlaceholder}
               autoFocus
-              className="h-8"
+              className="h-10"
             />
           </div>
 
           {/* Items list */}
-          <div 
-            className="py-1 overflow-auto"
-            style={{ maxHeight }}
+          <div
+            className={cn(
+              "py-1 overflow-auto",
+              maxHeight == null && "max-h-[50vh] sm:max-h-[300px]",
+            )}
+            {...(maxHeight != null ? { style: { maxHeight } } : {})}
           >
             {loading ? (
               <div className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
@@ -207,12 +213,14 @@ export function Combobox({
                   onMouseEnter={() => setHighlightedIndex(index)}
                   disabled={item.disabled}
                   className={cn(
-                    "w-full px-3 py-2 text-left text-sm transition-colors",
+                    "w-full px-3 py-3 text-left text-sm transition-colors min-h-[44px] flex items-center",
                     "hover:bg-accent hover:text-accent-foreground",
                     "focus:bg-accent focus:text-accent-foreground",
                     "disabled:pointer-events-none disabled:opacity-50",
-                    index === highlightedIndex && "bg-accent text-accent-foreground",
-                    selectedItem?.value === item.value && "bg-primary/10 text-primary font-medium"
+                    index === highlightedIndex &&
+                      "bg-accent text-accent-foreground",
+                    selectedItem?.value === item.value &&
+                      "bg-primary/10 text-primary font-medium",
                   )}
                 >
                   {item.label}

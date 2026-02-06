@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { Alert } from '~/components/ui/alert';
+import { Alert } from "~/components/ui/alert";
 
 interface YearData {
   year: number;
@@ -17,13 +17,13 @@ interface YearSelectorProps {
   showDecades?: boolean;
 }
 
-export function YearSelector({ 
-  typeId, 
-  onSelect, 
+export function YearSelector({
+  typeId,
+  onSelect,
   className = "",
   disabled = false,
   placeholder = "Année de production",
-  showDecades = true
+  showDecades = true,
 }: YearSelectorProps) {
   const fetcher = useFetcher<{
     years: YearData[];
@@ -39,8 +39,8 @@ export function YearSelector({
     }
 
     const params = new URLSearchParams();
-    params.append('typeId', typeId.toString());
-    
+    params.append("typeId", typeId.toString());
+
     fetcher.load(`/api/vehicles/forms/years?${params.toString()}`);
   }, [typeId, fetcher]);
 
@@ -50,16 +50,18 @@ export function YearSelector({
   };
 
   const years = fetcher.data?.years || [];
-  const isLoading = fetcher.state === 'loading';
+  const isLoading = fetcher.state === "loading";
 
   // Grouper les années par décennies
-  const yearGroups = showDecades ? years.reduce((acc: Record<string, YearData[]>, yearData: YearData) => {
-    const decade = Math.floor(yearData.year / 10) * 10;
-    const decadeKey = `${decade}s`;
-    if (!acc[decadeKey]) acc[decadeKey] = [];
-    acc[decadeKey].push(yearData);
-    return acc;
-  }, {}) : { 'Années': years };
+  const yearGroups = showDecades
+    ? years.reduce((acc: Record<string, YearData[]>, yearData: YearData) => {
+        const decade = Math.floor(yearData.year / 10) * 10;
+        const decadeKey = `${decade}s`;
+        if (!acc[decadeKey]) acc[decadeKey] = [];
+        acc[decadeKey].push(yearData);
+        return acc;
+      }, {})
+    : { Années: years };
 
   if (!typeId) {
     return (
@@ -79,7 +81,7 @@ export function YearSelector({
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {placeholder}
       </label>
-      
+
       {isLoading ? (
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-full"></div>
@@ -102,20 +104,22 @@ export function YearSelector({
                   ({decadeYears.length} années)
                 </span>
               </h4>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 {decadeYears.map((yearData: YearData) => (
                   <button
                     key={yearData.year}
                     onClick={() => handleSelect(yearData.year)}
                     disabled={disabled || !yearData.available}
                     className={`
-                      px-3 py-2 text-sm rounded border transition-colors
-                      ${selectedYear === yearData.year 
-                        ? 'bg-primary text-primary-foreground border-blue-600 shadow-md' 
-                        : yearData.available
-                          ? 'bg-white text-gray-700 border-gray-300 hover:bg-info/20 hover:border-blue-300'
-                          : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}
-                      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                      px-3 py-2 text-sm rounded border transition-colors min-h-[44px] flex items-center justify-center
+                      ${
+                        selectedYear === yearData.year
+                          ? "bg-primary text-primary-foreground border-blue-600 shadow-md"
+                          : yearData.available
+                            ? "bg-white text-gray-700 border-gray-300 hover:bg-info/20 hover:border-blue-300"
+                            : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                      }
+                      ${disabled ? "opacity-50 cursor-not-allowed" : ""}
                     `}
                   >
                     {yearData.year}
@@ -129,11 +133,11 @@ export function YearSelector({
               </div>
             </div>
           ))}
-          
+
           {selectedYear && (
-<Alert className="mt-4 p-3  rounded-lg" variant="info">
+            <Alert className="mt-4 p-3  rounded-lg" variant="info">
               <div className="text-sm">
-                <strong className="text-blue-800">Année sélectionnée :</strong>{' '}
+                <strong className="text-blue-800">Année sélectionnée :</strong>{" "}
                 <span className="text-blue-700">{selectedYear}</span>
               </div>
             </Alert>

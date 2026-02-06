@@ -40,7 +40,7 @@ function QuickCategoryChip({ href, label }: { href: string; label: string }) {
   return (
     <Link
       to={href}
-      className="inline-flex items-center px-3 py-1.5 bg-neutral-100 hover:bg-semantic-info/10 hover:text-semantic-info text-neutral-700 text-sm font-medium rounded-full transition-colors whitespace-nowrap"
+      className="inline-flex items-center px-3 py-2 bg-neutral-100 hover:bg-semantic-info/10 hover:text-semantic-info text-neutral-700 text-sm font-medium rounded-full transition-all whitespace-nowrap active:scale-95"
     >
       {label}
     </Link>
@@ -72,6 +72,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   // Ref pour la progress bar - optimisation performance
   const progressBarRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number>();
+  const navRef = useRef<HTMLElement>(null);
 
   // Role-based permissions
   const _isAdmin = user && (user.level ?? 0) >= 7;
@@ -123,6 +124,20 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Setup une seule fois au mount - lastScrollY est lu via closure
 
+  // Track navbar height via CSS variable for sticky children
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = Math.round(entry.contentRect.height);
+        document.documentElement.style.setProperty("--navbar-height", `${h}px`);
+      }
+    });
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+
   // Échap pour fermer la recherche
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -167,7 +182,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/80 via-white/85 to-white/80 backdrop-blur-sm md:backdrop-blur-xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
+        ref={navRef}
+        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/95 via-white/95 to-white/95 md:from-white/80 md:via-white/85 md:to-white/80 backdrop-blur-none md:backdrop-blur-xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
           isCompact ? "py-2.5" : "py-4"
         } ${
           isScrolled
@@ -309,7 +325,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                     }
                   }}
                   placeholder="Filtre à huile, alternateur, plaquettes..."
-                  className="relative z-20 w-full pl-12 pr-24 py-3 text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info/50 focus:border-semantic-info bg-white shadow-lg transition-all duration-300 hover:border-semantic-info/80 placeholder:text-neutral-400"
+                  className="relative z-20 w-full pl-12 pr-24 py-3 text-base md:text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info/50 focus:border-semantic-info bg-white shadow-lg transition-all duration-300 hover:border-semantic-info/80 placeholder:text-neutral-400"
                 />
                 {searchQuery && (
                   <button
@@ -440,7 +456,10 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       </nav>
 
       {/* 🔍 Barre de recherche mobile STICKY + Quick Categories */}
-      <div className="header__mobile-search-sticky md:hidden sticky top-[57px] z-40 bg-white border-b shadow-sm">
+      <div
+        className="header__mobile-search-sticky md:hidden sticky z-40 bg-white border-b shadow-sm"
+        style={{ top: "var(--navbar-height, 57px)" }}
+      >
         {/* Search Bar - toujours visible */}
         <div className="px-3 py-2">
           <button
@@ -456,36 +475,46 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         </div>
 
         {/* Quick Categories - scroll horizontal */}
-        <div className="px-3 pb-2 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 min-w-max">
-            <QuickCategoryChip
-              href="/#famille-systeme-de-freinage"
-              label="Freinage"
-            />
-            <QuickCategoryChip
-              href="/#famille-systeme-de-filtration"
-              label="Filtration"
-            />
-            <QuickCategoryChip
-              href="/#famille-courroie-galet-poulie-et-chaine"
-              label="Distribution"
-            />
-            <QuickCategoryChip href="/#famille-embrayage" label="Embrayage" />
-            <QuickCategoryChip
-              href="/#famille-prechauffage-et-allumage"
-              label="Allumage"
-            />
-            <QuickCategoryChip
-              href="/#famille-amortisseur-et-suspension"
-              label="Suspension"
-            />
+        <div className="relative px-3 pb-2">
+          <div
+            className="overflow-x-auto scrollbar-hide"
+            role="list"
+            aria-label="Catégories populaires"
+          >
+            <div className="flex gap-2 min-w-max">
+              <QuickCategoryChip
+                href="/#famille-systeme-de-freinage"
+                label="Freinage"
+              />
+              <QuickCategoryChip
+                href="/#famille-systeme-de-filtration"
+                label="Filtration"
+              />
+              <QuickCategoryChip
+                href="/#famille-courroie-galet-poulie-et-chaine"
+                label="Distribution"
+              />
+              <QuickCategoryChip href="/#famille-embrayage" label="Embrayage" />
+              <QuickCategoryChip
+                href="/#famille-prechauffage-et-allumage"
+                label="Allumage"
+              />
+              <QuickCategoryChip
+                href="/#famille-amortisseur-et-suspension"
+                label="Suspension"
+              />
+            </div>
           </div>
+          <div
+            className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"
+            aria-hidden="true"
+          />
         </div>
       </div>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}
       {showSearch && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white animate-in fade-in slide-in-from-top duration-300">
+        <div className="md:hidden fixed inset-0 z-50 bg-white animate-in fade-in slide-in-from-top duration-300">
           {/* Header avec gradient */}
           <div className="p-4 border-b border-neutral-200 bg-gradient-to-r from-semantic-info/10 to-secondary-500/10">
             <form onSubmit={handleSearch} className="flex items-center gap-3">
@@ -589,8 +618,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       {isScrolled && (
         <div
           ref={progressBarRef}
-          className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-semantic-info/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out"
-          style={{ width: "0%" }}
+          className="sticky z-40 h-1 bg-semantic-info shadow-lg shadow-semantic-info/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out"
+          style={{ top: "var(--navbar-height, 73px)", width: "0%" }}
         />
       )}
     </>
