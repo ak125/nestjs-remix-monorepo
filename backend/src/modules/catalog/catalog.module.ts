@@ -43,6 +43,7 @@ import { HomepageRpcService } from './services/homepage-rpc.service';
 import { CacheWarmingService } from './services/cache-warming.service';
 import { CompatibilityService } from './services/compatibility.service'; // 🎯 Service compatibilité pièce/véhicule
 import { PopularGammesService } from './services/popular-gammes.service'; // 🔗 Service maillage SEO (découplage Catalog↔Vehicles)
+import { GammePricePreviewService } from './services/gamme-price-preview.service'; // 💰 Prix indicatifs gamme (conversion P0)
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -117,6 +118,8 @@ import { PopularGammesService } from './services/popular-gammes.service'; // �
     CompatibilityService,
     // 🔗 POPULAR GAMMES SERVICE - Maillage SEO (découplage Catalog↔Vehicles)
     PopularGammesService,
+    // 💰 PRICE PREVIEW SERVICE - Prix indicatifs sans véhicule (conversion P0)
+    GammePricePreviewService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],

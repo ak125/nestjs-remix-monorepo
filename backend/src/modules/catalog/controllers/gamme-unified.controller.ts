@@ -12,6 +12,7 @@ import {
   Header,
 } from '@nestjs/common';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
+import { GammePricePreviewService } from '../services/gamme-price-preview.service';
 import { UnifiedPageDataService } from '../services/unified-page-data.service';
 
 @Controller('api/catalog/gammes')
@@ -21,6 +22,7 @@ export class GammeUnifiedController {
   constructor(
     private readonly gammeService: GammeUnifiedService,
     private readonly unifiedPageDataService: UnifiedPageDataService,
+    private readonly pricePreviewService: GammePricePreviewService,
   ) {}
 
   /**
@@ -118,6 +120,28 @@ export class GammeUnifiedController {
       data: gamme,
       message: `Gamme trouvée: ${gamme.name}`,
     };
+  }
+
+  /**
+   * 💰 GET /api/catalog/gammes/:id/price-preview - Prix indicatifs pour une gamme
+   * Retourne min/max/avg + produits représentatifs (1 par marque)
+   */
+  @Get(':id/price-preview')
+  @Header(
+    'Cache-Control',
+    'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
+  )
+  async getPricePreview(
+    @Param('id') gammeId: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pgId = parseInt(gammeId, 10);
+    if (isNaN(pgId) || pgId <= 0) {
+      return { success: false, data: null };
+    }
+    const limitNum = limit ? Math.min(parseInt(limit, 10) || 6, 12) : 6;
+    const data = await this.pricePreviewService.getPricePreview(pgId, limitNum);
+    return { success: !!data?.min_price, data };
   }
 
   /**

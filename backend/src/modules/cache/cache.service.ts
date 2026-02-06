@@ -101,6 +101,7 @@ export class CacheService {
       // 🚀 Données gamme RPC (quasi-statiques) - 1h
       'gamme:rpc': 3600,
       'gamme:rpc:v2:stale': 86400, // 24h pour stale cache
+      'gamme:price-preview': 3600, // 1h prix indicatifs
       'gamme:page': 3600,
       'gamme:seo': 3600,
 
