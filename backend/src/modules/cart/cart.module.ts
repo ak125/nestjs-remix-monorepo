@@ -1,13 +1,3 @@
-/**
- * 🛒 MODULE CART MODERNE - Architecture finale
- *
- * Module cart moderne avec :
- * ✅ Contrôleur API REST fonctionnel
- * ✅ Services spécialisés (calculs, validation)
- * ✅ Architecture modulaire et extensible
- * ✅ Intégration avec base de données et cache
- */
-
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
@@ -16,7 +6,11 @@ import { ProductsModule } from '../products/products.module';
 import { PromoModule } from '../promo/promo.module';
 
 // Controllers
-import { CartController } from './cart.controller';
+import { CartCoreController } from './controllers/cart-core.controller';
+import { CartItemsController } from './controllers/cart-items.controller';
+import { CartPromoController } from './controllers/cart-promo.controller';
+import { CartShippingController } from './controllers/cart-shipping.controller';
+import { CartAnalyticsController } from './controllers/cart-analytics.controller';
 
 // Services
 import { CartService } from './services/cart.service';
@@ -29,31 +23,34 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
 
 @Module({
   imports: [
-    DatabaseModule, // Pour accès Supabase/PostgREST
-    CacheModule, // Pour Redis cache et sessions
-    ShippingModule, // Pour les services de livraison
-    ProductsModule, // Pour accès StockService
-    PromoModule, // 🆕 Module promo avancé avec Zod et Cache
+    DatabaseModule,
+    CacheModule,
+    ShippingModule,
+    ProductsModule,
+    PromoModule,
   ],
   controllers: [
-    CartController, // Controller principal
+    CartCoreController,
+    CartItemsController,
+    CartPromoController,
+    CartShippingController,
+    CartAnalyticsController,
   ],
   providers: [
-    // Services modernes
-    CartService, // Service principal moderne
-    CartCalculationService, // Service de calculs
-    CartValidationService, // Service de validation
-    CartAnalyticsService, // Service analytics panier
-    CartDataService, // Service d'accès aux données
-    PromoDataService, // Service données codes promo
-    ShippingDataService, // Service données shipping
+    CartService,
+    CartCalculationService,
+    CartValidationService,
+    CartAnalyticsService,
+    CartDataService,
+    PromoDataService,
+    ShippingDataService,
   ],
   exports: [
-    CartService, // Service moderne exporté
-    CartCalculationService, // Service calculs exporté
-    CartValidationService, // Service validation exporté
-    CartAnalyticsService, // Service analytics exporté
-    CartDataService, // Service données exporté
+    CartService,
+    CartCalculationService,
+    CartValidationService,
+    CartAnalyticsService,
+    CartDataService,
   ],
 })
 export class CartModule {}
