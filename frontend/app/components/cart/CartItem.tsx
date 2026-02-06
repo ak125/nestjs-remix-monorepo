@@ -8,6 +8,7 @@ import { useState, useCallback, memo } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { type CartItem as CartItemType } from "../../types/cart";
+import { getOptimizedPartImageUrl } from "../../utils/image-optimizer";
 
 // Formatter prix extrait pour éviter recréation à chaque render
 const formatPrice = (price: number): string => {
@@ -43,7 +44,7 @@ export const CartItem = memo(function CartItem({
   const totalPrice = item.total_price || unitPrice * quantity;
   const stockAvailable = item.stock_available || 999; // Fallback pour stock illimité
   const productRef = item.product_ref || item.product_sku || item.product_id;
-  const productImage = item.product_image || "/images/categories/default.svg";
+  const productImage = getOptimizedPartImageUrl(item.product_image);
   const productName = item.product_name || `Produit ${item.product_id}`;
 
   // Handler memoizé avec useCallback - stable entre renders

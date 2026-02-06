@@ -461,6 +461,15 @@ export function getOptimizedModelImageUrl(
 /**
  * Image de pièce optimisée
  */
+/** Vérifie si un chemin d'image est valide (pas null, pas "no.webp", pas undefined) */
+export function isValidImagePath(path?: string | null): boolean {
+  if (!path) return false;
+  if (path === "no.webp") return false;
+  if (path.endsWith("/no.webp")) return false;
+  if (path.endsWith("/undefined") || path.endsWith("/null")) return false;
+  return true;
+}
+
 export function getOptimizedPartImageUrl(partImg?: string): string {
   if (!partImg) {
     return "/images/categories/default.svg"; // FIX: utiliser placeholder existant

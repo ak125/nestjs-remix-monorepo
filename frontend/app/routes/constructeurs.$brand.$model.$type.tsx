@@ -43,6 +43,7 @@ import {
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
+import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -359,7 +360,7 @@ function transformRpcToLoaderData(
       pg_alias: p.pg_alias,
       pg_name: p.pg_name,
       pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
-      pg_img: p.pg_img || "no.webp",
+      pg_img: p.pg_img || null,
       addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
     }),
   );
@@ -688,7 +689,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 
   // ✅ Migration /img/* : Preload via proxy Caddy
-  if (data.vehicle?.modele_pic && data.vehicle.modele_pic !== "no.webp") {
+  if (isValidImagePath(data.vehicle?.modele_pic)) {
     result.push({
       tagName: "link",
       rel: "preload",
@@ -880,7 +881,7 @@ export default function VehicleDetailPage() {
                       <div className="text-2xl font-black text-white leading-none">
                         {vehicle.type_power_ps}
                       </div>
-                      <div className="text-white/70 text-[9px] uppercase tracking-wider font-bold">
+                      <div className="text-white/70 text-[11px] sm:text-xs uppercase tracking-wider font-bold">
                         chevaux
                       </div>
                     </div>
@@ -919,9 +920,7 @@ export default function VehicleDetailPage() {
                 <div className="relative">
                   <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
-                      {!imageError &&
-                      vehicle.modele_pic &&
-                      vehicle.modele_pic !== "no.webp" ? (
+                      {!imageError && isValidImagePath(vehicle.modele_pic) ? (
                         <>
                           <img
                             src={`/img/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
@@ -1195,7 +1194,7 @@ export default function VehicleDetailPage() {
 
                   {/* Image gamme */}
                   <div className="p-6 bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
-                    {part.pg_img && part.pg_img !== "no.webp" ? (
+                    {isValidImagePath(part.pg_img) ? (
                       <img
                         src={`/img/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
                         alt={part.pg_name_meta}

@@ -44,7 +44,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     disque: ['disque', 'disques', 'frein', 'freinage'],
     amortisseur: ['amortisseur', 'amortisseurs', 'suspension'],
     bougie: ['bougie', 'bougies', 'allumage'],
-    demarreur: ['demarreur', 'démarreur', 'starter'],
+    demarreur: ['demarreur', 'starter'],
     alternateur: ['alternateur', 'alternateurs'],
     radiateur: ['radiateur', 'refroidissement'],
     pompe: ['pompe', 'eau', 'carburant'],
@@ -57,7 +57,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     refPart: string;
     keyword: string | null;
   } {
-    const lower = query.toLowerCase();
+    const lower = this.stripDiacritics(query.toLowerCase());
     const words = lower.split(/\s+/);
 
     for (const keywords of Object.values(this.CATEGORY_KEYWORDS)) {
@@ -74,6 +74,11 @@ export class SearchSimpleService extends SupabaseBaseService {
       }
     }
     return { refPart: query, keyword: null };
+  }
+
+  /** Supprime les diacritiques/accents (é→e, è→e, ç→c, etc.) */
+  private stripDiacritics(str: string): string {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
   /** Nettoie une référence (supprime espaces/tirets/points) */
@@ -199,16 +204,6 @@ export class SearchSimpleService extends SupabaseBaseService {
     this.logger.log(
       `📋 ${searchRefs.length} références trouvées dans pieces_ref_search`,
     );
-
-    // Distribution des kinds (debug)
-    if (searchRefs.length > 0) {
-      const kindCounts = searchRefs.reduce<Record<string, number>>((acc, r) => {
-        const k = r.prs_kind ?? 'null';
-        acc[k] = (acc[k] || 0) + 1;
-        return acc;
-      }, {});
-      this.logger.log(`📊 prs_kind: ${JSON.stringify(kindCounts)}`);
-    }
 
     // FALLBACK: Si pieces_ref_search est vide, rechercher dans pieces_price.pri_ref (beaucoup plus rapide !)
     let pieceIds: number[] = [];
@@ -665,8 +660,13 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Filtre catégorie via mot-clé éventuel
     if (categoryFilter) {
       const before = items.length;
+      const normalizedFilter = this.stripDiacritics(
+        categoryFilter.toLowerCase(),
+      );
       items = items.filter((it) =>
-        it.category.toLowerCase().includes(categoryFilter.toLowerCase()),
+        this.stripDiacritics(it.category.toLowerCase()).includes(
+          normalizedFilter,
+        ),
       );
       this.logger.log(
         `🔎 Filtre catégorie "${categoryFilter}": ${items.length}/${before} résultats`,
@@ -676,21 +676,6 @@ export class SearchSimpleService extends SupabaseBaseService {
     // PAS DE TRI ICI - Les pièces sont déjà triées par prs_kind puis prix avant l'appel à processResults()
     // Le tri initial (ligne 318-323) respecte la logique PHP : ORDER BY PRS_KIND, PIECE_QTY_SALE*PRI_VENTE_TTC
     const isOEMSearch = items.some((it) => it._isOEM);
-
-    // DEBUG: Vérifier que l'ordre est préservé
-    const kindDistribution = items.reduce((acc: Record<string, number>, it) => {
-      const k = String(it._prsKind ?? 'null');
-      acc[k] = (acc[k] || 0) + 1;
-      return acc;
-    }, {});
-    this.logger.log(
-      `🔧 Distribution prs_kind finale: ${JSON.stringify(kindDistribution)}`,
-    );
-    if (items.length > 0) {
-      this.logger.log(
-        `🔧 Premier: ${items[0]?.reference} (kind=${items[0]?._prsKind}), Dernier: ${items[items.length - 1]?.reference} (kind=${items[items.length - 1]?._prsKind})`,
-      );
-    }
 
     // Nettoyage flags internes
     for (const it of items) {
@@ -756,10 +741,11 @@ export class SearchSimpleService extends SupabaseBaseService {
     // 1) Chercher gammes correspondantes - priorité aux catégories principales (pg_level=1)
     //    pg_level='1' = catégories principales (Amortisseur, Plaquette de frein, Filtre à air...)
     //    pg_level='0' = sous-catégories obscures (Kit adaptateur-amortisseur...)
+    const normalizedQuery = this.stripDiacritics(query);
     const gammesResult = await this.client
       .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias, pg_level')
-      .ilike('pg_name', `%${query}%`)
+      .or(`pg_name.ilike.%${query}%,pg_name.ilike.%${normalizedQuery}%`)
       .eq('pg_display', '1')
       .order('pg_level', { ascending: false }) // Level 1 (main) avant level 0 (obscur)
       .limit(10);
@@ -772,7 +758,6 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     const gammes = gammesResult.data;
-    this.logger.log(`📊 Gammes brutes: ${JSON.stringify(gammes?.slice(0, 3))}`);
 
     if (!gammes?.length) {
       this.logger.log(`❌ Aucune gamme trouvée pour "${query}"`);

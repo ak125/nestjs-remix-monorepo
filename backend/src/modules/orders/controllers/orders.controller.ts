@@ -125,28 +125,39 @@ export class OrdersController {
    * GET /api/orders/:id
    */
   @Get(':id')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OptionalAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Récupérer une commande par ID' })
   @ApiParam({ name: 'id', description: 'ID de la commande (string)' })
   @ApiResponse({ status: 200, description: 'Détails de la commande' })
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
-  async getOrderById(
-    @Param('id') orderId: string, // ✅ CORRECTIF: ord_id est un string maintenant
-    @Request() req: any,
-  ) {
+  async getOrderById(@Param('id') orderId: string, @Request() req: any) {
     try {
       const userId = req.user?.id || req.session?.passport?.user?.id;
-      this.logger.log(`Getting order ${orderId} for user ${userId}`);
+      this.logger.log(
+        `Getting order ${orderId} for user ${userId || 'guest-session'}`,
+      );
 
       const order = await this.ordersService.getOrderById(orderId);
 
-      // Vérifier que l'utilisateur a accès à cette commande
       if (!order) {
         throw new NotFoundException('Commande non trouvée');
       }
 
-      // TODO: Vérifier order.customerId === userId (quand la BDD sera corrigée)
+      // Ownership check: user must own the order
+      if (userId) {
+        const orderCustomerId = String(order.ord_cst_id);
+        const requestUserId = String(userId);
+        if (orderCustomerId !== requestUserId) {
+          this.logger.warn(
+            `Access denied: user ${requestUserId} tried to access order ${orderId} owned by ${orderCustomerId}`,
+          );
+          throw new NotFoundException('Commande non trouvée');
+        }
+      } else {
+        this.logger.warn(`Unauthenticated access attempt for order ${orderId}`);
+        throw new NotFoundException('Commande non trouvée');
+      }
 
       return {
         success: true,

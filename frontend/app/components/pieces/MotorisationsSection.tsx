@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { pluralizePieceName } from "~/lib/seo-utils";
+import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 interface MotorisationItem {
   title: string;
@@ -136,7 +137,9 @@ export default function MotorisationsSection({
                               /marques-modeles\/([^/]+)\//,
                             )?.[1];
                             if (brandAlias) {
-                              img.src = `/img/uploads/constructeurs-automobiles/marques-logos/${brandAlias}.webp`;
+                              img.src = getOptimizedLogoUrl(
+                                `${brandAlias}.webp`,
+                              );
                             } else {
                               img.src = "/images/categories/default.svg";
                             }

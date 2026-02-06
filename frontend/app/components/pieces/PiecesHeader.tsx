@@ -14,7 +14,7 @@ import {
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
-import { ImageOptimizer } from "../../utils/image-optimizer";
+import { ImageOptimizer, isValidImagePath } from "../../utils/image-optimizer";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -108,7 +108,7 @@ export function PiecesHeader({
                         <div className="text-2xl font-black text-white leading-none tracking-tight">
                           {minPrice.toFixed(2)} €
                         </div>
-                        <div className="text-white/70 text-[9px] uppercase tracking-wider font-bold mt-0.5">
+                        <div className="text-white/70 text-[11px] sm:text-xs uppercase tracking-wider font-bold mt-0.5">
                           À partir de
                         </div>
                       </div>
@@ -200,7 +200,7 @@ export function PiecesHeader({
                     <div className="relative overflow-hidden rounded-xl">
                       {!imageError &&
                       vehicle.modelePic &&
-                      vehicle.modelePic !== "no.webp" ? (
+                      isValidImagePath(vehicle.modelePic) ? (
                         <>
                           {/* 🚀 LCP FIX: srcSet responsive via imgproxy pour charger taille adaptée au viewport */}
                           {(() => {

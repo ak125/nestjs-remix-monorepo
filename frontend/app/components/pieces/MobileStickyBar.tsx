@@ -29,7 +29,7 @@ export default function MobileStickyBar({
   };
 
   return (
-    <div className="fixed bottom-0 inset-x-0 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] p-3 flex gap-2 z-50 safe-area-inset-bottom">
+    <div className="fixed bottom-0 inset-x-0 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] p-3 pb-safe flex gap-2 z-40">
       <a
         href="#vehicle-selector"
         onClick={(e) => handleClick(e, "vehicle-selector")}
