@@ -503,6 +503,49 @@ export class PaymentDataService extends SupabaseBaseService {
   }
 
   /**
+   * 👤 Récupérer le client associé à une commande (pour envoi email)
+   */
+  async getCustomerForOrder(orderId: string): Promise<{
+    cst_id: string;
+    cst_mail: string;
+    cst_fname: string;
+    cst_name: string;
+  } | null> {
+    try {
+      const safeOrderId = normalizeOrderId(orderId);
+
+      // 1. Récupérer l'ordre pour avoir le cst_id
+      const { data: order, error: orderError } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_cst_id')
+        .eq('ord_id', safeOrderId)
+        .single();
+
+      if (orderError || !order?.ord_cst_id) {
+        this.logger.warn(`Order ${safeOrderId} not found for customer lookup`);
+        return null;
+      }
+
+      // 2. Récupérer le client
+      const { data: customer, error: customerError } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('cst_id, cst_mail, cst_fname, cst_name')
+        .eq('cst_id', order.ord_cst_id)
+        .single();
+
+      if (customerError || !customer) {
+        this.logger.warn(`Customer ${order.ord_cst_id} not found`);
+        return null;
+      }
+
+      return customer;
+    } catch (error) {
+      this.logger.error('Error in getCustomerForOrder:', error);
+      return null;
+    }
+  }
+
+  /**
    * 🔐 Récupérer une commande pour vérification avant paiement
    * Utilisé pour valider que le montant demandé correspond au montant stocké
    *

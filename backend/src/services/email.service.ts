@@ -1,64 +1,59 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 /**
- * 📧 EMAIL SERVICE - Notifications avec Resend
+ * EMAIL SERVICE - Notifications via Gmail OAuth2 (Nodemailer)
  *
- * ✨ Pourquoi Resend ?
- * - API moderne et simple (3 lignes de code)
- * - 100 emails/jour GRATUIT (3000/mois)
- * - Templates React/HTML avec coloration syntaxique
- * - Excellente livrabilité (infrastructure AWS SES)
- * - Dashboard analytics inclus (taux d'ouverture, clics)
- * - Webhooks pour tracking automatique
- * - Pas de serveur SMTP à configurer
- *
- * 🚀 Setup rapide :
- * 1. Créer compte sur https://resend.com (gratuit)
- * 2. Obtenir API key dans Settings
- * 3. Ajouter dans .env : RESEND_API_KEY=re_xxxxx
- * 4. Configurer domaine (optionnel, sinon @resend.dev)
+ * Transport : Nodemailer + Gmail OAuth2 (auto-refresh token)
+ * From : contact@automecanik.com
  *
  * Configuration .env :
- * - RESEND_API_KEY (obligatoire)
- * - EMAIL_FROM (ex: notifications@votre-domaine.com)
+ * - GMAIL_CLIENT_ID (obligatoire)
+ * - GMAIL_CLIENT_SECRET (obligatoire)
+ * - GMAIL_REFRESH_TOKEN (obligatoire)
+ * - GMAIL_USER_EMAIL (ex: contact@automecanik.com)
  * - APP_URL (pour liens dans emails)
  */
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private resend: Resend;
+  private transporter: nodemailer.Transporter;
   private readonly fromEmail: string;
   private readonly appUrl: string;
-  private readonly isConfigured: boolean; // Track si la vraie clé API est configurée
+  private readonly isConfigured: boolean;
 
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
-    this.isConfigured = !!apiKey;
+    const clientId = process.env.GMAIL_CLIENT_ID;
+    const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+    const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+    const userEmail = process.env.GMAIL_USER_EMAIL || 'contact@automecanik.com';
 
-    if (!apiKey) {
+    this.isConfigured = !!(clientId && clientSecret && refreshToken);
+
+    if (!this.isConfigured) {
       this.logger.warn(
-        '⚠️ RESEND_API_KEY non configurée - Les emails ne seront PAS envoyés. ' +
-          'Veuillez ajouter RESEND_API_KEY dans votre fichier .env',
+        'GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN non configures - Les emails ne seront PAS envoyes.',
       );
     }
 
-    // Utiliser une clé au format valide en dev (format re_xxxx requis par Resend)
-    // Cette clé ne fonctionnera pas mais permet au service de démarrer
-    const finalApiKey =
-      apiKey ||
-      (process.env.NODE_ENV === 'development'
-        ? 're_dev_mode_no_real_emails_will_be_sent_123456'
-        : 're_missing_configure_in_production_123456');
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: userEmail,
+        clientId: clientId || '',
+        clientSecret: clientSecret || '',
+        refreshToken: refreshToken || '',
+      },
+    } as nodemailer.TransportOptions);
 
-    this.resend = new Resend(finalApiKey);
-    this.fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    this.fromEmail = `AutoMecanik <${userEmail}>`;
     this.appUrl = process.env.APP_URL || 'http://localhost:5173';
 
     this.logger.log(
-      apiKey
-        ? '✅ Email service (Resend) initialized with API key'
-        : '⚠️ Email service initialized WITHOUT API key (emails disabled)',
+      this.isConfigured
+        ? `Email service (Gmail OAuth2) initialized for ${userEmail}`
+        : 'Email service initialized WITHOUT Gmail credentials (emails disabled)',
     );
   }
 
@@ -69,7 +64,7 @@ export class EmailService {
   private checkConfigured(methodName: string): boolean {
     if (!this.isConfigured) {
       this.logger.warn(
-        `⚠️ ${methodName}: Email non envoyé (RESEND_API_KEY manquante)`,
+        `${methodName}: Email non envoye (credentials Gmail manquants)`,
       );
       return false;
     }
@@ -85,10 +80,10 @@ export class EmailService {
     try {
       const html = this.getOrderConfirmationTemplate(order, customer);
 
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: customer.cst_mail,
-        subject: `✅ Commande ${order.ord_id} confirmée`,
+        subject: `Commande ${order.ord_id} confirmee - AutoMecanik`,
         html,
       });
 
@@ -111,10 +106,10 @@ export class EmailService {
     try {
       const html = this.getShippingTemplate(order, customer, trackingNumber);
 
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: customer.cst_mail,
-        subject: `📦 Commande ${order.ord_id} expédiée`,
+        subject: `Commande ${order.ord_id} expediee - AutoMecanik`,
         html,
       });
 
@@ -133,10 +128,10 @@ export class EmailService {
     try {
       const html = this.getPaymentReminderTemplate(order, customer);
 
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: customer.cst_mail,
-        subject: `💳 Rappel : Paiement en attente pour commande ${order.ord_id}`,
+        subject: `Rappel : Paiement en attente pour commande ${order.ord_id}`,
         html,
       });
 
@@ -159,10 +154,10 @@ export class EmailService {
     try {
       const html = this.getCancellationTemplate(order, customer, reason);
 
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: customer.cst_mail,
-        subject: `❌ Commande ${order.ord_id} annulée`,
+        subject: `Commande ${order.ord_id} annulee - AutoMecanik`,
         html,
       });
 
@@ -173,20 +168,46 @@ export class EmailService {
   }
 
   /**
-   * 🧪 Test connexion Resend
+   * 🔑 Email activation compte guest (après guest checkout)
+   */
+  async sendGuestAccountActivation(
+    email: string,
+    resetToken: string,
+    orderId?: string,
+  ): Promise<void> {
+    if (!this.checkConfigured('sendGuestAccountActivation')) return;
+
+    try {
+      const html = this.getGuestActivationTemplate(email, resetToken, orderId);
+
+      await this.transporter.sendMail({
+        from: this.fromEmail,
+        to: email,
+        subject: `Activez votre compte AutoMecanik`,
+        html,
+      });
+
+      this.logger.log(`🔑 Email activation envoyé à ${email}`);
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur envoi email activation: ${error.message}`);
+    }
+  }
+
+  /**
+   * Test connexion Gmail OAuth2
    */
   async testConnection(): Promise<boolean> {
     try {
-      if (!process.env.RESEND_API_KEY) {
-        this.logger.error('❌ RESEND_API_KEY non configurée');
+      if (!this.isConfigured) {
+        this.logger.error('Credentials Gmail non configures');
         return false;
       }
 
-      // Resend n'a pas de endpoint de test, on essaie juste de créer l'instance
-      this.logger.log('✅ Configuration Resend OK');
+      await this.transporter.verify();
+      this.logger.log('Connexion Gmail OAuth2 OK');
       return true;
     } catch (error: any) {
-      this.logger.error(`❌ Test connexion échoué: ${error.message}`);
+      this.logger.error(`Test connexion echoue: ${error.message}`);
       return false;
     }
   }
@@ -656,6 +677,116 @@ export class EmailService {
     <div class="footer">
       <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
       <p style="margin-top: 8px;">© ${new Date().getFullYear()} AutoParts - Tous droits réservés</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim();
+  }
+
+  private getGuestActivationTemplate(
+    email: string,
+    resetToken: string,
+    orderId?: string,
+  ): string {
+    const setPasswordUrl = `${this.appUrl}/client/set-password?token=${resetToken}`;
+    const orderInfo = orderId
+      ? `<p>Votre commande <strong>#${orderId}</strong> est en cours de traitement.</p>`
+      : '';
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .content { padding: 32px 24px; }
+    .activation-box {
+      background: #f5f3ff;
+      padding: 24px;
+      margin: 24px 0;
+      border-radius: 8px;
+      border: 2px solid #8b5cf6;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      background: #7c3aed;
+      color: white !important;
+      padding: 14px 28px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+    .footer {
+      text-align: center;
+      padding: 24px;
+      background: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="emoji">🔑</div>
+      <h1>Bienvenue !</h1>
+    </div>
+
+    <div class="content">
+      <p>Bonjour,</p>
+      <p>Un compte a été créé pour vous sur <strong>AutoMecanik</strong> avec l'adresse <strong>${email}</strong>.</p>
+      ${orderInfo}
+
+      <div class="activation-box">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #7c3aed;">Définissez votre mot de passe</p>
+        <p style="margin: 0 0 16px 0; color: #6b7280;">Pour accéder à votre espace client et suivre vos commandes</p>
+        <a href="${setPasswordUrl}" class="button">
+          Créer mon mot de passe
+        </a>
+      </div>
+
+      <p>Ce lien est valable <strong>7 jours</strong>.</p>
+      <p>Si vous n'êtes pas à l'origine de cette action, vous pouvez ignorer cet email.</p>
+    </div>
+
+    <div class="footer">
+      <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+      <p style="margin-top: 8px;">&copy; ${new Date().getFullYear()} AutoMecanik - Tous droits réservés</p>
     </div>
   </div>
 </body>

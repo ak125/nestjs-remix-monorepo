@@ -18,11 +18,14 @@ import {
   ApiCookieAuth,
 } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import * as crypto from 'crypto';
 import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
 import { UserService } from '../database/services/user.service';
 import { CartDataService } from '../database/services/cart-data.service';
+import { RedisCacheService } from '../database/services/redis-cache.service';
+import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import {
@@ -46,6 +49,8 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly cartDataService: CartDataService,
+    private readonly redisCacheService: RedisCacheService,
+    private readonly passwordCrypto: PasswordCryptoService,
   ) {}
 
   /**
@@ -662,6 +667,94 @@ export class AuthController {
     } catch (error: any) {
       console.error('Error fetching user permissions:', error);
       return {};
+    }
+  }
+
+  /**
+   * POST /auth/set-password
+   * Définir le mot de passe pour un compte guest (via token d'activation)
+   */
+  @Post('auth/set-password')
+  @ApiOperation({
+    summary: 'Set password for guest account',
+    description:
+      'Allows guest users to set their password using the activation token received by email.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['token', 'password'],
+      properties: {
+        token: { type: 'string', description: 'Activation token from email' },
+        password: {
+          type: 'string',
+          format: 'password',
+          minLength: 8,
+          description: 'New password (min 8 chars)',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Password set successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async setPassword(
+    @Body() body: { token: string; password: string },
+  ): Promise<any> {
+    try {
+      const { token, password } = body;
+
+      if (!token || !password) {
+        return { success: false, message: 'Token et mot de passe requis' };
+      }
+
+      if (password.length < 8) {
+        return {
+          success: false,
+          message: 'Le mot de passe doit contenir au moins 8 caractères',
+        };
+      }
+
+      // Hash the token to look up in Redis
+      const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+      const storedData = await this.redisCacheService.get(
+        `guest_activation:${hashedToken}`,
+      );
+
+      if (!storedData) {
+        return { success: false, message: 'Token invalide ou expiré' };
+      }
+
+      const { userId, email } = JSON.parse(storedData);
+
+      // Hash the new password
+      const hashedPassword = await this.passwordCrypto.hashPassword(password);
+
+      // Update the user's password (updateUserPassword takes email as first param)
+      await this.userService.updateUserPassword(email, hashedPassword);
+
+      // Delete the token (one-time use)
+      await this.redisCacheService.delete(`guest_activation:${hashedToken}`);
+
+      this.logger.log(
+        `Password set successfully for guest user ${userId} (${email})`,
+      );
+
+      return {
+        success: true,
+        message:
+          'Mot de passe défini avec succès. Vous pouvez maintenant vous connecter.',
+        email,
+      };
+    } catch (error: any) {
+      this.logger.error('Error in set-password:', error);
+      return {
+        success: false,
+        message: 'Erreur technique lors de la définition du mot de passe',
+      };
     }
   }
 }

@@ -12,6 +12,7 @@ import { Request, Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
+import { EmailService } from '../../../services/email.service';
 import { normalizeOrderId } from '../utils/normalize-order-id';
 
 /**
@@ -26,6 +27,7 @@ export class PayboxCallbackController {
     private readonly payboxService: PayboxService,
     private readonly paymentDataService: PaymentDataService,
     private readonly callbackGate: PayboxCallbackGateService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -137,6 +139,29 @@ export class PayboxCallbackController {
           this.logger.log(
             `✅ Paiement enregistré - Commande #${params.orderReference} - ${amountInEuros}€`,
           );
+
+          // Envoyer email confirmation commande au client
+          try {
+            const order =
+              await this.paymentDataService.getOrderForPayment(numericOrderId);
+            const customer =
+              await this.paymentDataService.getCustomerForOrder(numericOrderId);
+
+            if (order && customer?.cst_mail) {
+              await this.emailService.sendOrderConfirmation(order, customer);
+              this.logger.log(
+                `📧 Email confirmation envoyé pour commande #${numericOrderId}`,
+              );
+            } else {
+              this.logger.warn(
+                `⚠️ Impossible d'envoyer email confirmation: order=${!!order}, customer=${!!customer}`,
+              );
+            }
+          } catch (emailError: any) {
+            this.logger.error(
+              `⚠️ Erreur envoi email confirmation (non bloquant): ${emailError.message}`,
+            );
+          }
         } catch (error: any) {
           this.logger.error(
             `❌ Erreur enregistrement paiement: ${error.message}`,

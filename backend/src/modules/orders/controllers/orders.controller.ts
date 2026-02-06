@@ -49,6 +49,8 @@ import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { AuthService } from '../../../auth/auth.service';
+import { EmailService } from '../../../services/email.service';
+import { RedisCacheService } from '../../../database/services/redis-cache.service';
 import {
   OrdersService,
   CreateOrderData,
@@ -63,6 +65,8 @@ export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
+    private readonly redisCacheService: RedisCacheService,
   ) {}
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -269,7 +273,37 @@ export class OrdersController {
         customerId: newUser.id as any,
       };
 
-      return await this.ordersService.createOrder(dataWithUserId);
+      const order = await this.ordersService.createOrder(dataWithUserId);
+
+      // Envoyer email d'activation compte guest (non bloquant)
+      try {
+        const activationToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto
+          .createHash('sha256')
+          .update(activationToken)
+          .digest('hex');
+
+        // Stocker le token dans Redis (7 jours TTL)
+        await this.redisCacheService.set(
+          `guest_activation:${hashedToken}`,
+          JSON.stringify({ userId: newUser.id, email: guestEmail }),
+          7 * 24 * 60 * 60, // 7 jours
+        );
+
+        const orderId = order?.data?.ord_id || order?.ord_id;
+        await this.emailService.sendGuestAccountActivation(
+          guestEmail,
+          activationToken,
+          orderId,
+        );
+        this.logger.log(`📧 Email activation envoyé à ${guestEmail}`);
+      } catch (emailError: any) {
+        this.logger.error(
+          `⚠️ Erreur envoi email activation (non bloquant): ${emailError.message}`,
+        );
+      }
+
+      return order;
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
       throw error;
