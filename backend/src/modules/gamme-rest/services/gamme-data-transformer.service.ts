@@ -131,16 +131,10 @@ export class GammeDataTransformerService {
       const link = `/pieces/${pgAlias}-${pgId}.html`;
 
       // 📷 Générer l'URL de l'image via la fonction centralisée
-      let imageUrl: string;
-      if (pgPic) {
-        // buildGammeImageUrl gère déjà les cas http et /img/
-        imageUrl = buildGammeImageUrl(pgPic);
-      } else if (pgAlias) {
-        // Fallback: essayer avec pg_alias.webp si pg_pic est vide
-        imageUrl = buildGammeImageUrl(`${pgAlias}.webp`);
-      } else {
-        imageUrl = IMAGE_CONFIG.DEFAULT_IMAGE;
-      }
+      // Note: pg_alias.webp n'existe pas en Supabase Storage → utiliser DEFAULT_IMAGE
+      const imageUrl = pgPic
+        ? buildGammeImageUrl(pgPic)
+        : IMAGE_CONFIG.DEFAULT_IMAGE;
 
       return {
         id: pgId,

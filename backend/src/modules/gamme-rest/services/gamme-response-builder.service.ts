@@ -417,7 +417,9 @@ export class GammeResponseBuilderService {
     const totalTime = performance.now() - startTime;
 
     // ✅ URLs via fonctions centralisées
-    const imageUrl = pgPic ? buildGammeImageUrl(pgPic) : null;
+    const imageUrl = pgPic
+      ? buildGammeImageUrl(pgPic)
+      : IMAGE_CONFIG.DEFAULT_IMAGE;
     const wallUrl = pgWall
       ? buildProxyImageUrl(
           IMAGE_CONFIG.BUCKETS.UPLOADS,
