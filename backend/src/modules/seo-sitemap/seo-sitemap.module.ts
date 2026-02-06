@@ -27,6 +27,9 @@ import { CatalogModule } from '../catalog/catalog.module';
 // Services sitemap (import depuis seo/ pour compatibilité)
 import { SitemapV10Service } from '../seo/services/sitemap-v10.service';
 import { SitemapV10HubsService } from '../seo/services/sitemap-v10-hubs.service';
+import { HubsClusterService } from '../seo/services/sitemap-v10-hubs-cluster.service';
+import { HubsPriorityService } from '../seo/services/sitemap-v10-hubs-priority.service';
+import { HubsVehicleService } from '../seo/services/sitemap-v10-hubs-vehicle.service';
 import { SitemapV10ScoringService } from '../seo/services/sitemap-v10-scoring.service';
 import { SitemapDeltaService } from '../seo/services/sitemap-delta.service';
 import { SitemapStreamingService } from '../seo/services/sitemap-streaming.service';
@@ -55,6 +58,9 @@ import { SitemapDeltaController } from '../seo/controllers/sitemap-delta.control
 
   providers: [
     SitemapV10Service,
+    HubsClusterService,
+    HubsPriorityService,
+    HubsVehicleService,
     SitemapV10HubsService,
     SitemapV10ScoringService,
     SitemapDeltaService,

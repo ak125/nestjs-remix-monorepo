@@ -34,7 +34,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.service';
+import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
 
 // Types
 export type TemperatureBucket = 'hot' | 'new' | 'stable' | 'cold';
