@@ -23,8 +23,11 @@ import { ProductsController } from './products.controller';
 import { FilteringController } from './filtering.controller';
 import { CrossSellingController } from './cross-selling.controller';
 
-// Services - Consolidés Phase 2 (6 octobre 2025)
+// Services - Consolidés Phase 2 (6 octobre 2025) + Split Phase 4 (février 2026)
 import { ProductsService } from './products.service';
+import { ProductsCatalogService } from './services/products-catalog.service';
+import { ProductsAdminService } from './services/products-admin.service';
+import { ProductsTechnicalService } from './services/products-technical.service';
 import { ProductEnhancementService } from './services/product-enhancement.service';
 import { ProductFilteringService } from './services/product-filtering.service';
 import { PricingService } from './services/pricing.service';
@@ -48,8 +51,11 @@ import { StockService } from './services/stock.service';
     CrossSellingController, // ✅ API ventes croisées
   ],
   providers: [
-    // Services principaux consolidés
-    ProductsService, // ✅ CRUD produits
+    // Services principaux - Split Phase 4
+    ProductsService, // ✅ CRUD + Search core
+    ProductsCatalogService, // ✅ Gammes, Marques, Stats, Debug
+    ProductsAdminService, // ✅ Commercial, Filtres dynamiques, Toggle
+    ProductsTechnicalService, // ✅ OEM, Critères, Compatibilités
     ProductEnhancementService, // ✅ Enrichissement produits
     ProductFilteringService, // ✅ Filtrage avancé
     PricingService, // ✅ Calcul prix
@@ -58,6 +64,9 @@ import { StockService } from './services/stock.service';
   ],
   exports: [
     ProductsService,
+    ProductsCatalogService,
+    ProductsAdminService,
+    ProductsTechnicalService,
     ProductEnhancementService,
     ProductFilteringService,
     PricingService,
@@ -69,28 +78,23 @@ export class ProductsModule {
   private readonly logger = new Logger(ProductsModule.name);
 
   constructor() {
-    this.logger.log('🎯 Products Module CONSOLIDÉ - Phase 2 & 3 + Cleanup');
-    this.logger.log('✅ Services actifs (6):');
-    this.logger.log('   • ProductsService - CRUD principal');
+    this.logger.log(
+      '🎯 Products Module - Phase 4 Split (9 services, 3 controllers)',
+    );
+    this.logger.log('✅ Services actifs (9):');
+    this.logger.log('   • ProductsService - CRUD + Search core (~570L)');
+    this.logger.log(
+      '   • ProductsCatalogService - Gammes, Marques, Stats, Debug',
+    );
+    this.logger.log('   • ProductsAdminService - Commercial, Filtres, Toggle');
+    this.logger.log(
+      '   • ProductsTechnicalService - OEM, Critères, Compatibilités',
+    );
     this.logger.log('   • ProductEnhancementService - Enrichissement');
-    this.logger.log('   • ProductFilteringService - Filtrage');
+    this.logger.log('   • ProductFilteringService - Filtrage avancé');
     this.logger.log('   • PricingService - Calcul prix');
     this.logger.log('   • CrossSellingService - Ventes croisées');
     this.logger.log('   • StockService - Gestion stock');
-    this.logger.log('✅ Contrôleurs actifs (3):');
-    this.logger.log('   • ProductsController - api/products');
-    this.logger.log('   • FilteringController - api/products/filters');
-    this.logger.log('   • CrossSellingController - api/cross-selling');
-    this.logger.log('📊 Consolidation Finale:');
-    this.logger.log('   • Services: 13 → 6 (-54%)');
-    this.logger.log('   • Controllers: 8 → 3 (-63%)');
-    this.logger.log('   • TechnicalDataService supprimé (non utilisé)');
-    this.logger.log('   • Duplication: 49% → 0%');
-    this.logger.log('📊 Consolidation Phase 3:');
-    this.logger.log('   • Controllers: 8 → 4 (-50%)');
-    this.logger.log('   • Controllers archivés: 2 (V4 obsolètes)');
-    this.logger.log('   • Test controllers déplacés: 2');
-    this.logger.log('   • URLs propres: Sans suffixes V4/V5');
     this.logger.log('🚀 Module prêt pour production');
   }
 }

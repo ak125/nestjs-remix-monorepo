@@ -16,6 +16,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { ProductsService } from '../../products/products.service';
+import { ProductsCatalogService } from '../../products/services/products-catalog.service';
 
 @ApiTags('Admin Products')
 @Controller('api/admin/products')
@@ -23,7 +24,10 @@ import { ProductsService } from '../../products/products.service';
 export class AdminProductsController {
   private readonly logger = new Logger(AdminProductsController.name);
 
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly catalogService: ProductsCatalogService,
+  ) {}
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get admin products dashboard statistics' })
@@ -35,7 +39,7 @@ export class AdminProductsController {
     try {
       this.logger.log('📊 Récupération du dashboard admin produits');
 
-      const stats = await this.productsService.getStats();
+      const stats = await this.catalogService.getStats();
 
       return {
         success: true,
@@ -149,7 +153,7 @@ export class AdminProductsController {
     try {
       this.logger.log('� Récupération statistiques détaillées admin');
 
-      const stats = await this.productsService.getStats();
+      const stats = await this.catalogService.getStats();
 
       return {
         success: true,
@@ -180,7 +184,7 @@ export class AdminProductsController {
     try {
       this.logger.log('🏷️ Admin: récupération marques');
 
-      const brands = await this.productsService.getBrands();
+      const brands = await this.catalogService.getBrands();
 
       return {
         success: true,
@@ -207,7 +211,7 @@ export class AdminProductsController {
     try {
       this.logger.log('� Admin: récupération gammes');
 
-      const gammes = await this.productsService.getGammes();
+      const gammes = await this.catalogService.getGammes();
 
       return {
         success: true,

@@ -23,6 +23,8 @@ import {
 } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
+import { ProductsCatalogService } from './services/products-catalog.service';
+import { ProductsAdminService } from './services/products-admin.service';
 import { StockService } from './services/stock.service';
 import { PricingService } from './services/pricing.service';
 import {
@@ -63,6 +65,8 @@ export class ProductsController {
 
   constructor(
     private readonly productsService: ProductsService,
+    private readonly catalogService: ProductsCatalogService,
+    private readonly adminService: ProductsAdminService,
     private readonly stockService: StockService,
     private readonly pricingService: PricingService,
   ) {}
@@ -88,7 +92,7 @@ export class ProductsController {
    */
   @Get('debug/tables')
   async debugTables() {
-    return this.productsService.debugTables();
+    return this.catalogService.debugTables();
   }
 
   /**
@@ -96,7 +100,7 @@ export class ProductsController {
    */
   @Get('gammes')
   async getGammes() {
-    return this.productsService.getGammes();
+    return this.catalogService.getGammes();
   }
 
   /**
@@ -125,7 +129,7 @@ export class ProductsController {
         sortOrder: queryParams.sortOrder || 'asc',
       };
 
-      const result = await this.productsService.findProductsByGamme(options);
+      const result = await this.adminService.findProductsByGamme(options);
 
       this.logger.log(
         `Trouvé ${result.pagination.total} produits pour gamme ${gammeId}`,
@@ -221,7 +225,7 @@ export class ProductsController {
    */
   @Get('brands')
   async getBrands() {
-    return this.productsService.getBrands();
+    return this.catalogService.getBrands();
   }
 
   /**
@@ -229,7 +233,7 @@ export class ProductsController {
    */
   @Get('stats')
   async getStats() {
-    return this.productsService.getStats();
+    return this.catalogService.getStats();
   }
 
   /**
@@ -237,7 +241,7 @@ export class ProductsController {
    */
   @Get('debug-real-data')
   async debugRealData() {
-    return this.productsService.debugRealData();
+    return this.catalogService.debugRealData();
   }
 
   /**
@@ -245,7 +249,7 @@ export class ProductsController {
    */
   @Get('debug-stock-distribution')
   async debugStockDistribution() {
-    return this.productsService.debugStockDistribution();
+    return this.catalogService.debugStockDistribution();
   }
 
   /**
@@ -477,7 +481,7 @@ export class ProductsController {
   async getModels(@Param('brandId', ParseIntPipe) brandId: number) {
     try {
       this.logger.log(`Récupération des modèles pour la marque ${brandId}`);
-      const result = await this.productsService.getModels(brandId);
+      const result = await this.catalogService.getModels(brandId);
       return result;
     } catch (error) {
       this.logger.error(
@@ -499,7 +503,7 @@ export class ProductsController {
   async getTypes(@Param('modelId', ParseIntPipe) modelId: number) {
     try {
       this.logger.log(`Récupération des types pour le modèle ${modelId}`);
-      const result = await this.productsService.getTypes(modelId);
+      const result = await this.catalogService.getTypes(modelId);
       return result;
     } catch (error) {
       this.logger.error(
@@ -748,8 +752,7 @@ export class ProductsController {
         brandId: brandId ? parseInt(brandId, 10) : undefined,
       };
 
-      const result =
-        await this.productsService.getProductsForCommercial(options);
+      const result = await this.adminService.getProductsForCommercial(options);
 
       this.logger.log(
         `✅ Retourné ${result.products.length} produits (total: ${result.pagination.total})`,
@@ -775,10 +778,7 @@ export class ProductsController {
     try {
       this.logger.log(`🔄 Toggle status produit ${id} -> ${isActive}`);
 
-      const result = await this.productsService.toggleProductStatus(
-        id,
-        isActive,
-      );
+      const result = await this.adminService.toggleProductStatus(id, isActive);
 
       this.logger.log(`✅ Produit ${id} ${isActive ? 'activé' : 'désactivé'}`);
       return result;
@@ -816,20 +816,20 @@ export class ProductsController {
       if (gammeId && !brandId) {
         // Uniquement gamme sélectionnée, filtrer les marques
         [gammes, brands] = await Promise.all([
-          this.productsService.getGammesForFilters(),
-          this.productsService.getBrandsForGamme(parseInt(gammeId, 10)),
+          this.adminService.getGammesForFilters(),
+          this.adminService.getBrandsForGamme(parseInt(gammeId, 10)),
         ]);
       } else if (brandId && !gammeId) {
         // Uniquement marque sélectionnée, filtrer les gammes
         [gammes, brands] = await Promise.all([
-          this.productsService.getGammesForBrand(parseInt(brandId, 10)),
-          this.productsService.getPieceBrandsForFilters(),
+          this.adminService.getGammesForBrand(parseInt(brandId, 10)),
+          this.adminService.getPieceBrandsForFilters(),
         ]);
       } else {
         // Les deux filtres actifs OU aucun filtre : retourner toutes les listes
         [gammes, brands] = await Promise.all([
-          this.productsService.getGammesForFilters(),
-          this.productsService.getPieceBrandsForFilters(),
+          this.adminService.getGammesForFilters(),
+          this.adminService.getPieceBrandsForFilters(),
         ]);
       }
 
