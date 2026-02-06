@@ -79,7 +79,9 @@ export class RedirectService extends SupabaseBaseService {
       if (this.redirectCache.has(path)) {
         const rule = this.redirectCache.get(path)!;
         // Fire and forget pour le compteur
-        this.incrementHitCount(rule.id || rule.msg_id!).catch(() => {});
+        this.incrementHitCount(rule.id || rule.msg_id!).catch((err) =>
+          this.logger.debug('incrementHitCount failed:', err),
+        );
         return this.convertToRedirectEntry(rule);
       }
 
@@ -93,7 +95,9 @@ export class RedirectService extends SupabaseBaseService {
           const regex = new RegExp(rule.source_path);
           if (regex.test(path)) {
             // Fire and forget pour le compteur
-            this.incrementHitCount(rule.id || rule.msg_id!).catch(() => {});
+            this.incrementHitCount(rule.id || rule.msg_id!).catch((err) =>
+              this.logger.debug('incrementHitCount failed:', err),
+            );
             const processedRule = {
               ...rule,
               destination_path: path.replace(regex, rule.destination_path),
@@ -148,7 +152,9 @@ export class RedirectService extends SupabaseBaseService {
 
               if (regex.test(url)) {
                 // Ne pas attendre l'incrément du compteur (fire and forget)
-                this.incrementHitCount(redirect.msg_id).catch(() => {});
+                this.incrementHitCount(redirect.msg_id).catch((err) =>
+                  this.logger.debug('incrementHitCount failed:', err),
+                );
 
                 // Remplacer les wildcards dans destination_path
                 const newPath = metadata.destination_path?.replace(
