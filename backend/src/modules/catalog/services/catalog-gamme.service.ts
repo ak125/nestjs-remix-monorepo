@@ -4,6 +4,7 @@ import { TABLES } from '@repo/database-types';
 
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
 
 export interface CatalogGamme {
   mc_id: string;
@@ -446,9 +447,7 @@ export class CatalogGammeService extends SupabaseBaseService {
         id: String(gamme.pg_id),
         name: gamme.pg_name || '',
         alias: gamme.pg_alias || '',
-        image: gamme.pg_img
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/gammes/${gamme.pg_img}`
-          : null,
+        image: buildGammeImageUrl(gamme.pg_img),
         description: gamme.pg_desc || null,
         // URL vers la page pièces filtrée par marque
         url: `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`,
