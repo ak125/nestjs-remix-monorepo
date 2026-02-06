@@ -55,5 +55,14 @@ export function useHomeData() {
     // Autres données
     blogArticles: loaderData?.blogArticlesData,
     equipementiers: loaderData?.equipementiersData,
+    stats: loaderData?.statsData as
+      | {
+          total_pieces?: number;
+          total_equipementiers?: number;
+          total_brands?: number;
+          total_families?: number;
+          total_gammes?: number;
+        }
+      | undefined,
   };
 }

@@ -1,0 +1,15 @@
+-- ============================================================================
+-- Migration: Add total_pieces to get_homepage_data_optimized stats
+-- ============================================================================
+-- The homepage displayed "50 000+ pièces" hardcoded, but the real count is 409K+.
+-- Adding total_pieces to the existing stats block so the frontend can display
+-- the real number dynamically, with zero extra API calls.
+--
+-- Already applied to production via mcp__supabase__apply_migration on 2026-02-06.
+-- ============================================================================
+
+-- See 20260128_fix_homepage_rpc_gammes_count.sql for the full function body.
+-- This migration adds one line to the stats jsonb_build_object:
+--   'total_pieces', (SELECT COUNT(*) FROM pieces WHERE piece_display = true)
+--
+-- Result: stats.total_pieces = 409619 (as of 2026-02-06)

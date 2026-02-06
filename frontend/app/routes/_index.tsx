@@ -31,6 +31,7 @@ import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
 // hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { formatCatalogCount } from "~/utils/format-catalog-count";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -72,7 +73,7 @@ export const meta: MetaFunction = () => {
     {
       property: "og:description",
       content:
-        "50 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie.",
+        "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie.",
     },
     {
       property: "og:image",
@@ -90,7 +91,7 @@ export const meta: MetaFunction = () => {
     {
       name: "twitter:description",
       content:
-        "50 000+ pièces auto en stock pour toutes marques. Livraison 24-48h.",
+        "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h.",
     },
     {
       name: "twitter:image",
@@ -209,6 +210,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         slug: brand.marque_alias,
         logo: generateLogoUrl(brand.marque_logo),
       })),
+      statsData: rpcData.stats || {},
       success: true,
       timestamp: new Date().toISOString(),
       _performance: {
@@ -341,7 +343,9 @@ export default function TestHomepageModern() {
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-xs md:text-sm text-white/80 animate-in fade-in duration-1000 delay-500">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
               <CheckCircle2 className="w-4 h-4 text-semantic-success" />
-              <span>50 000+ pièces</span>
+              <span>
+                {formatCatalogCount(homeData.stats?.total_pieces)} pièces
+              </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
               <Truck className="w-4 h-4 text-semantic-info" />

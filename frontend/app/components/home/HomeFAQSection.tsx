@@ -74,7 +74,7 @@ export default function HomeFAQSection() {
                 name: "Couvrez-vous toutes les marques automobiles ?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Nous proposons plus de 50 marques et 50 000 références de pièces dans notre catalogue, incluant les marques françaises (Renault, Peugeot, Citroën, DS, Dacia, Alpine), allemandes (VW, BMW, Mercedes, Audi, Opel, Porsche, Smart), asiatiques (Toyota, Honda, Nissan, Mazda, Hyundai, Kia, Suzuki) et bien d'autres. Notre catalogue couvre les marques premium, généralistes, utilitaires et véhicules électriques.",
+                  text: "Nous proposons plus de 100 marques et 400 000 références de pièces dans notre catalogue, incluant les marques françaises (Renault, Peugeot, Citroën, DS, Dacia, Alpine), allemandes (VW, BMW, Mercedes, Audi, Opel, Porsche, Smart), asiatiques (Toyota, Honda, Nissan, Mazda, Hyundai, Kia, Suzuki) et bien d'autres. Notre catalogue couvre les marques premium, généralistes, utilitaires et véhicules électriques.",
                 },
               },
             ],
@@ -372,9 +372,9 @@ export default function HomeFAQSection() {
           </AccordionTrigger>
           <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-5 pl-16 pr-4">
             <p className="mb-4 text-gray-800">
-              <strong className="text-purple-600">Plus de 50 marques</strong> et{" "}
-              <strong className="text-purple-600">50 000 références</strong> de
-              pièces disponibles dans notre catalogue :
+              <strong className="text-purple-600">Plus de 100 marques</strong>{" "}
+              et <strong className="text-purple-600">400 000 références</strong>{" "}
+              de pièces disponibles dans notre catalogue :
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="bg-white p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors">
