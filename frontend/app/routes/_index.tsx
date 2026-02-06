@@ -3,15 +3,8 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import {
-  CheckCircle2,
-  ChevronRight,
-  Shield,
-  Truck,
-  Users,
-  AlertCircle,
-} from "lucide-react";
+import { Link } from "@remix-run/react";
+import { CheckCircle2, ChevronRight, Shield, Truck, Users } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -714,61 +707,6 @@ export default function TestHomepageModern() {
         </div>
       )}
       */}
-    </div>
-  );
-}
-
-/**
- * 🚨 Error Boundary
- * Gère les erreurs gracieusement avec un message utilisateur convivial
- */
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  if (isRouteErrorResponse(error)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {error.status}
-          </h1>
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            {error.statusText}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {error.data?.message ||
-              "Une erreur s'est produite lors du chargement de la page."}
-          </p>
-          <Button asChild className="w-full">
-            <Link to="/">Retour à l'accueil</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Oups !</h1>
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">
-          Une erreur inattendue s'est produite
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Nous sommes désolés pour la gêne occasionnée. Notre équipe a été
-          notifiée.
-        </p>
-        <div className="space-y-3">
-          <Button asChild className="w-full">
-            <Link to="/">Retour à l'accueil</Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full">
-            <Link to="/contact">Contacter le support</Link>
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

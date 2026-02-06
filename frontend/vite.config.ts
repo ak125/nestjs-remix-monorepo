@@ -11,6 +11,7 @@ const isProduction = MODE === 'production';
 export default defineConfig({
 	resolve: {
 		preserveSymlinks: true,
+		dedupe: ['react', 'react-dom', 'react/jsx-runtime', '@remix-run/react'],
 	},
 	// Proxy /img vers production pour les images Supabase en dev
 	server: {

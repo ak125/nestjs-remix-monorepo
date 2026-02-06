@@ -9,7 +9,7 @@ import { useState } from "react";
 import { type FamilyWithGammes } from "~/services/api/hierarchy.api";
 
 export function useHomeData() {
-  const loaderData = useLoaderData<any>();
+  const loaderData = useLoaderData<any>() ?? {};
 
   // État pour les données du catalogue
   const [families, _setFamilies] = useState<FamilyWithGammes[]>(
