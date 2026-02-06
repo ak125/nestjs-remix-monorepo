@@ -35,19 +35,14 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import {
-  Sheet,
-  SheetContent,
-  SheetClose,
-  SheetTrigger,
-} from "../ui/sheet";
+import { Sheet, SheetContent, SheetClose, SheetTrigger } from "../ui/sheet";
+import { Button } from "~/components/ui/button";
 
 interface NavbarMobileProps {
   user?: {
@@ -156,7 +151,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
             <li>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="catalogue" className="border-none">
-                  <AccordionTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:no-underline [&>svg]:hidden">
+                  <AccordionTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:no-underline [&>svg]:size-0 [&>svg]:overflow-hidden">
                     <Package className="h-5 w-5 text-blue-600" />
                     <span className="font-medium flex-1 text-left">
                       Catalogue
@@ -166,7 +161,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                   <AccordionContent className="pl-10 space-y-1 pb-2">
                     <SheetClose asChild>
                       <Link
-                        to="/pieces/plaquette-de-frein-402.html"
+                        to="/#famille-systeme-de-freinage"
                         className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Freinage
@@ -174,7 +169,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                     </SheetClose>
                     <SheetClose asChild>
                       <Link
-                        to="/pieces/filtre-a-huile-125.html"
+                        to="/#famille-systeme-de-filtration"
                         className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Filtration
@@ -182,7 +177,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                     </SheetClose>
                     <SheetClose asChild>
                       <Link
-                        to="/pieces/kit-de-distribution-311.html"
+                        to="/#famille-courroie-galet-poulie-et-chaine"
                         className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Distribution
@@ -190,7 +185,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                     </SheetClose>
                     <SheetClose asChild>
                       <Link
-                        to="/pieces/kit-embrayage-296.html"
+                        to="/#famille-embrayage"
                         className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Embrayage
@@ -198,7 +193,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                     </SheetClose>
                     <SheetClose asChild>
                       <Link
-                        to="/pieces/amortisseur-7.html"
+                        to="/#famille-amortisseur-et-suspension"
                         className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Suspension
@@ -206,10 +201,10 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                     </SheetClose>
                     <SheetClose asChild>
                       <Link
-                        to="/catalogue"
+                        to="/#catalogue"
                         className="block py-2 text-sm font-medium text-blue-600 hover:underline"
                       >
-                        + Voir les 50+ catégories
+                        Voir toutes les catégories
                       </Link>
                     </SheetClose>
                   </AccordionContent>

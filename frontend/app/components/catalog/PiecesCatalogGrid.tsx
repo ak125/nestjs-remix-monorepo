@@ -468,7 +468,7 @@ export default function PiecesCatalogGrid({
                       {category.piecesCount > 10 && (
                         <div className="text-center py-2">
                           <Link
-                            to={`/pieces/catalogue?category=${category.id}`}
+                            to={`/#catalogue?category=${category.id}`}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           >
                             Voir les{" "}
@@ -484,7 +484,7 @@ export default function PiecesCatalogGrid({
                 {/* Pied de carte */}
                 <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
                   <Link
-                    to={`/pieces/catalogue?category=${category.id}`}
+                    to={`/#catalogue?category=${category.id}`}
                     className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
                   >
                     Explorer {category.systemName} →
@@ -521,7 +521,7 @@ export default function PiecesCatalogGrid({
               variant="blue"
               asChild
             >
-              <Link to="/pieces/catalogue">Voir tout le catalogue</Link>
+              <Link to="/#catalogue">Voir tout le catalogue</Link>
             </Button>
           </div>
         </div>

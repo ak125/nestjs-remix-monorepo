@@ -114,7 +114,7 @@ export const Footer = () => {
                 </li>
                 <li>
                   <a
-                    href="/__crawl__/index.html"
+                    href="/plan-du-site"
                     className="text-neutral-400 hover:text-semantic-info transition-colors"
                   >
                     Plan du site

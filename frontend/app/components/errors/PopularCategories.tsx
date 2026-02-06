@@ -62,7 +62,7 @@ const popularCategories: Category[] = [
   },
   {
     name: "Catalogue",
-    href: "/pieces/catalogue",
+    href: "/#catalogue",
     icon: Wrench,
     description: "Toutes les pièces auto",
   },

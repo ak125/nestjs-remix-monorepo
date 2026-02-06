@@ -119,7 +119,13 @@ automecanik.com, www.automecanik.com {
     }
 
     # ===== CRAWL HUBS (HTML pour Googlebot) =====
-    # Pages de liens internes non indexees pour faciliter le crawl
+    # Redirect index crawl → page plan du site propre
+    @crawl_index path /__crawl__/index.html
+    handle @crawl_index {
+        redir /plan-du-site 301
+    }
+
+    # Pages de liens internes pour faciliter le crawl Google
     @crawl_hubs path /__crawl__/*
     handle @crawl_hubs {
         root * /var/www/crawl-hubs

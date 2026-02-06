@@ -1,9 +1,9 @@
 /**
  * 📧 SECTIONS FINALES HOMEPAGE
- * 
+ *
  * Regroupe les sections Newsletter + Advantages + Contact CTA
  * Extrait de _index.tsx pour modularité
- * 
+ *
  * Sections incluses :
  * - Advantages : Stats + Services + CTA (84 lignes)
  * - Newsletter : Formulaire avec RGPD (77 lignes)
@@ -24,7 +24,9 @@ interface HomeBottomSectionsProps {
   };
 }
 
-export default function HomeBottomSections({ newsletter }: HomeBottomSectionsProps) {
+export default function HomeBottomSections({
+  newsletter,
+}: HomeBottomSectionsProps) {
   return (
     <>
       {/* 🌟 NOS AVANTAGES - Section optimisée avec preuve sociale + stats + CTA */}
@@ -33,10 +35,15 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
           {/* En-tête premium */}
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Pourquoi <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">50 000 professionnels</span> nous font confiance
+              Pourquoi{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                50 000 professionnels
+              </span>{" "}
+              nous font confiance
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Leader B2B des pièces automobiles avec garantie du meilleur service
+              Leader B2B des pièces automobiles avec garantie du meilleur
+              service
             </p>
           </div>
 
@@ -53,7 +60,9 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
                 className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 text-center border border-blue-200/30 hover:shadow-lg transition-all"
               >
                 <div className="text-3xl mb-2">{item.icon}</div>
-                <div className="text-2xl font-bold text-gray-900">{item.stat}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {item.stat}
+                </div>
                 <div className="text-sm text-gray-600">{item.label}</div>
               </div>
             ))}
@@ -63,13 +72,30 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Colonne 1: 3 Services clés */}
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Nos promesses</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Nos promesses
+              </h3>
               {[
-                { icon: "✅", title: "100% Certifiées", desc: "Pièces neuves ou origin garanties" },
-                { icon: "🚚", title: "Express 24-48h", desc: "Partout en France métrop" },
-                { icon: "🔒", title: "Paiement Sûr", desc: "Cryptage SSL certifié" },
+                {
+                  icon: "✅",
+                  title: "100% Certifiées",
+                  desc: "Pièces neuves ou origin garanties",
+                },
+                {
+                  icon: "🚚",
+                  title: "Express 24-48h",
+                  desc: "Partout en France métrop",
+                },
+                {
+                  icon: "🔒",
+                  title: "Paiement Sûr",
+                  desc: "Cryptage SSL certifié",
+                },
               ].map((service, idx) => (
-                <div key={idx} className="bg-white rounded-xl p-4 border border-gray-200/50 hover:shadow-md transition-all">
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl p-4 border border-gray-200/50 hover:shadow-md transition-all"
+                >
                   <div className="text-2xl mb-2">{service.icon}</div>
                   <h4 className="font-bold text-gray-900">{service.title}</h4>
                   <p className="text-sm text-gray-600">{service.desc}</p>
@@ -95,7 +121,10 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
                   ))}
                 </ul>
               </div>
-              <Link to="/pieces/catalogue" className="w-full bg-white text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-xl transition-all text-center">
+              <Link
+                to="/#catalogue"
+                className="w-full bg-white text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-xl transition-all text-center"
+              >
                 Explorer le catalogue →
               </Link>
             </div>
@@ -103,7 +132,9 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
 
           {/* Ligne bonus : Trust badges */}
           <div className="mt-12 pt-12 border-t border-gray-200 text-center">
-            <p className="text-gray-600 mb-4 text-sm">Reconnu par les professionnels</p>
+            <p className="text-gray-600 mb-4 text-sm">
+              Reconnu par les professionnels
+            </p>
             <div className="flex flex-wrap justify-center gap-6 text-gray-500 text-xs font-semibold">
               <span>✅ Certifié B2B</span>
               <span>🔒 Paiements Sécurisés</span>
@@ -163,16 +194,19 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
 
               {/* Checkbox RGPD */}
               <label className="flex items-start gap-3 text-left text-sm text-blue-100 cursor-pointer hover:text-white transition-colors max-w-xl mx-auto">
-                <input 
-                  type="checkbox" 
-                  required 
+                <input
+                  type="checkbox"
+                  required
                   className="mt-0.5 w-4 h-4 rounded border-2 border-white/30 bg-white/10 checked:bg-white checked:border-white focus:ring-2 focus:ring-white/50 cursor-pointer"
                   aria-label="Consentement RGPD"
                 />
                 <span>
-                  J'accepte de recevoir les offres et actualités d'Automecanik par email. 
-                  Vous pouvez vous désinscrire à tout moment. 
-                  <Link to="/politique-confidentialite" className="underline hover:text-white font-medium ml-1">
+                  J'accepte de recevoir les offres et actualités d'Automecanik
+                  par email. Vous pouvez vous désinscrire à tout moment.
+                  <Link
+                    to="/politique-confidentialite"
+                    className="underline hover:text-white font-medium ml-1"
+                  >
                     Politique de confidentialité
                   </Link>
                 </span>
@@ -182,7 +216,10 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
             {newsletter.success && (
               <div className="mt-6 bg-green-500/20 border border-green-400/50 rounded-lg px-4 py-3 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <CheckCircle2 className="w-5 h-5 text-green-300" />
-                <span className="text-green-100 font-medium">Merci ! Vous êtes inscrit à notre newsletter. Vérifiez votre boîte de réception.</span>
+                <span className="text-green-100 font-medium">
+                  Merci ! Vous êtes inscrit à notre newsletter. Vérifiez votre
+                  boîte de réception.
+                </span>
               </div>
             )}
 
@@ -200,17 +237,28 @@ export default function HomeBottomSections({ newsletter }: HomeBottomSectionsPro
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-4xl mx-auto">
             <div className="text-center md:text-left">
               <h3 className="text-2xl font-bold mb-2">Une question ?</h3>
-              <p className="text-gray-300">Nos experts sont là pour vous aider</p>
+              <p className="text-gray-300">
+                Nos experts sont là pour vous aider
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                asChild
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Link to="/contact">
                   <Phone className="mr-2 h-5 w-5" />
                   Nous contacter
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
-                <Link to="/pieces/catalogue">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-gray-900"
+              >
+                <Link to="/#catalogue">
                   Voir le catalogue
                   <ChevronRight className="ml-2 h-5 w-5" />
                 </Link>

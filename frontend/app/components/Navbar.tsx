@@ -459,27 +459,24 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         <div className="px-3 pb-2 overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 min-w-max">
             <QuickCategoryChip
-              href="/pieces/catalogue?category=freinage"
+              href="/#famille-systeme-de-freinage"
               label="Freinage"
             />
             <QuickCategoryChip
-              href="/pieces/catalogue?category=moteur"
+              href="/#famille-systeme-de-filtration"
               label="Filtration"
             />
             <QuickCategoryChip
-              href="/pieces/catalogue?category=moteur"
+              href="/#famille-courroie-galet-poulie-et-chaine"
               label="Distribution"
             />
+            <QuickCategoryChip href="/#famille-embrayage" label="Embrayage" />
             <QuickCategoryChip
-              href="/pieces/catalogue?category=embrayage"
-              label="Embrayage"
-            />
-            <QuickCategoryChip
-              href="/pieces/catalogue?category=electrique"
+              href="/#famille-prechauffage-et-allumage"
               label="Allumage"
             />
             <QuickCategoryChip
-              href="/pieces/catalogue?category=suspension"
+              href="/#famille-amortisseur-et-suspension"
               label="Suspension"
             />
           </div>

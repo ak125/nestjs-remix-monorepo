@@ -11,6 +11,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -318,6 +319,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const slug = params.slug;
   if (!slug) {
     throw new Response("Not Found", { status: 404 });
+  }
+
+  // Redirect /pieces/catalogue → homepage (page supprimée)
+  if (slug === "catalogue") {
+    return redirect("/", 301);
   }
 
   // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)

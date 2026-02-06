@@ -339,7 +339,7 @@ export default function ReferenceIndexPage() {
             pièces compatibles avec votre véhicule.
           </p>
           <Link
-            to="/pieces/catalogue"
+            to="/#catalogue"
             className="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold hover:bg-indigo-50 transition-colors"
           >
             Voir le catalogue
