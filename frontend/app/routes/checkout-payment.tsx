@@ -15,7 +15,7 @@ import {
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { requireAuth } from "../auth/unified.server";
+import { getOptionalUser } from "../auth/unified.server";
 import {
   initializePayment,
   getAvailablePaymentMethods,
@@ -57,8 +57,9 @@ interface ActionData {
   error?: string;
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireAuth(request);
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // Guest checkout: auth optionnelle (le compte silencieux est deja cree par /api/orders/guest)
+  const user = await getOptionalUser({ context });
   const url = new URL(request.url);
   const orderId = url.searchParams.get("orderId");
 
@@ -312,18 +313,21 @@ export async function action({ request }: ActionFunctionArgs) {
     acceptTerms,
   });
 
-  // Maintenant vérifier l'authentification
-  console.log("🔐 Vérification authentification...");
-  let user: any;
+  // Guest checkout: auth optionnelle (l'email est sur la commande)
+  console.log("🔐 Vérification authentification (optionnelle)...");
+  let user: any = null;
   try {
-    user = await requireAuth(request);
-    console.log("✅ Utilisateur authentifié:", user.id, user.email);
+    const cookieHeader = request.headers.get("Cookie") || "";
+    const sessionRes = await fetch("http://127.0.0.1:3000/api/auth/me", {
+      headers: { Cookie: cookieHeader },
+    });
+    if (sessionRes.ok) {
+      const sessionData = await sessionRes.json();
+      user = sessionData.user || sessionData.data || null;
+    }
+    console.log("🔐 Utilisateur:", user?.id || "guest (sans session)");
   } catch (authError) {
-    console.error("❌ Erreur authentification:", authError);
-    return json<ActionData>(
-      { error: "Vous devez être connecté pour effectuer un paiement" },
-      { status: 401 },
-    );
+    console.log("🔐 Auth check echoue, continue en mode guest");
   }
 
   if (!orderId || !paymentMethod) {
@@ -374,9 +378,9 @@ export async function action({ request }: ActionFunctionArgs) {
     // ✅ Récupérer les infos client depuis la commande
     const customerName = orderDetails.customer
       ? `${orderDetails.customer.cst_fname || ""} ${orderDetails.customer.cst_name || ""}`.trim()
-      : `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Client";
+      : `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Client";
 
-    const customerEmail = orderDetails.customer?.cst_mail || user.email || "";
+    const customerEmail = orderDetails.customer?.cst_mail || user?.email || "";
 
     console.log("💰 Payment amounts:", {
       totalAmount,
@@ -387,7 +391,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     console.log("💳 Calling initializePayment with:", {
       orderId,
-      userId: user.id,
+      userId: user?.id || "guest",
       paymentMethod,
       amount: totalAmount,
       consigneTotal,
@@ -403,7 +407,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Initialiser le paiement côté serveur
     const paymentData = await initializePayment({
       orderId,
-      userId: user.id,
+      userId: user?.id || "guest",
       paymentMethod,
       amount: totalAmount, // ✅ Phase 7: Montant total incluant consignes
       consigneTotal, // ✅ Phase 7: Montant des consignes
