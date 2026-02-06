@@ -24,6 +24,10 @@ import { McpAlertingService } from './services/mcp-alerting.service';
 // Phase 5: External Compatibility Verification (Chrome DevTools scraping)
 import { ChromeDevToolsClientService } from './services/chrome-devtools-client.service';
 import { ExternalCompatibilityService } from './services/external-compatibility.service';
+import { ExternalCompatibilityScrapingService } from './services/external-compatibility-scraping.service';
+import { ExternalCompatibilityConsensusService } from './services/external-compatibility-consensus.service';
+import { ExternalCompatibilityCacheService } from './services/external-compatibility-cache.service';
+import { ExternalCompatibilityPartsLink24Service } from './services/external-compatibility-partslink24.service';
 
 /**
  * MCP Validation Module - Phases 1-6
@@ -70,8 +74,12 @@ import { ExternalCompatibilityService } from './services/external-compatibility.
     McpQueryService,
     McpAlertingService,
 
-    // Phase 5: External Compatibility (Chrome DevTools scraping)
+    // Phase 5-6: External Compatibility (Chrome DevTools scraping)
     ChromeDevToolsClientService,
+    ExternalCompatibilityScrapingService,
+    ExternalCompatibilityConsensusService,
+    ExternalCompatibilityCacheService,
+    ExternalCompatibilityPartsLink24Service,
     ExternalCompatibilityService,
 
     // Phase 1: Shadow interceptor (runs MCP in parallel, no blocking)

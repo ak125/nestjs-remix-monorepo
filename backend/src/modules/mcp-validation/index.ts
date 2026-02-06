@@ -164,8 +164,12 @@ export {
   CompatibilityComparisonResult,
   ExternalVerifyOptions,
 
+  // Phase 6 types
+  WeightedConsensusResult,
+  OemCrossValidationResult,
+
   // PartLink24 specific
   PartLink24OemPart,
   PartLink24NavigationPath,
   PartLink24CatalogResult,
-} from './services/external-compatibility.service';
+} from './services/external-compatibility.types';
