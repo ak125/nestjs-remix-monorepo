@@ -708,7 +708,9 @@ export class AdminGammesSeoController {
     try {
       this.logger.log('📊 GET /api/admin/gammes-seo/v-level/global-stats');
 
-      const stats = await this.gammesSeoService.getVLevelGlobalStats();
+      const stats = await this.gammesSeoService
+        .getBadgesService()
+        .getVLevelGlobalStats();
 
       return {
         success: true,
@@ -744,7 +746,9 @@ export class AdminGammesSeoController {
       );
 
       const pgIdNum = pgId ? parseInt(pgId, 10) : undefined;
-      const result = await this.gammesSeoService.getSectionKMetrics(pgIdNum);
+      const result = await this.gammesSeoService
+        .getBadgesService()
+        .getSectionKMetrics(pgIdNum);
 
       return {
         success: true,
@@ -776,8 +780,9 @@ export class AdminGammesSeoController {
         `🔍 GET /api/admin/gammes-seo/section-k/${pgIdNum}/missing`,
       );
 
-      const data =
-        await this.gammesSeoService.getSectionKMissingDetails(pgIdNum);
+      const data = await this.gammesSeoService
+        .getSectionKService()
+        .getSectionKMissingDetails(pgIdNum);
 
       return {
         success: true,
@@ -809,8 +814,9 @@ export class AdminGammesSeoController {
         `🔍 GET /api/admin/gammes-seo/section-k/${pgIdNum}/extras`,
       );
 
-      const data =
-        await this.gammesSeoService.getSectionKExtrasDetails(pgIdNum);
+      const data = await this.gammesSeoService
+        .getSectionKService()
+        .getSectionKExtrasDetails(pgIdNum);
 
       return {
         success: true,
@@ -843,7 +849,9 @@ export class AdminGammesSeoController {
     try {
       this.logger.log('🔄 POST /api/admin/gammes-seo/refresh-aggregates');
 
-      const result = await this.gammesSeoService.refreshAggregates();
+      const result = await this.gammesSeoService
+        .getBadgesService()
+        .refreshAggregates();
 
       return {
         success: true,
@@ -886,7 +894,9 @@ export class AdminGammesSeoController {
         `🔄 POST /api/admin/gammes-seo/${pgId}/refresh-aggregates`,
       );
 
-      const result = await this.gammesSeoService.refreshAggregates(pgId);
+      const result = await this.gammesSeoService
+        .getBadgesService()
+        .refreshAggregates(pgId);
 
       if (result.refreshed === 0) {
         throw new HttpException(

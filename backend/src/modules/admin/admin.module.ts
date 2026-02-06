@@ -33,6 +33,8 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
+import { GammeSeoBadgesService } from './services/gamme-seo-badges.service'; // 🏷️ Badges & Aggregates
+import { GammeSeoSectionKService } from './services/gamme-seo-section-k.service'; // 📊 Section K V-Level
 import { SeoCockpitService } from './services/seo-cockpit.service'; // 🚀 Service SEO Cockpit
 
 // Services - Stock services pour le controller consolidé
@@ -92,6 +94,8 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     AdminGammesSeoService, // 🎯 Service Gammes SEO
     GammeSeoThresholdsService, // 🎯 Seuils Gammes SEO
     GammeSeoAuditService, // 🎯 Audit Gammes SEO
+    GammeSeoBadgesService, // 🏷️ Badges & Aggregates
+    GammeSeoSectionKService, // 📊 Section K V-Level
     SeoCockpitService, // 🚀 Service SEO Cockpit Unifié
   ],
   exports: [
