@@ -5,7 +5,11 @@ import { DatabaseModule } from '../database/database.module';
 import { CacheModule } from '../cache/cache.module';
 import { UsersModule } from '../modules/users/users.module';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { AuthLoginController } from './controllers/auth-login.controller';
+import { AuthSessionController } from './controllers/auth-session.controller';
+import { AuthPermissionsController } from './controllers/auth-permissions.controller';
+import { AuthTokenController } from './controllers/auth-token.controller';
+import { ProfileController } from './profile.controller';
 import { CookieSerializer } from './cookie-serializer';
 import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -26,7 +30,13 @@ import { LocalStrategy } from './local.strategy';
     CacheModule,
     UsersModule,
   ],
-  controllers: [AuthController],
+  controllers: [
+    AuthLoginController,
+    AuthSessionController,
+    AuthPermissionsController,
+    AuthTokenController,
+    ProfileController,
+  ],
   providers: [
     AuthService,
     LocalStrategy,
