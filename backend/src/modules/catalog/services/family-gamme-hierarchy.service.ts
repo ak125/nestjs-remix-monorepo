@@ -4,7 +4,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CatalogFamily } from '../interfaces/catalog-family.interface';
-import { CatalogGamme, CatalogGammeService } from './catalog-gamme.service';
+import { CatalogGamme } from '../interfaces/catalog-gamme.interface';
 import { GammeUnifiedService } from './gamme-unified.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 
@@ -34,7 +34,6 @@ export interface HierarchyStats {
 @Injectable()
 export class FamilyGammeHierarchyService extends SupabaseBaseService {
   constructor(
-    private readonly catalogGammeService: CatalogGammeService,
     private readonly gammeUnifiedService: GammeUnifiedService,
     rpcGate: RpcGateService,
   ) {

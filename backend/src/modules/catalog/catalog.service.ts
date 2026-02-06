@@ -7,7 +7,6 @@ import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 
 // import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
 import { CatalogFamilyService } from './services/catalog-family.service';
-import { CatalogGammeService } from './services/catalog-gamme.service';
 import { GammeUnifiedService } from './services/gamme-unified.service';
 
 // ========================================
@@ -48,7 +47,6 @@ export class CatalogService
 
   constructor(
     private readonly catalogFamilyService: CatalogFamilyService,
-    private readonly catalogGammeService: CatalogGammeService,
     private readonly gammeUnifiedService: GammeUnifiedService,
     rpcGate: RpcGateService,
   ) {

@@ -8,7 +8,6 @@ import { CacheModule } from '../../cache/cache.module';
 // ========================================
 import { CatalogController } from './catalog.controller';
 import { EnhancedVehicleCatalogController } from './controllers/enhanced-vehicle-catalog.controller';
-// import { CatalogGammeController } from './controllers/catalog-gamme.controller'; // ❌ DÉSACTIVÉ - Conflit avec GammeUnifiedController
 import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
 import { GammeUnifiedController } from './controllers/gamme-unified.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
@@ -27,7 +26,6 @@ import { CompatibilityController } from './controllers/compatibility.controller'
 import { CatalogService } from './catalog.service';
 import { EnhancedVehicleCatalogService } from './services/enhanced-vehicle-catalog.service';
 import { CatalogFamilyService } from './services/catalog-family.service';
-import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
@@ -77,7 +75,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
   controllers: [
     CatalogController,
     EnhancedVehicleCatalogController,
-    // CatalogGammeController, // ❌ DÉSACTIVÉ - Conflit avec GammeUnifiedController sur /api/catalog/gammes/hierarchy
     FamilyGammeHierarchyController,
     GammeUnifiedController, // ✅ Controller unifié actif
     EquipementiersController,
@@ -94,7 +91,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     CatalogService,
     EnhancedVehicleCatalogService,
     CatalogFamilyService,
-    CatalogGammeService,
     FamilyGammeHierarchyService,
     GammeUnifiedService,
     EquipementiersService,
@@ -127,7 +123,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     CatalogService,
     EnhancedVehicleCatalogService,
     CatalogFamilyService,
-    CatalogGammeService,
     FamilyGammeHierarchyService,
     VehicleFilteredCatalogV4HybridService,
     CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
