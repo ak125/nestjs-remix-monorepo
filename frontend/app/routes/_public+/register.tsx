@@ -6,7 +6,6 @@ import {
 import { Link, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { z } from "zod";
-import { getOptionalUser } from "../../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -19,6 +18,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getOptionalUser } from "../../auth/unified.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {

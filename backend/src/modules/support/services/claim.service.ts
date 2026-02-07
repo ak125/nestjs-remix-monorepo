@@ -6,7 +6,10 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { NotificationService } from './notification.service';
-import { getErrorMessage, getErrorStack } from '../../../common/utils/error.utils';
+import {
+  getErrorMessage,
+  getErrorStack,
+} from '../../../common/utils/error.utils';
 
 export interface Claim {
   id: string;

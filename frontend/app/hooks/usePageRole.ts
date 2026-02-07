@@ -1,9 +1,9 @@
 import { useMatches } from "@remix-run/react";
-import { useVehicleContext } from "./useVehicleContext";
 import {
   type PageRoleMeta,
   type RouteHandleWithRole,
 } from "~/utils/page-role.types";
+import { useVehicleContext } from "./useVehicleContext";
 
 /**
  * Hook pour récupérer les métadonnées de rôle SEO de la route courante

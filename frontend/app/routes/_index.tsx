@@ -8,6 +8,9 @@ import { CheckCircle2, ChevronRight, Shield, Truck, Users } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
+import { formatCatalogCount } from "~/utils/format-catalog-count";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import HomeBlogSection from "../components/home/HomeBlogSection";
 import HomeBottomSections from "../components/home/HomeBottomSections";
@@ -24,9 +27,6 @@ import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
 // hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { formatCatalogCount } from "~/utils/format-catalog-count";
-import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
