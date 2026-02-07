@@ -20,7 +20,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
@@ -30,7 +30,7 @@ module.exports = {
       },
     ],
     // Prévenir les futurs console.log - warn pour migration progressive
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-console': ['warn', { allow: ['warn'] }],
 
     // ============================================
     // P1.3 - Import Firewall (2026-02-02)
