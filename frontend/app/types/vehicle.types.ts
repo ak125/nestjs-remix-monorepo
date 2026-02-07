@@ -1,9 +1,9 @@
 /**
  * 🚗 TYPES VÉHICULES CENTRALISÉS
- * 
+ *
  * Fichier central pour tous les types liés aux véhicules
  * Unifie les interfaces dispersées dans le projet
- * 
+ *
  * @version 1.0.0
  * @since 2025-09-13
  */
@@ -28,7 +28,7 @@ export interface VehicleBrand {
 }
 
 /**
- * Interface pour les modèles de véhicules  
+ * Interface pour les modèles de véhicules
  * Basée sur la table auto_modele
  */
 export interface VehicleModel {
@@ -36,7 +36,7 @@ export interface VehicleModel {
   modele_name: string;
   modele_alias?: string;
   modele_ful_name?: string;
-  modele_marque_id: number;  // Correspond à la clé étrangère en BDD
+  modele_marque_id: number; // Correspond à la clé étrangère en BDD
   modele_year_from?: number;
   modele_year_to?: number;
   // Relation avec la marque
@@ -45,7 +45,7 @@ export interface VehicleModel {
 
 /**
  * Interface pour les types/motorisations de véhicules
- * Basée sur la table auto_type  
+ * Basée sur la table auto_type
  */
 export interface VehicleType {
   type_id: number;
@@ -53,18 +53,18 @@ export interface VehicleType {
   type_alias?: string;
   type_engine_code?: string;
   type_fuel?: string;
-  type_power?: string;  // Compatibilité avec VehicleSelector existant
+  type_power?: string; // Compatibilité avec VehicleSelector existant
   type_power_ps?: number;
   type_power_kw?: number;
   type_liter?: string;
   type_year_from?: string;
   type_year_to?: string | null;
-  type_engine?: string;  // Compatibilité avec VehicleSelector existant
+  type_engine?: string; // Compatibilité avec VehicleSelector existant
   type_engine_description?: string;
-  type_slug?: string;  // Compatibilité avec VehicleSelector existant
-  modele_id: number;  // Clé étrangère vers auto_modele
-  year_from?: number;  // Compatibilité
-  year_to?: number;    // Compatibilité
+  type_slug?: string; // Compatibilité avec VehicleSelector existant
+  modele_id: number; // Clé étrangère vers auto_modele
+  year_from?: number; // Compatibilité
+  year_to?: number; // Compatibilité
   // Relations
   auto_modele?: VehicleModel;
 }
@@ -238,7 +238,7 @@ export interface SelectorChangeEvent<T> {
   value: string;
   item?: T;
   timestamp: number;
-  source: 'user' | 'api' | 'reset';
+  source: "user" | "api" | "reset";
 }
 
 // ====================================
@@ -258,7 +258,7 @@ export interface LoadingState {
  * Configuration pour le cache
  */
 export interface CacheConfig {
-  ttl: number;  // Time to live en secondes
+  ttl: number; // Time to live en secondes
   maxSize: number;
   keyPrefix?: string;
 }
@@ -286,17 +286,17 @@ export interface DisplayConfig {
   showCounter?: boolean;
   showIcons?: boolean;
   itemsPerPage?: number;
-  sortBy?: 'name' | 'popularity' | 'recent';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "popularity" | "recent";
+  sortOrder?: "asc" | "desc";
 }
 
 /**
  * Thème pour les composants
  */
 export interface ThemeConfig {
-  variant?: 'default' | 'outlined' | 'filled';
-  size?: 'sm' | 'md' | 'lg';
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+  variant?: "default" | "outlined" | "filled";
+  size?: "sm" | "md" | "lg";
+  color?: "primary" | "secondary" | "success" | "warning" | "error";
 }
 
 // ====================================
@@ -363,7 +363,7 @@ export interface VehicleInfo extends VehicleData {
 export type Model = VehicleModel;
 
 /**
- * @deprecated Utiliser VehicleBrand à la place  
+ * @deprecated Utiliser VehicleBrand à la place
  */
 export interface VehicleBrandComponent extends VehicleBrand {}
 
