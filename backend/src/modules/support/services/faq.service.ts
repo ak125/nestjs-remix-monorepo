@@ -1,4 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  DomainNotFoundException,
+  DomainConflictException,
+  DomainValidationException,
+  BusinessRuleException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface FAQ {
   id: string;
@@ -262,7 +269,7 @@ export class FaqService {
   ): Promise<FAQ> {
     const faq = this.faqs.get(faqId);
     if (!faq) {
-      throw new Error(`FAQ ${faqId} not found`);
+      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.FAQ_NOT_FOUND, message: `FAQ ${faqId} not found` });
     }
 
     const oldCategory = faq.category;
@@ -282,7 +289,7 @@ export class FaqService {
   async deleteFAQ(faqId: string): Promise<void> {
     const faq = this.faqs.get(faqId);
     if (!faq) {
-      throw new Error(`FAQ ${faqId} not found`);
+      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.FAQ_NOT_FOUND, message: `FAQ ${faqId} not found` });
     }
 
     this.faqs.delete(faqId);
@@ -293,7 +300,7 @@ export class FaqService {
   async markHelpful(faqId: string, helpful: boolean): Promise<FAQ> {
     const faq = this.faqs.get(faqId);
     if (!faq) {
-      throw new Error(`FAQ ${faqId} not found`);
+      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.FAQ_NOT_FOUND, message: `FAQ ${faqId} not found` });
     }
 
     if (helpful) {
@@ -340,7 +347,7 @@ export class FaqService {
   ): Promise<FAQCategory> {
     const category = this.categories.get(categoryId);
     if (!category) {
-      throw new Error(`Category ${categoryId} not found`);
+      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.FAQ_CATEGORY_NOT_FOUND, message: `Category ${categoryId} not found` });
     }
 
     const updatedCategory = { ...category, ...updates };
@@ -353,7 +360,7 @@ export class FaqService {
   async deleteCategory(categoryId: string): Promise<void> {
     const category = this.categories.get(categoryId);
     if (!category) {
-      throw new Error(`Category ${categoryId} not found`);
+      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.FAQ_CATEGORY_NOT_FOUND, message: `Category ${categoryId} not found` });
     }
 
     // Check if category has FAQs
@@ -362,7 +369,7 @@ export class FaqService {
     );
 
     if (faqsInCategory.length > 0) {
-      throw new Error('Cannot delete category with existing FAQs');
+      throw new BusinessRuleException({ code: ErrorCodes.SUPPORT.FAQ_CATEGORY_HAS_ITEMS, message: 'Cannot delete category with existing FAQs' });
     }
 
     this.categories.delete(categoryId);
@@ -425,37 +432,37 @@ export class FaqService {
     data: Omit<FAQ, 'id' | 'helpful' | 'notHelpful' | 'views' | 'lastUpdated'>,
   ): void {
     if (!data.question || data.question.length < 10) {
-      throw new Error('Question must be at least 10 characters');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Question must be at least 10 characters', field: 'question' });
     }
 
     if (!data.answer || data.answer.length < 20) {
-      throw new Error('Answer must be at least 20 characters');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Answer must be at least 20 characters', field: 'answer' });
     }
 
     if (!data.category) {
-      throw new Error('Category is required');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.REQUIRED_FIELD, message: 'Category is required', field: 'category' });
     }
 
     if (!this.categories.has(data.category)) {
-      throw new Error('Invalid category');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Invalid category', field: 'category' });
     }
 
     if (data.order < 0) {
-      throw new Error('Order must be a positive number');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_RANGE, message: 'Order must be a positive number', field: 'order' });
     }
   }
 
   private validateCategory(data: Omit<FAQCategory, 'faqCount'>): void {
     if (!data.id || !data.name) {
-      throw new Error('Category ID and name are required');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.REQUIRED_FIELD, message: 'Category ID and name are required' });
     }
 
     if (this.categories.has(data.id)) {
-      throw new Error('Category ID already exists');
+      throw new DomainConflictException({ code: ErrorCodes.SUPPORT.FAQ_CATEGORY_EXISTS, message: 'Category ID already exists' });
     }
 
     if (data.order < 0) {
-      throw new Error('Order must be a positive number');
+      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_RANGE, message: 'Order must be a positive number', field: 'order' });
     }
   }
 

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface CrawlBudgetExperiment {
   id: string;
@@ -76,7 +77,12 @@ export class CrawlBudgetSupabaseService {
 
     if (error) {
       this.logger.error('❌ Failed to create experiment:', error);
-      throw new Error(`Failed to create experiment: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Failed to create experiment: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     this.logger.log(`✅ Experiment created: ${experiment.id}`);
@@ -107,7 +113,12 @@ export class CrawlBudgetSupabaseService {
 
     if (error) {
       this.logger.error('❌ Failed to list experiments:', error);
-      throw new Error(`Failed to list experiments: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Failed to list experiments: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     return data || [];
@@ -156,7 +167,12 @@ export class CrawlBudgetSupabaseService {
       .single();
 
     if (error) {
-      throw new Error(`Failed to update status: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.OPERATION_FAILED,
+        message: `Failed to update status: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     return data;
@@ -176,7 +192,12 @@ export class CrawlBudgetSupabaseService {
 
     if (error) {
       this.logger.error('❌ Failed to add metric:', error);
-      throw new Error(`Failed to add metric: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Failed to add metric: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     return data;
@@ -207,7 +228,12 @@ export class CrawlBudgetSupabaseService {
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(`Failed to get metrics: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Failed to get metrics: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     return data || [];
@@ -223,7 +249,12 @@ export class CrawlBudgetSupabaseService {
       .eq('id', id);
 
     if (error) {
-      throw new Error(`Failed to delete experiment: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.OPERATION_FAILED,
+        message: `Failed to delete experiment: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     this.logger.log(`🗑️ Experiment ${id} deleted`);
@@ -243,7 +274,12 @@ export class CrawlBudgetSupabaseService {
       .select('status');
 
     if (error) {
-      throw new Error(`Failed to get stats: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Failed to get stats: ${error.message}`,
+        details: error.message,
+        cause: error as unknown as Error,
+      });
     }
 
     const stats = {

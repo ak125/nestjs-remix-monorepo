@@ -2,6 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import {
+  ConfigurationException,
+  DatabaseException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 import * as crypto from 'crypto';
 
 export interface ConfigItem {
@@ -65,7 +70,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
           return null;
         }
         this.logger.error('Error loading app configuration:', error);
-        throw new Error(`Failed to load app configuration: ${error.message}`);
+        throw new ConfigurationException({
+          code: ErrorCodes.CONFIG.LOAD_FAILED,
+          message: `Failed to load app configuration: ${error.message}`,
+        });
       }
 
       // Mettre en cache
@@ -105,7 +113,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
           return null;
         }
         this.logger.error(`Error getting config ${key}:`, error);
-        throw new Error(`Failed to get config ${key}: ${error.message}`);
+        throw new ConfigurationException({
+          code: ErrorCodes.CONFIG.LOAD_FAILED,
+          message: `Failed to get config ${key}: ${error.message}`,
+        });
       }
 
       // Mettre en cache
@@ -132,7 +143,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Error setting config ${key}:`, error);
-        throw new Error(`Failed to set config ${key}: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Failed to set config ${key}: ${error.message}`,
+        });
       }
 
       // Invalider le cache
@@ -157,7 +171,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Error deleting config ${key}:`, error);
-        throw new Error(`Failed to delete config ${key}: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Failed to delete config ${key}: ${error.message}`,
+        });
       }
 
       // Invalider le cache
@@ -186,7 +203,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
           `Error searching configs with pattern ${pattern}:`,
           error,
         );
-        throw new Error(`Failed to search configs: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Failed to search configs: ${error.message}`,
+        });
       }
 
       return data;
@@ -212,7 +232,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
           `Error getting configs for category ${category}:`,
           error,
         );
-        throw new Error(`Failed to get configs for category: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Failed to get configs for category: ${error.message}`,
+        });
       }
 
       return data;
@@ -287,7 +310,12 @@ export class EnhancedConfigService extends SupabaseBaseService {
       return `${iv.toString('hex')}:${encrypted}`;
     } catch (error) {
       this.logger.error('Error encrypting value:', error);
-      throw new Error('Failed to encrypt value');
+      throw new ConfigurationException({
+        code: ErrorCodes.CONFIG.ENCRYPT_FAILED,
+        message: 'Failed to encrypt value',
+        details: error instanceof Error ? error.message : undefined,
+        cause: error instanceof Error ? error : undefined,
+      });
     }
   }
 
@@ -312,7 +340,12 @@ export class EnhancedConfigService extends SupabaseBaseService {
       return decrypted;
     } catch (error) {
       this.logger.error('Error decrypting value:', error);
-      throw new Error('Failed to decrypt value');
+      throw new ConfigurationException({
+        code: ErrorCodes.CONFIG.DECRYPT_FAILED,
+        message: 'Failed to decrypt value',
+        details: error instanceof Error ? error.message : undefined,
+        cause: error instanceof Error ? error : undefined,
+      });
     }
   }
 

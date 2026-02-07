@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
  * Service de gestion des fournisseurs avec fonctionnalités avancées
@@ -63,9 +64,10 @@ export class SuppliersService extends SupabaseBaseService {
       // Vérifier l'unicité du code
       const existing = await this.checkSupplierCodeExists(supplierData.code);
       if (existing) {
-        throw new Error(
-          `Le code fournisseur "${supplierData.code}" existe déjà`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.SUPPLIER.UPDATE_FAILED,
+          message: `Le code fournisseur "${supplierData.code}" existe déjà`,
+        });
       }
 
       const formattedData = {
@@ -175,7 +177,10 @@ export class SuppliersService extends SupabaseBaseService {
         .single();
 
       if (error) throw error;
-      if (!data) throw new Error(`Fournisseur ID ${id} non trouvé`);
+      if (!data) throw new DatabaseException({
+          code: ErrorCodes.SUPPLIER.FETCH_FAILED,
+          message: `Fournisseur ID ${id} non trouvé`,
+        });
 
       return this.transformSupplierData(data);
     } catch (error) {
@@ -213,7 +218,10 @@ export class SuppliersService extends SupabaseBaseService {
         .single();
 
       if (existing) {
-        throw new Error('Cette liaison fournisseur-marque existe déjà');
+        throw new DatabaseException({
+          code: ErrorCodes.SUPPLIER.UPDATE_FAILED,
+          message: 'Cette liaison fournisseur-marque existe déjà',
+        });
       }
 
       const linkData = {

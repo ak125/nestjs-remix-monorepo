@@ -3,6 +3,7 @@ import { SupabaseBaseService } from './supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { CacheService } from '../../modules/cache/cache.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
  * 📊 INTERFACES ET TYPES OPTIMISÉS
@@ -304,7 +305,7 @@ export class CartDataService extends SupabaseBaseService {
       // 1. Récupérer le produit avec TOUTES les vraies données
       const product = await this.getProductWithAllData(productId);
       if (!product) {
-        throw new Error(`Produit ${productId} introuvable`);
+        throw new DatabaseException({ code: ErrorCodes.CART.UPDATE_FAILED, message: `Produit ${productId} introuvable` });
       }
 
       this.logger.log(

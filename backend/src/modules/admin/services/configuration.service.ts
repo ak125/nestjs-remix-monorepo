@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🔧 ConfigurationService - Service de configuration système
@@ -22,9 +23,7 @@ export class ConfigurationService extends SupabaseBaseService {
         .order('key', { ascending: true });
 
       if (error) {
-        throw new Error(
-          `Erreur lors de la récupération des configurations: ${error.message}`,
-        );
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.SUPABASE_ERROR, message: `Erreur lors de la récupération des configurations: ${error.message}`, details: error.message });
       }
 
       return {
@@ -53,7 +52,7 @@ export class ConfigurationService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Configuration non trouvée: ${error.message}`);
+        throw new DomainNotFoundException({ code: ErrorCodes.ADMIN.CONFIG_NOT_FOUND, message: `Configuration non trouvée: ${error.message}`, details: error.message });
       }
 
       return {
@@ -86,7 +85,7 @@ export class ConfigurationService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la mise à jour: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.CONFIG_UPDATE_FAILED, message: `Erreur lors de la mise à jour: ${error.message}`, details: error.message });
       }
 
       return {

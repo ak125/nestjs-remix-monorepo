@@ -4,6 +4,11 @@ import { SupabaseIndexationService } from '../../search/services/supabase-indexa
 import { BlogArticleTransformService } from './blog-article-transform.service';
 import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle } from '../interfaces/blog.interfaces';
+import {
+  DomainNotFoundException,
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 📦 BlogArticleDataService - Accès aux données articles
@@ -378,13 +383,19 @@ export class BlogArticleDataService {
       const article = await this.getArticleBySlug(slug);
 
       if (!article) {
-        throw new Error(`Article non trouvé: ${slug}`);
+        throw new DomainNotFoundException({
+          code: ErrorCodes.BLOG.ARTICLE_NOT_FOUND,
+          message: `Article non trouvé: ${slug}`,
+        });
       }
 
       const { legacy_table, legacy_id } = article;
 
       if (!legacy_table || !legacy_id) {
-        throw new Error(`Article sans legacy_table/legacy_id: ${slug}`);
+        throw new DomainNotFoundException({
+          code: ErrorCodes.BLOG.ARTICLE_NOT_FOUND,
+          message: `Article sans legacy_table/legacy_id: ${slug}`,
+        });
       }
 
       // 2. Déterminer le champ de compteur selon la table
@@ -409,7 +420,10 @@ export class BlogArticleDataService {
           idField = 'ba_id';
           break;
         default:
-          throw new Error(`Table non supportée: ${legacy_table}`);
+          throw new DomainValidationException({
+            code: ErrorCodes.BLOG.UNSUPPORTED_TABLE,
+            message: `Table non supportée: ${legacy_table}`,
+          });
       }
 
       // 3. Incrémenter avec UPDATE classique

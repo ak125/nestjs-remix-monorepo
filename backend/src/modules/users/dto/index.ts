@@ -33,6 +33,10 @@ export * from './user-address.dto';
 // =====================================
 
 import { z } from 'zod';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * Fonction utilitaire générique pour valider avec Zod
@@ -65,7 +69,10 @@ export function createValidationPipe<T>(schema: z.ZodSchema<T>) {
       const errors = result.error.issues.map(
         (issue) => `${issue.path.join('.')}: ${issue.message}`,
       );
-      throw new Error(`Validation failed: ${errors.join(', ')}`);
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: `Validation failed: ${errors.join(', ')}`,
+      });
     }
     return result.data;
   };

@@ -16,6 +16,7 @@ import {
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface AnalyticsReport {
   period: {
@@ -208,7 +209,12 @@ export class UploadAnalyticsService extends SupabaseBaseService {
         .order('timestamp', { ascending: false });
 
       if (error) {
-        throw new Error(`Database query failed: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.ANALYTICS_FAILED,
+          message: `Database query failed: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const report = this.generateReportFromData(
@@ -265,7 +271,12 @@ export class UploadAnalyticsService extends SupabaseBaseService {
         .eq('success', true);
 
       if (error) {
-        throw new Error(`Quick stats query failed: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.ANALYTICS_FAILED,
+          message: `Quick stats query failed: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const uploads = data || [];
@@ -334,7 +345,12 @@ export class UploadAnalyticsService extends SupabaseBaseService {
         .order('timestamp', { ascending: true });
 
       if (error) {
-        throw new Error(`Trends query failed: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.ANALYTICS_FAILED,
+          message: `Trends query failed: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const uploads = data || [];
@@ -367,7 +383,12 @@ export class UploadAnalyticsService extends SupabaseBaseService {
         .select('id');
 
       if (error) {
-        throw new Error(`Cleanup failed: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.ANALYTICS_FAILED,
+          message: `Cleanup failed: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const deletedCount = data?.length || 0;

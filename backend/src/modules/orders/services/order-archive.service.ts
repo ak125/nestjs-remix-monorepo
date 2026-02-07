@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface ArchiveFilters {
   customerId?: number;
@@ -57,7 +58,12 @@ export class OrderArchiveService extends SupabaseBaseService {
         .eq('order_id', orderId);
 
       if (updateError) {
-        throw new Error(`Échec archivage: ${updateError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.ORDER.ARCHIVE_FAILED,
+          message: `Échec archivage: ${updateError.message}`,
+          details: updateError.message,
+          cause: updateError instanceof Error ? updateError : undefined,
+        });
       }
 
       this.logger.log(`Commande #${orderId} archivée`);
@@ -85,7 +91,12 @@ export class OrderArchiveService extends SupabaseBaseService {
         .eq('order_id', orderId);
 
       if (error) {
-        throw new Error(`Échec restauration: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.ORDER.RESTORE_FAILED,
+          message: `Échec restauration: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       this.logger.log(`Commande #${orderId} restaurée`);
@@ -178,7 +189,12 @@ export class OrderArchiveService extends SupabaseBaseService {
       const { data: orders, error, count } = await query;
 
       if (error) {
-        throw new Error(`Erreur récupération archives: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.ORDER.ARCHIVE_FAILED,
+          message: `Erreur récupération archives: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return {
@@ -357,7 +373,12 @@ export class OrderArchiveService extends SupabaseBaseService {
         .in('order_id', orderIds);
 
       if (error) {
-        throw new Error(`Erreur suppression: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.ORDER.DELETE_FAILED,
+          message: `Erreur suppression: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       this.logger.log(`${tempOrders.length} commandes temporaires supprimées`);
@@ -407,7 +428,12 @@ export class OrderArchiveService extends SupabaseBaseService {
         .in('order_id', orderIds);
 
       if (error) {
-        throw new Error(`Erreur archivage: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.ORDER.ARCHIVE_FAILED,
+          message: `Erreur archivage: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       this.logger.log(

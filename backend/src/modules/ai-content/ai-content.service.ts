@@ -13,6 +13,11 @@ import { HuggingFaceProvider } from './providers/huggingface.provider';
 import { GroqProvider } from './providers/groq.provider';
 import { AnthropicProvider } from './providers/anthropic.provider';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
+import {
+  ExternalServiceException,
+  ConfigurationException,
+  ErrorCodes,
+} from '../../common/exceptions';
 
 interface AIProvider {
   generateContent(
@@ -172,7 +177,12 @@ export class AiContentService {
 
         if (!response.ok) {
           const error = await response.text();
-          throw new Error(`OpenAI API error: ${error}`);
+          throw new ExternalServiceException({
+            message: `OpenAI API error: ${error}`,
+            code: ErrorCodes.EXTERNAL.HTTP_ERROR,
+            serviceName: 'openai',
+            details: error,
+          });
         }
 
         const data = await response.json();
@@ -184,11 +194,13 @@ export class AiContentService {
   private createMockProvider(): AIProvider {
     return {
       async generateContent() {
-        throw new Error(
-          'Aucun provider IA disponible. ' +
+        throw new ConfigurationException({
+          message:
+            'Aucun provider IA disponible. ' +
             'Obtenez une clé API Groq gratuite sur https://console.groq.com ' +
             'ou configurez une clé HuggingFace sur https://huggingface.co/settings/tokens',
-        );
+          code: ErrorCodes.EXTERNAL.API_KEY_MISSING,
+        });
       },
     };
   }
@@ -278,11 +290,15 @@ export class AiContentService {
       ? this.circuitBreaker.getAvailableProviders()
       : Array.from(this.providers.keys());
 
-    throw new Error(
-      `All AI providers failed. Tried: [${triedProviders.join(', ')}]. ` +
+    throw new ExternalServiceException({
+      message:
+        `All AI providers failed. Tried: [${triedProviders.join(', ')}]. ` +
         `Available: [${availableProviders.join(', ')}]. ` +
         `Last error: ${lastError?.message || 'Unknown'}`,
-    );
+      code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+      details: lastError?.message,
+      cause: lastError || undefined,
+    });
   }
 
   private findNextProvider(

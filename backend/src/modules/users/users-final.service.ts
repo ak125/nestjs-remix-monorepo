@@ -4,6 +4,10 @@
  */
 
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  DomainConflictException,
+  ErrorCodes,
+} from '../../common/exceptions';
 import { UserDataConsolidatedService } from './services/user-data-consolidated.service';
 import { CacheService } from '../../cache/cache.service';
 import {
@@ -116,7 +120,10 @@ export class UsersFinalService {
     // Vérifier si l'email existe déjà
     const existing = await this.getUserByEmail(userData.email);
     if (existing) {
-      throw new Error('Un utilisateur avec cet email existe déjà');
+      throw new DomainConflictException({
+        code: ErrorCodes.USER.DUPLICATE_EMAIL,
+        message: 'Un utilisateur avec cet email existe déjà',
+      });
     }
 
     const user = await this.userDataService.create(userData);
@@ -139,7 +146,10 @@ export class UsersFinalService {
     if (updates.email) {
       const existing = await this.getUserByEmail(updates.email);
       if (existing && existing.id !== userId) {
-        throw new Error('Un utilisateur avec cet email existe déjà');
+        throw new DomainConflictException({
+          code: ErrorCodes.USER.DUPLICATE_EMAIL,
+          message: 'Un utilisateur avec cet email existe déjà',
+        });
       }
     }
 

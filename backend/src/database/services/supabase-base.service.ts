@@ -9,6 +9,7 @@ import {
   SupabaseRpcError,
   RpcBlockedError,
 } from '../../security/rpc-gate/rpc-gate.errors';
+import { ConfigurationException, ErrorCodes } from '../../common/exceptions';
 
 interface CircuitBreakerState {
   failures: number;
@@ -98,13 +99,17 @@ export abstract class SupabaseBaseService {
     }
 
     if (!this.supabaseUrl) {
-      throw new Error('SUPABASE_URL not found in environment variables');
+      throw new ConfigurationException({
+        code: ErrorCodes.DATABASE.CONFIG_MISSING,
+        message: 'SUPABASE_URL not found in environment variables',
+      });
     }
 
     if (!this.supabaseServiceKey) {
-      throw new Error(
-        'SUPABASE_SERVICE_ROLE_KEY not found in environment variables',
-      );
+      throw new ConfigurationException({
+        code: ErrorCodes.DATABASE.CONFIG_MISSING,
+        message: 'SUPABASE_SERVICE_ROLE_KEY not found in environment variables',
+      });
     }
 
     // 🔒 Kill-switch DEV: Use dev_readonly key in non-production when enabled
@@ -183,7 +188,10 @@ export abstract class SupabaseBaseService {
               err.code === 'UND_ERR_CONNECT_TIMEOUT'
             ) {
               this.logger.error(`❌ Supabase Request Timeout (15s) for ${url}`);
-              throw new Error('Supabase Request Timeout (15s)');
+              throw new ConfigurationException({
+                code: ErrorCodes.DATABASE.TIMEOUT,
+                message: 'Supabase Request Timeout (15s)',
+              });
             }
             throw error;
           } finally {

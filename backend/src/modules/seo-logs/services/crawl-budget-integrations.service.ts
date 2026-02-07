@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CrawlBudgetSupabaseService } from './crawl-budget-supabase.service';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateCrawlBudgetExperimentDto } from '../dto/crawl-budget-experiment.dto';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🔌 Intégration Google Search Console API
@@ -109,7 +110,10 @@ export class SitemapGeneratorService {
     const experiment = await this.supabase.getExperiment(experimentId);
 
     if (!experiment) {
-      throw new Error(`Experiment ${experimentId} not found`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: `Experiment ${experimentId} not found`,
+      });
     }
 
     // TODO: Récupérer toutes les URLs depuis Supabase
@@ -326,7 +330,10 @@ export class CrawlBudgetOrchestratorService {
     const experiment = await this.supabase.getExperiment(experimentId);
 
     if (!experiment) {
-      throw new Error('Experiment not found');
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.AUDIT_FAILED,
+        message: 'Experiment not found',
+      });
     }
 
     const metrics = await this.supabase.getMetrics(experimentId);

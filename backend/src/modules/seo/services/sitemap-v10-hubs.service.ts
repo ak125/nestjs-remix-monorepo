@@ -16,6 +16,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { HubsClusterService } from './sitemap-v10-hubs-cluster.service';
 import { HubsPriorityService } from './sitemap-v10-hubs-priority.service';
 import { HubsVehicleService } from './sitemap-v10-hubs-vehicle.service';
@@ -119,7 +120,11 @@ export class SitemapV10HubsService extends SupabaseBaseService {
           { source: 'cron' },
         );
 
-        if (error) throw new Error(error.message);
+        if (error) throw new DatabaseException({
+          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+          message: error.message,
+          details: error.message,
+        });
         urls = (data || []).map((row: { url: string }) =>
           row.url.startsWith('http') ? row.url : `${this.BASE_URL}${row.url}`,
         );
@@ -132,7 +137,11 @@ export class SitemapV10HubsService extends SupabaseBaseService {
           .eq('is_indexable_hint', true)
           .limit(config.maxUrls);
 
-        if (error) throw new Error(error.message);
+        if (error) throw new DatabaseException({
+          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+          message: error.message,
+          details: error.message,
+        });
         urls = (data || []).map((row) =>
           row.url.startsWith('http') ? row.url : `${this.BASE_URL}${row.url}`,
         );

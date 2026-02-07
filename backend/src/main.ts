@@ -18,7 +18,6 @@ import session from 'express-session';
 import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
-import { HttpExceptionFilter } from './auth/exception.filter';
 import cors from 'cors';
 
 const redisStoreFactory = RedisStore(session);
@@ -105,7 +104,8 @@ async function bootstrap() {
     });
     logger.log('Assets statiques configurés');
 
-    app.useGlobalFilters(new HttpExceptionFilter());
+    // GlobalErrorFilter is registered via APP_FILTER in ErrorsModule (DI-based)
+    // It catches ALL exceptions: DomainException, HttpException, and raw Errors
 
     // ⚠️ CRITIQUE: body-parser DOIT être avant passport pour éviter "stream is not readable"
     app.use(json({ limit: '10mb' }));

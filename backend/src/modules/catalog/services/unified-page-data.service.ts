@@ -4,6 +4,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import {
@@ -274,14 +275,22 @@ export class UnifiedPageDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`❌ Erreur RPC V3: ${error.message}`);
-      throw new Error(`RPC V3 failed: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.CATALOG.RPC_FAILED,
+        message: `RPC V3 failed: ${error.message}`,
+        details: error.message,
+        cause: error instanceof Error ? error : undefined,
+      });
     }
 
     if (!data) {
       this.logger.error(
         `❌ RPC V3 retourne null pour type=${typeId} pg=${pgId}`,
       );
-      throw new Error(`RPC V3 returned no data for type=${typeId} pg=${pgId}`);
+      throw new DatabaseException({
+        code: ErrorCodes.CATALOG.RPC_FAILED,
+        message: `RPC V3 returned no data for type=${typeId} pg=${pgId}`,
+      });
     }
 
     const rpcResult = data as RpcV3Result;

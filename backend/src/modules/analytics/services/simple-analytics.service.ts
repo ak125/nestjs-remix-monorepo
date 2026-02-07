@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../cache/cache.service';
 import { ConfigService } from '@nestjs/config';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 📊 SIMPLE ANALYTICS SERVICE - Configuration et Tracking Simplifié
@@ -291,7 +292,12 @@ export class SimpleAnalyticsService {
       };
     } catch (error) {
       this.logger.error('Error getting analytics metrics', error.stack);
-      throw new Error(`Failed to get metrics: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.ANALYTICS.METRICS_FAILED,
+        message: `Failed to get metrics: ${error.message}`,
+        details: error.message,
+        cause: error instanceof Error ? error : undefined,
+      });
     }
   }
 

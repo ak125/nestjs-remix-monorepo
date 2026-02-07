@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🔍 SERVICE DE RECHERCHE ENHANCED - Tables Existantes
@@ -310,7 +311,12 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       const { data: pieces, error: piecesError } = await piecesQuery;
 
       if (piecesError) {
-        throw new Error(`Erreur requête pièces: ${piecesError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEARCH.QUERY_FAILED,
+          message: `Erreur requête pièces: ${piecesError.message}`,
+          details: piecesError.message,
+          cause: piecesError instanceof Error ? piecesError : undefined,
+        });
       }
 
       if (!pieces?.length) {

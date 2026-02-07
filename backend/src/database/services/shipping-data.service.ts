@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
  * 🚚 SERVICE DE DONNÉES DE LIVRAISON
@@ -36,7 +37,10 @@ export class ShippingDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       return await response.json();
@@ -60,7 +64,10 @@ export class ShippingDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       return await response.json();
@@ -84,7 +91,10 @@ export class ShippingDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const data = await response.json();

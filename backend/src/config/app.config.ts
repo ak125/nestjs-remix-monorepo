@@ -1,6 +1,8 @@
 // Configuration centralisée pour éviter les dépendances circulaires
 // Approche Context7 : centraliser la configuration
 
+import { ConfigurationException, ErrorCodes } from '../common/exceptions';
+
 export interface AppConfig {
   supabase: {
     url: string;
@@ -39,7 +41,7 @@ export function createAppConfig(): AppConfig {
 
   // Validation Context7 : échouer rapidement si config invalide
   if (!config.supabase.serviceKey && config.app.environment === 'production') {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required in production');
+    throw new ConfigurationException({ code: ErrorCodes.CONFIG.MISSING, message: 'SUPABASE_SERVICE_ROLE_KEY is required in production' });
   }
 
   return config;

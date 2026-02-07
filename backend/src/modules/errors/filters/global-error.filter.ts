@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ErrorService } from '../services/error.service';
+import { DomainException } from '../../../common/exceptions';
+import { RedirectException } from '../../../auth/redirected-error.exception';
 
 @Catch()
 export class GlobalErrorFilter implements ExceptionFilter {
@@ -23,8 +25,58 @@ export class GlobalErrorFilter implements ExceptionFilter {
     // 🔒 Vérification immédiate si headers déjà envoyés
     if (response.headersSent) {
       this.logger.warn(
-        `⚠️ Headers already sent for ${request.method} ${request.url} - Skipping error handler`,
+        `Headers already sent for ${request.method} ${request.url} - Skipping error handler`,
       );
+      return;
+    }
+
+    // RedirectException — handle before status-code routing
+    if (exception instanceof RedirectException) {
+      const { redirectUrl, message } = exception;
+      return response.redirect(302, `${redirectUrl}?error=${message}`);
+    }
+
+    // DomainException — typed domain errors with error codes
+    if (exception instanceof DomainException) {
+      const status = exception.getStatus();
+
+      this.logger.error(
+        `${request.method} ${request.url} - ${status} [${exception.code}] ${exception.message}`,
+        exception.originalCause?.stack || exception.stack,
+      );
+
+      // Log 5xx to error service
+      if (status >= 500) {
+        this.errorService
+          .logError(exception.originalCause || exception, request, {
+            status,
+            code: exception.code,
+            handled_by: 'GlobalErrorFilter',
+            context: exception.context,
+          })
+          .catch((err) => {
+            this.logger.error('Failed to log error to service:', err.message);
+          });
+      }
+
+      if (response.headersSent) return;
+
+      const errorResponse: Record<string, unknown> = {
+        statusCode: status,
+        code: exception.code,
+        message: exception.message,
+        timestamp: exception.timestamp,
+        path: request.url,
+        method: request.method,
+      };
+      if (exception.details) errorResponse.details = exception.details;
+      if (exception.field) errorResponse.field = exception.field;
+
+      try {
+        response.status(status).json(errorResponse);
+      } catch (err) {
+        this.logger.error('Failed to send error response:', err);
+      }
       return;
     }
 
@@ -34,7 +86,11 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      message = exception.message;
+      const exceptionResponse = exception.getResponse();
+      message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any)?.message || exception.message;
       code = exception.constructor.name;
     } else if (exception instanceof Error) {
       message = exception.message;

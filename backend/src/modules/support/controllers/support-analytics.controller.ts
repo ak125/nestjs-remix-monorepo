@@ -1,5 +1,9 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { SupportAnalyticsService } from '../services/support-analytics.service';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/analytics')
 export class SupportAnalyticsController {
@@ -31,7 +35,10 @@ export class SupportAnalyticsController {
     @Query('endDate') endDate: string,
   ) {
     if (!startDate || !endDate) {
-      throw new Error('Start date and end date are required for reports');
+      throw new DomainValidationException({
+        message: 'Start date and end date are required for reports',
+        code: ErrorCodes.VALIDATION.REQUIRED_FIELD,
+      });
     }
 
     const period = {

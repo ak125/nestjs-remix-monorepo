@@ -8,6 +8,7 @@
 
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { OrdersService } from '../database/services/orders.service';
+import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
 
 interface StaffMember {
   status: string;
@@ -44,7 +45,7 @@ export class RemixApiService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.SERVICE_ERROR, message: `HTTP ${response.status}: ${response.statusText}` });
       }
 
       return (await response.json()) as T;

@@ -6,6 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  DatabaseException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface LegalDocument {
   msg_id: string;
@@ -127,9 +131,11 @@ export class LegalService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(
-          `Erreur lors de la création du document: ${error.message}`,
-        );
+        throw new DatabaseException({
+          message: `Erreur lors de la création du document: ${error.message}`,
+          code: ErrorCodes.SUPPORT.CREATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(
@@ -247,9 +253,11 @@ export class LegalService extends SupabaseBaseService {
       const { data: messages, error } = await query;
 
       if (error) {
-        throw new Error(
-          `Erreur lors de la récupération des documents: ${error.message}`,
-        );
+        throw new DatabaseException({
+          message: `Erreur lors de la récupération des documents: ${error.message}`,
+          code: ErrorCodes.SUPPORT.FETCH_FAILED,
+          details: error.message,
+        });
       }
 
       // Enrichir et filtrer par contenu JSON
@@ -308,7 +316,11 @@ export class LegalService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la mise à jour: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la mise à jour: ${error.message}`,
+          code: ErrorCodes.SUPPORT.UPDATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(`Document ${documentId} mis à jour par ${updatedBy}`);
@@ -351,7 +363,11 @@ export class LegalService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la publication: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la publication: ${error.message}`,
+          code: ErrorCodes.SUPPORT.UPDATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(
@@ -382,7 +398,11 @@ export class LegalService extends SupabaseBaseService {
         .eq('msg_id', documentId);
 
       if (error) {
-        throw new Error(`Erreur lors de la suppression: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la suppression: ${error.message}`,
+          code: ErrorCodes.SUPPORT.DELETE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(`Document légal supprimé: ${documentId}`);
@@ -433,7 +453,11 @@ export class LegalService extends SupabaseBaseService {
       });
 
       if (error) {
-        throw new Error(`Erreur lors de l'enregistrement: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de l'enregistrement: ${error.message}`,
+          code: ErrorCodes.SUPPORT.CREATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(

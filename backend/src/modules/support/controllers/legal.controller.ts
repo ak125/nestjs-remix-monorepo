@@ -12,6 +12,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { LegalService, LegalDocument } from '../services/legal.service';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/legal')
 export class LegalController {
@@ -49,7 +53,10 @@ export class LegalController {
       type as LegalDocument['type'],
     );
     if (!document) {
-      throw new Error(`No published document found for type ${type}`);
+      throw new DomainNotFoundException({
+        message: `No published document found for type ${type}`,
+        code: ErrorCodes.SUPPORT.LEGAL_NOT_FOUND,
+      });
     }
     return document;
   }
@@ -60,7 +67,10 @@ export class LegalController {
   ): Promise<LegalDocument> {
     const document = await this.legalService.getDocument(identifier);
     if (!document) {
-      throw new Error(`Document ${identifier} not found`);
+      throw new DomainNotFoundException({
+        message: `Document ${identifier} not found`,
+        code: ErrorCodes.SUPPORT.LEGAL_NOT_FOUND,
+      });
     }
     return document;
   }
@@ -112,9 +122,10 @@ export class LegalController {
       versionId,
     );
     if (!version) {
-      throw new Error(
-        `Version ${versionId} not found for document ${documentId}`,
-      );
+      throw new DomainNotFoundException({
+        message: `Version ${versionId} not found for document ${documentId}`,
+        code: ErrorCodes.SUPPORT.LEGAL_NOT_FOUND,
+      });
     }
     return version;
   }
@@ -172,7 +183,10 @@ export class LegalController {
     const page = await this.legalService.getLegalPageFromAriane(alias);
 
     if (!page) {
-      throw new Error(`Page légale "${alias}" non trouvée dans ARIANE`);
+      throw new DomainNotFoundException({
+        message: `Page légale "${alias}" non trouvée dans ARIANE`,
+        code: ErrorCodes.SUPPORT.LEGAL_NOT_FOUND,
+      });
     }
 
     return page;

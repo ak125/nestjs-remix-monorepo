@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { MetricsService } from '../services/metrics.service';
 import { DatabaseMonitorService } from '../services/database-monitor.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface MetricsJobData {
   type: 'performance' | 'business' | 'seo' | 'database_health' | 'maintenance';
@@ -52,7 +53,10 @@ export class MetricsProcessor extends WorkerHost {
           break;
 
         default:
-          throw new Error(`Unknown metrics job type: ${job.data.type}`);
+          throw new DatabaseException({
+            code: ErrorCodes.DATABASE.OPERATION_FAILED,
+            message: `Unknown metrics job type: ${job.data.type}`,
+          });
       }
 
       const processingTime = Date.now() - startTime;

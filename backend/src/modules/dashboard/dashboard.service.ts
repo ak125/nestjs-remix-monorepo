@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { CacheService } from '../cache/cache.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 @Injectable()
 export class DashboardService extends SupabaseBaseService {
@@ -659,9 +660,12 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getUserCountFixed: ${error.message}`);
-        throw new Error(
-          `Impossible de récupérer le nombre d'utilisateurs: ${error.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.DASHBOARD.STATS_FAILED,
+          message: `Impossible de récupérer le nombre d'utilisateurs: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return count || 0;
@@ -679,9 +683,12 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getOrderCountFixed: ${error.message}`);
-        throw new Error(
-          `Impossible de récupérer le nombre de commandes: ${error.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.DASHBOARD.STATS_FAILED,
+          message: `Impossible de récupérer le nombre de commandes: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return count || 0;
@@ -699,9 +706,12 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getSupplierCountFixed: ${error.message}`);
-        throw new Error(
-          `Impossible de récupérer le nombre de fournisseurs: ${error.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.DASHBOARD.STATS_FAILED,
+          message: `Impossible de récupérer le nombre de fournisseurs: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return count || 0;
@@ -723,9 +733,12 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getRecentOrdersCountFixed: ${error.message}`);
-        throw new Error(
-          `Impossible de récupérer les commandes récentes: ${error.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.DASHBOARD.STATS_FAILED,
+          message: `Impossible de récupérer les commandes récentes: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return count || 0;

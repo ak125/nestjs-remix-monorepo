@@ -3,6 +3,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🚀 Service pour les appels RPC optimisés avec cache Redis
@@ -133,7 +134,10 @@ export class GammeRpcService extends SupabaseBaseService {
     // Extraction page_info depuis le RPC
     const pageInfo = aggregatedData?.page_info;
     if (!pageInfo) {
-      throw new Error('Gamme non trouvée');
+      throw new DomainNotFoundException({
+        code: ErrorCodes.CATALOG.GAMME_NOT_FOUND,
+        message: 'Gamme non trouvée',
+      });
     }
 
     return {

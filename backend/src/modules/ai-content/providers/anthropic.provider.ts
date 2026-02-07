@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  ExternalServiceException,
+  ConfigurationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface AIProvider {
   generateContent(
@@ -48,7 +53,10 @@ export class AnthropicProvider implements AIProvider {
     },
   ): Promise<string> {
     if (!this.client) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+      throw new ConfigurationException({
+        message: 'ANTHROPIC_API_KEY not configured',
+        code: ErrorCodes.EXTERNAL.API_KEY_MISSING,
+      });
     }
 
     const model = options.model || this.defaultModel;
@@ -71,7 +79,11 @@ export class AnthropicProvider implements AIProvider {
 
       const textContent = message.content.find((c) => c.type === 'text');
       if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from Anthropic Claude');
+        throw new ExternalServiceException({
+          message: 'No text response from Anthropic Claude',
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          serviceName: 'anthropic',
+        });
       }
 
       const content = textContent.text;

@@ -7,6 +7,11 @@ import {
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { NotificationService } from './notification.service';
+import {
+  DatabaseException,
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface ReviewData {
   msg_id: string;
@@ -147,9 +152,11 @@ export class ReviewService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(
-          `Erreur lors de la création de l'avis: ${error.message}`,
-        );
+        throw new DatabaseException({
+          message: `Erreur lors de la création de l'avis: ${error.message}`,
+          code: ErrorCodes.SUPPORT.CREATE_FAILED,
+          details: error.message,
+        });
       }
 
       // Enrichir avec les données client et produit
@@ -232,9 +239,11 @@ export class ReviewService extends SupabaseBaseService {
       const { data: messages, error } = await query;
 
       if (error) {
-        throw new Error(
-          `Erreur lors de la récupération des avis: ${error.message}`,
-        );
+        throw new DatabaseException({
+          message: `Erreur lors de la récupération des avis: ${error.message}`,
+          code: ErrorCodes.SUPPORT.FETCH_FAILED,
+          details: error.message,
+        });
       }
 
       // Enrichir les données et appliquer les filtres JSON
@@ -288,7 +297,11 @@ export class ReviewService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la modération: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la modération: ${error.message}`,
+          code: ErrorCodes.SUPPORT.UPDATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(
@@ -332,7 +345,11 @@ export class ReviewService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la mise à jour: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la mise à jour: ${error.message}`,
+          code: ErrorCodes.SUPPORT.UPDATE_FAILED,
+          details: error.message,
+        });
       }
 
       return await this.enrichReviewData(updatedMessage);
@@ -429,7 +446,11 @@ export class ReviewService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Erreur lors de la vérification: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la vérification: ${error.message}`,
+          code: ErrorCodes.SUPPORT.UPDATE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(
@@ -460,7 +481,11 @@ export class ReviewService extends SupabaseBaseService {
         .eq('msg_id', reviewId);
 
       if (error) {
-        throw new Error(`Erreur lors de la suppression: ${error.message}`);
+        throw new DatabaseException({
+          message: `Erreur lors de la suppression: ${error.message}`,
+          code: ErrorCodes.SUPPORT.DELETE_FAILED,
+          details: error.message,
+        });
       }
 
       this.logger.log(`Avis ${reviewId} supprimé`);
@@ -526,15 +551,20 @@ export class ReviewService extends SupabaseBaseService {
           .single();
 
         if (error) {
-          throw new Error(
-            `Erreur lors de la création du client: ${error.message}`,
-          );
+          throw new DatabaseException({
+            message: `Erreur lors de la création du client: ${error.message}`,
+            code: ErrorCodes.SUPPORT.CREATE_FAILED,
+            details: error.message,
+          });
         }
 
         return newCustomer;
       }
 
-      throw new Error('Informations client insuffisantes');
+      throw new DomainValidationException({
+        message: 'Informations client insuffisantes',
+        code: ErrorCodes.VALIDATION.REQUIRED_FIELD,
+      });
     } catch (error) {
       this.logger.error(
         `Erreur dans findOrCreateCustomer: ${(error as Error).message}`,

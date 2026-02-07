@@ -1,5 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * Chrome DevTools MCP Client
@@ -104,7 +108,11 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         });
 
         if (!navigateResult.success) {
-          throw new Error(`Navigation failed: ${navigateResult.error}`);
+          throw new ExternalServiceException({
+            code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+            message: `Navigation failed: ${navigateResult.error}`,
+            serviceName: 'ChromeDevTools',
+          });
         }
 
         // 2. Wait for content (if selector specified)
@@ -118,7 +126,11 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         });
 
         if (!extractResult.success) {
-          throw new Error(`Data extraction failed: ${extractResult.error}`);
+          throw new ExternalServiceException({
+            code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+            message: `Data extraction failed: ${extractResult.error}`,
+            serviceName: 'ChromeDevTools',
+          });
         }
 
         // 4. Take screenshot if requested

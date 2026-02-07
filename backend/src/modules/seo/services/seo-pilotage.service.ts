@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { PageRole } from '../types/page-role.types';
 import {
   WeeklyReport,
@@ -62,15 +63,19 @@ export class SeoPilotageService extends SupabaseBaseService {
 
     // 1. Vérifier longueur
     if (sql.length > MAX_QUERY_LENGTH) {
-      throw new Error(
-        `SQL query exceeds max length (${MAX_QUERY_LENGTH} chars)`,
-      );
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.SQL_INJECTION,
+        message: `SQL query exceeds max length (${MAX_QUERY_LENGTH} chars)`,
+      });
     }
 
     // 2. Vérifier statements multiples (après suppression des strings)
     const sqlWithoutStrings = sql.replace(/'[^']*'/g, '');
     if (sqlWithoutStrings.includes(';')) {
-      throw new Error('Multiple SQL statements are not allowed');
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.SQL_INJECTION,
+        message: 'Multiple SQL statements are not allowed',
+      });
     }
 
     // 3. Vérifier que c'est SELECT ou EXPLAIN uniquement
@@ -81,7 +86,10 @@ export class SeoPilotageService extends SupabaseBaseService {
     );
 
     if (!startsWithAllowed) {
-      throw new Error('Only SELECT, EXPLAIN, and WITH queries are allowed');
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.SQL_INJECTION,
+        message: 'Only SELECT, EXPLAIN, and WITH queries are allowed',
+      });
     }
 
     // 4. Vérifier absence de mots-clés dangereux
@@ -101,7 +109,10 @@ export class SeoPilotageService extends SupabaseBaseService {
       // Regex: mot-clé comme token isolé (pas dans un identifiant)
       const regex = new RegExp(`\\b${keyword}\\b`, 'i');
       if (regex.test(sqlWithoutStrings)) {
-        throw new Error(`Dangerous SQL keyword detected: ${keyword}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEO.SQL_INJECTION,
+          message: `Dangerous SQL keyword detected: ${keyword}`,
+        });
       }
     }
   }

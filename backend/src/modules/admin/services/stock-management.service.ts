@@ -12,6 +12,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface StockItem {
   id: string;
@@ -110,7 +111,7 @@ export class StockManagementService extends SupabaseBaseService {
       const { data: items, error } = await query;
 
       if (error) {
-        throw new Error(`Erreur récupération stock: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération stock: ${error.message}`, details: error.message });
       }
 
       // Calculer les statistiques basiques
@@ -224,7 +225,7 @@ export class StockManagementService extends SupabaseBaseService {
         .single();
 
       if (updateError) {
-        throw new Error(`Erreur mise à jour: ${updateError.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur mise à jour: ${updateError.message}`, details: updateError.message });
       }
 
       // Logger l'action
@@ -298,7 +299,7 @@ export class StockManagementService extends SupabaseBaseService {
         .single();
 
       if (disableError) {
-        throw new Error(`Erreur désactivation: ${disableError.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur désactivation: ${disableError.message}`, details: disableError.message });
       }
 
       // Récupérer le stock actuel et libérer les réserves
@@ -379,7 +380,7 @@ export class StockManagementService extends SupabaseBaseService {
         .single();
 
       if (updateError) {
-        throw new Error(`Erreur réservation: ${updateError.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur réservation: ${updateError.message}`, details: updateError.message });
       }
 
       // Créer un mouvement de stock
@@ -444,7 +445,7 @@ export class StockManagementService extends SupabaseBaseService {
         .single();
 
       if (updateError) {
-        throw new Error(`Erreur libération: ${updateError.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur libération: ${updateError.message}`, details: updateError.message });
       }
 
       // Créer un mouvement de stock
@@ -493,7 +494,7 @@ export class StockManagementService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new Error(`Erreur récupération mouvements: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération mouvements: ${error.message}`, details: error.message });
       }
 
       return {
@@ -537,7 +538,7 @@ export class StockManagementService extends SupabaseBaseService {
         .order('alert_level', { ascending: false });
 
       if (error) {
-        throw new Error(`Erreur récupération alertes: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération alertes: ${error.message}`, details: error.message });
       }
 
       return {
@@ -770,7 +771,7 @@ export class StockManagementService extends SupabaseBaseService {
       const { data, error, count } = await query;
 
       if (error) {
-        throw new Error(`Erreur récupération stock: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération stock: ${error.message}`, details: error.message });
       }
 
       // Calculer les statistiques
@@ -832,9 +833,7 @@ export class StockManagementService extends SupabaseBaseService {
         });
 
       if (movementError) {
-        throw new Error(
-          `Erreur enregistrement mouvement: ${movementError.message}`,
-        );
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur enregistrement mouvement: ${movementError.message}`, details: movementError.message });
       }
 
       // Mettre à jour le stock si nécessaire
@@ -972,7 +971,7 @@ export class StockManagementService extends SupabaseBaseService {
         .order('pieces.reference');
 
       if (stocksError) {
-        throw new Error(`Erreur récupération stocks: ${stocksError.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération stocks: ${stocksError.message}`, details: stocksError.message });
       }
 
       // Récupérer les mouvements récents (7 derniers jours)
@@ -1100,7 +1099,7 @@ export class StockManagementService extends SupabaseBaseService {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(`Erreur récupération historique: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération historique: ${error.message}`, details: error.message });
       }
 
       return data || [];

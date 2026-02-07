@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
  * 🎫 SERVICE DE DONNÉES CODES PROMO
@@ -36,7 +37,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const data = await response.json();
@@ -62,7 +66,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const data = await response.json();
@@ -279,7 +286,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const data = await response.json();
@@ -307,7 +317,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const data = await response.json();
@@ -342,7 +355,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       const products = await response.json();
@@ -382,7 +398,10 @@ export class PromoDataService extends SupabaseBaseService {
       });
 
       if (!usageResponse.ok) {
-        throw new Error(`HTTP error! status: ${usageResponse.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${usageResponse.status}`,
+        });
       }
 
       // Incrémenter le compteur d'utilisation
@@ -418,7 +437,10 @@ export class PromoDataService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `HTTP error! status: ${response.status}`,
+        });
       }
 
       return await response.json();

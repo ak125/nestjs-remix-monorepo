@@ -16,6 +16,10 @@ import {
   ReviewData,
   ReviewFilters,
 } from '../services/review.service';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/reviews')
 export class ReviewController {
@@ -108,7 +112,10 @@ export class ReviewController {
   async getReview(@Param('reviewId') reviewId: string): Promise<ReviewData> {
     const review = await this.reviewService.getReview(reviewId);
     if (!review) {
-      throw new Error(`Review ${reviewId} not found`);
+      throw new DomainNotFoundException({
+        message: `Review ${reviewId} not found`,
+        code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+      });
     }
     return review;
   }

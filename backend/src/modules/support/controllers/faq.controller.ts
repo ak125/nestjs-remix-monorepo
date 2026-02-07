@@ -12,6 +12,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FaqService, FAQ, FAQCategory } from '../services/faq.service';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/faq')
 export class FaqController {
@@ -76,7 +80,10 @@ export class FaqController {
   ): Promise<FAQCategory> {
     const category = await this.faqService.getCategory(categoryId);
     if (!category) {
-      throw new Error(`Category ${categoryId} not found`);
+      throw new DomainNotFoundException({
+        message: `Category ${categoryId} not found`,
+        code: ErrorCodes.SUPPORT.FAQ_CATEGORY_NOT_FOUND,
+      });
     }
     return category;
   }
@@ -103,7 +110,10 @@ export class FaqController {
     const shouldIncrementView = incrementView === 'true';
     const faq = await this.faqService.getFAQ(faqId, shouldIncrementView);
     if (!faq) {
-      throw new Error(`FAQ ${faqId} not found`);
+      throw new DomainNotFoundException({
+        message: `FAQ ${faqId} not found`,
+        code: ErrorCodes.SUPPORT.FAQ_NOT_FOUND,
+      });
     }
     return faq;
   }

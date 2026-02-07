@@ -31,6 +31,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 // Types
 export interface EntityInputs {
@@ -242,7 +243,12 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
       // Note: On ne filtre plus status_target ici pour détecter les erreurs
 
       if (pagesError) {
-        throw new Error(`Failed to load pages: ${pagesError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Failed to load pages: ${pagesError.message}`,
+          details: pagesError.message,
+          cause: pagesError instanceof Error ? pagesError : undefined,
+        });
       }
 
       this.logger.log(`   Found ${pages?.length || 0} pages to score`);

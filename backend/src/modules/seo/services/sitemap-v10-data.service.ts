@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import {
   type TemperatureBucket,
   type SitemapUrl,
@@ -210,7 +211,11 @@ export class SitemapV10DataService extends SupabaseBaseService {
       .limit(MAX_URLS_PER_FILE);
 
     if (error) {
-      throw new Error(`Entity type fetch error: ${error.message}`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+        message: `Entity type fetch error: ${error.message}`,
+        details: error.message,
+      });
     }
 
     return (data || []).map((row) => ({

@@ -2,6 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import {
+  ConfigurationException,
+  DatabaseException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface AppConfig {
   cnf_id: string;
@@ -57,7 +62,10 @@ export class SimpleConfigService extends SupabaseBaseService {
           return null;
         }
         this.logger.error('Error loading app configuration:', error);
-        throw new Error(`Failed to load app configuration: ${error.message}`);
+        throw new ConfigurationException({
+          code: ErrorCodes.CONFIG.LOAD_FAILED,
+          message: `Failed to load app configuration: ${error.message}`,
+        });
       }
 
       // Mettre en cache
@@ -105,9 +113,10 @@ export class SimpleConfigService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Error updating config ${String(key)}:`, error);
-        throw new Error(
-          `Failed to update config ${String(key)}: ${error.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Failed to update config ${String(key)}: ${error.message}`,
+        });
       }
 
       // Invalider le cache

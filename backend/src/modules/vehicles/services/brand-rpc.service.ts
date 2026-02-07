@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🚀 Service RPC optimisé pour les pages marques constructeurs
@@ -113,7 +114,10 @@ export class BrandRpcService extends SupabaseBaseService {
 
     // Vérifier que les données sont valides
     if (!data?.success) {
-      throw new Error(data?.error || 'Brand RPC returned invalid data');
+      throw new DatabaseException({
+        code: ErrorCodes.VEHICLE.BRAND_RPC_FAILED,
+        message: data?.error || 'Brand RPC returned invalid data',
+      });
     }
 
     return {

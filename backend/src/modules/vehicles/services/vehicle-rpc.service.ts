@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🚀 Service RPC optimisé pour les pages véhicules /constructeurs/.../type.html
@@ -120,7 +121,10 @@ export class VehicleRpcService extends SupabaseBaseService {
 
     // Vérifier que le véhicule existe
     if (!data?.vehicle || !data?.success) {
-      throw new Error(`Vehicle not found: type_id=${typeId}`);
+      throw new DomainNotFoundException({
+        code: ErrorCodes.VEHICLE.NOT_FOUND,
+        message: `Vehicle not found: type_id=${typeId}`,
+      });
     }
 
     return {

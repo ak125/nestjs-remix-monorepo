@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 // Interface pour le message moderne
 export interface ModernMessage {
@@ -84,7 +85,12 @@ export class MessageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Error fetching messages:', error);
-        throw new Error(`Failed to fetch messages: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.FETCH_FAILED,
+          message: `Failed to fetch messages: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const messages = (data || []).map((row: any) =>
@@ -119,7 +125,12 @@ export class MessageDataService extends SupabaseBaseService {
           return null;
         }
         this.logger.error('Error finding message:', error);
-        throw new Error(`Failed to find message: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.NOT_FOUND,
+          message: `Failed to find message: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return this.mapLegacyToModern(data);
@@ -164,7 +175,12 @@ export class MessageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Error creating message:', error);
-        throw new Error(`Failed to create message: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.CREATE_FAILED,
+          message: `Failed to create message: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       this.logger.log(`Message created successfully: ${data.msg_id}`);
@@ -202,7 +218,12 @@ export class MessageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Error updating message:', error);
-        throw new Error(`Failed to update message: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.UPDATE_FAILED,
+          message: `Failed to update message: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return this.mapLegacyToModern(data);
@@ -232,7 +253,12 @@ export class MessageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Error fetching statistics:', error);
-        throw new Error(`Failed to fetch statistics: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.FETCH_FAILED,
+          message: `Failed to fetch statistics: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const total = data?.length || 0;
@@ -263,7 +289,12 @@ export class MessageDataService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Error fetching customers:', error);
-        throw new Error(`Failed to fetch customers: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.MESSAGE.FETCH_FAILED,
+          message: `Failed to fetch customers: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return data || [];

@@ -14,6 +14,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import {
   HubGenerationResult,
   HubType,
@@ -89,7 +90,11 @@ export class HubsPriorityService extends SupabaseBaseService {
         .order('map_has_item', { ascending: false })
         .limit(2000);
 
-      if (error) throw new Error(error.message);
+      if (error) throw new DatabaseException({
+        code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+        message: error.message,
+        details: error.message,
+      });
 
       const urls = (pieces || []).map(
         (p) =>

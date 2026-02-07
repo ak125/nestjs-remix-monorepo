@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 export interface SessionData {
   userId: string;
@@ -49,7 +50,7 @@ export class SessionService extends SupabaseBaseService {
       });
 
       if (error) {
-        throw new Error(`Erreur création session: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.DATABASE.OPERATION_FAILED, message: `Erreur création session: ${error.message}`, details: error.message });
       }
 
       this.logger.log(`Session créée pour utilisateur ${sessionData.userId}`);

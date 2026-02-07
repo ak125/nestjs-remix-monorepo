@@ -1,0 +1,12 @@
+export { DomainException, DomainExceptionOptions } from './domain.exception';
+export { DomainNotFoundException } from './domain-not-found.exception';
+export { DomainValidationException } from './domain-validation.exception';
+export { BusinessRuleException } from './business-rule.exception';
+export { DatabaseException } from './database.exception';
+export { ExternalServiceException } from './external-service.exception';
+export { ConfigurationException } from './configuration.exception';
+export { OperationFailedException } from './operation-failed.exception';
+export { DomainConflictException } from './domain-conflict.exception';
+export { AuthenticationException } from './authentication.exception';
+export { ErrorCodes } from './error-codes';
+export type { ErrorCode } from './error-codes';

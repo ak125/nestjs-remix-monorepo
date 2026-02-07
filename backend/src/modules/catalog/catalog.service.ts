@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 import { TABLES } from '@repo/database-types';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 // 📁 backend/src/modules/catalog/catalog.service.ts
@@ -860,7 +861,10 @@ export class CatalogService
         .eq('piece_display', true);
 
       if (brandsError || modelsError || piecesError) {
-        throw new Error('Erreur lors du calcul des statistiques');
+        throw new DatabaseException({
+          code: ErrorCodes.CATALOG.STATS_FAILED,
+          message: 'Erreur lors du calcul des statistiques',
+        });
       }
 
       return {
@@ -1060,9 +1064,12 @@ export class CatalogService
         .limit(2);
 
       if (samplesError) {
-        throw new Error(
-          `Erreur échantillons ${tableName}: ${samplesError.message}`,
-        );
+        throw new DatabaseException({
+          code: ErrorCodes.CATALOG.RPC_FAILED,
+          message: `Erreur échantillons ${tableName}: ${samplesError.message}`,
+          details: samplesError.message,
+          cause: samplesError instanceof Error ? samplesError : undefined,
+        });
       }
 
       // Compter le total

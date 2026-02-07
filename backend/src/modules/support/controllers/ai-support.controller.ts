@@ -10,6 +10,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import {
+  DomainNotFoundException,
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
+import {
   AISentimentService,
   AICategorizationService,
   SentimentAnalysis,
@@ -76,12 +81,18 @@ export class AISupportController {
       } else if (request.type === 'review') {
         const review = await this.reviewService.getReview(request.id);
         if (!review) {
-          throw new Error(`Review ${request.id} not found`);
+          throw new DomainNotFoundException({
+            message: `Review ${request.id} not found`,
+            code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+          });
         }
         return this.aiSentimentService.analyzeReviewSentiment(review);
       }
 
-      throw new Error(`Type non supporté: ${request.type}`);
+      throw new DomainValidationException({
+        message: `Type non supporté: ${request.type}`,
+        code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
+      });
     } catch (error) {
       this.logger.error(`Erreur analyse sentiment: ${error.message}`);
       throw error;
@@ -102,7 +113,10 @@ export class AISupportController {
   ): Promise<SentimentAnalysis> {
     const review = await this.reviewService.getReview(reviewId);
     if (!review) {
-      throw new Error(`Review ${reviewId} not found`);
+      throw new DomainNotFoundException({
+        message: `Review ${reviewId} not found`,
+        code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+      });
     }
     return this.aiSentimentService.analyzeReviewSentiment(review);
   }
@@ -123,12 +137,18 @@ export class AISupportController {
       } else if (request.type === 'review') {
         const review = await this.reviewService.getReview(request.id);
         if (!review) {
-          throw new Error(`Review ${request.id} not found`);
+          throw new DomainNotFoundException({
+            message: `Review ${request.id} not found`,
+            code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+          });
         }
         return this.aiCategorizationService.categorizeReview(review);
       }
 
-      throw new Error(`Type non supporté: ${request.type}`);
+      throw new DomainValidationException({
+        message: `Type non supporté: ${request.type}`,
+        code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
+      });
     } catch (error) {
       this.logger.error(`Erreur catégorisation: ${error.message}`);
       throw error;
@@ -149,7 +169,10 @@ export class AISupportController {
   ): Promise<SmartCategorization> {
     const review = await this.reviewService.getReview(reviewId);
     if (!review) {
-      throw new Error(`Review ${reviewId} not found`);
+      throw new DomainNotFoundException({
+        message: `Review ${reviewId} not found`,
+        code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+      });
     }
     return this.aiCategorizationService.categorizeReview(review);
   }
@@ -183,7 +206,10 @@ export class AISupportController {
       } else if (request.type === 'review') {
         const review = await this.reviewService.getReview(request.id);
         if (!review) {
-          throw new Error(`Review ${request.id} not found`);
+          throw new DomainNotFoundException({
+            message: `Review ${request.id} not found`,
+            code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+          });
         }
 
         if (request.includeAnalysis) {
@@ -193,7 +219,10 @@ export class AISupportController {
         return this.aiSmartResponseService.generateReviewResponse(review);
       }
 
-      throw new Error(`Type non supporté: ${request.type}`);
+      throw new DomainValidationException({
+        message: `Type non supporté: ${request.type}`,
+        code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
+      });
     } catch (error) {
       this.logger.error(`Erreur génération réponse: ${error.message}`);
       throw error;
@@ -228,7 +257,10 @@ export class AISupportController {
   ): Promise<SmartResponse> {
     const review = await this.reviewService.getReview(reviewId);
     if (!review) {
-      throw new Error(`Review ${reviewId} not found`);
+      throw new DomainNotFoundException({
+        message: `Review ${reviewId} not found`,
+        code: ErrorCodes.SUPPORT.REVIEW_NOT_FOUND,
+      });
     }
 
     if (includeAnalysis === 'true') {

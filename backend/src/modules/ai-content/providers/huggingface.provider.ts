@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  ExternalServiceException,
+  ConfigurationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface AIProvider {
   generateContent(
@@ -42,7 +47,10 @@ export class HuggingFaceProvider implements AIProvider {
     },
   ): Promise<string> {
     if (!this.apiKey) {
-      throw new Error('HUGGINGFACE_API_KEY not configured');
+      throw new ConfigurationException({
+        message: 'HUGGINGFACE_API_KEY not configured',
+        code: ErrorCodes.EXTERNAL.API_KEY_MISSING,
+      });
     }
 
     const model = options.model || this.defaultModel;
@@ -77,7 +85,12 @@ ${userPrompt} [/INST]`;
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(`HuggingFace API error: ${response.status} - ${error}`);
+        throw new ExternalServiceException({
+          message: `HuggingFace API error: ${response.status} - ${error}`,
+          code: ErrorCodes.EXTERNAL.HTTP_ERROR,
+          serviceName: 'huggingface',
+          details: error,
+        });
       }
 
       const data = await response.json();
@@ -90,7 +103,11 @@ ${userPrompt} [/INST]`;
       } else if (data.generated_text) {
         generatedText = data.generated_text;
       } else {
-        throw new Error('Unexpected response format from HuggingFace');
+        throw new ExternalServiceException({
+          message: 'Unexpected response format from HuggingFace',
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          serviceName: 'huggingface',
+        });
       }
 
       // Remove the prompt from the response

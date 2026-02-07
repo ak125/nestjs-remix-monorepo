@@ -5,6 +5,7 @@ import { FooterService } from '../services/footer.service';
 import { QuickSearchService } from '../services/quick-search.service';
 import { SocialShareService } from '../services/social-share.service';
 import { MetaTagsService } from '../services/meta-tags.service';
+import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
 
 @Controller('api/layout')
 export class LayoutController {
@@ -100,7 +101,10 @@ export class LayoutController {
     @Query('hashtags') hashtags?: string,
   ) {
     if (!url || !title) {
-      throw new Error('URL et titre sont requis');
+      throw new DomainValidationException({
+        code: ErrorCodes.LAYOUT.FETCH_FAILED,
+        message: 'URL et titre sont requis',
+      });
     }
 
     const shareData = {
@@ -128,7 +132,10 @@ export class LayoutController {
     @Query('showCounts') showCounts = false,
   ) {
     if (!url || !title) {
-      throw new Error('URL et titre sont requis');
+      throw new DomainValidationException({
+        code: ErrorCodes.LAYOUT.FETCH_FAILED,
+        message: 'URL et titre sont requis',
+      });
     }
 
     const shareData = {

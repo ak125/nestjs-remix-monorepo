@@ -8,6 +8,7 @@ import {
 import { AdviceService } from '../services/advice.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from '../services/blog-cache.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🏗️ Contrôleur pour la hiérarchie des conseils par famille
@@ -52,7 +53,10 @@ export class AdviceHierarchyController {
       });
 
       if (!adviceResult.success || !adviceResult.articles) {
-        throw new Error('Erreur récupération conseils');
+        throw new DatabaseException({
+          code: ErrorCodes.BLOG.FETCH_FAILED,
+          message: 'Erreur récupération conseils',
+        });
       }
 
       const articles = adviceResult.articles;

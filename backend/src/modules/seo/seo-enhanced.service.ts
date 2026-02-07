@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { DomainNotFoundException, ErrorCodes } from '../../common/exceptions';
 
 // Interfaces pour les types de données SEO enhancées
 interface SeoVariables {
@@ -87,7 +88,10 @@ export class SeoEnhancedService extends SupabaseBaseService {
         .single();
 
       if (!template) {
-        throw new Error(`Template non trouvé pour pg_id: ${pgId}`);
+        throw new DomainNotFoundException({
+          code: ErrorCodes.SEO.TEMPLATE_NOT_FOUND,
+          message: `Template non trouvé pour pg_id: ${pgId}`,
+        });
       }
 
       // Récupération des switches

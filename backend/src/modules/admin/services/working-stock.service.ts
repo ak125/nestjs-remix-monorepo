@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface StockItemWorkingVersion {
   pri_piece_id: string;
@@ -93,7 +94,7 @@ export class WorkingStockService extends SupabaseBaseService {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(`Erreur récupération stock: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération stock: ${error.message}`, details: error.message });
       }
 
       // Récupérer les statistiques
@@ -184,7 +185,7 @@ export class WorkingStockService extends SupabaseBaseService {
       const { data, error } = await searchQuery;
 
       if (error) {
-        throw new Error(`Erreur recherche: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur recherche: ${error.message}`, details: error.message });
       }
 
       return (data as StockItemWorkingVersion[]) || [];
@@ -208,7 +209,7 @@ export class WorkingStockService extends SupabaseBaseService {
         .eq('pri_piece_id', pieceId);
 
       if (error) {
-        throw new Error(`Erreur mise à jour: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur mise à jour: ${error.message}`, details: error.message });
       }
 
       this.logger.log(`Disponibilité mise à jour: ${pieceId} -> ${available}`);
@@ -243,7 +244,7 @@ export class WorkingStockService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new Error(`Erreur top items: ${error.message}`);
+        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur top items: ${error.message}`, details: error.message });
       }
 
       return (data as StockItemWorkingVersion[]) || [];

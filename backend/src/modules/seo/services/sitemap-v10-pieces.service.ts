@@ -11,6 +11,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
@@ -241,7 +242,12 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         .eq('pg_relfollow', '1');
 
       if (gammeError) {
-        throw new Error(`Gamme lookup failed: ${gammeError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+          message: `Gamme lookup failed: ${gammeError.message}`,
+          details: gammeError.message,
+          cause: gammeError instanceof Error ? gammeError : undefined,
+        });
       }
 
       const pgIds = (gammes || []).map((g) => String(g.pg_id));
@@ -275,7 +281,12 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           .range(offset, offset + PAGE_SIZE - 1);
 
         if (piecesError) {
-          throw new Error(`Pieces fetch failed: ${piecesError.message}`);
+          throw new DatabaseException({
+            code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+            message: `Pieces fetch failed: ${piecesError.message}`,
+            details: piecesError.message,
+            cause: piecesError instanceof Error ? piecesError : undefined,
+          });
         }
 
         if (pieces && pieces.length > 0) {

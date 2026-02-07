@@ -14,6 +14,10 @@ import {
   NotFoundException,
   Inject,
 } from '@nestjs/common';
+import {
+  DatabaseException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { UserDataService } from '../../../database/services/user-data.service';
 import { MailService } from '../../../services/mail.service';
@@ -92,7 +96,11 @@ export class PasswordService extends SupabaseBaseService {
         .eq('cst_id', userId);
 
       if (updateError) {
-        throw new Error(`Failed to update password: ${updateError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.USER.PASSWORD_FAILED,
+          message: `Failed to update password: ${updateError.message}`,
+          details: updateError.message,
+        });
       }
 
       // Invalider toutes les sessions utilisateur
@@ -163,7 +171,11 @@ export class PasswordService extends SupabaseBaseService {
         });
 
       if (insertError) {
-        throw new Error(`Failed to save reset token: ${insertError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.USER.RESET_TOKEN_FAILED,
+          message: `Failed to save reset token: ${insertError.message}`,
+          details: insertError.message,
+        });
       }
 
       // Envoyer l'email avec le token non hashé
@@ -264,7 +276,11 @@ export class PasswordService extends SupabaseBaseService {
       // Vérifier les erreurs
       for (const result of results) {
         if (result.error) {
-          throw new Error(`Transaction failed: ${result.error.message}`);
+          throw new DatabaseException({
+            code: ErrorCodes.USER.RESET_TOKEN_FAILED,
+            message: `Transaction failed: ${result.error.message}`,
+            details: result.error.message,
+          });
         }
       }
 
@@ -412,7 +428,11 @@ export class PasswordService extends SupabaseBaseService {
         .lt('expires_at', new Date().toISOString());
 
       if (error) {
-        throw new Error(`Failed to cleanup tokens: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Failed to cleanup tokens: ${error.message}`,
+          details: error.message,
+        });
       }
 
       const deletedCount = count || 0;

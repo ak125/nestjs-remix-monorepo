@@ -16,6 +16,10 @@ import {
   McpAlertChannel,
   McpAlertingConfig,
 } from '../types/mcp-verify.types';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Injectable()
 export class McpAlertingService implements OnModuleInit {
@@ -199,12 +203,22 @@ export class McpAlertingService implements OnModuleInit {
       });
 
       if (!response.ok) {
-        throw new Error(`Webhook returned ${response.status}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Webhook returned ${response.status}`,
+          serviceName: 'McpAlertingWebhook',
+        });
       }
 
       this.logger.debug(`Sent ${filteredAlerts.length} alerts to webhook`);
     } catch (error) {
-      throw new Error(`Webhook request failed: ${(error as Error).message}`);
+      throw new ExternalServiceException({
+        code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+        message: `Webhook request failed: ${(error as Error).message}`,
+        serviceName: 'McpAlertingWebhook',
+        details: (error as Error).message,
+        cause: error as Error,
+      });
     }
   }
 

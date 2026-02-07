@@ -9,6 +9,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
 
 const execAsync = promisify(exec);
 
@@ -209,7 +210,11 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
       );
 
       if (!response.ok) {
-        throw new Error(`Meilisearch error: ${response.statusText}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Meilisearch error: ${response.statusText}`,
+          serviceName: 'Meilisearch',
+        });
       }
 
       this.logger.log('✅ Report sent to Meilisearch');
@@ -255,7 +260,11 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
       });
 
       if (!response.ok) {
-        throw new Error(`Loki error: ${response.statusText}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Loki error: ${response.statusText}`,
+          serviceName: 'Loki',
+        });
       }
 
       this.logger.log('✅ Report sent to Loki');

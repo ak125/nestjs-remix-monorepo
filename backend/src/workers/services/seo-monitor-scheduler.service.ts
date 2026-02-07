@@ -8,6 +8,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 @Injectable()
 export class SeoMonitorSchedulerService implements OnModuleInit {
@@ -214,7 +215,10 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
     const job = await this.seoMonitorQueue.getJob(jobId);
 
     if (!job) {
-      throw new Error(`Job #${jobId} introuvable`);
+      throw new DatabaseException({
+        code: ErrorCodes.SEO.MONITORING_ERROR,
+        message: `Job #${jobId} introuvable`,
+      });
     }
 
     const state = await job.getState();

@@ -24,6 +24,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10StaticService } from './sitemap-v10-static.service';
@@ -277,7 +278,12 @@ export class SitemapV10Service extends SupabaseBaseService {
       );
 
       if (countError) {
-        throw new Error(`Count error: ${countError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+          message: `Count error: ${countError.message}`,
+          details: countError.message,
+          cause: countError instanceof Error ? countError : undefined,
+        });
       }
 
       const totalUrls = Number(countData) || 0;
@@ -315,7 +321,12 @@ export class SitemapV10Service extends SupabaseBaseService {
         );
 
         if (urlsError) {
-          throw new Error(`Fetch error: ${urlsError.message}`);
+          throw new DatabaseException({
+            code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+            message: `Fetch error: ${urlsError.message}`,
+            details: urlsError.message,
+            cause: urlsError instanceof Error ? urlsError : undefined,
+          });
         }
 
         if ((urls as SitemapUrl[]).length > 0) {
@@ -366,7 +377,12 @@ export class SitemapV10Service extends SupabaseBaseService {
           );
 
           if (urlsError) {
-            throw new Error(`Fetch error: ${urlsError.message}`);
+            throw new DatabaseException({
+              code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+              message: `Fetch error: ${urlsError.message}`,
+              details: urlsError.message,
+              cause: urlsError instanceof Error ? urlsError : undefined,
+            });
           }
 
           const fileName =

@@ -11,6 +11,10 @@ import {
   SOURCE_CONFIGS,
   sleep,
 } from './external-compatibility.types';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * PartLink24 Specialist Service
@@ -91,7 +95,11 @@ export class ExternalCompatibilityPartsLink24Service {
       });
 
       if (!navResult.success) {
-        throw new Error(`Failed to navigate to login: ${navResult.error}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Failed to navigate to login: ${navResult.error}`,
+          serviceName: 'PartLink24',
+        });
       }
 
       // 2. Take snapshot to understand the form

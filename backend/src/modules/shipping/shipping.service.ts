@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
+import {
+  DomainNotFoundException,
+  DatabaseException,
+  ErrorCodes,
+} from '../../common/exceptions';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
 /**
@@ -77,14 +82,20 @@ export class ShippingService extends SupabaseBaseService {
       });
 
       if (!orderResponse.ok) {
-        throw new Error('Impossible de récupérer les données de commande');
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: 'Impossible de récupérer les données de commande',
+        });
       }
 
       const orders = await orderResponse.json();
       const order = orders[0];
 
       if (!order) {
-        throw new Error('Commande introuvable');
+        throw new DomainNotFoundException({
+          code: ErrorCodes.SHIPPING.ORDER_NOT_FOUND,
+          message: 'Commande introuvable',
+        });
       }
 
       // Récupérer l'adresse de livraison si elle existe
@@ -246,7 +257,10 @@ export class ShippingService extends SupabaseBaseService {
       });
 
       if (!updateResponse.ok) {
-        throw new Error('Impossible de mettre à jour les frais de port');
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.UPDATE_FAILED,
+          message: 'Impossible de mettre à jour les frais de port',
+        });
       }
 
       this.logger.log(`Order ${orderId} shipping updated: €${fee}`);
@@ -273,14 +287,20 @@ export class ShippingService extends SupabaseBaseService {
       });
 
       if (!orderResponse.ok) {
-        throw new Error('Impossible de récupérer les données de commande');
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: 'Impossible de récupérer les données de commande',
+        });
       }
 
       const orders = await orderResponse.json();
       const order = orders[0];
 
       if (!order) {
-        throw new Error('Adresse de livraison introuvable');
+        throw new DomainNotFoundException({
+          code: ErrorCodes.SHIPPING.ADDRESS_NOT_FOUND,
+          message: 'Adresse de livraison introuvable',
+        });
       }
 
       const deliveryAddress = order.___xtr_customer_delivery_address;
@@ -451,7 +471,11 @@ export class ShippingService extends SupabaseBaseService {
         .limit(50);
 
       if (ordersError) {
-        throw new Error(`Database error: ${ordersError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SHIPPING.DATA_FETCH_FAILED,
+          message: `Database error: ${ordersError.message}`,
+          details: ordersError.message,
+        });
       }
 
       // BATCH: Collecter IDs uniques pour customers et addresses

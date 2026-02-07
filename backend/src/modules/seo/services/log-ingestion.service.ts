@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeiliSearch } from 'meilisearch';
+import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
 
 export interface CaddyLogEntry {
   timestamp: string;
@@ -256,7 +257,11 @@ export class LogIngestionService {
       });
 
       if (!response.ok) {
-        throw new Error(`Loki API error: ${response.status}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Loki API error: ${response.status}`,
+          serviceName: 'Loki',
+        });
       }
 
       this.logger.debug(`✅ ${logs.length} logs envoyés à Loki`);

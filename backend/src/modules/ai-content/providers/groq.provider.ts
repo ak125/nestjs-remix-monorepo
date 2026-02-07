@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  ExternalServiceException,
+  ConfigurationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface AIProvider {
   generateContent(
@@ -42,7 +47,10 @@ export class GroqProvider implements AIProvider {
     },
   ): Promise<string> {
     if (!this.apiKey) {
-      throw new Error('GROQ_API_KEY not configured');
+      throw new ConfigurationException({
+        message: 'GROQ_API_KEY not configured',
+        code: ErrorCodes.EXTERNAL.API_KEY_MISSING,
+      });
     }
 
     const model = options.model || this.defaultModel;
@@ -72,13 +80,22 @@ export class GroqProvider implements AIProvider {
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(`Groq API error: ${response.status} - ${error}`);
+        throw new ExternalServiceException({
+          message: `Groq API error: ${response.status} - ${error}`,
+          code: ErrorCodes.EXTERNAL.HTTP_ERROR,
+          serviceName: 'groq',
+          details: error,
+        });
       }
 
       const data = await response.json();
 
       if (!data.choices?.[0]?.message?.content) {
-        throw new Error('No response from Groq');
+        throw new ExternalServiceException({
+          message: 'No response from Groq',
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          serviceName: 'groq',
+        });
       }
 
       const content = data.choices[0].message.content;

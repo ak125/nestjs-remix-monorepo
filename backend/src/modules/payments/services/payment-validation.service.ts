@@ -1,7 +1,11 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'crypto';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Injectable()
 export class PaymentValidationService {
@@ -13,7 +17,11 @@ export class PaymentValidationService {
     try {
       // Validation du montant
       if (!paymentData.amount || paymentData.amount <= 0) {
-        throw new Error('Amount must be greater than 0');
+        throw new DomainValidationException({
+          code: ErrorCodes.PAYMENT.INVALID_AMOUNT,
+          message: 'Amount must be greater than 0',
+          field: 'amount',
+        });
       }
 
       // Validation de l'email
@@ -21,12 +29,20 @@ export class PaymentValidationService {
         !paymentData.customerEmail ||
         !this.isValidEmail(paymentData.customerEmail)
       ) {
-        throw new Error('Valid customer email is required');
+        throw new DomainValidationException({
+          code: ErrorCodes.VALIDATION.INVALID_EMAIL,
+          message: 'Valid customer email is required',
+          field: 'customerEmail',
+        });
       }
 
       // Validation de l'ordre
       if (!paymentData.orderId || paymentData.orderId.trim().length === 0) {
-        throw new Error('Order ID is required');
+        throw new DomainValidationException({
+          code: ErrorCodes.VALIDATION.REQUIRED_FIELD,
+          message: 'Order ID is required',
+          field: 'orderId',
+        });
       }
 
       // Validation des montants maximum (sécurité)
@@ -86,7 +102,10 @@ export class PaymentValidationService {
   ): Promise<boolean> {
     try {
       if (!paymentId || refundAmount <= 0) {
-        throw new Error('Invalid refund parameters');
+        throw new DomainValidationException({
+          code: ErrorCodes.PAYMENT.REFUND_INVALID,
+          message: 'Invalid refund parameters',
+        });
       }
 
       // Ici, on pourrait ajouter des validations supplémentaires
@@ -178,11 +197,19 @@ export class PaymentValidationService {
     );
 
     if (amount < minAmount) {
-      throw new BadRequestException(`Amount must be at least ${minAmount}`);
+      throw new DomainValidationException({
+        code: ErrorCodes.PAYMENT.INVALID_AMOUNT,
+        message: `Amount must be at least ${minAmount}`,
+        field: 'amount',
+      });
     }
 
     if (amount > maxAmount) {
-      throw new BadRequestException(`Amount cannot exceed ${maxAmount}`);
+      throw new DomainValidationException({
+        code: ErrorCodes.PAYMENT.INVALID_AMOUNT,
+        message: `Amount cannot exceed ${maxAmount}`,
+        field: 'amount',
+      });
     }
   }
 }

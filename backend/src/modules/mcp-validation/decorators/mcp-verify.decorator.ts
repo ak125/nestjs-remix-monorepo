@@ -16,6 +16,10 @@ import {
   MCP_VERIFY_KEY,
   MCP_VERIFY_DEFAULTS,
 } from '../types/mcp-verify.types';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * @McpVerify() Decorator
@@ -66,19 +70,26 @@ export function McpVerify(options: McpVerifyOptions) {
 
   // Validate options
   if (!mergedOptions.dataType) {
-    throw new Error('@McpVerify requires dataType option');
+    throw new DomainValidationException({
+      code: ErrorCodes.VALIDATION.FAILED,
+      message: '@McpVerify requires dataType option',
+    });
   }
 
   if (
     !['verification', 'gatekeeper', 'enforcement'].includes(mergedOptions.mode)
   ) {
-    throw new Error(
-      `@McpVerify mode must be 'verification', 'gatekeeper', or 'enforcement'`,
-    );
+    throw new DomainValidationException({
+      code: ErrorCodes.VALIDATION.FAILED,
+      message: `@McpVerify mode must be 'verification', 'gatekeeper', or 'enforcement'`,
+    });
   }
 
   if (!['warning', 'block'].includes(mergedOptions.onMismatch)) {
-    throw new Error(`@McpVerify onMismatch must be 'warning' or 'block'`);
+    throw new DomainValidationException({
+      code: ErrorCodes.VALIDATION.FAILED,
+      message: `@McpVerify onMismatch must be 'warning' or 'block'`,
+    });
   }
 
   return applyDecorators(SetMetadata(MCP_VERIFY_KEY, mergedOptions));

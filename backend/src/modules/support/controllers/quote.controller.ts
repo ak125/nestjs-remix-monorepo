@@ -11,6 +11,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { QuoteService, QuoteRequest, Quote } from '../services/quote.service';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/quotes')
 export class QuoteController {
@@ -56,7 +60,10 @@ export class QuoteController {
   ): Promise<QuoteRequest> {
     const request = await this.quoteService.getQuoteRequest(requestId);
     if (!request) {
-      throw new Error(`Quote request ${requestId} not found`);
+      throw new DomainNotFoundException({
+        message: `Quote request ${requestId} not found`,
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+      });
     }
     return request;
   }
@@ -95,7 +102,10 @@ export class QuoteController {
   async getQuote(@Param('quoteId') quoteId: string): Promise<Quote> {
     const quote = await this.quoteService.getQuote(quoteId);
     if (!quote) {
-      throw new Error(`Quote ${quoteId} not found`);
+      throw new DomainNotFoundException({
+        message: `Quote ${quoteId} not found`,
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+      });
     }
     return quote;
   }

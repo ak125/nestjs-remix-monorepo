@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 @Injectable()
 export class InvoicesService extends SupabaseBaseService {
@@ -45,7 +46,12 @@ export class InvoicesService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('Erreur factures:', error);
-        throw new Error('Impossible de récupérer les factures');
+        throw new DatabaseException({
+          code: ErrorCodes.INVOICE.FETCH_FAILED,
+          message: 'Impossible de récupérer les factures',
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const { count } = await this.supabase

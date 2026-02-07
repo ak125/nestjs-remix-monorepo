@@ -13,6 +13,7 @@ import {
   buildBrandLogoUrl,
   buildModelImageUrl,
 } from '../catalog/utils/image-urls.utils';
+import { DomainNotFoundException, ErrorCodes } from '../../common/exceptions';
 
 // Types enrichis inspirés de la proposition utilisateur
 export interface VehicleDetailsEnhanced {
@@ -178,9 +179,10 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       if (!data) {
-        throw new Error(
-          `Véhicule non trouvé: marque=${marqueId}, modele=${modeleId}, type=${typeId}`,
-        );
+        throw new DomainNotFoundException({
+          code: ErrorCodes.VEHICLE.NOT_FOUND,
+          message: `Véhicule non trouvé: marque=${marqueId}, modele=${modeleId}, type=${typeId}`,
+        });
       }
 
       this.logger.debug(

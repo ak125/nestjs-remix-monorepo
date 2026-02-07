@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { FileUploadResult } from '../dto/upload.dto';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 @Injectable()
 export class SupabaseStorageService extends SupabaseBaseService {
@@ -35,7 +36,12 @@ export class SupabaseStorageService extends SupabaseBaseService {
         });
 
       if (error) {
-        throw new Error(`Supabase upload error: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.STORAGE_ERROR,
+          message: `Supabase upload error: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       const {
@@ -85,7 +91,12 @@ export class SupabaseStorageService extends SupabaseBaseService {
         .createSignedUrl(filePath, expiresIn);
 
       if (error) {
-        throw new Error(`Signed URL error: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.STORAGE_ERROR,
+          message: `Signed URL error: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return data.signedUrl;
@@ -105,7 +116,12 @@ export class SupabaseStorageService extends SupabaseBaseService {
         });
 
       if (error) {
-        throw new Error(`List files error: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.STORAGE_ERROR,
+          message: `List files error: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return data || [];
@@ -122,7 +138,12 @@ export class SupabaseStorageService extends SupabaseBaseService {
       );
 
       if (error) {
-        throw new Error(`Bucket info error: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.UPLOAD.STORAGE_ERROR,
+          message: `Bucket info error: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
 
       return data;

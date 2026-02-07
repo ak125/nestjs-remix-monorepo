@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface OrderCalculation {
   subtotal: number;
@@ -62,7 +63,12 @@ export class OrderCalculationService {
       };
     } catch (error) {
       this.logger.error('Error calculating order total:', error);
-      throw new Error('Failed to calculate order total');
+      throw new DatabaseException({
+        code: ErrorCodes.ORDER.CALCULATION_FAILED,
+        message: 'Failed to calculate order total',
+        details: error instanceof Error ? error.message : String(error),
+        cause: error instanceof Error ? error : undefined,
+      });
     }
   }
 

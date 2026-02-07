@@ -2,6 +2,7 @@ import { Controller, Get, Param, Logger, Inject } from '@nestjs/common';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ
@@ -33,12 +34,20 @@ export class PiecesCleanController {
 
       if (isNaN(typeIdNum) || typeIdNum <= 0) {
         this.logger.error(`❌ [PHP-LOGIC] typeId invalide: ${typeId}`);
-        throw new Error(`typeId invalide: ${typeId}. Doit être un nombre > 0`);
+        throw new DomainValidationException({
+          code: ErrorCodes.CATALOG.INVALID_TYPE_ID,
+          message: `typeId invalide: ${typeId}. Doit être un nombre > 0`,
+          field: 'typeId',
+        });
       }
 
       if (isNaN(pgIdNum) || pgIdNum <= 0) {
         this.logger.error(`❌ [PHP-LOGIC] pgId invalide: ${pgId}`);
-        throw new Error(`pgId invalide: ${pgId}. Doit être un nombre > 0`);
+        throw new DomainValidationException({
+          code: ErrorCodes.CATALOG.INVALID_PG_ID,
+          message: `pgId invalide: ${pgId}. Doit être un nombre > 0`,
+          field: 'pgId',
+        });
       }
 
       // ✅ CACHE REDIS: Vérifier le cache (5 minutes TTL)

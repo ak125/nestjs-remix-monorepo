@@ -8,6 +8,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import sharp from 'sharp';
+import { OperationFailedException, ErrorCodes } from '../../../common/exceptions';
 
 export interface ImageProcessingOptions {
   resize?: {
@@ -206,7 +207,12 @@ export class ImageProcessingService {
       return result;
     } catch (error: any) {
       this.logger.error('❌ Image processing failed:', error.message);
-      throw new Error(`Échec du traitement d'image: ${error.message}`);
+      throw new OperationFailedException({
+        code: ErrorCodes.UPLOAD.PROCESSING_FAILED,
+        message: `Échec du traitement d'image: ${error.message}`,
+        details: error.message,
+        cause: error instanceof Error ? error : new Error(String(error)),
+      });
     }
   }
 
@@ -417,7 +423,12 @@ export class ImageProcessingService {
       };
     } catch (error: any) {
       this.logger.error('❌ Image analysis failed:', error.message);
-      throw new Error(`Échec de l'analyse d'image: ${error.message}`);
+      throw new OperationFailedException({
+        code: ErrorCodes.UPLOAD.PROCESSING_FAILED,
+        message: `Échec de l'analyse d'image: ${error.message}`,
+        details: error.message,
+        cause: error instanceof Error ? error : new Error(String(error)),
+      });
     }
   }
 

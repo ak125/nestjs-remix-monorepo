@@ -13,6 +13,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import {
+  DatabaseException,
+  ErrorCodes,
+} from '../../common/exceptions';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { UserDataService } from '../../database/services/user-data.service';
 import { UserService } from '../../database/services/user.service';
@@ -472,7 +476,11 @@ export class UsersService extends SupabaseBaseService {
 
       if (error) {
         console.error('❌ Erreur Supabase getActiveUsers:', error);
-        throw new Error(error.message);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: error.message,
+          details: error.message,
+        });
       }
 
       const total = count || 0;
@@ -548,7 +556,11 @@ export class UsersService extends SupabaseBaseService {
 
       if (error) {
         console.error('❌ Erreur Supabase searchUsers:', error);
-        throw new Error(error.message);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: error.message,
+          details: error.message,
+        });
       }
 
       const total = count || 0;
@@ -696,7 +708,10 @@ export class UsersService extends SupabaseBaseService {
   async confirmPasswordReset(): Promise<void> {
     console.log('UsersService.confirmPasswordReset (Mock)');
     // TODO: Implémenter avec vraie DB
-    throw new Error('Not implemented yet');
+    throw new DatabaseException({
+      code: ErrorCodes.DATABASE.OPERATION_FAILED,
+      message: 'Not implemented yet',
+    });
   }
 
   /**
@@ -783,7 +798,11 @@ export class UsersService extends SupabaseBaseService {
 
         if (error) {
           console.error('[UsersService.findAll] Database error:', error);
-          throw new Error(error.message);
+          throw new DatabaseException({
+            code: ErrorCodes.DATABASE.OPERATION_FAILED,
+            message: error.message,
+            details: error.message,
+          });
         }
 
         const { count } = await this.supabase

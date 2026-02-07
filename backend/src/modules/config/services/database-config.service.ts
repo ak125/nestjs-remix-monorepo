@@ -8,6 +8,7 @@ import {
 } from '../dto/config.dto';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 @Injectable()
 export class DatabaseConfigService extends SupabaseBaseService {
@@ -68,7 +69,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           'Erreur lors de la récupération des configurations',
           error,
         );
-        throw new Error(`Erreur database: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Erreur database: ${error.message}`,
+        });
       }
 
       const configs = this.formatConfigs(data || []);
@@ -119,7 +123,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           `Erreur lors de la récupération de la configuration ${key}`,
           error,
         );
-        throw new Error(`Erreur database: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Erreur database: ${error.message}`,
+        });
       }
 
       const config = this.formatConfig(data);
@@ -166,7 +173,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           'Erreur lors de la création de la configuration',
           error,
         );
-        throw new Error(`Erreur database: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Erreur database: ${error.message}`,
+        });
       }
 
       const config = this.formatConfig(data);
@@ -219,7 +229,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           `Erreur lors de la mise à jour de la configuration ${key}`,
           error,
         );
-        throw new Error(`Erreur database: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Erreur database: ${error.message}`,
+        });
       }
 
       const config = this.formatConfig(data);
@@ -249,7 +262,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           `Erreur lors de la suppression de la configuration ${key}`,
           error,
         );
-        throw new Error(`Erreur database: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.CONFIG.UPDATE_FAILED,
+          message: `Erreur database: ${error.message}`,
+        });
       }
 
       // Invalider le cache

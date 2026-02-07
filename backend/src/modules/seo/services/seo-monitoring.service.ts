@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
 
 export interface SitemapStatus {
   url: string;
@@ -315,7 +316,11 @@ export class SeoMonitoringService {
       });
 
       if (!response.ok) {
-        throw new Error(`Slack API error: ${response.status}`);
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Slack API error: ${response.status}`,
+          serviceName: 'Slack',
+        });
       }
 
       this.logger.log('✅ Alertes envoyées sur Slack');

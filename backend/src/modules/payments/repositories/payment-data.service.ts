@@ -3,6 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
+  DatabaseException,
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
+import {
   Payment,
   PaymentStatus,
   PaymentMethod,
@@ -181,7 +186,11 @@ export class PaymentDataService extends SupabaseBaseService {
 
       if (postbackError) {
         this.logger.error('Error creating postback:', postbackError);
-        throw new Error(`Failed to create payment: ${postbackError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.CREATE_FAILED,
+          message: 'Failed to create payment',
+          details: postbackError.message,
+        });
       }
 
       this.logger.log(
@@ -209,7 +218,10 @@ export class PaymentDataService extends SupabaseBaseService {
           const msg = `CRITICAL: Order not found in DB for id="${safeOrderId}" (payment=${paymentReference})`;
           this.logger.error(msg);
           if (isCompleted) {
-            throw new Error(msg);
+            throw new DomainNotFoundException({
+              code: ErrorCodes.PAYMENT.NOT_FOUND,
+              message: msg,
+            });
           }
         } else {
           const { error: orderError } = await this.supabase
@@ -218,10 +230,14 @@ export class PaymentDataService extends SupabaseBaseService {
             .eq('ord_id', resolvedId);
 
           if (orderError) {
-            const msg = `CRITICAL: Failed to update order ${resolvedId}: ${orderError.message}`;
-            this.logger.error(msg);
+            const msg = `CRITICAL: Failed to update order ${resolvedId}`;
+            this.logger.error(`${msg}: ${orderError.message}`);
             if (isCompleted) {
-              throw new Error(msg);
+              throw new DatabaseException({
+                code: ErrorCodes.PAYMENT.UPDATE_FAILED,
+                message: msg,
+                details: orderError.message,
+              });
             }
           } else if (isCompleted) {
             this.logger.log(
@@ -255,7 +271,11 @@ export class PaymentDataService extends SupabaseBaseService {
         if (error.code === 'PGRST116') {
           return null; // Not found
         }
-        throw new Error(`Failed to find payment: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.NOT_FOUND,
+          message: 'Failed to find payment',
+          details: error.message,
+        });
       }
 
       return this.mapPostbackToPayment(data);
@@ -281,7 +301,11 @@ export class PaymentDataService extends SupabaseBaseService {
         if (error.code === 'PGRST116') {
           return null;
         }
-        throw new Error(`Failed to find payment: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.NOT_FOUND,
+          message: 'Failed to find payment',
+          details: error.message,
+        });
       }
 
       return this.mapPostbackToPayment(data);
@@ -314,7 +338,11 @@ export class PaymentDataService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new Error(`Failed to update payment status: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.UPDATE_FAILED,
+          message: 'Failed to update payment status',
+          details: error.message,
+        });
       }
 
       // Si paiement completé et orderId existe, mettre à jour ___xtr_order
@@ -370,7 +398,11 @@ export class PaymentDataService extends SupabaseBaseService {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(`Failed to find payments: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.NOT_FOUND,
+          message: 'Failed to find payments',
+          details: error.message,
+        });
       }
 
       return data.map((postback) => this.mapPostbackToPayment(postback));
@@ -393,7 +425,11 @@ export class PaymentDataService extends SupabaseBaseService {
         .order('datepayment', { ascending: false });
 
       if (error) {
-        throw new Error(`Failed to find payments: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.PAYMENT.NOT_FOUND,
+          message: 'Failed to find payments',
+          details: error.message,
+        });
       }
 
       return data.map((postback) => this.mapPostbackToPayment(postback));
@@ -517,7 +553,11 @@ export class PaymentDataService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new Error(`Failed to get recent payments: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: 'Failed to get recent payments',
+          details: error.message,
+        });
       }
 
       return data.map((postback: any) => this.mapPostbackToPayment(postback));
@@ -557,7 +597,11 @@ export class PaymentDataService extends SupabaseBaseService {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(`Failed to get payment stats: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: 'Failed to get payment stats',
+          details: error.message,
+        });
       }
 
       const stats = {

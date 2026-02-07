@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🔍 PiecesAnalysisService - Analyse de la table pieces
@@ -144,7 +145,12 @@ export class PiecesAnalysisService extends SupabaseBaseService {
         .limit(1);
 
       if (error) {
-        throw new Error(`Erreur structure: ${error.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEARCH.QUERY_FAILED,
+          message: `Erreur structure: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
       }
 
       return {
@@ -171,7 +177,12 @@ export class PiecesAnalysisService extends SupabaseBaseService {
         .limit(limit);
 
       if (exactError) {
-        throw new Error(`Erreur recherche exacte: ${exactError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEARCH.QUERY_FAILED,
+          message: `Erreur recherche exacte: ${exactError.message}`,
+          details: exactError.message,
+          cause: exactError instanceof Error ? exactError : undefined,
+        });
       }
 
       // Recherche des variantes
@@ -184,7 +195,12 @@ export class PiecesAnalysisService extends SupabaseBaseService {
         .limit(limit);
 
       if (variantError) {
-        throw new Error(`Erreur recherche variantes: ${variantError.message}`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEARCH.QUERY_FAILED,
+          message: `Erreur recherche variantes: ${variantError.message}`,
+          details: variantError.message,
+          cause: variantError instanceof Error ? variantError : undefined,
+        });
       }
 
       // Combiner et dédupliquer par piece_id

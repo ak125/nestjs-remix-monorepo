@@ -6,6 +6,8 @@ import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const matter = require('gray-matter');
 
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+
 // Import du service de validation qualité
 import {
   QualityValidatorService,
@@ -135,9 +137,10 @@ export class SeoGeneratorService {
     );
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error(
-        'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
-      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.CONFIG_MISSING,
+        message: 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
+      });
     }
 
     this.supabase = createClient(supabaseUrl, supabaseKey);

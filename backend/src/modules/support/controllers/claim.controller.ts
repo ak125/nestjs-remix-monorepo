@@ -15,6 +15,10 @@ import {
   Claim,
   ClaimResolution,
 } from '../services/claim.service';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/support/claims')
 export class ClaimController {
@@ -75,7 +79,10 @@ export class ClaimController {
   async getClaim(@Param('claimId') claimId: string): Promise<Claim> {
     const claim = await this.claimService.getClaim(claimId);
     if (!claim) {
-      throw new Error(`Claim ${claimId} not found`);
+      throw new DomainNotFoundException({
+        message: `Claim ${claimId} not found`,
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+      });
     }
     return claim;
   }

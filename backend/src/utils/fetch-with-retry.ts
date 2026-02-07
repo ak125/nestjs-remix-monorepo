@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
 
 /**
  * 🚀 Utilitaire pour faire des fetch avec retry automatique et timeout
@@ -44,7 +45,7 @@ export async function fetchWithRetry(
 
         // Si erreur HTTP 5xx, on peut retry
         if (response.status >= 500 && attempt < maxRetries - 1) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.HTTP_ERROR, message: `HTTP ${response.status}: ${response.statusText}` });
         }
 
         return response;
@@ -110,7 +111,7 @@ export async function fetchJsonWithRetry<T = any>(
   const response = await fetchWithRetry(url, init, options);
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${url}`);
+    throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.HTTP_ERROR, message: `HTTP ${response.status}: ${response.statusText} - ${url}` });
   }
 
   return response.json();

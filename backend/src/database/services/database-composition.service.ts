@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
 import { UserDataService } from './user-data.service';
 import { OrdersService } from './orders.service';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
  * Service principal qui compose tous les services spécialisés
@@ -136,7 +137,10 @@ export class DatabaseCompositionService {
       const cartTotals = await this.cartDataService.calculateCartTotals(userId);
 
       if (!cartTotals.items.length) {
-        throw new Error('Panier vide');
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: 'Panier vide',
+        });
       }
 
       // 2. Créer la commande

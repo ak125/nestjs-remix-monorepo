@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MeilisearchService } from './meilisearch.service';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface FilterOption {
   value: string;
@@ -119,7 +120,10 @@ export class SearchFilterService {
           searchOptions,
         );
       } else {
-        throw new Error(`Index ${indexName} not supported`);
+        throw new DatabaseException({
+          code: ErrorCodes.SEARCH.FILTER_FAILED,
+          message: `Index ${indexName} not supported`,
+        });
       }
     } catch (error) {
       this.logger.error('Error searching with filters:', error);

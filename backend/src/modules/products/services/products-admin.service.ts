@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * Service pour l'interface commerciale et admin des produits :
@@ -54,7 +55,10 @@ export class ProductsAdminService extends SupabaseBaseService {
       };
 
       if (gammeError || !gammeInfo) {
-        throw new Error(`Gamme ${gammeId} non trouvée`);
+        throw new DomainNotFoundException({
+          code: ErrorCodes.PRODUCT.NOT_FOUND,
+          message: `Gamme ${gammeId} non trouvée`,
+        });
       }
 
       // Construire la requête pour les produits

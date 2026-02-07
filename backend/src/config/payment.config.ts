@@ -1,4 +1,5 @@
 import { registerAs } from '@nestjs/config';
+import { ConfigurationException, ErrorCodes } from '../common/exceptions';
 
 export enum PaymentMode {
   TEST = 'TEST',
@@ -38,9 +39,10 @@ export default registerAs('payment', (): PaymentConfig => {
 
   // Validation du mode
   if (!Object.values(PaymentMode).includes(mode)) {
-    throw new Error(
-      `Invalid SYSTEMPAY_MODE: ${mode}. Must be TEST or PRODUCTION`,
-    );
+    throw new ConfigurationException({
+      code: ErrorCodes.PAYMENT.CONFIG_MISSING,
+      message: `Invalid SYSTEMPAY_MODE: ${mode}. Must be TEST or PRODUCTION`,
+    });
   }
 
   // Validation des variables requises
@@ -52,7 +54,7 @@ export default registerAs('payment', (): PaymentConfig => {
   ];
   for (const varName of requiredVars) {
     if (!process.env[varName]) {
-      throw new Error(`Missing required environment variable: ${varName}`);
+      throw new ConfigurationException({ code: ErrorCodes.PAYMENT.CONFIG_MISSING, message: `Missing required environment variable: ${varName}` });
     }
   }
 

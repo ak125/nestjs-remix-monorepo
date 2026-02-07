@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
 
 /**
  * 🎯 PRICING SERVICE V5 ULTIMATE FINAL
@@ -73,7 +74,11 @@ export class PricingService extends SupabaseBaseService {
           z.string().transform((val) => {
             const parsed = parseInt(val, 10);
             if (isNaN(parsed) || parsed <= 0) {
-              throw new Error('ID pièce invalide');
+              throw new DomainValidationException({
+                code: ErrorCodes.PRODUCT.PRICING_FAILED,
+                message: 'ID pièce invalide',
+                field: 'pieceId',
+              });
             }
             return parsed;
           }),
