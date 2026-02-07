@@ -2,8 +2,8 @@
  * 🔥 CONTRÔLEUR SITEMAP V10 - ENDPOINTS TEMPÉRATURE
  *
  * Endpoints:
- * - POST /api/sitemap/v10/generate-all     → Génère tous les buckets
- * - POST /api/sitemap/v10/generate/:bucket → Génère un bucket spécifique
+ * - POST /api/sitemap/v10/generate-all      → Génère tous les buckets
+ * - POST /api/sitemap/v10/generate/:bucket  → Génère un bucket spécifique
  * - POST /api/sitemap/v10/refresh-scores   → Recalcule les scores
  * - POST /api/sitemap/v10/generate-hubs    → Génère les hubs de crawl (legacy)
  * - POST /api/sitemap/v10/generate-hubs-robust → 🚀 Hubs paginés (max 5k/file)
@@ -91,43 +91,6 @@ export class SitemapV10Controller {
         message: `Generation failed: ${error.message}`,
       };
     }
-  }
-
-  /**
-   * POST /api/sitemap/v10/generate-fusion
-   * @deprecated Utilisez POST /api/sitemap/v10/generate-all à la place
-   * Redirige maintenant vers generateAll()
-   */
-  @Post('generate-fusion')
-  async generateFusion(): Promise<{
-    success: boolean;
-    message: string;
-    data?: {
-      totalUrls: number;
-      totalFiles: number;
-      durationMs: number;
-      indexPath?: string;
-      buckets: Array<{
-        bucket: string;
-        success: boolean;
-        urlCount: number;
-        filesGenerated: number;
-        error?: string;
-      }>;
-      hubResult?: {
-        success: boolean;
-        totalUrls: number;
-        totalFiles: number;
-        error?: string;
-      };
-    };
-  }> {
-    this.logger.warn(
-      '⚠️ DEPRECATED: /generate-fusion → Use /generate-all instead',
-    );
-
-    // Redirect to unified generateAll()
-    return this.generateAll();
   }
 
   /**
