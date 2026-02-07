@@ -1,13 +1,13 @@
 /**
  * 🚀 Service API pour les pages gamme avec fallback automatique
- * 
+ *
  * Stratégie :
  * 1. Essaie RPC V2 (ultra-rapide : ~75ms)
  * 2. Si échec, fallback sur méthode classique (~680ms)
  * 3. Log les performances pour monitoring
  */
 
-const API_URL = process.env.API_URL || 'http://localhost:3000';
+const API_URL = process.env.API_URL || "http://localhost:3000";
 
 interface GammePageData {
   meta: {
@@ -49,17 +49,17 @@ interface FetchOptions {
  */
 export async function fetchGammePageData(
   gammeId: number | string,
-  options: FetchOptions = {}
+  options: FetchOptions = {},
 ): Promise<GammePageData> {
   const { signal, useRpcV2 = true } = options;
-  
+
   const startTime = performance.now();
-  
+
   // Tentative RPC V2 (ultra-optimisé)
   if (useRpcV2) {
     try {
       console.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
-      
+
       // Timeout spécifique pour RPC V2 (10s max)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -68,42 +68,45 @@ export async function fetchGammePageData(
       const rpcResponse = await fetch(
         `${API_URL}/api/gamme-rest/${gammeId}/page-data-rpc-v2`,
         {
-          headers: { 'Accept': 'application/json' },
+          headers: { Accept: "application/json" },
           signal: rpcSignal,
-        }
+        },
       );
-      
+
       clearTimeout(timeoutId);
 
       if (rpcResponse.ok) {
         const data = await rpcResponse.json();
         const elapsed = performance.now() - startTime;
-        
+
         // Pas d'erreur dans la réponse
         if (!data.error) {
           console.log(
             `✅ RPC V2 SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
-            ` (RPC: ${data.performance?.rpc_time_ms?.toFixed(0)}ms)`
+              ` (RPC: ${data.performance?.rpc_time_ms?.toFixed(0)}ms)`,
           );
           return data;
         }
-        
+
         console.warn(`⚠️ RPC V2 returned error:`, data.error);
       } else {
         console.warn(`⚠️ RPC V2 HTTP ${rpcResponse.status}`);
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         console.warn(`⏱️ RPC V2 Timeout (10s) pour gamme ${gammeId}`);
       } else {
-        console.warn(`⚠️ RPC V2 failed:`, error.message);
+        console.warn(
+          `⚠️ RPC V2 failed:`,
+          error instanceof Error ? error.message : String(error),
+        );
       }
     }
   }
 
   // Fallback sur méthode classique
   console.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
-  
+
   // Timeout pour fallback (60s max)
   const fallbackController = new AbortController();
   const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 60000);
@@ -113,23 +116,23 @@ export async function fetchGammePageData(
     const classicResponse = await fetch(
       `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
       {
-        headers: { 'Accept': 'application/json' },
+        headers: { Accept: "application/json" },
         signal: fallbackSignal,
-      }
+      },
     );
-    
+
     clearTimeout(fallbackTimeoutId);
 
     if (!classicResponse.ok) {
-      throw new Response('API Error', { status: classicResponse.status });
+      throw new Response("API Error", { status: classicResponse.status });
     }
 
     const data = await classicResponse.json();
     const elapsed = performance.now() - startTime;
-    
+
     console.log(
       `✅ Classic method SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
-      ` (Total: ${data.performance?.total_time_ms?.toFixed(0)}ms)`
+        ` (Total: ${data.performance?.total_time_ms?.toFixed(0)}ms)`,
     );
 
     return data;
@@ -143,14 +146,14 @@ export async function fetchGammePageData(
  * Feature flag pour activer/désactiver RPC V2
  * À configurer via variable d'environnement
  */
-export const ENABLE_RPC_V2 = process.env.ENABLE_RPC_V2 !== 'false'; // Activé par défaut
+export const ENABLE_RPC_V2 = process.env.ENABLE_RPC_V2 !== "false"; // Activé par défaut
 
 /**
  * Version simplifiée pour compatibilité
  */
 export async function fetchGammePageDataLegacy(
   gammeId: number | string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<GammePageData> {
   return fetchGammePageData(gammeId, { signal, useRpcV2: ENABLE_RPC_V2 });
 }

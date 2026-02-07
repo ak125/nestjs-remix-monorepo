@@ -173,7 +173,8 @@ export class CartDataService extends SupabaseBaseService {
                 : 'Non spécifiée';
 
             // ✅ PHASE 4: Extraire la consigne depuis product
-            const consigneUnit = (product as any).consigne_ttc || 0;
+            const consigneUnit =
+              (product as unknown as Record<string, number>).consigne_ttc || 0;
             const hasConsigne = consigneUnit > 0;
 
             return {
@@ -221,7 +222,9 @@ export class CartDataService extends SupabaseBaseService {
 
       // ✅ PHASE 4: Calculer le total des consignes
       const consigneTotal = enrichedItems.reduce(
-        (sum, item) => sum + ((item as any).consigne_total || 0),
+        (sum, item) =>
+          sum +
+          ((item as unknown as Record<string, number>).consigne_total || 0),
         0,
       );
 
@@ -312,7 +315,7 @@ export class CartDataService extends SupabaseBaseService {
       }
 
       this.logger.log(
-        `💰 Prix produit ${productId}: customPrice=${customPrice}, product.price_ttc=${(product as any).price_ttc}`,
+        `💰 Prix produit ${productId}: customPrice=${customPrice}, product.price_ttc=${(product as unknown as Record<string, unknown>).price_ttc}`,
       );
 
       // 2. Récupérer le panier existant depuis Redis
@@ -328,7 +331,10 @@ export class CartDataService extends SupabaseBaseService {
         user_id: sessionId,
         product_id: productId.toString(),
         quantity: quantity,
-        price: customPrice || (product as any).price_ttc || 0,
+        price:
+          customPrice ||
+          (product as unknown as Record<string, number>).price_ttc ||
+          0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         product_name: product.piece_name,

@@ -10,7 +10,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { LocalAuthGuard } from '../local-auth.guard';
 import { UsersService } from '../../modules/users/users.service';
 import { AuthService } from '../auth.service';
@@ -76,7 +76,7 @@ export class AuthLoginController {
   async register(
     @Body(new ZodValidationPipe(RegisterSchema)) userData: RegisterDto,
     @Req() request: Express.Request,
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     try {
       await this.userService.createUser({
         email: userData.email,
@@ -88,7 +88,7 @@ export class AuthLoginController {
       const loginResult = await this.authService.login(
         userData.email,
         userData.password,
-        (request as any).ip,
+        (request as Request).ip,
       );
 
       await promisifyLogin(request, loginResult.user);
@@ -98,8 +98,9 @@ export class AuthLoginController {
         user: loginResult.user,
         sessionToken: loginResult.access_token,
       };
-    } catch (error: any) {
-      if (error.message?.includes('déjà utilisé')) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      if (errMsg.includes('déjà utilisé')) {
         return {
           success: false,
           message: 'Cet email est déjà utilisé',
@@ -111,8 +112,7 @@ export class AuthLoginController {
         success: false,
         message: 'Erreur lors de la création du compte',
         status: 500,
-        debug:
-          process.env.NODE_ENV === 'development' ? error.message : undefined,
+        debug: process.env.NODE_ENV === 'development' ? errMsg : undefined,
       };
     }
   }
@@ -169,12 +169,12 @@ export class AuthLoginController {
   async loginPost(
     @Body() credentials: { email: string; password: string },
     @Req() request: Express.Request,
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     try {
       const loginResult = await this.authService.login(
         credentials.email,
         credentials.password,
-        (request as any).ip,
+        (request as Request).ip,
       );
 
       await promisifyLogin(request, loginResult.user);
@@ -184,10 +184,11 @@ export class AuthLoginController {
         user: loginResult.user,
         sessionToken: loginResult.access_token,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
-        error: err.message || 'Erreur lors de la connexion',
+        error:
+          err instanceof Error ? err.message : 'Erreur lors de la connexion',
       };
     }
   }
@@ -201,7 +202,7 @@ export class AuthLoginController {
     @Req() request: Express.Request,
     @Res() response: Response,
   ) {
-    const originalUrl = (request as any).originalUrl || '/auth/login';
+    const originalUrl = (request as Request).originalUrl || '/auth/login';
     const queryIndex = originalUrl.indexOf('?');
     const query = queryIndex >= 0 ? originalUrl.slice(queryIndex) : '';
     const target = `/login${query}`;
@@ -232,7 +233,7 @@ export class AuthLoginController {
     }
 
     // FUSION DE PANIER: Extraire la session du cookie AVANT toute modification
-    const cookieHeader = (request as any).headers?.cookie || '';
+    const cookieHeader = (request as Request).headers?.cookie || '';
     this.logger.log(
       `[CART-FUSION] Cookie header: ${cookieHeader.substring(0, 150)}`,
     );
@@ -245,12 +246,12 @@ export class AuthLoginController {
       this.logger.log('[CART-FUSION] No guest session ID found');
     }
 
-    const user = request.user as any;
-    const userLevel = parseInt(user.level) || 0;
+    const user = request.user;
+    const userLevel = parseInt(String(user?.level)) || 0;
 
     // Régénérer la session de manière sécurisée
     try {
-      await promisifySessionRegenerate((request as any).session);
+      await promisifySessionRegenerate(request.session);
     } catch (regenerateErr) {
       this.logger.error({ err: regenerateErr }, 'Erreur régénération session');
       return response.redirect('/');
@@ -258,16 +259,16 @@ export class AuthLoginController {
 
     try {
       await promisifyLogin(request, user);
-    } catch (loginErr) {
+    } catch (loginErr: unknown) {
       this.logger.error(
-        `Erreur réattachement utilisateur: ${(loginErr as any)?.message || loginErr}`,
+        `Erreur réattachement utilisateur: ${loginErr instanceof Error ? loginErr.message : String(loginErr)}`,
       );
       return response.redirect('/');
     }
 
     // FUSION DE PANIER: Fusionner vers userId
-    const userId = user.id;
-    const newSessionId = (request as any).session?.id;
+    const userId = user?.id;
+    const newSessionId = request.session?.id;
     this.logger.log(`Session APRES login: ${newSessionId}`);
     this.logger.log(`User ID: ${userId}`);
 
@@ -282,23 +283,24 @@ export class AuthLoginController {
         );
         const mergedCount = await this.cartDataService.mergeCart(
           guestSessionId,
-          userId,
+          String(userId),
         );
         if (mergedCount > 0) {
           this.logger.log(
             `Panier fusionné: ${mergedCount} articles transférés vers userId`,
           );
         }
-      } catch (mergeError) {
+      } catch (mergeError: unknown) {
         this.logger.error(
-          `Erreur fusion panier: ${(mergeError as any)?.message || mergeError}`,
+          `Erreur fusion panier: ${mergeError instanceof Error ? mergeError.message : String(mergeError)}`,
         );
       }
     }
 
     // Vérifier redirectTo (query ou body) avant la redirection par défaut
+    const expressReq = request as Request;
     const redirectTo =
-      (request as any).body?.redirectTo || (request as any).query?.redirectTo;
+      expressReq.body?.redirectTo || expressReq.query?.redirectTo;
 
     if (
       redirectTo &&
@@ -311,17 +313,17 @@ export class AuthLoginController {
     }
 
     // Redirection par défaut selon le type et niveau d'utilisateur
-    if (user.isAdmin && userLevel >= 7) {
+    if (user?.isAdmin && userLevel >= 7) {
       this.logger.log(
         `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
       );
       response.redirect('/admin');
-    } else if (user.isAdmin && userLevel >= 4) {
+    } else if (user?.isAdmin && userLevel >= 4) {
       this.logger.log(
         `Admin niveau ${userLevel} détecté, redirection vers admin`,
       );
       response.redirect('/admin');
-    } else if (user.isPro) {
+    } else if (user?.isPro) {
       this.logger.log(
         'Utilisateur pro détecté, redirection vers dashboard pro',
       );
@@ -360,8 +362,10 @@ export class AuthLoginController {
 
     try {
       await promisifyLogout(request);
-    } catch (err) {
-      this.logger.error(`Erreur logout: ${(err as any)?.message || err}`);
+    } catch (err: unknown) {
+      this.logger.error(
+        `Erreur logout: ${err instanceof Error ? err.message : String(err)}`,
+      );
       return next(err);
     }
 

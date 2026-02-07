@@ -51,13 +51,13 @@ export class SectionController {
 
     // Personnaliser le header selon les paramètres
     if (!showActions && 'actions' in header) {
-      (header as any).actions = [];
+      (header as Record<string, unknown>).actions = [];
     }
     if (!showNotifications && 'notifications' in header) {
-      (header as any).notifications = undefined;
+      (header as Record<string, unknown>).notifications = undefined;
     }
     if (!showBreadcrumbs && 'breadcrumbs' in header) {
-      (header as any).breadcrumbs = [];
+      (header as Record<string, unknown>).breadcrumbs = [];
     }
 
     return header;

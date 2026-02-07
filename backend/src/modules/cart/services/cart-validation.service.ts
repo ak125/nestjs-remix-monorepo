@@ -155,7 +155,7 @@ export class CartValidationService extends SupabaseBaseService {
       return data.stock_quantity || 0;
     } catch (error) {
       this.logger.error(
-        `Erreur checkStock: ${(error as any)?.message || error}`,
+        `Erreur checkStock: ${error instanceof Error ? error.message : String(error)}`,
       );
       return 0;
     }
@@ -210,7 +210,7 @@ export class CartValidationService extends SupabaseBaseService {
       return !error && !!data;
     } catch (error) {
       this.logger.error(
-        `Erreur checkPromoCodeExists: ${(error as any)?.message || error}`,
+        `Erreur checkPromoCodeExists: ${error instanceof Error ? error.message : String(error)}`,
       );
       return false;
     }

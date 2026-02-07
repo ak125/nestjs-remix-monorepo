@@ -55,7 +55,7 @@ export class BlogArticleDataService {
       // Respect variant priority order: first variant match wins
       for (const variant of slugVariants) {
         const adviceMatch = adviceResult.data?.find(
-          (a: any) => a.ba_alias === variant,
+          (a: { ba_alias: string }) => a.ba_alias === variant,
         );
         if (adviceMatch) {
           this.logger.debug(`Article found with alias: "${variant}"`);
@@ -63,7 +63,7 @@ export class BlogArticleDataService {
         }
 
         const guideMatch = guideResult.data?.find(
-          (g: any) => g.bg_alias === variant,
+          (g: { bg_alias: string }) => g.bg_alias === variant,
         );
         if (guideMatch) {
           this.logger.debug(`Guide found with alias: "${variant}"`);
@@ -253,7 +253,9 @@ export class BlogArticleDataService {
     updates: Partial<BlogArticle>,
   ): Promise<BlogArticle> {
     try {
-      const updateData: any = { ...updates };
+      const updateData: Record<string, unknown> = {
+        ...(updates as Record<string, unknown>),
+      };
 
       // Si le titre change, régénérer le slug
       if (updates.title) {
@@ -442,7 +444,11 @@ export class BlogArticleDataService {
         .single();
 
       const currentViews = parseInt(
-        String((currentData as any)?.[viewField] || '0'),
+        String(
+          (currentData as unknown as Record<string, unknown> | null)?.[
+            viewField
+          ] || '0',
+        ),
         10,
       );
       const newViews = currentViews + 1;
@@ -603,16 +609,21 @@ export class BlogArticleDataService {
         .from(legacy_table)
         .select('*');
 
-      if (pgIdField && (currentArticle as any).ba_pg_id) {
-        baseQuery = baseQuery.eq(pgIdField, (currentArticle as any).ba_pg_id);
+      const articleRecord = currentArticle as unknown as Record<
+        string,
+        unknown
+      >;
+
+      if (pgIdField && currentArticle.ba_pg_id) {
+        baseQuery = baseQuery.eq(pgIdField, currentArticle.ba_pg_id);
       }
 
       const { data: previousData } = await baseQuery
         .lt(
           dateField,
-          (currentArticle as any)[
+          (articleRecord[
             dateField.replace('ba_', '').replace('bg_', '')
-          ] || currentArticle.publishedAt,
+          ] as string) || currentArticle.publishedAt,
         )
         .order(dateField, { ascending: false })
         .limit(1)
@@ -620,16 +631,16 @@ export class BlogArticleDataService {
 
       // Article suivant
       baseQuery = this.supabaseService.client.from(legacy_table).select('*');
-      if (pgIdField && (currentArticle as any).ba_pg_id) {
-        baseQuery = baseQuery.eq(pgIdField, (currentArticle as any).ba_pg_id);
+      if (pgIdField && currentArticle.ba_pg_id) {
+        baseQuery = baseQuery.eq(pgIdField, currentArticle.ba_pg_id);
       }
 
       const { data: nextData } = await baseQuery
         .gt(
           dateField,
-          (currentArticle as any)[
+          (articleRecord[
             dateField.replace('ba_', '').replace('bg_', '')
-          ] || currentArticle.publishedAt,
+          ] as string) || currentArticle.publishedAt,
         )
         .order(dateField, { ascending: true })
         .limit(1)
@@ -665,7 +676,9 @@ export class BlogArticleDataService {
   /**
    * 📦 Charger un article avec ses sections H2/H3
    */
-  private async loadArticleWithSections(advice: any): Promise<BlogArticle> {
+  private async loadArticleWithSections(
+    advice: Record<string, unknown>,
+  ): Promise<BlogArticle> {
     // Charger les H2
     const { data: h2Sections } = await this.supabaseService.client
       .from(TABLES.blog_advice_h2)
@@ -674,10 +687,10 @@ export class BlogArticleDataService {
       .order('ba2_id');
 
     // Récupérer les IDs des H2 pour charger leurs H3
-    const h2Ids = h2Sections?.map((h2: any) => h2.ba2_id) || [];
+    const h2Ids = h2Sections?.map((h2: { ba2_id: number }) => h2.ba2_id) || [];
 
     // Charger les H3 qui appartiennent à ces H2
-    let h3Sections: any[] = [];
+    let h3Sections: Record<string, unknown>[] = [];
     if (h2Ids.length > 0) {
       const { data: h3Data } = await this.supabaseService.client
         .from(TABLES.blog_advice_h3)
@@ -713,8 +726,9 @@ export class BlogArticleDataService {
     ]);
 
     const existingSlugs = new Set<string>([
-      ...(adviceResult.data?.map((r: any) => r.ba_alias) || []),
-      ...(guideResult.data?.map((r: any) => r.bg_alias) || []),
+      ...(adviceResult.data?.map((r: { ba_alias: string }) => r.ba_alias) ||
+        []),
+      ...(guideResult.data?.map((r: { bg_alias: string }) => r.bg_alias) || []),
     ]);
 
     if (!existingSlugs.has(baseSlug)) return baseSlug;
@@ -752,9 +766,7 @@ export class BlogArticleDataService {
     try {
       // Récupérer tous les ba_pg_id uniques
       const pgIds = [
-        ...new Set(
-          articles.map((a) => (a as any).ba_pg_id).filter((id) => id != null),
-        ),
+        ...new Set(articles.map((a) => a.ba_pg_id).filter((id) => id != null)),
       ];
 
       if (pgIds.length === 0) return articles;
@@ -771,7 +783,7 @@ export class BlogArticleDataService {
 
       // Enrichir chaque article
       return articles.map((article) => {
-        const ba_pg_id = (article as any).ba_pg_id;
+        const ba_pg_id = article.ba_pg_id;
         const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
 
         return {

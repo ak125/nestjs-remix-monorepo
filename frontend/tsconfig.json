@@ -14,7 +14,7 @@
 		"resolveJsonModule": true,
 		"target": "ES2019",
 		"strict": true,
-		"useUnknownInCatchVariables": false,
+		"useUnknownInCatchVariables": true,
 		"allowJs": true,
 		"forceConsistentCasingInFileNames": true,
 		"baseUrl": ".",

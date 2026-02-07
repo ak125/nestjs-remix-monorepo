@@ -35,7 +35,7 @@ export class ProfileController {
         return res.redirect('/auth/login');
       }
 
-      const user = req.user as any;
+      const user = req.user as Express.User;
       this.logger.log(`Profile request for user: ${user.id}`);
 
       // Récupérer les informations complètes de l'utilisateur
@@ -77,7 +77,7 @@ export class ProfileController {
         return res.redirect('/login');
       }
 
-      const user = req.user as any;
+      const user = req.user as Express.User;
       this.logger.log(`Update profile request for user: ${user.id}`);
       this.logger.log(`Update data: ${JSON.stringify(body)}`);
 
@@ -117,7 +117,7 @@ export class ProfileController {
         return res.redirect('/login');
       }
 
-      const user = req.user as any;
+      const user = req.user as Express.User;
       const { currentPassword, newPassword, confirmPassword } = body;
 
       // Vérifier que les mots de passe correspondent

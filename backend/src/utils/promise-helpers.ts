@@ -1,5 +1,6 @@
 import { promisify } from 'util';
 import { gzip } from 'zlib';
+import type { Session } from 'express-session';
 
 /** Promisified gzip — replaces manual callback wrapping */
 export const gzipAsync = promisify(gzip);
@@ -10,35 +11,40 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /** Promisify passport req.login() */
-export function promisifyLogin(req: any, user: any): Promise<void> {
+export function promisifyLogin(
+  req: Express.Request,
+  user: object,
+): Promise<void> {
   return new Promise((resolve, reject) => {
-    req.login(user, (err: any) => (err ? reject(err) : resolve()));
+    req.login(user as Express.User, (err: Error | null) =>
+      err ? reject(err) : resolve(),
+    );
   });
 }
 
 /** Promisify express session.save() */
-export function promisifySessionSave(session: any): Promise<void> {
+export function promisifySessionSave(session: Session): Promise<void> {
   return new Promise((resolve, reject) => {
-    session.save((err: any) => (err ? reject(err) : resolve()));
+    session.save((err?: Error | null) => (err ? reject(err) : resolve()));
   });
 }
 
 /** Promisify express session.regenerate() */
-export function promisifySessionRegenerate(session: any): Promise<void> {
+export function promisifySessionRegenerate(session: Session): Promise<void> {
   return new Promise((resolve, reject) => {
-    session.regenerate((err: any) => (err ? reject(err) : resolve()));
+    session.regenerate((err?: Error | null) => (err ? reject(err) : resolve()));
   });
 }
 
 /** Promisify passport req.logOut() */
-export function promisifyLogout(req: any): Promise<void> {
+export function promisifyLogout(req: Express.Request): Promise<void> {
   return new Promise((resolve, reject) => {
-    req.logOut((err: any) => (err ? reject(err) : resolve()));
+    req.logOut((err: Error | null) => (err ? reject(err) : resolve()));
   });
 }
 
 /** Promisify express session.destroy() */
-export function promisifySessionDestroy(session: any): Promise<void> {
+export function promisifySessionDestroy(session: Session): Promise<void> {
   return new Promise((resolve) => {
     session.destroy(() => resolve());
   });

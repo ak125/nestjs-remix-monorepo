@@ -106,8 +106,12 @@ export class BrandsController {
 
     // 🔥 INTÉGRATION SEO __seo_marque
     let seoData = null;
-    const marqueId = (brand as any).marque_id;
-    const marqueNom = (brand as any).marque_name || brandSlug;
+    const brandRow = brand as unknown as {
+      marque_id: number;
+      marque_name: string;
+    };
+    const marqueId = brandRow.marque_id;
+    const marqueNom = brandRow.marque_name || brandSlug;
 
     if (marqueId) {
       seoData = await this.brandSeoService.getProcessedBrandSeo(
@@ -155,7 +159,13 @@ export class BrandsController {
         };
       }
 
-      const brandData = brand as any;
+      const brandData = brand as unknown as {
+        marque_id: number;
+        marque_name: string;
+        marque_alias: string;
+        marque_logo: string | null;
+        marque_img: string | null;
+      };
       const marqueId = brandData.marque_id;
       const marqueAlias = brandData.marque_alias || brandSlug;
 
@@ -175,7 +185,15 @@ export class BrandsController {
         };
       }
 
-      const modelData = model as any;
+      const modelData = model as unknown as {
+        modele_id: number;
+        modele_name: string;
+        modele_alias: string;
+        modele_pic: string | null;
+        modele_year_from: number | null;
+        modele_year_to: number | null;
+        modele_body: string | null;
+      };
       const modeleId = modelData.modele_id;
 
       // 3. Récupérer les types (motorisations) du modèle
@@ -185,7 +203,23 @@ export class BrandsController {
 
       // 4. Formater les types pour le frontend
       // ✅ Colonnes correctes: type_power_kw et type_power_ps (pas type_kw/type_ch)
-      const formattedTypes = (typesResult.data || []).map((type: any) => ({
+      const formattedTypes = (
+        typesResult.data as unknown as Array<{
+          type_id: number;
+          type_name: string | null;
+          type_power_kw: number | null;
+          type_power_ps: number | null;
+          type_fuel: string | null;
+          type_engine_code: string | null;
+          type_month_from: number | null;
+          type_year_from: number | null;
+          type_month_to: number | null;
+          type_year_to: number | null;
+          type_body: string | null;
+          type_cylinder: number | null;
+          type_alias: string | null;
+        }>
+      ).map((type) => ({
         id: type.type_id,
         designation:
           type.type_name ||
@@ -279,7 +313,13 @@ export class BrandsController {
       };
     }
 
-    const brand = result.data.find((b: any) => b.marque_id === marqueId);
+    const brandRows = result.data as unknown as Array<{
+      marque_id: number;
+      marque_name: string;
+      marque_slug: string;
+      marque_img: string | null;
+    }>;
+    const brand = brandRows.find((b) => b.marque_id === marqueId);
 
     if (!brand) {
       return {
@@ -289,7 +329,7 @@ export class BrandsController {
     }
 
     // 🔥 INTÉGRATION SEO __seo_marque
-    const marqueNom = (brand as any).marque_name;
+    const marqueNom = brand.marque_name;
     const seoData = await this.brandSeoService.getProcessedBrandSeo(
       marqueId,
       marqueNom,
@@ -298,10 +338,10 @@ export class BrandsController {
 
     return {
       success: true,
-      marqueId: (brand as any).marque_id,
-      marqueNom: (brand as any).marque_name,
-      marqueSlug: (brand as any).marque_slug,
-      marqueImg: (brand as any).marque_img,
+      marqueId: brand.marque_id,
+      marqueNom: brand.marque_name,
+      marqueSlug: brand.marque_slug,
+      marqueImg: brand.marque_img,
       seo: seoData,
     };
   }

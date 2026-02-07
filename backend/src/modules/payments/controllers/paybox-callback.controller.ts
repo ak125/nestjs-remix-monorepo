@@ -13,6 +13,7 @@ import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
 import { EmailService } from '../../../services/email.service';
+import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';
 
 /**
@@ -131,8 +132,8 @@ export class PayboxCallbackController {
             orderId,
             amount: amountInEuros,
             currency: 'EUR',
-            status: 'completed' as any,
-            method: 'credit_card' as any,
+            status: PaymentStatus.COMPLETED,
+            method: PaymentMethod.CREDIT_CARD,
             providerTransactionId:
               params.authorization || params.orderReference,
             providerReference: params.orderReference,
@@ -193,8 +194,8 @@ export class PayboxCallbackController {
             orderId,
             amount: amountInEuros,
             currency: 'EUR',
-            status: 'failed' as any,
-            method: 'credit_card' as any,
+            status: PaymentStatus.FAILED,
+            method: PaymentMethod.CREDIT_CARD,
             providerTransactionId:
               params.authorization || params.orderReference,
             providerReference: params.orderReference,

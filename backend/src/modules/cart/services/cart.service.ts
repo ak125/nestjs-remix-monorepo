@@ -124,7 +124,7 @@ export class CartService {
       };
     } catch (error) {
       this.logger.error(
-        `❌ Erreur application code promo: ${(error as any)?.message || error}`,
+        `❌ Erreur application code promo: ${error instanceof Error ? error.message : String(error)}`,
       );
 
       if (error instanceof BadRequestException) {

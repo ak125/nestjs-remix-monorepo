@@ -295,9 +295,15 @@ export class PiecesDiagnosticController {
         data: {
           type_id: typeData.type_id,
           type_name: typeData.type_name,
-          marque: (typeData as any).auto_modele?.[0]?.auto_marque?.[0]
-            ?.marque_name,
-          modele: (typeData as any).auto_modele?.[0]?.modele_name,
+          marque: (
+            (typeData as unknown as Record<string, Record<string, unknown>[]>)
+              .auto_modele?.[0]?.auto_marque as
+              | Record<string, unknown>[]
+              | undefined
+          )?.[0]?.marque_name as string | undefined,
+          modele: (
+            typeData as unknown as Record<string, Record<string, unknown>[]>
+          ).auto_modele?.[0]?.modele_name as string | undefined,
           exists: true,
           recommendation: '✅ Type ID valide',
         },

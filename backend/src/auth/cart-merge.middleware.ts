@@ -18,12 +18,15 @@ export class CartMergeMiddleware implements NestMiddleware {
     // Vérifier si c'est une requête d'authentification réussie
     const isAuthRoute =
       req.path === '/authenticate' || req.path === '/register-and-login';
-    const isAuthenticated = !!(req as any).user;
+    const isAuthenticated = !!req.user;
 
     if (isAuthRoute && isAuthenticated) {
       // Récupérer l'ancienne session depuis un cookie temporaire ou session
-      const oldSessionId = (req as any).session?.__oldSessionId;
-      const newSessionId = (req as any).session?.id;
+      const session = req.session as unknown as
+        | Record<string, unknown>
+        | undefined;
+      const oldSessionId = session?.__oldSessionId as string | undefined;
+      const newSessionId = session?.id as string | undefined;
 
       this.logger.log(
         `🔍 Auth détectée - Old: ${oldSessionId}, New: ${newSessionId}`,
@@ -43,7 +46,8 @@ export class CartMergeMiddleware implements NestMiddleware {
           }
 
           // Nettoyer le marqueur temporaire
-          delete (req as any).session.__oldSessionId;
+          delete (req.session as unknown as Record<string, unknown>)
+            .__oldSessionId;
         } catch (error) {
           this.logger.error('⚠️ [Middleware] Erreur fusion panier:', error);
         }

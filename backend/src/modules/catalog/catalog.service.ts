@@ -199,7 +199,9 @@ export class CatalogService
         quickAccess,
         stats: {
           total_categories: mainCategories.length,
-          total_pieces: (stats as any).stats?.pieces || 0,
+          total_pieces:
+            (stats as unknown as Record<string, Record<string, number>>).stats
+              ?.pieces || 0,
           featured_count: featuredCategories.length,
         },
       };

@@ -130,14 +130,11 @@ export class RedirectsApiController {
       const redirect = await this.redirectService.findRedirect(url);
 
       if (redirect) {
-        // Gérer les deux types d'interface
+        // Gérer les deux types d'interface via Record
+        const r = redirect as unknown as Record<string, unknown>;
         const isRedirectRule = 'destination_path' in redirect;
-        const destination = isRedirectRule
-          ? (redirect as any).destination_path
-          : (redirect as any).new_path;
-        const statusCode = isRedirectRule
-          ? (redirect as any).status_code
-          : (redirect as any).redirect_type;
+        const destination = isRedirectRule ? r.destination_path : r.new_path;
+        const statusCode = isRedirectRule ? r.status_code : r.redirect_type;
 
         return {
           destination,

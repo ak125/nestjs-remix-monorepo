@@ -110,7 +110,9 @@ export class CartCalculationService extends SupabaseBaseService {
       }
 
       subtotalHT += item.quantity * itemPrice;
-      totalWeight += item.quantity * ((item as any).weight || 0);
+      totalWeight +=
+        item.quantity *
+        ((item as unknown as Record<string, number>).weight || 0);
       itemCount += item.quantity;
     }
 
@@ -174,7 +176,7 @@ export class CartCalculationService extends SupabaseBaseService {
       return this.STANDARD_SHIPPING_FEE;
     } catch (error) {
       this.logger.error(
-        `Erreur calculateShipping: ${(error as any)?.message || error}`,
+        `Erreur calculateShipping: ${error instanceof Error ? error.message : String(error)}`,
       );
       return this.STANDARD_SHIPPING_FEE;
     }
@@ -223,7 +225,7 @@ export class CartCalculationService extends SupabaseBaseService {
       return basePrice;
     } catch (error) {
       this.logger.error(
-        `Erreur calculateQuantityDiscount: ${(error as any)?.message || error}`,
+        `Erreur calculateQuantityDiscount: ${error instanceof Error ? error.message : String(error)}`,
       );
       return basePrice;
     }
@@ -277,7 +279,7 @@ export class CartCalculationService extends SupabaseBaseService {
       return Math.round(discount * 100) / 100;
     } catch (error) {
       this.logger.error(
-        `Erreur calculatePromoDiscount: ${(error as any)?.message || error}`,
+        `Erreur calculatePromoDiscount: ${error instanceof Error ? error.message : String(error)}`,
       );
       return 0;
     }
@@ -305,7 +307,8 @@ export class CartCalculationService extends SupabaseBaseService {
         if (!error && product) {
           const categoryName = Array.isArray(product.categories)
             ? product.categories[0]?.name || 'Autre'
-            : (product.categories as any)?.name || 'Autre';
+            : (product.categories as unknown as { name?: string })?.name ||
+              'Autre';
           const itemTotal = item.price * item.quantity;
 
           categories[categoryName] =

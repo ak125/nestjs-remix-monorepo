@@ -143,12 +143,13 @@ export class TicketsService extends SupabaseBaseService {
         createdAt: new Date(),
       };
     } catch (error) {
+      const e = error instanceof Error ? error : { message: String(error) };
       this.logger.error('Erreur détaillée création ticket:', {
-        message: (error as any).message,
-        code: (error as any).code,
-        details: (error as any).details,
-        hint: (error as any).hint,
-        stack: (error as any).stack,
+        message: e.message,
+        code: (error as Record<string, unknown>)?.code,
+        details: (error as Record<string, unknown>)?.details,
+        hint: (error as Record<string, unknown>)?.hint,
+        stack: e instanceof Error ? e.stack : undefined,
       });
       throw new BadRequestException(
         'Erreur lors de la création du ticket de préparation',
@@ -342,7 +343,10 @@ export class TicketsService extends SupabaseBaseService {
         usedAmount: amountToUse,
         remainingValue: newValue,
         orderLineId: ticket.orlet_orl_id,
-        orderId: (ticket.___xtr_order_line as any)?.order_id?.toString() || '',
+        orderId:
+          (
+            ticket.___xtr_order_line as unknown as Record<string, unknown>
+          )?.order_id?.toString() || '',
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -391,8 +395,14 @@ export class TicketsService extends SupabaseBaseService {
           type = 'CREDIT_NOTE';
         }
 
-        const orderLine = ticket.___xtr_order_line as any;
-        const order = ticket.___xtr_order as any;
+        const orderLine = ticket.___xtr_order_line as unknown as Record<
+          string,
+          unknown
+        > | null;
+        const order = ticket.___xtr_order as unknown as Record<
+          string,
+          unknown
+        > | null;
 
         return {
           id: ticket.orlet_id,

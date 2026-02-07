@@ -62,10 +62,11 @@ export class PiecesCleanController {
         this.logger.log(
           `⚡ [PHP-LOGIC] Cache HIT pour type=${typeIdNum}, gamme=${pgIdNum} (${responseTime}ms)`,
         );
+        const cachedData = cached as Record<string, unknown>;
         return {
-          ...(cached as any),
+          ...cachedData,
           statistics: {
-            ...(cached as any).statistics,
+            ...(cachedData.statistics as Record<string, unknown>),
             response_time: `${responseTime}ms`,
             cache_hit: true,
           },

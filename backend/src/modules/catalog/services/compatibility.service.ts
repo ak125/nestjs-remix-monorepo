@@ -117,16 +117,21 @@ export class CompatibilityService extends SupabaseBaseService {
         return undefined;
       }
 
-      const modele = data.modeles_vehicule as any;
-      const marque = modele?.marques_vehicule;
+      const modele = data.modeles_vehicule as unknown as Record<
+        string,
+        unknown
+      >;
+      const marque = modele?.marques_vehicule as
+        | Record<string, unknown>
+        | undefined;
 
       return {
         typeId: data.type_id,
         typeName: data.type_name,
-        modelId: modele?.mod_id,
-        modelName: modele?.mod_name,
-        brandId: marque?.mar_id,
-        brandName: marque?.mar_name,
+        modelId: modele?.mod_id as number,
+        modelName: modele?.mod_name as string,
+        brandId: marque?.mar_id as number,
+        brandName: marque?.mar_name as string,
       };
     } catch {
       return undefined;
@@ -177,8 +182,13 @@ export class CompatibilityService extends SupabaseBaseService {
         return { found: false };
       }
 
-      const modele = data.modeles_vehicule as any;
-      const marque = modele?.marques_vehicule;
+      const modele = data.modeles_vehicule as unknown as Record<
+        string,
+        unknown
+      >;
+      const marque = modele?.marques_vehicule as
+        | Record<string, unknown>
+        | undefined;
       const duration = Date.now() - startTime;
 
       this.logger.log(
@@ -190,16 +200,17 @@ export class CompatibilityService extends SupabaseBaseService {
         vehicle: {
           typeId: data.type_id,
           typeName: data.type_name,
-          modelId: modele?.mod_id,
-          modelName: modele?.mod_name,
-          brandId: marque?.mar_id,
-          brandName: marque?.mar_name,
+          modelId: modele?.mod_id as number,
+          modelName: modele?.mod_name as string,
+          brandId: marque?.mar_id as number,
+          brandName: marque?.mar_name as string,
           cnit: data.type_cnit,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [CNIT] Exception: ${error.message}`);
-      return { found: false, error: error.message };
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [CNIT] Exception: ${errMsg}`);
+      return { found: false, error: errMsg };
     }
   }
 
@@ -249,8 +260,13 @@ export class CompatibilityService extends SupabaseBaseService {
         return { found: false };
       }
 
-      const modele = data.modeles_vehicule as any;
-      const marque = modele?.marques_vehicule;
+      const modele = data.modeles_vehicule as unknown as Record<
+        string,
+        unknown
+      >;
+      const marque = modele?.marques_vehicule as
+        | Record<string, unknown>
+        | undefined;
       const duration = Date.now() - startTime;
 
       this.logger.log(
@@ -262,10 +278,10 @@ export class CompatibilityService extends SupabaseBaseService {
         vehicle: {
           typeId: data.type_id,
           typeName: data.type_name,
-          modelId: modele?.mod_id,
-          modelName: modele?.mod_name,
-          brandId: marque?.mar_id,
-          brandName: marque?.mar_name,
+          modelId: modele?.mod_id as number,
+          modelName: modele?.mod_name as string,
+          brandId: marque?.mar_id as number,
+          brandName: marque?.mar_name as string,
           typeMine: data.type_mine,
         },
       };

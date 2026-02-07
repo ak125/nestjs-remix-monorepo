@@ -105,7 +105,7 @@ export class UsersController {
       this.logger.log('Récupération des statistiques dashboard');
 
       // Récupérer l'utilisateur depuis req.user (désérialisé par Passport)
-      const user = (req as any).user;
+      const user = req.user as Express.User | undefined;
 
       if (!user || !user.id) {
         throw new AuthenticationException({
@@ -208,8 +208,11 @@ export class UsersController {
           lastName: userDetails.lastName,
           status: userDetails.isActive ? 'active' : 'inactive',
           lastLoginAt:
-            (userDetails as any).lastLoginAt || new Date().toISOString(),
-          createdAt: (userDetails as any).createdAt || new Date().toISOString(),
+            (userDetails as unknown as Record<string, unknown>).lastLoginAt ||
+            new Date().toISOString(),
+          createdAt:
+            (userDetails as unknown as Record<string, unknown>).createdAt ||
+            new Date().toISOString(),
           isPro: userDetails.isPro || false,
           isActive: userDetails.isActive,
           level: userDetails.level || 1,
