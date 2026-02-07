@@ -5,6 +5,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { sleep } from '../../../utils/promise-helpers';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * Chrome DevTools MCP Client
@@ -153,14 +154,14 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         };
       } catch (error) {
         this.logger.warn(
-          `Scraping attempt ${attempt}/${this.maxRetries} failed for ${config.url}: ${error.message}`,
+          `Scraping attempt ${attempt}/${this.maxRetries} failed for ${config.url}: ${getErrorMessage(error)}`,
         );
 
         if (attempt === this.maxRetries) {
           return {
             success: false,
             data: null,
-            error: error.message,
+            error: getErrorMessage(error),
             duration_ms: Date.now() - startTime,
             url: config.url,
           };
@@ -410,7 +411,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         error: `Could not find field for label: ${labelText}`,
       };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 
@@ -481,7 +482,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
             error: `Could not find element with text: ${text}`,
           };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 
@@ -556,8 +557,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
             error: `Could not select "${optionValue}" from "${labelText}"`,
           };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
-
 }

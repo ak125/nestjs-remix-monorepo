@@ -3,7 +3,10 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 🚀 Service pour les appels RPC optimisés avec cache Redis

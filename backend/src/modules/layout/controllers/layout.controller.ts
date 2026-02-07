@@ -5,7 +5,10 @@ import { FooterService } from '../services/footer.service';
 import { QuickSearchService } from '../services/quick-search.service';
 import { SocialShareService } from '../services/social-share.service';
 import { MetaTagsService } from '../services/meta-tags.service';
-import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 @Controller('api/layout')
 export class LayoutController {

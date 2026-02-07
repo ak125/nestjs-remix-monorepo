@@ -11,7 +11,12 @@ import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { CacheService } from '../../../cache/cache.service';
-import { BusinessRuleException, DomainValidationException, DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
+import {
+  BusinessRuleException,
+  DomainValidationException,
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 import {
   GammeSeoThresholdsService,
   SmartActionThresholds,
@@ -679,7 +684,8 @@ export class AdminGammesSeoService extends SupabaseBaseService {
             );
             throw new BusinessRuleException({
               code: ErrorCodes.CATALOG.GAMME_NOT_FOUND,
-              message: `❌ Impossible de passer "${currentGamme.pg_name}" en NOINDEX.\n` +
+              message:
+                `❌ Impossible de passer "${currentGamme.pg_name}" en NOINDEX.\n` +
                 `Raison: C'est une gamme G1 (prioritaire) avec ${productCount} produits en stock.\n` +
                 `Pour NOINDEX un G1, le stock doit être à 0.`,
             });
@@ -993,7 +999,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         auditActionType = 'BATCH_UNMARK_G1';
         break;
       default:
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.UNKNOWN_ACTION, message: `Action inconnue: ${actionId}` });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.UNKNOWN_ACTION,
+          message: `Action inconnue: ${actionId}`,
+        });
     }
 
     const result = await this.batchUpdate(pgIds, updateData);
@@ -1152,7 +1161,10 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       const { count: productsCount } = productsCountResult;
 
       if (gammeError || !gamme) {
-        throw new DomainNotFoundException({ code: ErrorCodes.CATALOG.GAMME_NOT_FOUND, message: `Gamme ${pgId} non trouvée` });
+        throw new DomainNotFoundException({
+          code: ErrorCodes.CATALOG.GAMME_NOT_FOUND,
+          message: `Gamme ${pgId} non trouvée`,
+        });
       }
 
       // Grouper Item Switches par alias - TOUTES les variations

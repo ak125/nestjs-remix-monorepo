@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { DomainNotFoundException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainNotFoundException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 🚀 Service RPC optimisé pour les pages véhicules /constructeurs/.../type.html

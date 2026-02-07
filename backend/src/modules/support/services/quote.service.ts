@@ -6,6 +6,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { NotificationService } from './notification.service';
+import { getErrorMessage, getErrorStack } from '../../../common/utils/error.utils';
 
 export interface QuoteRequest {
   id: string;
@@ -117,8 +118,8 @@ export class QuoteService {
       return quoteRequest;
     } catch (error) {
       this.logger.error(
-        `Failed to submit quote request: ${error.message}`,
-        error.stack,
+        `Failed to submit quote request: ${getErrorMessage(error)}`,
+        getErrorStack(error),
       );
       throw error;
     }
@@ -167,7 +168,10 @@ export class QuoteService {
   ): Promise<QuoteRequest> {
     const request = this.quoteRequests.get(requestId);
     if (!request) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote request ${requestId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote request ${requestId} not found`,
+      });
     }
 
     request.status = status;
@@ -189,7 +193,10 @@ export class QuoteService {
   ): Promise<QuoteRequest> {
     const request = this.quoteRequests.get(requestId);
     if (!request) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote request ${requestId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote request ${requestId} not found`,
+      });
     }
 
     request.assignedTo = staffId;
@@ -211,7 +218,10 @@ export class QuoteService {
   ): Promise<Quote> {
     const request = this.quoteRequests.get(requestId);
     if (!request) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote request ${requestId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote request ${requestId} not found`,
+      });
     }
 
     this.validateQuote(quoteData);
@@ -243,7 +253,10 @@ export class QuoteService {
   async sendQuote(quoteId: string): Promise<Quote> {
     const quote = this.quotes.get(quoteId);
     if (!quote) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote ${quoteId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote ${quoteId} not found`,
+      });
     }
 
     quote.status = 'sent';
@@ -256,15 +269,24 @@ export class QuoteService {
   async acceptQuote(quoteId: string): Promise<Quote> {
     const quote = this.quotes.get(quoteId);
     if (!quote) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote ${quoteId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote ${quoteId} not found`,
+      });
     }
 
     if (quote.status !== 'sent') {
-      throw new BusinessRuleException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_SENT, message: 'Quote must be sent before it can be accepted' });
+      throw new BusinessRuleException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_SENT,
+        message: 'Quote must be sent before it can be accepted',
+      });
     }
 
     if (new Date() > quote.validUntil) {
-      throw new BusinessRuleException({ code: ErrorCodes.SUPPORT.QUOTE_EXPIRED, message: 'Quote has expired' });
+      throw new BusinessRuleException({
+        code: ErrorCodes.SUPPORT.QUOTE_EXPIRED,
+        message: 'Quote has expired',
+      });
     }
 
     quote.status = 'accepted';
@@ -285,7 +307,10 @@ export class QuoteService {
   async rejectQuote(quoteId: string, reason?: string): Promise<Quote> {
     const quote = this.quotes.get(quoteId);
     if (!quote) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND, message: `Quote ${quoteId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.QUOTE_NOT_FOUND,
+        message: `Quote ${quoteId} not found`,
+      });
     }
 
     quote.status = 'rejected';
@@ -355,20 +380,32 @@ export class QuoteService {
     data: Omit<QuoteRequest, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
   ): void {
     if (!data.customerName || !data.customerEmail || !data.projectDescription) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.REQUIRED_FIELD, message: 'Missing required fields' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.REQUIRED_FIELD,
+        message: 'Missing required fields',
+      });
     }
 
     if (!data.requiredProducts || data.requiredProducts.length === 0) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'At least one product must be specified' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: 'At least one product must be specified',
+      });
     }
 
     if (!this.isValidEmail(data.customerEmail)) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_EMAIL, message: 'Invalid email format' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.INVALID_EMAIL,
+        message: 'Invalid email format',
+      });
     }
 
     data.requiredProducts.forEach((product, index) => {
       if (!product.name || product.quantity <= 0) {
-        throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: `Invalid product at index ${index}` });
+        throw new DomainValidationException({
+          code: ErrorCodes.VALIDATION.FAILED,
+          message: `Invalid product at index ${index}`,
+        });
       }
     });
   }
@@ -377,20 +414,32 @@ export class QuoteService {
     data: Omit<Quote, 'id' | 'quoteRequestId' | 'createdAt' | 'status'>,
   ): void {
     if (!data.quotedItems || data.quotedItems.length === 0) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Quote must contain at least one item' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: 'Quote must contain at least one item',
+      });
     }
 
     if (data.subtotal < 0 || data.total < 0) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_RANGE, message: 'Quote amounts cannot be negative' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.INVALID_RANGE,
+        message: 'Quote amounts cannot be negative',
+      });
     }
 
     if (data.validUntil <= new Date()) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_RANGE, message: 'Quote expiration date must be in the future' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.INVALID_RANGE,
+        message: 'Quote expiration date must be in the future',
+      });
     }
 
     data.quotedItems.forEach((item, index) => {
       if (!item.productName || item.quantity <= 0 || item.unitPrice < 0) {
-        throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: `Invalid quoted item at index ${index}` });
+        throw new DomainValidationException({
+          code: ErrorCodes.VALIDATION.FAILED,
+          message: `Invalid quoted item at index ${index}`,
+        });
       }
     });
   }

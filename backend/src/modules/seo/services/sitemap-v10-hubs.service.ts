@@ -120,11 +120,12 @@ export class SitemapV10HubsService extends SupabaseBaseService {
           { source: 'cron' },
         );
 
-        if (error) throw new DatabaseException({
-          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
-          message: error.message,
-          details: error.message,
-        });
+        if (error)
+          throw new DatabaseException({
+            code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+            message: error.message,
+            details: error.message,
+          });
         urls = (data || []).map((row: { url: string }) =>
           row.url.startsWith('http') ? row.url : `${this.BASE_URL}${row.url}`,
         );
@@ -137,11 +138,12 @@ export class SitemapV10HubsService extends SupabaseBaseService {
           .eq('is_indexable_hint', true)
           .limit(config.maxUrls);
 
-        if (error) throw new DatabaseException({
-          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
-          message: error.message,
-          details: error.message,
-        });
+        if (error)
+          throw new DatabaseException({
+            code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+            message: error.message,
+            details: error.message,
+          });
         urls = (data || []).map((row) =>
           row.url.startsWith('http') ? row.url : `${this.BASE_URL}${row.url}`,
         );

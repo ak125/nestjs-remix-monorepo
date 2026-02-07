@@ -9,7 +9,10 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 const execAsync = promisify(exec);
 

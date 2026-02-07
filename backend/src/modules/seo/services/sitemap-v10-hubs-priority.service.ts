@@ -90,11 +90,12 @@ export class HubsPriorityService extends SupabaseBaseService {
         .order('map_has_item', { ascending: false })
         .limit(2000);
 
-      if (error) throw new DatabaseException({
-        code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
-        message: error.message,
-        details: error.message,
-      });
+      if (error)
+        throw new DatabaseException({
+          code: ErrorCodes.SEO.SITEMAP_FETCH_FAILED,
+          message: error.message,
+          details: error.message,
+        });
 
       const urls = (pieces || []).map(
         (p) =>

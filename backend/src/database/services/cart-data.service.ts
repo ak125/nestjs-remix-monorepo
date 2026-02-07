@@ -305,7 +305,10 @@ export class CartDataService extends SupabaseBaseService {
       // 1. Récupérer le produit avec TOUTES les vraies données
       const product = await this.getProductWithAllData(productId);
       if (!product) {
-        throw new DatabaseException({ code: ErrorCodes.CART.UPDATE_FAILED, message: `Produit ${productId} introuvable` });
+        throw new DatabaseException({
+          code: ErrorCodes.CART.UPDATE_FAILED,
+          message: `Produit ${productId} introuvable`,
+        });
       }
 
       this.logger.log(

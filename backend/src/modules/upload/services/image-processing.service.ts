@@ -8,7 +8,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import sharp from 'sharp';
-import { OperationFailedException, ErrorCodes } from '../../../common/exceptions';
+import {
+  OperationFailedException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface ImageProcessingOptions {
   resize?: {

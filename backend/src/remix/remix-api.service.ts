@@ -45,7 +45,10 @@ export class RemixApiService {
       });
 
       if (!response.ok) {
-        throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.SERVICE_ERROR, message: `HTTP ${response.status}: ${response.statusText}` });
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+        });
       }
 
       return (await response.json()) as T;

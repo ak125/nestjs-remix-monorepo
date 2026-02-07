@@ -4,7 +4,10 @@
  */
 
 import { z } from 'zod';
-import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 // =====================================
 // SCHEMAS STOCK MANAGEMENT
@@ -110,7 +113,11 @@ export const createZodValidationPipe = (schema: z.ZodSchema) => {
           const errorMessage = error.issues
             .map((err: any) => `${err.path.join('.')}: ${err.message}`)
             .join(', ');
-          throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: `Validation error: ${errorMessage}`, details: errorMessage });
+          throw new DomainValidationException({
+            code: ErrorCodes.VALIDATION.FAILED,
+            message: `Validation error: ${errorMessage}`,
+            details: errorMessage,
+          });
         }
         throw error;
       }

@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { ConfigurationException, ErrorCodes } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * Page de test Paybox convertie depuis l'exemple PHP.
@@ -70,7 +71,11 @@ export class PayboxTestController {
     // Convert HMAC key from hex to binary (pack("H*", $key) in PHP)
     let hmac = '';
     try {
-      if (!hmacKey) throw new ConfigurationException({ code: ErrorCodes.PAYMENT.CONFIG_MISSING, message: 'PAYBOX_HMAC_KEY not configured' });
+      if (!hmacKey)
+        throw new ConfigurationException({
+          code: ErrorCodes.PAYMENT.CONFIG_MISSING,
+          message: 'PAYBOX_HMAC_KEY not configured',
+        });
       const binaryKey = Buffer.from(hmacKey, 'hex');
       hmac = crypto
         .createHmac('sha512', binaryKey)
@@ -78,10 +83,10 @@ export class PayboxTestController {
         .digest('hex')
         .toUpperCase();
     } catch (e) {
-      this.logger.error('Erreur génération HMAC:', e?.message || e);
+      this.logger.error('Erreur génération HMAC:', getErrorMessage(e));
       return res
         .status(500)
-        .send(`Erreur serveur génération HMAC: ${e?.message || e}`);
+        .send(`Erreur serveur génération HMAC: ${getErrorMessage(e)}`);
     }
 
     // Build HTML form

@@ -3,7 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 🎯 PRICING SERVICE V5 ULTIMATE FINAL

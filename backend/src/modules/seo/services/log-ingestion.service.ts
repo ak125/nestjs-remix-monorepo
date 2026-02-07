@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeiliSearch } from 'meilisearch';
-import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface CaddyLogEntry {
   timestamp: string;

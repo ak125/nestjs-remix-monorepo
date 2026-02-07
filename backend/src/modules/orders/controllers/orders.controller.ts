@@ -56,7 +56,10 @@ import {
   CreateOrderData,
   OrderFilters,
 } from '../services/orders.service';
-import { promisifyLogin, promisifySessionSave } from '../../../utils/promise-helpers';
+import {
+  promisifyLogin,
+  promisifySessionSave,
+} from '../../../utils/promise-helpers';
 
 @ApiTags('orders')
 @Controller('api/orders')

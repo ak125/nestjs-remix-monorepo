@@ -177,7 +177,8 @@ export class SuppliersService extends SupabaseBaseService {
         .single();
 
       if (error) throw error;
-      if (!data) throw new DatabaseException({
+      if (!data)
+        throw new DatabaseException({
           code: ErrorCodes.SUPPLIER.FETCH_FAILED,
           message: `Fournisseur ID ${id} non trouvé`,
         });

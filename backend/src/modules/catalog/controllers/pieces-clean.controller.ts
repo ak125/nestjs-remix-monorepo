@@ -2,7 +2,10 @@ import { Controller, Get, Param, Logger, Inject } from '@nestjs/common';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { DomainValidationException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainValidationException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ

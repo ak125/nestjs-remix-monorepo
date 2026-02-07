@@ -5,11 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class LocalAuthGuard extends AuthGuard('local') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<any>();
-    console.log('--- LocalAuthGuard canActivate ---');
-    console.log('Request method:', request.method);
-    console.log('Request URL:', request.url);
-    console.log('Request body:', request.body);
-    console.log('Request headers:', request.headers);
 
     try {
       const canBeActivated = (await super.canActivate(context)) as boolean;
@@ -17,23 +12,15 @@ export class LocalAuthGuard extends AuthGuard('local') {
       // Ne faire logIn que si l'authentification a réussi
       if (canBeActivated && request.user) {
         await super.logIn(request);
-        console.log(
-          '✅ Session créée pour:',
-          request.user.email || request.user.id,
-        );
       }
 
       return canBeActivated;
     } catch (error: any) {
-      console.log('❌ Authentification échouée:', error?.message || error);
-      // L'erreur sera gérée par handleRequest
       throw error;
     }
   }
 
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
-    console.log('LocalAuthGuard handleRequest:', { err, user, info });
-
     if (err || !user) {
       const request = context.switchToHttp().getRequest();
       const response = context.switchToHttp().getResponse();

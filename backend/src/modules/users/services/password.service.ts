@@ -14,10 +14,7 @@ import {
   NotFoundException,
   Inject,
 } from '@nestjs/common';
-import {
-  DatabaseException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { UserDataService } from '../../../database/services/user-data.service';
 import { MailService } from '../../../services/mail.service';

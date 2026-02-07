@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface SitemapStatus {
   url: string;

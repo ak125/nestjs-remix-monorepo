@@ -12,7 +12,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as zlib from 'zlib';
 import { gzipAsync } from '../../../utils/promise-helpers';
 import { createHash } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -371,7 +370,9 @@ ${shards
    * Compresser avec GZIP
    */
   private async compressGzip(buffer: Buffer): Promise<Buffer> {
-    return gzipAsync(buffer, { level: this.config.compressionLevel }) as Promise<Buffer>;
+    return gzipAsync(buffer, {
+      level: this.config.compressionLevel,
+    }) as Promise<Buffer>;
   }
 
   /**

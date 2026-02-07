@@ -10,7 +10,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
-import { DomainValidationException, DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DomainValidationException,
+  DatabaseException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 // Interface des seuils Smart Action
 export interface SmartActionThresholds {
@@ -125,22 +129,46 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
 
       // Validate values
       if (merged.trends_high < merged.trends_medium) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'trends_high doit être >= trends_medium', field: 'trends_high' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'trends_high doit être >= trends_medium',
+          field: 'trends_high',
+        });
       }
       if (merged.seo_excellent < merged.seo_good) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'seo_excellent doit être >= seo_good', field: 'seo_excellent' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'seo_excellent doit être >= seo_good',
+          field: 'seo_excellent',
+        });
       }
       if (merged.trends_high < 0 || merged.trends_high > 100) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'trends_high doit être entre 0 et 100', field: 'trends_high' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'trends_high doit être entre 0 et 100',
+          field: 'trends_high',
+        });
       }
       if (merged.trends_medium < 0 || merged.trends_medium > 100) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'trends_medium doit être entre 0 et 100', field: 'trends_medium' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'trends_medium doit être entre 0 et 100',
+          field: 'trends_medium',
+        });
       }
       if (merged.seo_excellent < 0 || merged.seo_excellent > 100) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'seo_excellent doit être entre 0 et 100', field: 'seo_excellent' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'seo_excellent doit être entre 0 et 100',
+          field: 'seo_excellent',
+        });
       }
       if (merged.seo_good < 0 || merged.seo_good > 100) {
-        throw new DomainValidationException({ code: ErrorCodes.ADMIN.THRESHOLD_INVALID, message: 'seo_good doit être entre 0 et 100', field: 'seo_good' });
+        throw new DomainValidationException({
+          code: ErrorCodes.ADMIN.THRESHOLD_INVALID,
+          message: 'seo_good doit être entre 0 et 100',
+          field: 'seo_good',
+        });
       }
 
       // Upsert in database
@@ -159,7 +187,11 @@ export class GammeSeoThresholdsService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Error saving thresholds:', error);
-        throw new DatabaseException({ code: ErrorCodes.ADMIN.SUPABASE_ERROR, message: 'Erreur lors de la sauvegarde des seuils', details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.ADMIN.SUPABASE_ERROR,
+          message: 'Erreur lors de la sauvegarde des seuils',
+          details: error.message,
+        });
       }
 
       // Clear cache

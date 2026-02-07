@@ -94,7 +94,11 @@ export class WorkingStockService extends SupabaseBaseService {
       const { data, error } = await query;
 
       if (error) {
-        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur récupération stock: ${error.message}`, details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.ADMIN.STOCK_ERROR,
+          message: `Erreur récupération stock: ${error.message}`,
+          details: error.message,
+        });
       }
 
       // Récupérer les statistiques
@@ -185,7 +189,11 @@ export class WorkingStockService extends SupabaseBaseService {
       const { data, error } = await searchQuery;
 
       if (error) {
-        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur recherche: ${error.message}`, details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.ADMIN.STOCK_ERROR,
+          message: `Erreur recherche: ${error.message}`,
+          details: error.message,
+        });
       }
 
       return (data as StockItemWorkingVersion[]) || [];
@@ -209,7 +217,11 @@ export class WorkingStockService extends SupabaseBaseService {
         .eq('pri_piece_id', pieceId);
 
       if (error) {
-        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur mise à jour: ${error.message}`, details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.ADMIN.STOCK_ERROR,
+          message: `Erreur mise à jour: ${error.message}`,
+          details: error.message,
+        });
       }
 
       this.logger.log(`Disponibilité mise à jour: ${pieceId} -> ${available}`);
@@ -244,7 +256,11 @@ export class WorkingStockService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new DatabaseException({ code: ErrorCodes.ADMIN.STOCK_ERROR, message: `Erreur top items: ${error.message}`, details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.ADMIN.STOCK_ERROR,
+          message: `Erreur top items: ${error.message}`,
+          details: error.message,
+        });
       }
 
       return (data as StockItemWorkingVersion[]) || [];

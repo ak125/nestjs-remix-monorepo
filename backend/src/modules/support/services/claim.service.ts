@@ -6,6 +6,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { NotificationService } from './notification.service';
+import { getErrorMessage, getErrorStack } from '../../../common/utils/error.utils';
 
 export interface Claim {
   id: string;
@@ -146,8 +147,8 @@ export class ClaimService {
       return claim;
     } catch (error) {
       this.logger.error(
-        `Failed to submit claim: ${error.message}`,
-        error.stack,
+        `Failed to submit claim: ${getErrorMessage(error)}`,
+        getErrorStack(error),
       );
       throw error;
     }
@@ -203,7 +204,10 @@ export class ClaimService {
   ): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     const oldStatus = claim.status;
@@ -233,7 +237,10 @@ export class ClaimService {
   async assignClaim(claimId: string, staffId: string): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     const oldAssignee = claim.assignedTo;
@@ -268,7 +275,10 @@ export class ClaimService {
   ): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     const timelineEntry: ClaimTimelineEntry = {
@@ -293,7 +303,10 @@ export class ClaimService {
   ): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     claim.resolution = {
@@ -327,7 +340,10 @@ export class ClaimService {
   ): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     claim.priority = 'urgent';
@@ -357,11 +373,17 @@ export class ClaimService {
   ): Promise<Claim> {
     const claim = this.claims.get(claimId);
     if (!claim) {
-      throw new DomainNotFoundException({ code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND, message: `Claim ${claimId} not found` });
+      throw new DomainNotFoundException({
+        code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
+        message: `Claim ${claimId} not found`,
+      });
     }
 
     if (claim.status !== 'resolved' && claim.status !== 'closed') {
-      throw new BusinessRuleException({ code: ErrorCodes.SUPPORT.CLAIM_INVALID_STATE, message: 'Can only rate resolved or closed claims' });
+      throw new BusinessRuleException({
+        code: ErrorCodes.SUPPORT.CLAIM_INVALID_STATE,
+        message: 'Can only rate resolved or closed claims',
+      });
     }
 
     claim.satisfaction = { rating, feedback };
@@ -462,23 +484,38 @@ export class ClaimService {
     data: Omit<Claim, 'id' | 'status' | 'timeline' | 'createdAt' | 'updatedAt'>,
   ): void {
     if (!data.customerId || !data.customerName || !data.customerEmail) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.REQUIRED_FIELD, message: 'Customer information is required' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.REQUIRED_FIELD,
+        message: 'Customer information is required',
+      });
     }
 
     if (!data.title || data.title.length < 5) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Claim title must be at least 5 characters' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: 'Claim title must be at least 5 characters',
+      });
     }
 
     if (!data.description || data.description.length < 20) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Claim description must be at least 20 characters' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: 'Claim description must be at least 20 characters',
+      });
     }
 
     if (!data.expectedResolution || data.expectedResolution.length < 10) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.FAILED, message: 'Expected resolution must be at least 10 characters' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.FAILED,
+        message: 'Expected resolution must be at least 10 characters',
+      });
     }
 
     if (!this.isValidEmail(data.customerEmail)) {
-      throw new DomainValidationException({ code: ErrorCodes.VALIDATION.INVALID_EMAIL, message: 'Invalid email format' });
+      throw new DomainValidationException({
+        code: ErrorCodes.VALIDATION.INVALID_EMAIL,
+        message: 'Invalid email format',
+      });
     }
   }
 

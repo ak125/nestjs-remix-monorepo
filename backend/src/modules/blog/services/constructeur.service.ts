@@ -666,7 +666,9 @@ export class ConstructeurService {
           : [],
       ]);
       const mostPopular = mostPopularRaw.filter(Boolean) as BlogArticle[];
-      const recentlyUpdated = recentlyUpdatedRaw.filter(Boolean) as BlogArticle[];
+      const recentlyUpdated = recentlyUpdatedRaw.filter(
+        Boolean,
+      ) as BlogArticle[];
 
       // Métriques de performance
       const cacheHitRate =
@@ -1156,9 +1158,12 @@ export class ConstructeurService {
           .select('*', { count: 'exact', head: true })
           .eq('bac_ba_id', constructeur.bsm_id),
       ]);
-      const h2Sections = h2Result.status === 'fulfilled' ? h2Result.value.data ?? [] : [];
-      const h3Sections = h3Result.status === 'fulfilled' ? h3Result.value.data ?? [] : [];
-      const modelsCount = crossResult.status === 'fulfilled' ? crossResult.value.count ?? 0 : 0;
+      const h2Sections =
+        h2Result.status === 'fulfilled' ? (h2Result.value.data ?? []) : [];
+      const h3Sections =
+        h3Result.status === 'fulfilled' ? (h3Result.value.data ?? []) : [];
+      const modelsCount =
+        crossResult.status === 'fulfilled' ? (crossResult.value.count ?? 0) : 0;
 
       // Construction des sections avec décodage HTML optimisé
       const sections: BlogSection[] = [

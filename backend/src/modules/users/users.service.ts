@@ -13,10 +13,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  DatabaseException,
-  ErrorCodes,
-} from '../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { UserDataService } from '../../database/services/user-data.service';
 import { UserService } from '../../database/services/user.service';

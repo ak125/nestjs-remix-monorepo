@@ -8,7 +8,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
-import { ExternalServiceException, ErrorCodes } from '../../../common/exceptions';
+import {
+  ExternalServiceException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 export interface ReportFilters {
   startDate?: string;
@@ -121,7 +124,11 @@ export class ReportingService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.SERVICE_ERROR, message: `Erreur Supabase: ${response.status}`, serviceName: 'Supabase' });
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Erreur Supabase: ${response.status}`,
+          serviceName: 'Supabase',
+        });
       }
 
       const users = await response.json();
@@ -176,7 +183,11 @@ export class ReportingService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        throw new ExternalServiceException({ code: ErrorCodes.EXTERNAL.SERVICE_ERROR, message: `Erreur Supabase: ${response.status}`, serviceName: 'Supabase' });
+        throw new ExternalServiceException({
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          message: `Erreur Supabase: ${response.status}`,
+          serviceName: 'Supabase',
+        });
       }
 
       const orders = await response.json();

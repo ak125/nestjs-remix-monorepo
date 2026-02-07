@@ -6,10 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import {
-  DatabaseException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface LegalDocument {
   msg_id: string;

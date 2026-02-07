@@ -6,10 +6,11 @@
  */
 
 import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
-import { LocalAuthGuard } from '../../../auth/local-auth.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
 @Controller('admin')
-@UseGuards(LocalAuthGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminRootController {
   private readonly logger = new Logger(AdminRootController.name);
 
@@ -71,43 +72,6 @@ export class AdminRootController {
       return {
         success: false,
         error: 'Erreur lors de la récupération du menu',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * GET /admin/simple
-   * Page d'administration simple sans authentification (dev/test)
-   */
-  @Get('simple')
-  async getAdminSimple() {
-    try {
-      this.logger.log('Accès page admin simple');
-
-      return {
-        success: true,
-        message: 'Page admin simple',
-        data: {
-          title: 'Administration Simple',
-          timestamp: new Date().toISOString(),
-          staff: {
-            available: true,
-            endpoint: '/api/admin/staff',
-            methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-          },
-          orders: {
-            available: true,
-            endpoint: '/api/admin/orders',
-            methods: ['GET', 'PATCH'],
-          },
-        },
-      };
-    } catch (error) {
-      this.logger.error('Erreur page admin simple:', error);
-      return {
-        success: false,
-        error: 'Erreur lors de la récupération de la page simple',
         timestamp: new Date().toISOString(),
       };
     }
