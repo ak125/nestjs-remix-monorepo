@@ -73,15 +73,6 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   }
 
   /**
-   * @deprecated Utiliser getPiecesViaRPC() à la place
-   * Maintenu pour rétrocompatibilité - redirige vers RPC
-   */
-  async getPiecesExactPHP(typeId: number, pgId: number): Promise<PiecesResult> {
-    this.logger.warn('⚠️ [DEPRECATED] getPiecesExactPHP appelé → RPC');
-    return this.getPiecesViaRPC(typeId, pgId);
-  }
-
-  /**
    * Crée un résultat vide avec message d'erreur
    */
   private createEmptyResult(errorMessage?: string): PiecesResult {
