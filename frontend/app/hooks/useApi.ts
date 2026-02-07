@@ -29,7 +29,7 @@ export const useApi = <T extends z.ZodSchema>(
     url: string,
     options: RequestInit & ApiOptions = {}
   ) => {
-  const { showLoading = true, showNotifications = true, cacheKey: _cacheKey, ...fetchOptions } = options;
+  const { showLoading = true, showNotifications = true, cacheKey: _, ...fetchOptions } = options;
 
     try {
       if (showLoading) {

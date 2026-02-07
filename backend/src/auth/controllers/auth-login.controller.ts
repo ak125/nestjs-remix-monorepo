@@ -23,6 +23,12 @@ import RegisterSchema, {
   RegisterDtoClass,
 } from '../dto/register.dto';
 import { extractGuestSessionId } from './auth-controller.utils';
+import {
+  promisifyLogin,
+  promisifyLogout,
+  promisifySessionRegenerate,
+  promisifySessionDestroy,
+} from '../../utils/promise-helpers';
 
 @ApiTags('auth')
 @Controller()
@@ -85,22 +91,15 @@ export class AuthLoginController {
         (request as any).ip,
       );
 
-      return new Promise((resolve, reject) => {
-        (request as any).login(loginResult.user, (err: any) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({
-              success: true,
-              message: 'Compte créé avec succès',
-              user: loginResult.user,
-              sessionToken: loginResult.access_token,
-            });
-          }
-        });
-      });
-    } catch (_error: any) {
-      if (_error.message?.includes('déjà utilisé')) {
+      await promisifyLogin(request, loginResult.user);
+      return {
+        success: true,
+        message: 'Compte créé avec succès',
+        user: loginResult.user,
+        sessionToken: loginResult.access_token,
+      };
+    } catch (error: any) {
+      if (error.message?.includes('déjà utilisé')) {
         return {
           success: false,
           message: 'Cet email est déjà utilisé',
@@ -113,7 +112,7 @@ export class AuthLoginController {
         message: 'Erreur lors de la création du compte',
         status: 500,
         debug:
-          process.env.NODE_ENV === 'development' ? _error.message : undefined,
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
       };
     }
   }
@@ -178,25 +177,17 @@ export class AuthLoginController {
         (request as any).ip,
       );
 
-      return new Promise((resolve, reject) => {
-        (request as any).login(loginResult.user, (err: any) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({
-              success: true,
-              message: 'Connexion réussie',
-              user: loginResult.user,
-              sessionToken: loginResult.access_token,
-            });
-          }
-        });
-      });
-    } catch (_error: any) {
-      const error = _error as Error;
+      await promisifyLogin(request, loginResult.user);
+      return {
+        success: true,
+        message: 'Connexion réussie',
+        user: loginResult.user,
+        sessionToken: loginResult.access_token,
+      };
+    } catch (err: any) {
       return {
         success: false,
-        error: error.message || 'Erreur lors de la connexion',
+        error: err.message || 'Erreur lors de la connexion',
       };
     }
   }
@@ -254,101 +245,93 @@ export class AuthLoginController {
     const userLevel = parseInt(user.level) || 0;
 
     // Régénérer la session de manière sécurisée
-    return new Promise<void>((resolve) => {
-      (request as any).session.regenerate(async (regenerateErr: any) => {
-        if (regenerateErr) {
-          this.logger.error(
-            { err: regenerateErr },
-            'Erreur régénération session',
-          );
-          response.redirect('/');
-          return resolve();
-        }
+    try {
+      await promisifySessionRegenerate((request as any).session);
+    } catch (regenerateErr) {
+      this.logger.error(
+        { err: regenerateErr },
+        'Erreur régénération session',
+      );
+      return response.redirect('/');
+    }
 
-        (request as any).login(user, async (loginErr: any) => {
-          if (loginErr) {
-            console.error('❌ Erreur réattachement utilisateur:', loginErr);
-            response.redirect('/');
-            return resolve();
-          }
+    try {
+      await promisifyLogin(request, user);
+    } catch (loginErr) {
+      console.error('❌ Erreur réattachement utilisateur:', loginErr);
+      return response.redirect('/');
+    }
 
-          // FUSION DE PANIER: Fusionner vers userId
-          const userId = user.id;
-          const newSessionId = (request as any).session?.id;
-          console.log(`🔑 Session APRÈS login: ${newSessionId}`);
-          console.log(`👤 User ID: ${userId}`);
+    // FUSION DE PANIER: Fusionner vers userId
+    const userId = user.id;
+    const newSessionId = (request as any).session?.id;
+    console.log(`🔑 Session APRÈS login: ${newSessionId}`);
+    console.log(`👤 User ID: ${userId}`);
 
+    console.log(
+      '[CART-FUSION] Verification: guest=',
+      guestSessionId,
+      'userId=',
+      userId,
+    );
+
+    if (guestSessionId && userId && guestSessionId !== userId) {
+      try {
+        console.log(
+          '[CART-FUSION] Merging cart from',
+          guestSessionId,
+          'to userId',
+          userId,
+        );
+        const mergedCount = await this.cartDataService.mergeCart(
+          guestSessionId,
+          userId,
+        );
+        if (mergedCount > 0) {
           console.log(
-            '[CART-FUSION] Verification: guest=',
-            guestSessionId,
-            'userId=',
-            userId,
+            `✅ Panier fusionné: ${mergedCount} articles transférés vers userId`,
           );
+        }
+      } catch (mergeError) {
+        console.error('⚠️ Erreur fusion panier:', mergeError);
+      }
+    }
 
-          if (guestSessionId && userId && guestSessionId !== userId) {
-            try {
-              console.log(
-                '[CART-FUSION] Merging cart from',
-                guestSessionId,
-                'to userId',
-                userId,
-              );
-              const mergedCount = await this.cartDataService.mergeCart(
-                guestSessionId,
-                userId,
-              );
-              if (mergedCount > 0) {
-                console.log(
-                  `✅ Panier fusionné: ${mergedCount} articles transférés vers userId`,
-                );
-              }
-            } catch (mergeError) {
-              console.error('⚠️ Erreur fusion panier:', mergeError);
-            }
-          }
+    // Vérifier redirectTo (query ou body) avant la redirection par défaut
+    const redirectTo =
+      (request as any).body?.redirectTo ||
+      (request as any).query?.redirectTo;
 
-          // Vérifier redirectTo (query ou body) avant la redirection par défaut
-          const redirectTo =
-            (request as any).body?.redirectTo ||
-            (request as any).query?.redirectTo;
+    if (
+      redirectTo &&
+      typeof redirectTo === 'string' &&
+      redirectTo.startsWith('/') &&
+      !redirectTo.startsWith('//')
+    ) {
+      console.log(`✅ Redirection vers: ${redirectTo}`);
+      return response.redirect(redirectTo);
+    }
 
-          if (
-            redirectTo &&
-            typeof redirectTo === 'string' &&
-            redirectTo.startsWith('/') &&
-            !redirectTo.startsWith('//')
-          ) {
-            console.log(`✅ Redirection vers: ${redirectTo}`);
-            response.redirect(redirectTo);
-            resolve();
-            return;
-          }
-
-          // Redirection par défaut selon le type et niveau d'utilisateur
-          if (user.isAdmin && userLevel >= 7) {
-            console.log(
-              `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
-            );
-            response.redirect('/admin');
-          } else if (user.isAdmin && userLevel >= 4) {
-            console.log(
-              `Admin niveau ${userLevel} détecté, redirection vers admin`,
-            );
-            response.redirect('/admin');
-          } else if (user.isPro) {
-            console.log(
-              'Utilisateur pro détecté, redirection vers dashboard pro',
-            );
-            response.redirect('/pro/dashboard');
-          } else {
-            console.log('Utilisateur standard, redirection vers accueil');
-            response.redirect('/');
-          }
-
-          resolve();
-        });
-      });
-    });
+    // Redirection par défaut selon le type et niveau d'utilisateur
+    if (user.isAdmin && userLevel >= 7) {
+      console.log(
+        `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
+      );
+      response.redirect('/admin');
+    } else if (user.isAdmin && userLevel >= 4) {
+      console.log(
+        `Admin niveau ${userLevel} détecté, redirection vers admin`,
+      );
+      response.redirect('/admin');
+    } else if (user.isPro) {
+      console.log(
+        'Utilisateur pro détecté, redirection vers dashboard pro',
+      );
+      response.redirect('/pro/dashboard');
+    } else {
+      console.log('Utilisateur standard, redirection vers accueil');
+      response.redirect('/');
+    }
   }
 
   /**
@@ -377,19 +360,18 @@ export class AuthLoginController {
     console.log('--- POST /auth/logout DÉBUT ---');
     console.log('User avant logout:', request.user);
 
-    request.logOut(function (err) {
-      if (err) {
-        console.error('Erreur logout:', err);
-        return next(err);
-      }
-      console.log('LogOut réussi, user après:', request.user);
+    try {
+      await promisifyLogout(request);
+    } catch (err) {
+      console.error('Erreur logout:', err);
+      return next(err);
+    }
 
-      request.session.destroy(() => {
-        response.clearCookie('connect.sid');
-        console.log('Session détruite et cookie effacé');
-        console.log('--- POST /auth/logout REDIRECTION vers / ---');
-        response.redirect('/');
-      });
-    });
+    console.log('LogOut réussi, user après:', request.user);
+    await promisifySessionDestroy(request.session);
+    response.clearCookie('connect.sid');
+    console.log('Session détruite et cookie effacé');
+    console.log('--- POST /auth/logout REDIRECTION vers / ---');
+    response.redirect('/');
   }
 }

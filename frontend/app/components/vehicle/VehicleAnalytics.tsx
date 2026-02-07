@@ -108,19 +108,6 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
     };
   }, [vehicle.brand, vehicle.model, vehicle.type, trackEvent]);
 
-  // Fonction utilitaires pour les composants enfants (non utilisées actuellement)
-  const _trackPartClick = (_partId: number, _partName: string) => {
-    // Placeholder pour future utilisation
-  };
-
-  const _trackImageView = (_imageIndex: number) => {
-    // Placeholder pour future utilisation
-  };
-
-  const _trackSearch = (_searchTerm: string, _resultsCount: number) => {
-    // Placeholder pour future utilisation
-  };
-
   // Performance monitoring
   useEffect(() => {
     // Performance de chargement de la page
@@ -165,24 +152,6 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
   // pour que les composants parent puissent tracker des événements
   return null;
 }
-
-// Export des fonctions utilitaires pour les autres composants
-export const useVehicleAnalytics = (_vehicle: VehicleData, _userId?: string) => {
-  return {
-    trackPartClick: (_partId: number, _partName: string) => {
-      // Placeholder pour future utilisation
-    },
-    trackImageView: (_imageIndex: number) => {
-      // Placeholder pour future utilisation
-    },
-    trackSearch: (_searchTerm: string, _resultsCount: number) => {
-      // Placeholder pour future utilisation
-    },
-    trackCustomEvent: (_eventData: any) => {
-      // Placeholder pour future utilisation
-    }
-  };
-};
 
 // Types pour TypeScript
 declare global {

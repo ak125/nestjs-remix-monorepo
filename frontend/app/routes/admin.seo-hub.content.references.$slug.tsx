@@ -206,7 +206,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function AdminReferencesEdit() {
-  const { reference, gammes: _gammes, error } = useLoaderData<typeof loader>();
+  const { reference, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";

@@ -353,28 +353,6 @@ export const validateVehicleFilters = (data: unknown): VehicleFilters => {
 // 🎭 TYPES DE COMPATIBILITÉ
 // ====================================
 
-/**
- * @deprecated Utiliser VehicleModel à la place
- */
-export type Model = VehicleModel;
-
-/**
- * @deprecated Utiliser VehicleBrand à la place
- */
-export interface VehicleBrandComponent extends VehicleBrand {}
-
-/**
- * @deprecated Utiliser VehicleBrand à la place
- */
-export interface VehicleBrandAPI extends VehicleBrand {
-  id: number;
-  code: string;
-  name: string;
-  isActive: boolean;
-  isFavorite: boolean;
-  displayOrder: number;
-}
-
 // ====================================
 // 🔧 TYPES CODES MOTEUR & TYPES MINES
 // ====================================

@@ -168,7 +168,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AdminDiagnosticsNew() {
-  const { gammes: _gammes } = useLoaderData<typeof loader>();
+  const _loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";

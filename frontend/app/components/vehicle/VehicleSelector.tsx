@@ -25,8 +25,6 @@ interface VehicleSelectorProps {
   mode?: "compact" | "full";
 
   // 🔧 Fonctionnalités
-  showVinSearch?: boolean;
-  showRecommendation?: boolean;
   enableTypeMineSearch?: boolean;
 
   // 📞 Callbacks
@@ -60,14 +58,12 @@ interface VehicleSelectorProps {
 
 export default function VehicleSelector({
   mode = "full",
-  showVinSearch: _showVinSearch = false,
-  showRecommendation: _showRecommendation = false,
   enableTypeMineSearch = false,
   onVehicleSelect,
   redirectOnSelect = true,
   redirectTo = "vehicle-page",
   customRedirectUrl,
-  currentVehicle: _currentVehicle,
+  currentVehicle: currentVehicle,
   className = "",
   variant = "default",
   context = "homepage",
@@ -88,7 +84,7 @@ export default function VehicleSelector({
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(false);
 
-  const [_searchQuery, setSearchQuery] = useState("");
+  const [, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"vehicle" | "mine">("vehicle");
   const [mineCode, setMineCode] = useState("");
 
@@ -107,7 +103,7 @@ export default function VehicleSelector({
     };
 
     // Pré-charger si currentVehicle fourni
-    if (_currentVehicle?.brand?.id) {
+    if (currentVehicle?.brand?.id) {
       loadBrands();
     }
 
@@ -120,7 +116,7 @@ export default function VehicleSelector({
       brandSelect?.removeEventListener("focus", handleFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_currentVehicle]);
+  }, [currentVehicle]);
 
   const loadBrands = useCallback(async () => {
     if (loadingBrands || brands.length > 0) return;
@@ -131,9 +127,9 @@ export default function VehicleSelector({
       setBrands(brandsData);
 
       // 🎯 Pré-sélectionner la marque si fournie dans currentVehicle
-      if (_currentVehicle?.brand?.id && brandsData.length > 0) {
+      if (currentVehicle?.brand?.id && brandsData.length > 0) {
         const preselectedBrand = brandsData.find(
-          (b) => b.marque_id === _currentVehicle.brand!.id,
+          (b) => b.marque_id === currentVehicle.brand!.id,
         );
         if (preselectedBrand) {
           setSelectedBrand(preselectedBrand);
@@ -159,7 +155,7 @@ export default function VehicleSelector({
       setLoadingBrands(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingBrands, brands.length, _currentVehicle?.brand?.id]);
+  }, [loadingBrands, brands.length, currentVehicle?.brand?.id]);
 
   // 🏷️ Gestion sélection marque
   const handleBrandChange = useCallback(

@@ -357,6 +357,7 @@ export interface VehicleInfo extends VehicleData {
 // �🔄 TYPES DE COMPATIBILITÉ
 // ====================================
 
+<<<<<<< Updated upstream
 /**
  * @deprecated Utiliser VehicleModel à la place
  */
@@ -378,3 +379,5 @@ export interface VehicleBrandAPI extends VehicleBrand {
   isFavorite: boolean;
   displayOrder: number;
 }
+=======
+>>>>>>> Stashed changes

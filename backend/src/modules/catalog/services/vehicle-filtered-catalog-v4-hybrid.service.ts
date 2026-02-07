@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { sleep } from '../../../utils/promise-helpers';
 
 interface CatalogMetrics {
   responseTime: number;
@@ -665,7 +666,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
         );
 
         // Pause entre batchs pour éviter surcharge
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await sleep(1000);
       }
 
       this.logger.log(

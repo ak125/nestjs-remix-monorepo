@@ -56,6 +56,7 @@ import {
   CreateOrderData,
   OrderFilters,
 } from '../services/orders.service';
+import { promisifyLogin, promisifySessionSave } from '../../../utils/promise-helpers';
 
 @ApiTags('orders')
 @Controller('api/orders')
@@ -265,16 +266,10 @@ export class OrdersController {
       this.logger.log(`Guest account created: ${newUser.id} for ${guestEmail}`);
 
       // Connecter l'utilisateur dans la session courante
-      await new Promise<void>((resolve, reject) => {
-        req.login({ id: newUser.id, email: newUser.email }, (err: any) =>
-          err ? reject(err) : resolve(),
-        );
-      });
+      await promisifyLogin(req, { id: newUser.id, email: newUser.email });
 
       // Flush la session vers Redis
-      await new Promise<void>((resolve, reject) => {
-        req.session.save((err: any) => (err ? reject(err) : resolve()));
-      });
+      await promisifySessionSave(req.session);
 
       this.logger.log(`Guest session established for user ${newUser.id}`);
 

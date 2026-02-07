@@ -80,13 +80,10 @@ export function SearchBar({
     setQuery,
     debouncedQuery,
     loading: isSearching,
-    results: _results,
-    error: _error,
   } = useEnhancedSearchWithDebounce(initialQuery, 300);
 
   // Hook d'autocomplete Enhanced
-  const { suggestions: _autocompleteSuggestions } =
-    useEnhancedAutocomplete(query);
+  useEnhancedAutocomplete(query);
 
   // Historique local (localStorage)
   const [searchHistory, setSearchHistory] = useState<string[]>([]);

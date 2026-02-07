@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as zlib from 'zlib';
+import { gzipAsync } from '../../../utils/promise-helpers';
 import { createHash } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
@@ -370,16 +371,7 @@ ${shards
    * Compresser avec GZIP
    */
   private async compressGzip(buffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      zlib.gzip(
-        buffer,
-        { level: this.config.compressionLevel },
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        },
-      );
-    });
+    return gzipAsync(buffer, { level: this.config.compressionLevel }) as Promise<Buffer>;
   }
 
   /**

@@ -41,7 +41,10 @@ export function createAppConfig(): AppConfig {
 
   // Validation Context7 : échouer rapidement si config invalide
   if (!config.supabase.serviceKey && config.app.environment === 'production') {
-    throw new ConfigurationException({ code: ErrorCodes.CONFIG.MISSING, message: 'SUPABASE_SERVICE_ROLE_KEY is required in production' });
+    throw new ConfigurationException({
+      code: ErrorCodes.CONFIG.MISSING,
+      message: 'SUPABASE_SERVICE_ROLE_KEY is required in production',
+    });
   }
 
   return config;

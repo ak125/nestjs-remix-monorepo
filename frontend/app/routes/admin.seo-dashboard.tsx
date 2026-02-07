@@ -214,7 +214,7 @@ function generateDailyTrend(startDate: string, endDate: string): DailyMetric[] {
 }
 
 export default function SeoDashboard() {
-  const { report, error, filters: _filters } = useLoaderData<typeof loader>();
+  const { report, error } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const [selectedPeriod, setSelectedPeriod] = useState<
     "7d" | "30d" | "90d" | "custom"

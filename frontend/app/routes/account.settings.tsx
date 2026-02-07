@@ -105,7 +105,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 };
 
 export default function AccountSettings() {
-  const { user: _user, preferences } = useLoaderData<typeof loader>();
+  const { preferences } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
 

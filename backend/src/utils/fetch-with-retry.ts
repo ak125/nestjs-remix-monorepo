@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
+import { sleep } from './promise-helpers';
 
 /**
  * 🚀 Utilitaire pour faire des fetch avec retry automatique et timeout
@@ -93,7 +94,7 @@ export async function fetchWithRetry(
       }
 
       // Attendre avant le retry
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await sleep(delay);
     }
   }
 

@@ -54,7 +54,10 @@ export default registerAs('payment', (): PaymentConfig => {
   ];
   for (const varName of requiredVars) {
     if (!process.env[varName]) {
-      throw new ConfigurationException({ code: ErrorCodes.PAYMENT.CONFIG_MISSING, message: `Missing required environment variable: ${varName}` });
+      throw new ConfigurationException({
+        code: ErrorCodes.PAYMENT.CONFIG_MISSING,
+        message: `Missing required environment variable: ${varName}`,
+      });
     }
   }
 

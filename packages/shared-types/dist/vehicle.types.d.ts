@@ -510,19 +510,19 @@ export declare const VehicleResponseSchema: <T extends z.ZodType>(itemSchema: T)
     hasNext: z.ZodBoolean;
     hasPrev: z.ZodBoolean;
 }, "strip", z.ZodTypeAny, {
-    total: number;
     page: number;
     limit: number;
-    hasNext: boolean;
-    hasPrev: boolean;
     data: T["_output"][];
-}, {
     total: number;
-    page: number;
-    limit: number;
     hasNext: boolean;
     hasPrev: boolean;
+}, {
+    page: number;
+    limit: number;
     data: T["_input"][];
+    total: number;
+    hasNext: boolean;
+    hasPrev: boolean;
 }>;
 /**
  * Type générique pour les réponses véhicules
@@ -963,9 +963,9 @@ export declare const VehicleSelectionEventSchema: z.ZodObject<{
     timestamp: z.ZodDefault<z.ZodNumber>;
     source: z.ZodDefault<z.ZodEnum<["user", "api", "cache", "reset"]>>;
 }, "strip", z.ZodTypeAny, {
-    timestamp: number;
-    source: "api" | "cache" | "user" | "reset";
     isComplete: boolean;
+    timestamp: number;
+    source: "user" | "api" | "cache" | "reset";
     type?: {
         modele_id: number;
         type_id: number;
@@ -1124,8 +1124,6 @@ export declare const VehicleSelectionEventSchema: z.ZodObject<{
         year_from?: number | undefined;
         year_to?: number | undefined;
     } | undefined;
-    timestamp?: number | undefined;
-    source?: "api" | "cache" | "user" | "reset" | undefined;
     year?: number | undefined;
     brand?: {
         marque_id: number;
@@ -1174,6 +1172,8 @@ export declare const VehicleSelectionEventSchema: z.ZodObject<{
             is_featured?: boolean | undefined;
         } | undefined;
     } | undefined;
+    timestamp?: number | undefined;
+    source?: "user" | "api" | "cache" | "reset" | undefined;
 }>;
 export type VehicleSelectionEvent = z.infer<typeof VehicleSelectionEventSchema>;
 /**
@@ -1188,8 +1188,8 @@ export declare const LoadingStateSchema: z.ZodObject<{
     error?: string | undefined;
     lastUpdate?: number | undefined;
 }, {
-    error?: string | undefined;
     isLoading?: boolean | undefined;
+    error?: string | undefined;
     lastUpdate?: number | undefined;
 }>;
 export type LoadingState = z.infer<typeof LoadingStateSchema>;
@@ -1234,12 +1234,12 @@ export declare const VehicleDataSchema: z.ZodObject<{
     type: string;
     brand: string;
     model: string;
-    engine?: string | undefined;
     brandId?: number | undefined;
     modelId?: number | undefined;
     typeId?: number | undefined;
     year?: number | undefined;
     fuel?: string | undefined;
+    engine?: string | undefined;
     power?: string | undefined;
     description?: string | undefined;
     imageUrl?: string | undefined;
@@ -1251,12 +1251,12 @@ export declare const VehicleDataSchema: z.ZodObject<{
     type: string;
     brand: string;
     model: string;
-    engine?: string | undefined;
     brandId?: number | undefined;
     modelId?: number | undefined;
     typeId?: number | undefined;
     year?: number | undefined;
     fuel?: string | undefined;
+    engine?: string | undefined;
     power?: string | undefined;
     description?: string | undefined;
     imageUrl?: string | undefined;
@@ -1742,12 +1742,12 @@ export declare const VehicleInfoSchema: z.ZodObject<{
     type: string;
     brand: string;
     model: string;
-    engine?: string | undefined;
     brandId?: number | undefined;
     modelId?: number | undefined;
     typeId?: number | undefined;
     year?: number | undefined;
     fuel?: string | undefined;
+    engine?: string | undefined;
     power?: string | undefined;
     description?: string | undefined;
     imageUrl?: string | undefined;
@@ -1872,12 +1872,12 @@ export declare const VehicleInfoSchema: z.ZodObject<{
     type: string;
     brand: string;
     model: string;
-    engine?: string | undefined;
     brandId?: number | undefined;
     modelId?: number | undefined;
     typeId?: number | undefined;
     year?: number | undefined;
     fuel?: string | undefined;
+    engine?: string | undefined;
     power?: string | undefined;
     description?: string | undefined;
     imageUrl?: string | undefined;
@@ -2168,26 +2168,6 @@ export declare const validateVehicleType: (data: unknown) => VehicleType;
  * Valide les filtres de recherche
  */
 export declare const validateVehicleFilters: (data: unknown) => VehicleFilters;
-/**
- * @deprecated Utiliser VehicleModel à la place
- */
-export type Model = VehicleModel;
-/**
- * @deprecated Utiliser VehicleBrand à la place
- */
-export interface VehicleBrandComponent extends VehicleBrand {
-}
-/**
- * @deprecated Utiliser VehicleBrand à la place
- */
-export interface VehicleBrandAPI extends VehicleBrand {
-    id: number;
-    code: string;
-    name: string;
-    isActive: boolean;
-    isFavorite: boolean;
-    displayOrder: number;
-}
 /**
  * Schema pour les codes moteur (ex: K9K 752, M9R, CAGA)
  * Table: auto_type_motor_code

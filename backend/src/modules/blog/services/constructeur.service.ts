@@ -647,14 +647,14 @@ export class ConstructeurService {
         }));
 
       // 🚀 P7.1 PERF: Paralléliser les transformations
-      const [mostPopular, recentlyUpdated] = await Promise.all([
+      const [mostPopularRaw, recentlyUpdatedRaw] = await Promise.all([
         // Articles les plus populaires
         popularConstructeurs
           ? Promise.all(
               popularConstructeurs.map((c) =>
                 this.transformConstructeurToArticle(client, c),
               ),
-            ).then((articles) => articles.filter(Boolean) as BlogArticle[])
+            )
           : [],
         // Articles récemment mis à jour
         recentConstructeurs
@@ -662,9 +662,11 @@ export class ConstructeurService {
               recentConstructeurs.map((c) =>
                 this.transformConstructeurToArticle(client, c),
               ),
-            ).then((articles) => articles.filter(Boolean) as BlogArticle[])
+            )
           : [],
       ]);
+      const mostPopular = mostPopularRaw.filter(Boolean) as BlogArticle[];
+      const recentlyUpdated = recentlyUpdatedRaw.filter(Boolean) as BlogArticle[];
 
       // Métriques de performance
       const cacheHitRate =
@@ -1138,32 +1140,25 @@ export class ConstructeurService {
   ): Promise<BlogArticle> {
     try {
       // Récupérer les sections H2/H3 et modèles en parallèle pour performance maximale
-      const [
-        { data: h2Sections },
-        { data: h3Sections },
-        { count: modelsCount },
-      ] = await Promise.all([
+      const [h2Result, h3Result, crossResult] = await Promise.allSettled([
         client
           .from(TABLES.blog_advice_h2)
           .select('*')
           .eq('ba2_ba_id', constructeur.bsm_id)
-          .order('ba2_id')
-          .then(({ data }: any) => ({ data: data || [] }))
-          .catch(() => ({ data: [] })),
+          .order('ba2_id'),
         client
           .from(TABLES.blog_advice_h3)
           .select('*')
           .eq('bc3_bc_id', constructeur.bsm_id)
-          .order('ba3_id')
-          .then(({ data }: any) => ({ data: data || [] }))
-          .catch(() => ({ data: [] })),
+          .order('ba3_id'),
         client
           .from(TABLES.blog_advice_cross)
           .select('*', { count: 'exact', head: true })
-          .eq('bac_ba_id', constructeur.bsm_id)
-          .then(({ count }: any) => ({ count: count || 0 }))
-          .catch(() => ({ count: 0 })),
+          .eq('bac_ba_id', constructeur.bsm_id),
       ]);
+      const h2Sections = h2Result.status === 'fulfilled' ? h2Result.value.data ?? [] : [];
+      const h3Sections = h3Result.status === 'fulfilled' ? h3Result.value.data ?? [] : [];
+      const modelsCount = crossResult.status === 'fulfilled' ? crossResult.value.count ?? 0 : 0;
 
       // Construction des sections avec décodage HTML optimisé
       const sections: BlogSection[] = [

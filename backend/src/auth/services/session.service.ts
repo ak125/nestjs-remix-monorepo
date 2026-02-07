@@ -50,7 +50,11 @@ export class SessionService extends SupabaseBaseService {
       });
 
       if (error) {
-        throw new DatabaseException({ code: ErrorCodes.DATABASE.OPERATION_FAILED, message: `Erreur création session: ${error.message}`, details: error.message });
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Erreur création session: ${error.message}`,
+          details: error.message,
+        });
       }
 
       this.logger.log(`Session créée pour utilisateur ${sessionData.userId}`);

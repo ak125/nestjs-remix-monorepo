@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../cache/cache.service';
+import { sleep } from '../../../utils/promise-helpers';
 
 export interface DatabaseConfig {
   environment: string;
@@ -112,7 +113,7 @@ export class SimpleDatabaseConfigService {
 
       // Simulation d'un test de connexion
       // Dans un vrai système, on créerait une vraie connexion
-      await new Promise((resolve) => setTimeout(resolve, 50)); // Simulate network delay
+      await sleep(50); // Simulate network delay
 
       const responseTime = Date.now() - startTime;
 

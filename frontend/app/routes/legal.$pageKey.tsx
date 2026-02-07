@@ -332,7 +332,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function LegalPage() {
-  const { page, fromDB: _fromDB } = useLoaderData<typeof loader>();
+  const { page } = useLoaderData<typeof loader>();
   const params = useParams();
 
   return (

@@ -1,6 +1,7 @@
 import { Injectable, Optional, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { once } from 'events';
 import { getAppConfig } from '../config/app.config';
 
 @Injectable()
@@ -19,49 +20,39 @@ export class CacheService implements OnModuleInit {
   }
 
   private async waitForRedis(): Promise<void> {
-    return new Promise((resolve) => {
-      if (this.redisReady) {
-        console.log('✅ Redis déjà prêt');
-        resolve();
-        return;
-      }
+    if (this.redisReady) {
+      console.log('✅ Redis déjà prêt');
+      return;
+    }
 
-      if (!this.redisClient) {
-        console.error('❌ RedisClient non initialisé');
-        resolve();
-        return;
-      }
+    if (!this.redisClient) {
+      console.error('❌ RedisClient non initialisé');
+      return;
+    }
 
-      // Vérifier si Redis est déjà connecté
-      if (
-        this.redisClient.status === 'ready' ||
-        this.redisClient.status === 'connect'
-      ) {
-        this.redisReady = true;
-        console.log(
-          '✅ Redis déjà connecté (status:',
-          this.redisClient.status,
-          ')',
-        );
-        resolve();
-        return;
-      }
+    // Vérifier si Redis est déjà connecté
+    if (
+      this.redisClient.status === 'ready' ||
+      this.redisClient.status === 'connect'
+    ) {
+      this.redisReady = true;
+      console.log(
+        '✅ Redis déjà connecté (status:',
+        this.redisClient.status,
+        ')',
+      );
+      return;
+    }
 
-      this.redisClient.once('ready', () => {
-        this.redisReady = true;
-        console.log('✅ Redis prêt et disponible');
-        resolve();
-      });
-
-      // 🚀 LCP OPTIMIZATION: Timeout réduit à 2s pour éviter blocage
-      setTimeout(() => {
-        if (!this.redisReady) {
-          console.warn('⚠️ Redis non prêt après 2s, continue quand même');
-          this.redisReady = true; // Force ready pour ne pas bloquer
-        }
-        resolve();
-      }, 2000);
-    });
+    // 🚀 LCP OPTIMIZATION: Timeout réduit à 2s pour éviter blocage
+    try {
+      await once(this.redisClient, 'ready', { signal: AbortSignal.timeout(2000) });
+      this.redisReady = true;
+      console.log('✅ Redis prêt et disponible');
+    } catch {
+      console.warn('⚠️ Redis non prêt après 2s, continue quand même');
+      this.redisReady = true;
+    }
   }
 
   private async initializeRedis() {

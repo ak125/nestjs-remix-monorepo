@@ -10,6 +10,7 @@ import {
   RpcBlockedError,
 } from '../../security/rpc-gate/rpc-gate.errors';
 import { ConfigurationException, ErrorCodes } from '../../common/exceptions';
+import { sleep } from '../../utils/promise-helpers';
 
 interface CircuitBreakerState {
   failures: number;
@@ -323,7 +324,7 @@ export abstract class SupabaseBaseService {
             this.logger.log(
               `⏳ Attente de ${delay}ms avant nouvelle tentative...`,
             );
-            await this.sleep(delay);
+            await sleep(delay);
           }
         } else {
           // Autre type d'erreur - ne pas réessayer
@@ -401,13 +402,6 @@ export abstract class SupabaseBaseService {
       this.logger.warn('Circuit breaker: HALF-OPEN → OPEN (échec détecté)');
       this.circuitBreaker.state = 'open';
     }
-  }
-
-  /**
-   * Utilitaire pour attendre
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

@@ -95,7 +95,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
 };
 
 export default function MessageDetail() {
-  const { message, user: _user } = useLoaderData<typeof loader>();
+  const { message } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto py-8 px-4">

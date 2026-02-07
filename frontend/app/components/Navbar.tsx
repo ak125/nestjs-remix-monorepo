@@ -13,7 +13,7 @@
  * - Dark mode ready
  */
 
-import { Link, useLocation, useNavigate } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import {
   Bell,
   BookOpen,
@@ -49,22 +49,18 @@ function QuickCategoryChip({ href, label }: { href: string; label: string }) {
 
 export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const user = useOptionalUser();
-  const _location = useLocation();
-  const _navigate = useNavigate();
 
   // 🛒 Panier: données depuis root loader + état local pour ouverture
   const cartData = useRootCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
-  const _openCart = useCallback(() => setIsCartOpen(true), []);
 
   // Résumé du panier depuis les données du root loader
   const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [_lastScrollY, setLastScrollY] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -73,10 +69,6 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number>();
   const navRef = useRef<HTMLElement>(null);
-
-  // Role-based permissions
-  const _isAdmin = user && (user.level ?? 0) >= 7;
-  const _isSuperAdmin = user && (user.level ?? 0) >= 9;
 
   // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
@@ -87,8 +79,6 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
 
       // Navbar compacte après 100px
       setIsCompact(currentScrollY > 100);
-
-      setLastScrollY(currentScrollY);
 
       // Optimisation progress bar avec requestAnimationFrame
       if (progressBarRef.current && currentScrollY > 10) {
@@ -122,7 +112,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Setup une seule fois au mount - lastScrollY est lu via closure
+  }, []);
 
   // Track navbar height via CSS variable for sticky children
   useEffect(() => {

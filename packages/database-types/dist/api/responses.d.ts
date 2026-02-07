@@ -415,13 +415,13 @@ export declare const ApiResponseSchema: <T extends z.ZodTypeAny>(dataSchema: T) 
         generatedAt: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }>>;
     warnings: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -630,13 +630,13 @@ export declare const ApiResponseSchema: <T extends z.ZodTypeAny>(dataSchema: T) 
         generatedAt: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }>>;
     warnings: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -845,13 +845,13 @@ export declare const ApiResponseSchema: <T extends z.ZodTypeAny>(dataSchema: T) 
         generatedAt: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         generatedAt?: string | undefined;
     }>>;
     warnings: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -1029,12 +1029,12 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
         ttl: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
     }, {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
     }>>;
     filters: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
     sort: z.ZodOptional<z.ZodObject<{
@@ -1049,7 +1049,6 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
     }>>;
 }, "strip", z.ZodTypeAny, {
     success: boolean;
-    data: T["_output"][];
     pagination: {
         total: number;
         page: number;
@@ -1060,6 +1059,7 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
         startIndex: number;
         endIndex: number;
     };
+    data: T["_output"][];
     sort?: {
         field: string;
         order: "asc" | "desc";
@@ -1090,8 +1090,8 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
     } | undefined;
     cache?: {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
     } | undefined;
     filters?: Record<string, any> | undefined;
 }, {
@@ -1110,7 +1110,6 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
         field: string;
         order: "asc" | "desc";
     } | undefined;
-    data?: T["_input"][] | undefined;
     metadata?: {
         requestId: string;
         timestamp: string;
@@ -1137,10 +1136,11 @@ export declare const PaginatedResponseSchema: <T extends z.ZodTypeAny>(itemSchem
     } | undefined;
     cache?: {
         hit: boolean;
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
     } | undefined;
     filters?: Record<string, any> | undefined;
+    data?: T["_input"][] | undefined;
 }>;
 export type PaginatedResponse<T> = {
     success: boolean;
@@ -1323,7 +1323,6 @@ export declare const SearchResponseSchema: <T extends z.ZodTypeAny>(itemSchema: 
     }>>;
 }, "strip", z.ZodTypeAny, {
     success: boolean;
-    data: T["_output"][];
     pagination: {
         total: number;
         page: number;
@@ -1334,6 +1333,7 @@ export declare const SearchResponseSchema: <T extends z.ZodTypeAny>(itemSchema: 
         startIndex: number;
         endIndex: number;
     };
+    data: T["_output"][];
     query: string;
     metadata?: {
         requestId: string;
@@ -1383,7 +1383,6 @@ export declare const SearchResponseSchema: <T extends z.ZodTypeAny>(itemSchema: 
         limit?: number | undefined;
     };
     query: string;
-    data?: T["_input"][] | undefined;
     metadata?: {
         requestId: string;
         timestamp: string;
@@ -1408,6 +1407,7 @@ export declare const SearchResponseSchema: <T extends z.ZodTypeAny>(itemSchema: 
             } | undefined;
         } | undefined;
     } | undefined;
+    data?: T["_input"][] | undefined;
     suggestions?: string[] | undefined;
     facets?: Record<string, {
         value: string;
@@ -1621,6 +1621,11 @@ export declare const ValidationResponseSchema: z.ZodObject<{
         field: string;
         value?: any;
     }[] | undefined;
+    warnings?: {
+        code: string;
+        message: string;
+        field: string;
+    }[] | undefined;
     metadata?: {
         requestId: string;
         timestamp: string;
@@ -1645,11 +1650,6 @@ export declare const ValidationResponseSchema: z.ZodObject<{
             } | undefined;
         } | undefined;
     } | undefined;
-    warnings?: {
-        code: string;
-        message: string;
-        field: string;
-    }[] | undefined;
 }>;
 export type ValidationResponse = z.infer<typeof ValidationResponseSchema>;
 export declare const SortOptionsSchema: z.ZodObject<{
@@ -1679,8 +1679,8 @@ export declare const CacheOptionsSchema: z.ZodObject<{
     refresh: boolean;
     key?: string | undefined;
 }, {
-    key?: string | undefined;
     ttl?: number | undefined;
+    key?: string | undefined;
     tags?: string[] | undefined;
     bypass?: boolean | undefined;
     refresh?: boolean | undefined;
@@ -1726,8 +1726,8 @@ export declare const QueryOptionsSchema: z.ZodObject<{
         refresh: boolean;
         key?: string | undefined;
     }, {
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         tags?: string[] | undefined;
         bypass?: boolean | undefined;
         refresh?: boolean | undefined;
@@ -1754,9 +1754,9 @@ export declare const QueryOptionsSchema: z.ZodObject<{
         refresh: boolean;
         key?: string | undefined;
     } | undefined;
-    filters?: Record<string, any> | undefined;
     include?: string[] | undefined;
     fields?: string[] | undefined;
+    filters?: Record<string, any> | undefined;
     search?: string | undefined;
 }, {
     sort?: {
@@ -1770,15 +1770,15 @@ export declare const QueryOptionsSchema: z.ZodObject<{
         offset?: number | undefined;
     } | undefined;
     cache?: {
-        key?: string | undefined;
         ttl?: number | undefined;
+        key?: string | undefined;
         tags?: string[] | undefined;
         bypass?: boolean | undefined;
         refresh?: boolean | undefined;
     } | undefined;
-    filters?: Record<string, any> | undefined;
     include?: string[] | undefined;
     fields?: string[] | undefined;
+    filters?: Record<string, any> | undefined;
     search?: string | undefined;
 }>;
 export type QueryOptions = z.infer<typeof QueryOptionsSchema>;

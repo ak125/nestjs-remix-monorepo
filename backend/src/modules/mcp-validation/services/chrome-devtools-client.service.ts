@@ -4,6 +4,7 @@ import {
   ExternalServiceException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { sleep } from '../../../utils/promise-helpers';
 
 /**
  * Chrome DevTools MCP Client
@@ -166,7 +167,7 @@ export class ChromeDevToolsClientService implements OnModuleInit {
         }
 
         // Wait before retry
-        await this.delay(1000 * attempt);
+        await sleep(1000 * attempt);
       }
     }
 
@@ -559,10 +560,4 @@ export class ChromeDevToolsClientService implements OnModuleInit {
     }
   }
 
-  /**
-   * Utility: delay for specified milliseconds
-   */
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 }
