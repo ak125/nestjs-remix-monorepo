@@ -2,7 +2,6 @@
  * 🎯 SEO COCKPIT CONTROLLER - Point d'entrée unifié SEO Admin
  *
  * Consolidation de:
- * - /api/admin/seo (AdminSeoController) - Queue monitoring
  * - /api/seo/dashboard (SeoDashboardController) - Risk flags
  * - /seo-logs/kpi (SeoKpiController) - Crawl KPIs Loki
  *

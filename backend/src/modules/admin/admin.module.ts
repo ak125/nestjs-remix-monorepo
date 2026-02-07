@@ -27,7 +27,6 @@ import { ReportingController } from './controllers/reporting.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
-import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO (DEPRECATED)
 import { AdminGammesSeoListController } from './controllers/admin-gammes-seo-list.controller'; // 📋 Gammes SEO - Liste & Stats
 import { AdminGammesSeoUpdateController } from './controllers/admin-gammes-seo-update.controller'; // 🔧 Gammes SEO - Mises à jour
 import { AdminGammesSeoThresholdsController } from './controllers/admin-gammes-seo-thresholds.controller'; // 🔧 Gammes SEO - Seuils
@@ -82,7 +81,6 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     UserManagementController,
     AdminStaffController,
     AdminProductsController,
-    AdminSeoController, // 📊 Dashboard monitoring SEO (DEPRECATED - use SeoCockpitController)
     AdminGammesSeoListController, // 📋 Gammes SEO - Liste, stats, export, audit
     AdminGammesSeoUpdateController, // 🔧 Gammes SEO - Update, batch, actions
     AdminGammesSeoThresholdsController, // 🔧 Gammes SEO - Seuils Smart Action

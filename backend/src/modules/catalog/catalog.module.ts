@@ -18,7 +18,6 @@ import { CatalogIntegrityController } from './controllers/catalog-integrity.cont
 import { VehicleHierarchyController } from './controllers/vehicle-hierarchy.controller'; // 🚗 API hiérarchie véhicules
 import { CompatibilityController } from './controllers/compatibility.controller'; // 🎯 API compatibilité pièce/véhicule
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
-// PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
 // ========================================
 // 🔧 SERVICES PRINCIPAUX - Logique métier
