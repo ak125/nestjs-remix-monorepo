@@ -4,10 +4,10 @@
 import { Link } from "@remix-run/react";
 import { Car, Home, ChevronRight } from "lucide-react";
 
-import VehicleSelector from "../vehicle/VehicleSelector";
 import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
+import VehicleSelector from "../vehicle/VehicleSelector";
 
 interface BrandHeroProps {
   brand: {

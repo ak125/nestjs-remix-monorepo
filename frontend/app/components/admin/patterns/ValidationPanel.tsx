@@ -9,7 +9,6 @@
 
 import { AlertTriangle, ChevronDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { StatusBadge, type StatusType } from "./StatusBadge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -26,6 +25,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { cn } from "~/lib/utils";
+import { StatusBadge, type StatusType } from "./StatusBadge";
 
 export interface TestItem {
   /** Identifiant du test (e.g., "T-A", "T-B") */

@@ -1,9 +1,9 @@
 import { Link } from "@remix-run/react";
 import { useEffect } from "react";
+import { Alert } from "~/components/ui/alert";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 import { ErrorSearchBar } from "./ErrorSearchBar";
 import { PopularCategories } from "./PopularCategories";
-import { Alert } from "~/components/ui/alert";
 
 interface Error410Props {
   url?: string;

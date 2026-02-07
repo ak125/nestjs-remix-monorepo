@@ -26,11 +26,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 import {
   MotorisationsTable,
   type MotorisationEntry,
 } from "./MotorisationsTable";
-import { HtmlContent } from "~/components/seo/HtmlContent";
 
 export interface ModelContentV1Data {
   id: number;
