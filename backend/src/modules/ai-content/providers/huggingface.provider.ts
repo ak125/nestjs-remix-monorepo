@@ -5,6 +5,7 @@ import {
   ConfigurationException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface AIProvider {
   generateContent(
@@ -119,7 +120,9 @@ ${userPrompt} [/INST]`;
 
       return generatedText.trim();
     } catch (error) {
-      this.logger.error(`HuggingFace generation error: ${error.message}`);
+      this.logger.error(
+        `HuggingFace generation error: ${getErrorMessage(error)}`,
+      );
       throw error;
     }
   }

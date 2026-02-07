@@ -13,6 +13,7 @@ import {
   SubstitutionLock,
   SubstitutionDataResponse,
 } from '../types/substitution.types';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * SubstitutionService - Moteur de Substitution Sémantique
@@ -122,7 +123,7 @@ export class SubstitutionService extends SupabaseBaseService {
 
       return data as SubstitutionDataResponse;
     } catch (error) {
-      this.logger.error(`RPC exception: ${error.message}`);
+      this.logger.error(`RPC exception: ${getErrorMessage(error)}`);
       return {
         _meta: {
           gamme_found: false,

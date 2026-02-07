@@ -19,6 +19,7 @@ import { ConstructeurService } from '../services/constructeur.service';
 import { GlossaryService } from '../services/glossary.service';
 import { AuthGuard } from '@nestjs/passport';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * 📚 BlogController - Contrôleur principal du module blog
@@ -60,7 +61,7 @@ export class BlogController {
       };
     } catch (error) {
       this.logger.error(
-        `❌ Erreur récupération switches SEO: ${error.message}`,
+        `❌ Erreur récupération switches SEO: ${getErrorMessage(error)}`,
       );
       throw new HttpException(
         'Erreur lors de la récupération des switches SEO',

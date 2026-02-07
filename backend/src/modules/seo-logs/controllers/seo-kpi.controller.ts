@@ -2,6 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 const execAsync = promisify(exec);
 
@@ -107,7 +108,7 @@ export class SeoKpiController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: 'Erreur lors du calcul du KPI de crawl',
       };
     }
@@ -174,7 +175,7 @@ export class SeoKpiController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }
@@ -225,7 +226,7 @@ export class SeoKpiController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }

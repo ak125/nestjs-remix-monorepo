@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChromeDevToolsClientService } from './chrome-devtools-client.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 import {
   ExternalVerificationResult,
@@ -141,14 +142,16 @@ export class ExternalCompatibilityScrapingService {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.warn(`Error scraping ${config.name}: ${error.message}`);
+      this.logger.warn(
+        `Error scraping ${config.name}: ${getErrorMessage(error)}`,
+      );
       return {
         source: config.name,
         url,
         compatible: null,
         confidence: 0,
         extractedData: {},
-        error: error.message,
+        error: getErrorMessage(error),
         duration_ms: Date.now() - startTime,
         timestamp: new Date().toISOString(),
       };

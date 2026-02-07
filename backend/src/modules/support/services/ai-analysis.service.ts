@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ContactTicket, ContactFormData } from './contact.service';
 import { ReviewData } from './review.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface SentimentAnalysis {
   sentiment: 'positive' | 'negative' | 'neutral';
@@ -103,7 +104,7 @@ export class AISentimentService {
         urgency,
       };
     } catch (error) {
-      this.logger.error(`Erreur analyse sentiment: ${error.message}`);
+      this.logger.error(`Erreur analyse sentiment: ${getErrorMessage(error)}`);
       return {
         sentiment: 'neutral',
         confidence: 0.5,
@@ -152,7 +153,7 @@ export class AISentimentService {
         urgency,
       };
     } catch (error) {
-      this.logger.error(`Erreur analyse ticket: ${error.message}`);
+      this.logger.error(`Erreur analyse ticket: ${getErrorMessage(error)}`);
       return {
         sentiment: 'neutral',
         confidence: 0.5,
@@ -348,7 +349,7 @@ export class AICategorizationService {
         issues,
       };
     } catch (error) {
-      this.logger.error(`Erreur catégorisation: ${error.message}`);
+      this.logger.error(`Erreur catégorisation: ${getErrorMessage(error)}`);
       return {
         category: 'general',
         subcategory: 'other',
@@ -376,7 +377,9 @@ export class AICategorizationService {
         issues,
       };
     } catch (error) {
-      this.logger.error(`Erreur catégorisation avis: ${error.message}`);
+      this.logger.error(
+        `Erreur catégorisation avis: ${getErrorMessage(error)}`,
+      );
       return {
         category: 'product_feedback',
         subcategory: 'general',

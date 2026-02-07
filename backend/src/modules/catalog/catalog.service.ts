@@ -3,6 +3,7 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 import { TABLES } from '@repo/database-types';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -509,7 +510,7 @@ export class CatalogService
       this.logger.error('Erreur lors de la récupération des marques:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: [],
         count: 0,
       };
@@ -563,7 +564,7 @@ export class CatalogService
       this.logger.error('Erreur lors de la récupération des modèles:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: [],
         count: 0,
       };
@@ -619,7 +620,7 @@ export class CatalogService
       this.logger.error('Erreur lors de la recherche de pièces:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: [],
         count: 0,
       };
@@ -831,7 +832,7 @@ export class CatalogService
       this.logger.error('Erreur lors de la récupération de la pièce:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: null,
       };
     }
@@ -880,7 +881,7 @@ export class CatalogService
       this.logger.error('Erreur lors du calcul des statistiques:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         stats: null,
       };
     }
@@ -969,7 +970,7 @@ export class CatalogService
       this.logger.error('❌ Erreur génération données homepage:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: null,
         timestamp: new Date().toISOString(),
       };
@@ -1042,7 +1043,7 @@ export class CatalogService
       this.logger.error('❌ Erreur marques sélecteur:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: [],
         count: 0,
       };

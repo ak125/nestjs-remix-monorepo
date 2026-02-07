@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 @Injectable()
 export class AiContentCacheService {
@@ -34,10 +35,12 @@ export class AiContentCacheService {
       });
 
       this.redisClient.on('error', (error) => {
-        this.logger.error(`Redis cache error: ${error.message}`);
+        this.logger.error(`Redis cache error: ${getErrorMessage(error)}`);
       });
     } catch (error) {
-      this.logger.error(`Failed to initialize Redis: ${error.message}`);
+      this.logger.error(
+        `Failed to initialize Redis: ${getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -51,7 +54,9 @@ export class AiContentCacheService {
 
       return JSON.parse(data) as T;
     } catch (error) {
-      this.logger.error(`Cache get error for key ${key}: ${error.message}`);
+      this.logger.error(
+        `Cache get error for key ${key}: ${getErrorMessage(error)}`,
+      );
       return null;
     }
   }
@@ -66,7 +71,9 @@ export class AiContentCacheService {
         JSON.stringify(value),
       );
     } catch (error) {
-      this.logger.error(`Cache set error for key ${key}: ${error.message}`);
+      this.logger.error(
+        `Cache set error for key ${key}: ${getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -76,7 +83,9 @@ export class AiContentCacheService {
     try {
       await this.redisClient.del(this.PREFIX + key);
     } catch (error) {
-      this.logger.error(`Cache delete error for key ${key}: ${error.message}`);
+      this.logger.error(
+        `Cache delete error for key ${key}: ${getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -95,7 +104,7 @@ export class AiContentCacheService {
 
       return keys.length;
     } catch (error) {
-      this.logger.error(`Cache clear error: ${error.message}`);
+      this.logger.error(`Cache clear error: ${getErrorMessage(error)}`);
       return 0;
     }
   }
@@ -121,7 +130,7 @@ export class AiContentCacheService {
         memoryUsage,
       };
     } catch (error) {
-      this.logger.error(`Error getting cache stats: ${error.message}`);
+      this.logger.error(`Error getting cache stats: ${getErrorMessage(error)}`);
       return { totalKeys: 0, memoryUsage: '0B' };
     }
   }

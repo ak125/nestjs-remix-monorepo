@@ -32,6 +32,7 @@ import {
   DynamicSeoV4UltimateService,
   SeoVariables,
 } from './dynamic-seo-v4-ultimate.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 @ApiTags('SEO - Dynamic V4')
 @Controller('api/seo-dynamic-v4')
@@ -155,7 +156,7 @@ export class DynamicSeoController {
         {
           success: false,
           error: 'Erreur lors de la génération SEO',
-          details: error.message,
+          details: getErrorMessage(error),
           metadata: {
             api_version: '4.0.0',
             response_time: responseTime,
@@ -364,7 +365,7 @@ export class DynamicSeoController {
 
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         data: {
           title: `${gamme} ${marque} ${modele} - Pièces détachées`,
           description: `Trouvez vos ${gamme.toLowerCase()} pour ${marque} ${modele}`,
@@ -582,7 +583,7 @@ export class DynamicSeoController {
       return {
         success: false,
         error: 'Variables SEO invalides',
-        details: error.message,
+        details: getErrorMessage(error),
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
@@ -636,12 +637,14 @@ export class DynamicSeoController {
         message: '📊 Métriques SEO récupérées avec succès',
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération métriques: ${error.message}`);
+      this.logger.error(
+        `❌ Erreur récupération métriques: ${getErrorMessage(error)}`,
+      );
       throw new HttpException(
         {
           success: false,
           error: 'Erreur récupération métriques SEO',
-          details: error.message,
+          details: getErrorMessage(error),
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -673,12 +676,12 @@ export class DynamicSeoController {
         message: `🔍 Audit complété: ${report.coverageRate.toFixed(1)}% couverture, score ${report.qualityScore}/100`,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur audit SEO: ${error.message}`);
+      this.logger.error(`❌ Erreur audit SEO: ${getErrorMessage(error)}`);
       throw new HttpException(
         {
           success: false,
           error: "Erreur lors de l'audit SEO",
-          details: error.message,
+          details: getErrorMessage(error),
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -740,12 +743,14 @@ export class DynamicSeoController {
         message: `🧪 ${variants.length} variantes A/B générées avec succès`,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur génération A/B test: ${error.message}`);
+      this.logger.error(
+        `❌ Erreur génération A/B test: ${getErrorMessage(error)}`,
+      );
       throw new HttpException(
         {
           success: false,
           error: 'Erreur génération variantes A/B',
-          details: error.message,
+          details: getErrorMessage(error),
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -788,13 +793,13 @@ export class DynamicSeoController {
       };
     } catch (error) {
       this.logger.error(
-        `❌ Erreur métriques maillage interne: ${error.message}`,
+        `❌ Erreur métriques maillage interne: ${getErrorMessage(error)}`,
       );
       throw new HttpException(
         {
           success: false,
           error: 'Erreur récupération métriques maillage interne',
-          details: error.message,
+          details: getErrorMessage(error),
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

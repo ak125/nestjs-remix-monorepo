@@ -5,6 +5,10 @@ import { ReviewService } from './review.service';
 import { QuoteService } from './quote.service';
 import { ClaimService } from './claim.service';
 import { FaqService } from './faq.service';
+import {
+  getErrorMessage,
+  getErrorStack,
+} from '../../../common/utils/error.utils';
 
 export interface SupportAnalytics {
   overview: {
@@ -144,8 +148,8 @@ export class SupportAnalyticsService {
       };
     } catch (error) {
       this.logger.error(
-        `Failed to generate analytics: ${error.message}`,
-        error.stack,
+        `Failed to generate analytics: ${getErrorMessage(error)}`,
+        getErrorStack(error),
       );
       throw error;
     }

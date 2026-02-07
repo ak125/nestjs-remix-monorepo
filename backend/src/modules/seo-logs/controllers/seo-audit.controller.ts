@@ -5,6 +5,7 @@ import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SeoAuditSchedulerService } from '../services/seo-audit-scheduler.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 const execAsync = promisify(exec);
 
@@ -74,7 +75,7 @@ export class SeoAuditController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: "Erreur lors de la création du job d'audit",
       };
     }
@@ -169,13 +170,18 @@ export class SeoAuditController {
         },
       };
     } catch (error) {
+      const execError = error as {
+        message?: string;
+        stdout?: string;
+        stderr?: string;
+      };
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: "Erreur lors de l'exécution de l'audit",
         logs: {
-          stdout: error.stdout?.substring(0, 5000),
-          stderr: error.stderr?.substring(0, 5000),
+          stdout: execError.stdout?.substring(0, 5000),
+          stderr: execError.stderr?.substring(0, 5000),
         },
       };
     }
@@ -279,7 +285,7 @@ export class SeoAuditController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: 'Erreur lors de la lecture du rapport',
       };
     }
@@ -344,7 +350,7 @@ export class SeoAuditController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: "Erreur lors de la récupération de l'historique",
       };
     }
@@ -455,7 +461,7 @@ export class SeoAuditController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         message: "Erreur lors de l'analyse des tendances",
       };
     }

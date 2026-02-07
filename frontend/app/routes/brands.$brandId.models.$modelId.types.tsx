@@ -28,9 +28,9 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

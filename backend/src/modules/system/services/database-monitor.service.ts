@@ -157,7 +157,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
       await this.createAlert(
         'critical',
         'Database health check failed',
-        error.message,
+        getErrorMessage(error),
       );
 
       return {

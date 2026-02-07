@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ExtractedIntent } from '../types/substitution.types';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * Service d'extraction d'intention depuis l'URL
@@ -131,7 +132,7 @@ export class IntentExtractorService {
       return intent;
     } catch (error) {
       this.logger.warn(
-        `Erreur extraction intention: ${error.message}`,
+        `Erreur extraction intention: ${getErrorMessage(error)}`,
         pathname,
       );
       return intent;

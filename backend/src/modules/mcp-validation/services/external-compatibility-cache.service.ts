@@ -7,6 +7,7 @@ import {
   VehicleInfo,
   CACHE_TTL_CONFIG,
 } from './external-compatibility.types';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * External Compatibility Cache Service
@@ -119,7 +120,9 @@ export class ExternalCompatibilityCacheService {
         }
         this.logger.debug(`Cache MISS for ${source}: ${cacheKey}`);
       } catch (error) {
-        this.logger.warn(`Cache read error for ${cacheKey}: ${error.message}`);
+        this.logger.warn(
+          `Cache read error for ${cacheKey}: ${getErrorMessage(error)}`,
+        );
       }
     }
 
@@ -142,7 +145,9 @@ export class ExternalCompatibilityCacheService {
         await this.cacheService.set(cacheKey, toCache, ttl);
         this.logger.debug(`Cached ${source} result for ${ttl}s: ${cacheKey}`);
       } catch (error) {
-        this.logger.warn(`Cache write error for ${cacheKey}: ${error.message}`);
+        this.logger.warn(
+          `Cache write error for ${cacheKey}: ${getErrorMessage(error)}`,
+        );
       }
     }
 

@@ -15,6 +15,7 @@ import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
 import { ProductsCatalogService } from '../services/products-catalog.service';
 import { ProductsAdminService } from '../services/products-admin.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 @ApiTags('Products Admin')
 @Controller('api/products')
@@ -86,7 +87,7 @@ export class ProductsAdminController {
             ...test,
             count: 0,
             success: false,
-            error: error.message,
+            error: getErrorMessage(error),
           });
         }
       }

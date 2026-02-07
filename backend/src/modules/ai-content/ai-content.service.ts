@@ -18,6 +18,7 @@ import {
   ConfigurationException,
   ErrorCodes,
 } from '../../common/exceptions';
+import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
 interface AIProvider {
   generateContent(
@@ -273,7 +274,7 @@ export class AiContentService {
       } catch (error) {
         lastError = error as Error;
         this.logger.warn(
-          `⚠️ Provider ${providerName} failed: ${error.message}`,
+          `⚠️ Provider ${providerName} failed: ${getErrorMessage(error)}`,
         );
 
         // Record failure in circuit breaker
@@ -388,11 +389,11 @@ export class AiContentService {
       return response;
     } catch (error) {
       this.logger.error(
-        `Error generating content: ${error.message}`,
-        error.stack,
+        `Error generating content: ${getErrorMessage(error)}`,
+        getErrorStack(error),
       );
       throw new HttpException(
-        `Failed to generate content: ${error.message}`,
+        `Failed to generate content: ${getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

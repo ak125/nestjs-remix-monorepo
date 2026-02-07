@@ -5,6 +5,7 @@ import {
   ConfigurationException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface AIProvider {
   generateContent(
@@ -103,7 +104,7 @@ export class GroqProvider implements AIProvider {
 
       return content.trim();
     } catch (error) {
-      this.logger.error(`Groq generation error: ${error.message}`);
+      this.logger.error(`Groq generation error: ${getErrorMessage(error)}`);
       throw error;
     }
   }

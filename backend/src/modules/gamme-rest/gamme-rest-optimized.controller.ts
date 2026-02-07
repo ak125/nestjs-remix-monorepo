@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, Injectable } from '@nestjs/common';
 import { GammePageDataService } from './services/gamme-page-data.service';
+import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
 /**
  * 🚀 GAMME REST CONTROLLER OPTIMISÉ - Fallback classique
@@ -28,8 +29,11 @@ export class GammeRestOptimizedController {
       return {
         status: 500,
         error: 'Internal server error',
-        message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        message: getErrorMessage(error),
+        stack:
+          process.env.NODE_ENV === 'development'
+            ? getErrorStack(error)
+            : undefined,
       };
     }
   }
@@ -46,7 +50,7 @@ export class GammeRestOptimizedController {
       return {
         status: 500,
         error: 'Internal server error',
-        message: error.message,
+        message: getErrorMessage(error),
       };
     }
   }

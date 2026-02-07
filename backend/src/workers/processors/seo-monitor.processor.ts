@@ -14,6 +14,7 @@ import { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 interface SeoMonitorJobData {
   taskType: 'check-critical-urls' | 'check-random-sample';
@@ -180,7 +181,7 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
     } catch (error) {
       this.logger.error(
         `❌ [Job #${job.id}] Erreur monitoring:`,
-        error.message,
+        getErrorMessage(error),
       );
       throw error;
     }
@@ -256,14 +257,17 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         checkedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur vérification ${url}:`, error.message);
+      this.logger.error(
+        `❌ Erreur vérification ${url}:`,
+        getErrorMessage(error),
+      );
       return {
         url,
         typeId,
         gammeId,
         piecesCount: -1,
         status: 'error',
-        message: error.message,
+        message: getErrorMessage(error),
         checkedAt: new Date().toISOString(),
       };
     }
@@ -301,7 +305,10 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         gammeId: row.id_pg,
       }));
     } catch (error) {
-      this.logger.error('❌ Erreur échantillon aléatoire:', error.message);
+      this.logger.error(
+        '❌ Erreur échantillon aléatoire:',
+        getErrorMessage(error),
+      );
       return [];
     }
   }

@@ -2,6 +2,7 @@ import { Controller, Get, Query, Res, Logger, Session } from '@nestjs/common';
 import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { ConfigService } from '@nestjs/config';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * Contrôleur pour la redirection vers la passerelle Paybox
@@ -85,7 +86,7 @@ export class PayboxRedirectController {
           <body>
             <h1>❌ Erreur serveur</h1>
             <p>Impossible de générer le formulaire de paiement.</p>
-            <p>Erreur: ${error.message}</p>
+            <p>Erreur: ${getErrorMessage(error)}</p>
             <a href="/checkout-payment">← Retour au paiement</a>
           </body>
         </html>

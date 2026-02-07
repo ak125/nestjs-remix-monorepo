@@ -4,6 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { sleep } from '../../../utils/promise-helpers';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 interface CatalogMetrics {
   responseTime: number;
@@ -180,7 +181,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
     } catch (mvException) {
       this.logger.warn(
-        `⚠️ [NIVEAU 1] Exception vue matérialisée: ${mvException.message} → Fallback niveau 2`,
+        `⚠️ [NIVEAU 1] Exception vue matérialisée: ${getErrorMessage(mvException)} → Fallback niveau 2`,
       );
     }
 
@@ -227,7 +228,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
     } catch (indexException) {
       this.logger.error(
-        `❌ [NIVEAU 2] Exception: ${indexException.message} → Fallback niveau 3`,
+        `❌ [NIVEAU 2] Exception: ${getErrorMessage(indexException)} → Fallback niveau 3`,
       );
     }
 

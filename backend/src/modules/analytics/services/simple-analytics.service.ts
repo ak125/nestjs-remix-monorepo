@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../cache/cache.service';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import {
+  getErrorMessage,
+  getErrorStack,
+} from '../../../common/utils/error.utils';
 
 /**
  * 📊 SIMPLE ANALYTICS SERVICE - Configuration et Tracking Simplifié
@@ -158,7 +162,7 @@ export class SimpleAnalyticsService {
 
       return config;
     } catch (error) {
-      this.logger.error('Error loading analytics config', error.stack);
+      this.logger.error('Error loading analytics config', getErrorStack(error));
       return null;
     }
   }
@@ -212,7 +216,10 @@ export class SimpleAnalyticsService {
 
       return options.minified ? this.minifyScript(script) : script;
     } catch (error) {
-      this.logger.error('Error generating tracking script', error.stack);
+      this.logger.error(
+        'Error generating tracking script',
+        getErrorStack(error),
+      );
       return '<!-- Error generating analytics script -->';
     }
   }
@@ -248,7 +255,7 @@ export class SimpleAnalyticsService {
 
       this.logger.debug(`Event tracked: ${category}:${action}`);
     } catch (error) {
-      this.logger.error('Error tracking event', error.stack);
+      this.logger.error('Error tracking event', getErrorStack(error));
     }
   }
 
@@ -291,11 +298,14 @@ export class SimpleAnalyticsService {
         lastEventTime,
       };
     } catch (error) {
-      this.logger.error('Error getting analytics metrics', error.stack);
+      this.logger.error(
+        'Error getting analytics metrics',
+        getErrorStack(error),
+      );
       throw new DatabaseException({
         code: ErrorCodes.ANALYTICS.METRICS_FAILED,
-        message: `Failed to get metrics: ${error.message}`,
-        details: error.message,
+        message: `Failed to get metrics: ${getErrorMessage(error)}`,
+        details: getErrorMessage(error),
         cause: error instanceof Error ? error : undefined,
       });
     }
@@ -466,7 +476,7 @@ export class SimpleAnalyticsService {
       await this.cacheService.del(pattern);
       this.logger.log('Analytics cache cleared');
     } catch (error) {
-      this.logger.error('Error clearing analytics cache', error.stack);
+      this.logger.error('Error clearing analytics cache', getErrorStack(error));
     }
   }
 

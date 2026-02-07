@@ -16,6 +16,7 @@ import {
   buildGammeImageUrl,
 } from '../../catalog/utils/image-urls.utils';
 import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * Interface pour le résultat des bestsellers
@@ -196,11 +197,14 @@ export class BrandBestsellersService extends SupabaseBaseService {
 
       return result;
     } catch (error) {
-      this.logger.error('❌ Erreur getBrandBestsellers:', error.message);
+      this.logger.error(
+        '❌ Erreur getBrandBestsellers:',
+        getErrorMessage(error),
+      );
       return {
         success: false,
         data: { vehicles: [], parts: [] },
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }

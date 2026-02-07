@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
 /**
  * 🚗 CONTROLLER VEHICLES FORMS - Version optimisée
@@ -54,8 +55,8 @@ export class VehiclesFormsController {
     } catch (error) {
       const responseTime = Date.now() - startTime;
       this.logger.error(
-        `❌ Error in getAllModels: ${error.message} (${responseTime}ms)`,
-        error.stack,
+        `❌ Error in getAllModels: ${getErrorMessage(error)} (${responseTime}ms)`,
+        getErrorStack(error),
       );
       throw error;
     }
@@ -120,8 +121,8 @@ export class VehiclesFormsController {
     } catch (error) {
       const responseTime = Date.now() - startTime;
       this.logger.error(
-        `❌ Error in getAllTypes: ${error.message} (${responseTime}ms)`,
-        error.stack,
+        `❌ Error in getAllTypes: ${getErrorMessage(error)} (${responseTime}ms)`,
+        getErrorStack(error),
       );
       throw error;
     }
@@ -231,8 +232,8 @@ export class VehiclesFormsController {
     } catch (error) {
       const responseTime = Date.now() - startTime;
       this.logger.error(
-        `❌ Error in getStats: ${error.message} (${responseTime}ms)`,
-        error.stack,
+        `❌ Error in getStats: ${getErrorMessage(error)} (${responseTime}ms)`,
+        getErrorStack(error),
       );
 
       return {

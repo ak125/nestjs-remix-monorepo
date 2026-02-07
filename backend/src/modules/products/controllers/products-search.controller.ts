@@ -18,6 +18,7 @@ import {
   PopularProductsSchema,
 } from '../schemas/product.schemas';
 import { ZodQueryValidationPipe } from '../../../common/pipes/zod-query-validation.pipe';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 @ApiTags('Products Search')
 @Controller('api/products')
@@ -95,7 +96,7 @@ export class ProductsSearchController {
 
       return { results };
     } catch (error) {
-      this.logger.error(`Erreur recherche produits: ${error.message}`);
+      this.logger.error(`Erreur recherche produits: ${getErrorMessage(error)}`);
       return { results: [] };
     }
   }

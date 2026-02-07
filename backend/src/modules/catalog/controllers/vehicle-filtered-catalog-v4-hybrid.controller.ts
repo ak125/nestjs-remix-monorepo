@@ -1,5 +1,9 @@
 import { Controller, Get, Param, ParseIntPipe, Logger } from '@nestjs/common';
 import { VehicleFilteredCatalogV4HybridService } from '../services/vehicle-filtered-catalog-v4-hybrid.service';
+import {
+  getErrorMessage,
+  getErrorStack,
+} from '../../../common/utils/error.utils';
 
 @Controller('api/catalog/families')
 export class VehicleFilteredCatalogV4Controller {
@@ -52,13 +56,13 @@ export class VehicleFilteredCatalogV4Controller {
       const responseTime = Date.now() - startTime;
 
       this.logger.error(
-        `❌ [V4] Erreur type_id ${typeId}: ${error.message} (${responseTime}ms)`,
-        error.stack,
+        `❌ [V4] Erreur type_id ${typeId}: ${getErrorMessage(error)} (${responseTime}ms)`,
+        getErrorStack(error),
       );
 
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         catalog: {
           queryType: 'ERROR_V4',
           families: [],
@@ -90,11 +94,11 @@ export class VehicleFilteredCatalogV4Controller {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error(`❌ [V4 METRICS] Erreur: ${error.message}`);
+      this.logger.error(`❌ [V4 METRICS] Erreur: ${getErrorMessage(error)}`);
 
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date(),
       };
     }
@@ -118,11 +122,11 @@ export class VehicleFilteredCatalogV4Controller {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error(`❌ [V4 PRECOMPUTE] Erreur: ${error.message}`);
+      this.logger.error(`❌ [V4 PRECOMPUTE] Erreur: ${getErrorMessage(error)}`);
 
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date(),
       };
     }

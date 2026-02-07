@@ -15,6 +15,7 @@ import {
   ExternalServiceException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * PartLink24 Specialist Service
@@ -173,7 +174,9 @@ export class ExternalCompatibilityPartsLink24Service {
       this.partslink24Authenticated = true; // Try to continue
       return true;
     } catch (error) {
-      this.logger.error(`PartLink24 authentication failed: ${error.message}`);
+      this.logger.error(
+        `PartLink24 authentication failed: ${getErrorMessage(error)}`,
+      );
       return false;
     }
   }
@@ -285,14 +288,14 @@ export class ExternalCompatibilityPartsLink24Service {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.warn(`Error scraping PartLink24: ${error.message}`);
+      this.logger.warn(`Error scraping PartLink24: ${getErrorMessage(error)}`);
       return {
         source: config.name,
         url,
         compatible: null,
         confidence: 0,
         extractedData: {},
-        error: error.message,
+        error: getErrorMessage(error),
         duration_ms: Date.now() - startTime,
         timestamp: new Date().toISOString(),
       };
@@ -411,13 +414,15 @@ export class ExternalCompatibilityPartsLink24Service {
         timestamp,
       };
     } catch (error) {
-      this.logger.error(`PartLink24 catalog scraping failed: ${error.message}`);
+      this.logger.error(
+        `PartLink24 catalog scraping failed: ${getErrorMessage(error)}`,
+      );
       return {
         success: false,
         navigation,
         parts: [],
         duration_ms: Date.now() - startTime,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp,
       };
     }
@@ -518,7 +523,7 @@ export class ExternalCompatibilityPartsLink24Service {
         notes: p.notes,
       }));
     } catch (error) {
-      this.logger.warn(`Failed to extract parts: ${error.message}`);
+      this.logger.warn(`Failed to extract parts: ${getErrorMessage(error)}`);
       return [];
     }
   }

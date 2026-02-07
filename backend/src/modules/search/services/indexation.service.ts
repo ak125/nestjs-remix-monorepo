@@ -1,6 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { MeilisearchService } from './meilisearch.service';
 import { SupabaseIndexationService } from './supabase-indexation.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface VehicleIndexData {
   id: number;
@@ -389,7 +390,7 @@ export class IndexationService {
       return {
         success: false,
         count: 0,
-        message: `Erreur: ${error.message}`,
+        message: `Erreur: ${getErrorMessage(error)}`,
       };
     }
   }
@@ -414,7 +415,7 @@ export class IndexationService {
       this.logger.error('❌ Erreur suppression index:', error);
       return {
         success: false,
-        message: `Erreur: ${error.message}`,
+        message: `Erreur: ${getErrorMessage(error)}`,
       };
     }
   }

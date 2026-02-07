@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 @Injectable()
 export class UserShipmentService extends SupabaseBaseService {
@@ -83,7 +84,7 @@ export class UserShipmentService extends SupabaseBaseService {
       this.logger.error('Erreur inattendue:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         shipments: [],
         count: 0,
       };
@@ -117,7 +118,7 @@ export class UserShipmentService extends SupabaseBaseService {
       this.logger.error('Erreur lors du calcul des statistiques:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         stats: null,
       };
     }

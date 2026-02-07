@@ -4,6 +4,7 @@ import { Job } from 'bullmq';
 import { MetricsService } from '../services/metrics.service';
 import { DatabaseMonitorService } from '../services/database-monitor.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface MetricsJobData {
   type: 'performance' | 'business' | 'seo' | 'database_health' | 'maintenance';
@@ -123,7 +124,7 @@ export class MetricsProcessor extends WorkerHost {
       return results;
     } catch (error) {
       this.logger.error('❌ Error in scheduled maintenance:', error);
-      return { ...results, error: error.message };
+      return { ...results, error: getErrorMessage(error) };
     }
   }
 

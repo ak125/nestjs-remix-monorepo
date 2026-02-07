@@ -3,6 +3,7 @@ import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * 🎯 CROSS SELLING SERVICE V5 ULTIMATE - MÉTHODOLOGIE APPLIQUÉE
@@ -173,7 +174,7 @@ export class CrossSellingService extends SupabaseBaseService {
           return cachedData;
         }
       } catch (cacheError) {
-        this.logger.debug('Cache MISS ou erreur:', cacheError.message);
+        this.logger.debug('Cache MISS ou erreur:', getErrorMessage(cacheError));
       }
 
       // ✅ EXTRACTION CROSS-SELLING MULTI-SOURCES - Parallélisé
@@ -439,7 +440,7 @@ export class CrossSellingService extends SupabaseBaseService {
         clearTimeout(timeoutId);
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         this.logger.error('⏱️ Timeout 10s dépassé pour cross-selling famille');
       } else {
         this.logger.error(
@@ -600,7 +601,7 @@ export class CrossSellingService extends SupabaseBaseService {
         clearTimeout(timeoutId);
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         this.logger.error('⏱️ Timeout 10s dépassé pour cross-selling config');
       } else {
         this.logger.error('❌ Erreur getCrossGammesByConfigOptimized:', error);

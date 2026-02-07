@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { MetricsService } from './metrics.service';
 import { DatabaseMonitorService } from './database-monitor.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface HealthCheckResult {
   service: string;
@@ -147,7 +148,7 @@ export class HealthCheckService extends SupabaseBaseService {
         service: 'database',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        details: { error: error.message },
+        details: { error: getErrorMessage(error) },
         timestamp: new Date().toISOString(),
       };
     }
@@ -186,7 +187,7 @@ export class HealthCheckService extends SupabaseBaseService {
         service: 'metrics',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        details: { error: error.message },
+        details: { error: getErrorMessage(error) },
         timestamp: new Date().toISOString(),
       };
     }
@@ -230,7 +231,7 @@ export class HealthCheckService extends SupabaseBaseService {
         service: 'memory',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        details: { error: error.message },
+        details: { error: getErrorMessage(error) },
         timestamp: new Date().toISOString(),
       };
     }
@@ -270,7 +271,7 @@ export class HealthCheckService extends SupabaseBaseService {
         service: 'disk',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        details: { error: error.message },
+        details: { error: getErrorMessage(error) },
         timestamp: new Date().toISOString(),
       };
     }
@@ -307,7 +308,7 @@ export class HealthCheckService extends SupabaseBaseService {
         service: 'external',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        details: { error: error.message },
+        details: { error: getErrorMessage(error) },
         timestamp: new Date().toISOString(),
       };
     }

@@ -6,6 +6,7 @@ import {
   ConfigurationException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface AIProvider {
   generateContent(
@@ -91,7 +92,9 @@ export class AnthropicProvider implements AIProvider {
 
       return content.trim();
     } catch (error) {
-      this.logger.error(`Anthropic generation error: ${error.message}`);
+      this.logger.error(
+        `Anthropic generation error: ${getErrorMessage(error)}`,
+      );
       throw error;
     }
   }

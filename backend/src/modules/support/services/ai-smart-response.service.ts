@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ContactTicket, ContactFormData } from './contact.service';
 import { ReviewData } from './review.service';
 import { SentimentAnalysis, SmartCategorization } from './ai-analysis.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface SmartResponse {
   response: string;
@@ -72,7 +73,7 @@ export class AISmartResponseService {
         estimatedResolutionTime: estimatedTime,
       };
     } catch (error) {
-      this.logger.error(`Erreur génération réponse: ${error.message}`);
+      this.logger.error(`Erreur génération réponse: ${getErrorMessage(error)}`);
       return this.getFallbackResponse();
     }
   }
@@ -110,7 +111,7 @@ export class AISmartResponseService {
         suggestedActions: this.getReviewActions(rating),
       };
     } catch (error) {
-      this.logger.error(`Erreur réponse avis: ${error.message}`);
+      this.logger.error(`Erreur réponse avis: ${getErrorMessage(error)}`);
       return {
         response:
           'Merci pour votre avis. Nous prenons en compte vos commentaires.',
@@ -581,7 +582,9 @@ export class AIPredictiveService {
         reasoning,
       };
     } catch (error) {
-      this.logger.error(`Erreur prédiction escalation: ${error.message}`);
+      this.logger.error(
+        `Erreur prédiction escalation: ${getErrorMessage(error)}`,
+      );
       return {
         riskLevel: 50,
         escalationProbability: 0.3,
@@ -620,7 +623,9 @@ export class AIPredictiveService {
         automationOpportunities: automationOps,
       };
     } catch (error) {
-      this.logger.error(`Erreur optimisation workflow: ${error.message}`);
+      this.logger.error(
+        `Erreur optimisation workflow: ${getErrorMessage(error)}`,
+      );
       return {
         estimatedResolutionTime: 1440, // 24h par défaut
         priority: 5,

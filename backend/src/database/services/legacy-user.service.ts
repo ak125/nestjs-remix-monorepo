@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../modules/cache/cache.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 export interface LegacyUser {
   id: string;
@@ -124,7 +125,7 @@ export class LegacyUserService extends SupabaseBaseService {
         error,
       );
       throw new NotFoundException(
-        `Impossible de récupérer l'utilisateur ${userId}: ${error.message}`,
+        `Impossible de récupérer l'utilisateur ${userId}: ${getErrorMessage(error)}`,
       );
     }
   }

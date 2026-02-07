@@ -9,6 +9,7 @@ import {
 import { PiecesAnalysisService } from '../services/pieces-analysis.service';
 import { SupabaseIndexationService } from '../services/supabase-indexation.service';
 import { MeilisearchService } from '../services/meilisearch.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * 🔧 Contrôleur pour l'analyse des pièces
@@ -102,7 +103,7 @@ export class PiecesController {
       };
     } catch (error) {
       throw new HttpException(
-        `Erreur lors de la récupération de la structure: ${error.message}`,
+        `Erreur lors de la récupération de la structure: ${getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -119,7 +120,7 @@ export class PiecesController {
       };
     } catch (error) {
       throw new HttpException(
-        `Erreur lors de la récupération des marques: ${error.message}`,
+        `Erreur lors de la récupération des marques: ${getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -144,7 +145,7 @@ export class PiecesController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }
@@ -178,7 +179,7 @@ export class PiecesController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }
@@ -206,7 +207,7 @@ export class PiecesController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }
@@ -250,7 +251,7 @@ export class PiecesController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }
@@ -277,7 +278,7 @@ export class PiecesController {
       this.logger.error('Erreur recherche filtre à air:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }
@@ -440,7 +441,7 @@ export class PiecesController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }

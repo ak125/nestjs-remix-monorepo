@@ -3,6 +3,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * 🛡️ Service de validation de l'intégrité des données du catalogue
@@ -94,7 +95,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       return {
         valid: false,
         type_id: typeId,
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }
@@ -152,7 +153,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       return {
         valid: false,
         gamme_id: gammeId,
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }

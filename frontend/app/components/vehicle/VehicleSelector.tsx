@@ -63,7 +63,7 @@ export default function VehicleSelector({
   redirectOnSelect = true,
   redirectTo = "vehicle-page",
   customRedirectUrl,
-  currentVehicle: currentVehicle,
+  currentVehicle,
   className = "",
   variant = "default",
   context = "homepage",

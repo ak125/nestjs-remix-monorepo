@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto';
 import { SearchRequestDto, SearchResponseDto } from './dto/search.dto';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 @Injectable()
 export class RagProxyService {
@@ -59,7 +60,9 @@ export class RagProxyService {
         throw error;
       }
 
-      this.logger.error(`Failed to call RAG service: ${error.message}`);
+      this.logger.error(
+        `Failed to call RAG service: ${getErrorMessage(error)}`,
+      );
       throw new HttpException(
         'Failed to connect to RAG service',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -104,7 +107,7 @@ export class RagProxyService {
         throw error;
       }
 
-      this.logger.error(`Failed to call RAG search: ${error.message}`);
+      this.logger.error(`Failed to call RAG search: ${getErrorMessage(error)}`);
       throw new HttpException(
         'Failed to connect to RAG service',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -140,7 +143,7 @@ export class RagProxyService {
     } catch (error) {
       return {
         status: 'unhealthy',
-        services: { rag: { status: 'down', error: error.message } },
+        services: { rag: { status: 'down', error: getErrorMessage(error) } },
       };
     }
   }

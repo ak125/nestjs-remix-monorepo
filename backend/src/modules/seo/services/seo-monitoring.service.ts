@@ -4,6 +4,7 @@ import {
   ExternalServiceException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface SitemapStatus {
   url: string;
@@ -458,7 +459,7 @@ export class SeoMonitoringService {
           failed.push(`${url} (${response.status})`);
         }
       } catch (error) {
-        failed.push(`${url} (error: ${error.message})`);
+        failed.push(`${url} (error: ${getErrorMessage(error)})`);
       }
     }
 

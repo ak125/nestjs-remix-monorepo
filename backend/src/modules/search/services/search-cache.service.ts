@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface CacheStats {
   hits: number;
@@ -84,7 +85,7 @@ export class SearchCacheService {
 
       this.logger.debug(`💾 Cache SET: ${key} (TTL: ${finalTTL}s)`);
     } catch (error) {
-      this.logger.error(`💥 Cache SET ERROR: ${key}:`, error.message);
+      this.logger.error(`💥 Cache SET ERROR: ${key}:`, getErrorMessage(error));
     }
   }
 
@@ -97,7 +98,7 @@ export class SearchCacheService {
       await this.cache.del(cacheKey);
       this.logger.debug(`🗑️ Cache DEL: ${key}`);
     } catch (error) {
-      this.logger.error(`💥 Cache DEL ERROR: ${key}:`, error.message);
+      this.logger.error(`💥 Cache DEL ERROR: ${key}:`, getErrorMessage(error));
     }
   }
 
@@ -118,7 +119,10 @@ export class SearchCacheService {
         );
       }
     } catch (error) {
-      this.logger.error(`💥 Cache invalidation ERROR: ${tag}:`, error.message);
+      this.logger.error(
+        `💥 Cache invalidation ERROR: ${tag}:`,
+        getErrorMessage(error),
+      );
     }
   }
 
@@ -135,7 +139,7 @@ export class SearchCacheService {
         // on peut déclencher cela depuis l'extérieur ou utiliser un event
         this.logger.debug(`🔥 Warm-up query: ${query}`);
       } catch (error) {
-        this.logger.warn(`⚠️ Erreur warm-up ${query}:`, error.message);
+        this.logger.warn(`⚠️ Erreur warm-up ${query}:`, getErrorMessage(error));
       }
     }
 
@@ -303,7 +307,7 @@ export class SearchCacheService {
           await this.cache.set(tagKey, existingKeys, 7200); // 2h pour les tags
         }
       } catch (error) {
-        this.logger.warn(`Erreur tagging ${tag}:`, error.message);
+        this.logger.warn(`Erreur tagging ${tag}:`, getErrorMessage(error));
       }
     }
   }

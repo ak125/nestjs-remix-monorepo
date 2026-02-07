@@ -8,6 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SeoEnhancedService } from './seo-enhanced.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 // Interfaces pour les requêtes
 interface SeoGenerationRequest {
@@ -64,11 +65,11 @@ export class SeoEnhancedController {
         generatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur génération SEO: ${error.message}`);
+      this.logger.error(`❌ Erreur génération SEO: ${getErrorMessage(error)}`);
       return {
         success: false,
         error: 'Erreur lors de la génération SEO',
-        details: error.message,
+        details: getErrorMessage(error),
       };
     }
   }
@@ -93,11 +94,11 @@ export class SeoEnhancedController {
         generatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur SEO pièces: ${error.message}`);
+      this.logger.error(`❌ Erreur SEO pièces: ${getErrorMessage(error)}`);
       return {
         success: false,
         error: 'Erreur lors de la génération SEO pièces',
-        details: error.message,
+        details: getErrorMessage(error),
       };
     }
   }
@@ -129,11 +130,11 @@ export class SeoEnhancedController {
         generatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur SEO véhicule: ${error.message}`);
+      this.logger.error(`❌ Erreur SEO véhicule: ${getErrorMessage(error)}`);
       return {
         success: false,
         error: 'Erreur lors de la génération SEO véhicule',
-        details: error.message,
+        details: getErrorMessage(error),
       };
     }
   }
@@ -169,11 +170,11 @@ export class SeoEnhancedController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur analytics SEO: ${error.message}`);
+      this.logger.error(`❌ Erreur analytics SEO: ${getErrorMessage(error)}`);
       return {
         success: false,
         error: 'Erreur lors de la récupération des analytics',
-        details: error.message,
+        details: getErrorMessage(error),
       };
     }
   }
@@ -216,11 +217,11 @@ export class SeoEnhancedController {
         generatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur preview SEO: ${error.message}`);
+      this.logger.error(`❌ Erreur preview SEO: ${getErrorMessage(error)}`);
       return {
         success: false,
         error: "Erreur lors de la génération de l'aperçu",
-        details: error.message,
+        details: getErrorMessage(error),
       };
     }
   }

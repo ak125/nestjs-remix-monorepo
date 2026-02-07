@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { SubstitutionLogEntry, LockType } from '../types/substitution.types';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
  * SubstitutionLoggerService - Analytics du Moteur de Substitution
@@ -38,7 +39,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
         });
       } catch (error) {
         // Ne pas faire échouer la requête principale pour un log
-        this.logger.warn(`Failed to log substitution: ${error.message}`);
+        this.logger.warn(
+          `Failed to log substitution: ${getErrorMessage(error)}`,
+        );
       }
     });
   }
@@ -64,7 +67,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
         .order('created_at', { ascending: false })
         .limit(1);
     } catch (error) {
-      this.logger.warn(`Failed to mark funnel completed: ${error.message}`);
+      this.logger.warn(
+        `Failed to mark funnel completed: ${getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -86,7 +91,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
         .order('created_at', { ascending: false })
         .limit(1);
     } catch (error) {
-      this.logger.warn(`Failed to log vehicle prefill: ${error.message}`);
+      this.logger.warn(
+        `Failed to log vehicle prefill: ${getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -123,7 +130,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
 
       return { funnel: funnel as any };
     } catch (error) {
-      this.logger.error(`Exception getting funnel stats: ${error.message}`);
+      this.logger.error(
+        `Exception getting funnel stats: ${getErrorMessage(error)}`,
+      );
       return { funnel: {} as any };
     }
   }
@@ -197,7 +206,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
 
       return { daily };
     } catch (error) {
-      this.logger.error(`Exception getting daily stats: ${error.message}`);
+      this.logger.error(
+        `Exception getting daily stats: ${getErrorMessage(error)}`,
+      );
       return { daily: [] };
     }
   }
@@ -234,7 +245,9 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
     } catch (error) {
-      this.logger.error(`Exception getting top URLs: ${error.message}`);
+      this.logger.error(
+        `Exception getting top URLs: ${getErrorMessage(error)}`,
+      );
       return [];
     }
   }

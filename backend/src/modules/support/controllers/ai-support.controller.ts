@@ -29,6 +29,7 @@ import {
 } from '../services/ai-smart-response.service';
 import { ContactService } from '../services/contact.service';
 import { ReviewService } from '../services/review.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface AIAnalysisRequest {
   type: 'ticket' | 'review';
@@ -94,7 +95,7 @@ export class AISupportController {
         code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
       });
     } catch (error) {
-      this.logger.error(`Erreur analyse sentiment: ${error.message}`);
+      this.logger.error(`Erreur analyse sentiment: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -150,7 +151,7 @@ export class AISupportController {
         code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
       });
     } catch (error) {
-      this.logger.error(`Erreur catégorisation: ${error.message}`);
+      this.logger.error(`Erreur catégorisation: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -224,7 +225,7 @@ export class AISupportController {
         code: ErrorCodes.SUPPORT.UNSUPPORTED_TYPE,
       });
     } catch (error) {
-      this.logger.error(`Erreur génération réponse: ${error.message}`);
+      this.logger.error(`Erreur génération réponse: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -293,7 +294,9 @@ export class AISupportController {
         categorization,
       );
     } catch (error) {
-      this.logger.error(`Erreur prédiction escalation: ${error.message}`);
+      this.logger.error(
+        `Erreur prédiction escalation: ${getErrorMessage(error)}`,
+      );
       throw error;
     }
   }
@@ -332,7 +335,9 @@ export class AISupportController {
 
       return this.aiPredictiveService.optimizeWorkflow(ticket, categorization);
     } catch (error) {
-      this.logger.error(`Erreur optimisation workflow: ${error.message}`);
+      this.logger.error(
+        `Erreur optimisation workflow: ${getErrorMessage(error)}`,
+      );
       throw error;
     }
   }
@@ -405,7 +410,7 @@ export class AISupportController {
         },
       };
     } catch (error) {
-      this.logger.error(`Erreur analyse complète: ${error.message}`);
+      this.logger.error(`Erreur analyse complète: ${getErrorMessage(error)}`);
       throw error;
     }
   }

@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { DomainNotFoundException, ErrorCodes } from '../../common/exceptions';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 // Interfaces pour les types de données SEO enhancées
 interface SeoVariables {
@@ -112,7 +113,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
       );
       return result;
     } catch (error) {
-      this.logger.error(`❌ Erreur génération SEO: ${error.message}`);
+      this.logger.error(`❌ Erreur génération SEO: ${getErrorMessage(error)}`);
       return this.getFallbackSeoContent(variables);
     }
   }
@@ -266,7 +267,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
         }
       } catch (error) {
         this.logger.warn(
-          `⚠️ Erreur switch ${aliasId}_${optionIndex}: ${error.message}`,
+          `⚠️ Erreur switch ${aliasId}_${optionIndex}: ${getErrorMessage(error)}`,
         );
         processed = processed.replace(fullMatch, '');
       }
@@ -356,8 +357,8 @@ export class SeoEnhancedService extends SupabaseBaseService {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur analytics SEO: ${error.message}`);
-      return { error: error.message };
+      this.logger.error(`❌ Erreur analytics SEO: ${getErrorMessage(error)}`);
+      return { error: getErrorMessage(error) };
     }
   }
 }

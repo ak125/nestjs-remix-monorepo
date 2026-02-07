@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 export interface RedirectEntry {
   old_path: string;
@@ -515,7 +516,7 @@ export class RedirectService extends SupabaseBaseService {
       this.logger.log(`Cache rechargé avec ${rules.length} règles`);
     } catch (error) {
       this.logger.warn(
-        `Erreur lors du chargement du cache (service de redirection non disponible): ${error?.message || 'Erreur inconnue'}`,
+        `Erreur lors du chargement du cache (service de redirection non disponible): ${getErrorMessage(error)}`,
       );
       // Ne pas lancer l'erreur, juste logger
       // L'application peut continuer sans redirections
@@ -561,7 +562,7 @@ export class RedirectService extends SupabaseBaseService {
       // Ne pas logger cette erreur en ERROR car ce n'est pas critique
       // La redirection fonctionnera même si les stats ne sont pas mises à jour
       this.logger.warn(
-        `Erreur lors de la mise à jour des statistiques: ${error?.message || 'Erreur inconnue'}`,
+        `Erreur lors de la mise à jour des statistiques: ${getErrorMessage(error)}`,
       );
     }
   }

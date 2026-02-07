@@ -2,6 +2,13 @@ import { Controller, Get, Param, Post, Body, Injectable } from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 
+interface SupabaseRpcError {
+  message?: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+}
+
 /**
  * 🚀 GAMME REST CONTROLLER RPC V2 - VERSION ULTRA-OPTIMISÉE
  *
@@ -39,14 +46,15 @@ export class GammeRestRpcV2Controller {
       );
       return result;
     } catch (error) {
+      const rpcError = error as SupabaseRpcError;
       console.error('❌ Erreur dans getPageDataRpcV2:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
+        message: rpcError.message,
+        details: rpcError.details,
+        hint: rpcError.hint,
+        code: rpcError.code,
       });
       console.log(
-        `⚠️ RPC V2 returned error: ${error.message || 'Erreur serveur'}`,
+        `⚠️ RPC V2 returned error: ${rpcError.message || 'Erreur serveur'}`,
       );
 
       // Retourner une erreur 503 pour que le client sache que c'est temporaire
@@ -55,8 +63,9 @@ export class GammeRestRpcV2Controller {
         error: 'Service temporairement indisponible',
         message:
           'Timeout de connexion à la base de données. Veuillez réessayer.',
-        code: error.code,
-        retryable: error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET',
+        code: rpcError.code,
+        retryable:
+          rpcError.code === 'ETIMEDOUT' || rpcError.code === 'ECONNRESET',
       };
     }
   }

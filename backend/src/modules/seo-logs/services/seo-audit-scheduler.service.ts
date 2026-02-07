@@ -13,6 +13,7 @@ import {
   ExternalServiceException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 
 const execAsync = promisify(exec);
 
@@ -171,9 +172,13 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
 
       return report;
     } catch (error) {
-      this.logger.error(`❌ Audit job #${job.id} failed:`, error.message);
-      if (error.stderr) {
-        this.logger.error(`📋 Script stderr:\n${error.stderr}`);
+      this.logger.error(
+        `❌ Audit job #${job.id} failed:`,
+        getErrorMessage(error),
+      );
+      const execError = error as { stderr?: string };
+      if (execError.stderr) {
+        this.logger.error(`📋 Script stderr:\n${execError.stderr}`);
       }
       throw error;
     }

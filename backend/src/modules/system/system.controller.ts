@@ -3,6 +3,7 @@ import { SystemService } from './services/system.service';
 import { MetricsService } from './services/metrics.service';
 import { DatabaseMonitorService } from './services/database-monitor.service';
 import { HealthCheckService } from './services/health-check.service';
+import { getErrorMessage } from '../../common/utils/error.utils';
 
 @Controller('system')
 export class SystemController {
@@ -60,7 +61,7 @@ export class SystemController {
       this.logger.error('❌ Detailed health check failed:', error);
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       };
     }

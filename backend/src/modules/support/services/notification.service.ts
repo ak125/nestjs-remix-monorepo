@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupportConfigService } from './support-config.service';
+import {
+  getErrorMessage,
+  getErrorStack,
+} from '../../../common/utils/error.utils';
 
 export interface NotificationPayload {
   type: 'contact' | 'review' | 'quote' | 'claim' | 'faq' | 'system';
@@ -108,8 +112,8 @@ export class NotificationService {
       this.logger.log(`Notification sent successfully: ${payload.title}`);
     } catch (error) {
       this.logger.error(
-        `Failed to send notification: ${error.message}`,
-        error.stack,
+        `Failed to send notification: ${getErrorMessage(error)}`,
+        getErrorStack(error),
       );
       throw error;
     }
@@ -139,7 +143,9 @@ export class NotificationService {
         `Webhook notification would be sent to: ${config.webhookUrl}`,
       );
     } catch (error) {
-      this.logger.error(`Webhook notification failed: ${error.message}`);
+      this.logger.error(
+        `Webhook notification failed: ${getErrorMessage(error)}`,
+      );
     }
   }
 
