@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
-import { Input } from "./input";
 import { cn } from "~/lib/utils";
+import { Input } from "./input";
 
 export interface ComboboxItem {
   value: string;

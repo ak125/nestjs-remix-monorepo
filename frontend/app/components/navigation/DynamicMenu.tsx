@@ -6,12 +6,12 @@
 import { Link, useLocation } from "@remix-run/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { Alert } from "~/components/ui/alert";
 import {
   type MenuItem,
   type NavigationResponse,
   type UserPreferences,
 } from "../../types/navigation";
-import { Alert } from "~/components/ui/alert";
 
 interface DynamicMenuProps {
   module: "commercial" | "expedition" | "seo";

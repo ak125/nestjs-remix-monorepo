@@ -248,10 +248,7 @@ export class AuthLoginController {
     try {
       await promisifySessionRegenerate((request as any).session);
     } catch (regenerateErr) {
-      this.logger.error(
-        { err: regenerateErr },
-        'Erreur régénération session',
-      );
+      this.logger.error({ err: regenerateErr }, 'Erreur régénération session');
       return response.redirect('/');
     }
 
@@ -299,8 +296,7 @@ export class AuthLoginController {
 
     // Vérifier redirectTo (query ou body) avant la redirection par défaut
     const redirectTo =
-      (request as any).body?.redirectTo ||
-      (request as any).query?.redirectTo;
+      (request as any).body?.redirectTo || (request as any).query?.redirectTo;
 
     if (
       redirectTo &&
@@ -319,14 +315,10 @@ export class AuthLoginController {
       );
       response.redirect('/admin');
     } else if (user.isAdmin && userLevel >= 4) {
-      console.log(
-        `Admin niveau ${userLevel} détecté, redirection vers admin`,
-      );
+      console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);
       response.redirect('/admin');
     } else if (user.isPro) {
-      console.log(
-        'Utilisateur pro détecté, redirection vers dashboard pro',
-      );
+      console.log('Utilisateur pro détecté, redirection vers dashboard pro');
       response.redirect('/pro/dashboard');
     } else {
       console.log('Utilisateur standard, redirection vers accueil');

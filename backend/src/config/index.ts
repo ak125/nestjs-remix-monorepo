@@ -1,12 +1,28 @@
 // App configuration
-export { AppConfig, createAppConfig, getAppConfig, resetAppConfig } from './app.config';
+export {
+  AppConfig,
+  createAppConfig,
+  getAppConfig,
+  resetAppConfig,
+} from './app.config';
 
 // Cache TTL configuration
-export { CacheTTL, CACHE_STRATEGIES, AdaptiveTTL, getCacheKey, getTTLMs } from './cache-ttl.config';
+export {
+  CacheTTL,
+  CACHE_STRATEGIES,
+  AdaptiveTTL,
+  getCacheKey,
+  getTTLMs,
+} from './cache-ttl.config';
 export type { CacheStrategy } from './cache-ttl.config';
 
 // CSP configuration
-export { IMAGE_DOMAINS, CSP_DIRECTIVES, getConnectSrcWithHMR, buildCSPDirectives } from './csp.config';
+export {
+  IMAGE_DOMAINS,
+  CSP_DIRECTIVES,
+  getConnectSrcWithHMR,
+  buildCSPDirectives,
+} from './csp.config';
 
 // Logger configuration
 export { loggerConfig } from './logger.config';
@@ -26,7 +42,11 @@ export {
   SEO_LINK_TYPES,
   SEO_LINK_POSITIONS,
 } from './seo-link-limits.config';
-export type { SeoLinkLimits, SeoLinkType, SeoLinkPosition } from './seo-link-limits.config';
+export type {
+  SeoLinkLimits,
+  SeoLinkType,
+  SeoLinkPosition,
+} from './seo-link-limits.config';
 
 // SEO variations
 export {

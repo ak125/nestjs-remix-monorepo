@@ -4,8 +4,8 @@
  */
 
 import { Package, Plus } from "lucide-react";
-import { type OrdersHeaderProps } from "../../types/orders.types";
 import { Button } from "~/components/ui/button";
+import { type OrdersHeaderProps } from "../../types/orders.types";
 
 export function OrdersHeader({
   permissions,

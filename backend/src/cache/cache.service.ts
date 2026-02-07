@@ -46,7 +46,9 @@ export class CacheService implements OnModuleInit {
 
     // 🚀 LCP OPTIMIZATION: Timeout réduit à 2s pour éviter blocage
     try {
-      await once(this.redisClient, 'ready', { signal: AbortSignal.timeout(2000) });
+      await once(this.redisClient, 'ready', {
+        signal: AbortSignal.timeout(2000),
+      });
       this.redisReady = true;
       console.log('✅ Redis prêt et disponible');
     } catch {
