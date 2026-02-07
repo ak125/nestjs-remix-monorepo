@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
 @Injectable()
 export class CookieSerializer extends PassportSerializer {
+  private readonly logger = new Logger(CookieSerializer.name);
+
   // 🔧 Cache en mémoire pour éviter les requêtes BDD répétées
   private userCache = new Map<string, { user: any; timestamp: number }>();
   private readonly CACHE_TTL = 5000; // 5 secondes
@@ -32,7 +34,7 @@ export class CookieSerializer extends PassportSerializer {
       const user = await this.authService.getUserById(userId);
 
       if (!user) {
-        console.log('⚠️  User not found during deserialization:', userId);
+        this.logger.log(`User not found during deserialization: ${userId}`);
         this.userCache.delete(userId); // Nettoyer le cache
         return done(null, false);
       }
@@ -48,7 +50,7 @@ export class CookieSerializer extends PassportSerializer {
       // console.log('✅ User deserialized:', user.email);
       done(null, user);
     } catch (error) {
-      console.error('❌ Deserialization error:', error);
+      this.logger.error(`Deserialization error: ${error}`);
       done(error, null);
     }
   }
@@ -72,8 +74,8 @@ export class CookieSerializer extends PassportSerializer {
   serializeUser(user: any, done: (err: any, userId?: any) => void) {
     // Si user est undefined, false ou null, ne pas créer de session
     if (!user || user === false || user === null) {
-      console.log(
-        '⚠️  User is undefined/false/null, skipping session creation',
+      this.logger.log(
+        'User is undefined/false/null, skipping session creation',
       );
       return done(null, false);
     }
@@ -82,11 +84,13 @@ export class CookieSerializer extends PassportSerializer {
     const userId = user.id || user.cst_id || user.cnfa_id;
 
     if (!userId) {
-      console.log('⚠️  No user ID found, cannot serialize:', user);
+      this.logger.log(
+        `No user ID found, cannot serialize: ${JSON.stringify(user)}`,
+      );
       return done(null, false);
     }
 
-    console.log('✅ Serializing user ID:', userId, 'for email:', user.email);
+    this.logger.log(`Serializing user ID: ${userId} for email: ${user.email}`);
     done(null, userId); // ⚠️ IMPORTANT: Ne stocker QUE l'ID
   }
 }

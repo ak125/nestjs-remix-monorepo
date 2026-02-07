@@ -17,9 +17,8 @@ import {
   Query,
   ParseIntPipe,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -148,23 +147,13 @@ export class DynamicSeoController {
         },
       };
     } catch (error) {
-      const responseTime = Date.now() - startTime;
+      const _responseTime = Date.now() - startTime;
 
       this.logger.error(`❌ [API] Erreur génération SEO:`, error);
 
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Erreur lors de la génération SEO',
-          details: getErrorMessage(error),
-          metadata: {
-            api_version: '4.0.0',
-            response_time: responseTime,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération SEO',
+      });
     }
   }
 
@@ -263,10 +252,9 @@ export class DynamicSeoController {
     } catch (error) {
       this.logger.error(`❌ [API] Erreur SEO véhicule:`, error);
 
-      throw new HttpException(
-        'Erreur lors de la génération SEO véhicule',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération SEO véhicule',
+      });
     }
   }
 
@@ -442,10 +430,9 @@ export class DynamicSeoController {
     } catch (error) {
       this.logger.error(`❌ [API] Erreur comparaison:`, error);
 
-      throw new HttpException(
-        'Erreur lors de la comparaison',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la comparaison',
+      });
     }
   }
 
@@ -640,14 +627,9 @@ export class DynamicSeoController {
       this.logger.error(
         `❌ Erreur récupération métriques: ${getErrorMessage(error)}`,
       );
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Erreur récupération métriques SEO',
-          details: getErrorMessage(error),
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur récupération métriques SEO',
+      });
     }
   }
 
@@ -677,14 +659,9 @@ export class DynamicSeoController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur audit SEO: ${getErrorMessage(error)}`);
-      throw new HttpException(
-        {
-          success: false,
-          error: "Erreur lors de l'audit SEO",
-          details: getErrorMessage(error),
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de l'audit SEO",
+      });
     }
   }
 
@@ -746,14 +723,9 @@ export class DynamicSeoController {
       this.logger.error(
         `❌ Erreur génération A/B test: ${getErrorMessage(error)}`,
       );
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Erreur génération variantes A/B',
-          details: getErrorMessage(error),
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur génération variantes A/B',
+      });
     }
   }
 
@@ -795,14 +767,9 @@ export class DynamicSeoController {
       this.logger.error(
         `❌ Erreur métriques maillage interne: ${getErrorMessage(error)}`,
       );
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Erreur récupération métriques maillage interne',
-          details: getErrorMessage(error),
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur récupération métriques maillage interne',
+      });
     }
   }
 }

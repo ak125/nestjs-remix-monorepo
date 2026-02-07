@@ -4,16 +4,16 @@ import { TABLES } from '@repo/database-types';
  * Implémente toutes les fonctionnalités nécessaires pour l'API
  */
 
+import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import {
-  Injectable,
-  Inject,
-  forwardRef,
-  NotFoundException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+  DatabaseException,
+  ErrorCodes,
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainConflictException,
+  DomainValidationException,
+  BusinessRuleException,
+} from '../../common/exceptions';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { UserDataService } from '../../database/services/user-data.service';
 import { UserService } from '../../database/services/user.service';
@@ -39,6 +39,8 @@ import { ProfileService } from './services/profile.service';
 
 @Injectable()
 export class UsersService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(UsersService.name);
+
   constructor(
     configService: ConfigService,
     private readonly userDataService: UserDataService,
@@ -56,7 +58,7 @@ export class UsersService extends SupabaseBaseService {
    * Inscription d'un nouvel utilisateur
    */
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
-    console.log('🔐 UsersService.register:', registerDto.email);
+    this.logger.log(`UsersService.register: ${registerDto.email}`);
 
     try {
       const authUser = await this.authService.register({
@@ -79,10 +81,12 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('Utilisateur créé via AuthService:', authUser.id);
+      this.logger.log(`Utilisateur créé via AuthService: ${authUser.id}`);
       return userResponse;
     } catch (error: any) {
-      console.error('❌ Erreur création utilisateur:', error);
+      this.logger.error(
+        `Erreur création utilisateur: ${error?.message || error}`,
+      );
       throw error; // Propager l'erreur d'AuthService
     }
   }
@@ -91,7 +95,7 @@ export class UsersService extends SupabaseBaseService {
    * Connexion utilisateur
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    console.log('🔑 UsersService.login:', loginDto.email);
+    this.logger.log(`UsersService.login: ${loginDto.email}`);
 
     try {
       const loginResult = await this.authService.login(
@@ -115,10 +119,12 @@ export class UsersService extends SupabaseBaseService {
         expiresIn: loginResult.expires_in,
       };
 
-      console.log('Connexion réussie via AuthService:', loginResult.user.id);
+      this.logger.log(
+        `Connexion réussie via AuthService: ${loginResult.user.id}`,
+      );
       return response;
     } catch (error: any) {
-      console.error('❌ Erreur connexion:', error);
+      this.logger.error(`Erreur connexion: ${error?.message || error}`);
       throw error; // Propager l'erreur d'AuthService
     }
   }
@@ -130,12 +136,14 @@ export class UsersService extends SupabaseBaseService {
    * Récupérer profil utilisateur
    */
   async getProfile(userId: number): Promise<UserResponseDto> {
-    console.log('👤 UsersService.getProfile:', userId);
+    this.logger.log(`UsersService.getProfile: ${userId}`);
 
     try {
       return await this.profileService.getProfile(String(userId));
     } catch (error: any) {
-      console.error('❌ Erreur récupération profil:', error);
+      this.logger.error(
+        `Erreur récupération profil: ${error?.message || error}`,
+      );
       throw error; // Propager erreur de ProfileService
     }
   }
@@ -147,12 +155,16 @@ export class UsersService extends SupabaseBaseService {
     userId: number,
     updateDto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
-    console.log('✏️ UsersService.updateProfile:', userId, updateDto);
+    this.logger.log(
+      `UsersService.updateProfile: ${userId} ${JSON.stringify(updateDto)}`,
+    );
 
     try {
       return await this.profileService.updateProfile(String(userId), updateDto);
     } catch (error: any) {
-      console.error('❌ Erreur mise à jour profil:', error);
+      this.logger.error(
+        `Erreur mise à jour profil: ${error?.message || error}`,
+      );
       throw error; // Propager erreur de ProfileService
     }
   }
@@ -164,10 +176,7 @@ export class UsersService extends SupabaseBaseService {
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('UsersService.getAllUsers:', {
-      page,
-      limit,
-    });
+    this.logger.log(`UsersService.getAllUsers: page=${page} limit=${limit}`);
 
     try {
       const result = await this.userService.getAllUsers(page, limit);
@@ -193,11 +202,13 @@ export class UsersService extends SupabaseBaseService {
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
-      console.error('❌ Erreur récupération utilisateurs:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération des utilisateurs',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur récupération utilisateurs: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || 'Erreur lors de la récupération des utilisateurs',
+      });
     }
   }
 
@@ -205,15 +216,15 @@ export class UsersService extends SupabaseBaseService {
    * Créer un nouvel utilisateur (admin)
    */
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    console.log('UsersService.createUser:', createUserDto.email);
+    this.logger.log(`UsersService.createUser: ${createUserDto.email}`);
 
     try {
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await this.findByEmail(createUserDto.email);
       if (existingUser) {
-        throw new ConflictException(
-          'Un utilisateur avec cet email existe déjà',
-        );
+        throw new DomainConflictException({
+          message: 'Un utilisateur avec cet email existe déjà',
+        });
       }
 
       // Créer le nouvel utilisateur
@@ -228,14 +239,16 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('Utilisateur créé (admin):', newUser.id);
+      this.logger.log(`Utilisateur créé (admin): ${newUser.id}`);
       return newUser;
     } catch (error: any) {
-      console.error('❌ Erreur création utilisateur (admin):', error);
-      throw new HttpException(
-        error?.message || "Erreur lors de la création de l'utilisateur",
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur création utilisateur (admin): ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || "Erreur lors de la création de l'utilisateur",
+      });
     }
   }
 
@@ -246,12 +259,16 @@ export class UsersService extends SupabaseBaseService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    console.log('UsersService.updateUser:', id, updateUserDto);
+    this.logger.log(
+      `UsersService.updateUser: ${id} ${JSON.stringify(updateUserDto)}`,
+    );
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // Mettre à jour les champs
@@ -265,14 +282,16 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('Utilisateur mis à jour:', updatedUser.email);
+      this.logger.log(`Utilisateur mis à jour: ${updatedUser.email}`);
       return updatedUser;
     } catch (error: any) {
-      console.error('❌ Erreur mise à jour utilisateur:', error);
-      throw new HttpException(
-        error?.message || "Erreur lors de la mise à jour de l'utilisateur",
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur mise à jour utilisateur: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || "Erreur lors de la mise à jour de l'utilisateur",
+      });
     }
   }
 
@@ -280,23 +299,27 @@ export class UsersService extends SupabaseBaseService {
    * Supprimer un utilisateur (désactiver)
    */
   async deleteUser(id: string): Promise<boolean> {
-    console.log('🗑️ UsersService.deleteUser:', id);
+    this.logger.log(`UsersService.deleteUser: ${id}`);
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // En pratique, on désactive plutôt que de supprimer
-      console.log('Utilisateur désactivé:', id);
+      this.logger.log(`Utilisateur désactivé: ${id}`);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur suppression utilisateur:', error);
-      throw new HttpException(
-        error?.message || "Erreur lors de la suppression de l'utilisateur",
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur suppression utilisateur: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || "Erreur lors de la suppression de l'utilisateur",
+      });
     }
   }
 
@@ -304,7 +327,7 @@ export class UsersService extends SupabaseBaseService {
    * Récupérer le profil utilisateur (alias pour getUserProfile)
    */
   async getUserProfile(id: string): Promise<UserProfileDto> {
-    console.log('👤 UsersService.getUserProfile:', id);
+    this.logger.log(`UsersService.getUserProfile: ${id}`);
 
     try {
       const user = await this.getProfile(Number(id));
@@ -333,11 +356,12 @@ export class UsersService extends SupabaseBaseService {
 
       return profile;
     } catch (error: any) {
-      console.error('❌ Erreur récupération profil utilisateur:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération du profil',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur récupération profil utilisateur: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la récupération du profil',
+      });
     }
   }
 
@@ -345,23 +369,26 @@ export class UsersService extends SupabaseBaseService {
    * Changer le mot de passe d'un utilisateur
    */
   async changePassword(id: string): Promise<boolean> {
-    console.log('🔒 UsersService.changePassword:', id);
+    this.logger.log(`UsersService.changePassword: ${id}`);
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // En pratique, vérifier l'ancien mot de passe et hasher le nouveau
-      console.log('Mot de passe changé pour:', id);
+      this.logger.log(`Mot de passe changé pour: ${id}`);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur changement mot de passe:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors du changement de mot de passe',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur changement mot de passe: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors du changement de mot de passe',
+      });
     }
   }
 
@@ -369,12 +396,14 @@ export class UsersService extends SupabaseBaseService {
    * Mettre à jour le niveau d'un utilisateur
    */
   async updateUserLevel(id: string, level: number): Promise<UserResponseDto> {
-    console.log('⬆️ UsersService.updateUserLevel:', id, level);
+    this.logger.log(`UsersService.updateUserLevel: ${id} level=${level}`);
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // Mettre à jour le niveau (en pratique, stocké dans la DB)
@@ -383,14 +412,15 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('Niveau utilisateur mis à jour:', id, level);
+      this.logger.log(`Niveau utilisateur mis à jour: ${id} level=${level}`);
       return updatedUser;
     } catch (error: any) {
-      console.error('❌ Erreur mise à jour niveau:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la mise à jour du niveau',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur mise à jour niveau: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la mise à jour du niveau',
+      });
     }
   }
 
@@ -398,23 +428,26 @@ export class UsersService extends SupabaseBaseService {
    * Désactiver un utilisateur
    */
   async deactivateUser(id: string, reason?: string): Promise<boolean> {
-    console.log('🚫 UsersService.deactivateUser:', id, reason);
+    this.logger.log(`UsersService.deactivateUser: ${id} reason=${reason}`);
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // Désactiver l'utilisateur
-      console.log('Utilisateur désactivé:', id);
+      this.logger.log(`Utilisateur désactivé: ${id}`);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur désactivation utilisateur:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la désactivation',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur désactivation utilisateur: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la désactivation',
+      });
     }
   }
 
@@ -422,12 +455,14 @@ export class UsersService extends SupabaseBaseService {
    * Réactiver un utilisateur
    */
   async reactivateUser(id: string): Promise<UserResponseDto> {
-    console.log('UsersService.reactivateUser:', id);
+    this.logger.log(`UsersService.reactivateUser: ${id}`);
 
     try {
       const user = await this.findById(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // Réactiver l'utilisateur
@@ -437,14 +472,15 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('Utilisateur réactivé:', id);
+      this.logger.log(`Utilisateur réactivé: ${id}`);
       return reactivatedUser;
     } catch (error: any) {
-      console.error('❌ Erreur réactivation utilisateur:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la réactivation',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur réactivation utilisateur: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la réactivation',
+      });
     }
   }
 
@@ -455,7 +491,7 @@ export class UsersService extends SupabaseBaseService {
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('UsersService.getActiveUsers:', { page, limit });
+    this.logger.log(`UsersService.getActiveUsers: page=${page} limit=${limit}`);
 
     try {
       const offset = (page - 1) * limit;
@@ -472,7 +508,7 @@ export class UsersService extends SupabaseBaseService {
         .order('cst_id', { ascending: false });
 
       if (error) {
-        console.error('❌ Erreur Supabase getActiveUsers:', error);
+        this.logger.error(`Erreur Supabase getActiveUsers: ${error.message}`);
         throw new DatabaseException({
           code: ErrorCodes.DATABASE.OPERATION_FAILED,
           message: error.message,
@@ -481,7 +517,7 @@ export class UsersService extends SupabaseBaseService {
       }
 
       const total = count || 0;
-      console.log(`✅ ${users?.length || 0} utilisateurs actifs sur ${total}`);
+      this.logger.log(`${users?.length || 0} utilisateurs actifs sur ${total}`);
 
       return {
         users: (users || []).map((user) => ({
@@ -504,12 +540,14 @@ export class UsersService extends SupabaseBaseService {
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
-      console.error('❌ Erreur récupération utilisateurs actifs:', error);
-      throw new HttpException(
-        error?.message ||
-          'Erreur lors de la récupération des utilisateurs actifs',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur récupération utilisateurs actifs: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message ||
+          'Erreur lors de la récupération des utilisateurs actifs',
+      });
     }
   }
 
@@ -519,7 +557,9 @@ export class UsersService extends SupabaseBaseService {
   async searchUsers(
     searchParams: SearchUsersDto,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('UsersService.searchUsers:', searchParams);
+    this.logger.log(
+      `UsersService.searchUsers: ${JSON.stringify(searchParams)}`,
+    );
 
     try {
       const page = searchParams.page || 1;
@@ -552,7 +592,7 @@ export class UsersService extends SupabaseBaseService {
       const { data: users, error, count } = await query;
 
       if (error) {
-        console.error('❌ Erreur Supabase searchUsers:', error);
+        this.logger.error(`Erreur Supabase searchUsers: ${error.message}`);
         throw new DatabaseException({
           code: ErrorCodes.DATABASE.OPERATION_FAILED,
           message: error.message,
@@ -561,7 +601,9 @@ export class UsersService extends SupabaseBaseService {
       }
 
       const total = count || 0;
-      console.log(`✅ ${users?.length || 0} utilisateurs trouvés sur ${total}`);
+      this.logger.log(
+        `${users?.length || 0} utilisateurs trouvés sur ${total}`,
+      );
 
       return {
         users: (users || []).map((user) => ({
@@ -584,11 +626,13 @@ export class UsersService extends SupabaseBaseService {
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
-      console.error('❌ Erreur recherche utilisateurs:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la recherche des utilisateurs',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur recherche utilisateurs: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || 'Erreur lors de la recherche des utilisateurs',
+      });
     }
   }
 
@@ -596,13 +640,12 @@ export class UsersService extends SupabaseBaseService {
    * Mettre à jour les adresses - TEMPORAIREMENT DÉSACTIVÉE
    */
   async updateAddress(userId: number): Promise<UserResponseDto> {
-    console.log('🏠 UsersService.updateAddress - DÉSACTIVÉE:', userId);
+    this.logger.log(`UsersService.updateAddress - DESACTIVEE: ${userId}`);
 
     // TODO: Corriger les DTOs pour faire fonctionner cette méthode
-    throw new HttpException(
-      'Cette fonction est temporairement désactivée',
-      HttpStatus.NOT_IMPLEMENTED,
-    );
+    throw new BusinessRuleException({
+      message: 'Cette fonction est temporairement désactivée',
+    });
   }
 
   /**
@@ -612,7 +655,7 @@ export class UsersService extends SupabaseBaseService {
     userId: number,
     messageDto: UserMessageDto,
   ): Promise<{ success: boolean; messageId: string }> {
-    console.log('📝 UsersService.createMessage:', userId);
+    this.logger.log(`UsersService.createMessage: ${userId}`);
 
     try {
       // ✅ Déléguer vers MessagesService
@@ -624,10 +667,10 @@ export class UsersService extends SupabaseBaseService {
         priority: 'normal',
       });
 
-      console.log('Message créé via MessagesService:', message.id);
+      this.logger.log(`Message créé via MessagesService: ${message.id}`);
       return { success: true, messageId: message.id };
     } catch (error: any) {
-      console.error('❌ Erreur création message:', error);
+      this.logger.error(`Erreur création message: ${error?.message || error}`);
       throw error; // Propager l'erreur de MessagesService
     }
   }
@@ -636,7 +679,7 @@ export class UsersService extends SupabaseBaseService {
    * Récupérer les messages d'un utilisateur
    */
   async getUserMessages(userId: number): Promise<any[]> {
-    console.log('📬 UsersService.getUserMessages:', userId);
+    this.logger.log(`UsersService.getUserMessages: ${userId}`);
 
     try {
       // ✅ Déléguer vers MessagesService avec filtres
@@ -657,13 +700,14 @@ export class UsersService extends SupabaseBaseService {
         priority: msg.priority,
       }));
 
-      console.log(
-        '✅ Messages récupérés via MessagesService:',
-        messages.length,
+      this.logger.log(
+        `Messages récupérés via MessagesService: ${messages.length}`,
       );
       return messages;
     } catch (error: any) {
-      console.error('❌ Erreur récupération messages:', error);
+      this.logger.error(
+        `Erreur récupération messages: ${error?.message || error}`,
+      );
       throw error; // Propager l'erreur de MessagesService
     }
   }
@@ -674,7 +718,7 @@ export class UsersService extends SupabaseBaseService {
   async requestPasswordReset(
     resetDto: ResetPasswordDto,
   ): Promise<{ success: boolean; message: string }> {
-    console.log('UsersService.requestPasswordReset:', resetDto.email);
+    this.logger.log(`UsersService.requestPasswordReset: ${resetDto.email}`);
 
     try {
       const user = await this.findByEmail(resetDto.email);
@@ -688,14 +732,16 @@ export class UsersService extends SupabaseBaseService {
       }
 
       // En production, générer un token et envoyer un email
-      console.log('Demande de réinitialisation traitée');
+      this.logger.log('Demande de réinitialisation traitée');
       return { success: true, message: 'Lien de réinitialisation envoyé' };
     } catch (error: any) {
-      console.error('❌ Erreur demande réinitialisation:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la demande de réinitialisation',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      this.logger.error(
+        `Erreur demande réinitialisation: ${error?.message || error}`,
       );
+      throw new OperationFailedException({
+        message:
+          error?.message || 'Erreur lors de la demande de réinitialisation',
+      });
     }
   }
 
@@ -703,7 +749,7 @@ export class UsersService extends SupabaseBaseService {
    * Confirmer la réinitialisation de mot de passe
    */
   async confirmPasswordReset(): Promise<void> {
-    console.log('UsersService.confirmPasswordReset (Mock)');
+    this.logger.log('UsersService.confirmPasswordReset (Mock)');
     // TODO: Implémenter avec vraie DB
     throw new DatabaseException({
       code: ErrorCodes.DATABASE.OPERATION_FAILED,
@@ -718,12 +764,14 @@ export class UsersService extends SupabaseBaseService {
    * Trouver utilisateur par email
    */
   async findByEmail(email: string): Promise<UserResponseDto | null> {
-    console.log('📧 UsersService.findByEmail:', email);
+    this.logger.log(`UsersService.findByEmail: ${email}`);
 
     try {
       return await this.profileService.findByEmail(email);
     } catch (error: any) {
-      console.error('❌ Erreur recherche par email:', error);
+      this.logger.error(
+        `Erreur recherche par email: ${error?.message || error}`,
+      );
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
@@ -732,12 +780,12 @@ export class UsersService extends SupabaseBaseService {
    * Trouver utilisateur par ID
    */
   async findById(id: string): Promise<UserResponseDto | null> {
-    console.log('UsersService.findById:', id);
+    this.logger.log(`UsersService.findById: ${id}`);
 
     try {
       return await this.profileService.findById(id);
     } catch (error: any) {
-      console.error('❌ Erreur recherche par ID:', error);
+      this.logger.error(`Erreur recherche par ID: ${error?.message || error}`);
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
@@ -772,16 +820,17 @@ export class UsersService extends SupabaseBaseService {
    * Trouver tous les utilisateurs avec pagination
    */
   async findAll(options: any = {}, currentUser?: any): Promise<any> {
-    console.log('[UsersService.findAll] Options:', options);
-    console.log(
-      '[UsersService.findAll] Current user:',
-      currentUser?.email || 'none',
+    this.logger.log(
+      `[UsersService.findAll] Options: ${JSON.stringify(options)}`,
+    );
+    this.logger.log(
+      `[UsersService.findAll] Current user: ${currentUser?.email || 'none'}`,
     );
 
     try {
       // Si nous avons un utilisateur authentifié, récupérer vraiment les données
       if (currentUser && currentUser.level >= 5) {
-        console.log(
+        this.logger.log(
           '[UsersService.findAll] Admin user detected, fetching real data',
         );
 
@@ -794,7 +843,9 @@ export class UsersService extends SupabaseBaseService {
           );
 
         if (error) {
-          console.error('[UsersService.findAll] Database error:', error);
+          this.logger.error(
+            `[UsersService.findAll] Database error: ${error.message}`,
+          );
           throw new DatabaseException({
             code: ErrorCodes.DATABASE.OPERATION_FAILED,
             message: error.message,
@@ -806,7 +857,9 @@ export class UsersService extends SupabaseBaseService {
           .from(TABLES.users)
           .select('*', { count: 'exact', head: true });
 
-        console.log(`[UsersService.findAll] Found ${users?.length || 0} users`);
+        this.logger.log(
+          `[UsersService.findAll] Found ${users?.length || 0} users`,
+        );
 
         return {
           users: users || [],
@@ -820,11 +873,13 @@ export class UsersService extends SupabaseBaseService {
         };
       }
     } catch (error) {
-      console.error('[UsersService.findAll] Error:', error);
+      this.logger.error(
+        `[UsersService.findAll] Error: ${error instanceof Error ? error.message : error}`,
+      );
     }
 
     // Fallback pour utilisateurs non authentifiés ou erreur
-    console.log('[UsersService.findAll] Returning empty result');
+    this.logger.log('[UsersService.findAll] Returning empty result');
     return {
       users: [],
       total: 0,
@@ -899,7 +954,7 @@ export class UsersService extends SupabaseBaseService {
    * Valider une civilité
    */
   validateCivility(civility: string): boolean {
-    console.log('UsersService.validateCivility:', civility);
+    this.logger.log(`UsersService.validateCivility: ${civility}`);
     const validCivilities = ['M', 'Mme', 'Mlle', 'Dr', 'Prof'];
     return validCivilities.includes(civility);
   }
@@ -908,19 +963,21 @@ export class UsersService extends SupabaseBaseService {
    * Rechercher les utilisateurs par civilité
    */
   async findByCivility(civility: string, options: any = {}): Promise<any> {
-    console.log('UsersService.findByCivility:', civility);
+    this.logger.log(`UsersService.findByCivility: ${civility}`);
 
     try {
       if (!this.validateCivility(civility)) {
-        throw new HttpException('Civilité invalide', HttpStatus.BAD_REQUEST);
+        throw new DomainValidationException({
+          message: 'Civilité invalide',
+        });
       }
 
       const { page = 1, limit = 20 } = options;
 
       // Le champ civilité n'existe pas dans ___xtr_customer
       // Retourner une liste vide pour l'instant
-      console.log(
-        `⚠️ La recherche par civilité n'est pas supportée (champ manquant dans la DB)`,
+      this.logger.warn(
+        `La recherche par civilité n'est pas supportée (champ manquant dans la DB)`,
       );
       return {
         users: [],
@@ -932,11 +989,10 @@ export class UsersService extends SupabaseBaseService {
         },
       };
     } catch (error: any) {
-      console.error('❌ Erreur findByCivility:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la recherche par civilité',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur findByCivility: ${error?.message || error}`);
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la recherche par civilité',
+      });
     }
   }
 
@@ -944,20 +1000,20 @@ export class UsersService extends SupabaseBaseService {
    * Mettre à jour la dernière connexion
    */
   async updateLastLogin(userId: number): Promise<boolean> {
-    console.log('UsersService.updateLastLogin:', userId);
+    this.logger.log(`UsersService.updateLastLogin: ${userId}`);
 
     try {
       // Simulation de mise à jour pour le moment
       // En production, utiliser Supabase pour mettre à jour last_login
-      console.log('Dernière connexion mise à jour:', userId);
+      this.logger.log(`Dernière connexion mise à jour: ${userId}`);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur updateLastLogin:', error);
-      throw new HttpException(
-        error?.message ||
+      this.logger.error(`Erreur updateLastLogin: ${error?.message || error}`);
+      throw new OperationFailedException({
+        message:
+          error?.message ||
           'Erreur lors de la mise à jour de la dernière connexion',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      });
     }
   }
 }

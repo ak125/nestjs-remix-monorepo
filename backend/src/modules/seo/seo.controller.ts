@@ -6,8 +6,6 @@ import {
   Body,
   Param,
   Query,
-  HttpException,
-  HttpStatus,
   UseGuards,
   Logger,
 } from '@nestjs/common';
@@ -15,6 +13,7 @@ import { SeoService } from './seo.service';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { UrlCompatibilityService } from './services/url-compatibility.service';
 import { SeoKpisService } from './services/seo-kpis.service';
+import { OperationFailedException } from '../../common/exceptions';
 
 interface MetadataDto {
   page_url: string;
@@ -74,10 +73,9 @@ export class SeoController {
         `Erreur lors de la récupération des métadonnées pour ${url}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des métadonnées',
+      });
     }
   }
 
@@ -105,10 +103,9 @@ export class SeoController {
         `Erreur lors de la mise à jour des métadonnées:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour des métadonnées',
+      });
     }
   }
 
@@ -134,10 +131,9 @@ export class SeoController {
         `Erreur lors de la vérification des redirections pour ${url}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la vérification des redirections',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la vérification des redirections',
+      });
     }
   }
 
@@ -154,10 +150,9 @@ export class SeoController {
         'Erreur lors de la récupération de la configuration SEO:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération de la configuration SEO',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la configuration SEO',
+      });
     }
   }
 
@@ -193,10 +188,9 @@ export class SeoController {
         'Erreur lors de la récupération des analytics SEO:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des analytics SEO',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des analytics SEO',
+      });
     }
   }
 
@@ -218,10 +212,9 @@ export class SeoController {
         'Erreur lors de la récupération des pages sans SEO:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des pages sans SEO',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des pages sans SEO',
+      });
     }
   }
 
@@ -269,10 +262,9 @@ export class SeoController {
       };
     } catch (error) {
       this.logger.error('Erreur lors de la mise à jour en lot:', error);
-      throw new HttpException(
-        'Erreur lors de la mise à jour en lot',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour en lot',
+      });
     }
   }
 
@@ -295,10 +287,9 @@ export class SeoController {
         'Erreur lors de la génération du rapport de compatibilité:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la génération du rapport',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération du rapport',
+      });
     }
   }
 
@@ -326,10 +317,9 @@ export class SeoController {
         'Erreur lors de la vérification de compatibilité:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la vérification',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la vérification',
+      });
     }
   }
 
@@ -358,10 +348,9 @@ export class SeoController {
         'Erreur lors de la récupération des URLs gammes:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des URLs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des URLs',
+      });
     }
   }
 
@@ -389,10 +378,9 @@ export class SeoController {
         'Erreur lors de la récupération des URLs constructeurs:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des URLs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des URLs',
+      });
     }
   }
 
@@ -422,10 +410,9 @@ export class SeoController {
         'Erreur lors de la récupération des URLs modèles:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des URLs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des URLs',
+      });
     }
   }
 
@@ -504,10 +491,9 @@ export class SeoController {
       };
     } catch (error) {
       this.logger.error('Erreur test URL véhicule:', error);
-      throw new HttpException(
-        'Erreur lors du test',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du test',
+      });
     }
   }
 
@@ -573,10 +559,9 @@ export class SeoController {
       };
     } catch (error) {
       this.logger.error('Erreur test URL constructeur:', error);
-      throw new HttpException(
-        'Erreur lors du test',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du test',
+      });
     }
   }
 
@@ -595,10 +580,9 @@ export class SeoController {
       };
     } catch (error) {
       this.logger.error('Erreur récupération KPIs dashboard:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des KPIs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des KPIs',
+      });
     }
   }
 }

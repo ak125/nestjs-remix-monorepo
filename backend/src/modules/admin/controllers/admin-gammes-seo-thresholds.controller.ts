@@ -15,10 +15,12 @@ import {
   Body,
   Req,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 import { Request } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
@@ -51,14 +53,9 @@ export class AdminGammesSeoThresholdsController {
       };
     } catch (error) {
       this.logger.error('❌ Error getting thresholds:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des seuils',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des seuils',
+      });
     }
   }
 
@@ -109,16 +106,12 @@ export class AdminGammesSeoThresholdsController {
       };
     } catch (error) {
       this.logger.error('❌ Error updating thresholds:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Erreur lors de la mise à jour des seuils',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la mise à jour des seuils',
+      });
     }
   }
 
@@ -160,14 +153,9 @@ export class AdminGammesSeoThresholdsController {
       };
     } catch (error) {
       this.logger.error('❌ Error resetting thresholds:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la réinitialisation des seuils',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la réinitialisation des seuils',
+      });
     }
   }
 }

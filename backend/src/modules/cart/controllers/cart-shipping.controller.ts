@@ -6,10 +6,12 @@ import {
   UseGuards,
   Req,
   Logger,
-  HttpStatus,
-  HttpException,
   BadRequestException,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -85,10 +87,10 @@ export class CartShippingController {
       };
     } catch (error) {
       this.logger.error('Erreur calcul shipping:', error);
-      throw new HttpException(
-        error instanceof Error ? error.message : 'Erreur calcul livraison',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message:
+          error instanceof Error ? error.message : 'Erreur calcul livraison',
+      });
     }
   }
 
@@ -157,10 +159,12 @@ export class CartShippingController {
       };
     } catch (error) {
       this.logger.error('Erreur application shipping:', error);
-      throw new HttpException(
-        error instanceof Error ? error.message : 'Erreur application livraison',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur application livraison',
+      });
     }
   }
 
@@ -186,10 +190,9 @@ export class CartShippingController {
       };
     } catch (error) {
       this.logger.error('Erreur retrait shipping:', error);
-      throw new HttpException(
-        'Erreur lors du retrait de la méthode de livraison',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du retrait de la méthode de livraison',
+      });
     }
   }
 }

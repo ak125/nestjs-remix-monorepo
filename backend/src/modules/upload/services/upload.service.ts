@@ -5,13 +5,8 @@
  * Intégration avec tous les services spécialisés
  */
 
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseStorageService } from './supabase-storage.service';
 import { FileValidationService } from './file-validation.service';
@@ -145,10 +140,9 @@ export class UploadService {
         throw error;
       }
 
-      throw new HttpException(
-        `Échec de l'upload: ${errorMessage}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Échec de l'upload: ${errorMessage}`,
+      });
     }
   }
 
@@ -413,10 +407,9 @@ export class UploadService {
       );
     } catch (error: any) {
       this.logger.error('❌ Failed to generate usage report:', error.message);
-      throw new HttpException(
-        'Impossible de générer le rapport',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Impossible de générer le rapport',
+      });
     }
   }
 

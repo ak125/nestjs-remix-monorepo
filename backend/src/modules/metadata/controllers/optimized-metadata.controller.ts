@@ -17,14 +17,13 @@ import {
   Param,
   Body,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   OptimizedMetadataService,
   PageMetadata,
   MetadataUpdateData,
 } from '../services/optimized-metadata.service';
+import { OperationFailedException } from '../../../common/exceptions';
 
 @Controller('api/metadata')
 export class OptimizedMetadataController {
@@ -58,10 +57,9 @@ export class OptimizedMetadataController {
         `❌ Erreur récupération métadonnées pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des métadonnées',
+      });
     }
   }
 
@@ -93,10 +91,9 @@ export class OptimizedMetadataController {
         `❌ Erreur mise à jour métadonnées pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour des métadonnées',
+      });
     }
   }
 
@@ -124,10 +121,9 @@ export class OptimizedMetadataController {
         `❌ Erreur suppression métadonnées pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la suppression des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la suppression des métadonnées',
+      });
     }
   }
 }

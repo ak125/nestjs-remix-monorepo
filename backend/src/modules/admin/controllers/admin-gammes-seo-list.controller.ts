@@ -19,11 +19,10 @@ import {
   Param,
   Res,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { Response } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
@@ -90,14 +89,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error in getGammesList:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des gammes',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des gammes',
+      });
     }
   }
 
@@ -120,14 +114,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error in getStats:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des statistiques',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -150,14 +139,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error in getFamilies:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des familles',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des familles',
+      });
     }
   }
 
@@ -180,14 +164,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error in getAvailableActions:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des actions',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des actions',
+      });
     }
   }
 
@@ -212,14 +191,9 @@ export class AdminGammesSeoListController {
       res.send('\uFEFF' + csv); // BOM for Excel UTF-8 compatibility
     } catch (error) {
       this.logger.error('❌ Error in exportCsv:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de l'export CSV",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de l'export CSV",
+      });
     }
   }
 
@@ -241,14 +215,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error(`❌ Error getting gamme detail ${id}:`, error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération du détail gamme',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du détail gamme',
+      });
     }
   }
 
@@ -285,14 +254,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error getting audit history:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de la récupération de l'historique",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la récupération de l'historique",
+      });
     }
   }
 
@@ -316,14 +280,9 @@ export class AdminGammesSeoListController {
       };
     } catch (error) {
       this.logger.error('❌ Error getting audit stats:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des statistiques',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 }

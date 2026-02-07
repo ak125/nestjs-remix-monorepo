@@ -4,8 +4,6 @@ import {
   Param,
   Query,
   Logger,
-  HttpException,
-  HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
@@ -15,6 +13,11 @@ import {
   ConstructeurFilters,
 } from '../services/constructeur.service';
 import { GlossaryService, GlossaryFilters } from '../services/glossary.service';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 
 /**
  * 📚 ContentController - Contrôleur pour guides, constructeurs et glossaire
@@ -75,10 +78,9 @@ export class ContentController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur liste guides: ${(error as Error).message}`);
-      throw new HttpException(
-        'Erreur lors de la récupération des guides',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des guides',
+      });
     }
   }
 
@@ -92,7 +94,9 @@ export class ContentController {
       const guide = await this.guideService.getGuideBySlug(slug);
 
       if (!guide) {
-        throw new HttpException('Guide non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Guide non trouvé',
+        });
       }
 
       // Incrémenter les vues (utiliser l'ID du guide)
@@ -105,17 +109,16 @@ export class ContentController {
         data: guide,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération guide ${slug}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -129,7 +132,9 @@ export class ContentController {
       const guide = await this.guideService.getGuideById(id);
 
       if (!guide) {
-        throw new HttpException('Guide non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Guide non trouvé',
+        });
       }
 
       // Incrémenter les vues
@@ -140,17 +145,16 @@ export class ContentController {
         data: { guide },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération guide ${id}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -173,10 +177,9 @@ export class ContentController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur guides achat: ${(error as Error).message}`);
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -201,10 +204,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur guides techniques: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -254,10 +256,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur liste constructeurs: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des constructeurs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des constructeurs',
+      });
     }
   }
 
@@ -272,10 +273,9 @@ export class ContentController {
         await this.constructeurService.getConstructeurById(id);
 
       if (!constructeur) {
-        throw new HttpException(
-          'Constructeur non trouvé',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: 'Constructeur non trouvé',
+        });
       }
 
       // Récupérer les modèles associés
@@ -293,17 +293,16 @@ export class ContentController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération constructeur ${id}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -318,10 +317,9 @@ export class ContentController {
         await this.constructeurService.getConstructeurByBrand(brand);
 
       if (!constructeur) {
-        throw new HttpException(
-          'Constructeur non trouvé',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: 'Constructeur non trouvé',
+        });
       }
 
       // Récupérer les modèles associés
@@ -338,17 +336,16 @@ export class ContentController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur constructeur par marque ${brand}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -374,10 +371,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur constructeurs alphabétique: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -424,10 +420,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur liste glossaire: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération du glossaire',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du glossaire',
+      });
     }
   }
 
@@ -441,7 +436,9 @@ export class ContentController {
       const term = await this.glossaryService.getTermById(id);
 
       if (!term) {
-        throw new HttpException('Terme non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Terme non trouvé',
+        });
       }
 
       // Incrémenter les vues
@@ -452,17 +449,16 @@ export class ContentController {
         data: { term },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération terme ${id}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -477,10 +473,9 @@ export class ContentController {
   ) {
     try {
       if (!query.trim()) {
-        throw new HttpException(
-          'Terme de recherche requis',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Terme de recherche requis',
+        });
       }
 
       const terms = await this.glossaryService.searchTerms(query, limit);
@@ -495,17 +490,19 @@ export class ContentController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (
+        error instanceof DomainValidationException ||
+        error instanceof DomainNotFoundException
+      ) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur recherche glossaire: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -517,10 +514,9 @@ export class ContentController {
   async getTermsByLetter(@Param('letter') letter: string) {
     try {
       if (!letter || letter.length !== 1) {
-        throw new HttpException(
-          'Lettre valide requise (A-Z)',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Lettre valide requise (A-Z)',
+        });
       }
 
       const terms = await this.glossaryService.getTermsByLetter(
@@ -536,17 +532,19 @@ export class ContentController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (
+        error instanceof DomainValidationException ||
+        error instanceof DomainNotFoundException
+      ) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur termes lettre ${letter}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -571,10 +569,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur glossaire alphabétique: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -601,10 +598,9 @@ export class ContentController {
       this.logger.error(
         `❌ Erreur termes aléatoires: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 }

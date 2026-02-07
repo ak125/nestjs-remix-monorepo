@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Body, Injectable } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 
@@ -24,6 +32,8 @@ interface SupabaseRpcError {
 @Injectable()
 @Controller('api/gamme-rest')
 export class GammeRestRpcV2Controller {
+  private readonly logger = new Logger(GammeRestRpcV2Controller.name);
+
   constructor(
     private readonly responseBuilder: GammeResponseBuilderService,
     private readonly rpcService: GammeRpcService,
@@ -36,25 +46,27 @@ export class GammeRestRpcV2Controller {
   @Get(':pgId/page-data-rpc-v2')
   async getPageDataRpcV2(@Param('pgId') pgId: string) {
     const pgIdNum = parseInt(pgId, 10);
-    console.log(`⚡ Tentative RPC V2 pour gamme ${pgIdNum}...`);
+    this.logger.log(`Tentative RPC V2 pour gamme ${pgIdNum}...`);
 
     try {
       const result = await this.responseBuilder.buildRpcV2Response(pgId);
       const cacheInfo = '🔄 RPC';
-      console.log(
-        `✅ RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`,
+      this.logger.log(
+        `RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`,
       );
       return result;
     } catch (error) {
       const rpcError = error as SupabaseRpcError;
-      console.error('❌ Erreur dans getPageDataRpcV2:', {
-        message: rpcError.message,
-        details: rpcError.details,
-        hint: rpcError.hint,
-        code: rpcError.code,
-      });
-      console.log(
-        `⚠️ RPC V2 returned error: ${rpcError.message || 'Erreur serveur'}`,
+      this.logger.error(
+        `Erreur dans getPageDataRpcV2: ${JSON.stringify({
+          message: rpcError.message,
+          details: rpcError.details,
+          hint: rpcError.hint,
+          code: rpcError.code,
+        })}`,
+      );
+      this.logger.log(
+        `RPC V2 returned error: ${rpcError.message || 'Erreur serveur'}`,
       );
 
       // Retourner une erreur 503 pour que le client sache que c'est temporaire
@@ -102,7 +114,7 @@ export class GammeRestRpcV2Controller {
 
     const pgIds = body.pgIds || defaultPopularGammes;
 
-    console.log(`🔥 Warm cache pour ${pgIds.length} gammes...`);
+    this.logger.log(`Warm cache pour ${pgIds.length} gammes...`);
     const result = await this.rpcService.warmCache(pgIds);
 
     return {

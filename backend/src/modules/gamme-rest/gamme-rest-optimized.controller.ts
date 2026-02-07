@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Query, Injectable } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { GammePageDataService } from './services/gamme-page-data.service';
 import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
@@ -12,6 +19,8 @@ import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 @Injectable()
 @Controller('api/gamme-rest-optimized')
 export class GammeRestOptimizedController {
+  private readonly logger = new Logger(GammeRestOptimizedController.name);
+
   constructor(private readonly pageDataService: GammePageDataService) {}
 
   /**
@@ -25,7 +34,7 @@ export class GammeRestOptimizedController {
     try {
       return await this.pageDataService.getCompletePageData(pgId, query);
     } catch (error) {
-      console.error('❌ Erreur dans getPageData:', error);
+      this.logger.error(`Erreur dans getPageData: ${error}`);
       return {
         status: 500,
         error: 'Internal server error',
@@ -46,7 +55,7 @@ export class GammeRestOptimizedController {
     try {
       return await this.pageDataService.getGammeDetails(pgId);
     } catch (error) {
-      console.error('❌ Erreur dans getGammeDetails:', error);
+      this.logger.error(`Erreur dans getGammeDetails: ${error}`);
       return {
         status: 500,
         error: 'Internal server error',

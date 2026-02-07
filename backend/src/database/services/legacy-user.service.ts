@@ -44,7 +44,9 @@ export class LegacyUserService extends SupabaseBaseService {
     try {
       const { limit = 20, offset = 0 } = options;
 
-      console.log(`[UserService] getAllUsers called with:`, { limit, offset });
+      this.logger.log(
+        `[UserService] getAllUsers called with: ${JSON.stringify({ limit, offset })}`,
+      );
 
       const { data, error } = await this.supabase
         .from(TABLES.xtr_customer)
@@ -55,28 +57,33 @@ export class LegacyUserService extends SupabaseBaseService {
         .order('cst_id', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      console.log(`[UserService] Supabase query result:`, {
-        dataLength: data?.length,
-        error: error,
-        firstUser: data?.[0],
-      });
+      this.logger.log(
+        `[UserService] Supabase query result: ${JSON.stringify({
+          dataLength: data?.length,
+          error: error,
+          firstUser: data?.[0],
+        })}`,
+      );
 
       if (error) {
-        console.error(`[UserService] Supabase error:`, error);
+        this.logger.error(
+          `[UserService] Supabase error: ${JSON.stringify(error)}`,
+        );
         throw error;
       }
 
       const mappedUsers = (data || []).map((user) =>
         this.mapToLegacyUser(user),
       );
-      console.log(`[UserService] Mapped users:`, {
-        count: mappedUsers.length,
-        firstMapped: mappedUsers[0],
-      });
+      this.logger.log(
+        `[UserService] Mapped users: ${JSON.stringify({
+          count: mappedUsers.length,
+          firstMapped: mappedUsers[0],
+        })}`,
+      );
       return mappedUsers;
     } catch (error) {
-      console.error('[UserService] Failed to get all users:', error);
-      this.logger.error('Failed to get all users:', error);
+      this.logger.error(`[UserService] Failed to get all users: ${error}`);
       throw error;
     }
   }

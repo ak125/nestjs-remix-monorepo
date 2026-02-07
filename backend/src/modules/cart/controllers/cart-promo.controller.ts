@@ -6,10 +6,9 @@ import {
   UseGuards,
   Req,
   Logger,
-  HttpStatus,
-  HttpException,
   BadRequestException,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -72,10 +71,9 @@ export class CartPromoController {
         throw error;
       }
 
-      throw new HttpException(
-        "Erreur lors de l'application du code promo",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de l'application du code promo",
+      });
     }
   }
 
@@ -105,10 +103,9 @@ export class CartPromoController {
         `Erreur retrait promo: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
 
-      throw new HttpException(
-        'Erreur lors du retrait du code promo',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du retrait du code promo',
+      });
     }
   }
 }

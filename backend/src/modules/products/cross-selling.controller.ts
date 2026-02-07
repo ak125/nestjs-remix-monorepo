@@ -1,12 +1,5 @@
-import {
-  Controller,
-  Get,
-  Logger,
-  Param,
-  HttpException,
-  HttpStatus,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Logger, Param, Query } from '@nestjs/common';
+import { OperationFailedException } from '../../common/exceptions';
 import { CrossSellingService } from './services/cross-selling.service';
 
 /**
@@ -59,10 +52,9 @@ export class CrossSellingController {
         `Erreur cross-selling V5 pour typeId=${typeId}, pgId=${pgId}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors du calcul du cross-selling V5',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du calcul du cross-selling V5',
+      });
     }
   }
 
@@ -104,10 +96,9 @@ export class CrossSellingController {
         `Erreur cross-selling V5 alias pour gamme=${gamme}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors du calcul du cross-selling V5 par alias',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du calcul du cross-selling V5 par alias',
+      });
     }
   }
 }

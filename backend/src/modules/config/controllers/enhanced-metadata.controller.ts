@@ -8,9 +8,11 @@ import {
   Body,
   Query,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 import {
   EnhancedMetadataService,
   PageMetadata,
@@ -49,10 +51,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error('Erreur récupération analytics SEO:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des analytics SEO',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des analytics SEO',
+      });
     }
   }
 
@@ -78,10 +79,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error('Erreur récupération pages sans métadonnées:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des pages sans métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des pages sans métadonnées',
+      });
     }
   }
 
@@ -95,10 +95,10 @@ export class EnhancedMetadataController {
   ): Promise<{ success: boolean; data: { results: any[]; count: number } }> {
     try {
       if (!query || query.trim().length < 2) {
-        throw new HttpException(
-          'La requête de recherche doit contenir au moins 2 caractères',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message:
+            'La requête de recherche doit contenir au moins 2 caractères',
+        });
       }
 
       this.logger.log(`Recherche métadonnées: "${query}"`);
@@ -116,10 +116,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error(`Erreur recherche métadonnées pour "${query}":`, error);
-      throw new HttpException(
-        'Erreur lors de la recherche des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche des métadonnées',
+      });
     }
   }
 
@@ -160,10 +159,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error('Erreur mise à jour en lot:', error);
-      throw new HttpException(
-        'Erreur lors de la mise à jour en lot',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour en lot',
+      });
     }
   }
 
@@ -187,10 +185,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error(`Erreur récupération métadonnées pour ${path}:`, error);
-      throw new HttpException(
-        'Erreur lors de la récupération des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des métadonnées',
+      });
     }
   }
 
@@ -218,10 +215,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error(`Erreur mise à jour métadonnées pour ${path}:`, error);
-      throw new HttpException(
-        'Erreur lors de la mise à jour des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour des métadonnées',
+      });
     }
   }
 
@@ -245,10 +241,9 @@ export class EnhancedMetadataController {
       };
     } catch (error) {
       this.logger.error(`Erreur suppression métadonnées pour ${path}:`, error);
-      throw new HttpException(
-        'Erreur lors de la suppression des métadonnées',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la suppression des métadonnées',
+      });
     }
   }
 

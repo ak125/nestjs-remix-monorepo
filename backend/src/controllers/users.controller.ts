@@ -1,18 +1,18 @@
+import { Controller, Get, Param, Query, Req, Logger } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  HttpStatus,
-  HttpException,
-  Req,
-} from '@nestjs/common';
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainValidationException,
+  AuthenticationException,
+} from '../common/exceptions';
 import { Request } from 'express';
 import { LegacyUserService } from '../database/services/legacy-user.service';
 import { OrdersService } from '../database/services/orders.service';
 
 @Controller('api/legacy-users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(
     private readonly legacyUserService: LegacyUserService,
     private readonly ordersService: OrdersService,
@@ -28,11 +28,8 @@ export class UsersController {
     @Query('limit') limit: string = '20',
   ) {
     try {
-      console.log(
-        '[UsersController] � NEW CONTROLLER CALLED - getAllUsers with:',
-        { page, limit },
-      );
-      console.log('�📋 Récupération des utilisateurs...');
+      this.logger.log(`getAllUsers with: page=${page}, limit=${limit}`);
+      this.logger.log('Récupération des utilisateurs...');
 
       const users = await this.legacyUserService.getAllUsers({
         limit: parseInt(limit),
@@ -43,12 +40,8 @@ export class UsersController {
       const totalCount =
         await this.legacyUserService.getTotalActiveUsersCount();
 
-      console.log(
-        '[UsersController] 🔥 Service returned:',
-        users.length,
-        'users out of',
-        totalCount,
-        'total',
+      this.logger.log(
+        `Service returned: ${users.length} users out of ${totalCount} total`,
       );
 
       return {
@@ -61,14 +54,10 @@ export class UsersController {
         },
       };
     } catch (error) {
-      console.error(
-        '[UsersController] ❌ Erreur récupération utilisateurs:',
-        error,
-      );
-      throw new HttpException(
-        'Erreur lors de la récupération des utilisateurs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur récupération utilisateurs: ${error}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des utilisateurs',
+      });
     }
   }
 
@@ -79,13 +68,12 @@ export class UsersController {
   @Get('search')
   async searchUsers(@Query('q') searchTerm: string) {
     try {
-      console.log(`🔍 Recherche utilisateurs: "${searchTerm}"`);
+      this.logger.log(`Recherche utilisateurs: "${searchTerm}"`);
 
       if (!searchTerm || searchTerm.length < 3) {
-        throw new HttpException(
-          'Le terme de recherche doit contenir au moins 3 caractères',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Le terme de recherche doit contenir au moins 3 caractères',
+        });
       }
 
       const users = await this.legacyUserService.searchUsers(searchTerm);
@@ -97,13 +85,12 @@ export class UsersController {
         count: users.length,
       };
     } catch (error) {
-      console.error('❌ Erreur recherche utilisateurs:', error);
-      if (error instanceof HttpException) throw error;
+      this.logger.error(`Erreur recherche utilisateurs: ${error}`);
+      if (error instanceof DomainValidationException) throw error;
 
-      throw new HttpException(
-        'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -115,27 +102,28 @@ export class UsersController {
   @Get('dashboard')
   async getDashboardStats(@Req() req: Request) {
     try {
-      console.log(`📊 Récupération des statistiques dashboard`);
+      this.logger.log('Récupération des statistiques dashboard');
 
       // Récupérer l'utilisateur depuis req.user (désérialisé par Passport)
       const user = (req as any).user;
 
       if (!user || !user.id) {
-        throw new HttpException(
-          'Session utilisateur non trouvée',
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new AuthenticationException({
+          message: 'Session utilisateur non trouvée',
+        });
       }
 
-      console.log(
-        `👤 Dashboard stats pour utilisateur: ${user.email} (${user.id})`,
+      this.logger.log(
+        `Dashboard stats pour utilisateur: ${user.email} (${user.id})`,
       );
 
       // Récupérer les détails complets de l'utilisateur
       const userDetails = await this.legacyUserService.getUserById(user.id);
 
       if (!userDetails) {
-        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       // Stats globales (pour admin)
@@ -174,7 +162,7 @@ export class UsersController {
           ).length;
         }
       } catch (error) {
-        console.error('Erreur récupération messages:', error);
+        this.logger.error(`Erreur récupération messages: ${error}`);
       }
 
       // Calculer les stats des commandes
@@ -235,16 +223,18 @@ export class UsersController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      console.error(`❌ Erreur récupération stats dashboard:`, error);
+      this.logger.error(`Erreur récupération stats dashboard: ${error}`);
 
-      if (error instanceof HttpException) {
+      if (
+        error instanceof AuthenticationException ||
+        error instanceof DomainNotFoundException
+      ) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -277,14 +267,16 @@ export class UsersController {
   @Get(':id')
   async getUserById(@Param('id') id: string) {
     try {
-      console.log(`🔍 Récupération utilisateur ID: ${id}`);
+      this.logger.log(`Récupération utilisateur ID: ${id}`);
 
       const user = await this.legacyUserService.getUserById(id, {
         throwOnNotFound: true,
       });
 
       if (!user) {
-        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       return {
@@ -292,13 +284,12 @@ export class UsersController {
         data: user,
       };
     } catch (error) {
-      console.error(`❌ Erreur récupération utilisateur ${id}:`, error);
-      if (error instanceof HttpException) throw error;
+      this.logger.error(`Erreur récupération utilisateur ${id}: ${error}`);
+      if (error instanceof DomainNotFoundException) throw error;
 
-      throw new HttpException(
-        "Erreur lors de la récupération de l'utilisateur",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la récupération de l'utilisateur",
+      });
     }
   }
 
@@ -309,7 +300,7 @@ export class UsersController {
   @Get(':id/orders')
   async getUserOrders(@Param('id') userId: string) {
     try {
-      console.log(`📦 Récupération commandes utilisateur: ${userId}`);
+      this.logger.log(`Récupération commandes utilisateur: ${userId}`);
 
       const orders = await this.legacyUserService.getUserOrders(userId);
 
@@ -320,11 +311,10 @@ export class UsersController {
         count: orders.length,
       };
     } catch (error) {
-      console.error(`❌ Erreur commandes utilisateur ${userId}:`, error);
-      throw new HttpException(
-        'Erreur lors de la récupération des commandes',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur commandes utilisateur ${userId}: ${error}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des commandes',
+      });
     }
   }
 
@@ -335,7 +325,7 @@ export class UsersController {
   @Get(':id/stats')
   async getUserStats(@Param('id') userId: string) {
     try {
-      console.log(`📊 Récupération statistiques utilisateur: ${userId}`);
+      this.logger.log(`Récupération statistiques utilisateur: ${userId}`);
 
       const stats = await this.legacyUserService.getUserStats(userId);
 
@@ -345,11 +335,10 @@ export class UsersController {
         userId,
       };
     } catch (error) {
-      console.error(`❌ Erreur statistiques utilisateur ${userId}:`, error);
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur statistiques utilisateur ${userId}: ${error}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 }

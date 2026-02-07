@@ -7,11 +7,14 @@ import {
   Body,
   UseGuards,
   Logger,
-  HttpException,
-  HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+  DomainNotFoundException,
+} from '../../../common/exceptions';
 import { AdviceService, AdviceFilters } from '../services/advice.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
@@ -78,10 +81,9 @@ export class AdviceController {
       this.logger.error(
         `❌ Erreur liste conseils: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des conseils',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des conseils',
+      });
     }
   }
 
@@ -96,10 +98,9 @@ export class AdviceController {
   ) {
     try {
       if (!keywords.trim()) {
-        throw new HttpException(
-          'Mots-clés requis pour la recherche',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Mots-clés requis pour la recherche',
+        });
       }
 
       const keywordArray = keywords
@@ -126,17 +127,16 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur recherche conseils: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -164,7 +164,9 @@ export class AdviceController {
       const result = await this.adviceService.updateAdvice(id, body);
 
       if (!result.success) {
-        throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+        throw new DomainValidationException({
+          message: result.message,
+        });
       }
 
       return {
@@ -173,17 +175,16 @@ export class AdviceController {
         data: result.data,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur mise à jour conseil ${id}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour',
+      });
     }
   }
 
@@ -198,7 +199,9 @@ export class AdviceController {
       const article = await this.adviceService.getAdviceById(id);
 
       if (!article) {
-        throw new HttpException('Conseil non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Conseil non trouvé',
+        });
       }
 
       // Incrémenter les vues
@@ -215,17 +218,16 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération conseil ${id}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -257,10 +259,9 @@ export class AdviceController {
       this.logger.error(
         `❌ Erreur conseils produit ${productId}: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -281,10 +282,9 @@ export class AdviceController {
       this.logger.error(
         `❌ Erreur stats conseils: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors des statistiques',
+      });
     }
   }
 
@@ -313,10 +313,9 @@ export class AdviceController {
       this.logger.error(
         `❌ Erreur mots-clés populaires: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -354,10 +353,9 @@ export class AdviceController {
       this.logger.error(
         `❌ Erreur conseils populaires: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 

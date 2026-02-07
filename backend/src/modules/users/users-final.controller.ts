@@ -14,8 +14,6 @@ import {
   Param,
   Query,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
   Req,
 } from '@nestjs/common';
@@ -23,6 +21,12 @@ import { Request } from 'express';
 import { UsersFinalService } from './users-final.service';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
+import {
+  AuthenticationException,
+  OperationFailedException,
+  DomainValidationException,
+  DomainNotFoundException,
+} from '../../common/exceptions';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -74,7 +78,9 @@ export class UsersFinalController {
     this.logger.log(`GET /api/users/profile - User: ${user?.email}`);
 
     if (!user?.id) {
-      throw new HttpException('Non authentifié', HttpStatus.UNAUTHORIZED);
+      throw new AuthenticationException({
+        message: 'Non authentifié',
+      });
     }
 
     try {
@@ -85,10 +91,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur getProfile:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la récupération du profil',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || 'Erreur lors de la récupération du profil',
+      });
     }
   }
 
@@ -105,7 +110,9 @@ export class UsersFinalController {
     this.logger.log(`PUT /api/users/profile - User: ${user?.email}`);
 
     if (!user?.id) {
-      throw new HttpException('Non authentifié', HttpStatus.UNAUTHORIZED);
+      throw new AuthenticationException({
+        message: 'Non authentifié',
+      });
     }
 
     try {
@@ -124,10 +131,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur updateProfile:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la mise à jour du profil',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors de la mise à jour du profil',
+      });
     }
   }
 
@@ -141,7 +147,9 @@ export class UsersFinalController {
     this.logger.log(`GET /api/users/dashboard - User: ${user?.email}`);
 
     if (!user?.id) {
-      throw new HttpException('Non authentifié', HttpStatus.UNAUTHORIZED);
+      throw new AuthenticationException({
+        message: 'Non authentifié',
+      });
     }
 
     try {
@@ -152,10 +160,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur getDashboard:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la récupération du dashboard',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || 'Erreur lors de la récupération du dashboard',
+      });
     }
   }
 
@@ -194,10 +201,10 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur getUsers:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la récupération des utilisateurs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message:
+          error.message || 'Erreur lors de la récupération des utilisateurs',
+      });
     }
   }
 
@@ -217,10 +224,10 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur getStats:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message:
+          error.message || 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -236,10 +243,9 @@ export class UsersFinalController {
     this.logger.log(`GET /api/users/search?q=${searchTerm}`);
 
     if (!searchTerm || searchTerm.length < 3) {
-      throw new HttpException(
-        'Le terme de recherche doit contenir au moins 3 caractères',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: 'Le terme de recherche doit contenir au moins 3 caractères',
+      });
     }
 
     try {
@@ -256,10 +262,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur searchUsers:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -279,10 +284,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur getUser ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Utilisateur non trouvé',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new DomainNotFoundException({
+        message: error.message || 'Utilisateur non trouvé',
+      });
     }
   }
 
@@ -302,10 +306,10 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur getUserStats ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message:
+          error.message || 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -330,10 +334,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur createUser:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la création',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors de la création',
+      });
     }
   }
 
@@ -358,10 +361,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur updateUser ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la mise à jour',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors de la mise à jour',
+      });
     }
   }
 
@@ -382,10 +384,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur deleteUser ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la suppression',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors de la suppression',
+      });
     }
   }
 
@@ -407,10 +408,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur reactivateUser ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la réactivation',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors de la réactivation',
+      });
     }
   }
 
@@ -426,10 +426,9 @@ export class UsersFinalController {
     this.logger.log(`PUT /api/users/${id}/password`);
 
     if (!body.newPassword || body.newPassword.length < 8) {
-      throw new HttpException(
-        'Le mot de passe doit contenir au moins 8 caractères',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: 'Le mot de passe doit contenir au moins 8 caractères',
+      });
     }
 
     try {
@@ -441,10 +440,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error(`Erreur updatePassword ${id}:`, error);
-      throw new HttpException(
-        error.message || 'Erreur lors du changement de mot de passe',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors du changement de mot de passe',
+      });
     }
   }
 
@@ -466,10 +464,9 @@ export class UsersFinalController {
       };
     } catch (error: any) {
       this.logger.error('Erreur exportUsers:', error);
-      throw new HttpException(
-        error.message || "Erreur lors de l'export",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || "Erreur lors de l'export",
+      });
     }
   }
 }

@@ -38,43 +38,46 @@ export class BlogArticleDataService {
    */
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
     try {
-      // Générer les variantes de slug à essayer
       const slugVariants = this.transformService.generateSlugVariants(slug);
 
-      // Essayer chaque variante dans les tables advice et guide
-      for (const variant of slugVariants) {
-        // Chercher dans blog_advice
-        const { data: adviceData } = await this.supabaseService.client
+      // Query both tables in parallel with all variants at once (2 queries instead of 2*N)
+      const [adviceResult, guideResult] = await Promise.all([
+        this.supabaseService.client
           .from(TABLES.blog_advice)
           .select('*')
-          .eq('ba_alias', variant)
-          .single();
-
-        if (adviceData) {
-          this.logger.debug(`✅ Article trouvé avec alias: "${variant}"`);
-          return await this.loadArticleWithSections(adviceData);
-        }
-
-        // Chercher dans blog_guide
-        const { data: guideData } = await this.supabaseService.client
+          .in('ba_alias', slugVariants),
+        this.supabaseService.client
           .from(TABLES.blog_guide)
           .select('*')
-          .eq('bg_alias', variant)
-          .single();
+          .in('bg_alias', slugVariants),
+      ]);
 
-        if (guideData) {
-          this.logger.debug(`✅ Guide trouvé avec alias: "${variant}"`);
-          return this.transformService.transformGuideToArticle(guideData);
+      // Respect variant priority order: first variant match wins
+      for (const variant of slugVariants) {
+        const adviceMatch = adviceResult.data?.find(
+          (a: any) => a.ba_alias === variant,
+        );
+        if (adviceMatch) {
+          this.logger.debug(`Article found with alias: "${variant}"`);
+          return await this.loadArticleWithSections(adviceMatch);
+        }
+
+        const guideMatch = guideResult.data?.find(
+          (g: any) => g.bg_alias === variant,
+        );
+        if (guideMatch) {
+          this.logger.debug(`Guide found with alias: "${variant}"`);
+          return this.transformService.transformGuideToArticle(guideMatch);
         }
       }
 
       this.logger.debug(
-        `❌ Aucun article trouvé pour: "${slug}" (variantes testées: ${slugVariants.join(', ')})`,
+        `No article found for: "${slug}" (variants tested: ${slugVariants.join(', ')})`,
       );
       return null;
     } catch (error) {
       this.logger.error(
-        `❌ Erreur récupération article ${slug}: ${(error as Error).message}`,
+        `Error fetching article ${slug}: ${(error as Error).message}`,
       );
       return null;
     }
@@ -695,29 +698,32 @@ export class BlogArticleDataService {
    * 🔗 Générer un slug unique
    */
   private async generateUniqueSlug(title: string): Promise<string> {
-    const slug = this.transformService.generateSlugFromTitle(title);
-    let counter = 0;
-    let uniqueSlug = slug;
+    const baseSlug = this.transformService.generateSlugFromTitle(title);
 
-    while (true) {
-      const existsInAdvice = await this.checkSlugExists(
-        '__blog_advice',
-        'ba_alias',
-        uniqueSlug,
-      );
-      const existsInGuide = await this.checkSlugExists(
-        '__blog_guide',
-        'bg_alias',
-        uniqueSlug,
-      );
+    // Pre-fetch all existing slugs matching the base pattern (2 queries instead of 2*N)
+    const [adviceResult, guideResult] = await Promise.all([
+      this.supabaseService.client
+        .from('__blog_advice')
+        .select('ba_alias')
+        .like('ba_alias', `${baseSlug}%`),
+      this.supabaseService.client
+        .from('__blog_guide')
+        .select('bg_alias')
+        .like('bg_alias', `${baseSlug}%`),
+    ]);
 
-      if (!existsInAdvice && !existsInGuide) {
-        return uniqueSlug;
-      }
+    const existingSlugs = new Set<string>([
+      ...(adviceResult.data?.map((r: any) => r.ba_alias) || []),
+      ...(guideResult.data?.map((r: any) => r.bg_alias) || []),
+    ]);
 
+    if (!existingSlugs.has(baseSlug)) return baseSlug;
+
+    let counter = 1;
+    while (existingSlugs.has(`${baseSlug}-${counter}`)) {
       counter++;
-      uniqueSlug = `${slug}-${counter}`;
     }
+    return `${baseSlug}-${counter}`;
   }
 
   /**

@@ -14,8 +14,6 @@ import {
   Param,
   Body,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
@@ -25,6 +23,11 @@ import {
   UserFilters,
 } from '../services/user-management.service';
 import { User } from '../../../common/decorators/user.decorator';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 
 @Controller('api/admin/users')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -54,15 +57,9 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error('❌ Erreur stats utilisateurs:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message:
-            'Erreur lors de la récupération des statistiques utilisateurs',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques utilisateurs',
+      });
     }
   }
 
@@ -103,14 +100,9 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error('❌ Erreur liste utilisateurs:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des utilisateurs',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des utilisateurs',
+      });
     }
   }
 
@@ -125,13 +117,9 @@ export class UserManagementController {
       const user = await this.userManagementService.getUserById(userId);
 
       if (!user) {
-        throw new HttpException(
-          {
-            success: false,
-            message: 'Utilisateur non trouvé',
-          },
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: 'Utilisateur non trouvé',
+        });
       }
 
       this.logger.log(`✅ Utilisateur ${userId} récupéré`);
@@ -145,18 +133,13 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error(`❌ Erreur utilisateur ${userId}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de la récupération de l'utilisateur",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la récupération de l'utilisateur",
+      });
     }
   }
 
@@ -184,13 +167,9 @@ export class UserManagementController {
       );
 
       if (!success) {
-        throw new HttpException(
-          {
-            success: false,
-            message: "Échec de la mise à jour de l'utilisateur",
-          },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: "Échec de la mise à jour de l'utilisateur",
+        });
       }
 
       this.logger.log(
@@ -205,18 +184,13 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error(`❌ Erreur mise à jour utilisateur ${userId}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de la mise à jour de l'utilisateur",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la mise à jour de l'utilisateur",
+      });
     }
   }
 
@@ -238,13 +212,9 @@ export class UserManagementController {
       );
 
       if (!success) {
-        throw new HttpException(
-          {
-            success: false,
-            message: "Échec de la désactivation de l'utilisateur",
-          },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: "Échec de la désactivation de l'utilisateur",
+        });
       }
 
       this.logger.log(
@@ -262,18 +232,13 @@ export class UserManagementController {
         error,
       );
 
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de la désactivation de l'utilisateur",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la désactivation de l'utilisateur",
+      });
     }
   }
 
@@ -288,13 +253,9 @@ export class UserManagementController {
       const success = await this.userManagementService.reactivateUser(userId);
 
       if (!success) {
-        throw new HttpException(
-          {
-            success: false,
-            message: "Échec de la réactivation de l'utilisateur",
-          },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: "Échec de la réactivation de l'utilisateur",
+        });
       }
 
       this.logger.log(
@@ -309,18 +270,13 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error(`❌ Erreur réactivation utilisateur ${userId}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de la réactivation de l'utilisateur",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la réactivation de l'utilisateur",
+      });
     }
   }
 
@@ -343,14 +299,9 @@ export class UserManagementController {
     } catch (error) {
       this.logger.error('❌ Erreur health check user management:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors du health check user management',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du health check user management',
+      });
     }
   }
 }

@@ -13,7 +13,7 @@
  * ✅ Schema.org pour SEO
  */
 
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 
 // Modules externes
@@ -51,7 +51,9 @@ import { BreadcrumbAdminController } from './controllers/breadcrumb-admin.contro
   ],
 })
 export class MetadataModule {
+  private readonly logger = new Logger(MetadataModule.name);
+
   constructor() {
-    console.log('🔍 MetadataModule initialisé - Services optimisés actifs');
+    this.logger.log('MetadataModule initialisé - Services optimisés actifs');
   }
 }

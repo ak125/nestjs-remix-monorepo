@@ -5,15 +5,12 @@
  * ✅ Logging et gestion d'erreurs complète
  */
 
+import { Controller, Post, Body, Logger, Request } from '@nestjs/common';
 import {
-  Controller,
-  Post,
-  Body,
-  HttpException,
-  HttpStatus,
-  Logger,
-  Request,
-} from '@nestjs/common';
+  AuthenticationException,
+  DomainValidationException,
+  OperationFailedException,
+} from '../../../common/exceptions';
 import { PasswordService } from '../services/password.service';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { ChangePasswordSchema } from '../dto/change-password.dto';
@@ -44,10 +41,9 @@ export class PasswordController {
     try {
       const userId = req.user?.id || 'test-user-id'; // TODO: Récupérer l'ID utilisateur réel
       if (!userId) {
-        throw new HttpException(
-          'Utilisateur non authentifié',
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new AuthenticationException({
+          message: 'Utilisateur non authentifié',
+        });
       }
 
       await this.passwordService.changePassword(
@@ -63,10 +59,10 @@ export class PasswordController {
       };
     } catch (error: any) {
       this.logger.error('Erreur changePassword:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors du changement de mot de passe',
-        error.status || HttpStatus.BAD_REQUEST,
-      );
+      if (error instanceof AuthenticationException) throw error;
+      throw new DomainValidationException({
+        message: error.message || 'Erreur lors du changement de mot de passe',
+      });
     }
   }
 
@@ -124,10 +120,10 @@ export class PasswordController {
       };
     } catch (error: any) {
       this.logger.error('Erreur resetPassword:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la réinitialisation du mot de passe',
-        error.status || HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainValidationException({
+        message:
+          error.message || 'Erreur lors de la réinitialisation du mot de passe',
+      });
     }
   }
 
@@ -143,7 +139,7 @@ export class PasswordController {
     try {
       // Vérifier que l'utilisateur est admin
       if (!req.user?.isAdmin) {
-        throw new HttpException('Accès refusé', HttpStatus.FORBIDDEN);
+        throw new AuthenticationException({ message: 'Accès refusé' });
       }
 
       const deletedCount = await this.passwordService.cleanupExpiredTokens();
@@ -156,10 +152,10 @@ export class PasswordController {
       };
     } catch (error: any) {
       this.logger.error('Erreur cleanupExpiredTokens:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors du nettoyage des tokens',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof AuthenticationException) throw error;
+      throw new OperationFailedException({
+        message: error.message || 'Erreur lors du nettoyage des tokens',
+      });
     }
   }
 }

@@ -6,7 +6,7 @@
  * 🔒 AUTHENTIFICATION : Bypass des guards pour appels internes
  */
 
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import { OrdersService } from '../database/services/orders.service';
 import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
 
@@ -24,6 +24,7 @@ interface UsersApiResponse {
 
 @Injectable()
 export class RemixApiService {
+  private readonly logger = new Logger(RemixApiService.name);
   private readonly baseUrl = 'http://localhost:3000';
 
   constructor(
@@ -53,7 +54,7 @@ export class RemixApiService {
 
       return (await response.json()) as T;
     } catch (error) {
-      console.error(`❌ API Call failed for ${endpoint}:`, error);
+      this.logger.error(`API Call failed for ${endpoint}: ${error}`);
       throw error;
     }
   }
@@ -193,7 +194,7 @@ export class RemixApiService {
         },
       };
     } catch (error) {
-      console.error('❌ Erreur getDashboardStats:', error);
+      this.logger.error(`Erreur getDashboardStats: ${error}`);
       return {
         success: false,
         stats: {

@@ -7,8 +7,6 @@ import {
   Body,
   UseGuards,
   Logger,
-  HttpException,
-  HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
@@ -20,6 +18,11 @@ import { GlossaryService } from '../services/glossary.service';
 import { AuthGuard } from '@nestjs/passport';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { getErrorMessage } from '../../../common/utils/error.utils';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 
 /**
  * 📚 BlogController - Contrôleur principal du module blog
@@ -63,10 +66,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur récupération switches SEO: ${getErrorMessage(error)}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des switches SEO',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des switches SEO',
+      });
     }
   }
 
@@ -88,10 +90,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur récupération conseils: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des conseils',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des conseils',
+      });
     }
   }
 
@@ -113,10 +114,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur debug sections: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors du debug des sections',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du debug des sections',
+      });
     }
   }
 
@@ -136,10 +136,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur debug articles with H3: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors du debug des articles avec H3',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du debug des articles avec H3',
+      });
     }
   } /**
    * 🏠 Page d'accueil du blog avec contenu complet
@@ -159,10 +158,9 @@ export class BlogController {
       };
     } catch (error) {
       this.logger.error('[BlogController] Erreur homepage:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération de la homepage',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la homepage',
+      });
     }
   }
 
@@ -180,10 +178,9 @@ export class BlogController {
   ) {
     try {
       if (!query.trim()) {
-        throw new HttpException(
-          'Paramètre de recherche requis',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Paramètre de recherche requis',
+        });
       }
 
       const offset = (page - 1) * limit;
@@ -212,13 +209,16 @@ export class BlogController {
         },
       };
     } catch (error) {
+      if (error instanceof DomainValidationException) {
+        throw error;
+      }
+
       this.logger.error(
         `❌ Erreur recherche blog: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -236,10 +236,9 @@ export class BlogController {
       const article = await this.blogService.getArticleByGamme(pg_alias);
 
       if (!article) {
-        throw new HttpException(
-          `Article non trouvé pour la gamme "${pg_alias}"`,
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: `Article non trouvé pour la gamme "${pg_alias}"`,
+        });
       }
 
       return {
@@ -247,15 +246,14 @@ export class BlogController {
         data: article,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(`❌ Erreur gamme ${pg_alias}:`, error);
-      throw new HttpException(
-        "Erreur lors de la récupération de l'article par gamme",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la récupération de l'article par gamme",
+      });
     }
   }
 
@@ -272,10 +270,9 @@ export class BlogController {
       const article = await this.blogService.getArticleBySlug(slug);
 
       if (!article) {
-        throw new HttpException(
-          `Article "${slug}" non trouvé`,
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: `Article "${slug}" non trouvé`,
+        });
       }
 
       return {
@@ -283,15 +280,14 @@ export class BlogController {
         data: article,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(`❌ Erreur article ${slug}:`, error);
-      throw new HttpException(
-        "Erreur lors de la récupération de l'article",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la récupération de l'article",
+      });
     }
   }
 
@@ -357,10 +353,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur dashboard blog: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors du chargement du dashboard',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du chargement du dashboard',
+      });
     }
   }
 
@@ -385,7 +380,9 @@ export class BlogController {
       }
 
       if (!article) {
-        throw new HttpException('Article non trouvé', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Article non trouvé',
+        });
       }
 
       // Incrementer les vues si c'est un vrai utilisateur
@@ -401,17 +398,16 @@ export class BlogController {
         },
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainNotFoundException) {
         throw error;
       }
 
       this.logger.error(
         `❌ Erreur récupération article: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -468,10 +464,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur articles populaires: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération',
+      });
     }
   }
 
@@ -490,10 +485,9 @@ export class BlogController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur stats blog: ${(error as Error).message}`);
-      throw new HttpException(
-        'Erreur lors des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors des statistiques',
+      });
     }
   }
 
@@ -541,10 +535,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur navigation blog: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la navigation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la navigation',
+      });
     }
   }
 
@@ -571,10 +564,9 @@ export class BlogController {
       this.logger.error(
         `❌ Erreur rafraîchissement cache: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors du rafraîchissement',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du rafraîchissement',
+      });
     }
   }
 

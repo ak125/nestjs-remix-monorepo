@@ -1,4 +1,4 @@
-import { Injectable, Optional, OnModuleInit } from '@nestjs/common';
+import { Injectable, Optional, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { once } from 'events';
@@ -6,6 +6,7 @@ import { getAppConfig } from '../config/app.config';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
+  private readonly logger = new Logger(CacheService.name);
   private redisClient: Redis | null = null;
   private redisReady = false;
   private readonly defaultTTL = 3600; // 1 heure
@@ -21,12 +22,12 @@ export class CacheService implements OnModuleInit {
 
   private async waitForRedis(): Promise<void> {
     if (this.redisReady) {
-      console.log('✅ Redis déjà prêt');
+      this.logger.log('Redis déjà prêt');
       return;
     }
 
     if (!this.redisClient) {
-      console.error('❌ RedisClient non initialisé');
+      this.logger.error('RedisClient non initialisé');
       return;
     }
 
@@ -36,10 +37,8 @@ export class CacheService implements OnModuleInit {
       this.redisClient.status === 'connect'
     ) {
       this.redisReady = true;
-      console.log(
-        '✅ Redis déjà connecté (status:',
-        this.redisClient.status,
-        ')',
+      this.logger.log(
+        `Redis déjà connecté (status: ${this.redisClient.status})`,
       );
       return;
     }
@@ -50,9 +49,9 @@ export class CacheService implements OnModuleInit {
         signal: AbortSignal.timeout(2000),
       });
       this.redisReady = true;
-      console.log('✅ Redis prêt et disponible');
+      this.logger.log('Redis prêt et disponible');
     } catch {
-      console.warn('⚠️ Redis non prêt après 2s, continue quand même');
+      this.logger.warn('Redis not ready after 2s, continuing anyway');
       this.redisReady = true;
     }
   }
@@ -64,34 +63,32 @@ export class CacheService implements OnModuleInit {
       let redisUrl: string;
 
       if (this.configService) {
-        console.log('🔧 CacheService: Utilisation ConfigService');
+        this.logger.log('Utilisation ConfigService');
         redisUrl =
           this.configService.get<string>('REDIS_URL') ||
           `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
       } else {
-        console.log(
-          '🔧 CacheService: Utilisation AppConfig (fallback Context7)',
-        );
+        this.logger.log('Utilisation AppConfig (fallback Context7)');
         redisUrl =
           appConfig.redis.url ||
           `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
       }
 
-      console.log('🔧 Initialisation Redis avec URL:', redisUrl);
+      this.logger.log(`Initialisation Redis avec URL: ${redisUrl}`);
 
       this.redisClient = new Redis(redisUrl);
 
       this.redisClient.on('error', (err: any) => {
-        console.error('Redis Client Error:', err);
+        this.logger.error(`Redis Client Error: ${err}`);
       });
 
       this.redisClient.on('connect', () => {
-        console.log('✅ Cache Redis connecté');
+        this.logger.log('Cache Redis connecté');
       });
 
       this.redisClient.on('ready', () => {
         this.redisReady = true;
-        console.log('✅ Cache Redis prêt (via event ready)');
+        this.logger.log('Cache Redis prêt (via event ready)');
       });
 
       // Vérifier la connexion après un court délai
@@ -102,25 +99,25 @@ export class CacheService implements OnModuleInit {
             this.redisClient.status === 'connect')
         ) {
           this.redisReady = true;
-          console.log('✅ Cache Redis connecté (status check)');
+          this.logger.log('Cache Redis connecté (status check)');
         }
       }, 100);
     } catch (error) {
-      console.error('❌ Erreur de connexion Redis Cache:', error);
+      this.logger.error(`Erreur de connexion Redis Cache: ${error}`);
     }
   }
 
   async get<T>(key: string): Promise<T | null> {
     try {
       if (!this.redisClient || !this.redisReady) {
-        console.warn(`⚠️ Redis non prêt pour GET ${key}`);
+        this.logger.warn(`Redis not ready for GET ${key}`);
         return null;
       }
 
       const value = await this.redisClient.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      console.error(`❌ Cache GET ${key} error:`, error);
+      this.logger.error(`Cache GET ${key} error: ${error}`);
       return null;
     }
   }
@@ -132,7 +129,7 @@ export class CacheService implements OnModuleInit {
   ): Promise<void> {
     try {
       if (!this.redisClient || !this.redisReady) {
-        console.error(`❌ Redis non prêt pour SET ${key}`);
+        this.logger.error(`Redis non prêt pour SET ${key}`);
         return;
       }
 
@@ -141,9 +138,9 @@ export class CacheService implements OnModuleInit {
         ttl,
         JSON.stringify(value),
       );
-      console.log(`✅ Redis SET ${key} = ${result} (TTL: ${ttl}s)`);
+      this.logger.log(`Redis SET ${key} = ${result} (TTL: ${ttl}s)`);
     } catch (error) {
-      console.error(`❌ Cache SET ${key} error:`, error);
+      this.logger.error(`Cache SET ${key} error: ${error}`);
       throw error;
     }
   }
@@ -154,7 +151,7 @@ export class CacheService implements OnModuleInit {
 
       await this.redisClient.del(key);
     } catch (error) {
-      console.error('Cache delete error:', error);
+      this.logger.error(`Cache delete error: ${error}`);
     }
   }
 
@@ -164,7 +161,7 @@ export class CacheService implements OnModuleInit {
 
       return (await this.redisClient.exists(key)) === 1;
     } catch (error) {
-      console.error('Cache exists error:', error);
+      this.logger.error(`Cache exists error: ${error}`);
       return false;
     }
   }
@@ -248,20 +245,20 @@ export class CacheService implements OnModuleInit {
   async clearByPattern(pattern: string): Promise<number> {
     try {
       if (!this.redisClient || !this.redisReady) {
-        console.warn(`⚠️ Redis non prêt pour clearByPattern ${pattern}`);
+        this.logger.warn(`Redis not ready for clearByPattern ${pattern}`);
         return 0;
       }
 
       const keys = await this.redisClient.keys(pattern);
       if (keys.length > 0) {
         await this.redisClient.del(...keys);
-        console.log(
-          `🧹 Cleared ${keys.length} cache entries matching: ${pattern}`,
+        this.logger.log(
+          `Cleared ${keys.length} cache entries matching: ${pattern}`,
         );
       }
       return keys.length;
     } catch (error) {
-      console.error(`❌ Cache clearByPattern ${pattern} error:`, error);
+      this.logger.error(`Cache clearByPattern ${pattern} error: ${error}`);
       return 0;
     }
   }

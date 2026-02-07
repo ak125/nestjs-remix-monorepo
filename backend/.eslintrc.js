@@ -29,8 +29,8 @@ module.exports = {
         caughtErrorsIgnorePattern: '^_',
       },
     ],
-    // Prévenir les futurs console.log - warn pour migration progressive
-    'no-console': ['warn', { allow: ['warn'] }],
+    // Bloquer tout console.log/error — utiliser NestJS Logger
+    'no-console': ['error', { allow: ['warn'] }],
 
     // ============================================
     // P1.3 - Import Firewall (2026-02-02)

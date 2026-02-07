@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 
@@ -22,8 +22,9 @@ export interface CacheStats {
  * ✅ Cache distribué multi-instances
  */
 @Injectable()
-export class SearchCacheService {
+export class SearchCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(SearchCacheService.name);
+  private readonly MAX_RESPONSE_TIMES = 200;
   private readonly stats = {
     hits: 0,
     misses: 0,
@@ -46,6 +47,11 @@ export class SearchCacheService {
 
       const responseTime = Date.now() - startTime;
       this.stats.responseTime.push(responseTime);
+      if (this.stats.responseTime.length > this.MAX_RESPONSE_TIMES) {
+        this.stats.responseTime = this.stats.responseTime.slice(
+          -this.MAX_RESPONSE_TIMES,
+        );
+      }
 
       if (cachedData) {
         this.stats.hits++;
@@ -180,15 +186,24 @@ export class SearchCacheService {
     try {
       this.logger.log('🧹 Démarrage nettoyage cache...');
 
-      // Reset des statistiques périodiquement
-      if (this.stats.responseTime.length > 1000) {
-        this.stats.responseTime = this.stats.responseTime.slice(-500);
+      if (this.stats.responseTime.length > this.MAX_RESPONSE_TIMES) {
+        this.stats.responseTime = this.stats.responseTime.slice(
+          -this.MAX_RESPONSE_TIMES,
+        );
       }
 
       this.logger.log('✅ Nettoyage cache terminé');
     } catch (error) {
       this.logger.error('💥 Erreur nettoyage cache:', error);
     }
+  }
+
+  onModuleDestroy() {
+    this.stats.responseTime = [];
+    this.stats.hits = 0;
+    this.stats.misses = 0;
+    this.stats.totalRequests = 0;
+    this.logger.log('SearchCacheService destroyed, stats reset');
   }
 
   // Méthodes privées

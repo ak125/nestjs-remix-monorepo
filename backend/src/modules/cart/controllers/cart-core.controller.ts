@@ -5,9 +5,8 @@ import {
   UseGuards,
   Req,
   Logger,
-  HttpStatus,
-  HttpException,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -96,10 +95,9 @@ export class CartCoreController {
       this.logger.error(
         `Erreur récupération panier: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération du panier',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du panier',
+      });
     }
   }
 
@@ -175,10 +173,9 @@ export class CartCoreController {
       this.logger.error(
         `Erreur vidage panier: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-      throw new HttpException(
-        'Erreur lors du vidage du panier',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du vidage du panier',
+      });
     }
   }
 

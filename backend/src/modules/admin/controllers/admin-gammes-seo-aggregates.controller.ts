@@ -11,11 +11,14 @@ import {
   Post,
   Param,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainException,
+} from '../../../common/exceptions';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { AdminGammesSeoService } from '../services/admin-gammes-seo.service';
@@ -59,14 +62,9 @@ export class AdminGammesSeoAggregatesController {
       };
     } catch (error) {
       this.logger.error('❌ Error refreshing aggregates:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors du rafraîchissement des agrégats',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du rafraîchissement des agrégats',
+      });
     }
   }
 
@@ -86,13 +84,9 @@ export class AdminGammesSeoAggregatesController {
         .refreshAggregates(pgId);
 
       if (result.refreshed === 0) {
-        throw new HttpException(
-          {
-            success: false,
-            message: `Gamme ${pgId} non trouvée ou inactive`,
-          },
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: `Gamme ${pgId} non trouvée ou inactive`,
+        });
       }
 
       const gammeResult = result.results[0];
@@ -109,21 +103,16 @@ export class AdminGammesSeoAggregatesController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      if (error instanceof HttpException) {
+      if (error instanceof DomainException) {
         throw error;
       }
       this.logger.error(
         `❌ Error refreshing aggregates for gamme ${pgId}:`,
         error,
       );
-      throw new HttpException(
-        {
-          success: false,
-          message: `Erreur lors du rafraîchissement des agrégats pour la gamme ${pgId}`,
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Erreur lors du rafraîchissement des agrégats pour la gamme ${pgId}`,
+      });
     }
   }
 }

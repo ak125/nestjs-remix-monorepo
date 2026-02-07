@@ -1,4 +1,5 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, HttpException, Logger } from '@nestjs/common';
+import { ExternalServiceException } from '../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto';
 import { SearchRequestDto, SearchResponseDto } from './dto/search.dto';
@@ -41,10 +42,10 @@ export class RagProxyService {
         this.logger.error(
           `RAG service error: ${response.status} - ${errorText}`,
         );
-        throw new HttpException(
-          'RAG service error',
-          response.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new ExternalServiceException({
+          message: 'RAG service error',
+          serviceName: 'rag',
+        });
       }
 
       const data = await response.json();
@@ -63,10 +64,10 @@ export class RagProxyService {
       this.logger.error(
         `Failed to call RAG service: ${getErrorMessage(error)}`,
       );
-      throw new HttpException(
-        'Failed to connect to RAG service',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      throw new ExternalServiceException({
+        message: 'Failed to connect to RAG service',
+        serviceName: 'rag',
+      });
     }
   }
 
@@ -89,10 +90,10 @@ export class RagProxyService {
       });
 
       if (!response.ok) {
-        throw new HttpException(
-          'RAG search error',
-          response.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new ExternalServiceException({
+          message: 'RAG search error',
+          serviceName: 'rag',
+        });
       }
 
       const data = await response.json();
@@ -108,10 +109,10 @@ export class RagProxyService {
       }
 
       this.logger.error(`Failed to call RAG search: ${getErrorMessage(error)}`);
-      throw new HttpException(
-        'Failed to connect to RAG service',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      throw new ExternalServiceException({
+        message: 'Failed to connect to RAG service',
+        serviceName: 'rag',
+      });
     }
   }
 

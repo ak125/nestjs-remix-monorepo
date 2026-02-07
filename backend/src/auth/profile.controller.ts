@@ -5,6 +5,7 @@ import {
   Body,
   Req,
   Res,
+  Logger,
   // Param, Put, UseGuards, HttpStatus - imports temporairement non utilisés
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -22,6 +23,8 @@ const AuthenticatedGuard = (req: ExpressRequest, res: Response, next: any) => {
 
 @Controller('profile')
 export class ProfileController {
+  private readonly logger = new Logger(ProfileController.name);
+
   constructor(private authService: AuthService) {}
 
   @Get()
@@ -33,7 +36,7 @@ export class ProfileController {
       }
 
       const user = req.user as any;
-      console.log('Profile request for user:', user.id);
+      this.logger.log(`Profile request for user: ${user.id}`);
 
       // Récupérer les informations complètes de l'utilisateur
       const fullUser = await this.authService.checkIfUserExists({
@@ -47,7 +50,7 @@ export class ProfileController {
       // Rediriger vers la page de profil du frontend
       return res.redirect(`/profile`);
     } catch (error) {
-      console.error('Profile error:', error);
+      this.logger.error(`Profile error: ${error}`);
       return res.redirect('/');
     }
   }
@@ -75,8 +78,8 @@ export class ProfileController {
       }
 
       const user = req.user as any;
-      console.log('Update profile request for user:', user.id);
-      console.log('Update data:', body);
+      this.logger.log(`Update profile request for user: ${user.id}`);
+      this.logger.log(`Update data: ${JSON.stringify(body)}`);
 
       // Mettre à jour le profil
       const updatedUser = await this.authService.updateUserProfile(
@@ -92,7 +95,7 @@ export class ProfileController {
         return res.redirect('/profile?error=update_failed');
       }
     } catch (error) {
-      console.error('Update profile error:', error);
+      this.logger.error(`Update profile error: ${error}`);
       return res.redirect('/profile?error=server_error');
     }
   }
@@ -127,7 +130,7 @@ export class ProfileController {
         return res.redirect('/profile?error=password_too_short');
       }
 
-      console.log('Change password request for user:', user.id);
+      this.logger.log(`Change password request for user: ${user.id}`);
 
       // Changer le mot de passe
       const result = await this.authService.changePassword(
@@ -144,7 +147,7 @@ export class ProfileController {
         );
       }
     } catch (error) {
-      console.error('Change password error:', error);
+      this.logger.error(`Change password error: ${error}`);
       return res.redirect('/profile?error=server_error');
     }
   }

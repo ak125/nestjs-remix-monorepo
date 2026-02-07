@@ -3,11 +3,10 @@ import {
   Get,
   Param,
   Query,
-  HttpException,
-  HttpStatus,
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
@@ -123,10 +122,9 @@ export class ProductsSearchController {
       return result;
     } catch (error) {
       this.logger.error('Erreur lors de la recherche par véhicule:', error);
-      throw new HttpException(
-        'Erreur lors de la recherche par véhicule',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche par véhicule',
+      });
     }
   }
 
@@ -141,10 +139,9 @@ export class ProductsSearchController {
       return await this.pricingService.searchByReference(reference);
     } catch (error) {
       this.logger.error(`Erreur recherche référence ${reference}:`, error);
-      throw new HttpException(
-        'Erreur lors de la recherche',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche',
+      });
     }
   }
 
@@ -171,10 +168,9 @@ export class ProductsSearchController {
         'Erreur lors de la récupération des produits populaires:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des produits populaires',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des produits populaires',
+      });
     }
   }
 }

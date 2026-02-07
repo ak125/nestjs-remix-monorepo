@@ -17,9 +17,12 @@ import {
   Body,
   Query,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,
@@ -122,10 +125,9 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur récupération liste breadcrumbs:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des breadcrumbs',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des breadcrumbs',
+      });
     }
   }
 
@@ -144,7 +146,9 @@ export class BreadcrumbAdminController {
       // Récupérer les métadonnées pour cette page
       const metadata = await this.metadataService.getPageMetadata(decodedId);
       if (!metadata) {
-        throw new HttpException('Breadcrumb introuvable', HttpStatus.NOT_FOUND);
+        throw new DomainNotFoundException({
+          message: 'Breadcrumb introuvable',
+        });
       }
 
       // Récupérer le breadcrumb
@@ -167,11 +171,10 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur récupération breadcrumb ${id}:`, error);
-      if (error instanceof HttpException) throw error;
-      throw new HttpException(
-        'Erreur lors de la récupération du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainNotFoundException) throw error;
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du breadcrumb',
+      });
     }
   }
 
@@ -213,11 +216,10 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur création breadcrumb:', error);
-      if (error instanceof HttpException) throw error;
-      throw new HttpException(
-        'Erreur lors de la création du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainValidationException) throw error;
+      throw new OperationFailedException({
+        message: 'Erreur lors de la création du breadcrumb',
+      });
     }
   }
 
@@ -261,11 +263,10 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur mise à jour breadcrumb ${id}:`, error);
-      if (error instanceof HttpException) throw error;
-      throw new HttpException(
-        'Erreur lors de la mise à jour du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainValidationException) throw error;
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du breadcrumb',
+      });
     }
   }
 
@@ -290,10 +291,9 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur suppression breadcrumb ${id}:`, error);
-      throw new HttpException(
-        'Erreur lors de la suppression du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la suppression du breadcrumb',
+      });
     }
   }
 
@@ -333,10 +333,9 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur prévisualisation breadcrumb:', error);
-      throw new HttpException(
-        'Erreur lors de la prévisualisation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la prévisualisation',
+      });
     }
   }
 
@@ -359,10 +358,9 @@ export class BreadcrumbAdminController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur génération automatique pour ${url}:`, error);
-      throw new HttpException(
-        'Erreur lors de la génération automatique',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération automatique',
+      });
     }
   }
 
@@ -406,30 +404,34 @@ export class BreadcrumbAdminController {
 
   private validateBreadcrumbData(data: BreadcrumbAdminData): void {
     if (!data.url || data.url.trim().length === 0) {
-      throw new HttpException('URL requise', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'URL requise',
+      });
     }
 
     if (!data.title || data.title.trim().length === 0) {
-      throw new HttpException('Titre requis', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'Titre requis',
+      });
     }
 
     if (!data.breadcrumbs || !Array.isArray(data.breadcrumbs)) {
-      throw new HttpException('Breadcrumbs requis', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'Breadcrumbs requis',
+      });
     }
 
     // Valider chaque élément du breadcrumb
     data.breadcrumbs.forEach((item, index) => {
       if (!item.label || item.label.trim().length === 0) {
-        throw new HttpException(
-          `Label requis pour l'élément ${index + 1} du breadcrumb`,
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: `Label requis pour l'élément ${index + 1} du breadcrumb`,
+        });
       }
       if (!item.path) {
-        throw new HttpException(
-          `Chemin requis pour l'élément ${index + 1} du breadcrumb`,
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: `Chemin requis pour l'élément ${index + 1} du breadcrumb`,
+        });
       }
     });
   }

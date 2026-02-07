@@ -15,10 +15,13 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
-  HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+  DomainNotFoundException,
+} from '../../common/exceptions';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   UploadService,
@@ -45,7 +48,9 @@ export class UploadController {
     @Query('validate') validate?: string,
   ) {
     if (!file) {
-      throw new HttpException('Aucun fichier fourni', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'Aucun fichier fourni',
+      });
     }
 
     const options: UploadOptions = {
@@ -63,10 +68,9 @@ export class UploadController {
       };
     } catch (error: any) {
       this.logger.error('Upload failed:', error);
-      throw new HttpException(
-        error.message || "Erreur lors de l'upload",
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || "Erreur lors de l'upload",
+      });
     }
   }
 
@@ -82,7 +86,9 @@ export class UploadController {
     @Query('continueOnError') continueOnError?: string,
   ) {
     if (!files || files.length === 0) {
-      throw new HttpException('Aucun fichier fourni', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'Aucun fichier fourni',
+      });
     }
 
     const options: BulkUploadOptions = {
@@ -103,10 +109,9 @@ export class UploadController {
       };
     } catch (error: any) {
       this.logger.error('Bulk upload failed:', error);
-      throw new HttpException(
-        error.message || "Erreur lors de l'upload en lot",
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: error.message || "Erreur lors de l'upload en lot",
+      });
     }
   }
 
@@ -120,7 +125,9 @@ export class UploadController {
     @Param('type') uploadType: UploadType,
   ) {
     if (!file) {
-      throw new HttpException('Aucun fichier fourni', HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: 'Aucun fichier fourni',
+      });
     }
 
     try {
@@ -132,10 +139,9 @@ export class UploadController {
       };
     } catch (error: any) {
       this.logger.error('Validation failed:', error);
-      throw new HttpException(
-        'Erreur lors de la validation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la validation',
+      });
     }
   }
 
@@ -153,17 +159,18 @@ export class UploadController {
           message: 'Fichier supprimé avec succès',
         };
       } else {
-        throw new HttpException(
-          'Impossible de supprimer le fichier',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new DomainNotFoundException({
+          message: 'Impossible de supprimer le fichier',
+        });
       }
     } catch (error: any) {
       this.logger.error('Delete failed:', error);
-      throw new HttpException(
-        error.message || 'Erreur lors de la suppression',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainNotFoundException) {
+        throw error;
+      }
+      throw new OperationFailedException({
+        message: error.message || 'Erreur lors de la suppression',
+      });
     }
   }
 
@@ -180,10 +187,9 @@ export class UploadController {
       };
     } catch (error: any) {
       this.logger.error('Stats failed:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -199,7 +205,9 @@ export class UploadController {
         data: config,
       };
     } catch {
-      throw new HttpException("Type d'upload invalide", HttpStatus.BAD_REQUEST);
+      throw new DomainValidationException({
+        message: "Type d'upload invalide",
+      });
     }
   }
 
@@ -248,10 +256,9 @@ export class UploadController {
       };
     } catch (error: any) {
       this.logger.error('List files failed:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des fichiers',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des fichiers',
+      });
     }
   }
 }

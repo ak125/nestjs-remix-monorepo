@@ -5,11 +5,10 @@ import {
   Param,
   Body,
   Query,
-  HttpException,
-  HttpStatus,
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
@@ -99,10 +98,9 @@ export class ProductsAdminController {
       };
     } catch (error) {
       this.logger.error('Erreur dans debugPieceActiv:', error);
-      throw new HttpException(
-        'Erreur lors du diagnostic piece_activ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du diagnostic piece_activ',
+      });
     }
   }
 
@@ -159,10 +157,9 @@ export class ProductsAdminController {
       return result;
     } catch (error) {
       this.logger.error('Erreur getProductsAdmin:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des produits',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des produits',
+      });
     }
   }
 
@@ -183,10 +180,9 @@ export class ProductsAdminController {
       return result;
     } catch (error) {
       this.logger.error(`Erreur toggle status produit ${id}:`, error);
-      throw new HttpException(
-        'Erreur lors de la mise à jour du statut',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du statut',
+      });
     }
   }
 
@@ -235,10 +231,9 @@ export class ProductsAdminController {
       };
     } catch (error) {
       this.logger.error('Erreur getFilterLists:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des listes',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des listes',
+      });
     }
   }
 }

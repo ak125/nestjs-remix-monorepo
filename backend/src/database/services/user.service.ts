@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import * as bcrypt from 'bcrypt';
 // createHash supprimé car la validation est maintenant dans PasswordCryptoService
@@ -26,12 +26,14 @@ export interface User {
 
 @Injectable()
 export class UserService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(UserService.name);
+
   /**
    * Trouver un utilisateur par email
    */
   async findUserByEmail(email: string): Promise<User | null> {
     try {
-      console.log(`🔍 findUserByEmail: ${email}`);
+      this.logger.log(`findUserByEmail: ${email}`);
       const url = `${this.baseUrl}/___xtr_customer?cst_mail=eq.${email}&select=*`;
 
       const response = await fetch(url, {
@@ -40,14 +42,16 @@ export class UserService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        console.error('Erreur Supabase:', response.status, response.statusText);
+        this.logger.error(
+          `Erreur Supabase: ${response.status} ${response.statusText}`,
+        );
         return null;
       }
 
       const users = await response.json();
       return users.length > 0 ? users[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la recherche utilisateur:', error);
+      this.logger.error(`Erreur lors de la recherche utilisateur: ${error}`);
       return null;
     }
   }
@@ -101,10 +105,10 @@ export class UserService extends SupabaseBaseService {
         }
       }
 
-      console.error('User not found in both tables:', userId);
+      this.logger.error(`User not found in both tables: ${userId}`);
       return null;
     } catch (error) {
-      console.error('Erreur lors de la récupération utilisateur:', error);
+      this.logger.error(`Erreur lors de la récupération utilisateur: ${error}`);
       return null;
     }
   }
@@ -119,8 +123,8 @@ export class UserService extends SupabaseBaseService {
     level?: number,
   ): Promise<{ users: User[]; total: number }> {
     try {
-      console.log(
-        `🔍 getAllUsers: page=${page}, limit=${limit}, search=${search}, level=${level}`,
+      this.logger.log(
+        `getAllUsers: page=${page}, limit=${limit}, search=${search}, level=${level}`,
       );
 
       const offset = (page - 1) * limit;
@@ -144,7 +148,9 @@ export class UserService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération utilisateurs:', response.status);
+        this.logger.error(
+          `Erreur récupération utilisateurs: ${response.status}`,
+        );
         return { users: [], total: 0 };
       }
 
@@ -153,14 +159,16 @@ export class UserService extends SupabaseBaseService {
       // Compter le total
       const total = await this._getTotalUsersCount(search, level);
 
-      console.log(`✅ Users retrieved: ${users.length}/${total}`);
+      this.logger.log(`Users retrieved: ${users.length}/${total}`);
 
       return {
         users: users || [],
         total: total,
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des utilisateurs:', error);
+      this.logger.error(
+        `Erreur lors de la récupération des utilisateurs: ${error}`,
+      );
       return { users: [], total: 0 };
     }
   }
@@ -191,7 +199,7 @@ export class UserService extends SupabaseBaseService {
         return countResult[0]?.count || 0;
       }
     } catch (error) {
-      console.error('Erreur comptage utilisateurs:', error);
+      this.logger.error(`Erreur comptage utilisateurs: ${error}`);
     }
     return 0;
   }
@@ -226,10 +234,8 @@ export class UserService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        console.error(
-          'Erreur création utilisateur:',
-          response.status,
-          response.statusText,
+        this.logger.error(
+          `Erreur création utilisateur: ${response.status} ${response.statusText}`,
         );
         return null;
       }
@@ -237,7 +243,7 @@ export class UserService extends SupabaseBaseService {
       const createdUsers = await response.json();
       return createdUsers[0];
     } catch (error) {
-      console.error('Erreur lors de la création utilisateur:', error);
+      this.logger.error(`Erreur lors de la création utilisateur: ${error}`);
       return null;
     }
   }
@@ -260,10 +266,8 @@ export class UserService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        console.error(
-          'Erreur mise à jour utilisateur:',
-          response.status,
-          response.statusText,
+        this.logger.error(
+          `Erreur mise à jour utilisateur: ${response.status} ${response.statusText}`,
         );
         return null;
       }
@@ -271,7 +275,7 @@ export class UserService extends SupabaseBaseService {
       const updatedUsers = await response.json();
       return updatedUsers[0];
     } catch (error) {
-      console.error('Erreur lors de la mise à jour utilisateur:', error);
+      this.logger.error(`Erreur lors de la mise à jour utilisateur: ${error}`);
       return null;
     }
   }
@@ -299,13 +303,17 @@ export class UserService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        console.error('Erreur HTTP:', response.status, response.statusText);
+        this.logger.error(
+          `Erreur HTTP: ${response.status} ${response.statusText}`,
+        );
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du mot de passe:', error);
+      this.logger.error(
+        `Erreur lors de la mise à jour du mot de passe: ${error}`,
+      );
       return false;
     }
   }
@@ -348,13 +356,15 @@ export class UserService extends SupabaseBaseService {
       );
 
       if (!response.ok) {
-        console.error('Erreur HTTP:', response.status, response.statusText);
+        this.logger.error(
+          `Erreur HTTP: ${response.status} ${response.statusText}`,
+        );
         return null;
       }
 
       return await this.getUserById(userId);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du profil:', error);
+      this.logger.error(`Erreur lors de la mise à jour du profil: ${error}`);
       return null;
     }
   }
@@ -364,7 +374,7 @@ export class UserService extends SupabaseBaseService {
    */
   async findAdminByEmail(email: string): Promise<any | null> {
     try {
-      console.log(`🔍 findAdminByEmail: ${email}`);
+      this.logger.log(`findAdminByEmail: ${email}`);
       const url = `${this.baseUrl}/___config_admin?cnfa_mail=eq.${email}&select=*`;
 
       const response = await fetch(url, {
@@ -373,10 +383,8 @@ export class UserService extends SupabaseBaseService {
       });
 
       if (!response.ok) {
-        console.error(
-          'Erreur Supabase (admin):',
-          response.status,
-          response.statusText,
+        this.logger.error(
+          `Erreur Supabase (admin): ${response.status} ${response.statusText}`,
         );
         return null;
       }
@@ -384,7 +392,7 @@ export class UserService extends SupabaseBaseService {
       const admins = await response.json();
       return admins.length > 0 ? admins[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la recherche admin:', error);
+      this.logger.error(`Erreur lors de la recherche admin: ${error}`);
       return null;
     }
   }

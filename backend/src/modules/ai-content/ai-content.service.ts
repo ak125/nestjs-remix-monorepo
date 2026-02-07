@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   GenerateContentDto,
@@ -16,6 +16,7 @@ import { CircuitBreakerService } from './services/circuit-breaker.service';
 import {
   ExternalServiceException,
   ConfigurationException,
+  OperationFailedException,
   ErrorCodes,
 } from '../../common/exceptions';
 import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
@@ -392,10 +393,9 @@ export class AiContentService {
         `Error generating content: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new HttpException(
-        `Failed to generate content: ${getErrorMessage(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Failed to generate content: ${getErrorMessage(error)}`,
+      });
     }
   }
 
@@ -458,10 +458,9 @@ export class AiContentService {
         return result.value;
       } else {
         this.logger.error(`Batch item ${index} failed: ${result.reason}`);
-        throw new HttpException(
-          `Batch generation failed for item ${index}`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new OperationFailedException({
+          message: `Batch generation failed for item ${index}`,
+        });
       }
     });
   }

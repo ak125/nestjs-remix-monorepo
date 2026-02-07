@@ -4,10 +4,10 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  HttpException,
   Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { CyberplusService } from '../services/cyberplus.service';
@@ -95,10 +95,9 @@ export class PaymentCallbackController {
         `process SystemPay callback for order ${orderId}`,
         error,
       );
-      throw new HttpException(
-        'Payment callback processing failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Payment callback processing failed',
+      });
     }
   }
 

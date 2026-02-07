@@ -6,7 +6,12 @@
  * access policies based on mode and level configuration.
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -22,7 +27,7 @@ import {
 } from './rpc-gate.types';
 
 @Injectable()
-export class RpcGateService implements OnModuleInit {
+export class RpcGateService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RpcGateService.name);
 
   // Configuration
@@ -43,6 +48,8 @@ export class RpcGateService implements OnModuleInit {
   private blockCounts = new Map<string, number>();
   private sampleCounter = 0;
   private readonly SAMPLE_RATE = 100; // Log 1/100 ALLOW calls
+  private readonly MAX_TRACKED_FUNCTIONS = 500;
+  private metricsResetInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly configService: ConfigService) {
     this.mode = (this.configService.get<string>('RPC_GATE_MODE') ||
@@ -64,6 +71,30 @@ export class RpcGateService implements OnModuleInit {
     this.logger.log(
       `Loaded: ${this.allowlist.size} allowlist, ${this.denylistP0.size} P0, ${this.denylistP1.size} P1, ${this.denylistP2.size} P2`,
     );
+    // Reset metrics every 24 hours to prevent counter overflow
+    this.metricsResetInterval = setInterval(
+      () => {
+        this.resetMetrics();
+      },
+      24 * 60 * 60 * 1000,
+    );
+  }
+
+  onModuleDestroy() {
+    if (this.metricsResetInterval) {
+      clearInterval(this.metricsResetInterval);
+      this.metricsResetInterval = null;
+    }
+    this.callCounts.clear();
+    this.blockCounts.clear();
+    this.logger.log('RpcGateService destroyed, metrics cleared');
+  }
+
+  private resetMetrics(): void {
+    this.callCounts.clear();
+    this.blockCounts.clear();
+    this.sampleCounter = 0;
+    this.logger.log('RPC Gate metrics reset (periodic cleanup)');
   }
 
   /**
@@ -130,6 +161,10 @@ export class RpcGateService implements OnModuleInit {
     rpcName: string,
     context: RpcGateContext = {},
   ): { decision: RpcDecision; reason: string } {
+    // Guard against unbounded growth from arbitrary RPC names
+    if (this.callCounts.size > this.MAX_TRACKED_FUNCTIONS) {
+      this.resetMetrics();
+    }
     // Track call count
     this.callCounts.set(rpcName, (this.callCounts.get(rpcName) || 0) + 1);
 

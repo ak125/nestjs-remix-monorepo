@@ -4,9 +4,11 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainNotFoundException,
+} from '../../../common/exceptions';
 import { RmBuilderService } from '../services/rm-builder.service';
 
 /**
@@ -52,15 +54,9 @@ export class RmController {
     });
 
     if (!result.success) {
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Failed to fetch products',
-          gamme_id,
-          vehicle_id,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Failed to fetch products for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+      });
     }
 
     return result;
@@ -100,18 +96,9 @@ export class RmController {
     }
 
     if (!result.success) {
-      throw new HttpException(
-        {
-          success: false,
-          error: result.error || {
-            code: 'UNKNOWN',
-            message: 'Failed to fetch page data',
-          },
-          gamme_id,
-          vehicle_id,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Failed to fetch page data for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+      });
     }
 
     return result;
@@ -158,18 +145,9 @@ export class RmController {
     }
 
     if (!result.success) {
-      throw new HttpException(
-        {
-          success: false,
-          error: result.error || {
-            code: 'UNKNOWN',
-            message: 'Failed to fetch page v2 data',
-          },
-          gamme_id,
-          vehicle_id,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Failed to fetch page v2 data for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+      });
     }
 
     return result;
@@ -197,18 +175,9 @@ export class RmController {
     });
 
     if (!result.success) {
-      throw new HttpException(
-        {
-          success: false,
-          error: result.error || {
-            code: 'UNKNOWN',
-            message: 'Listing not found',
-          },
-          gamme_id,
-          vehicle_id,
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new DomainNotFoundException({
+        message: `Listing not found for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+      });
     }
 
     return result;
@@ -233,15 +202,9 @@ export class RmController {
     const listing = await this.rmBuilder.getListing(gamme_id, vehicle_id);
 
     if (!listing) {
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Listing not found',
-          gamme_id,
-          vehicle_id,
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new DomainNotFoundException({
+        message: `Listing not found for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+      });
     }
 
     return {

@@ -90,7 +90,7 @@ export class AuthSessionController {
         user: null,
       };
     } catch (error: any) {
-      console.error('Session validation error:', error);
+      this.logger.error(`Session validation error: ${error}`);
       return {
         valid: false,
         error: error.message,

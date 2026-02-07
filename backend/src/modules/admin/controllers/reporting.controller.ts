@@ -12,10 +12,9 @@ import {
   Query,
   Body,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { ReportingService, ReportFilters } from '../services/reporting.service';
@@ -66,14 +65,9 @@ export class ReportingController {
     } catch (error) {
       this.logger.error('❌ Erreur génération rapport analytics:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la génération du rapport analytics',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération du rapport analytics',
+      });
     }
   }
 
@@ -107,14 +101,9 @@ export class ReportingController {
     } catch (error) {
       this.logger.error(`❌ Erreur génération rapport ${body.type}:`, error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: `Erreur lors de la génération du rapport ${body.type}`,
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Erreur lors de la génération du rapport ${body.type}`,
+      });
     }
   }
 
@@ -139,14 +128,9 @@ export class ReportingController {
     } catch (error) {
       this.logger.error('❌ Erreur récupération rapports:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des rapports',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des rapports',
+      });
     }
   }
 
@@ -169,14 +153,9 @@ export class ReportingController {
     } catch (error) {
       this.logger.error('❌ Erreur health check reporting:', error);
 
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors du health check reporting',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du health check reporting',
+      });
     }
   }
 }

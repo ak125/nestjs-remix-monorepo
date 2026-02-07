@@ -9,10 +9,9 @@ import {
   UseGuards,
   Req,
   Logger,
-  HttpStatus,
-  HttpException,
   BadRequestException,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -137,10 +136,9 @@ export class CartItemsController {
         throw error;
       }
 
-      throw new HttpException(
-        "Erreur lors de l'ajout de l'article",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de l'ajout de l'article",
+      });
     }
   }
 
@@ -201,10 +199,9 @@ export class CartItemsController {
         throw error;
       }
 
-      throw new HttpException(
-        "Erreur lors de la mise à jour de l'article",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la mise à jour de l'article",
+      });
     }
   }
 
@@ -302,10 +299,9 @@ export class CartItemsController {
         throw error;
       }
 
-      throw new HttpException(
-        "Erreur lors de la suppression de l'article",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la suppression de l'article",
+      });
     }
   }
 }

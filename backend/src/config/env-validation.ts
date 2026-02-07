@@ -8,6 +8,10 @@
  * @since 2026-01-16
  */
 
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('EnvValidation');
+
 /**
  * Required environment variables for production
  * The application will NOT start if any of these are missing
@@ -61,22 +65,22 @@ export function validateRequiredEnvVars(): void {
   }
 
   if (missing.length > 0) {
-    console.error('');
-    console.error('═══════════════════════════════════════════════════════');
-    console.error('❌ FATAL: Missing required environment variables');
-    console.error('═══════════════════════════════════════════════════════');
-    console.error('');
-    console.error('The following variables must be set in your .env file:');
-    console.error('');
+    logger.error('');
+    logger.error('═══════════════════════════════════════════════════════');
+    logger.error('FATAL: Missing required environment variables');
+    logger.error('═══════════════════════════════════════════════════════');
+    logger.error('');
+    logger.error('The following variables must be set in your .env file:');
+    logger.error('');
 
     for (const varName of missing) {
-      console.error(`  • ${varName}`);
+      logger.error(`  - ${varName}`);
     }
 
-    console.error('');
-    console.error('See backend/.env.example for a complete template.');
-    console.error('');
-    console.error('═══════════════════════════════════════════════════════');
+    logger.error('');
+    logger.error('See backend/.env.example for a complete template.');
+    logger.error('');
+    logger.error('═══════════════════════════════════════════════════════');
 
     // Exit with error code to prevent app from starting
     process.exit(1);
@@ -84,16 +88,16 @@ export function validateRequiredEnvVars(): void {
 
   // Log success in non-test environments
   if (process.env.NODE_ENV !== 'test') {
-    console.log('✅ All required environment variables present');
+    logger.log('All required environment variables present');
 
     // Log Kill-switch DEV status
     if (
       process.env.NODE_ENV !== 'production' &&
       process.env.DEV_KILL_SWITCH === 'true'
     ) {
-      console.log('🔒 Kill-switch DEV: ENABLED (read-only mode)');
+      logger.log('Kill-switch DEV: ENABLED (read-only mode)');
       if (process.env.DEV_SUPABASE_KEY) {
-        console.log('   Using dev_readonly Supabase key');
+        logger.log('   Using dev_readonly Supabase key');
       } else {
         console.warn(
           '   ⚠️ DEV_SUPABASE_KEY not set - falling back to service_role',

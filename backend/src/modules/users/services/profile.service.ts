@@ -15,13 +15,11 @@ import { TABLES } from '@repo/database-types';
  * - Évite circular dependency avec UsersService
  */
 
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+  OperationFailedException,
+  DatabaseException,
+} from '../../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { UserService } from '../../../database/services/user.service';
@@ -74,10 +72,10 @@ export class ProfileService extends SupabaseBaseService {
       return profile;
     } catch (error: any) {
       this.logger.error(`❌ Erreur récupération profil ${userId}:`, error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération du profil',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof NotFoundException) throw error;
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la récupération du profil',
+      });
     }
   }
 
@@ -123,10 +121,9 @@ export class ProfileService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        throw new HttpException(
-          `Erreur mise à jour DB: ${error.message}`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new DatabaseException({
+          message: `Erreur mise à jour DB: ${error.message}`,
+        });
       }
 
       // 4. Invalider cache
@@ -139,10 +136,14 @@ export class ProfileService extends SupabaseBaseService {
       return updatedProfile;
     } catch (error: any) {
       this.logger.error(`❌ Erreur mise à jour profil ${userId}:`, error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la mise à jour du profil',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (
+        error instanceof NotFoundException ||
+        error instanceof DatabaseException
+      )
+        throw error;
+      throw new OperationFailedException({
+        message: error?.message || 'Erreur lors de la mise à jour du profil',
+      });
     }
   }
 

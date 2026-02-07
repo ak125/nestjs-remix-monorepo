@@ -28,12 +28,14 @@ export class MailService {
 
       // TODO: Implémenter un vrai service mail
       // Pour l'instant, on simule l'envoi
-      console.log('🚀 EMAIL SIMULÉ:', {
-        to: options.to,
-        subject: options.subject,
-        template: options.template,
-        context: options.context,
-      });
+      this.logger.log(
+        `EMAIL SIMULÉ: ${JSON.stringify({
+          to: options.to,
+          subject: options.subject,
+          template: options.template,
+          context: options.context,
+        })}`,
+      );
     } catch (error) {
       this.logger.error('❌ Erreur envoi email:', error);
       throw error;

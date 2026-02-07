@@ -1,15 +1,14 @@
+import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  HttpStatus,
-  HttpException,
-} from '@nestjs/common';
+  OperationFailedException,
+  DomainException,
+} from '../common/exceptions';
 import { OrdersService } from '../database/services/orders.service';
 
 @Controller('api/legacy-orders')
 export class OrdersController {
+  private readonly logger = new Logger(OrdersController.name);
+
   constructor(private readonly ordersService: OrdersService) {}
 
   /**
@@ -25,13 +24,15 @@ export class OrdersController {
     @Query('excludePending') excludePending?: string, // ✨ Nouveau: exclure "En attente"
   ) {
     try {
-      console.log('📦 Récupération des commandes...', {
-        page,
-        limit,
-        status,
-        userId,
-        excludePending,
-      });
+      this.logger.log(
+        `Récupération des commandes... ${JSON.stringify({
+          page,
+          limit,
+          status,
+          userId,
+          excludePending,
+        })}`,
+      );
 
       const orders = await this.ordersService.getAllOrders({
         limit: parseInt(limit),
@@ -59,11 +60,10 @@ export class OrdersController {
         filters: { status, userId, excludePending: excludePending !== 'false' },
       };
     } catch (error) {
-      console.error('❌ Erreur récupération commandes:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des commandes',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur récupération commandes: ${error}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des commandes',
+      });
     }
   }
 
@@ -74,7 +74,7 @@ export class OrdersController {
   @Get('stats')
   async getOrdersStats(@Query('userId') userId?: string) {
     try {
-      console.log('📊 Calcul des statistiques des commandes...');
+      this.logger.log('Calcul des statistiques des commandes...');
 
       const stats = await this.ordersService.getOrdersStats(userId);
 
@@ -84,11 +84,10 @@ export class OrdersController {
         userId: userId || 'all',
       };
     } catch (error) {
-      console.error('❌ Erreur calcul statistiques:', error);
-      throw new HttpException(
-        'Erreur lors du calcul des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(`Erreur calcul statistiques: ${error}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors du calcul des statistiques',
+      });
     }
   }
 
@@ -99,7 +98,7 @@ export class OrdersController {
   @Get(':id')
   async getOrderById(@Param('id') orderId: string) {
     try {
-      console.log(`🔍 Récupération commande ID: ${orderId}`);
+      this.logger.log(`Récupération commande ID: ${orderId}`);
 
       const order = await this.ordersService.getOrderWithCustomer(orderId);
 
@@ -108,13 +107,12 @@ export class OrdersController {
         data: order,
       };
     } catch (error) {
-      console.error(`❌ Erreur récupération commande ${orderId}:`, error);
-      if (error instanceof HttpException) throw error;
+      this.logger.error(`Erreur récupération commande ${orderId}: ${error}`);
+      if (error instanceof DomainException) throw error;
 
-      throw new HttpException(
-        'Erreur lors de la récupération de la commande',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la commande',
+      });
     }
   }
 }

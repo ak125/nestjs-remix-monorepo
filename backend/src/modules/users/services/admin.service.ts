@@ -14,12 +14,11 @@
  * @see JOUR3-PHASE3.1-ANALYSE-ADMIN-SIMPLIFIE.md
  */
 
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  Injectable,
-  NotFoundException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+  DomainValidationException,
+  DatabaseException,
+} from '../../../common/exceptions';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ProfileService } from './profile.service';
 import { ConfigService } from '@nestjs/config';
@@ -62,10 +61,10 @@ export class UsersAdminService extends SupabaseBaseService {
 
       // Valider le niveau (1-9)
       if (level < 1 || level > 9) {
-        throw new HttpException(
-          'Niveau invalide (doit être entre 1 et 9)',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Niveau invalide (doit être entre 1 et 9)',
+          field: 'level',
+        });
       }
 
       // UPDATE niveau dans DB
@@ -81,10 +80,9 @@ export class UsersAdminService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Erreur update niveau:', error);
-        throw new HttpException(
-          'Erreur lors de la mise à jour du niveau',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new DatabaseException({
+          message: 'Erreur lors de la mise à jour du niveau',
+        });
       }
 
       // Invalider le cache
@@ -146,10 +144,9 @@ export class UsersAdminService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Erreur désactivation utilisateur:', error);
-        throw new HttpException(
-          'Erreur lors de la désactivation',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new DatabaseException({
+          message: 'Erreur lors de la désactivation',
+        });
       }
 
       // Invalider le cache
@@ -200,10 +197,9 @@ export class UsersAdminService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Erreur réactivation utilisateur:', error);
-        throw new HttpException(
-          'Erreur lors de la réactivation',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new DatabaseException({
+          message: 'Erreur lors de la réactivation',
+        });
       }
 
       // Invalider le cache
@@ -264,10 +260,9 @@ export class UsersAdminService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error('❌ Erreur soft delete utilisateur:', error);
-        throw new HttpException(
-          "Erreur lors de la suppression de l'utilisateur",
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new DatabaseException({
+          message: "Erreur lors de la suppression de l'utilisateur",
+        });
       }
 
       // Invalider le cache

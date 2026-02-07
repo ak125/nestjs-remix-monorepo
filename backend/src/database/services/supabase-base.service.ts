@@ -246,7 +246,7 @@ export abstract class SupabaseBaseService {
 
       return response.ok;
     } catch (error) {
-      console.error('Erreur test connexion:', error);
+      this.logger.error(`Erreur test connexion: ${error}`);
       return false;
     }
   }

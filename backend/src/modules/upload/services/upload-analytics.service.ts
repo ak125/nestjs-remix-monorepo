@@ -5,7 +5,7 @@
  * Reporting avancé et monitoring des performances
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
@@ -62,9 +62,13 @@ export interface RealTimeMetrics {
 }
 
 @Injectable()
-export class UploadAnalyticsService extends SupabaseBaseService {
+export class UploadAnalyticsService
+  extends SupabaseBaseService
+  implements OnModuleDestroy
+{
   protected readonly logger = new Logger(UploadAnalyticsService.name);
   private readonly metricsCache = new Map<string, any>();
+  private metricsInterval: ReturnType<typeof setInterval> | null = null;
 
   // Métriques en temps réel
   private realTimeMetrics: RealTimeMetrics = {
@@ -406,9 +410,18 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   /**
    * Initialise la collecte de métriques
    */
+  onModuleDestroy() {
+    if (this.metricsInterval) {
+      clearInterval(this.metricsInterval);
+      this.metricsInterval = null;
+    }
+    this.metricsCache.clear();
+    this.logger.log('UploadAnalyticsService destroyed, intervals cleared');
+  }
+
   private initializeMetricsCollection(): void {
     // Mise à jour des métriques toutes les 30 secondes
-    setInterval(async () => {
+    this.metricsInterval = setInterval(async () => {
       try {
         await this.updateAllMetrics();
       } catch (error: any) {

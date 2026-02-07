@@ -311,7 +311,7 @@ export class VehiclesFormsController {
         },
       };
     } catch (error) {
-      console.error('Erreur dans getCompatibleProducts:', error);
+      this.logger.error(`Erreur dans getCompatibleProducts: ${error}`);
       return {
         products: [],
         total: 0,

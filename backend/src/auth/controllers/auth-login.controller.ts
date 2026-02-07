@@ -233,12 +233,16 @@ export class AuthLoginController {
 
     // FUSION DE PANIER: Extraire la session du cookie AVANT toute modification
     const cookieHeader = (request as any).headers?.cookie || '';
-    console.log('[CART-FUSION] Cookie header:', cookieHeader.substring(0, 150));
+    this.logger.log(
+      `[CART-FUSION] Cookie header: ${cookieHeader.substring(0, 150)}`,
+    );
     const guestSessionId = extractGuestSessionId(cookieHeader);
     if (guestSessionId) {
-      console.log('[CART-FUSION] Guest session ID extracted:', guestSessionId);
+      this.logger.log(
+        `[CART-FUSION] Guest session ID extracted: ${guestSessionId}`,
+      );
     } else {
-      console.log('[CART-FUSION] No guest session ID found');
+      this.logger.log('[CART-FUSION] No guest session ID found');
     }
 
     const user = request.user as any;
@@ -255,42 +259,40 @@ export class AuthLoginController {
     try {
       await promisifyLogin(request, user);
     } catch (loginErr) {
-      console.error('❌ Erreur réattachement utilisateur:', loginErr);
+      this.logger.error(
+        `Erreur réattachement utilisateur: ${(loginErr as any)?.message || loginErr}`,
+      );
       return response.redirect('/');
     }
 
     // FUSION DE PANIER: Fusionner vers userId
     const userId = user.id;
     const newSessionId = (request as any).session?.id;
-    console.log(`🔑 Session APRÈS login: ${newSessionId}`);
-    console.log(`👤 User ID: ${userId}`);
+    this.logger.log(`Session APRES login: ${newSessionId}`);
+    this.logger.log(`User ID: ${userId}`);
 
-    console.log(
-      '[CART-FUSION] Verification: guest=',
-      guestSessionId,
-      'userId=',
-      userId,
+    this.logger.log(
+      `[CART-FUSION] Verification: guest=${guestSessionId} userId=${userId}`,
     );
 
     if (guestSessionId && userId && guestSessionId !== userId) {
       try {
-        console.log(
-          '[CART-FUSION] Merging cart from',
-          guestSessionId,
-          'to userId',
-          userId,
+        this.logger.log(
+          `[CART-FUSION] Merging cart from ${guestSessionId} to userId ${userId}`,
         );
         const mergedCount = await this.cartDataService.mergeCart(
           guestSessionId,
           userId,
         );
         if (mergedCount > 0) {
-          console.log(
-            `✅ Panier fusionné: ${mergedCount} articles transférés vers userId`,
+          this.logger.log(
+            `Panier fusionné: ${mergedCount} articles transférés vers userId`,
           );
         }
       } catch (mergeError) {
-        console.error('⚠️ Erreur fusion panier:', mergeError);
+        this.logger.error(
+          `Erreur fusion panier: ${(mergeError as any)?.message || mergeError}`,
+        );
       }
     }
 
@@ -304,24 +306,28 @@ export class AuthLoginController {
       redirectTo.startsWith('/') &&
       !redirectTo.startsWith('//')
     ) {
-      console.log(`✅ Redirection vers: ${redirectTo}`);
+      this.logger.log(`Redirection vers: ${redirectTo}`);
       return response.redirect(redirectTo);
     }
 
     // Redirection par défaut selon le type et niveau d'utilisateur
     if (user.isAdmin && userLevel >= 7) {
-      console.log(
+      this.logger.log(
         `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
       );
       response.redirect('/admin');
     } else if (user.isAdmin && userLevel >= 4) {
-      console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);
+      this.logger.log(
+        `Admin niveau ${userLevel} détecté, redirection vers admin`,
+      );
       response.redirect('/admin');
     } else if (user.isPro) {
-      console.log('Utilisateur pro détecté, redirection vers dashboard pro');
+      this.logger.log(
+        'Utilisateur pro détecté, redirection vers dashboard pro',
+      );
       response.redirect('/pro/dashboard');
     } else {
-      console.log('Utilisateur standard, redirection vers accueil');
+      this.logger.log('Utilisateur standard, redirection vers accueil');
       response.redirect('/');
     }
   }
@@ -349,21 +355,23 @@ export class AuthLoginController {
     @Res() response: Response,
     @Next() next: NextFunction,
   ) {
-    console.log('--- POST /auth/logout DÉBUT ---');
-    console.log('User avant logout:', request.user);
+    this.logger.log('--- POST /auth/logout DEBUT ---');
+    this.logger.log(`User avant logout: ${JSON.stringify(request.user)}`);
 
     try {
       await promisifyLogout(request);
     } catch (err) {
-      console.error('Erreur logout:', err);
+      this.logger.error(`Erreur logout: ${(err as any)?.message || err}`);
       return next(err);
     }
 
-    console.log('LogOut réussi, user après:', request.user);
+    this.logger.log(
+      `LogOut réussi, user après: ${JSON.stringify(request.user)}`,
+    );
     await promisifySessionDestroy(request.session);
     response.clearCookie('connect.sid');
-    console.log('Session détruite et cookie effacé');
-    console.log('--- POST /auth/logout REDIRECTION vers / ---');
+    this.logger.log('Session détruite et cookie effacé');
+    this.logger.log('--- POST /auth/logout REDIRECTION vers / ---');
     response.redirect('/');
   }
 }

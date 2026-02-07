@@ -94,7 +94,7 @@ export class AuthPermissionsController {
 
       return permissions;
     } catch (error: any) {
-      console.error('Error fetching user permissions:', error);
+      this.logger.error(`Error fetching user permissions: ${error}`);
       return {};
     }
   }

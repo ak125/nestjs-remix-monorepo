@@ -1,11 +1,5 @@
-import {
-  Controller,
-  Get,
-  Logger,
-  Query,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { PiecesAnalysisService } from '../services/pieces-analysis.service';
 import { SupabaseIndexationService } from '../services/supabase-indexation.service';
 import { MeilisearchService } from '../services/meilisearch.service';
@@ -102,10 +96,9 @@ export class PiecesController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException(
-        `Erreur lors de la récupération de la structure: ${getErrorMessage(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Erreur lors de la récupération de la structure: ${getErrorMessage(error)}`,
+      });
     }
   }
 
@@ -119,10 +112,9 @@ export class PiecesController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException(
-        `Erreur lors de la récupération des marques: ${getErrorMessage(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Erreur lors de la récupération des marques: ${getErrorMessage(error)}`,
+      });
     }
   }
 

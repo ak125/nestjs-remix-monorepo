@@ -15,11 +15,13 @@ import {
   Param,
   Req,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+} from '../../../common/exceptions';
 import { Request } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
@@ -56,14 +58,9 @@ export class AdminGammesSeoUpdateController {
       };
     } catch (error) {
       this.logger.error(`❌ Error updating gamme ${id}:`, error);
-      throw new HttpException(
-        {
-          success: false,
-          message: `Erreur lors de la mise à jour de la gamme ${id}`,
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: `Erreur lors de la mise à jour de la gamme ${id}`,
+      });
     }
   }
 
@@ -85,10 +82,9 @@ export class AdminGammesSeoUpdateController {
         !Array.isArray(body.pgIds) ||
         body.pgIds.length === 0
       ) {
-        throw new HttpException(
-          { success: false, message: 'pgIds requis (tableau non vide)' },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'pgIds requis (tableau non vide)',
+        });
       }
 
       const result = await this.gammesSeoService.batchUpdate(
@@ -104,15 +100,10 @@ export class AdminGammesSeoUpdateController {
       };
     } catch (error) {
       this.logger.error('❌ Error in batch update:', error);
-      if (error instanceof HttpException) throw error;
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la mise à jour en masse',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainValidationException) throw error;
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour en masse',
+      });
     }
   }
 
@@ -135,17 +126,15 @@ export class AdminGammesSeoUpdateController {
         !Array.isArray(body.pgIds) ||
         body.pgIds.length === 0
       ) {
-        throw new HttpException(
-          { success: false, message: 'pgIds requis (tableau non vide)' },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'pgIds requis (tableau non vide)',
+        });
       }
 
       if (!body.actionId) {
-        throw new HttpException(
-          { success: false, message: 'actionId requis' },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'actionId requis',
+        });
       }
 
       // Extract admin info from session for audit logging
@@ -168,15 +157,10 @@ export class AdminGammesSeoUpdateController {
       };
     } catch (error) {
       this.logger.error('❌ Error applying predefined action:', error);
-      if (error instanceof HttpException) throw error;
-      throw new HttpException(
-        {
-          success: false,
-          message: "Erreur lors de l'application de l'action",
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof DomainValidationException) throw error;
+      throw new OperationFailedException({
+        message: "Erreur lors de l'application de l'action",
+      });
     }
   }
 }

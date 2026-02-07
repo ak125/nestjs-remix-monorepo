@@ -8,11 +8,10 @@ import {
   Body,
   Query,
   UsePipes,
-  HttpException,
-  HttpStatus,
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
@@ -87,10 +86,9 @@ export class ProductsCoreController {
       return result;
     } catch (error) {
       this.logger.error('Erreur lors de la création du produit:', error);
-      throw new HttpException(
-        'Erreur lors de la création du produit',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la création du produit',
+      });
     }
   }
 
@@ -115,10 +113,9 @@ export class ProductsCoreController {
         `Erreur lors de la mise à jour du produit ${id}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour du produit',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du produit',
+      });
     }
   }
 
@@ -157,10 +154,9 @@ export class ProductsCoreController {
         `Erreur lors de la mise à jour du stock du produit ${id}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour du stock',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du stock',
+      });
     }
   }
 

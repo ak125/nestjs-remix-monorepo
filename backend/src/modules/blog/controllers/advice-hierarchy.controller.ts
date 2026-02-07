@@ -1,14 +1,12 @@
-import {
-  Controller,
-  Get,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { AdviceService } from '../services/advice.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from '../services/blog-cache.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import {
+  DatabaseException,
+  OperationFailedException,
+  ErrorCodes,
+} from '../../../common/exceptions';
 
 /**
  * 🏗️ Contrôleur pour la hiérarchie des conseils par famille
@@ -203,10 +201,9 @@ export class AdviceHierarchyController {
       this.logger.error(
         `❌ Erreur advice-hierarchy: ${(error as Error).message}`,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération de la hiérarchie',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la hiérarchie',
+      });
     }
   }
 

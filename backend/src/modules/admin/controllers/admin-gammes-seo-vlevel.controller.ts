@@ -17,11 +17,10 @@ import {
   Query,
   Param,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { AdminGammesSeoService } from '../services/admin-gammes-seo.service';
@@ -59,14 +58,9 @@ export class AdminGammesSeoVlevelController {
         `❌ Error recalculating V-Level for gamme ${pgId}:`,
         error,
       );
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors du recalcul V-Level',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du recalcul V-Level',
+      });
     }
   }
 
@@ -88,14 +82,9 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error('❌ Error validating V-Level rules:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la validation V-Level',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la validation V-Level',
+      });
     }
   }
 
@@ -119,14 +108,9 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error('❌ Error fetching V-Level global stats:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des stats V-Level',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des stats V-Level',
+      });
     }
   }
 
@@ -155,14 +139,9 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error('❌ Error fetching Section K metrics:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des métriques Section K',
-          error: error instanceof Error ? error.message : 'Erreur inconnue',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des métriques Section K',
+      });
     }
   }
 
@@ -190,13 +169,9 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error('❌ Error fetching Section K missing:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des manquants Section K',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des manquants Section K',
+      });
     }
   }
 
@@ -224,13 +199,9 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error('❌ Error fetching Section K extras:', error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Erreur lors de la récupération des extras Section K',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des extras Section K',
+      });
     }
   }
 }

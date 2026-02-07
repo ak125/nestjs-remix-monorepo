@@ -20,9 +20,8 @@ import {
   Query,
   UseGuards,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   StaffService,
@@ -70,10 +69,9 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error('Erreur récupération staff:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du staff',
+      });
     }
   }
 
@@ -97,10 +95,9 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error('Erreur statistiques staff:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 
@@ -126,14 +123,13 @@ export class AdminStaffController {
     } catch (error) {
       this.logger.error(`Erreur récupération staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la récupération du membre',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du membre',
+      });
     }
   }
 
@@ -160,14 +156,13 @@ export class AdminStaffController {
     } catch (error) {
       this.logger.error('Erreur création staff:', error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la création',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la création',
+      });
     }
   }
 
@@ -197,14 +192,13 @@ export class AdminStaffController {
     } catch (error) {
       this.logger.error(`Erreur mise à jour staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la mise à jour',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour',
+      });
     }
   }
 
@@ -230,14 +224,13 @@ export class AdminStaffController {
     } catch (error) {
       this.logger.error(`Erreur suppression staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la suppression',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la suppression',
+      });
     }
   }
 }

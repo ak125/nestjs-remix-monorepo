@@ -19,13 +19,12 @@ import {
   Body,
   Query,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,
 } from '../services/optimized-breadcrumb.service';
+import { OperationFailedException } from '../../../common/exceptions';
 
 @Controller('api/breadcrumb')
 export class OptimizedBreadcrumbController {
@@ -80,10 +79,9 @@ export class OptimizedBreadcrumbController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur récupération config breadcrumb:`, error);
-      throw new HttpException(
-        'Erreur lors de la récupération de la configuration',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la configuration',
+      });
     }
   }
 
@@ -105,10 +103,9 @@ export class OptimizedBreadcrumbController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur nettoyage cache:`, error);
-      throw new HttpException(
-        'Erreur lors du nettoyage du cache',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du nettoyage du cache',
+      });
     }
   }
 
@@ -142,10 +139,9 @@ export class OptimizedBreadcrumbController {
         `❌ Erreur récupération breadcrumb pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du breadcrumb',
+      });
     }
   }
 
@@ -177,10 +173,9 @@ export class OptimizedBreadcrumbController {
         `❌ Erreur mise à jour breadcrumb pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la mise à jour du breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du breadcrumb',
+      });
     }
   }
 
@@ -222,10 +217,9 @@ export class OptimizedBreadcrumbController {
         `❌ Erreur génération schema breadcrumb pour ${path}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la génération du schema breadcrumb',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la génération du schema breadcrumb',
+      });
     }
   }
 }

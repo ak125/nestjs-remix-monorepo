@@ -1,11 +1,5 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-  Logger,
-  HttpStatus,
-  HttpException,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CartAnalyticsService } from '../services/cart-analytics.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
@@ -34,10 +28,9 @@ export class CartAnalyticsController {
       };
     } catch (error) {
       this.logger.error('Erreur getAnalyticsReport:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération du rapport analytics',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du rapport analytics',
+      });
     }
   }
 
@@ -55,10 +48,9 @@ export class CartAnalyticsController {
       };
     } catch (error) {
       this.logger.error('Erreur getAbandonmentRate:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération du taux d abandon',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du taux d abandon',
+      });
     }
   }
 
@@ -76,10 +68,9 @@ export class CartAnalyticsController {
       };
     } catch (error) {
       this.logger.error('Erreur getAverageCartValue:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération de la valeur moyenne',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération de la valeur moyenne',
+      });
     }
   }
 
@@ -99,10 +90,9 @@ export class CartAnalyticsController {
       };
     } catch (error) {
       this.logger.error('Erreur getTopAbandonedProducts:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des produits abandonnés',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des produits abandonnés',
+      });
     }
   }
 }

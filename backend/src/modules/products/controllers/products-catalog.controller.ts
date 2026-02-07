@@ -4,11 +4,10 @@ import {
   Param,
   Query,
   ParseIntPipe,
-  HttpException,
-  HttpStatus,
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsCatalogService } from '../services/products-catalog.service';
@@ -73,10 +72,9 @@ export class ProductsCatalogController {
         `Erreur lors de la recherche produits gamme ${gammeId}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la recherche des produits',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la recherche des produits',
+      });
     }
   }
 
@@ -103,10 +101,9 @@ export class ProductsCatalogController {
         `Erreur lors de la récupération des modèles pour la marque ${brandId}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des modèles',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des modèles',
+      });
     }
   }
 
@@ -125,10 +122,9 @@ export class ProductsCatalogController {
         `Erreur lors de la récupération des types pour le modèle ${modelId}:`,
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération des types',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des types',
+      });
     }
   }
 

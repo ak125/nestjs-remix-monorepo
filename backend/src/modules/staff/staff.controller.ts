@@ -17,9 +17,11 @@ import {
   Query,
   UseGuards,
   Logger,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
+import {
+  OperationFailedException,
+  DomainValidationException,
+} from '../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
@@ -71,14 +73,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error('Erreur récupération staff:', error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la récupération du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du staff',
+      });
     }
   }
 
@@ -104,14 +105,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error(`Erreur récupération staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la récupération du membre du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération du membre du staff',
+      });
     }
   }
 
@@ -138,14 +138,15 @@ export class StaffController {
         !createStaffDto.firstName ||
         !createStaffDto.lastName
       ) {
-        throw new HttpException(
-          'Email, prénom et nom sont requis',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new DomainValidationException({
+          message: 'Email, prénom et nom sont requis',
+        });
       }
 
       if (!createStaffDto.role) {
-        throw new HttpException('Le rôle est requis', HttpStatus.BAD_REQUEST);
+        throw new DomainValidationException({
+          message: 'Le rôle est requis',
+        });
       }
 
       const staff = await this.staffService.create(createStaffDto);
@@ -161,14 +162,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error('Erreur création staff:', error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof DomainValidationException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la création du membre du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la création du membre du staff',
+      });
     }
   }
 
@@ -200,14 +200,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error(`Erreur mise à jour staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la mise à jour du membre du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la mise à jour du membre du staff',
+      });
     }
   }
 
@@ -235,14 +234,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error(`Erreur suppression staff ${id}:`, error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la suppression du membre du staff',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la suppression du membre du staff',
+      });
     }
   }
 
@@ -267,14 +265,13 @@ export class StaffController {
     } catch (error) {
       this.logger.error('Erreur stats staff:', error);
 
-      if (error instanceof HttpException) {
+      if (error instanceof OperationFailedException) {
         throw error;
       }
 
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des statistiques',
+      });
     }
   }
 

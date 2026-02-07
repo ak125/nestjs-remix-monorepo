@@ -4,11 +4,10 @@ import {
   Post,
   Param,
   Body,
-  HttpException,
-  HttpStatus,
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { StockService } from '../services/stock.service';
@@ -39,10 +38,10 @@ export class ProductsInventoryController {
         'Erreur lors de la récupération de la liste de réapprovisionnement:',
         error,
       );
-      throw new HttpException(
-        'Erreur lors de la récupération de la liste de réapprovisionnement',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message:
+          'Erreur lors de la récupération de la liste de réapprovisionnement',
+      });
     }
   }
 
@@ -63,10 +62,9 @@ export class ProductsInventoryController {
         "Erreur lors de la génération du rapport d'inventaire:",
         error,
       );
-      throw new HttpException(
-        "Erreur lors de la génération du rapport d'inventaire",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: "Erreur lors de la génération du rapport d'inventaire",
+      });
     }
   }
 
@@ -92,17 +90,15 @@ export class ProductsInventoryController {
           productId,
         };
       } else {
-        throw new HttpException(
-          'Échec du réapprovisionnement',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new OperationFailedException({
+          message: 'Échec du réapprovisionnement',
+        });
       }
     } catch (error) {
       this.logger.error('Erreur lors du réapprovisionnement:', error);
-      throw new HttpException(
-        'Erreur lors du réapprovisionnement',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new OperationFailedException({
+        message: 'Erreur lors du réapprovisionnement',
+      });
     }
   }
 }
