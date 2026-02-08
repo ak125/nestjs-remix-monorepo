@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 import { getCart } from "../services/cart.server";
+import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
 import {
@@ -689,6 +690,9 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Panier" }]} />
+
+        {/* Stepper checkout */}
+        <CheckoutStepper current="cart" />
 
         {/* Notification de succès après vidage */}
         {cleared && (

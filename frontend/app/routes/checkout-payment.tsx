@@ -21,6 +21,7 @@ import {
   getAvailablePaymentMethods,
 } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
+import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 import { trackAddPaymentInfo } from "~/utils/analytics";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -517,8 +518,9 @@ export default function PaymentPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header avec breadcrumb */}
+        {/* Header avec stepper + breadcrumb */}
         <div className="mb-8">
+          <CheckoutStepper current="payment" />
           <nav className="flex items-center gap-2 text-sm text-slate-600 mb-4">
             <Link to="/cart" className="hover:text-blue-600 transition-colors">
               Panier

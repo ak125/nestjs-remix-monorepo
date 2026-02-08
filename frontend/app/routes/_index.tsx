@@ -49,7 +49,7 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content:
-        "Découvrez le catalogue de pièces détachées auto Automecanik : pièces neuves pour toutes marques et modèles, adaptées au parc roulant français. Filtrez par constructeur, modèle, motorisation ou gamme de pièces pour trouver rapidement la référence compatible avec votre véhicule.",
+        "Pièces détachées auto pas cher pour toutes marques. Catalogue 400 000+ références, livraison 24-48h, qualité garantie. Filtrez par véhicule.",
     },
     {
       name: "keywords",
@@ -408,9 +408,9 @@ export default function TestHomepageModern() {
         <div className="container mx-auto px-4">
           {/* En-tête simplifié */}
           <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Catalogue pièces auto
-            </h1>
+            </h2>
             <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-3"></div>
             <p className="text-base text-gray-700">
               Pièces neuves pour toutes marques
@@ -582,12 +582,12 @@ export default function TestHomepageModern() {
         <div className="container mx-auto px-4">
           {/* En-tête simplifié */}
           <div className="max-w-5xl mx-auto mb-10">
-            <h1
+            <h2
               id="marques-title"
               className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center"
             >
               Toutes les marques auto
-            </h1>
+            </h2>
             <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-4"></div>
           </div>
 

@@ -1,8 +1,8 @@
 import { Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 
-import { Badge } from '~/components/ui';
-import { Button } from '~/components/ui/button';
+import { Badge } from "~/components/ui";
+import { Button } from "~/components/ui/button";
 
 interface User {
   id: string;
@@ -29,34 +29,34 @@ interface UserListProps {
   searchQuery?: string;
 }
 
-export function UserList({ 
-  users, 
-  total, 
-  currentPage, 
-  itemsPerPage, 
-  searchQuery = "" 
+export function UserList({
+  users,
+  total,
+  currentPage,
+  itemsPerPage,
+  searchQuery = "",
 }: UserListProps) {
   const navigate = useNavigate();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  
+
   const totalPages = Math.ceil(total / itemsPerPage);
-  
+
   const handleSelectUser = (userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
-  
+
   const handleSelectAll = () => {
     if (selectedUsers.length === users.length) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(users.map(u => u.id));
+      setSelectedUsers(users.map((u) => u.id));
     }
   };
-  
+
   return (
     <div className="space-y-4">
       {/* Barre de recherche */}
@@ -68,18 +68,22 @@ export function UserList({
           placeholder="Rechercher par email, nom..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <Button className="px-6 py-2  rounded-lg" variant="blue" type="submit">\n  Rechercher\n</Button>
+        <Button className="px-6 py-2  rounded-lg" variant="blue" type="submit">
+          \n Rechercher\n
+        </Button>
       </Form>
-      
+
       {/* Tableau des utilisateurs */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedUsers.length === users.length && users.length > 0}
+                  checked={
+                    selectedUsers.length === users.length && users.length > 0
+                  }
                   onChange={handleSelectAll}
                   className="rounded"
                 />
@@ -129,10 +133,10 @@ export function UserList({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.phone || '-'}
+                  {user.phone || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.city || '-'}
+                  {user.city || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {user.isPro ? (
@@ -168,26 +172,31 @@ export function UserList({
             ))}
           </tbody>
         </table>
-        
+
         {users.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">Aucun utilisateur trouvé</p>
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Affichage de {((currentPage - 1) * itemsPerPage) + 1} à{' '}
-            {Math.min(currentPage * itemsPerPage, total)} sur {total} utilisateurs
+            Affichage de {(currentPage - 1) * itemsPerPage + 1} à{" "}
+            {Math.min(currentPage * itemsPerPage, total)} sur {total}{" "}
+            utilisateurs
           </div>
-          
+
           <div className="flex gap-2">
             <Form method="get">
               <input type="hidden" name="search" value={searchQuery} />
-              <input type="hidden" name="page" value={Math.max(1, currentPage - 1)} />
+              <input
+                type="hidden"
+                name="page"
+                value={Math.max(1, currentPage - 1)}
+              />
               <button
                 type="submit"
                 disabled={currentPage === 1}
@@ -196,14 +205,18 @@ export function UserList({
                 Précédent
               </button>
             </Form>
-            
+
             <span className="px-3 py-1 text-sm">
               Page {currentPage} sur {totalPages}
             </span>
-            
+
             <Form method="get">
               <input type="hidden" name="search" value={searchQuery} />
-              <input type="hidden" name="page" value={Math.min(totalPages, currentPage + 1)} />
+              <input
+                type="hidden"
+                name="page"
+                value={Math.min(totalPages, currentPage + 1)}
+              />
               <button
                 type="submit"
                 disabled={currentPage === totalPages}

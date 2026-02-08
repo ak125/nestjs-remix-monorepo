@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getOptionalUser } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
+import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
 import {
@@ -132,9 +133,16 @@ export async function action({ request }: ActionFunctionArgs) {
   logger.log("🔵 [Checkout Action] Request method:", request.method);
 
   try {
-    // Lire guestEmail depuis l'URL (query param) car formData() bloque avec NestJS middleware
+    // Lire les données depuis l'URL (query params) car formData() bloque avec NestJS middleware
     const url = new URL(request.url);
     const guestEmail = url.searchParams.get("guestEmail") || null;
+    const addressFirstName = url.searchParams.get("firstName") || "";
+    const addressLastName = url.searchParams.get("lastName") || "";
+    const addressLine = url.searchParams.get("address") || "";
+    const addressZipCode = url.searchParams.get("zipCode") || "";
+    const addressCity = url.searchParams.get("city") || "";
+    const addressCivility = url.searchParams.get("civility") || "M.";
+    const addressCountry = url.searchParams.get("country") || "France";
     logger.log(
       "🔵 [Checkout Action] guestEmail:",
       guestEmail || "none (authenticated user)",
@@ -194,28 +202,21 @@ export async function action({ request }: ActionFunctionArgs) {
     }));
 
     // 3. Créer la commande avec données structurées
+    const addressData = {
+      civility: addressCivility,
+      firstName: addressFirstName,
+      lastName: addressLastName,
+      address: addressLine,
+      zipCode: addressZipCode,
+      city: addressCity,
+      country: addressCountry,
+    };
     const orderPayload = {
       customerId: cartData.metadata?.user_id || 0, // sera récupéré côté backend
       orderLines,
-      billingAddress: {
-        civility: "M.",
-        firstName: "Test",
-        lastName: "User",
-        address: "Adresse à compléter",
-        zipCode: "75000",
-        city: "Paris",
-        country: "France",
-      },
-      shippingAddress: {
-        civility: "M.",
-        firstName: "Test",
-        lastName: "User",
-        address: "Adresse à compléter",
-        zipCode: "75000",
-        city: "Paris",
-        country: "France",
-      },
-      customerNote: "Commande créée depuis le checkout",
+      billingAddress: addressData,
+      shippingAddress: addressData,
+      customerNote: "",
       shippingMethod: "standard",
     };
 
@@ -348,13 +349,34 @@ export default function CheckoutPage() {
   const isSubmitting = navigation.state === "submitting";
   const submit = useSubmit();
   const [guestEmail, setGuestEmail] = useState("");
+  const [shippingAddress, setShippingAddress] = useState({
+    civility: "M.",
+    firstName: "",
+    lastName: "",
+    address: "",
+    zipCode: "",
+    city: "",
+    country: "France",
+  });
 
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Envoyer POST vide avec guestEmail en query param (formData() bloque avec NestJS)
-    const action = guestEmail
-      ? `/checkout?guestEmail=${encodeURIComponent(guestEmail)}`
-      : "/checkout";
+    // Envoyer POST avec données en query params (formData() bloque avec NestJS middleware)
+    const params = new URLSearchParams();
+    if (guestEmail) params.set("guestEmail", guestEmail);
+    // Toujours envoyer l'adresse saisie (guest et auth)
+    if (shippingAddress.firstName)
+      params.set("firstName", shippingAddress.firstName);
+    if (shippingAddress.lastName)
+      params.set("lastName", shippingAddress.lastName);
+    if (shippingAddress.address) params.set("address", shippingAddress.address);
+    if (shippingAddress.zipCode) params.set("zipCode", shippingAddress.zipCode);
+    if (shippingAddress.city) params.set("city", shippingAddress.city);
+    if (shippingAddress.civility)
+      params.set("civility", shippingAddress.civility);
+    params.set("country", shippingAddress.country);
+    const queryString = params.toString();
+    const action = queryString ? `/checkout?${queryString}` : "/checkout";
     submit(null, { method: "post", action });
   };
 
@@ -417,11 +439,12 @@ export default function CheckoutPage() {
         onSubmit={handleCheckoutSubmit}
         className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8"
       >
-        {/* Header avec breadcrumb */}
+        {/* Header avec breadcrumb + stepper */}
         <div className="mb-8">
           <PublicBreadcrumb
             items={[{ label: "Panier", href: "/cart" }, { label: "Commande" }]}
           />
+          <CheckoutStepper current="checkout" />
 
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
             Finaliser ma commande
@@ -561,21 +584,132 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900">
-                    Informations de livraison
+                    Adresse de livraison
                   </h2>
                   <p className="text-sm text-slate-500">
-                    {cart.metadata?.user_id
-                      ? "Récupérées automatiquement"
-                      : "À compléter à l'étape suivante"}
+                    {user
+                      ? "Modifiable si nécessaire"
+                      : "Requise pour l'expédition"}
                   </p>
                 </div>
               </div>
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-slate-600 text-sm">
-                  {cart.metadata?.user_id
-                    ? "✓ Vos informations de livraison et de facturation seront récupérées automatiquement depuis votre profil."
-                    : "✓ Vous pourrez compléter vos informations de livraison à l'étape suivante, juste avant le paiement."}
-                </p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Prénom *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      required
+                      value={shippingAddress.firstName}
+                      onChange={(e) =>
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          firstName: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Prénom"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Nom *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      required
+                      value={shippingAddress.lastName}
+                      onChange={(e) =>
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          lastName: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Nom"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Adresse *
+                  </label>
+                  <input
+                    type="text"
+                    id="address"
+                    required
+                    value={shippingAddress.address}
+                    onChange={(e) =>
+                      setShippingAddress((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Numéro et nom de rue"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="zipCode"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Code postal *
+                    </label>
+                    <input
+                      type="text"
+                      id="zipCode"
+                      required
+                      pattern="[0-9]{5}"
+                      maxLength={5}
+                      value={shippingAddress.zipCode}
+                      onChange={(e) =>
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          zipCode: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="75000"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="city"
+                      className="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                      Ville *
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      required
+                      value={shippingAddress.city}
+                      onChange={(e) =>
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          city: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Ville"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -827,6 +961,7 @@ export default function CheckoutPage() {
                 </Link>
               </div>
 
+              {/* Livraison info */}
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div className="flex items-start gap-3">
                   <svg
@@ -839,16 +974,59 @@ export default function CheckoutPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1 2 1 2-1 2 1zm6-6h-2l-2 5h4l2-5h-2zm-2 7a1 1 0 11-2 0 1 1 0 012 0zm-8 0a1 1 0 11-2 0 1 1 0 012 0z"
                     />
                   </svg>
-                  <p className="text-xs text-blue-800">
-                    En confirmant votre commande, vous serez redirigé vers la
-                    page de paiement sécurisé. Aucun paiement ne sera effectué à
-                    cette étape.
-                  </p>
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">
+                      Expédition sous 24-48h ouvrées
+                    </p>
+                    <p className="text-xs text-blue-700 mt-0.5">
+                      Le délai de livraison dépend du transporteur et de votre
+                      localisation.
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Trust badges sécurité */}
+              <div className="mt-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <svg
+                      className="h-5 w-5 text-emerald-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-900">
+                      Paiement 100% sécurisé
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        SSL/TLS
+                      </span>
+                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        PCI DSS
+                      </span>
+                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        3D Secure
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs text-center text-slate-500">
+                En confirmant, vous serez redirigé vers le paiement sécurisé.
+              </p>
             </div>
           </div>
         </div>
