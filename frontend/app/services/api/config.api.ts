@@ -3,7 +3,8 @@
  * Compatible avec l'écosystème admin existant
  */
 
-import { ApiError } from '../common/errors';
+import { ApiError } from "../common/errors";
+import { logger } from "~/utils/logger";
 
 export interface ConfigCategory {
   key: string;
@@ -16,7 +17,7 @@ export interface ConfigItem {
   key: string;
   value: any;
   category: string;
-  type: 'string' | 'number' | 'boolean' | 'json' | 'array';
+  type: "string" | "number" | "boolean" | "json" | "array";
   description?: string;
   isSensitive?: boolean;
   requiresRestart?: boolean;
@@ -45,7 +46,7 @@ export interface ConfigStats {
 }
 
 class ConfigApiService {
-  private readonly baseUrl = '/admin/configuration';
+  private readonly baseUrl = "/admin/configuration";
 
   /**
    * Récupère toutes les configurations
@@ -53,10 +54,10 @@ class ConfigApiService {
   async getAllConfigs(): Promise<ConfigItem[]> {
     try {
       const response = await fetch(this.baseUrl, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -70,7 +71,7 @@ class ConfigApiService {
       const data = await response.json();
       return data.configs || data;
     } catch (error) {
-      console.error('❌ Erreur getAllConfigs:', error);
+      logger.error("❌ Erreur getAllConfigs:", error);
       throw error;
     }
   }
@@ -81,9 +82,9 @@ class ConfigApiService {
   async getConfigsByCategory(category: string): Promise<ConfigItem[]> {
     try {
       const configs = await this.getAllConfigs();
-      return configs.filter(config => config.category === category);
+      return configs.filter((config) => config.category === category);
     } catch (error) {
-      console.error('❌ Erreur getConfigsByCategory:', error);
+      logger.error("❌ Erreur getConfigsByCategory:", error);
       throw error;
     }
   }
@@ -94,10 +95,10 @@ class ConfigApiService {
   async getConfig(key: string): Promise<ConfigItem | null> {
     try {
       const response = await fetch(`${this.baseUrl}/${key}`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -115,7 +116,7 @@ class ConfigApiService {
       const data = await response.json();
       return data.config || data;
     } catch (error) {
-      console.error('❌ Erreur getConfig:', error);
+      logger.error("❌ Erreur getConfig:", error);
       throw error;
     }
   }
@@ -126,10 +127,10 @@ class ConfigApiService {
   async updateConfig(key: string, value: any): Promise<ConfigItem> {
     try {
       const response = await fetch(`${this.baseUrl}/${key}`, {
-        method: 'PUT',
-        credentials: 'include',
+        method: "PUT",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ value }),
       });
@@ -144,7 +145,7 @@ class ConfigApiService {
       const data = await response.json();
       return data.config || data;
     } catch (error) {
-      console.error('❌ Erreur updateConfig:', error);
+      logger.error("❌ Erreur updateConfig:", error);
       throw error;
     }
   }
@@ -155,13 +156,13 @@ class ConfigApiService {
   async createBackup(name?: string): Promise<string> {
     try {
       const response = await fetch(`${this.baseUrl}/backup`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          name: name || `Backup ${new Date().toLocaleString()}` 
+        body: JSON.stringify({
+          name: name || `Backup ${new Date().toLocaleString()}`,
         }),
       });
 
@@ -175,7 +176,7 @@ class ConfigApiService {
       const data = await response.json();
       return data.backupId || data.id;
     } catch (error) {
-      console.error('❌ Erreur createBackup:', error);
+      logger.error("❌ Erreur createBackup:", error);
       throw error;
     }
   }
@@ -186,10 +187,10 @@ class ConfigApiService {
   async restoreBackup(backupId: string): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/restore/${backupId}`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -200,7 +201,7 @@ class ConfigApiService {
         );
       }
     } catch (error) {
-      console.error('❌ Erreur restoreBackup:', error);
+      logger.error("❌ Erreur restoreBackup:", error);
       throw error;
     }
   }
@@ -211,10 +212,10 @@ class ConfigApiService {
   async getStats(): Promise<ConfigStats> {
     try {
       const response = await fetch(`${this.baseUrl}/stats`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -228,7 +229,7 @@ class ConfigApiService {
       const data = await response.json();
       return data.stats || data;
     } catch (error) {
-      console.error('❌ Erreur getStats:', error);
+      logger.error("❌ Erreur getStats:", error);
       throw error;
     }
   }
@@ -236,13 +237,16 @@ class ConfigApiService {
   /**
    * Valide une valeur de configuration
    */
-  async validateConfig(key: string, value: any): Promise<{ isValid: boolean; errors?: string[] }> {
+  async validateConfig(
+    key: string,
+    value: any,
+  ): Promise<{ isValid: boolean; errors?: string[] }> {
     try {
       const response = await fetch(`${this.baseUrl}/validate`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ key, value }),
       });
@@ -256,7 +260,7 @@ class ConfigApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('❌ Erreur validateConfig:', error);
+      logger.error("❌ Erreur validateConfig:", error);
       throw error;
     }
   }
@@ -267,10 +271,10 @@ class ConfigApiService {
   async reloadConfigs(): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/reload`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -281,7 +285,7 @@ class ConfigApiService {
         );
       }
     } catch (error) {
-      console.error('❌ Erreur reloadConfigs:', error);
+      logger.error("❌ Erreur reloadConfigs:", error);
       throw error;
     }
   }

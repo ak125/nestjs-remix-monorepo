@@ -31,11 +31,12 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
-  Request,
+  Req,
   BadRequestException,
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import * as crypto from 'crypto';
 import {
   ApiTags,
@@ -60,6 +61,38 @@ import {
   promisifyLogin,
   promisifySessionSave,
 } from '../../../utils/promise-helpers';
+
+/** Query parameters for order listing */
+interface OrderListQuery {
+  page?: string;
+  limit?: string;
+  status?: string;
+  year?: string;
+  startDate?: string;
+  endDate?: string;
+  customerId?: string;
+}
+
+/** Express session with Passport data */
+interface PassportSession {
+  passport?: { user?: { id: string } };
+}
+
+/** Authenticated request with user and session data */
+type AuthenticatedRequest = ExpressRequest & {
+  user?: {
+    id?: string;
+    id_utilisateur?: string;
+    email?: string;
+    [key: string]: unknown;
+  };
+};
+
+/** Helper to extract userId from Passport-augmented request */
+function getUserId(req: AuthenticatedRequest): string | undefined {
+  const session = req.session as unknown as PassportSession | undefined;
+  return req.user?.id || session?.passport?.user?.id;
+}
 
 @ApiTags('orders')
 @Controller('api/orders')
@@ -90,9 +123,12 @@ export class OrdersController {
   @ApiQuery({ name: 'status', required: false, example: '6' })
   @ApiQuery({ name: 'year', required: false, example: '2025' })
   @ApiResponse({ status: 200, description: 'Liste des commandes' })
-  async listMyOrders(@Query() query: any, @Request() req: any) {
+  async listMyOrders(
+    @Query() query: OrderListQuery,
+    @Req() req: AuthenticatedRequest,
+  ) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
 
       if (!userId) {
         throw new BadRequestException('Utilisateur non authentifié');
@@ -135,9 +171,12 @@ export class OrdersController {
   @ApiParam({ name: 'id', description: 'ID de la commande (string)' })
   @ApiResponse({ status: 200, description: 'Détails de la commande' })
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
-  async getOrderById(@Param('id') orderId: string, @Request() req: any) {
+  async getOrderById(
+    @Param('id') orderId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
       this.logger.log(
         `Getting order ${orderId} for user ${userId || 'guest-session'}`,
       );
@@ -185,9 +224,12 @@ export class OrdersController {
   @ApiOperation({ summary: 'Créer une nouvelle commande' })
   @ApiResponse({ status: 201, description: 'Commande créée avec succès' })
   @ApiResponse({ status: 400, description: 'Données invalides' })
-  async createOrder(@Body() orderData: CreateOrderData, @Request() req: any) {
+  async createOrder(
+    @Body() orderData: CreateOrderData,
+    @Req() req: AuthenticatedRequest,
+  ) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
 
       if (!userId) {
         throw new BadRequestException('Utilisateur non authentifié');
@@ -196,10 +238,9 @@ export class OrdersController {
       this.logger.log(`Creating order for user ${userId}`);
 
       // S'assurer que le customerId correspond à l'utilisateur connecté
-      // Utiliser directement userId (peut être string ou number)
       const dataWithUserId = {
         ...orderData,
-        customerId: userId,
+        customerId: Number(userId),
       };
 
       return await this.ordersService.createOrder(dataWithUserId);
@@ -227,11 +268,11 @@ export class OrdersController {
   })
   async createGuestOrder(
     @Body() body: CreateOrderData & { guestEmail?: string },
-    @Request() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     try {
       // Si déjà authentifié, déléguer au flow normal
-      const existingUserId = req.user?.id || req.session?.passport?.user?.id;
+      const existingUserId = getUserId(req);
       if (existingUserId) {
         this.logger.log(
           `Guest checkout: user already authenticated (${existingUserId}), delegating to normal flow`,
@@ -269,7 +310,10 @@ export class OrdersController {
       this.logger.log(`Guest account created: ${newUser.id} for ${guestEmail}`);
 
       // Connecter l'utilisateur dans la session courante
-      await promisifyLogin(req, { id: newUser.id, email: newUser.email });
+      await promisifyLogin(req as unknown as ExpressRequest, {
+        id: newUser.id,
+        email: newUser.email,
+      });
 
       // Flush la session vers Redis
       await promisifySessionSave(req.session);
@@ -279,7 +323,7 @@ export class OrdersController {
       // Créer la commande avec le nouveau userId
       const dataWithUserId = {
         ...orderData,
-        customerId: newUser.id as any,
+        customerId: Number(newUser.id),
       };
 
       const order = await this.ordersService.createOrder(dataWithUserId);
@@ -299,16 +343,24 @@ export class OrdersController {
           7 * 24 * 60 * 60, // 7 jours
         );
 
-        const orderId = order?.data?.ord_id || order?.ord_id;
+        const orderRecord = order as Record<string, unknown>;
+        const orderData = orderRecord?.data as
+          | Record<string, unknown>
+          | undefined;
+        const orderId = (orderData?.ord_id || orderRecord?.ord_id) as
+          | string
+          | undefined;
         await this.emailService.sendGuestAccountActivation(
           guestEmail,
           activationToken,
           orderId,
         );
         this.logger.log(`📧 Email activation envoyé à ${guestEmail}`);
-      } catch (emailError: any) {
+      } catch (emailError: unknown) {
+        const errMsg =
+          emailError instanceof Error ? emailError.message : String(emailError);
         this.logger.error(
-          `⚠️ Erreur envoi email activation (non bloquant): ${emailError.message}`,
+          `Erreur envoi email activation (non bloquant): ${errMsg}`,
         );
       }
 
@@ -333,10 +385,10 @@ export class OrdersController {
   async updateOrder(
     @Param('id', ParseIntPipe) orderId: number,
     @Body() updateData: { status?: number; comment?: string },
-    @Request() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
       this.logger.log(`Updating order ${orderId} by user ${userId}`);
 
       // TODO: Vérifier que l'utilisateur possède cette commande
@@ -362,10 +414,10 @@ export class OrdersController {
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
   async cancelOrder(
     @Param('id', ParseIntPipe) orderId: number,
-    @Request() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
       this.logger.log(`Cancelling order ${orderId} by user ${userId}`);
 
       // TODO: Vérifier que l'utilisateur possède cette commande
@@ -386,9 +438,9 @@ export class OrdersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Statistiques des commandes de l'utilisateur" })
   @ApiResponse({ status: 200, description: 'Statistiques récupérées' })
-  async getMyStats(@Request() req: any) {
+  async getMyStats(@Req() req: AuthenticatedRequest) {
     try {
-      const userId = req.user?.id || req.session?.passport?.user?.id;
+      const userId = getUserId(req);
 
       if (!userId) {
         throw new BadRequestException('Utilisateur non authentifié');
@@ -436,7 +488,7 @@ export class OrdersController {
   @ApiQuery({ name: 'status', required: false, example: '1' })
   @ApiQuery({ name: 'customerId', required: false })
   @ApiResponse({ status: 200, description: 'Liste complète des commandes' })
-  async getAllOrders(@Query() query: any) {
+  async getAllOrders(@Query() query: OrderListQuery) {
     try {
       this.logger.log('Admin listing all orders with filters:', query);
 
@@ -561,7 +613,7 @@ export class OrdersController {
   @ApiResponse({ status: 200, description: 'Commandes du client' })
   async getCustomerOrders(
     @Param('customerId', ParseIntPipe) customerId: number,
-    @Query() query: any,
+    @Query() query: OrderListQuery,
   ) {
     try {
       this.logger.log(`Admin getting orders for customer ${customerId}`);
@@ -596,7 +648,7 @@ export class OrdersController {
     deprecated: true,
   })
   @ApiResponse({ status: 200, description: 'Liste legacy' })
-  async listOrdersLegacy(@Query() query: any) {
+  async listOrdersLegacy(@Query() query: OrderListQuery) {
     try {
       this.logger.warn('LEGACY endpoint called: GET /api/orders/legacy/list');
 

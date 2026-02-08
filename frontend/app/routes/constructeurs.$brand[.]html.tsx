@@ -41,6 +41,7 @@ import {
   type PopularGamme,
 } from "../types/brand.types";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -270,7 +271,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur récupération bestsellers:", error);
+    logger.error("Erreur récupération bestsellers:", error);
     throw new Response("Error loading brand page", { status: 500 });
   }
 }

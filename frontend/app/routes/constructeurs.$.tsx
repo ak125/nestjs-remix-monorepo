@@ -19,6 +19,7 @@ import {
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
 import { Error410 } from "~/components/errors/Error410";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 
@@ -62,7 +63,7 @@ interface LoaderData {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const catchAll = params["*"];
 
-  console.log(
+  logger.log(
     "[ConstructeursCatchAll] URL:",
     request.url,
     "CatchAll:",
@@ -106,7 +107,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const expectedBrand = `${marqueAlias}-${marqueId}`;
     const expectedModel = `${modeleAlias}-${modeleId}`;
     if (brand !== expectedBrand || model !== expectedModel) {
-      console.log(
+      logger.log(
         `[ConstructeursCatchAll] 301 redirect: ${brand}/${model} → ${expectedBrand}/${expectedModel}`,
       );
       return redirect(
@@ -149,12 +150,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         }
       }
     } catch (error) {
-      console.warn("[ConstructeursCatchAll] Erreur fetch types:", error);
+      logger.warn("[ConstructeursCatchAll] Erreur fetch types:", error);
     }
 
     // Si aucune motorisation valide → 410 Gone (modèle sans motorisations disponibles)
     if (motorOptions.length === 0) {
-      console.log(
+      logger.log(
         `[ConstructeursCatchAll] 410 Gone: modele_id=${modeleId} has no valid motorizations`,
       );
       throw new Response(
@@ -214,7 +215,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (legacyMatch) {
     const [, brandSlug, brandId, modelSlug, typeId] = legacyMatch;
 
-    console.log("[LegacyCatchAll] Legacy URL detected:", {
+    logger.log("[LegacyCatchAll] Legacy URL detected:", {
       brandSlug,
       brandId,
       modelSlug,
@@ -236,12 +237,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       if (response.ok) {
         const data = await response.json();
 
-        console.log("[LegacyCatchAll] Vehicle found:", data);
+        logger.log("[LegacyCatchAll] Vehicle found:", data);
 
         // Construire la nouvelle URL avec les alias
         const newUrl = `/constructeurs/${data.marque_alias}/${data.modele_alias}/${data.type_alias}`;
 
-        console.log("[LegacyCatchAll] Redirecting to:", newUrl);
+        logger.log("[LegacyCatchAll] Redirecting to:", newUrl);
 
         // Redirection 301 permanente
         return redirect(newUrl, { status: 301 });
@@ -249,7 +250,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       // Véhicule supprimé/introuvable → 410 Gone
       if (response.status === 404 || response.status === 410) {
-        console.log("[LegacyCatchAll] Vehicle gone, type_id:", typeId);
+        logger.log("[LegacyCatchAll] Vehicle gone, type_id:", typeId);
 
         throw new Response(
           JSON.stringify({
@@ -268,12 +269,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         );
       }
 
-      console.error(
+      logger.error(
         "[LegacyCatchAll] Unexpected API response:",
         response.status,
       );
     } catch (error) {
-      console.error("[LegacyCatchAll] Error:", error);
+      logger.error("[LegacyCatchAll] Error:", error);
 
       // En cas d'erreur, retourner 404 plutôt que crash
       throw new Response("Vehicle data unavailable", { status: 404 });
@@ -285,14 +286,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const brandLegacyMatch = catchAll.match(/^([a-z0-9-]+)-(\d+)\.html$/i);
   if (brandLegacyMatch) {
     const [, brandSlug, brandId] = brandLegacyMatch;
-    console.log("[LegacyCatchAll] Legacy brand URL:", brandSlug, brandId);
+    logger.log("[LegacyCatchAll] Legacy brand URL:", brandSlug, brandId);
 
     // Rediriger vers la page marque sans ID
     return redirect(`/constructeurs/${brandSlug}`, { status: 301 });
   }
 
   // URLs inconnues → 404
-  console.log("[LegacyCatchAll] Unknown pattern, returning 404");
+  logger.log("[LegacyCatchAll] Unknown pattern, returning 404");
   throw new Response("Not Found", { status: 404 });
 }
 

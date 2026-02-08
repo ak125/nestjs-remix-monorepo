@@ -1,8 +1,25 @@
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useActionData, Form, Link } from '@remix-run/react';
-import { ArrowLeft, User, Save, Mail, Phone, MapPin } from 'lucide-react';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
+import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const user = data?.user;
+  const userName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : undefined;
+  return createNoIndexMeta(
+    userName ? `Modifier ${userName} - Admin` : "Modifier Utilisateur - Admin",
+  );
+};
 
 interface User {
   id: string;
@@ -30,7 +47,7 @@ interface ActionData {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const userId = params.id;
-  
+
   const mockUser: User = {
     id: userId!,
     firstName: "Jean",
@@ -43,28 +60,28 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     isCompany: false,
     level: 3,
     isActive: true,
-    notes: "Client privilégié, excellent historique de commandes."
+    notes: "Client privilégié, excellent historique de commandes.",
   };
-  
+
   return json<LoaderData>({ user: mockUser });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const _formData = await request.formData();
-  
+
   // Simuler la sauvegarde
   try {
     // En production : await updateUser(userId, formData);
     return json<ActionData>({ success: true });
   } catch (error) {
-    return json<ActionData>({ error: 'Erreur lors de la sauvegarde' });
+    return json<ActionData>({ error: "Erreur lors de la sauvegarde" });
   }
 };
 
 export default function EditUser() {
   const { user } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
-  
+
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -88,7 +105,7 @@ export default function EditUser() {
 
       {/* Messages */}
       {actionData?.success && (
-<Alert className="p-4    rounded-lg" variant="success">
+        <Alert className="p-4    rounded-lg" variant="success">
           <div className="flex items-center gap-2 text-green-800">
             <User className="w-5 h-5" />
             <strong>Utilisateur mis à jour avec succès !</strong>
@@ -97,7 +114,7 @@ export default function EditUser() {
       )}
 
       {actionData?.error && (
-<Alert className="p-4    rounded-lg" variant="error">
+        <Alert className="p-4    rounded-lg" variant="error">
           <div className="text-red-800">
             <strong>{actionData.error}</strong>
           </div>
@@ -114,61 +131,73 @@ export default function EditUser() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Prénom
                 </label>
-                <input 
-                  id="firstName" 
-                  name="firstName" 
-                  defaultValue={user.firstName || ''} 
+                <input
+                  id="firstName"
+                  name="firstName"
+                  defaultValue={user.firstName || ""}
                   placeholder="Prénom"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Nom
                 </label>
-                <input 
-                  id="lastName" 
-                  name="lastName" 
-                  defaultValue={user.lastName || ''} 
+                <input
+                  id="lastName"
+                  name="lastName"
+                  defaultValue={user.lastName || ""}
                   placeholder="Nom de famille"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
-            
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email *
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  defaultValue={user.email} 
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  defaultValue={user.email}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="email@exemple.com"
                   required
                 />
               </div>
             </div>
-            
+
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Téléphone
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input 
-                  id="phone" 
-                  name="phone" 
-                  defaultValue={user.phone || ''} 
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  placeholder="+33 1 23 45 67 89" 
+                <input
+                  id="phone"
+                  name="phone"
+                  defaultValue={user.phone || ""}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+33 1 23 45 67 89"
                 />
               </div>
             </div>
@@ -183,27 +212,33 @@ export default function EditUser() {
           </h3>
           <div className="space-y-4">
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Ville
               </label>
-              <input 
-                id="city" 
-                name="city" 
-                defaultValue={user.city || ''} 
+              <input
+                id="city"
+                name="city"
+                defaultValue={user.city || ""}
                 placeholder="Paris"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Adresse complète
               </label>
-              <textarea 
-                id="address" 
-                name="address" 
-                defaultValue={user.address || ''} 
-                placeholder="123 Rue de la Paix, 75001 Paris" 
+              <textarea
+                id="address"
+                name="address"
+                defaultValue={user.address || ""}
+                placeholder="123 Rue de la Paix, 75001 Paris"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -213,53 +248,67 @@ export default function EditUser() {
 
         {/* Configuration du compte */}
         <div className="border rounded-lg p-6 bg-white shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Configuration du compte</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            Configuration du compte
+          </h3>
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <input 
-                id="isActive" 
-                name="isActive" 
+              <input
+                id="isActive"
+                name="isActive"
                 type="checkbox"
                 defaultChecked={user.isActive}
                 className="rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium text-gray-700"
+              >
                 Compte actif
               </label>
             </div>
-            
+
             <div className="flex items-center space-x-2">
-              <input 
-                id="isPro" 
-                name="isPro" 
+              <input
+                id="isPro"
+                name="isPro"
                 type="checkbox"
                 defaultChecked={user.isPro}
                 className="rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="isPro" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="isPro"
+                className="text-sm font-medium text-gray-700"
+              >
                 Compte professionnel
               </label>
             </div>
-            
+
             <div className="flex items-center space-x-2">
-              <input 
-                id="isCompany" 
-                name="isCompany" 
+              <input
+                id="isCompany"
+                name="isCompany"
                 type="checkbox"
                 defaultChecked={user.isCompany}
                 className="rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="isCompany" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="isCompany"
+                className="text-sm font-medium text-gray-700"
+              >
                 Entreprise
               </label>
             </div>
-            
+
             <div>
-              <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="level"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Niveau utilisateur
               </label>
-              <select 
-                name="level" 
+              <select
+                name="level"
                 defaultValue={user.level.toString()}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -277,14 +326,17 @@ export default function EditUser() {
         <div className="border rounded-lg p-6 bg-white shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Notes internes</h3>
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="notes"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Notes administratives
             </label>
-            <textarea 
-              id="notes" 
-              name="notes" 
-              defaultValue={user.notes || ''} 
-              placeholder="Notes internes sur ce client..." 
+            <textarea
+              id="notes"
+              name="notes"
+              defaultValue={user.notes || ""}
+              placeholder="Notes internes sur ce client..."
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -296,12 +348,16 @@ export default function EditUser() {
 
         {/* Actions */}
         <div className="flex gap-4">
-          <Button className="flex-1  px-4 py-2 rounded-md flex items-center justify-center gap-2" variant="blue" type="submit">
+          <Button
+            className="flex-1  px-4 py-2 rounded-md flex items-center justify-center gap-2"
+            variant="blue"
+            type="submit"
+          >
             <Save className="w-4 h-4" />
             Sauvegarder les modifications
           </Button>
           <Link to={`/admin/users/${user.id}`}>
-            <button 
+            <button
               type="button"
               className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >

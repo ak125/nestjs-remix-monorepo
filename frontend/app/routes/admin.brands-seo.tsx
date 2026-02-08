@@ -10,6 +10,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Form, useNavigation } from "@remix-run/react";
 import { useState, lazy, Suspense } from "react";
@@ -27,6 +28,10 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Brands SEO - Admin");
 
 // Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
 const RichTextEditor = lazy(() =>
@@ -61,7 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands: brandsData.data || [],
     });
   } catch (error) {
-    console.error("[Brands SEO Admin] Error:", error);
+    logger.error("[Brands SEO Admin] Error:", error);
     return json({
       brand: null,
       brands: [],

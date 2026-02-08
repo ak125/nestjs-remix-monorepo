@@ -16,16 +16,18 @@
 
 import { Link } from "@remix-run/react";
 import { Search, ShoppingCart, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-
-import { PartImage } from "~/components/ui/ResponsiveImage";
+import { memo, useEffect, useRef, useState } from "react";
 import { useProductSearch } from "../../hooks/useProductSearch";
+import { PartImage } from "~/components/ui/ResponsiveImage";
+import { logger } from "~/utils/logger";
 
 interface QuickSearchBarProps {
   className?: string;
 }
 
-export function QuickSearchBar({ className = "" }: QuickSearchBarProps) {
+export const QuickSearchBar = memo(function QuickSearchBar({
+  className = "",
+}: QuickSearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -84,11 +86,11 @@ export function QuickSearchBar({ className = "" }: QuickSearchBarProps) {
       });
 
       if (response.ok) {
-        console.log("Added to cart!");
+        logger.log("Added to cart!");
         // Could trigger cart refresh here or show toast
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      logger.error("Error adding to cart:", error);
     }
   };
 
@@ -226,4 +228,4 @@ export function QuickSearchBar({ className = "" }: QuickSearchBarProps) {
       )}
     </div>
   );
-}
+});

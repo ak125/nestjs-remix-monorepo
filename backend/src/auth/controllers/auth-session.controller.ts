@@ -89,11 +89,11 @@ export class AuthSessionController {
         valid: false,
         user: null,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Session validation error: ${error}`);
       return {
         valid: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         user: null,
       };
     }

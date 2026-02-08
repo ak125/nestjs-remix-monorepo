@@ -8,7 +8,11 @@
  * - Filtres par disponibilité, prix, etc.
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -40,6 +44,10 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Gamme Produits");
 
 interface Product {
   piece_id: number;
@@ -270,7 +278,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 
     throw new Error("Impossible de charger les produits");
   } catch (error) {
-    console.error("❌ Erreur loader products by range:", error);
+    logger.error("❌ Erreur loader products by range:", error);
 
     if (error instanceof Response) {
       throw error;

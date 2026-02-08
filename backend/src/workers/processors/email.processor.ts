@@ -37,8 +37,9 @@ export class EmailProcessor {
         to,
         subject,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Email sending failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Email sending failed: ${message}`);
       throw error;
     }
   }
@@ -57,8 +58,9 @@ export class EmailProcessor {
       return {
         success: true,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Daily report failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Daily report failed: ${message}`);
       throw error;
     }
   }

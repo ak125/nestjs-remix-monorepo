@@ -1,12 +1,12 @@
 // 📁 frontend/app/components/home/BrandCarousel.tsx
 // 🎠 Carousel des marques automobiles
 
-import { Link } from '@remix-run/react';
-import { ChevronLeft, ChevronRight, Car, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Link } from "@remix-run/react";
+import { ChevronLeft, ChevronRight, Car, ExternalLink } from "lucide-react";
+import { useState, useEffect, memo } from "react";
 
-import { Alert } from '~/components/ui';
-import { type VehicleBrand } from '../../services/api/enhanced-vehicle.api';
+import { type VehicleBrand } from "../../services/api/enhanced-vehicle.api";
+import { Alert } from "~/components/ui";
 
 interface BrandCarouselProps {
   brands: VehicleBrand[];
@@ -14,11 +14,15 @@ interface BrandCarouselProps {
   interval?: number;
 }
 
-export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: BrandCarouselProps) {
+export const BrandCarousel = memo(function BrandCarousel({
+  brands,
+  autoPlay = true,
+  interval = 4000,
+}: BrandCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [itemsPerSlide, setItemsPerSlide] = useState(6);
-  
+
   useEffect(() => {
     const updateItemsPerSlide = () => {
       if (window.innerWidth < 640) {
@@ -35,34 +39,34 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
     };
 
     updateItemsPerSlide();
-    window.addEventListener('resize', updateItemsPerSlide);
-    return () => window.removeEventListener('resize', updateItemsPerSlide);
+    window.addEventListener("resize", updateItemsPerSlide);
+    return () => window.removeEventListener("resize", updateItemsPerSlide);
   }, []);
 
   useEffect(() => {
     if (autoPlay && !isHovered && brands.length > itemsPerSlide) {
       const timer = setInterval(() => {
-        setCurrentIndex((prev) => 
-          prev >= Math.ceil(brands.length / itemsPerSlide) - 1 ? 0 : prev + 1
+        setCurrentIndex((prev) =>
+          prev >= Math.ceil(brands.length / itemsPerSlide) - 1 ? 0 : prev + 1,
         );
       }, interval);
-      
+
       return () => clearInterval(timer);
     }
   }, [autoPlay, isHovered, brands.length, itemsPerSlide, interval]);
 
   const totalSlides = Math.ceil(brands.length / itemsPerSlide);
-  
+
   const goToSlide = (index: number) => {
     setCurrentIndex(Math.max(0, Math.min(index, totalSlides - 1)));
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => prev <= 0 ? totalSlides - 1 : prev - 1);
+    setCurrentIndex((prev) => (prev <= 0 ? totalSlides - 1 : prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => prev >= totalSlides - 1 ? 0 : prev + 1);
+    setCurrentIndex((prev) => (prev >= totalSlides - 1 ? 0 : prev + 1));
   };
 
   if (brands.length === 0) {
@@ -75,7 +79,7 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
   }
 
   return (
-    <div 
+    <div
       className="relative bg-white rounded-2xl shadow-lg overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -88,31 +92,39 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
             </div>
             <div>
               <h3 className="text-xl font-bold">Marques automobiles</h3>
-              <p className="text-blue-100 text-sm">{brands.length} marques disponibles</p>
+              <p className="text-blue-100 text-sm">
+                {brands.length} marques disponibles
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="relative overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-500 ease-in-out"
-          style={{ 
+          style={{
             transform: `translateX(-${currentIndex * 100}%)`,
-            width: `${totalSlides * 100}%`
+            width: `${totalSlides * 100}%`,
           }}
         >
           {Array.from({ length: totalSlides }).map((_, slideIndex) => (
-            <div 
-              key={slideIndex} 
+            <div
+              key={slideIndex}
               className="flex-shrink-0"
               style={{ width: `${100 / totalSlides}%` }}
             >
-              <div className="grid gap-4 p-6" style={{ 
-                gridTemplateColumns: `repeat(${itemsPerSlide}, 1fr)` 
-              }}>
+              <div
+                className="grid gap-4 p-6"
+                style={{
+                  gridTemplateColumns: `repeat(${itemsPerSlide}, 1fr)`,
+                }}
+              >
                 {brands
-                  .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
+                  .slice(
+                    slideIndex * itemsPerSlide,
+                    (slideIndex + 1) * itemsPerSlide,
+                  )
                   .map((brand, brandIndex) => (
                     <Link
                       key={brand.marque_id || `brand-${brandIndex}`}
@@ -124,7 +136,7 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                           {brand.marque_logo ? (
                             <img
                               src={brand.marque_logo}
-                              alt={`Logo ${brand.marque_name || 'marque'}`}
+                              alt={`Logo ${brand.marque_name || "marque"}`}
                               width={48}
                               height={48}
                               loading="lazy"
@@ -133,31 +145,33 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                             />
                           ) : (
                             <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                              {brand.marque_name?.charAt(0) || '?'}
+                              {brand.marque_name?.charAt(0) || "?"}
                             </div>
                           )}
                         </div>
-                        
+
                         <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors text-sm mb-1">
-                          {brand.marque_name || 'Marque inconnue'}
+                          {brand.marque_name || "Marque inconnue"}
                         </h4>
-                        
+
                         {brand.marque_country && (
                           <p className="text-xs text-gray-600 mb-2">
                             {brand.marque_country}
                           </p>
                         )}
-                        
+
                         {brand.products_count && (
-                          <Alert intent="info">{brand.products_count.toLocaleString()} pièces</Alert>
+                          <Alert intent="info">
+                            {brand.products_count.toLocaleString()} pièces
+                          </Alert>
                         )}
-                        
+
                         {brand.is_featured && (
                           <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xs py-1 px-2 rounded-full inline-block">
                             ⭐ Premium
                           </div>
                         )}
-                        
+
                         <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="flex items-center justify-center text-blue-600 text-xs font-semibold">
                             <ExternalLink className="w-3 h-3 mr-1" />
@@ -181,7 +195,7 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
-            
+
             <button
               onClick={goToNext}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 hover:text-blue-600 transition-all transform hover:scale-110"
@@ -200,9 +214,9 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
               key={index}
               onClick={() => goToSlide(index)}
               className={`w-3 h-3 rounded-full transition-all ${
-                index === currentIndex 
-                  ? 'bg-primary w-8' 
-                  : 'bg-muted/50 hover:bg-gray-400'
+                index === currentIndex
+                  ? "bg-primary w-8"
+                  : "bg-muted/50 hover:bg-gray-400"
               }`}
               aria-label={`Aller au slide ${index + 1}`}
             />
@@ -211,4 +225,4 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
       )}
     </div>
   );
-}
+});

@@ -65,8 +65,9 @@ export class CacheProcessor {
         success: true,
         deletedCount,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Cache cleanup failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Cache cleanup failed: ${message}`);
       throw error;
     }
   }
@@ -87,8 +88,9 @@ export class CacheProcessor {
       return {
         success: true,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Cache warmup failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Cache warmup failed: ${message}`);
       throw error;
     }
   }

@@ -1,37 +1,38 @@
 /**
  * ⚡ PRODUCTS QUICK ACTIONS COMPONENT
- * 
+ *
  * Component consolidé pour les actions rapides produits
  * Réutilise l'architecture dashboard QuickActions avec spécialisation products
- * 
+ *
  * Usage:
  * - Pro Products Interface
  * - Commercial Products Interface
  * - Progressive Enhancement ready
  */
 
-import { Link, Form } from '@remix-run/react';
-import { 
-  Plus, 
-  Upload, 
-  Download, 
-  RefreshCw, 
-  Search, 
+import { Link, Form } from "@remix-run/react";
+import {
+  Plus,
+  Upload,
+  Download,
+  RefreshCw,
+  Search,
   Filter,
   BarChart3,
   Settings,
-  type LucideIcon 
-} from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
+  type LucideIcon,
+} from "lucide-react";
+import { memo } from "react";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 
 interface QuickAction {
   label: string;
   icon: LucideIcon;
   to?: string;
-  action?: 'submit' | 'button';
-  variant?: 'default' | 'outline' | 'secondary' | 'destructive';
+  action?: "submit" | "button";
+  variant?: "default" | "outline" | "secondary" | "destructive";
   enhanced?: boolean;
   proOnly?: boolean;
   commercialOnly?: boolean;
@@ -39,99 +40,112 @@ interface QuickAction {
 
 interface ProductsQuickActionsProps {
   enhanced?: boolean;
-  userRole?: 'pro' | 'commercial';
+  userRole?: "pro" | "commercial";
   onRefresh?: () => void;
   className?: string;
 }
 
-export function ProductsQuickActions({
+export const ProductsQuickActions = memo(function ProductsQuickActions({
   enhanced = false,
-  userRole = 'commercial',
+  userRole = "commercial",
   onRefresh,
-  className
+  className,
 }: ProductsQuickActionsProps) {
   const actions: QuickAction[] = [
     {
-      label: 'Nouveau Produit',
+      label: "Nouveau Produit",
       icon: Plus,
-      to: userRole === 'pro' ? '/pro/products/new' : '/commercial/products/new',
-      variant: 'default'
+      to: userRole === "pro" ? "/pro/products/new" : "/commercial/products/new",
+      variant: "default",
     },
     {
-      label: 'Recherche Avancée',
+      label: "Recherche Avancée",
       icon: Search,
-      to: userRole === 'pro' ? '/pro/products/search' : '/commercial/products/search',
-      variant: 'outline'
+      to:
+        userRole === "pro"
+          ? "/pro/products/search"
+          : "/commercial/products/search",
+      variant: "outline",
     },
     {
-      label: 'Filtres',
+      label: "Filtres",
       icon: Filter,
-      action: 'button',
-      variant: 'outline',
-      enhanced: true
+      action: "button",
+      variant: "outline",
+      enhanced: true,
     },
     {
-      label: 'Actualiser',
+      label: "Actualiser",
       icon: RefreshCw,
-      action: 'button',
-      variant: 'secondary'
+      action: "button",
+      variant: "secondary",
     },
-    ...(enhanced ? [
-      {
-        label: 'Import CSV',
-        icon: Upload,
-        to: userRole === 'pro' ? '/pro/products/import' : '/commercial/products/import',
-        variant: 'outline' as const,
-        enhanced: true
-      },
-      {
-        label: 'Export',
-        icon: Download,
-        action: 'button' as const,
-        variant: 'outline' as const,
-        enhanced: true
-      },
-      {
-        label: 'Analytics',
-        icon: BarChart3,
-        to: userRole === 'pro' ? '/pro/analytics/products' : '/commercial/analytics/products',
-        variant: 'secondary' as const,
-        enhanced: true
-      }
-    ] : []),
-    ...(userRole === 'pro' ? [
-      {
-        label: 'Configuration',
-        icon: Settings,
-        to: '/pro/products/settings',
-        variant: 'outline' as const,
-        proOnly: true
-      }
-    ] : [])
+    ...(enhanced
+      ? [
+          {
+            label: "Import CSV",
+            icon: Upload,
+            to:
+              userRole === "pro"
+                ? "/pro/products/import"
+                : "/commercial/products/import",
+            variant: "outline" as const,
+            enhanced: true,
+          },
+          {
+            label: "Export",
+            icon: Download,
+            action: "button" as const,
+            variant: "outline" as const,
+            enhanced: true,
+          },
+          {
+            label: "Analytics",
+            icon: BarChart3,
+            to:
+              userRole === "pro"
+                ? "/pro/analytics/products"
+                : "/commercial/analytics/products",
+            variant: "secondary" as const,
+            enhanced: true,
+          },
+        ]
+      : []),
+    ...(userRole === "pro"
+      ? [
+          {
+            label: "Configuration",
+            icon: Settings,
+            to: "/pro/products/settings",
+            variant: "outline" as const,
+            proOnly: true,
+          },
+        ]
+      : []),
   ];
 
   // Filter actions based on role and enhanced mode
-  const availableActions = actions.filter(action => {
-    if (action.proOnly && userRole !== 'pro') return false;
-    if (action.commercialOnly && userRole !== 'commercial') return false;
+  const availableActions = actions.filter((action) => {
+    if (action.proOnly && userRole !== "pro") return false;
+    if (action.commercialOnly && userRole !== "commercial") return false;
     if (action.enhanced && !enhanced) return false;
     return true;
   });
 
   const handleAction = (action: QuickAction) => {
-    if (action.action === 'button' && action.icon === RefreshCw) {
+    if (action.action === "button" && action.icon === RefreshCw) {
       onRefresh?.();
     }
     // Add other action handlers as needed
   };
 
   return (
-    <Card className={cn('w-full', className)}>
+    <Card className={cn("w-full", className)}>
       <CardContent className="p-6">
         <div className="flex flex-wrap gap-3">
           {availableActions.map((action, index) => {
             const ActionIcon = action.icon;
-            
+
             if (action.to) {
               return (
                 <Button
@@ -140,8 +154,8 @@ export function ProductsQuickActions({
                   variant={action.variant}
                   size="sm"
                   className={cn(
-                    'flex items-center gap-2 transition-all duration-200',
-                    enhanced && 'hover:scale-105'
+                    "flex items-center gap-2 transition-all duration-200",
+                    enhanced && "hover:scale-105",
                   )}
                 >
                   <Link to={action.to}>
@@ -152,7 +166,7 @@ export function ProductsQuickActions({
               );
             }
 
-            if (action.action === 'submit') {
+            if (action.action === "submit") {
               return (
                 <Form key={index} method="post" className="inline-block">
                   <Button
@@ -160,8 +174,8 @@ export function ProductsQuickActions({
                     variant={action.variant}
                     size="sm"
                     className={cn(
-                      'flex items-center gap-2 transition-all duration-200',
-                      enhanced && 'hover:scale-105'
+                      "flex items-center gap-2 transition-all duration-200",
+                      enhanced && "hover:scale-105",
                     )}
                   >
                     <ActionIcon className="h-4 w-4" />
@@ -178,8 +192,8 @@ export function ProductsQuickActions({
                 size="sm"
                 onClick={() => handleAction(action)}
                 className={cn(
-                  'flex items-center gap-2 transition-all duration-200',
-                  enhanced && 'hover:scale-105'
+                  "flex items-center gap-2 transition-all duration-200",
+                  enhanced && "hover:scale-105",
                 )}
               >
                 <ActionIcon className="h-4 w-4" />
@@ -200,6 +214,6 @@ export function ProductsQuickActions({
       </CardContent>
     </Card>
   );
-}
+});
 
 export default ProductsQuickActions;

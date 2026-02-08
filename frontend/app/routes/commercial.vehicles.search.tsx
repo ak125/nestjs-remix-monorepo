@@ -5,7 +5,12 @@
  * Route: /commercial/vehicles/search
  */
 
-import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { Car, Filter, RotateCcw, Search } from "lucide-react";
 import { useState } from "react";
@@ -27,6 +32,11 @@ import {
 } from "../components/ui/select";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Recherche Vehicules - Commercial");
 
 interface VehicleSearchData {
   user: any;
@@ -145,7 +155,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       error,
     });
   } catch (err) {
-    console.error("Erreur loader recherche véhicules:", err);
+    logger.error("Erreur loader recherche véhicules:", err);
     return json<VehicleSearchData>({
       user,
       brands: [],

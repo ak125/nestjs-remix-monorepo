@@ -1,9 +1,18 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from "../hooks/useAdvancedAnalyticsComplete";
 import { getMonitoringService } from "../services/monitoring";
 import { Badge } from "~/components/ui";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Optimisation - Admin");
 
 interface DashboardStats {
   totalOrders: number;
@@ -31,7 +40,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   } catch (error) {
-    console.error("Erreur lors du chargement des stats:", error);
+    logger.error("Erreur lors du chargement des stats:", error);
     return json({
       stats: null,
       error: "Impossible de charger les statistiques",
@@ -57,7 +66,7 @@ export default function OptimizationSummaryPage() {
   // Test automatique de toutes les fonctionnalités
   useEffect(() => {
     const runFullTest = async () => {
-      console.log("🚀 Démarrage des tests complets...");
+      logger.log("🚀 Démarrage des tests complets...");
 
       // 1. Test Analytics
       analytics.trackEvent("optimization_test_started", {
@@ -105,7 +114,7 @@ export default function OptimizationSummaryPage() {
         config: monitoringService?.getConfig(),
       });
 
-      console.log("✅ Tests complets terminés avec succès");
+      logger.log("✅ Tests complets terminés avec succès");
     };
 
     runFullTest();

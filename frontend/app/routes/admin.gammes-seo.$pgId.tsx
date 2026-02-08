@@ -15,6 +15,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -83,6 +84,15 @@ import { Textarea } from "~/components/ui/textarea";
 
 // Import extracted components
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+  createNoIndexMeta(
+    data?.detail?.gamme?.pg_name
+      ? `${data.detail.gamme.pg_name} - Admin`
+      : "Gamme SEO - Admin",
+  );
 
 // Loader
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -197,7 +207,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       }
     }
   } catch (e) {
-    console.error("Section K fetch error:", e);
+    logger.error("Section K fetch error:", e);
   }
 
   return json({ detail, freshness, sectionK });

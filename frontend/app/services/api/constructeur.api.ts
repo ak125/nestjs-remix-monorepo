@@ -3,9 +3,12 @@
  * Service optimisé pour gérer les données constructeurs avec cache intelligent
  */
 
-const API_BASE_URL = typeof window !== 'undefined' && window.ENV?.API_BASE_URL 
-  ? window.ENV.API_BASE_URL 
-  : "http://localhost:3000";
+import { logger } from "~/utils/logger";
+
+const API_BASE_URL =
+  typeof window !== "undefined" && window.ENV?.API_BASE_URL
+    ? window.ENV.API_BASE_URL
+    : "http://localhost:3000";
 
 export interface ConstructeurFilters {
   search?: string;
@@ -14,8 +17,8 @@ export interface ConstructeurFilters {
   popular?: boolean;
   limit?: number;
   page?: number;
-  sortBy?: 'name' | 'views' | 'date' | 'models' | 'alpha';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "views" | "date" | "models" | "alpha";
+  sortOrder?: "asc" | "desc";
   hasModels?: boolean;
   withStats?: boolean;
 }
@@ -74,13 +77,16 @@ export interface ConstructeurResponse {
 }
 
 class ConstructeurApiService {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
 
   private getCacheKey(filters: ConstructeurFilters): string {
     const normalized = {
       ...filters,
       page: filters.page || 1,
-      limit: filters.limit || 24
+      limit: filters.limit || 24,
     };
     return `constructeurs:${JSON.stringify(normalized, Object.keys(normalized).sort())}`;
   }
@@ -98,40 +104,42 @@ class ConstructeurApiService {
   /**
    * Récupère la liste des constructeurs avec filtres
    */
-  async getConstructeurs(filters: ConstructeurFilters = {}): Promise<ConstructeurResponse> {
+  async getConstructeurs(
+    filters: ConstructeurFilters = {},
+  ): Promise<ConstructeurResponse> {
     try {
       const cacheKey = this.getCacheKey(filters);
       const cached = this.cache.get(cacheKey);
 
       if (cached && this.isValidCache(cached)) {
-        console.log('[CACHE HIT] Constructeurs:', cacheKey);
+        logger.log("[CACHE HIT] Constructeurs:", cacheKey);
         return cached.data;
       }
 
       const queryParams = new URLSearchParams();
-      
+
       // Paramètres de base
-      queryParams.set('page', (filters.page || 1).toString());
-      queryParams.set('limit', (filters.limit || 24).toString());
-      
+      queryParams.set("page", (filters.page || 1).toString());
+      queryParams.set("limit", (filters.limit || 24).toString());
+
       // Filtres optionnels
-      if (filters.search) queryParams.set('search', filters.search);
-      if (filters.brand) queryParams.set('brand', filters.brand);
-      if (filters.letter) queryParams.set('letter', filters.letter);
-      if (filters.sortBy) queryParams.set('sortBy', filters.sortBy);
-      if (filters.sortOrder) queryParams.set('sortOrder', filters.sortOrder);
-      if (filters.popular) queryParams.set('popular', 'true');
-      if (filters.hasModels) queryParams.set('hasModels', 'true');
-      if (filters.withStats) queryParams.set('withStats', 'true');
+      if (filters.search) queryParams.set("search", filters.search);
+      if (filters.brand) queryParams.set("brand", filters.brand);
+      if (filters.letter) queryParams.set("letter", filters.letter);
+      if (filters.sortBy) queryParams.set("sortBy", filters.sortBy);
+      if (filters.sortOrder) queryParams.set("sortOrder", filters.sortOrder);
+      if (filters.popular) queryParams.set("popular", "true");
+      if (filters.hasModels) queryParams.set("hasModels", "true");
+      if (filters.withStats) queryParams.set("withStats", "true");
 
       const url = `${API_BASE_URL}/api/blog/constructeurs?${queryParams}`;
-      console.log('[API CALL] Constructeurs:', url);
+      logger.log("[API CALL] Constructeurs:", url);
 
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
@@ -142,18 +150,20 @@ class ConstructeurApiService {
       const data: ConstructeurResponse = await response.json();
 
       // Mise en cache avec TTL intelligent
-      const ttl = this.calculateTTL(!!filters.withStats, data.data?.constructeurs?.length || 0);
-      this.cache.set(cacheKey, { 
-        data, 
-        timestamp: Date.now(), 
-        ttl 
+      const ttl = this.calculateTTL(
+        !!filters.withStats,
+        data.data?.constructeurs?.length || 0,
+      );
+      this.cache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+        ttl,
       });
 
-      console.log('[CACHE SET] Constructeurs:', cacheKey, `TTL: ${ttl/1000}s`);
+      logger.log("[CACHE SET] Constructeurs:", cacheKey, `TTL: ${ttl / 1000}s`);
       return data;
-
     } catch (error) {
-      console.error('[ERROR] Constructeurs API:', error);
+      logger.error("[ERROR] Constructeurs API:", error);
       throw error;
     }
   }
@@ -168,26 +178,26 @@ class ConstructeurApiService {
     stats: ConstructeurStats;
   }> {
     try {
-      const cacheKey = 'constructeurs:home';
+      const cacheKey = "constructeurs:home";
       const cached = this.cache.get(cacheKey);
 
       if (cached && this.isValidCache(cached)) {
-        console.log('[CACHE HIT] Constructeurs Home:', cacheKey);
+        logger.log("[CACHE HIT] Constructeurs Home:", cacheKey);
         return cached.data;
       }
 
       // Récupération parallèle des données
       const [brandsResponse, featuredResponse] = await Promise.all([
-        this.getConstructeurs({ 
-          limit: 24, 
-          sortBy: 'name', 
-          withStats: true 
+        this.getConstructeurs({
+          limit: 24,
+          sortBy: "name",
+          withStats: true,
         }),
-        this.getConstructeurs({ 
-          limit: 6, 
-          sortBy: 'views', 
-          popular: true 
-        })
+        this.getConstructeurs({
+          limit: 6,
+          sortBy: "views",
+          popular: true,
+        }),
       ]);
 
       const result = {
@@ -197,25 +207,24 @@ class ConstructeurApiService {
           total: 0,
           totalViews: 0,
           avgViews: 0,
-          totalModels: 0
-        }
+          totalModels: 0,
+        },
       };
 
       // Cache pour 10 minutes
-      this.cache.set(cacheKey, { 
-        data: result, 
-        timestamp: Date.now(), 
-        ttl: 10 * 60 * 1000 
+      this.cache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now(),
+        ttl: 10 * 60 * 1000,
       });
 
       return result;
-
     } catch (error) {
-      console.error('[ERROR] Constructeurs Home API:', error);
+      logger.error("[ERROR] Constructeurs Home API:", error);
       return {
         brands: [],
         featured: [],
-        stats: { total: 0, totalViews: 0, avgViews: 0, totalModels: 0 }
+        stats: { total: 0, totalViews: 0, avgViews: 0, totalModels: 0 },
       };
     }
   }
@@ -223,13 +232,15 @@ class ConstructeurApiService {
   /**
    * Récupère un constructeur spécifique par slug
    */
-  async getConstructeurBySlug(slug: string): Promise<ConstructeurArticle | null> {
+  async getConstructeurBySlug(
+    slug: string,
+  ): Promise<ConstructeurArticle | null> {
     try {
       const cacheKey = `constructeur:slug:${slug}`;
       const cached = this.cache.get(cacheKey);
 
       if (cached && this.isValidCache(cached)) {
-        console.log('[CACHE HIT] Constructeur:', slug);
+        logger.log("[CACHE HIT] Constructeur:", slug);
         return cached.data;
       }
 
@@ -247,16 +258,15 @@ class ConstructeurApiService {
       const constructeur = data.success ? data.data : null;
 
       // Cache pour 30 minutes (article individuel)
-      this.cache.set(cacheKey, { 
-        data: constructeur, 
-        timestamp: Date.now(), 
-        ttl: 30 * 60 * 1000 
+      this.cache.set(cacheKey, {
+        data: constructeur,
+        timestamp: Date.now(),
+        ttl: 30 * 60 * 1000,
       });
 
       return constructeur;
-
     } catch (error) {
-      console.error('[ERROR] Constructeur by slug API:', error);
+      logger.error("[ERROR] Constructeur by slug API:", error);
       return null;
     }
   }
@@ -264,7 +274,10 @@ class ConstructeurApiService {
   /**
    * Recherche constructeurs avec suggestions
    */
-  async searchConstructeurs(query: string, limit: number = 10): Promise<ConstructeurArticle[]> {
+  async searchConstructeurs(
+    query: string,
+    limit: number = 10,
+  ): Promise<ConstructeurArticle[]> {
     try {
       if (!query.trim()) return [];
 
@@ -272,29 +285,28 @@ class ConstructeurApiService {
       const cached = this.cache.get(cacheKey);
 
       if (cached && this.isValidCache(cached)) {
-        console.log('[CACHE HIT] Search Constructeurs:', query);
+        logger.log("[CACHE HIT] Search Constructeurs:", query);
         return cached.data;
       }
 
       const response = await this.getConstructeurs({
         search: query,
         limit,
-        sortBy: 'views'
+        sortBy: "views",
       });
 
       const results = response.data?.constructeurs || [];
 
       // Cache pour 5 minutes (recherche)
-      this.cache.set(cacheKey, { 
-        data: results, 
-        timestamp: Date.now(), 
-        ttl: 5 * 60 * 1000 
+      this.cache.set(cacheKey, {
+        data: results,
+        timestamp: Date.now(),
+        ttl: 5 * 60 * 1000,
       });
 
       return results;
-
     } catch (error) {
-      console.error('[ERROR] Search Constructeurs API:', error);
+      logger.error("[ERROR] Search Constructeurs API:", error);
       return [];
     }
   }
@@ -304,7 +316,7 @@ class ConstructeurApiService {
    */
   async getAvailableLetters(): Promise<string[]> {
     try {
-      const cacheKey = 'constructeurs:letters';
+      const cacheKey = "constructeurs:letters";
       const cached = this.cache.get(cacheKey);
 
       if (cached && this.isValidCache(cached)) {
@@ -316,23 +328,24 @@ class ConstructeurApiService {
 
       if (!response.ok) {
         // Fallback: générer A-Z
-        return Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+        return Array.from({ length: 26 }, (_, i) =>
+          String.fromCharCode(65 + i),
+        );
       }
 
       const data = await response.json();
       const letters = data.success ? data.data : [];
 
       // Cache pour 1 heure
-      this.cache.set(cacheKey, { 
-        data: letters, 
-        timestamp: Date.now(), 
-        ttl: 60 * 60 * 1000 
+      this.cache.set(cacheKey, {
+        data: letters,
+        timestamp: Date.now(),
+        ttl: 60 * 60 * 1000,
       });
 
       return letters;
-
     } catch (error) {
-      console.error('[ERROR] Available Letters API:', error);
+      logger.error("[ERROR] Available Letters API:", error);
       // Fallback: générer A-Z
       return Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
     }
@@ -343,7 +356,7 @@ class ConstructeurApiService {
    */
   clearCache(): void {
     this.cache.clear();
-    console.log('[CACHE CLEARED] Constructeurs cache cleared');
+    logger.log("[CACHE CLEARED] Constructeurs cache cleared");
   }
 
   /**
@@ -352,7 +365,7 @@ class ConstructeurApiService {
   getCacheStats(): { size: number; keys: string[] } {
     return {
       size: this.cache.size,
-      keys: Array.from(this.cache.keys())
+      keys: Array.from(this.cache.keys()),
     };
   }
 }

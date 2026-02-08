@@ -1,0 +1,18 @@
+{
+  "file": "/opt/automecanik/app/frontend/app/routes/cart.tsx",
+  "route": "/cart",
+  "timestamp": "2026-01-29T19:19:50.827Z",
+  "global_score": 9.3,
+  "scores": {
+    "mobile_first": 10,
+    "responsive": 9,
+    "touch_ux": 10,
+    "readability": 9.5,
+    "ecommerce_ux": 9,
+    "a11y": 9,
+    "design_system": 8
+  },
+  "hard_rule_violations": [],
+  "top_risks": [],
+  "quick_wins": []
+}

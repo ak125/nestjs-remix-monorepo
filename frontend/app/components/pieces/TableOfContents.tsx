@@ -1,4 +1,15 @@
-import { Car, CheckCircle, AlertTriangle, BookOpen, Info, Lightbulb, Factory, HelpCircle, Package } from 'lucide-react';
+import {
+  Car,
+  CheckCircle,
+  AlertTriangle,
+  BookOpen,
+  Info,
+  Lightbulb,
+  Factory,
+  HelpCircle,
+  Package,
+} from "lucide-react";
+import { memo } from "react";
 
 interface TOCItem {
   id: string;
@@ -18,8 +29,8 @@ interface TableOfContentsProps {
   hasCatalogue?: boolean;
 }
 
-export default function TableOfContents({
-  gammeName: _gammeName = 'pièces',
+const TableOfContents = memo(function TableOfContents({
+  gammeName: _gammeName = "pièces",
   hasMotorizations = true,
   hasSymptoms = true,
   hasGuide = true,
@@ -30,28 +41,92 @@ export default function TableOfContents({
   hasCatalogue = true,
 }: TableOfContentsProps) {
   const items: TOCItem[] = [
-    { id: 'vehicle-selector', label: 'Sélection véhicule', icon: <Car className="w-4 h-4" /> },
-    ...(hasMotorizations ? [{ id: 'compatibilities', label: 'Compatibilités', icon: <CheckCircle className="w-4 h-4" /> }] : []),
-    ...(hasSymptoms ? [{ id: 'symptoms', label: 'Symptômes', icon: <AlertTriangle className="w-4 h-4" /> }] : []),
-    ...(hasGuide ? [{ id: 'quick-guide', label: 'Guide rapide', icon: <BookOpen className="w-4 h-4" /> }] : []),
-    ...(hasInformations ? [{ id: 'essentials', label: 'Informations', icon: <Info className="w-4 h-4" /> }] : []),
-    ...(hasConseils ? [{ id: 'advice', label: 'Conseils', icon: <Lightbulb className="w-4 h-4" /> }] : []),
-    ...(hasEquipementiers ? [{ id: 'brands', label: 'Équipementiers', icon: <Factory className="w-4 h-4" /> }] : []),
-    ...(hasFaq ? [{ id: 'faq', label: 'FAQ', icon: <HelpCircle className="w-4 h-4" /> }] : []),
-    ...(hasCatalogue ? [{ id: 'family', label: 'Autres pièces', icon: <Package className="w-4 h-4" /> }] : []),
+    {
+      id: "vehicle-selector",
+      label: "Sélection véhicule",
+      icon: <Car className="w-4 h-4" />,
+    },
+    ...(hasMotorizations
+      ? [
+          {
+            id: "compatibilities",
+            label: "Compatibilités",
+            icon: <CheckCircle className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasSymptoms
+      ? [
+          {
+            id: "symptoms",
+            label: "Symptômes",
+            icon: <AlertTriangle className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasGuide
+      ? [
+          {
+            id: "quick-guide",
+            label: "Guide rapide",
+            icon: <BookOpen className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasInformations
+      ? [
+          {
+            id: "essentials",
+            label: "Informations",
+            icon: <Info className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasConseils
+      ? [
+          {
+            id: "advice",
+            label: "Conseils",
+            icon: <Lightbulb className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasEquipementiers
+      ? [
+          {
+            id: "brands",
+            label: "Équipementiers",
+            icon: <Factory className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(hasFaq
+      ? [{ id: "faq", label: "FAQ", icon: <HelpCircle className="w-4 h-4" /> }]
+      : []),
+    ...(hasCatalogue
+      ? [
+          {
+            id: "family",
+            label: "Autres pièces",
+            icon: <Package className="w-4 h-4" />,
+          },
+        ]
+      : []),
   ];
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     // SSR-safe: document/window n'existent pas côté serveur
-    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    if (typeof document === "undefined" || typeof window === "undefined")
+      return;
     const element = document.getElementById(id);
     if (element) {
       const offset = 80; // Hauteur de la navbar sticky
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const elementPosition =
+        element.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: elementPosition - offset,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -62,7 +137,9 @@ export default function TableOfContents({
       aria-label="Sommaire de la page"
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-gray-500 text-sm font-medium">Accès rapide :</span>
+        <span className="text-gray-500 text-sm font-medium">
+          Accès rapide :
+        </span>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {items.map((item) => (
@@ -79,4 +156,6 @@ export default function TableOfContents({
       </div>
     </nav>
   );
-}
+});
+
+export default TableOfContents;

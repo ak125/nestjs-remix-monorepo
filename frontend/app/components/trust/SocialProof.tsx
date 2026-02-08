@@ -1,6 +1,6 @@
 /**
  * 📊 SocialProof - Compteurs sociaux pour persuasion
- * 
+ *
  * Affiche:
  * - Nombre de ventes
  * - Nombre d'avis
@@ -9,6 +9,7 @@
  */
 
 import { Star, ShoppingCart, MessageSquare, ThumbsUp } from "lucide-react";
+import { memo } from "react";
 import { cn } from "~/lib/utils";
 
 interface SocialProofProps {
@@ -20,7 +21,7 @@ interface SocialProofProps {
   className?: string;
 }
 
-export function SocialProof({
+export const SocialProof = memo(function SocialProof({
   soldCount,
   reviewCount,
   rating,
@@ -40,9 +41,7 @@ export function SocialProof({
         {reviewCount && (
           <span className="text-gray-600">({reviewCount} avis)</span>
         )}
-        {soldCount && (
-          <span className="text-gray-600">{soldCount} vendus</span>
-        )}
+        {soldCount && <span className="text-gray-600">{soldCount} vendus</span>}
       </div>
     );
   }
@@ -78,9 +77,7 @@ export function SocialProof({
           <StarRating rating={rating} />
           <span className="text-lg font-bold">{rating.toFixed(1)}/5</span>
           {reviewCount && (
-            <span className="text-sm text-gray-500">
-              ({reviewCount} avis)
-            </span>
+            <span className="text-sm text-gray-500">({reviewCount} avis)</span>
           )}
         </div>
       )}
@@ -125,7 +122,7 @@ export function SocialProof({
       </div>
     </div>
   );
-}
+});
 
 /**
  * StarRating - Affichage étoiles
@@ -136,7 +133,11 @@ interface StarRatingProps {
   className?: string;
 }
 
-export function StarRating({ rating, size = "md", className }: StarRatingProps) {
+export const StarRating = memo(function StarRating({
+  rating,
+  size = "md",
+  className,
+}: StarRatingProps) {
   const stars = 5;
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
@@ -157,7 +158,7 @@ export function StarRating({ rating, size = "md", className }: StarRatingProps) 
           <div key={i} className="relative">
             {/* Empty star */}
             <Star className={cn(sizeClasses[size], "text-gray-300")} />
-            
+
             {/* Filled star */}
             {(isFull || isHalf) && (
               <div
@@ -165,7 +166,10 @@ export function StarRating({ rating, size = "md", className }: StarRatingProps) 
                 style={{ width: isHalf ? "50%" : "100%" }}
               >
                 <Star
-                  className={cn(sizeClasses[size], "text-yellow-400 fill-yellow-400")}
+                  className={cn(
+                    sizeClasses[size],
+                    "text-yellow-400 fill-yellow-400",
+                  )}
                 />
               </div>
             )}
@@ -174,7 +178,7 @@ export function StarRating({ rating, size = "md", className }: StarRatingProps) 
       })}
     </div>
   );
-}
+});
 
 /**
  * Formater les nombres (1234 → 1,2k)

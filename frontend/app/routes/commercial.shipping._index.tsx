@@ -2,7 +2,11 @@
  * 📦 Gestion des expéditions - Interface principale
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   Truck,
@@ -20,6 +24,11 @@ import {
 import { useState } from "react";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Expeditions - Commercial");
 
 // Types pour les expéditions
 interface ShippingOrder {
@@ -211,7 +220,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const trackingStatus = url.searchParams.get("trackingStatus") || "";
 
   try {
-    console.log("🚚 Chargement des données d'expédition...");
+    logger.log("🚚 Chargement des données d'expédition...");
 
     // Récupérer les commandes avec informations de livraison via l'API existante
     const ordersUrl = new URL(
@@ -403,7 +412,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    console.error("Erreur chargement expéditions commercial:", error);
+    logger.error("Erreur chargement expéditions commercial:", error);
     return json({
       orders: [],
       stats: {

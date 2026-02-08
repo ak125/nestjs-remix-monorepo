@@ -1,4 +1,5 @@
 import { Award, Shield, Users, Wrench } from "lucide-react";
+import { memo } from "react";
 
 interface AboutSectionProps {
   className?: string;
@@ -9,7 +10,7 @@ interface AboutSectionProps {
  * Composant AboutSection - Reproduit la section 5 PHP
  * Section descriptive "À propos" avec texte informatif
  */
-export function AboutSection({
+export const AboutSection = memo(function AboutSection({
   className = "",
   title = "À propos de notre service",
 }: AboutSectionProps) {
@@ -162,6 +163,6 @@ export function AboutSection({
       </div>
     </div>
   );
-}
+});
 
 export default AboutSection;

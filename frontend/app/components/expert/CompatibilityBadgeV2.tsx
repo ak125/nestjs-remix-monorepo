@@ -20,7 +20,7 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import { forwardRef, useState, useEffect } from "react";
+import { forwardRef, useState, useEffect, memo } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
@@ -516,74 +516,73 @@ function LoadingBadge({
 // Main Component
 // ============================================================================
 
-const CompatibilityBadgeV2 = forwardRef<
-  HTMLDivElement,
-  CompatibilityBadgeV2Props
->(
-  (
-    {
-      productId: _productId,
-      productName: _productName,
-      isCompatible,
-      currentVehicle,
-      confidenceScore,
-      isLoading = false,
-      onVerifyClick,
-      onChangeVehicle,
-      className,
-      variant = "full",
-      showConfidence = false,
+const CompatibilityBadgeV2 = memo(
+  forwardRef<HTMLDivElement, CompatibilityBadgeV2Props>(
+    (
+      {
+        productId: _productId,
+        productName: _productName,
+        isCompatible,
+        currentVehicle,
+        confidenceScore,
+        isLoading = false,
+        onVerifyClick,
+        onChangeVehicle,
+        className,
+        variant = "full",
+        showConfidence = false,
+      },
+      ref,
+    ) => {
+      // Loading state
+      if (isLoading) {
+        return (
+          <div ref={ref} className={className}>
+            <LoadingBadge variant={variant} />
+          </div>
+        );
+      }
+
+      // Compatible state
+      if (isCompatible === true) {
+        return (
+          <div ref={ref} className={className}>
+            <CompatibleBadge
+              vehicle={currentVehicle}
+              confidenceScore={confidenceScore}
+              showConfidence={showConfidence}
+              onChangeVehicle={onChangeVehicle}
+              variant={variant}
+            />
+          </div>
+        );
+      }
+
+      // Incompatible state
+      if (isCompatible === false) {
+        return (
+          <div ref={ref} className={className}>
+            <IncompatibleBadge
+              vehicle={currentVehicle}
+              onChangeVehicle={onChangeVehicle}
+              variant={variant}
+            />
+          </div>
+        );
+      }
+
+      // Unknown state (null or undefined)
+      return (
+        <div ref={ref} className={className}>
+          <UnknownBadge
+            onVerifyClick={onVerifyClick}
+            isLoading={isLoading}
+            variant={variant}
+          />
+        </div>
+      );
     },
-    ref,
-  ) => {
-    // Loading state
-    if (isLoading) {
-      return (
-        <div ref={ref} className={className}>
-          <LoadingBadge variant={variant} />
-        </div>
-      );
-    }
-
-    // Compatible state
-    if (isCompatible === true) {
-      return (
-        <div ref={ref} className={className}>
-          <CompatibleBadge
-            vehicle={currentVehicle}
-            confidenceScore={confidenceScore}
-            showConfidence={showConfidence}
-            onChangeVehicle={onChangeVehicle}
-            variant={variant}
-          />
-        </div>
-      );
-    }
-
-    // Incompatible state
-    if (isCompatible === false) {
-      return (
-        <div ref={ref} className={className}>
-          <IncompatibleBadge
-            vehicle={currentVehicle}
-            onChangeVehicle={onChangeVehicle}
-            variant={variant}
-          />
-        </div>
-      );
-    }
-
-    // Unknown state (null or undefined)
-    return (
-      <div ref={ref} className={className}>
-        <UnknownBadge
-          onVerifyClick={onVerifyClick}
-          isLoading={isLoading}
-          variant={variant}
-        />
-      </div>
-    );
-  },
+  ),
 );
 
 CompatibilityBadgeV2.displayName = "CompatibilityBadgeV2";

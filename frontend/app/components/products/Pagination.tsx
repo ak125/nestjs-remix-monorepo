@@ -1,6 +1,6 @@
 /**
  * 📄 PAGINATION - Composant de navigation entre pages
- * 
+ *
  * Features:
  * - Boutons Précédent/Suivant
  * - Numéros de pages (avec ellipses)
@@ -8,16 +8,17 @@
  * - Informations "X - Y de Z résultats"
  */
 
-import { Link, useSearchParams } from '@remix-run/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Link, useSearchParams } from "@remix-run/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { memo } from "react";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from "../ui/select";
 
 interface PaginationProps {
   currentPage: number;
@@ -27,7 +28,7 @@ interface PaginationProps {
   onPageSizeChange?: (size: number) => void;
 }
 
-export function Pagination({
+export const Pagination = memo(function Pagination({
   currentPage,
   totalPages,
   totalItems,
@@ -38,15 +39,15 @@ export function Pagination({
   // Créer URL avec nouveau numéro de page
   const createPageUrl = (page: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', page.toString());
+    params.set("page", page.toString());
     return `?${params.toString()}`;
   };
 
   // Créer URL avec nouvelle taille de page
   const createPageSizeUrl = (size: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('limit', size.toString());
-    params.set('page', '1'); // Reset à page 1
+    params.set("limit", size.toString());
+    params.set("page", "1"); // Reset à page 1
     return `?${params.toString()}`;
   };
 
@@ -64,17 +65,17 @@ export function Pagination({
       // Logique avec ellipses
       if (currentPage <= 4) {
         for (let i = 1; i <= 5; i++) pages.push(i);
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 3) {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
       } else {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       }
     }
@@ -89,9 +90,9 @@ export function Pagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2">
       {/* Informations */}
       <div className="text-sm text-gray-600">
-        Affichage de <span className="font-semibold">{startItem}</span> à{' '}
-        <span className="font-semibold">{endItem}</span> sur{' '}
-        <span className="font-semibold">{totalItems.toLocaleString()}</span>{' '}
+        Affichage de <span className="font-semibold">{startItem}</span> à{" "}
+        <span className="font-semibold">{endItem}</span> sur{" "}
+        <span className="font-semibold">{totalItems.toLocaleString()}</span>{" "}
         résultats
       </div>
 
@@ -106,7 +107,9 @@ export function Pagination({
         >
           <Link
             to={createPageUrl(currentPage - 1)}
-            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+            className={
+              currentPage === 1 ? "pointer-events-none opacity-50" : ""
+            }
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Précédent
@@ -116,7 +119,7 @@ export function Pagination({
         {/* Numéros de pages */}
         <div className="hidden sm:flex items-center gap-1">
           {getPageNumbers().map((page, index) => {
-            if (page === '...') {
+            if (page === "...") {
               return (
                 <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
                   ...
@@ -131,9 +134,9 @@ export function Pagination({
               <Button
                 key={pageNum}
                 asChild
-                variant={isActive ? 'default' : 'outline'}
+                variant={isActive ? "default" : "outline"}
                 size="sm"
-                className={isActive ? 'pointer-events-none' : ''}
+                className={isActive ? "pointer-events-none" : ""}
               >
                 <Link to={createPageUrl(pageNum)}>{pageNum}</Link>
               </Button>
@@ -151,7 +154,7 @@ export function Pagination({
           <Link
             to={createPageUrl(currentPage + 1)}
             className={
-              currentPage === totalPages ? 'pointer-events-none opacity-50' : ''
+              currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }
           >
             Suivant
@@ -181,4 +184,4 @@ export function Pagination({
       </div>
     </div>
   );
-}
+});

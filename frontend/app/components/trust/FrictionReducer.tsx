@@ -1,6 +1,6 @@
 /**
  * 🛡️ FrictionReducer - Réducteurs de friction pour rassurer
- * 
+ *
  * Assurances:
  * - Retour 30 jours
  * - Paiement sécurisé
@@ -9,9 +9,14 @@
  */
 
 import { RotateCcw, Lock, Shield, Headphones } from "lucide-react";
+import { memo } from "react";
 import { cn } from "~/lib/utils";
 
-export type AssuranceType = "return" | "secure-payment" | "satisfaction" | "support";
+export type AssuranceType =
+  | "return"
+  | "secure-payment"
+  | "satisfaction"
+  | "support";
 
 interface FrictionReducerProps {
   type: AssuranceType;
@@ -46,7 +51,11 @@ const ASSURANCE_CONFIG = {
   },
 } as const;
 
-export function FrictionReducer({ type, variant = "default", className }: FrictionReducerProps) {
+export const FrictionReducer = memo(function FrictionReducer({
+  type,
+  variant = "default",
+  className,
+}: FrictionReducerProps) {
   const config = ASSURANCE_CONFIG[type];
   const Icon = config.icon;
 
@@ -70,7 +79,7 @@ export function FrictionReducer({ type, variant = "default", className }: Fricti
       </div>
     </div>
   );
-}
+});
 
 /**
  * FrictionReducerGroup - Groupe d'assurances
@@ -82,21 +91,21 @@ interface FrictionReducerGroupProps {
   className?: string;
 }
 
-export function FrictionReducerGroup({
+export const FrictionReducerGroup = memo(function FrictionReducerGroup({
   assurances,
   variant = "default",
   layout = "grid",
   className,
 }: FrictionReducerGroupProps) {
   const isCompact = variant === "compact";
-  
+
   return (
     <div
       className={cn(
         layout === "grid"
           ? `grid gap-${isCompact ? "3" : "4"} ${assurances.length === 2 ? "grid-cols-2" : assurances.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-1"}`
           : "flex flex-col gap-3",
-        className
+        className,
       )}
     >
       {assurances.map((type) => (
@@ -104,4 +113,4 @@ export function FrictionReducerGroup({
       ))}
     </div>
   );
-}
+});

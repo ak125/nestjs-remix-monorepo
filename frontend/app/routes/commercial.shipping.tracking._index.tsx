@@ -2,7 +2,11 @@
  * 📦 Suivi des expéditions - Interface commerciale
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   Clock,
@@ -20,6 +24,11 @@ import {
 import { useState, useEffect } from "react";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Suivi Expeditions - Commercial");
 
 // Types pour le suivi
 interface TrackingEvent {
@@ -290,7 +299,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ shipments, stats });
   } catch (error) {
-    console.error("❌ Erreur tracking:", error);
+    logger.error("❌ Erreur tracking:", error);
 
     // Fallback vers les données mockées en cas d'erreur
     const shipments = mockShipments;

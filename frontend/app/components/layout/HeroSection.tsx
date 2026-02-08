@@ -17,9 +17,9 @@
  * ```
  */
 
-import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
-import React from 'react';
-import { cn } from '../../lib/utils';
+import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
+import React, { memo } from "react";
+import { cn } from "../../lib/utils";
 
 // Types pour les breadcrumbs
 interface BreadcrumbItem {
@@ -29,7 +29,7 @@ interface BreadcrumbItem {
 
 interface HeroSectionProps {
   /** Variante de layout: home (2 colonnes), gamme, vehicle, search, brand */
-  variant?: 'home' | 'gamme' | 'vehicle' | 'search' | 'brand' | 'minimal';
+  variant?: "home" | "gamme" | "vehicle" | "search" | "brand" | "minimal";
   /** Titre principal (H1) */
   title: string;
   /** Sous-titre optionnel */
@@ -41,7 +41,7 @@ interface HeroSectionProps {
   /** Afficher les badges de confiance */
   showTrustBadges?: boolean;
   /** Gradient de fond */
-  backgroundGradient?: 'blue' | 'dark' | 'light' | 'none';
+  backgroundGradient?: "blue" | "dark" | "light" | "none";
   /** Compteur (pour search/listing) */
   count?: number;
   /** Icône à afficher (pour search) */
@@ -54,25 +54,28 @@ interface HeroSectionProps {
 
 // Gradients disponibles
 const GRADIENTS = {
-  blue: 'bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900',
-  dark: 'bg-gradient-to-br from-slate-900 to-slate-800',
-  light: 'bg-gradient-to-br from-blue-50 to-white',
-  none: '',
+  blue: "bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900",
+  dark: "bg-gradient-to-br from-slate-900 to-slate-800",
+  light: "bg-gradient-to-br from-blue-50 to-white",
+  none: "",
 } as const;
 
 // Composant TrustBadges interne
 function TrustBadges() {
   const badges = [
-    { icon: CheckCircle2, label: 'Qualité garantie' },
-    { icon: Truck, label: 'Livraison rapide' },
-    { icon: Shield, label: 'Paiement sécurisé' },
-    { icon: Users, label: '+59 000 clients' },
+    { icon: CheckCircle2, label: "Qualité garantie" },
+    { icon: Truck, label: "Livraison rapide" },
+    { icon: Shield, label: "Paiement sécurisé" },
+    { icon: Users, label: "+59 000 clients" },
   ];
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mt-8 pt-6 border-t border-white/20">
       {badges.map((badge, idx) => (
-        <div key={idx} className="flex items-center gap-2 text-white/80 text-sm">
+        <div
+          key={idx}
+          className="flex items-center gap-2 text-white/80 text-sm"
+        >
           <badge.icon className="h-4 w-4 text-green-400" />
           <span>{badge.label}</span>
         </div>
@@ -108,47 +111,45 @@ function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   );
 }
 
-export function HeroSection({
-  variant = 'minimal',
+export const HeroSection = memo(function HeroSection({
+  variant = "minimal",
   title,
   subtitle,
   breadcrumbs,
   showVehicleSelector = false,
   showTrustBadges = false,
-  backgroundGradient = 'blue',
+  backgroundGradient = "blue",
   count,
   icon,
   children,
   className,
 }: HeroSectionProps) {
   // Déterminer le gradient en fonction du variant si non spécifié
-  const effectiveGradient = backgroundGradient === 'blue'
-    ? variant === 'search' ? 'dark' : 'blue'
-    : backgroundGradient;
+  const effectiveGradient =
+    backgroundGradient === "blue"
+      ? variant === "search"
+        ? "dark"
+        : "blue"
+      : backgroundGradient;
 
   // Classes de texte en fonction du gradient
-  const textColorClass = effectiveGradient === 'light'
-    ? 'text-gray-900'
-    : 'text-white';
+  const textColorClass =
+    effectiveGradient === "light" ? "text-gray-900" : "text-white";
 
-  const subtitleColorClass = effectiveGradient === 'light'
-    ? 'text-gray-600'
-    : 'text-white/80';
+  const subtitleColorClass =
+    effectiveGradient === "light" ? "text-gray-600" : "text-white/80";
 
   // Padding responsive
-  const paddingClass = variant === 'home'
-    ? 'py-12 lg:py-20'
-    : variant === 'minimal'
-      ? 'py-8 lg:py-12'
-      : 'py-8 lg:py-16';
+  const paddingClass =
+    variant === "home"
+      ? "py-12 lg:py-20"
+      : variant === "minimal"
+        ? "py-8 lg:py-12"
+        : "py-8 lg:py-16";
 
   return (
     <section
-      className={cn(
-        GRADIENTS[effectiveGradient],
-        paddingClass,
-        className
-      )}
+      className={cn(GRADIENTS[effectiveGradient], paddingClass, className)}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
@@ -159,12 +160,13 @@ export function HeroSection({
         {/* Layout principal */}
         <div
           className={cn(
-            variant === 'home' && 'lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center',
-            variant === 'search' && 'text-center max-w-3xl mx-auto'
+            variant === "home" &&
+              "lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center",
+            variant === "search" && "text-center max-w-3xl mx-auto",
           )}
         >
           {/* Contenu textuel */}
-          <div className={variant === 'search' ? '' : ''}>
+          <div className={variant === "search" ? "" : ""}>
             {/* Icône (pour search) */}
             {icon && (
               <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -175,13 +177,13 @@ export function HeroSection({
             {/* Titre H1 */}
             <h1
               className={cn(
-                'font-bold',
+                "font-bold",
                 textColorClass,
-                variant === 'home'
-                  ? 'text-3xl md:text-4xl lg:text-5xl'
-                  : variant === 'search'
-                    ? 'text-2xl md:text-3xl lg:text-4xl'
-                    : 'text-2xl md:text-3xl lg:text-4xl'
+                variant === "home"
+                  ? "text-3xl md:text-4xl lg:text-5xl"
+                  : variant === "search"
+                    ? "text-2xl md:text-3xl lg:text-4xl"
+                    : "text-2xl md:text-3xl lg:text-4xl",
               )}
             >
               {title}
@@ -189,29 +191,26 @@ export function HeroSection({
 
             {/* Sous-titre */}
             {subtitle && (
-              <p
-                className={cn(
-                  'mt-4 text-lg md:text-xl',
-                  subtitleColorClass
-                )}
-              >
+              <p className={cn("mt-4 text-lg md:text-xl", subtitleColorClass)}>
                 {subtitle}
               </p>
             )}
 
             {/* Compteur */}
-            {typeof count === 'number' && (
+            {typeof count === "number" && (
               <div className="mt-4 flex items-center justify-center gap-2">
                 <span
                   className={cn(
-                    'text-2xl md:text-3xl font-bold',
-                    effectiveGradient === 'light' ? 'text-blue-600' : 'text-white'
+                    "text-2xl md:text-3xl font-bold",
+                    effectiveGradient === "light"
+                      ? "text-blue-600"
+                      : "text-white",
                   )}
                 >
-                  {count.toLocaleString('fr-FR')}
+                  {count.toLocaleString("fr-FR")}
                 </span>
                 <span className={subtitleColorClass}>
-                  résultat{count > 1 ? 's' : ''}
+                  résultat{count > 1 ? "s" : ""}
                 </span>
               </div>
             )}
@@ -238,6 +237,6 @@ export function HeroSection({
       </div>
     </section>
   );
-}
+});
 
 export default HeroSection;

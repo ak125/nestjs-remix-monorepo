@@ -1,6 +1,16 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData, useNavigate, Form, useNavigation } from "@remix-run/react";
-import { 
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
+import {
+  useLoaderData,
+  useNavigate,
+  Form,
+  useNavigation,
+} from "@remix-run/react";
+import {
   ArrowLeft,
   DollarSign,
   CreditCard,
@@ -12,13 +22,25 @@ import {
   AlertTriangle,
   XCircle,
   RefreshCw,
-  Download
+  Download,
 } from "lucide-react";
 import { useState } from "react";
-import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
-import { getPaymentById, processRefund } from "../services/payment-admin.server";
+import {
+  getPaymentById,
+  processRefund,
+} from "../services/payment-admin.server";
 import { type Payment, PaymentStatus } from "../types/payment";
+import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+  createNoIndexMeta(
+    data?.payment?.id
+      ? `Paiement #${data.payment.id.slice(0, 8)} - Admin`
+      : "Paiement - Admin",
+  );
 
 interface LoaderData {
   payment: Payment | null;
@@ -26,7 +48,7 @@ interface LoaderData {
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   await requireAdmin({ context });
-  
+
   const paymentId = params.paymentId;
   if (!paymentId) {
     throw new Response("Payment ID is required", { status: 400 });
@@ -36,41 +58,47 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     const payment = await getPaymentById(paymentId);
     return json<LoaderData>({ payment });
   } catch (error) {
-    console.error("❌ Error loading payment:", error);
+    logger.error("❌ Error loading payment:", error);
     return json<LoaderData>({ payment: null });
   }
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
   await requireAdmin({ context });
-  
+
   const formData = await request.formData();
-  const action = formData.get('action');
-  const paymentId = formData.get('paymentId') as string;
-  
+  const action = formData.get("action");
+  const paymentId = formData.get("paymentId") as string;
+
   try {
-    if (action === 'refund') {
-      const amount = parseFloat(formData.get('amount') as string);
-      const reason = formData.get('reason') as string;
-      
+    if (action === "refund") {
+      const amount = parseFloat(formData.get("amount") as string);
+      const reason = formData.get("reason") as string;
+
       await processRefund(paymentId, amount, reason);
-      
-      return json({ 
-        success: true, 
-        message: 'Remboursement traité avec succès' 
+
+      return json({
+        success: true,
+        message: "Remboursement traité avec succès",
       });
     }
-    
-    return json({ 
-      success: false, 
-      message: 'Action non reconnue' 
-    }, { status: 400 });
+
+    return json(
+      {
+        success: false,
+        message: "Action non reconnue",
+      },
+      { status: 400 },
+    );
   } catch (error) {
-    console.error("❌ Error processing action:", error);
-    return json({ 
-      success: false, 
-      message: 'Erreur lors du traitement de l\'action' 
-    }, { status: 500 });
+    logger.error("❌ Error processing action:", error);
+    return json(
+      {
+        success: false,
+        message: "Erreur lors du traitement de l'action",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -79,8 +107,8 @@ export default function AdminPaymentDetail() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const [showRefundModal, setShowRefundModal] = useState(false);
-  const [refundAmount, setRefundAmount] = useState('');
-  const [refundReason, setRefundReason] = useState('');
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
 
   if (!payment) {
     return (
@@ -93,7 +121,7 @@ export default function AdminPaymentDetail() {
             Le paiement demandé n'existe pas ou n'est plus accessible.
           </p>
           <button
-            onClick={() => navigate('/admin/payments/dashboard')}
+            onClick={() => navigate("/admin/payments/dashboard")}
             className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -124,35 +152,36 @@ export default function AdminPaymentDetail() {
 
   const getStatusBadge = (status: PaymentStatus) => {
     const badges = {
-      [PaymentStatus.COMPLETED]: 'bg-success/20 text-success',
-      [PaymentStatus.PENDING]: 'bg-warning/20 text-warning',
-      [PaymentStatus.PROCESSING]: 'bg-info/20 text-info',
-      [PaymentStatus.FAILED]: 'bg-destructive/20 text-destructive',
-      [PaymentStatus.CANCELLED]: 'bg-gray-100 text-gray-800',
-      [PaymentStatus.REFUNDED]: 'bg-purple-100 text-purple-800',
+      [PaymentStatus.COMPLETED]: "bg-success/20 text-success",
+      [PaymentStatus.PENDING]: "bg-warning/20 text-warning",
+      [PaymentStatus.PROCESSING]: "bg-info/20 text-info",
+      [PaymentStatus.FAILED]: "bg-destructive/20 text-destructive",
+      [PaymentStatus.CANCELLED]: "bg-gray-100 text-gray-800",
+      [PaymentStatus.REFUNDED]: "bg-purple-100 text-purple-800",
     };
 
-    return badges[status] || 'bg-gray-100 text-gray-800';
+    return badges[status] || "bg-gray-100 text-gray-800";
   };
 
   const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(dateString));
   };
 
-  const canRefund = payment.status === PaymentStatus.COMPLETED && !payment.refundedAt;
+  const canRefund =
+    payment.status === PaymentStatus.COMPLETED && !payment.refundedAt;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -163,7 +192,7 @@ export default function AdminPaymentDetail() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <button
-                  onClick={() => navigate('/admin/payments/dashboard')}
+                  onClick={() => navigate("/admin/payments/dashboard")}
                   className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -178,10 +207,12 @@ export default function AdminPaymentDetail() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 {getStatusIcon(payment.status)}
-                <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(payment.status)}`}>
+                <span
+                  className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(payment.status)}`}
+                >
                   {payment.status}
                 </span>
               </div>
@@ -192,10 +223,8 @@ export default function AdminPaymentDetail() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           {/* Informations principales */}
           <div className="lg:col-span-2 space-y-6">
-            
             {/* Détails du paiement */}
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -210,7 +239,7 @@ export default function AdminPaymentDetail() {
                       ID Transaction
                     </label>
                     <p className="mt-1 text-sm text-gray-900 font-mono">
-                      {payment.transactionId || 'N/A'}
+                      {payment.transactionId || "N/A"}
                     </p>
                   </div>
                   <div>
@@ -284,13 +313,15 @@ export default function AdminPaymentDetail() {
                     <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-1" />
                     <div>
                       <p className="text-sm text-gray-900">
-                        {payment.billingAddress.firstName} {payment.billingAddress.lastName}
+                        {payment.billingAddress.firstName}{" "}
+                        {payment.billingAddress.lastName}
                       </p>
                       <p className="text-sm text-gray-600">
                         {payment.billingAddress.street}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {payment.billingAddress.postalCode} {payment.billingAddress.city}
+                        {payment.billingAddress.postalCode}{" "}
+                        {payment.billingAddress.city}
                       </p>
                       <p className="text-sm text-gray-600">
                         {payment.billingAddress.country}
@@ -332,7 +363,7 @@ export default function AdminPaymentDetail() {
                         </div>
                       </div>
                     </li>
-                    
+
                     {payment.processedAt && (
                       <li>
                         <div className="relative">
@@ -364,14 +395,12 @@ export default function AdminPaymentDetail() {
 
           {/* Actions */}
           <div className="space-y-6">
-            
             {/* Actions principales */}
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">Actions</h3>
               </div>
               <div className="px-6 py-4 space-y-3">
-                
                 {canRefund && (
                   <button
                     onClick={() => setShowRefundModal(true)}
@@ -381,12 +410,12 @@ export default function AdminPaymentDetail() {
                     Rembourser
                   </button>
                 )}
-                
+
                 <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                   <Download className="h-4 w-4 mr-2" />
                   Télécharger reçu
                 </button>
-                
+
                 <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                   <User className="h-4 w-4 mr-2" />
                   Voir le client
@@ -410,7 +439,7 @@ export default function AdminPaymentDetail() {
                     {payment.id}
                   </p>
                 </div>
-                
+
                 {payment.gatewayTransactionId && (
                   <div>
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -421,7 +450,7 @@ export default function AdminPaymentDetail() {
                     </p>
                   </div>
                 )}
-                
+
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Devise
@@ -444,13 +473,16 @@ export default function AdminPaymentDetail() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Traiter un Remboursement
               </h3>
-              
+
               <Form method="post" className="space-y-4">
                 <input type="hidden" name="action" value="refund" />
                 <input type="hidden" name="paymentId" value={payment.id} />
-                
+
                 <div className="text-left">
-                  <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="amount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Montant à rembourser
                   </label>
                   <input
@@ -466,9 +498,12 @@ export default function AdminPaymentDetail() {
                     required
                   />
                 </div>
-                
+
                 <div className="text-left">
-                  <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="reason"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Raison du remboursement
                   </label>
                   <textarea
@@ -482,7 +517,7 @@ export default function AdminPaymentDetail() {
                     required
                   />
                 </div>
-                
+
                 <div className="flex space-x-3 pt-4">
                   <button
                     type="button"
@@ -491,8 +526,18 @@ export default function AdminPaymentDetail() {
                   >
                     Annuler
                   </button>
-                  <Button className="flex-1 px-4 py-2  rounded-md disabled:opacity-50" variant="red" type="submit"
-                    disabled={navigation.state === 'submitting'}>\n  {navigation.state === 'submitting' ? 'Traitement...' : 'Rembourser'}\n</Button>
+                  <Button
+                    className="flex-1 px-4 py-2  rounded-md disabled:opacity-50"
+                    variant="red"
+                    type="submit"
+                    disabled={navigation.state === "submitting"}
+                  >
+                    \n{" "}
+                    {navigation.state === "submitting"
+                      ? "Traitement..."
+                      : "Rembourser"}
+                    \n
+                  </Button>
                 </div>
               </Form>
             </div>

@@ -44,6 +44,7 @@ import {
 } from "../components/ui/card";
 import { Alert, Badge } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -59,7 +60,7 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async () => {
   try {
-    console.log("📊 Chargement des statistiques du dashboard...");
+    logger.log("📊 Chargement des statistiques du dashboard...");
 
     // Initialiser les stats par défaut
     let stats = {
@@ -130,7 +131,7 @@ export const loader: LoaderFunction = async () => {
       );
       if (unifiedResponse.ok) {
         const unifiedData = await unifiedResponse.json();
-        console.log("✅ API Dashboard unifiée disponible");
+        logger.log("✅ API Dashboard unifiée disponible");
         // Merger les données unifiées avec les stats par défaut
         if (unifiedData.success || unifiedData.totalUsers !== undefined) {
           stats = {
@@ -150,7 +151,7 @@ export const loader: LoaderFunction = async () => {
         apiErrors.push("Dashboard unifié non disponible");
       }
     } catch (error) {
-      console.log(
+      logger.log(
         "📊 API Dashboard unifiée non disponible, fallback vers APIs individuelles",
       );
       apiErrors.push("API Dashboard unifiée");
@@ -175,7 +176,7 @@ export const loader: LoaderFunction = async () => {
         }
       }
     } catch (error) {
-      console.log("📊 API reports non disponible");
+      logger.log("📊 API reports non disponible");
       apiErrors.push("API Reports");
     }
 
@@ -195,7 +196,7 @@ export const loader: LoaderFunction = async () => {
         apiErrors.push("API Produits");
       }
     } catch (error) {
-      console.log("📦 API produits non disponible");
+      logger.log("📦 API produits non disponible");
       apiErrors.push("API Produits");
     }
 
@@ -218,7 +219,7 @@ export const loader: LoaderFunction = async () => {
         apiErrors.push("API SEO");
       }
     } catch (seoError) {
-      console.log("📈 Statistiques SEO par défaut utilisées");
+      logger.log("📈 Statistiques SEO par défaut utilisées");
       apiErrors.push("API SEO");
     }
 
@@ -241,7 +242,7 @@ export const loader: LoaderFunction = async () => {
       apiErrors.push("API Health");
     }
 
-    console.log("✅ Stats du dashboard chargées:", {
+    logger.log("✅ Stats du dashboard chargées:", {
       users: stats.totalUsers,
       products: stats.totalProducts,
       systemStatus: stats.systemHealth.status,
@@ -254,7 +255,7 @@ export const loader: LoaderFunction = async () => {
       hasErrors: apiErrors.length > 0,
     });
   } catch (error) {
-    console.error("❌ Erreur critique dashboard:", error);
+    logger.error("❌ Erreur critique dashboard:", error);
     return json({
       stats: {
         totalUsers: 0,
@@ -347,7 +348,7 @@ export default function AdminDashboard() {
           setLastUpdate(new Date());
         }
       } catch (error) {
-        console.log("Erreur mise à jour temps réel:", error);
+        logger.log("Erreur mise à jour temps réel:", error);
       }
     }, 30000);
 

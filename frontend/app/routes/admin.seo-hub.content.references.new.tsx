@@ -9,6 +9,7 @@ import {
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -40,6 +41,8 @@ import { Switch } from "~/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface Gamme {
   pgId: number;
@@ -56,6 +59,9 @@ interface LoaderData {
   gammes: Gamme[];
   r5Slugs: R5Slug[];
 }
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Nouvelle Référence - Admin");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -80,7 +86,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       r5Slugs: r5Data.data || [],
     });
   } catch (error) {
-    console.error("[R4 New] Loader error:", error);
+    logger.error("[R4 New] Loader error:", error);
     return json<LoaderData>({
       gammes: [],
       r5Slugs: [],
@@ -168,7 +174,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(`/admin/seo-hub/content/references/${slug}`);
   } catch (error) {
-    console.error("[R4 New] Action error:", error);
+    logger.error("[R4 New] Action error:", error);
     return json({ success: false, errors: ["Erreur serveur"] });
   }
 }

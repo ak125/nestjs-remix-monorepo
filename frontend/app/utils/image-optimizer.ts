@@ -23,6 +23,8 @@
  *
  * ⚠️ CSP: Le domaine DOMAIN doit être dans backend/src/config/csp.config.ts → IMAGE_DOMAINS
  */
+import { logger } from "~/utils/logger";
+
 export const IMAGE_CONFIG = {
   // Base URLs
   PROXY_BASE: "/img", // Caddy proxy (prod+dev)
@@ -547,26 +549,26 @@ export function compareImageSizes(imagePath: string): {
  * 🧪 MODE DEBUG - Affiche les URLs générées
  */
 export function debugImageUrls(imagePath: string): void {
-  console.group("🖼️ Image URLs Debug");
-  console.log(
+  logger.log("🖼️ Image URLs Debug");
+  logger.log(
     "Proxy 400px:",
     ImageOptimizer.getOptimizedUrl(imagePath, { width: 400 }),
   );
-  console.log(
+  logger.log(
     "Proxy 800px:",
     ImageOptimizer.getOptimizedUrl(imagePath, { width: 800 }),
   );
-  console.log(
+  logger.log(
     "Proxy 1200px:",
     ImageOptimizer.getOptimizedUrl(imagePath, { width: 1200 }),
   );
-  console.log("Proxy Original:", ImageOptimizer.getOriginalUrl(imagePath));
-  console.log(
+  logger.log("Proxy Original:", ImageOptimizer.getOriginalUrl(imagePath));
+  logger.log(
     "Direct Supabase:",
     ImageOptimizer.getDirectSupabaseUrl(imagePath),
   );
-  console.log("SrcSet:", ImageOptimizer.getResponsiveSrcSet(imagePath));
-  console.groupEnd();
+  logger.log("SrcSet:", ImageOptimizer.getResponsiveSrcSet(imagePath));
+  logger.log("--- End Image URLs Debug ---");
 }
 
 // Export par défaut

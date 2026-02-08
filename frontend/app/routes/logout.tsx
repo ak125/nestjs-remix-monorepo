@@ -2,12 +2,13 @@ import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const action = async ({
   request,
   context: _context,
 }: ActionFunctionArgs) => {
-  console.log("--- Remix Logout Action ---");
+  logger.log("--- Remix Logout Action ---");
 
   try {
     // Faire un POST vers le backend pour déconnecter
@@ -20,11 +21,7 @@ export const action = async ({
       },
     });
 
-    console.log(
-      "Réponse backend logout:",
-      response.status,
-      response.statusText,
-    );
+    logger.log("Réponse backend logout:", response.status, response.statusText);
 
     // Récupérer les headers de réponse pour les cookies
     const setCookieHeader = response.headers.get("Set-Cookie");
@@ -38,7 +35,7 @@ export const action = async ({
         : undefined,
     });
   } catch (error) {
-    console.error("Erreur lors du logout:", error);
+    logger.error("Erreur lors du logout:", error);
     // En cas d'erreur, rediriger quand même
     return redirect("/");
   }

@@ -1,6 +1,6 @@
 /**
  * useConversionTracking - Hook analytics pour optimisation conversion
- * 
+ *
  * Fonctionnalités:
  * - Track clics CTA avec contexte
  * - Mesure temps avant conversion
@@ -8,11 +8,11 @@
  * - Heatmap data (coordonnées clics)
  * - Funnel tracking (étapes parcours)
  * - Session replay metadata
- * 
+ *
  * @example
  * ```tsx
  * const { trackCTAClick, trackConversion, startFunnel } = useConversionTracking();
- * 
+ *
  * // Track CTA
  * <button onClick={(e) => {
  *   trackCTAClick('add-to-cart', { productId: '123' }, e);
@@ -20,13 +20,22 @@
  * }}>
  *   Ajouter au panier
  * </button>
- * 
+ *
  * // Track conversion
  * trackConversion('purchase', { orderId, total, items });
  * ```
  */
 
-import { useState, useEffect, useCallback, useRef, createContext, useContext, type ReactNode } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  createContext,
+  useContext,
+  type ReactNode,
+} from "react";
+import { logger } from "~/utils/logger";
 
 // ============================================================================
 // TYPES
@@ -34,23 +43,23 @@ import { useState, useEffect, useCallback, useRef, createContext, useContext, ty
 
 export interface ConversionEvent {
   /** Type d'événement */
-  type: 'cta_click' | 'conversion' | 'funnel_step' | 'abandonment';
-  
+  type: "cta_click" | "conversion" | "funnel_step" | "abandonment";
+
   /** Label de l'action */
   label: string;
-  
+
   /** Timestamp */
   timestamp: number;
-  
+
   /** Métadonnées */
   metadata?: Record<string, unknown>;
-  
+
   /** Coordonnées clic (heatmap) */
   clickPosition?: { x: number; y: number };
-  
+
   /** Temps depuis début session (ms) */
   timeInSession?: number;
-  
+
   /** Variant A/B test */
   variant?: string;
 }
@@ -58,16 +67,16 @@ export interface ConversionEvent {
 export interface FunnelStep {
   /** Nom de l'étape */
   step: string;
-  
+
   /** Timestamp entrée */
   enteredAt: number;
-  
+
   /** Timestamp sortie */
   exitedAt?: number;
-  
+
   /** Durée dans l'étape (ms) */
   duration?: number;
-  
+
   /** Complétée ou abandonnée */
   completed: boolean;
 }
@@ -75,25 +84,25 @@ export interface FunnelStep {
 export interface ConversionSession {
   /** ID session */
   sessionId: string;
-  
+
   /** Timestamp début */
   startedAt: number;
-  
+
   /** Variant A/B test */
   abVariant?: string;
-  
+
   /** Événements */
   events: ConversionEvent[];
-  
+
   /** Funnel actif */
   funnel?: FunnelStep[];
-  
+
   /** Converti (oui/non) */
   converted: boolean;
-  
+
   /** Temps avant conversion (ms) */
   timeToConversion?: number;
-  
+
   /** Valeur conversion */
   conversionValue?: number;
 }
@@ -101,22 +110,22 @@ export interface ConversionSession {
 export interface UseConversionTrackingOptions {
   /** ID session personnalisé */
   sessionId?: string;
-  
+
   /** Variant A/B test */
   abVariant?: string;
-  
+
   /** Activer heatmap tracking */
   enableHeatmap?: boolean;
-  
+
   /** Activer funnel tracking */
   enableFunnel?: boolean;
-  
+
   /** Provider analytics (GA4, Mixpanel, custom) */
-  provider?: 'gtag' | 'mixpanel' | 'plausible' | 'custom';
-  
+  provider?: "gtag" | "mixpanel" | "plausible" | "custom";
+
   /** Callback custom pour événements */
   onEvent?: (event: ConversionEvent) => void;
-  
+
   /** Debug mode */
   debug?: boolean;
 }
@@ -125,13 +134,15 @@ export interface UseConversionTrackingOptions {
 // HOOK PRINCIPAL
 // ============================================================================
 
-export function useConversionTracking(options: UseConversionTrackingOptions = {}) {
+export function useConversionTracking(
+  options: UseConversionTrackingOptions = {},
+) {
   const {
     sessionId: customSessionId,
     abVariant,
     enableHeatmap = true,
     enableFunnel = true,
-    provider = 'gtag',
+    provider = "gtag",
     onEvent,
     debug = false,
   } = options;
@@ -141,7 +152,7 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
   // ========================================
   // SSR-safe: Initialize with placeholder values, hydrate in useEffect
   const [session, setSession] = useState<ConversionSession>({
-    sessionId: '',
+    sessionId: "",
     startedAt: 0,
     abVariant,
     events: [],
@@ -155,7 +166,7 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
   useEffect(() => {
     const now = Date.now();
     sessionStartRef.current = now;
-    setSession(prev => ({
+    setSession((prev) => ({
       ...prev,
       sessionId: customSessionId || generateSessionId(),
       startedAt: now,
@@ -166,14 +177,14 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
   // PERSISTANCE (LOCALSTORAGE)
   // ========================================
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Sauvegarder session
     const saveSession = () => {
       try {
-        sessionStorage.setItem('conversionSession', JSON.stringify(session));
+        sessionStorage.setItem("conversionSession", JSON.stringify(session));
       } catch (err) {
-        if (debug) console.error('Failed to save session:', err);
+        if (debug) logger.error("Failed to save session:", err);
       }
     };
 
@@ -187,17 +198,18 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
     (
       label: string,
       metadata?: Record<string, unknown>,
-      mouseEvent?: React.MouseEvent<HTMLElement>
+      mouseEvent?: React.MouseEvent<HTMLElement>,
     ) => {
-      const clickPosition = enableHeatmap && mouseEvent
-        ? {
-            x: mouseEvent.clientX,
-            y: mouseEvent.clientY,
-          }
-        : undefined;
+      const clickPosition =
+        enableHeatmap && mouseEvent
+          ? {
+              x: mouseEvent.clientX,
+              y: mouseEvent.clientY,
+            }
+          : undefined;
 
       const event: ConversionEvent = {
-        type: 'cta_click',
+        type: "cta_click",
         label,
         timestamp: Date.now(),
         timeInSession: Date.now() - sessionStartRef.current,
@@ -219,10 +231,10 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       if (onEvent) onEvent(event);
 
       if (debug) {
-        console.log('[ConversionTracking] CTA Click:', event);
+        logger.log("[ConversionTracking] CTA Click:", event);
       }
     },
-    [enableHeatmap, session.abVariant, provider, onEvent, debug]
+    [enableHeatmap, session.abVariant, provider, onEvent, debug],
   );
 
   // ========================================
@@ -233,7 +245,7 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       const timeToConversion = Date.now() - sessionStartRef.current;
 
       const event: ConversionEvent = {
-        type: 'conversion',
+        type: "conversion",
         label,
         timestamp: Date.now(),
         timeInSession: timeToConversion,
@@ -256,13 +268,13 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       if (onEvent) onEvent(event);
 
       if (debug) {
-        console.log('[ConversionTracking] Conversion:', {
+        logger.log("[ConversionTracking] Conversion:", {
           ...event,
           timeToConversion: `${(timeToConversion / 1000).toFixed(1)}s`,
         });
       }
     },
-    [session.abVariant, provider, onEvent, debug]
+    [session.abVariant, provider, onEvent, debug],
   );
 
   // ========================================
@@ -282,10 +294,10 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       }));
 
       if (debug) {
-        console.log('[ConversionTracking] Funnel started:', steps);
+        logger.log("[ConversionTracking] Funnel started:", steps);
       }
     },
-    [enableFunnel, debug]
+    [enableFunnel, debug],
   );
 
   const enterFunnelStep = useCallback(
@@ -312,7 +324,7 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       currentFunnelStepRef.current = stepName;
 
       const event: ConversionEvent = {
-        type: 'funnel_step',
+        type: "funnel_step",
         label: `entered_${stepName}`,
         timestamp: now,
         timeInSession: now - sessionStartRef.current,
@@ -322,10 +334,10 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       sendToProvider(provider, event, debug);
 
       if (debug) {
-        console.log('[ConversionTracking] Entered funnel step:', stepName);
+        logger.log("[ConversionTracking] Entered funnel step:", stepName);
       }
     },
-    [enableFunnel, session.abVariant, provider, debug]
+    [enableFunnel, session.abVariant, provider, debug],
   );
 
   const completeFunnelStep = useCallback(
@@ -357,7 +369,7 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       currentFunnelStepRef.current = null;
 
       const event: ConversionEvent = {
-        type: 'funnel_step',
+        type: "funnel_step",
         label: `completed_${stepName}`,
         timestamp: now,
         timeInSession: now - sessionStartRef.current,
@@ -367,10 +379,10 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       sendToProvider(provider, event, debug);
 
       if (debug) {
-        console.log('[ConversionTracking] Completed funnel step:', stepName);
+        logger.log("[ConversionTracking] Completed funnel step:", stepName);
       }
     },
-    [enableFunnel, session.abVariant, provider, debug]
+    [enableFunnel, session.abVariant, provider, debug],
   );
 
   const abandonFunnel = useCallback(
@@ -378,8 +390,8 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       if (!enableFunnel) return;
 
       const event: ConversionEvent = {
-        type: 'abandonment',
-        label: 'funnel_abandoned',
+        type: "abandonment",
+        label: "funnel_abandoned",
         timestamp: Date.now(),
         timeInSession: Date.now() - sessionStartRef.current,
         variant: session.abVariant,
@@ -392,10 +404,10 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       sendToProvider(provider, event, debug);
 
       if (debug) {
-        console.log('[ConversionTracking] Funnel abandoned:', reason);
+        logger.log("[ConversionTracking] Funnel abandoned:", reason);
       }
     },
-    [enableFunnel, session.abVariant, provider, debug]
+    [enableFunnel, session.abVariant, provider, debug],
   );
 
   // ========================================
@@ -403,8 +415,12 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
   // ========================================
   const getSessionStats = useCallback(() => {
     const totalEvents = session.events.length;
-    const ctaClicks = session.events.filter((e) => e.type === 'cta_click').length;
-    const conversions = session.events.filter((e) => e.type === 'conversion').length;
+    const ctaClicks = session.events.filter(
+      (e) => e.type === "cta_click",
+    ).length;
+    const conversions = session.events.filter(
+      (e) => e.type === "conversion",
+    ).length;
     const sessionDuration = Date.now() - sessionStartRef.current;
 
     return {
@@ -418,7 +434,9 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
       converted: session.converted,
       conversionValue: session.conversionValue,
       funnelCompletion: session.funnel
-        ? (session.funnel.filter((s) => s.completed).length / session.funnel.length) * 100
+        ? (session.funnel.filter((s) => s.completed).length /
+            session.funnel.length) *
+          100
         : 0,
     };
   }, [session]);
@@ -430,13 +448,13 @@ export function useConversionTracking(options: UseConversionTrackingOptions = {}
     // Core tracking
     trackCTAClick,
     trackConversion,
-    
+
     // Funnel tracking
     startFunnel,
     enterFunnelStep,
     completeFunnelStep,
     abandonFunnel,
-    
+
     // Getters
     getSessionStats,
     session,
@@ -452,17 +470,17 @@ function generateSessionId(): string {
 }
 
 function sendToProvider(
-  provider: UseConversionTrackingOptions['provider'],
+  provider: UseConversionTrackingOptions["provider"],
   event: ConversionEvent,
-  debug?: boolean
+  debug?: boolean,
 ) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   try {
     switch (provider) {
-      case 'gtag':
+      case "gtag":
         if ((window as any).gtag) {
-          (window as any).gtag('event', event.type, {
+          (window as any).gtag("event", event.type, {
             event_label: event.label,
             variant: event.variant,
             ...event.metadata,
@@ -470,7 +488,7 @@ function sendToProvider(
         }
         break;
 
-      case 'mixpanel':
+      case "mixpanel":
         if ((window as any).mixpanel) {
           (window as any).mixpanel.track(event.type, {
             label: event.label,
@@ -481,7 +499,7 @@ function sendToProvider(
         }
         break;
 
-      case 'plausible':
+      case "plausible":
         if ((window as any).plausible) {
           (window as any).plausible(event.label, {
             props: {
@@ -493,18 +511,18 @@ function sendToProvider(
         }
         break;
 
-      case 'custom':
+      case "custom":
         // Utiliser onEvent callback
         break;
 
       default:
         if (debug) {
-          console.warn('[ConversionTracking] Unknown provider:', provider);
+          logger.warn("[ConversionTracking] Unknown provider:", provider);
         }
     }
   } catch (err) {
     if (debug) {
-      console.error('[ConversionTracking] Provider error:', err);
+      logger.error("[ConversionTracking] Provider error:", err);
     }
   }
 }
@@ -520,7 +538,6 @@ export function useABTest(testName: string, variants: string[]): string {
   // Use JSON.stringify for stable dependency comparison (avoid infinite loop)
   const variantsKey = JSON.stringify(variants);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- variantsKey is derived from variants, using variants directly causes infinite loop
   useEffect(() => {
     // Vérifier si variant déjà assigné
     const stored = sessionStorage.getItem(`ab_test_${testName}`);
@@ -533,6 +550,7 @@ export function useABTest(testName: string, variants: string[]): string {
     const randomVariant = variants[Math.floor(Math.random() * variants.length)];
     sessionStorage.setItem(`ab_test_${testName}`, randomVariant);
     setVariant(randomVariant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- variantsKey is derived from variants, using variants directly causes infinite loop
   }, [testName, variantsKey]);
 
   return variant;
@@ -543,7 +561,9 @@ export function useABTest(testName: string, variants: string[]): string {
 // ============================================================================
 
 export function useHeatmapTracking() {
-  const clicksRef = useRef<Array<{ x: number; y: number; timestamp: number }>>([]);
+  const clicksRef = useRef<Array<{ x: number; y: number; timestamp: number }>>(
+    [],
+  );
 
   const trackClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
     clicksRef.current.push({
@@ -578,16 +598,19 @@ export function useHeatmapTracking() {
 // ============================================================================
 
 interface ConversionTrackingContextValue {
-  trackCTAClick: ReturnType<typeof useConversionTracking>['trackCTAClick'];
-  trackConversion: ReturnType<typeof useConversionTracking>['trackConversion'];
-  startFunnel: ReturnType<typeof useConversionTracking>['startFunnel'];
-  enterFunnelStep: ReturnType<typeof useConversionTracking>['enterFunnelStep'];
-  completeFunnelStep: ReturnType<typeof useConversionTracking>['completeFunnelStep'];
-  abandonFunnel: ReturnType<typeof useConversionTracking>['abandonFunnel'];
-  getSessionStats: ReturnType<typeof useConversionTracking>['getSessionStats'];
+  trackCTAClick: ReturnType<typeof useConversionTracking>["trackCTAClick"];
+  trackConversion: ReturnType<typeof useConversionTracking>["trackConversion"];
+  startFunnel: ReturnType<typeof useConversionTracking>["startFunnel"];
+  enterFunnelStep: ReturnType<typeof useConversionTracking>["enterFunnelStep"];
+  completeFunnelStep: ReturnType<
+    typeof useConversionTracking
+  >["completeFunnelStep"];
+  abandonFunnel: ReturnType<typeof useConversionTracking>["abandonFunnel"];
+  getSessionStats: ReturnType<typeof useConversionTracking>["getSessionStats"];
 }
 
-const ConversionTrackingContext = createContext<ConversionTrackingContextValue | null>(null);
+const ConversionTrackingContext =
+  createContext<ConversionTrackingContextValue | null>(null);
 
 export function ConversionTrackingProvider({
   children,
@@ -608,7 +631,9 @@ export function ConversionTrackingProvider({
 export function useConversionTrackingContext() {
   const context = useContext(ConversionTrackingContext);
   if (!context) {
-    throw new Error('useConversionTrackingContext must be used within ConversionTrackingProvider');
+    throw new Error(
+      "useConversionTrackingContext must be used within ConversionTrackingProvider",
+    );
   }
   return context;
 }

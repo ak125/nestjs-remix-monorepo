@@ -5,7 +5,12 @@
  * Route: /commercial/vehicles/brands/$brandId/models
  */
 
-import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Settings, Search } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
@@ -19,6 +24,11 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Modeles par Marque - Commercial");
 
 interface Model {
   modele_id: number;
@@ -93,7 +103,7 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
 
     return json({ models, brand } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement modèles:", error);
+    logger.error("Erreur chargement modèles:", error);
     return json({
       models: [],
       brand: null,

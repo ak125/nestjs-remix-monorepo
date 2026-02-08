@@ -29,6 +29,7 @@ import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -152,7 +153,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         popularModels = modelsData.data || [];
       }
     } catch (error) {
-      console.error("Erreur chargement modèles populaires:", error);
+      logger.error("Erreur chargement modèles populaires:", error);
     }
 
     // ✨ Récupérer les logos de marques
@@ -169,7 +170,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         brandLogos = logosData.data || [];
       }
     } catch (error) {
-      console.error("Erreur chargement logos:", error);
+      logger.error("Erreur chargement logos:", error);
     }
 
     return json({
@@ -179,7 +180,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brandLogos,
     } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement marques:", error);
+    logger.error("Erreur chargement marques:", error);
     return json({
       brands: [],
       total: 0,

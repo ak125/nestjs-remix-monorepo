@@ -7,7 +7,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import React, { useEffect } from "react";
+import React, { useEffect, memo } from "react";
 
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
 import {
@@ -24,7 +24,7 @@ interface PiecesCrossSellingProps {
  * Composant Cross-Selling avec gammes complémentaires
  * URLs FORMAT: /pieces/{gamme}/{marque}/{modele}/{type}.html
  */
-export function PiecesCrossSelling({
+export const PiecesCrossSelling = memo(function PiecesCrossSelling({
   gammes,
   vehicle,
 }: PiecesCrossSellingProps) {
@@ -213,102 +213,104 @@ export function PiecesCrossSelling({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Version compacte pour sidebar (optionnelle)
  */
-export function PiecesCrossSellingCompact({
-  gammes,
-  vehicle,
-}: PiecesCrossSellingProps) {
-  if (gammes.length === 0) return null;
+export const PiecesCrossSellingCompact = memo(
+  function PiecesCrossSellingCompact({
+    gammes,
+    vehicle,
+  }: PiecesCrossSellingProps) {
+    if (gammes.length === 0) return null;
 
-  // Limiter à 5 gammes max pour version compacte
-  const limitedGammes = gammes.slice(0, 5);
+    // Limiter à 5 gammes max pour version compacte
+    const limitedGammes = gammes.slice(0, 5);
 
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="bg-gradient-to-r from-teal-50 to-cyan-50 px-4 py-3 border-b border-teal-200">
-        <h3 className="text-sm font-bold text-teal-900 flex items-center gap-2">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-            />
-          </svg>
-          Autres pièces
-        </h3>
-      </div>
-
-      <div className="p-3 space-y-2">
-        {limitedGammes.map((gamme) => {
-          // ⚠️ CRITIQUE: Construction URL préservée
-          // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
-          const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
-
-          return (
-            <Link
-              key={gamme.PG_ID}
-              to={url}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors group"
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 px-4 py-3 border-b border-teal-200">
+          <h3 className="text-sm font-bold text-teal-900 flex items-center gap-2">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                {gamme.PG_IMAGE ? (
-                  <img
-                    src={gamme.PG_IMAGE}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 object-cover rounded"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <svg
-                    className="w-5 h-5 text-teal-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-1">
-                  {gamme.PG_NAME}
-                </div>
-              </div>
-              <svg
-                className="w-4 h-4 text-gray-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+              />
+            </svg>
+            Autres pièces
+          </h3>
+        </div>
+
+        <div className="p-3 space-y-2">
+          {limitedGammes.map((gamme) => {
+            // ⚠️ CRITIQUE: Construction URL préservée
+            // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
+            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
+
+            return (
+              <Link
+                key={gamme.PG_ID}
+                to={url}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors group"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
-          );
-        })}
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  {gamme.PG_IMAGE ? (
+                    <img
+                      src={gamme.PG_IMAGE}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 object-cover rounded"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <svg
+                      className="w-5 h-5 text-teal-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-1">
+                    {gamme.PG_NAME}
+                  </div>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);

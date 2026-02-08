@@ -7,6 +7,7 @@
 
 import { parse, serialize } from "cookie";
 import { normalizeTypeAlias } from "./url-builder.utils";
+import { logger } from "~/utils/logger";
 
 // ========================================
 // 📋 TYPES
@@ -59,13 +60,13 @@ export async function getVehicleFromCookie(
 
     // Validation basique
     if (!vehicle.marque_id || !vehicle.modele_id || !vehicle.type_id) {
-      console.warn("⚠️ Cookie véhicule invalide (IDs manquants)");
+      logger.warn("⚠️ Cookie véhicule invalide (IDs manquants)");
       return null;
     }
 
     return vehicle;
   } catch (error) {
-    console.error("❌ Erreur parsing cookie véhicule:", error);
+    logger.error("❌ Erreur parsing cookie véhicule:", error);
     return null;
   }
 }
@@ -213,7 +214,7 @@ export function storeVehicleClient(
   vehicle: Omit<VehicleCookie, "selected_at">,
 ): void {
   if (typeof document === "undefined") {
-    console.warn("⚠️ storeVehicleClient appelé côté serveur");
+    logger.warn("⚠️ storeVehicleClient appelé côté serveur");
     return;
   }
 
@@ -225,7 +226,7 @@ export function storeVehicleClient(
  */
 export function clearVehicleClient(): void {
   if (typeof document === "undefined") {
-    console.warn("⚠️ clearVehicleClient appelé côté serveur");
+    logger.warn("⚠️ clearVehicleClient appelé côté serveur");
     return;
   }
 

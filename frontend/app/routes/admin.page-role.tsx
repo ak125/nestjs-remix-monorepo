@@ -50,6 +50,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "PageRole Validator | Admin" },
@@ -168,7 +169,7 @@ export default function AdminPageRoleDashboard() {
       const data = await res.json();
       setDetectedRole(data);
     } catch (err) {
-      console.error("Error detecting role:", err);
+      logger.error("Error detecting role:", err);
     } finally {
       setDetectLoading(false);
     }
@@ -186,7 +187,7 @@ export default function AdminPageRoleDashboard() {
       const data = await res.json();
       setValidationResult(data);
     } catch (err) {
-      console.error("Error validating content:", err);
+      logger.error("Error validating content:", err);
     } finally {
       setValidateLoading(false);
     }
@@ -202,7 +203,7 @@ export default function AdminPageRoleDashboard() {
       const data = await res.json();
       setLinkResult(data);
     } catch (err) {
-      console.error("Error checking link:", err);
+      logger.error("Error checking link:", err);
     } finally {
       setLinkLoading(false);
     }

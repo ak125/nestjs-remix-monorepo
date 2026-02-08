@@ -6,7 +6,11 @@
  * avec contenu éducatif et conseils sécurité
  */
 
-import { type VehicleData, type GammeData } from "../../types/pieces-route.types";
+import { memo } from "react";
+import {
+  type VehicleData,
+  type GammeData,
+} from "../../types/pieces-route.types";
 
 interface GroupedPiece {
   oemRefs?: string[];
@@ -27,14 +31,14 @@ interface PiecesOemSectionProps {
  * - Explication éducative "Qu'est-ce qu'une ref OEM ?"
  * - Conseils équivalences et sécurité
  */
-export function PiecesOemSection({
+export const PiecesOemSection = memo(function PiecesOemSection({
   groupedPieces,
   vehicle,
   gamme,
 }: PiecesOemSectionProps) {
   // Ne pas afficher si aucune ref OEM
   const hasOemRefs = groupedPieces?.some(
-    (g) => g.oemRefs && g.oemRefs.length > 0
+    (g) => g.oemRefs && g.oemRefs.length > 0,
   );
 
   if (!hasOemRefs) {
@@ -62,7 +66,8 @@ export function PiecesOemSection({
           Références constructeur (OEM) {vehicle.marque}
         </h2>
         <p className="text-slate-300 text-sm mt-1">
-          Numéros de pièce d'origine pour votre {vehicle.marque} {vehicle.modele}
+          Numéros de pièce d'origine pour votre {vehicle.marque}{" "}
+          {vehicle.modele}
         </p>
       </div>
 
@@ -127,9 +132,9 @@ export function PiecesOemSection({
             </p>
             <p>
               <strong>Pourquoi c'est utile ?</strong> Cette référence vous
-              permet de trouver des pièces équivalentes chez d'autres
-              fabricants (Bosch, TRW, Brembo...) qui respectent les mêmes
-              spécifications techniques que la pièce d'origine.
+              permet de trouver des pièces équivalentes chez d'autres fabricants
+              (Bosch, TRW, Brembo...) qui respectent les mêmes spécifications
+              techniques que la pièce d'origine.
             </p>
           </div>
         </details>
@@ -191,9 +196,9 @@ export function PiecesOemSection({
                   {/* Texte explicatif dynamique */}
                   <p className="text-sm text-gray-600 mb-3">
                     Ces références {vehicle.marque} correspondent aux{" "}
-                    {gamme.name} montées {positionText} de votre {vehicle.modele}
-                    . Utilisez-les pour trouver des équivalences chez nos marques
-                    partenaires.
+                    {gamme.name} montées {positionText} de votre{" "}
+                    {vehicle.modele}. Utilisez-les pour trouver des équivalences
+                    chez nos marques partenaires.
                   </p>
 
                   {/* Liste des refs avec meilleur styling */}
@@ -275,6 +280,6 @@ export function PiecesOemSection({
       </div>
     </section>
   );
-}
+});
 
 export default PiecesOemSection;

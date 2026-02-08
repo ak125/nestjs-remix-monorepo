@@ -8,9 +8,13 @@
  */
 
 import { Star } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 
-import { type GammeData, type PieceData, type VehicleData } from "../../types/pieces-route.types";
+import {
+  type GammeData,
+  type PieceData,
+  type VehicleData,
+} from "../../types/pieces-route.types";
 
 interface SeoSwitches {
   verbs?: Array<{ id: number; content: string }>;
@@ -47,13 +51,16 @@ function getVerb(seoSwitches: SeoSwitches | undefined, index: number): string {
 /**
  * Génère un anchor text dynamique pour une pièce
  */
-function getPieceAnchorText(seoSwitches: SeoSwitches | undefined, index: number): string {
+function getPieceAnchorText(
+  seoSwitches: SeoSwitches | undefined,
+  index: number,
+): string {
   const verb = getVerb(seoSwitches, index + 1); // Offset pour varier
   const suffix = PIECE_SUFFIXES[index % PIECE_SUFFIXES.length];
   return `${verb} ${suffix}`;
 }
 
-export function PiecesRecommendedSection({
+export const PiecesRecommendedSection = memo(function PiecesRecommendedSection({
   pieces,
   visible,
   seoSwitches,
@@ -87,9 +94,7 @@ export function PiecesRecommendedSection({
             <div className="font-medium text-gray-900 mb-1 line-clamp-2">
               {piece.name}
             </div>
-            <div className="text-sm text-gray-600 mb-2">
-              {piece.brand}
-            </div>
+            <div className="text-sm text-gray-600 mb-2">{piece.brand}</div>
             <div className="flex items-center justify-between">
               <div className="text-lg font-bold text-blue-600">
                 {piece.priceFormatted}€
@@ -103,4 +108,4 @@ export function PiecesRecommendedSection({
       </div>
     </div>
   );
-}
+});

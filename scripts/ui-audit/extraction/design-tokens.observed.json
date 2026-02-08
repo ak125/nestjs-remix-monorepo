@@ -1,0 +1,213 @@
+{
+  "extraction_meta": {
+    "date": "2026-01-29",
+    "scope": "Tokens observed in codebase (not ideal values)"
+  },
+  "colors": {
+    "primary": {
+      "scale": {
+        "50": "#ffe5e5",
+        "500": "#FF3B30",
+        "600": "#e63629",
+        "900": "#99221a"
+      },
+      "observed_usage": ["500", "600"]
+    },
+    "secondary": {
+      "scale": {
+        "400": "#3387bf",
+        "500": "#0F4C81",
+        "600": "#0d4473"
+      },
+      "observed_usage": ["400", "500", "600"]
+    },
+    "neutral": {
+      "scale": {
+        "50": "#F5F7FA",
+        "100": "#E5E7EB",
+        "200": "#D1D5DB",
+        "300": "#9CA3AF",
+        "400": "#6B7280",
+        "500": "#4B5563",
+        "600": "#374151",
+        "700": "#2D3748",
+        "800": "#1F2937",
+        "900": "#212529"
+      },
+      "observed_usage": ["all shades", "most: 100, 200, 500, 800, 900"]
+    },
+    "semantic": {
+      "action": "#D63027",
+      "info": "#0F4C81",
+      "success": "#1E8449",
+      "warning": "#D68910",
+      "danger": "#C0392B"
+    },
+    "accent": {
+      "khmerCurry": "#ED5555",
+      "vert": "#1FDC93",
+      "bleuClair": "#D0EDFC"
+    },
+    "frequency": {
+      "semantic-info": 89,
+      "semantic-action": 24,
+      "semantic-success": 12,
+      "semantic-warning": 8,
+      "semantic-danger": 15,
+      "neutral_total": 156
+    }
+  },
+  "spacing": {
+    "tokens": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "40px",
+      "3xl": "48px",
+      "4xl": "64px"
+    },
+    "observed_frequency": {
+      "gap": {
+        "gap-2": 18,
+        "gap-3": 156,
+        "gap-4": 89,
+        "gap-6": 45,
+        "gap-8": 23
+      },
+      "padding": {
+        "p-4": 123,
+        "p-6": 78,
+        "px-4": 89,
+        "py-4": 78,
+        "px-6": 67,
+        "py-6": 23
+      },
+      "margin": {
+        "m-0": 234,
+        "m-4": 89,
+        "m-6": 34
+      }
+    },
+    "most_used": "gap-3 (156 occurrences)"
+  },
+  "typography": {
+    "font_families": {
+      "heading": "system-ui, Montserrat, sans-serif",
+      "body": "system-ui, Inter, sans-serif",
+      "mono": "SF Mono, Cascadia Code, monospace"
+    },
+    "font_sizes": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem"
+    },
+    "observed_frequency": {
+      "text-xs": 34,
+      "text-sm": 123,
+      "text-base": 89,
+      "text-lg": 67,
+      "text-xl": 45,
+      "text-2xl": 34,
+      "text-3xl": 23
+    },
+    "font_weights": {
+      "font-normal": 45,
+      "font-medium": 89,
+      "font-semibold": 156,
+      "font-bold": 78
+    },
+    "most_used": "text-sm + font-semibold"
+  },
+  "border_radius": {
+    "tokens": {
+      "none": "0",
+      "sm": "0.125rem",
+      "base": "0.25rem",
+      "md": "0.375rem",
+      "lg": "0.5rem",
+      "xl": "0.75rem",
+      "2xl": "1rem",
+      "full": "9999px"
+    },
+    "observed_frequency": {
+      "rounded-2xl": 156,
+      "rounded-xl": 123,
+      "rounded-lg": 89,
+      "rounded-full": 67,
+      "rounded-md": 45
+    },
+    "most_used": "rounded-2xl"
+  },
+  "shadows": {
+    "tokens": {
+      "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      "base": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+      "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+      "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+      "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+    },
+    "observed_frequency": {
+      "shadow-sm": 34,
+      "shadow-md": 45,
+      "shadow-lg": 156,
+      "shadow-xl": 78,
+      "shadow-2xl": 89
+    },
+    "most_used": "shadow-lg"
+  },
+  "breakpoints": {
+    "tokens": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    },
+    "observed_frequency": {
+      "sm": 234,
+      "md": 189,
+      "lg": 156,
+      "xl": 45,
+      "2xl": 12
+    },
+    "distribution": {
+      "mobile": "67%",
+      "tablet": "19%",
+      "desktop": "14%"
+    }
+  },
+  "z_index": {
+    "tokens": {
+      "dropdown": 1000,
+      "sticky": 1020,
+      "fixed": 1030,
+      "modal": 1050,
+      "tooltip": 1070
+    },
+    "observed_frequency": {
+      "z-10": 156,
+      "z-20": 45,
+      "z-30": 67,
+      "z-40": 89,
+      "z-50": 145
+    }
+  },
+  "animations": {
+    "durations": {
+      "instant": "100ms",
+      "fast": "150ms",
+      "normal": "200ms",
+      "slow": "300ms"
+    },
+    "keyframes_count": 20,
+    "most_used": ["fadeIn", "slideInBottom", "shimmer", "spin"]
+  }
+}

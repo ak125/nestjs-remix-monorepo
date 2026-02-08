@@ -8,7 +8,11 @@
  * - Preview validations
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Calendar,
@@ -36,6 +40,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface AuditEntry {
   id: string;
@@ -55,6 +61,8 @@ interface AuditStats {
   byAdmin: Array<{ email: string; count: number }>;
   byType: Array<{ type: string; count: number }>;
 }
+
+export const meta: MetaFunction = () => createNoIndexMeta("Audit SEO - Admin");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -83,7 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Audit] Loader error:", error);
+    logger.error("[SEO Audit] Loader error:", error);
     return json({
       history: [],
       stats: null,

@@ -146,9 +146,11 @@ export class PayboxCallbackController {
             },
             processedAt: new Date(),
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
           this.logger.error(
-            `CRITICAL: Echec enregistrement paiement reussi pour ${params.orderReference}: ${error.message}`,
+            `CRITICAL: Echec enregistrement paiement reussi pour ${params.orderReference}: ${message}`,
           );
           // Retourner 500 pour que Paybox re-essaie le callback
           return res.status(500).send('Payment recording failed');
@@ -166,7 +168,11 @@ export class PayboxCallbackController {
             await this.paymentDataService.getCustomerForOrder(orderId);
 
           if (order && customer?.cst_mail) {
-            await this.emailService.sendOrderConfirmation(order, customer);
+            const orderData = {
+              ...order,
+              ord_date: order.ord_date || new Date().toISOString(),
+            };
+            await this.emailService.sendOrderConfirmation(orderData, customer);
             this.logger.log(
               `Email confirmation envoye pour commande #${orderId}`,
             );
@@ -175,9 +181,13 @@ export class PayboxCallbackController {
               `Impossible d'envoyer email confirmation: order=${!!order}, customer=${!!customer}`,
             );
           }
-        } catch (emailError: any) {
+        } catch (emailError: unknown) {
+          const emailMsg =
+            emailError instanceof Error
+              ? emailError.message
+              : String(emailError);
           this.logger.error(
-            `Erreur envoi email confirmation (non bloquant): ${emailError.message}`,
+            `Erreur envoi email confirmation (non bloquant): ${emailMsg}`,
           );
         }
 
@@ -213,10 +223,10 @@ export class PayboxCallbackController {
           this.logger.log(
             `Echec paiement enregistre pour commande #${params.orderReference}`,
           );
-        } catch (error: any) {
-          this.logger.error(
-            `Erreur enregistrement echec paiement: ${error.message}`,
-          );
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(`Erreur enregistrement echec paiement: ${message}`);
         }
 
         // OK pour les échecs — Paybox n'a pas besoin de re-essayer

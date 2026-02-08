@@ -47,6 +47,7 @@ import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -165,7 +166,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json<LoaderData>({ reference });
   } catch (error) {
-    console.error("Erreur chargement référence:", error);
+    logger.error("Erreur chargement référence:", error);
     throw new Response("Référence non trouvée", { status: 404 });
   }
 }

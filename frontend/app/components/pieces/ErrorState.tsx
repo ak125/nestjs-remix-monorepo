@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface ErrorStateProps {
   title?: string;
   message?: string;
@@ -5,7 +7,7 @@ interface ErrorStateProps {
   variant?: "error" | "warning" | "info";
 }
 
-export default function ErrorState({
+const ErrorState = memo(function ErrorState({
   title = "Une erreur s'est produite",
   message = "Nous n'avons pas pu charger ces données. Veuillez réessayer.",
   onRetry,
@@ -40,4 +42,6 @@ export default function ErrorState({
       )}
     </div>
   );
-}
+});
+
+export default ErrorState;

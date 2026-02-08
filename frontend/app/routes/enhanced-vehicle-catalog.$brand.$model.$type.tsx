@@ -1,11 +1,11 @@
-import { 
-  json, 
-  type LoaderFunctionArgs, 
+import {
+  json,
+  type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { 
-  useLoaderData, 
-  useRouteError, 
+import {
+  useLoaderData,
+  useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { z } from "zod";
@@ -17,11 +17,12 @@ import { VehicleGallery } from "~/components/vehicle/VehicleGallery";
 import { VehicleHeader } from "~/components/vehicle/VehicleHeader";
 import { VehicleInfo } from "~/components/vehicle/VehicleInfo";
 import { VehiclePartsGrid } from "~/components/vehicle/VehiclePartsGrid";
+import { type VehicleData } from "~/types/vehicle.types";
+import { logger } from "~/utils/logger";
 
 // Composants UI
 
 // Types
-import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================
 // 🔍 VALIDATION SCHEMA
@@ -40,7 +41,7 @@ interface MockVehiclePart {
   price: number;
   currency: string;
   imageUrl?: string;
-  availability: 'in-stock' | 'low-stock' | 'out-of-stock';
+  availability: "in-stock" | "low-stock" | "out-of-stock";
   brand: string;
   partNumber: string;
   category: string;
@@ -59,7 +60,7 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
     const vehicleData: VehicleData = {
       brand: brand.charAt(0).toUpperCase() + brand.slice(1),
       model: model.charAt(0).toUpperCase() + model.slice(1),
-      type: type.replace(/-/g, ' ').toUpperCase(),
+      type: type.replace(/-/g, " ").toUpperCase(),
       year: 2020,
       engine: "1.6 HDi",
       fuel: "Diesel",
@@ -79,21 +80,21 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
         description: "Plaquettes de frein haute qualité",
         price: 45.99,
         currency: "EUR",
-        availability: 'in-stock',
+        availability: "in-stock",
         brand: "Bosch",
         partNumber: "BP1234",
-        category: "Freinage"
+        category: "Freinage",
       },
       {
         id: 2,
         name: "Filtre à air",
         description: "Filtre à air haute performance",
-        price: 12.50,
+        price: 12.5,
         currency: "EUR",
-        availability: 'in-stock',
+        availability: "in-stock",
         brand: "Mann",
         partNumber: "FA5678",
-        category: "Moteur"
+        category: "Moteur",
       },
       {
         id: 3,
@@ -101,11 +102,11 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
         description: "Amortisseur de suspension",
         price: 89.99,
         currency: "EUR",
-        availability: 'low-stock',
+        availability: "low-stock",
         brand: "Monroe",
         partNumber: "AM9012",
-        category: "Suspension"
-      }
+        category: "Suspension",
+      },
     ];
 
     return json({
@@ -114,10 +115,9 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
       success: true,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Erreur dans le loader:', error);
-    throw json({ error: 'Véhicule non trouvé' }, { status: 404 });
+    logger.error("Erreur dans le loader:", error);
+    throw json({ error: "Véhicule non trouvé" }, { status: 404 });
   }
 }
 
@@ -128,7 +128,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data || !data.vehicle) {
     return [
       { title: "Véhicule non trouvé" },
-      { name: "description", content: "Le véhicule demandé n'a pas été trouvé." },
+      {
+        name: "description",
+        content: "Le véhicule demandé n'a pas été trouvé.",
+      },
     ];
   }
 
@@ -139,7 +142,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title },
     { name: "description", content: description },
-    { name: "keywords", content: `${vehicle.brand}, ${vehicle.model}, ${vehicle.type}, pièces détachées, pièces auto` },
+    {
+      name: "keywords",
+      content: `${vehicle.brand}, ${vehicle.model}, ${vehicle.type}, pièces détachées, pièces auto`,
+    },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
@@ -159,18 +165,17 @@ export default function EnhancedVehicleCatalog() {
     <div className="min-h-screen bg-gray-50">
       {/* Analytics tracking */}
       <VehicleAnalytics vehicle={vehicle} />
-      
+
       {/* En-tête du véhicule */}
       <VehicleHeader vehicle={vehicle} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           {/* Colonne principale */}
           <div className="lg:col-span-2 space-y-8">
             {/* Galerie d'images */}
             <VehicleGallery vehicle={vehicle} />
-            
+
             {/* Grille des pièces */}
             <VehiclePartsGrid vehicle={vehicle} parts={parts} />
           </div>
@@ -199,10 +204,9 @@ export function ErrorBoundary() {
             {error.status} {error.statusText}
           </h1>
           <p className="text-gray-600 mb-8">
-            {error.status === 404 
+            {error.status === 404
               ? "Le véhicule que vous recherchez n'existe pas."
-              : "Une erreur est survenue lors du chargement de la page."
-            }
+              : "Une erreur est survenue lors du chargement de la page."}
           </p>
           <a
             href="/"

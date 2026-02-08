@@ -84,11 +84,12 @@ export class SitemapV10Controller {
           hubResult: result.hubResult,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Generate all failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Generate all failed: ${message}`);
       return {
         success: false,
-        message: `Generation failed: ${error.message}`,
+        message: `Generation failed: ${message}`,
       };
     }
   }
@@ -135,11 +136,12 @@ export class SitemapV10Controller {
           filePaths: result.filePaths,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Generate ${bucket} failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Generate ${bucket} failed: ${message}`);
       return {
         success: false,
-        message: `Generation failed: ${error.message}`,
+        message: `Generation failed: ${message}`,
       };
     }
   }
@@ -176,11 +178,12 @@ export class SitemapV10Controller {
           durationMs: result.durationMs,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Refresh scores failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Refresh scores failed: ${message}`);
       return {
         success: false,
-        message: `Refresh failed: ${error.message}`,
+        message: `Refresh failed: ${message}`,
       };
     }
   }
@@ -228,11 +231,12 @@ export class SitemapV10Controller {
           })),
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Generate hubs failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Generate hubs failed: ${message}`);
       return {
         success: false,
-        message: `Hub generation failed: ${error.message}`,
+        message: `Hub generation failed: ${message}`,
       };
     }
   }
@@ -300,11 +304,12 @@ export class SitemapV10Controller {
           })),
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Generate robust hubs failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Generate robust hubs failed: ${message}`);
       return {
         success: false,
-        message: `Hub generation failed: ${error.message}`,
+        message: `Hub generation failed: ${message}`,
       };
     }
   }
@@ -341,11 +346,12 @@ export class SitemapV10Controller {
           scoring: scoreDistribution,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Get stats failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Get stats failed: ${message}`);
       return {
         success: false,
-        message: `Failed to get stats: ${error.message}`,
+        message: `Failed to get stats: ${message}`,
       };
     }
   }
@@ -372,11 +378,12 @@ export class SitemapV10Controller {
           : `Google ping failed with status ${result.status}`,
         data: { status: result.status },
       };
-    } catch (error: any) {
-      this.logger.error(`Ping failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Ping failed: ${message}`);
       return {
         success: false,
-        message: `Ping failed: ${error.message}`,
+        message: `Ping failed: ${message}`,
       };
     }
   }
@@ -413,11 +420,12 @@ export class SitemapV10Controller {
           : `Google ping failed with status ${result.status}`,
         data: { bucket, status: result.status },
       };
-    } catch (error: any) {
-      this.logger.error(`Ping ${bucket} failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Ping ${bucket} failed: ${message}`);
       return {
         success: false,
-        message: `Ping failed: ${error.message}`,
+        message: `Ping failed: ${message}`,
       };
     }
   }

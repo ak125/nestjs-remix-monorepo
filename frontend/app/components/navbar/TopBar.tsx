@@ -1,9 +1,9 @@
 /**
  * 📞 TopBar Component - PHASE 3
- * 
+ *
  * Barre d'information au-dessus de la navbar principale.
  * Pattern inspiré du legacy PHP: tagline + phone + user greeting + liens rapides.
- * 
+ *
  * Features:
  * - ✅ Tagline site (ex: "Pièces auto à prix pas cher")
  * - ✅ Téléphone cliquable
@@ -11,10 +11,10 @@
  * - ✅ Liens rapides: Aide, Contact, CGV
  * - ✅ Responsive: masqué sur mobile < 768px (économie espace)
  * - ✅ Configuration dynamique possible
- * 
+ *
  * @example
  * ```tsx
- * <TopBar 
+ * <TopBar
  *   tagline="Pièces auto à prix pas cher"
  *   phone="01 23 45 67 89"
  *   user={user}
@@ -22,8 +22,9 @@
  * ```
  */
 
-import { Link } from '@remix-run/react';
-import { Phone } from 'lucide-react';
+import { Link } from "@remix-run/react";
+import { Phone } from "lucide-react";
+import { memo } from "react";
 
 export interface TopBarConfig {
   tagline?: string;
@@ -37,7 +38,7 @@ interface TopBarProps {
   user?: {
     firstName?: string;
     lastName?: string;
-    gender?: 'M' | 'F' | 'Autre';
+    gender?: "M" | "F" | "Autre";
   } | null;
 }
 
@@ -48,17 +49,21 @@ const DEFAULT_CONFIG: TopBarConfig = {
   showQuickLinks: true,
 };
 
-export function TopBar({ config = DEFAULT_CONFIG, user }: TopBarProps) {
+export const TopBar = memo(function TopBar({
+  config = DEFAULT_CONFIG,
+  user,
+}: TopBarProps) {
   const mergedConfig = { ...DEFAULT_CONFIG, ...config };
-  
+
   // 👤 Greeting personnalisé (pattern PHP legacy)
   const getUserGreeting = (): string => {
-    if (!user) return '';
-    
-    const civilite = user.gender === 'F' ? 'Mme' : user.gender === 'M' ? 'M.' : '';
-    const nom = user.lastName || '';
-    
-    return civilite && nom ? `${civilite} ${nom}` : user.firstName || '';
+    if (!user) return "";
+
+    const civilite =
+      user.gender === "F" ? "Mme" : user.gender === "M" ? "M." : "";
+    const nom = user.lastName || "";
+
+    return civilite && nom ? `${civilite} ${nom}` : user.firstName || "";
   };
 
   const greeting = getUserGreeting();
@@ -71,8 +76,8 @@ export function TopBar({ config = DEFAULT_CONFIG, user }: TopBarProps) {
           <div className="flex items-center gap-5">
             {/* Phone - Contact direct avec animation */}
             {mergedConfig.phone && (
-              <a 
-                href={`tel:${mergedConfig.phone.replace(/\s/g, '')}`}
+              <a
+                href={`tel:${mergedConfig.phone.replace(/\s/g, "")}`}
                 className="group flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:scale-105"
                 title="Appelez-nous pour un support immédiat"
               >
@@ -80,14 +85,18 @@ export function TopBar({ config = DEFAULT_CONFIG, user }: TopBarProps) {
                   <Phone className="h-4 w-4 text-white" />
                   <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-                <span className="font-bold text-sm tracking-wide">{mergedConfig.phone}</span>
+                <span className="font-bold text-sm tracking-wide">
+                  {mergedConfig.phone}
+                </span>
               </a>
             )}
 
             {/* Badge promo - Plus visible et attractif */}
             <div className="flex items-center gap-2.5 px-3.5 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-300/60 dark:border-green-800/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
               <span className="text-xl">🚚</span>
-              <span className="text-xs font-bold text-green-700 dark:text-green-300 tracking-wide">Livraison gratuite dès 100€</span>
+              <span className="text-xs font-bold text-green-700 dark:text-green-300 tracking-wide">
+                Livraison gratuite dès 100€
+              </span>
             </div>
           </div>
 
@@ -102,38 +111,40 @@ export function TopBar({ config = DEFAULT_CONFIG, user }: TopBarProps) {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-white text-xs font-bold leading-tight">
-                      Bonjour, {greeting.split(' ')[1] || greeting}
+                      Bonjour, {greeting.split(" ")[1] || greeting}
                     </span>
                     <span className="text-blue-200 text-[10px] font-medium">
                       Connecté
                     </span>
                   </div>
                 </div>
-                <span className="text-slate-300 dark:text-neutral-700 font-light">•</span>
+                <span className="text-slate-300 dark:text-neutral-700 font-light">
+                  •
+                </span>
               </>
             )}
 
             {/* Quick links - Design premium */}
             {mergedConfig.showQuickLinks && (
               <div className="flex items-center gap-4">
-                <Link 
-                  to="/aide" 
+                <Link
+                  to="/aide"
                   className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
                 >
                   Aide
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
                 </Link>
-                
-                <Link 
-                  to="/contact" 
+
+                <Link
+                  to="/contact"
                   className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
                 >
                   Contact
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
                 </Link>
-                
-                <Link 
-                  to="/cgv" 
+
+                <Link
+                  to="/cgv"
                   className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
                 >
                   CGV
@@ -146,4 +157,4 @@ export function TopBar({ config = DEFAULT_CONFIG, user }: TopBarProps) {
       </div>
     </div>
   );
-}
+});

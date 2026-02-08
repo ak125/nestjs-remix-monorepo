@@ -1,10 +1,11 @@
 /**
  * 🚗 Composant VehicleCard
- * 
+ *
  * Affichage d'une carte véhicule avec toutes les informations essentielles
  */
 
 import { Car, Fuel, Zap, Calendar } from "lucide-react";
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface VehicleCardProps {
@@ -39,7 +40,11 @@ interface VehicleCardProps {
   showDetails?: boolean;
 }
 
-export function VehicleCard({ vehicle, className = "", showDetails = true }: VehicleCardProps) {
+export const VehicleCard = memo(function VehicleCard({
+  vehicle,
+  className = "",
+  showDetails = true,
+}: VehicleCardProps) {
   const type = vehicle.auto_type;
   const model = type?.auto_modele;
   const brand = model?.auto_marque;
@@ -83,14 +88,22 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
         <div className="grid grid-cols-2 gap-3">
           {vehicle.tnc_code && (
             <div className="bg-muted p-3 rounded-lg">
-              <div className="text-xs font-medium text-blue-600 uppercase">Code Mine</div>
-              <div className="text-sm font-mono text-blue-800">{vehicle.tnc_code}</div>
+              <div className="text-xs font-medium text-blue-600 uppercase">
+                Code Mine
+              </div>
+              <div className="text-sm font-mono text-blue-800">
+                {vehicle.tnc_code}
+              </div>
             </div>
           )}
           {vehicle.tnc_cnit && (
             <div className="bg-success/10 p-3 rounded-lg">
-              <div className="text-xs font-medium text-green-600 uppercase">CNIT</div>
-              <div className="text-sm font-mono text-green-800">{vehicle.tnc_cnit}</div>
+              <div className="text-xs font-medium text-green-600 uppercase">
+                CNIT
+              </div>
+              <div className="text-sm font-mono text-green-800">
+                {vehicle.tnc_cnit}
+              </div>
             </div>
           )}
         </div>
@@ -103,7 +116,9 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
                 <Fuel className="h-4 w-4 text-gray-500" />
                 <div>
                   <div className="text-xs text-gray-500">Carburant</div>
-                  <div className="text-sm font-medium capitalize">{type.type_fuel}</div>
+                  <div className="text-sm font-medium capitalize">
+                    {type.type_fuel}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -137,10 +152,12 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
             <div className="flex items-center gap-2 pt-2 border-t">
               <Calendar className="h-4 w-4 text-gray-500" />
               <div>
-                <div className="text-xs text-gray-500">Période de production</div>
+                <div className="text-xs text-gray-500">
+                  Période de production
+                </div>
                 <div className="text-sm">
                   {type.type_year_from}
-                  {type.type_year_to ? ` - ${type.type_year_to}` : ' - Actuel'}
+                  {type.type_year_to ? ` - ${type.type_year_to}` : " - Actuel"}
                 </div>
               </div>
             </div>
@@ -160,4 +177,4 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
       </CardContent>
     </Card>
   );
-}
+});

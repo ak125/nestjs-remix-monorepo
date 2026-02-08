@@ -8,5 +8,11 @@
  * pour maintenir la compatibilité pendant la transition
  */
 
+import { type MetaFunction } from "@remix-run/node";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Gamme SEO Hub - Admin");
+
 // Re-export everything from the original gammes-seo detail route
 export { loader, action, default } from "./admin.gammes-seo.$pgId";

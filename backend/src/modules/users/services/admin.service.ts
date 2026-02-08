@@ -102,7 +102,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       this.logger.log(`✅ Niveau utilisateur mis à jour: ${id} = ${level}`);
       return updatedUser;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Erreur mise à jour niveau:', error);
       throw error;
     }
@@ -159,7 +159,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       this.logger.log(`✅ Utilisateur désactivé: ${id}`);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Erreur désactivation utilisateur:', error);
       throw error;
     }
@@ -219,7 +219,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       this.logger.log(`✅ Utilisateur réactivé: ${id}`);
       return reactivatedUser;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Erreur réactivation utilisateur:', error);
       throw error;
     }
@@ -270,7 +270,7 @@ export class UsersAdminService extends SupabaseBaseService {
 
       this.logger.log(`✅ Utilisateur supprimé (soft delete): ${id}`);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Erreur suppression utilisateur:', error);
       throw error;
     }

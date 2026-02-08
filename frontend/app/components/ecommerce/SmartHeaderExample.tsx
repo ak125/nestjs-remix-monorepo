@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 📘 SMART HEADER - EXEMPLE D'UTILISATION
  * ═══════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Démonstration du SmartHeader e-commerce avec :
  * • Gestion véhicule mémorisé (localStorage)
  * • Recherche fonctionnelle
@@ -10,8 +10,9 @@
  * • Cas d'usage réels
  */
 
-import { useState, useEffect } from 'react';
-import { SmartHeader } from './SmartHeader';
+import { useState, useEffect } from "react";
+import { SmartHeader } from "./SmartHeader";
+import { logger } from "~/utils/logger";
 
 // Types
 interface Vehicle {
@@ -33,7 +34,7 @@ export function SmartHeaderWithVehicle() {
 
   // Charger véhicule depuis localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('userVehicle');
+    const stored = localStorage.getItem("userVehicle");
     if (stored) {
       setSavedVehicle(JSON.parse(stored));
     }
@@ -41,12 +42,12 @@ export function SmartHeaderWithVehicle() {
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSavedVehicle(vehicle);
-    localStorage.setItem('userVehicle', JSON.stringify(vehicle));
-    console.log('✅ Véhicule sauvegardé:', vehicle);
+    localStorage.setItem("userVehicle", JSON.stringify(vehicle));
+    logger.log("✅ Véhicule sauvegardé:", vehicle);
   };
 
   const handleSearch = (query: string) => {
-    console.log('🔍 Recherche:', query);
+    logger.log("🔍 Recherche:", query);
     // Redirection vers page résultats
     window.location.href = `/search?q=${encodeURIComponent(query)}`;
   };
@@ -74,8 +75,10 @@ export function SmartHeaderNewVisitor() {
       {/* Header sans véhicule = CTA "Mon véhicule" affiché */}
       <SmartHeader
         savedVehicle={null}
-        onVehicleSelect={(vehicle) => console.log('Véhicule sélectionné:', vehicle)}
-        onSearch={(query) => console.log('Recherche:', query)}
+        onVehicleSelect={(vehicle) =>
+          logger.log("Véhicule sélectionné:", vehicle)
+        }
+        onSearch={(query) => logger.log("Recherche:", query)}
         cartItemCount={0}
         logoUrl="/logo.svg"
         companyName="AutoPieces Pro"
@@ -85,7 +88,9 @@ export function SmartHeaderNewVisitor() {
       <main className="py-xl px-md max-w-7xl mx-auto">
         <div className="bg-warning-50 border border-warning-200 rounded-lg p-md mb-lg">
           <p className="font-sans text-warning-800">
-            <strong className="font-heading">⚠️ Nouveau visiteur détecté</strong>
+            <strong className="font-heading">
+              ⚠️ Nouveau visiteur détecté
+            </strong>
             <br />
             Le CTA "Mon véhicule" est affiché pour inciter à la configuration.
           </p>
@@ -109,10 +114,10 @@ export function SmartHeaderNewVisitor() {
  */
 export function SmartHeaderConfiguredVehicle() {
   const mockVehicle: Vehicle = {
-    id: 'renault-clio4-15dci-2016',
-    brand: 'Renault',
-    model: 'Clio 4',
-    engine: '1.5 dCi',
+    id: "renault-clio4-15dci-2016",
+    brand: "Renault",
+    model: "Clio 4",
+    engine: "1.5 dCi",
     year: 2016,
   };
 
@@ -121,8 +126,10 @@ export function SmartHeaderConfiguredVehicle() {
       {/* Header avec véhicule = affiche "Renault Clio 4" dans le CTA */}
       <SmartHeader
         savedVehicle={mockVehicle}
-        onVehicleSelect={(vehicle) => console.log('Changement véhicule:', vehicle)}
-        onSearch={(query) => console.log('Recherche:', query)}
+        onVehicleSelect={(vehicle) =>
+          logger.log("Changement véhicule:", vehicle)
+        }
+        onSearch={(query) => logger.log("Recherche:", query)}
         cartItemCount={5}
         logoUrl="/logo.svg"
         companyName="AutoPieces Pro"
@@ -141,26 +148,26 @@ export function SmartHeaderConfiguredVehicle() {
         <h1 className="font-heading text-3xl font-bold text-neutral-900 mb-md">
           Pièces pour votre {mockVehicle.brand} {mockVehicle.model}
         </h1>
-        
+
         {/* Exemple produits */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
           {[
             {
-              name: 'Plaquettes de frein avant',
-              oemRef: 'REF-7701208265',
-              price: 45.90,
+              name: "Plaquettes de frein avant",
+              oemRef: "REF-7701208265",
+              price: 45.9,
               compatible: true,
             },
             {
-              name: 'Filtre à huile',
-              oemRef: 'REF-8200768913',
-              price: 12.50,
+              name: "Filtre à huile",
+              oemRef: "REF-8200768913",
+              price: 12.5,
               compatible: true,
             },
             {
-              name: 'Disques de frein (x2)',
-              oemRef: 'REF-7701207795',
-              price: 89.00,
+              name: "Disques de frein (x2)",
+              oemRef: "REF-7701207795",
+              price: 89.0,
               compatible: true,
             },
           ].map((product) => (
@@ -208,13 +215,13 @@ export function SmartHeaderConfiguredVehicle() {
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export function SmartHeaderShowcase() {
-  const [scenario, setScenario] = useState<'new' | 'configured'>('new');
+  const [scenario, setScenario] = useState<"new" | "configured">("new");
 
   const mockVehicle: Vehicle = {
-    id: 'renault-megane4-16dci-2018',
-    brand: 'Renault',
-    model: 'Mégane 4',
-    engine: '1.6 dCi',
+    id: "renault-megane4-16dci-2018",
+    brand: "Renault",
+    model: "Mégane 4",
+    engine: "1.6 dCi",
     year: 2018,
   };
 
@@ -227,13 +234,13 @@ export function SmartHeaderShowcase() {
         </h3>
         <div className="flex flex-col gap-xs">
           <button
-            onClick={() => setScenario('new')}
+            onClick={() => setScenario("new")}
             className={`
               px-sm py-xs rounded font-sans text-sm text-left
               ${
-                scenario === 'new'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                scenario === "new"
+                  ? "bg-primary-500 text-white"
+                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }
               transition-colors
             `}
@@ -241,13 +248,13 @@ export function SmartHeaderShowcase() {
             👤 Nouveau visiteur
           </button>
           <button
-            onClick={() => setScenario('configured')}
+            onClick={() => setScenario("configured")}
             className={`
               px-sm py-xs rounded font-sans text-sm text-left
               ${
-                scenario === 'configured'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                scenario === "configured"
+                  ? "bg-primary-500 text-white"
+                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }
               transition-colors
             `}
@@ -259,10 +266,10 @@ export function SmartHeaderShowcase() {
 
       {/* Header adaptatif */}
       <SmartHeader
-        savedVehicle={scenario === 'configured' ? mockVehicle : null}
-        onVehicleSelect={(vehicle) => console.log('Véhicule:', vehicle)}
-        onSearch={(query) => console.log('Recherche:', query)}
-        cartItemCount={scenario === 'configured' ? 3 : 0}
+        savedVehicle={scenario === "configured" ? mockVehicle : null}
+        onVehicleSelect={(vehicle) => logger.log("Véhicule:", vehicle)}
+        onSearch={(query) => logger.log("Recherche:", query)}
+        cartItemCount={scenario === "configured" ? 3 : 0}
         logoUrl="/logo.svg"
         companyName="AutoPieces Pro"
       />
@@ -294,8 +301,8 @@ export function SmartHeaderShowcase() {
                 🚗 CTA "Mon Véhicule"
               </h3>
               <p className="font-sans text-sm text-primary-700">
-                Mémorise le véhicule utilisateur. Affiche les infos dans le header.
-                Toujours visible (sticky).
+                Mémorise le véhicule utilisateur. Affiche les infos dans le
+                header. Toujours visible (sticky).
               </p>
             </div>
 
@@ -304,8 +311,8 @@ export function SmartHeaderShowcase() {
                 📱 Responsive & Sticky
               </h3>
               <p className="font-sans text-sm text-success-700">
-                Adaptatif mobile → desktop. Sticky au scroll.
-                Navigation secondaire contextuelle.
+                Adaptatif mobile → desktop. Sticky au scroll. Navigation
+                secondaire contextuelle.
               </p>
             </div>
           </div>
@@ -317,7 +324,9 @@ export function SmartHeaderShowcase() {
             💡 Testez le header
           </h2>
           <ul className="font-sans text-neutral-700 space-y-sm">
-            <li>• Utilisez le switcher en bas à droite pour changer de scénario</li>
+            <li>
+              • Utilisez le switcher en bas à droite pour changer de scénario
+            </li>
             <li>• Scrollez pour voir l'effet sticky</li>
             <li>• Cliquez sur "Mon véhicule" pour ouvrir le modal</li>
             <li>• Testez la recherche avec suggestions rapides</li>

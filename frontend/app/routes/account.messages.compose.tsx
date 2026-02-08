@@ -3,6 +3,7 @@ import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   Form,
@@ -25,6 +26,10 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Nouveau Message");
 
 interface LoaderData {
   user: any;
@@ -84,7 +89,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
       throw new Error(result.message || "Erreur inconnue");
     }
   } catch (error) {
-    console.error("Erreur envoi message:", error);
+    logger.error("Erreur envoi message:", error);
     return json(
       { error: "Erreur lors de l'envoi du message" },
       { status: 500 },

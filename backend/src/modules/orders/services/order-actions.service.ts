@@ -51,7 +51,7 @@ export class OrderActionsService extends SupabaseBaseService {
       }
 
       // Préparer mise à jour
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         orl_orls_id: newStatus,
         orl_updated_at: new Date().toISOString(),
       };
@@ -366,7 +366,12 @@ export class OrderActionsService extends SupabaseBaseService {
     orderId: number,
     lineId: number,
     action: string,
-    data: any,
+    data: {
+      oldStatus?: number;
+      newStatus?: number;
+      comment?: string;
+      userId?: number;
+    },
   ): Promise<void> {
     try {
       await this.supabase.from('___xtr_order_line_audit').insert({

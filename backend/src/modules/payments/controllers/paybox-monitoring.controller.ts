@@ -108,11 +108,12 @@ export class PayboxMonitoringController {
         },
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error('❌ Error fetching Paybox monitoring:', error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         data: {
           summary: {
             totalTransactions: 0,
@@ -168,11 +169,12 @@ export class PayboxMonitoringController {
           lastCheck: new Date().toISOString(),
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error('❌ Error checking Paybox health:', error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         data: {
           status: 'error',
           config: {},

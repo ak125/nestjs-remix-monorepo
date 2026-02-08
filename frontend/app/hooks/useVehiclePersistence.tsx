@@ -1,30 +1,37 @@
 /**
  * useVehiclePersistence - Hook + Context pour persistance véhicule
- * 
+ *
  * Gère la sauvegarde et récupération automatique du véhicule sélectionné
  * dans localStorage/cookie pour une expérience utilisateur personnalisée.
- * 
+ *
  * Features:
  * - Sauvegarde auto dans localStorage
  * - Récupération au chargement
  * - Provider React Context pour partage global
  * - SSR-safe (vérif window)
  * - Type-safe avec Vehicle interface
- * 
+ *
  * Usage:
  * ```tsx
  * // Au niveau root
  * <VehicleProvider>
  *   <App />
  * </VehicleProvider>
- * 
+ *
  * // Dans n'importe quel composant
  * const { vehicle, setVehicle, clearVehicle } = useVehicle();
  * ```
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { type Vehicle } from '../components/ecommerce/SmartHeader';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { type Vehicle } from "../components/ecommerce/SmartHeader";
+import { logger } from "~/utils/logger";
 
 // ============================================================================
 // Types
@@ -33,16 +40,16 @@ import { type Vehicle } from '../components/ecommerce/SmartHeader';
 interface VehicleContextValue {
   /** Véhicule actuellement sélectionné (null si aucun) */
   vehicle: Vehicle | null;
-  
+
   /** Définir un nouveau véhicule (sauvegarde auto) */
   setVehicle: (vehicle: Vehicle | null) => void;
-  
+
   /** Effacer le véhicule sauvegardé */
   clearVehicle: () => void;
-  
+
   /** Vérifier si un véhicule est sauvegardé */
   hasVehicle: boolean;
-  
+
   /** Charger depuis localStorage (manuel si besoin) */
   loadVehicle: () => Vehicle | null;
 }
@@ -51,20 +58,22 @@ interface VehicleContextValue {
 // Context
 // ============================================================================
 
-const VehicleContext = createContext<VehicleContextValue | undefined>(undefined);
+const VehicleContext = createContext<VehicleContextValue | undefined>(
+  undefined,
+);
 
 // ============================================================================
 // Storage utilities
 // ============================================================================
 
-const STORAGE_KEY = 'userVehicle';
+const STORAGE_KEY = "userVehicle";
 
 /**
  * Sauvegarder véhicule dans localStorage
  */
 const saveVehicleToStorage = (vehicle: Vehicle | null): void => {
-  if (typeof window === 'undefined') return;
-  
+  if (typeof window === "undefined") return;
+
   try {
     if (vehicle) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicle));
@@ -72,7 +81,7 @@ const saveVehicleToStorage = (vehicle: Vehicle | null): void => {
       localStorage.removeItem(STORAGE_KEY);
     }
   } catch (error) {
-    console.error('Erreur sauvegarde véhicule:', error);
+    logger.error("Erreur sauvegarde véhicule:", error);
   }
 };
 
@@ -80,18 +89,18 @@ const saveVehicleToStorage = (vehicle: Vehicle | null): void => {
  * Charger véhicule depuis localStorage
  */
 const loadVehicleFromStorage = (): Vehicle | null => {
-  if (typeof window === 'undefined') return null;
-  
+  if (typeof window === "undefined") return null;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
-    
+
     const parsed = JSON.parse(stored);
-    
+
     // Valider structure minimale
     if (
       parsed &&
-      typeof parsed === 'object' &&
+      typeof parsed === "object" &&
       parsed.id &&
       parsed.brand &&
       parsed.model &&
@@ -99,10 +108,10 @@ const loadVehicleFromStorage = (): Vehicle | null => {
     ) {
       return parsed as Vehicle;
     }
-    
+
     return null;
   } catch (error) {
-    console.error('Erreur chargement véhicule:', error);
+    logger.error("Erreur chargement véhicule:", error);
     return null;
   }
 };
@@ -121,7 +130,9 @@ export const VehicleProvider: React.FC<VehicleProviderProps> = ({
   children,
   initialVehicle,
 }) => {
-  const [vehicle, setVehicleState] = useState<Vehicle | null>(initialVehicle || null);
+  const [vehicle, setVehicleState] = useState<Vehicle | null>(
+    initialVehicle || null,
+  );
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Charger depuis localStorage au montage (uniquement côté client)
@@ -164,7 +175,9 @@ export const VehicleProvider: React.FC<VehicleProviderProps> = ({
 
   // Toujours rendre les enfants - ne PAS bloquer le SSR
   // Les composants enfants peuvent vérifier hasVehicle ou vehicle === null
-  return <VehicleContext.Provider value={value}>{children}</VehicleContext.Provider>;
+  return (
+    <VehicleContext.Provider value={value}>{children}</VehicleContext.Provider>
+  );
 };
 
 // ============================================================================
@@ -173,30 +186,30 @@ export const VehicleProvider: React.FC<VehicleProviderProps> = ({
 
 /**
  * Hook pour accéder au véhicule sauvegardé partout dans l'app
- * 
+ *
  * @throws Error si utilisé hors VehicleProvider
- * 
+ *
  * @example
  * ```tsx
  * const { vehicle, setVehicle, clearVehicle, hasVehicle } = useVehicle();
- * 
+ *
  * // Afficher véhicule
  * {vehicle && <p>{vehicle.brand} {vehicle.model}</p>}
- * 
+ *
  * // Sauvegarder véhicule
  * setVehicle({ id: '1', brand: 'Peugeot', model: '208', year: 2016 });
- * 
+ *
  * // Effacer
  * clearVehicle();
  * ```
  */
 export const useVehicle = (): VehicleContextValue => {
   const context = useContext(VehicleContext);
-  
+
   if (!context) {
-    throw new Error('useVehicle must be used within VehicleProvider');
+    throw new Error("useVehicle must be used within VehicleProvider");
   }
-  
+
   return context;
 };
 
@@ -207,7 +220,7 @@ export const useVehicle = (): VehicleContextValue => {
 /**
  * Hook standalone pour persistance véhicule sans Provider
  * Utile pour composants isolés qui n'ont pas besoin du Context global
- * 
+ *
  * @example
  * ```tsx
  * const [vehicle, setVehicle, clearVehicle] = useVehiclePersistence();
@@ -216,7 +229,7 @@ export const useVehicle = (): VehicleContextValue => {
 export const useVehiclePersistence = (): [
   Vehicle | null,
   (vehicle: Vehicle | null) => void,
-  () => void
+  () => void,
 ] => {
   const [vehicle, setVehicleState] = useState<Vehicle | null>(null);
 

@@ -23,7 +23,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-import { forwardRef, useState, useEffect } from "react";
+import { forwardRef, useState, useEffect, memo } from "react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
@@ -303,200 +303,204 @@ function CompatibilityBadgeV2({
 // Skeleton Loading
 // ============================================================================
 
-export function ProductStickyCTAV2Skeleton() {
-  return (
-    <div
-      className={cn(
-        "min-h-[96px] md:min-h-0",
-        "fixed bottom-0 left-0 right-0 z-40",
-        "md:relative md:z-auto",
-        "bg-white/95 backdrop-blur-sm",
-        "border-t border-slate-200",
-        "md:border md:rounded-xl",
-        "shadow-[0_-4px_20px_rgba(0,0,0,0.08)]",
-        "md:shadow-lg",
-        "px-4 py-4 md:p-5",
-      )}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 space-y-3">
-          <Skeleton className="h-7 w-28 bg-slate-200" />
-          <div className="flex gap-2">
-            <Skeleton className="h-6 w-20 rounded-md bg-slate-200" />
-            <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
+export const ProductStickyCTAV2Skeleton = memo(
+  function ProductStickyCTAV2Skeleton() {
+    return (
+      <div
+        className={cn(
+          "min-h-[96px] md:min-h-0",
+          "fixed bottom-0 left-0 right-0 z-40",
+          "md:relative md:z-auto",
+          "bg-white/95 backdrop-blur-sm",
+          "border-t border-slate-200",
+          "md:border md:rounded-xl",
+          "shadow-[0_-4px_20px_rgba(0,0,0,0.08)]",
+          "md:shadow-lg",
+          "px-4 py-4 md:p-5",
+        )}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-7 w-28 bg-slate-200" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20 rounded-md bg-slate-200" />
+              <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
+            </div>
           </div>
+          <Skeleton className="h-12 w-44 rounded-lg bg-slate-200" />
         </div>
-        <Skeleton className="h-12 w-44 rounded-lg bg-slate-200" />
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-const ProductStickyCTAV2 = forwardRef<HTMLDivElement, ProductStickyCTAV2Props>(
-  (
-    {
-      price,
-      originalPrice,
-      stockQuantity,
-      isCompatible,
-      vehicleContext,
-      productRef,
-      isLoading = false,
-      disabled = false,
-      onAddToCart,
-      onVerifyCompatibility,
-      className,
-    },
-    ref,
-  ) => {
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
-    const [ctaHovered, setCtaHovered] = useState(false);
+const ProductStickyCTAV2 = memo(
+  forwardRef<HTMLDivElement, ProductStickyCTAV2Props>(
+    (
+      {
+        price,
+        originalPrice,
+        stockQuantity,
+        isCompatible,
+        vehicleContext,
+        productRef,
+        isLoading = false,
+        disabled = false,
+        onAddToCart,
+        onVerifyCompatibility,
+        className,
+      },
+      ref,
+    ) => {
+      const [isAddingToCart, setIsAddingToCart] = useState(false);
+      const [ctaHovered, setCtaHovered] = useState(false);
 
-    const handleAddToCart = async () => {
-      if (isAddingToCart || disabled || stockQuantity <= 0) return;
+      const handleAddToCart = async () => {
+        if (isAddingToCart || disabled || stockQuantity <= 0) return;
 
-      setIsAddingToCart(true);
-      try {
-        await onAddToCart?.();
-      } finally {
-        setIsAddingToCart(false);
+        setIsAddingToCart(true);
+        try {
+          await onAddToCart?.();
+        } finally {
+          setIsAddingToCart(false);
+        }
+      };
+
+      const isOutOfStock = stockQuantity <= 0;
+      const isDisabled = disabled || isOutOfStock || isLoading;
+
+      if (isLoading) {
+        return <ProductStickyCTAV2Skeleton />;
       }
-    };
 
-    const isOutOfStock = stockQuantity <= 0;
-    const isDisabled = disabled || isOutOfStock || isLoading;
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            // Fixed height to prevent CLS
+            "min-h-[96px] md:min-h-0",
+            // Sticky on mobile
+            "fixed bottom-0 left-0 right-0 z-40",
+            "md:relative md:z-auto",
+            // Background - frosted glass effect
+            "bg-white/95 backdrop-blur-sm",
+            // Borders
+            "border-t border-slate-200/80",
+            "md:border md:rounded-xl md:border-slate-200",
+            // Shadow - trust elevation
+            "shadow-[0_-8px_30px_rgba(15,118,110,0.08)]",
+            "md:shadow-lg md:shadow-slate-200/50",
+            // Padding
+            "px-4 py-4 md:p-5",
+            // Safe area
+            "pb-[calc(1rem+env(safe-area-inset-bottom))]",
+            "md:pb-5",
+            className,
+          )}
+        >
+          {/* Main content */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Price + Indicators */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <PriceDisplayV2 price={price} originalPrice={originalPrice} />
 
-    if (isLoading) {
-      return <ProductStickyCTAV2Skeleton />;
-    }
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          // Fixed height to prevent CLS
-          "min-h-[96px] md:min-h-0",
-          // Sticky on mobile
-          "fixed bottom-0 left-0 right-0 z-40",
-          "md:relative md:z-auto",
-          // Background - frosted glass effect
-          "bg-white/95 backdrop-blur-sm",
-          // Borders
-          "border-t border-slate-200/80",
-          "md:border md:rounded-xl md:border-slate-200",
-          // Shadow - trust elevation
-          "shadow-[0_-8px_30px_rgba(15,118,110,0.08)]",
-          "md:shadow-lg md:shadow-slate-200/50",
-          // Padding
-          "px-4 py-4 md:p-5",
-          // Safe area
-          "pb-[calc(1rem+env(safe-area-inset-bottom))]",
-          "md:pb-5",
-          className,
-        )}
-      >
-        {/* Main content */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Price + Indicators */}
-          <div className="flex-1 min-w-0 space-y-2">
-            <PriceDisplayV2 price={price} originalPrice={originalPrice} />
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <StockIndicatorV2 quantity={stockQuantity} />
-              <CompatibilityBadgeV2
-                isCompatible={isCompatible}
-                vehicleContext={vehicleContext}
-                onVerify={onVerifyCompatibility}
-              />
-            </div>
-          </div>
-
-          {/* Right: CTA Button - Professional Blue */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={isDisabled}
-            onMouseEnter={() => setCtaHovered(true)}
-            onMouseLeave={() => setCtaHovered(false)}
-            className={cn(
-              // Size
-              "h-12 px-6 min-w-[160px]",
-              // Colors - Professional Blue (Trust & Authority)
-              "bg-[#0369A1] hover:bg-[#075985] active:bg-[#0C4A6E]",
-              "text-white font-semibold",
-              // Typography - Lexend
-              "text-base",
-              // Border radius - slightly more rounded
-              "rounded-lg",
-              // Transitions
-              "transition-all duration-200 ease-out",
-              // Hover effects - CTA elevation
-              "hover:shadow-[0_6px_20px_rgba(3,105,161,0.3)]",
-              "hover:-translate-y-0.5",
-              "active:translate-y-0 active:shadow-md",
-              // Disabled
-              "disabled:bg-slate-300 disabled:cursor-not-allowed",
-              "disabled:hover:shadow-none disabled:hover:translate-y-0",
-              // Focus ring
-              "focus-visible:ring-2 focus-visible:ring-[#0369A1] focus-visible:ring-offset-2",
-              // Attention pulse for in-stock items
-              stockQuantity > 0 &&
-                stockQuantity <= 5 &&
-                !isDisabled &&
-                "animate-[cta-pulse_2s_ease-in-out_infinite]",
-            )}
-            style={{
-              fontFamily: "'Lexend', system-ui, sans-serif",
-            }}
-          >
-            {isAddingToCart ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                <span className="hidden sm:inline">Ajout...</span>
-              </>
-            ) : isOutOfStock ? (
-              <span>Indisponible</span>
-            ) : (
-              <>
-                <ShoppingCart
-                  className={cn(
-                    "h-5 w-5 mr-2",
-                    "transition-transform duration-200",
-                    ctaHovered && "scale-110",
-                  )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <StockIndicatorV2 quantity={stockQuantity} />
+                <CompatibilityBadgeV2
+                  isCompatible={isCompatible}
+                  vehicleContext={vehicleContext}
+                  onVerify={onVerifyCompatibility}
                 />
-                <span className="hidden sm:inline">Ajouter au panier</span>
-                <span className="sm:hidden">Ajouter</span>
-              </>
-            )}
-          </Button>
-        </div>
+              </div>
+            </div>
 
-        {/* Product reference - monospace, subtle */}
-        {productRef && (
-          <div
-            className={cn(
-              "hidden md:flex items-center gap-2",
-              "mt-3 pt-3 border-t border-slate-100",
-            )}
-          >
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider">
-              Réf
-            </span>
-            <code
-              className="text-xs text-slate-500 font-mono bg-slate-50 px-1.5 py-0.5 rounded"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            {/* Right: CTA Button - Professional Blue */}
+            <Button
+              onClick={handleAddToCart}
+              disabled={isDisabled}
+              onMouseEnter={() => setCtaHovered(true)}
+              onMouseLeave={() => setCtaHovered(false)}
+              className={cn(
+                // Size
+                "h-12 px-6 min-w-[160px]",
+                // Colors - Professional Blue (Trust & Authority)
+                "bg-[#0369A1] hover:bg-[#075985] active:bg-[#0C4A6E]",
+                "text-white font-semibold",
+                // Typography - Lexend
+                "text-base",
+                // Border radius - slightly more rounded
+                "rounded-lg",
+                // Transitions
+                "transition-all duration-200 ease-out",
+                // Hover effects - CTA elevation
+                "hover:shadow-[0_6px_20px_rgba(3,105,161,0.3)]",
+                "hover:-translate-y-0.5",
+                "active:translate-y-0 active:shadow-md",
+                // Disabled
+                "disabled:bg-slate-300 disabled:cursor-not-allowed",
+                "disabled:hover:shadow-none disabled:hover:translate-y-0",
+                // Focus ring
+                "focus-visible:ring-2 focus-visible:ring-[#0369A1] focus-visible:ring-offset-2",
+                // Attention pulse for in-stock items
+                stockQuantity > 0 &&
+                  stockQuantity <= 5 &&
+                  !isDisabled &&
+                  "animate-[cta-pulse_2s_ease-in-out_infinite]",
+              )}
+              style={{
+                fontFamily: "'Lexend', system-ui, sans-serif",
+              }}
             >
-              {productRef}
-            </code>
+              {isAddingToCart ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  <span className="hidden sm:inline">Ajout...</span>
+                </>
+              ) : isOutOfStock ? (
+                <span>Indisponible</span>
+              ) : (
+                <>
+                  <ShoppingCart
+                    className={cn(
+                      "h-5 w-5 mr-2",
+                      "transition-transform duration-200",
+                      ctaHovered && "scale-110",
+                    )}
+                  />
+                  <span className="hidden sm:inline">Ajouter au panier</span>
+                  <span className="sm:hidden">Ajouter</span>
+                </>
+              )}
+            </Button>
           </div>
-        )}
-      </div>
-    );
-  },
+
+          {/* Product reference - monospace, subtle */}
+          {productRef && (
+            <div
+              className={cn(
+                "hidden md:flex items-center gap-2",
+                "mt-3 pt-3 border-t border-slate-100",
+              )}
+            >
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                Réf
+              </span>
+              <code
+                className="text-xs text-slate-500 font-mono bg-slate-50 px-1.5 py-0.5 rounded"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                {productRef}
+              </code>
+            </div>
+          )}
+        </div>
+      );
+    },
+  ),
 );
 
 ProductStickyCTAV2.displayName = "ProductStickyCTAV2";

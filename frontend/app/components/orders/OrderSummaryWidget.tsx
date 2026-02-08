@@ -1,4 +1,5 @@
 import { Package, Clock, CheckCircle, Euro } from "lucide-react";
+import { memo } from "react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
@@ -9,16 +10,16 @@ interface OrderSummaryProps {
   totalSpent: number;
 }
 
-export function OrderSummaryWidget({ 
-  totalOrders, 
-  pendingOrders, 
-  completedOrders, 
-  totalSpent 
+export const OrderSummaryWidget = memo(function OrderSummaryWidget({
+  totalOrders,
+  pendingOrders,
+  completedOrders,
+  totalSpent,
 }: OrderSummaryProps) {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
     }).format(price);
   };
 
@@ -78,4 +79,4 @@ export function OrderSummaryWidget({
       </Card>
     </div>
   );
-}
+});

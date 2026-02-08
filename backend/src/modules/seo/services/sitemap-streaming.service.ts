@@ -141,8 +141,10 @@ export class SitemapStreamingService {
           this.logger.log(
             `✅ Shard ${i + 1}/${shards.length}: ${shardResult.filename} (${shardResult.urlCount} URLs, ${this.formatBytes(shardResult.compressedSize || shardResult.fileSize)})`,
           );
-        } catch (error: any) {
-          const errorMsg = `Failed to generate shard ${i + 1}: ${error.message}`;
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          const errorMsg = `Failed to generate shard ${i + 1}: ${message}`;
           this.logger.error(errorMsg);
           errors.push(errorMsg);
         }
@@ -188,8 +190,9 @@ export class SitemapStreamingService {
       );
 
       return result;
-    } catch (error: any) {
-      this.logger.error(`❌ Generation failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Generation failed: ${message}`);
       throw error;
     }
   }

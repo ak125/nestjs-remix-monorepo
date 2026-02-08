@@ -5,8 +5,26 @@
  * Route: /brands/*
  */
 
+import { type MetaFunction } from "@remix-run/node";
 import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
+
+export const meta: MetaFunction = () => [
+  { title: "Marques Automobiles - Catalogue | Automecanik" },
+  {
+    name: "description",
+    content:
+      "Explorez notre catalogue par marque automobile. Pièces détachées pour toutes marques et modèles.",
+  },
+  { name: "robots", content: "index, follow" },
+  { property: "og:title", content: "Marques Automobiles | Automecanik" },
+  {
+    property: "og:description",
+    content:
+      "Explorez notre catalogue par marque automobile. Pièces détachées pour toutes marques et modèles.",
+  },
+  { property: "og:type", content: "website" },
+];
 
 export default function BrandsLayout() {
   return (

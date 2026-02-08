@@ -24,6 +24,7 @@ import { type PaymentMethod, type OrderSummary } from "../types/payment";
 import { Error404 } from "~/components/errors/Error404";
 import { trackAddPaymentInfo } from "~/utils/analytics";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // Phase 9: PageRole pour analytics
@@ -87,7 +88,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const orderData = await orderResponse.json();
     const orderDetails = orderData.data;
 
-    console.log(
+    logger.log(
       "📦 Order details from API:",
       JSON.stringify(orderDetails, null, 2),
     );
@@ -109,9 +110,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     const customerEmail = orderDetails.customer?.cst_mail || "";
 
-    console.log("🔍 DEBUG customerName:", customerName);
-    console.log("🔍 DEBUG customerEmail:", customerEmail);
-    console.log("🔍 DEBUG customer object:", orderDetails.customer);
+    logger.log("🔍 DEBUG customerName:", customerName);
+    logger.log("🔍 DEBUG customerEmail:", customerEmail);
+    logger.log("🔍 DEBUG customer object:", orderDetails.customer);
 
     // Transformer les données de la commande pour l'interface OrderSummary
     const order: OrderSummary = {
@@ -139,7 +140,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         : undefined,
     };
 
-    console.log("✅ Order transformed:", order);
+    logger.log("✅ Order transformed:", order);
 
     // Si la commande est déjà payée, rediriger vers la page de commande
     if (order.status !== 0) {
@@ -158,16 +159,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("❌ Error loading payment page:", error);
+    logger.error("❌ Error loading payment page:", error);
     throw new Response("Erreur lors du chargement", { status: 500 });
   }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log("🔥 ACTION CHECKOUT-PAYMENT APPELÉE 🔥");
-  console.log("🔍 Request URL:", request.url);
-  console.log("🔍 Request method:", request.method);
-  console.log("🔍 Content-Type:", request.headers.get("content-type"));
+  logger.log("🔥 ACTION CHECKOUT-PAYMENT APPELÉE 🔥");
+  logger.log("🔍 Request URL:", request.url);
+  logger.log("🔍 Request method:", request.method);
+  logger.log("🔍 Content-Type:", request.headers.get("content-type"));
 
   let orderId: string | undefined;
   let paymentMethod: string | undefined;
@@ -177,14 +178,14 @@ export async function action({ request }: ActionFunctionArgs) {
   const fetchBody = request.headers.get("X-Fetch-Body");
 
   if (!fetchBody) {
-    console.error("❌ Header X-Fetch-Body manquant");
+    logger.error("❌ Header X-Fetch-Body manquant");
     return json<ActionData>(
       { error: "Données de formulaire manquantes" },
       { status: 400 },
     );
   }
 
-  console.log(
+  logger.log(
     "✅ Body reçu depuis header X-Fetch-Body (length:",
     fetchBody.length,
     ")",
@@ -195,20 +196,20 @@ export async function action({ request }: ActionFunctionArgs) {
   paymentMethod = params.get("paymentMethod") || undefined;
   acceptTerms = params.get("acceptTerms") === "on";
 
-  console.log("✅ Données extraites:", { orderId, paymentMethod, acceptTerms });
+  logger.log("✅ Données extraites:", { orderId, paymentMethod, acceptTerms });
 
   // Maintenant vérifier l'authentification
   if (false) {
     // Code mort - à supprimer
     const params = new URLSearchParams("");
     const keys = Array.from(params.keys());
-    console.log("� Paramètres:", keys.join(", "));
+    logger.log("� Paramètres:", keys.join(", "));
 
     orderId = params.get("orderId") || undefined;
     paymentMethod = params.get("paymentMethod") || undefined;
     acceptTerms = params.get("acceptTerms") === "on";
 
-    console.log("✅ Données extraites:", {
+    logger.log("✅ Données extraites:", {
       orderId,
       paymentMethod,
       acceptTerms,
@@ -217,11 +218,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Vérification authentification suit immédiatement
   if (false) {
-    console.log("mort");
+    logger.log("mort");
   }
   if (false) {
     try {
-      console.log("mort");
+      logger.log("mort");
 
       // Créer une promesse avec timeout pour éviter de bloquer indéfiniment
       const timeoutPromise = new Promise<string>((_, reject) => {
@@ -239,29 +240,24 @@ export async function action({ request }: ActionFunctionArgs) {
       const bodyPromise = request.text();
 
       const bodyText = await Promise.race([bodyPromise, timeoutPromise]);
-      console.log(
-        "✅ Body text reçu (length:",
-        bodyText.length,
-        "):",
-        bodyText,
-      );
+      logger.log("✅ Body text reçu (length:", bodyText.length, "):", bodyText);
 
       // Parser manuellement les données URL-encoded
       const params = new URLSearchParams(bodyText);
       const keys = Array.from(params.keys());
-      console.log("📋 Nombre de paramètres:", keys.length);
-      console.log("📋 Clés:", keys);
+      logger.log("📋 Nombre de paramètres:", keys.length);
+      logger.log("📋 Clés:", keys);
 
       orderId = params.get("orderId") || undefined;
-      console.log("✅ orderId extrait:", orderId);
+      logger.log("✅ orderId extrait:", orderId);
 
       paymentMethod = params.get("paymentMethod") || undefined;
-      console.log("✅ paymentMethod extrait:", paymentMethod);
+      logger.log("✅ paymentMethod extrait:", paymentMethod);
 
       acceptTerms = params.get("acceptTerms") === "on";
-      console.log("✅ acceptTerms extrait:", acceptTerms);
+      logger.log("✅ acceptTerms extrait:", acceptTerms);
     } catch (err: unknown) {
-      console.error("❌ Erreur lecture body:", err);
+      logger.error("❌ Erreur lecture body:", err);
 
       let errorMessage: string;
       let errorType: string;
@@ -273,9 +269,9 @@ export async function action({ request }: ActionFunctionArgs) {
         errorType = error.constructor.name;
         errorStack = error.stack || "no stack";
 
-        console.error("❌ Type erreur:", errorType);
-        console.error("❌ Message:", errorMessage);
-        console.error("❌ Stack:", errorStack);
+        logger.error("❌ Type erreur:", errorType);
+        logger.error("❌ Message:", errorMessage);
+        logger.error("❌ Stack:", errorStack);
 
         // Si c'est un timeout, message spécifique
         if (error.message.includes("Timeout")) {
@@ -292,8 +288,8 @@ export async function action({ request }: ActionFunctionArgs) {
         errorType = typeof err;
         errorStack = "no stack";
 
-        console.error("❌ Type erreur:", errorType);
-        console.error("❌ Message:", errorMessage);
+        logger.error("❌ Type erreur:", errorType);
+        logger.error("❌ Message:", errorMessage);
       }
 
       return json<ActionData>(
@@ -307,14 +303,14 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  console.log("📝 Données complètes reçues:", {
+  logger.log("📝 Données complètes reçues:", {
     orderId,
     paymentMethod,
     acceptTerms,
   });
 
   // Guest checkout: auth optionnelle (l'email est sur la commande)
-  console.log("🔐 Vérification authentification (optionnelle)...");
+  logger.log("🔐 Vérification authentification (optionnelle)...");
   let user: any = null;
   try {
     const cookieHeader = request.headers.get("Cookie") || "";
@@ -325,13 +321,13 @@ export async function action({ request }: ActionFunctionArgs) {
       const sessionData = await sessionRes.json();
       user = sessionData.user || sessionData.data || null;
     }
-    console.log("🔐 Utilisateur:", user?.id || "guest (sans session)");
+    logger.log("🔐 Utilisateur:", user?.id || "guest (sans session)");
   } catch (authError) {
-    console.log("🔐 Auth check echoue, continue en mode guest");
+    logger.log("🔐 Auth check echoue, continue en mode guest");
   }
 
   if (!orderId || !paymentMethod) {
-    console.error("❌ Données manquantes:", { orderId, paymentMethod });
+    logger.error("❌ Données manquantes:", { orderId, paymentMethod });
     return json<ActionData>(
       { error: "Données de paiement manquantes" },
       { status: 400 },
@@ -348,7 +344,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     // ✅ Phase 7: Récupérer les infos de la commande pour obtenir le montant total avec consignes
     const backendUrl = getInternalApiUrl("");
-    console.log(
+    logger.log(
       "🔍 Fetching order details from:",
       `${backendUrl}/api/orders/${orderId}`,
     );
@@ -360,17 +356,17 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
 
-    console.log("📦 Order response status:", orderResponse.status);
+    logger.log("📦 Order response status:", orderResponse.status);
 
     if (!orderResponse.ok) {
       const errorText = await orderResponse.text();
-      console.error("❌ Order fetch failed:", errorText);
+      logger.error("❌ Order fetch failed:", errorText);
       throw new Error("Impossible de récupérer la commande");
     }
 
     const orderData = await orderResponse.json();
     const orderDetails = orderData.data;
-    console.log("✅ Order details fetched successfully");
+    logger.log("✅ Order details fetched successfully");
 
     const totalAmount = parseFloat(orderDetails.ord_total_ttc || "0");
     const consigneTotal = parseFloat(orderDetails.ord_deposit_ttc || "0");
@@ -382,14 +378,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const customerEmail = orderDetails.customer?.cst_mail || user?.email || "";
 
-    console.log("💰 Payment amounts:", {
+    logger.log("💰 Payment amounts:", {
       totalAmount,
       consigneTotal,
       customerName,
       customerEmail,
     });
 
-    console.log("💳 Calling initializePayment with:", {
+    logger.log("💳 Calling initializePayment with:", {
       orderId,
       userId: user?.id || "guest",
       paymentMethod,
@@ -402,7 +398,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Construire l'URL de base depuis la requête
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
-    console.log("🔗 Base URL détectée:", baseUrl);
+    logger.log("🔗 Base URL détectée:", baseUrl);
 
     // Initialiser le paiement côté serveur
     const paymentData = await initializePayment({
@@ -421,7 +417,7 @@ export async function action({ request }: ActionFunctionArgs) {
         "unknown",
     });
 
-    console.log("✅ Payment initialized:", paymentData);
+    logger.log("✅ Payment initialized:", paymentData);
 
     // Redirection vers la page de traitement du paiement
     if (paymentData.redirectUrl) {
@@ -434,7 +430,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("❌ Payment initialization failed:", error);
+    logger.error("❌ Payment initialization failed:", error);
     return json<ActionData>(
       {
         error:
@@ -464,10 +460,10 @@ export default function PaymentPage() {
   // Handler pour soumettre avec fetch + header X-Fetch-Body
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("🚀 handleSubmit called");
+    logger.log("🚀 handleSubmit called");
 
     if (!acceptedTerms) {
-      console.log("❌ Terms not accepted");
+      logger.log("❌ Terms not accepted");
       toast.error("Conditions générales requises", {
         description: "Vous devez accepter les CGV pour continuer",
         duration: 4000,
@@ -475,11 +471,11 @@ export default function PaymentPage() {
       return;
     }
 
-    console.log("✅ Terms accepted, preparing payment...");
+    logger.log("✅ Terms accepted, preparing payment...");
     setIsProcessing(true);
 
     try {
-      console.log("🔵 Redirecting directly to Paybox...");
+      logger.log("🔵 Redirecting directly to Paybox...");
 
       // ✅ OPTIMISATION: Redirection directe vers Paybox (pas de création de paiement préalable)
       // Le paiement sera créé au retour du callback Paybox
@@ -488,7 +484,7 @@ export default function PaymentPage() {
       const customerEmail = order.customerEmail || user?.email || "";
 
       if (!customerEmail) {
-        console.error("❌ No customer email available");
+        logger.error("❌ No customer email available");
         toast.error("Email requis", {
           description: "Aucun email client disponible",
           duration: 4000,
@@ -499,8 +495,8 @@ export default function PaymentPage() {
 
       const redirectUrl = `/api/paybox/redirect?orderId=${encodeURIComponent(order.id)}&amount=${encodeURIComponent(order.totalTTC)}&email=${encodeURIComponent(customerEmail)}`;
 
-      console.log("🚀 Redirect URL:", redirectUrl);
-      console.log("📧 Customer email:", customerEmail);
+      logger.log("🚀 Redirect URL:", redirectUrl);
+      logger.log("📧 Customer email:", customerEmail);
 
       toast.loading("Redirection vers le paiement...", { duration: 2000 });
       window.location.href = redirectUrl;
@@ -509,7 +505,7 @@ export default function PaymentPage() {
       if (error instanceof Response) {
         throw error;
       }
-      console.error("❌ ERROR:", error);
+      logger.error("❌ ERROR:", error);
       toast.error("Erreur de paiement", {
         description: String(error),
         duration: 5000,

@@ -1,6 +1,15 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Couleurs Familles - Admin");
 
 /**
  * 🎨 PAGE ADMIN - Aperçu des couleurs par famille
@@ -11,13 +20,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // Charger toutes les familles
     const catalogData = await hierarchyApi.getHomepageData();
-    
+
     return json({
       families: catalogData.families || [],
       success: true,
     });
   } catch (error) {
-    console.error('Erreur chargement familles:', error);
+    logger.error("Erreur chargement familles:", error);
     return json({
       families: [],
       success: false,
@@ -37,27 +46,35 @@ export default function CouleursAdminPage() {
             🎨 Palette de couleurs des familles
           </h1>
           <p className="text-lg text-gray-600">
-            Visualisation de toutes les couleurs assignées aux {families.length} familles de produits
+            Visualisation de toutes les couleurs assignées aux {families.length}{" "}
+            familles de produits
           </p>
-          
+
           {/* Légende */}
           <div className="mt-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-sm font-semibold text-gray-700 mb-2">📋 Organisation des couleurs</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-2">
+              📋 Organisation des couleurs
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
-                <span className="font-medium">🔧 Mécanique & Moteur:</span> Rouge, Orange, Jaune, Lime
+                <span className="font-medium">🔧 Mécanique & Moteur:</span>{" "}
+                Rouge, Orange, Jaune, Lime
               </div>
               <div>
-                <span className="font-medium">🚗 Train roulant:</span> Vert, Teal, Violet, Emerald
+                <span className="font-medium">🚗 Train roulant:</span> Vert,
+                Teal, Violet, Emerald
               </div>
               <div>
-                <span className="font-medium">⚡ Électronique:</span> Indigo, Amber, Bleu
+                <span className="font-medium">⚡ Électronique:</span> Indigo,
+                Amber, Bleu
               </div>
               <div>
-                <span className="font-medium">❄️ Confort:</span> Cyan, Sky, Fuchsia, Pink
+                <span className="font-medium">❄️ Confort:</span> Cyan, Sky,
+                Fuchsia, Pink
               </div>
               <div>
-                <span className="font-medium">🏗️ Structure:</span> Pink, Rose, Gray, Neutral
+                <span className="font-medium">🏗️ Structure:</span> Pink, Rose,
+                Gray, Neutral
               </div>
             </div>
           </div>
@@ -75,17 +92,19 @@ export default function CouleursAdminPage() {
                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
               >
                 {/* Carte couleur avec image */}
-                <div className={`relative h-48 bg-gradient-to-br ${familyColor}`}>
+                <div
+                  className={`relative h-48 bg-gradient-to-br ${familyColor}`}
+                >
                   <img
                     src={familyImage}
                     alt={family.mf_name_system || family.mf_name}
                     className="w-full h-full object-contain opacity-90"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.style.display = "none";
                     }}
                   />
-                  
+
                   {/* Badge ID */}
                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full">
                     ID: {family.mf_id}
@@ -114,7 +133,9 @@ export default function CouleursAdminPage() {
                   {/* Statistiques */}
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <span className="flex items-center gap-1">
-                      <span className="font-medium">{family.gammes_count || 0}</span>
+                      <span className="font-medium">
+                        {family.gammes_count || 0}
+                      </span>
                       <span className="text-gray-500">gammes</span>
                     </span>
                     {family.mf_sort && (
@@ -126,7 +147,9 @@ export default function CouleursAdminPage() {
 
                   {/* Aperçu couleur pur */}
                   <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className={`h-12 rounded-lg bg-gradient-to-br ${familyColor} shadow-inner`}></div>
+                    <div
+                      className={`h-12 rounded-lg bg-gradient-to-br ${familyColor} shadow-inner`}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -142,15 +165,22 @@ export default function CouleursAdminPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {Array.from({ length: 50 }, (_, i) => i + 1).map((id) => {
               // Simuler une famille avec cet ID
-              const mockFamily = { mf_id: id.toString(), mf_name: `Famille ${id}` };
+              const mockFamily = {
+                mf_id: id.toString(),
+                mf_name: `Famille ${id}`,
+              };
               const color = hierarchyApi.getFamilyColor(mockFamily as any);
-              
+
               return (
                 <div key={id} className="text-center">
-                  <div className={`h-20 rounded-lg bg-gradient-to-br ${color} shadow-md mb-2`}></div>
-                  <p className="text-xs font-semibold text-gray-700">ID: {id}</p>
+                  <div
+                    className={`h-20 rounded-lg bg-gradient-to-br ${color} shadow-md mb-2`}
+                  ></div>
+                  <p className="text-xs font-semibold text-gray-700">
+                    ID: {id}
+                  </p>
                   <p className="text-xs text-gray-500 mt-1 leading-tight break-words">
-                    {color.replace('from-', '').replace(' to-', ' → ')}
+                    {color.replace("from-", "").replace(" to-", " → ")}
                   </p>
                 </div>
               );
@@ -161,10 +191,12 @@ export default function CouleursAdminPage() {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-gray-500">
           <p>
-            💡 <strong>Note:</strong> Les couleurs sont assignées automatiquement par ID ou par recherche de mots-clés dans le nom.
+            💡 <strong>Note:</strong> Les couleurs sont assignées
+            automatiquement par ID ou par recherche de mots-clés dans le nom.
           </p>
           <p className="mt-1">
-            Si une famille n'a pas de couleur spécifique, une couleur est générée de manière cohérente via un hash.
+            Si une famille n'a pas de couleur spécifique, une couleur est
+            générée de manière cohérente via un hash.
           </p>
         </div>
       </div>

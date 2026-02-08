@@ -1,4 +1,4 @@
-import { useFetcher } from '@remix-run/react';
+import { useFetcher } from "@remix-run/react";
 import {
   Check,
   CheckCircle,
@@ -8,10 +8,11 @@ import {
   PlayCircle,
   Truck,
   XCircle,
-} from 'lucide-react';
-import { Alert } from '~/components/ui/alert';
-import { type Order } from '../../types/orders.types';
-import { type UserPermissions } from '../../utils/permissions';
+} from "lucide-react";
+import { memo } from "react";
+import { type Order } from "../../types/orders.types";
+import { type UserPermissions } from "../../utils/permissions";
+import { Alert } from "~/components/ui/alert";
 
 interface OrderWorkflowButtonsProps {
   order: Order;
@@ -31,60 +32,60 @@ interface WorkflowStep {
 
 const WORKFLOW_STEPS: WorkflowStep[] = [
   {
-    id: '1',
-    name: 'En attente',
+    id: "1",
+    name: "En attente",
     icon: Clock,
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
   },
   {
-    id: '2',
-    name: 'Validée',
+    id: "2",
+    name: "Validée",
     icon: CheckCircle,
-    bgColor: 'bg-primary/15',
-    textColor: 'text-blue-700',
-    action: 'validate',
-    permission: 'canValidate',
+    bgColor: "bg-primary/15",
+    textColor: "text-blue-700",
+    action: "validate",
+    permission: "canValidate",
   },
   {
-    id: '3',
-    name: 'Préparation',
+    id: "3",
+    name: "Préparation",
     icon: PlayCircle,
-    bgColor: 'bg-purple-100',
-    textColor: 'text-purple-700',
-    action: 'startProcessing',
-    permission: 'canValidate',
+    bgColor: "bg-purple-100",
+    textColor: "text-purple-700",
+    action: "startProcessing",
+    permission: "canValidate",
   },
   {
-    id: '4',
-    name: 'Prête',
+    id: "4",
+    name: "Prête",
     icon: Package,
-    bgColor: 'bg-warning/15',
-    textColor: 'text-yellow-700',
-    action: 'markReady',
-    permission: 'canShip',
+    bgColor: "bg-warning/15",
+    textColor: "text-yellow-700",
+    action: "markReady",
+    permission: "canShip",
   },
   {
-    id: '5',
-    name: 'Expédiée',
+    id: "5",
+    name: "Expédiée",
     icon: Truck,
-    bgColor: 'bg-indigo-100',
-    textColor: 'text-indigo-700',
-    action: 'ship',
-    permission: 'canShip',
+    bgColor: "bg-indigo-100",
+    textColor: "text-indigo-700",
+    action: "ship",
+    permission: "canShip",
   },
   {
-    id: '6',
-    name: 'Livrée',
+    id: "6",
+    name: "Livrée",
     icon: Check,
-    bgColor: 'bg-success/15',
-    textColor: 'text-green-700',
-    action: 'deliver',
-    permission: 'canDeliver',
+    bgColor: "bg-success/15",
+    textColor: "text-green-700",
+    action: "deliver",
+    permission: "canDeliver",
   },
 ];
 
-export function OrderWorkflowButtons({
+export const OrderWorkflowButtons = memo(function OrderWorkflowButtons({
   order,
   permissions,
   onStatusChange,
@@ -112,18 +113,21 @@ export function OrderWorkflowButtons({
     if (confirm(`Passer la commande à l'état "${step.name}" ?`)) {
       fetcher.submit(
         { intent: step.action, orderId: order.ord_id },
-        { method: 'post' },
+        { method: "post" },
       );
       onStatusChange?.(step.id);
     }
   };
 
-  const isProcessing = fetcher.state !== 'idle';
+  const isProcessing = fetcher.state !== "idle";
 
   // Si commande annulée
-  if (order.ord_ords_id === '7') {
+  if (order.ord_ords_id === "7") {
     return (
-<Alert className="flex items-center gap-2 px-4 py-3    rounded-lg" variant="error">
+      <Alert
+        className="flex items-center gap-2 px-4 py-3    rounded-lg"
+        variant="error"
+      >
         <XCircle className="w-5 h-5 text-red-600" />
         <span className="font-medium text-red-700">Commande annulée</span>
       </Alert>
@@ -140,7 +144,8 @@ export function OrderWorkflowButtons({
           const isCurrent = step.id === order.ord_ords_id;
           const isPast = index < currentStepIndex;
           const isNext = index === currentStepIndex + 1;
-          const hasPermission = !step.permission || permissions[step.permission];
+          const hasPermission =
+            !step.permission || permissions[step.permission];
           const isClickable = isNext && hasPermission && !isProcessing;
 
           const Icon = step.icon;
@@ -154,10 +159,10 @@ export function OrderWorkflowButtons({
                   isCurrent
                     ? `${step.bgColor} ${step.textColor} ring-2 ring-offset-2 ring-current font-semibold`
                     : isPast
-                      ? 'bg-success/10 text-success'
+                      ? "bg-success/10 text-success"
                       : isClickable
                         ? `${step.bgColor} ${step.textColor} hover:ring-2 hover:ring-offset-1 hover:ring-current cursor-pointer`
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 {isPast ? (
@@ -172,7 +177,7 @@ export function OrderWorkflowButtons({
 
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div
-                  className={`w-8 h-0.5 ${isPast ? 'bg-success/60' : 'bg-muted/50'}`}
+                  className={`w-8 h-0.5 ${isPast ? "bg-success/60" : "bg-muted/50"}`}
                 />
               )}
             </div>
@@ -181,4 +186,4 @@ export function OrderWorkflowButtons({
       </div>
     </div>
   );
-}
+});

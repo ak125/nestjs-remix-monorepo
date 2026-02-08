@@ -22,6 +22,7 @@ import { createReview } from "../services/api/review.api";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -91,7 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
     await createReview(reviewData, request);
     return redirect(`/reviews?created=true`);
   } catch (error) {
-    console.error("Erreur lors de la création de l'avis:", error);
+    logger.error("Erreur lors de la création de l'avis:", error);
     return json<ActionData>(
       {
         errors: {

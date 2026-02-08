@@ -1,6 +1,6 @@
 /**
  * TrustPageExamples - Exemples d'utilisation de TrustPage
- * 
+ *
  * Démontre les différentes configurations possibles:
  * 1. Page complète (logos + badges + avis)
  * 2. Section logos seule
@@ -8,13 +8,14 @@
  * 4. Configuration personnalisée
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   TrustPage,
   type PartnerBrand,
   type SecurityBadge,
   type CustomerReview,
-} from './TrustPage';
+} from "./TrustPage";
+import { logger } from "~/utils/logger";
 
 // ============================================================================
 // Exemple 1: Page Complète
@@ -25,7 +26,7 @@ import {
  */
 export const TrustPageComplete: React.FC = () => {
   const handleViewAllReviews = () => {
-    console.log('Navigation vers page avis complets');
+    logger.log("Navigation vers page avis complets");
     // router.push('/avis-clients');
   };
 
@@ -36,7 +37,8 @@ export const TrustPageComplete: React.FC = () => {
           Pourquoi nous faire confiance ?
         </h1>
         <p className="font-sans text-lg text-neutral-600 text-center mb-2xl max-w-3xl mx-auto">
-          Des pièces de qualité, des garanties solides, et des milliers de clients satisfaits.
+          Des pièces de qualité, des garanties solides, et des milliers de
+          clients satisfaits.
         </p>
 
         <TrustPage onViewAllReviews={handleViewAllReviews} />
@@ -56,52 +58,52 @@ export const TrustPageComplete: React.FC = () => {
 export const TrustPagePartnersOnly: React.FC = () => {
   const customBrands: PartnerBrand[] = [
     {
-      id: 'bosch',
-      name: 'Bosch',
-      logoUrl: '/images/brands/bosch.png',
-      description: 'Leader mondial équipements auto',
+      id: "bosch",
+      name: "Bosch",
+      logoUrl: "/images/brands/bosch.png",
+      description: "Leader mondial équipements auto",
     },
     {
-      id: 'valeo',
-      name: 'Valeo',
-      logoUrl: '/images/brands/valeo.png',
-      description: 'Expert systèmes automobiles',
+      id: "valeo",
+      name: "Valeo",
+      logoUrl: "/images/brands/valeo.png",
+      description: "Expert systèmes automobiles",
     },
     {
-      id: 'mann',
-      name: 'MANN-FILTER',
-      logoUrl: '/images/brands/mann.png',
-      description: 'Spécialiste filtration',
+      id: "mann",
+      name: "MANN-FILTER",
+      logoUrl: "/images/brands/mann.png",
+      description: "Spécialiste filtration",
     },
     {
-      id: 'sachs',
-      name: 'Sachs',
-      logoUrl: '/images/brands/sachs.png',
-      description: 'Expert embrayage et suspension',
+      id: "sachs",
+      name: "Sachs",
+      logoUrl: "/images/brands/sachs.png",
+      description: "Expert embrayage et suspension",
     },
     {
-      id: 'brembo',
-      name: 'Brembo',
-      logoUrl: '/images/brands/brembo.png',
-      description: 'Référence freinage haute performance',
+      id: "brembo",
+      name: "Brembo",
+      logoUrl: "/images/brands/brembo.png",
+      description: "Référence freinage haute performance",
     },
     {
-      id: 'ngk',
-      name: 'NGK',
-      logoUrl: '/images/brands/ngk.png',
-      description: 'N°1 mondial bougies allumage',
+      id: "ngk",
+      name: "NGK",
+      logoUrl: "/images/brands/ngk.png",
+      description: "N°1 mondial bougies allumage",
     },
     {
-      id: 'continental',
-      name: 'Continental',
-      logoUrl: '/images/brands/continental.png',
-      description: 'Expert pneumatiques et freinage',
+      id: "continental",
+      name: "Continental",
+      logoUrl: "/images/brands/continental.png",
+      description: "Expert pneumatiques et freinage",
     },
     {
-      id: 'liqui-moly',
-      name: 'Liqui Moly',
-      logoUrl: '/images/brands/liqui-moly.png',
-      description: 'Spécialiste lubrifiants premium',
+      id: "liqui-moly",
+      name: "Liqui Moly",
+      logoUrl: "/images/brands/liqui-moly.png",
+      description: "Spécialiste lubrifiants premium",
     },
   ];
 
@@ -131,103 +133,103 @@ export const TrustPagePartnersOnly: React.FC = () => {
 export const TrustPageReviewsOnly: React.FC = () => {
   const productReviews: CustomerReview[] = [
     {
-      id: 'review-p1',
-      customerName: 'Jean-Luc M.',
-      customerPhoto: '/images/avatars/jeanluc.jpg',
+      id: "review-p1",
+      customerName: "Jean-Luc M.",
+      customerPhoto: "/images/avatars/jeanluc.jpg",
       rating: 5,
       comment:
-        'Disques de frein Brembo au top ! Freinage progressif et puissant. Compatible parfaitement avec ma Golf GTI.',
-      date: '2025-10-20',
+        "Disques de frein Brembo au top ! Freinage progressif et puissant. Compatible parfaitement avec ma Golf GTI.",
+      date: "2025-10-20",
       vehicle: {
-        brand: 'Volkswagen',
-        model: 'Golf GTI',
+        brand: "Volkswagen",
+        model: "Golf GTI",
         year: 2017,
-        engine: '2.0 TSI',
+        engine: "2.0 TSI",
       },
       isVerified: true,
-      productName: 'Kit disques de frein avant Brembo',
+      productName: "Kit disques de frein avant Brembo",
     },
     {
-      id: 'review-p2',
-      customerName: 'Céline R.',
-      customerPhoto: '/images/avatars/celine.jpg',
+      id: "review-p2",
+      customerName: "Céline R.",
+      customerPhoto: "/images/avatars/celine.jpg",
       rating: 5,
       comment:
-        'Amortisseurs Sachs installés sur ma Megane. Confort retrouvé, tenue de route améliorée. Excellent rapport qualité/prix.',
-      date: '2025-10-18',
+        "Amortisseurs Sachs installés sur ma Megane. Confort retrouvé, tenue de route améliorée. Excellent rapport qualité/prix.",
+      date: "2025-10-18",
       vehicle: {
-        brand: 'Renault',
-        model: 'Megane III',
+        brand: "Renault",
+        model: "Megane III",
         year: 2014,
-        engine: '1.5 dCi',
+        engine: "1.5 dCi",
       },
       isVerified: true,
-      productName: 'Amortisseurs avant Sachs',
+      productName: "Amortisseurs avant Sachs",
     },
     {
-      id: 'review-p3',
-      customerName: 'Pierre D.',
-      customerPhoto: '/images/avatars/pierre.jpg',
+      id: "review-p3",
+      customerName: "Pierre D.",
+      customerPhoto: "/images/avatars/pierre.jpg",
       rating: 4,
       comment:
-        'Kit distribution Bosch de qualité. Notice claire, pièces bien emballées. Installation nickel par mon garagiste.',
-      date: '2025-10-14',
+        "Kit distribution Bosch de qualité. Notice claire, pièces bien emballées. Installation nickel par mon garagiste.",
+      date: "2025-10-14",
       vehicle: {
-        brand: 'Peugeot',
-        model: '308',
+        brand: "Peugeot",
+        model: "308",
         year: 2016,
-        engine: '1.6 BlueHDi',
+        engine: "1.6 BlueHDi",
       },
       isVerified: true,
-      productName: 'Kit distribution Bosch',
+      productName: "Kit distribution Bosch",
     },
     {
-      id: 'review-p4',
-      customerName: 'Nathalie B.',
+      id: "review-p4",
+      customerName: "Nathalie B.",
       rating: 5,
       comment:
-        'Parfait ! Filtre à huile MANN + huile Liqui Moly. Livraison rapide, prix compétitif. Ma 208 ronronne.',
-      date: '2025-10-10',
+        "Parfait ! Filtre à huile MANN + huile Liqui Moly. Livraison rapide, prix compétitif. Ma 208 ronronne.",
+      date: "2025-10-10",
       vehicle: {
-        brand: 'Peugeot',
-        model: '208',
+        brand: "Peugeot",
+        model: "208",
         year: 2019,
-        engine: '1.2 PureTech',
+        engine: "1.2 PureTech",
       },
       isVerified: true,
-      productName: 'Kit vidange MANN + Liqui Moly',
+      productName: "Kit vidange MANN + Liqui Moly",
     },
     {
-      id: 'review-p5',
-      customerName: 'Alexandre T.',
-      customerPhoto: '/images/avatars/alex.jpg',
+      id: "review-p5",
+      customerName: "Alexandre T.",
+      customerPhoto: "/images/avatars/alex.jpg",
       rating: 5,
       comment:
-        'Bougies NGK pour ma Civic Type R. Démarrage immédiat, moteur plus nerveux. Compatible OEM, qualité irréprochable.',
-      date: '2025-10-05',
+        "Bougies NGK pour ma Civic Type R. Démarrage immédiat, moteur plus nerveux. Compatible OEM, qualité irréprochable.",
+      date: "2025-10-05",
       vehicle: {
-        brand: 'Honda',
-        model: 'Civic Type R',
+        brand: "Honda",
+        model: "Civic Type R",
         year: 2018,
-        engine: '2.0 VTEC Turbo',
+        engine: "2.0 VTEC Turbo",
       },
       isVerified: true,
-      productName: 'Bougies allumage NGK Iridium',
+      productName: "Bougies allumage NGK Iridium",
     },
     {
-      id: 'review-p6',
-      customerName: 'Isabelle G.',
+      id: "review-p6",
+      customerName: "Isabelle G.",
       rating: 4,
       comment:
-        'Batterie Bosch pour ma Clio. Très bon rapport qualité/prix. Garantie 1 an rassurante. Délai de livraison respecté.',
-      date: '2025-10-01',
+        "Batterie Bosch pour ma Clio. Très bon rapport qualité/prix. Garantie 1 an rassurante. Délai de livraison respecté.",
+      date: "2025-10-01",
       vehicle: {
-        brand: 'Renault',
-        model: 'Clio IV',
+        brand: "Renault",
+        model: "Clio IV",
         year: 2015,
       },
       isVerified: true,
-      productName: 'Batterie Bosch S4',
+      productName: "Batterie Bosch S4",
     },
   ];
 
@@ -241,7 +243,7 @@ export const TrustPageReviewsOnly: React.FC = () => {
           security: false,
           reviews: true,
         }}
-        onViewAllReviews={() => console.log('Voir tous les avis')}
+        onViewAllReviews={() => logger.log("Voir tous les avis")}
       />
     </div>
   );
@@ -257,47 +259,48 @@ export const TrustPageReviewsOnly: React.FC = () => {
 export const TrustPageCustomConfig: React.FC = () => {
   const customSecurityBadges: SecurityBadge[] = [
     {
-      id: 'eco-payment',
-      type: 'payment',
-      title: 'Paiement en 3x sans frais',
-      description: 'Répartissez vos achats sur 3 mois sans frais supplémentaires.',
-      icon: '💳',
-      variant: 'primary',
+      id: "eco-payment",
+      type: "payment",
+      title: "Paiement en 3x sans frais",
+      description:
+        "Répartissez vos achats sur 3 mois sans frais supplémentaires.",
+      icon: "💳",
+      variant: "primary",
     },
     {
-      id: 'expert-warranty',
-      type: 'warranty',
-      title: 'Garantie Expert 3 ans',
-      description: 'Garantie étendue 3 ans pour tous les kits distribution.',
-      icon: '🛡️',
-      variant: 'success',
+      id: "expert-warranty",
+      type: "warranty",
+      title: "Garantie Expert 3 ans",
+      description: "Garantie étendue 3 ans pour tous les kits distribution.",
+      icon: "🛡️",
+      variant: "success",
     },
     {
-      id: 'mounting-guide',
-      type: 'certified',
-      title: 'Notice montage incluse',
-      description: 'Guides techniques détaillés pour faciliter l\'installation.',
-      icon: '📋',
-      variant: 'secondary',
+      id: "mounting-guide",
+      type: "certified",
+      title: "Notice montage incluse",
+      description: "Guides techniques détaillés pour faciliter l'installation.",
+      icon: "📋",
+      variant: "secondary",
     },
     {
-      id: 'hotline',
-      type: 'certified',
-      title: 'Hotline technique gratuite',
-      description: 'Nos experts répondent à vos questions par téléphone.',
-      icon: '📞',
-      variant: 'secondary',
+      id: "hotline",
+      type: "certified",
+      title: "Hotline technique gratuite",
+      description: "Nos experts répondent à vos questions par téléphone.",
+      icon: "📞",
+      variant: "secondary",
     },
   ];
 
   const [selectedSection, setSelectedSection] = useState<
-    'all' | 'partners' | 'security' | 'reviews'
-  >('all');
+    "all" | "partners" | "security" | "reviews"
+  >("all");
 
   const showSectionsConfig = {
-    partners: selectedSection === 'all' || selectedSection === 'partners',
-    security: selectedSection === 'all' || selectedSection === 'security',
-    reviews: selectedSection === 'all' || selectedSection === 'reviews',
+    partners: selectedSection === "all" || selectedSection === "partners",
+    security: selectedSection === "all" || selectedSection === "security",
+    reviews: selectedSection === "all" || selectedSection === "reviews",
   };
 
   return (
@@ -310,41 +313,41 @@ export const TrustPageCustomConfig: React.FC = () => {
         {/* Sélecteur de sections */}
         <div className="flex justify-center gap-md mb-2xl flex-wrap">
           <button
-            onClick={() => setSelectedSection('all')}
+            onClick={() => setSelectedSection("all")}
             className={`font-heading px-lg py-md rounded-lg transition-colors ${
-              selectedSection === 'all'
-                ? 'bg-primary-500 text-white'
-                : 'bg-white text-neutral-700 hover:bg-neutral-100'
+              selectedSection === "all"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-neutral-700 hover:bg-neutral-100"
             }`}
           >
             Toutes les sections
           </button>
           <button
-            onClick={() => setSelectedSection('partners')}
+            onClick={() => setSelectedSection("partners")}
             className={`font-heading px-lg py-md rounded-lg transition-colors ${
-              selectedSection === 'partners'
-                ? 'bg-secondary-500 text-white'
-                : 'bg-white text-neutral-700 hover:bg-neutral-100'
+              selectedSection === "partners"
+                ? "bg-secondary-500 text-white"
+                : "bg-white text-neutral-700 hover:bg-neutral-100"
             }`}
           >
             Logos uniquement
           </button>
           <button
-            onClick={() => setSelectedSection('security')}
+            onClick={() => setSelectedSection("security")}
             className={`font-heading px-lg py-md rounded-lg transition-colors ${
-              selectedSection === 'security'
-                ? 'bg-success-500 text-white'
-                : 'bg-white text-neutral-700 hover:bg-neutral-100'
+              selectedSection === "security"
+                ? "bg-success-500 text-white"
+                : "bg-white text-neutral-700 hover:bg-neutral-100"
             }`}
           >
             Badges uniquement
           </button>
           <button
-            onClick={() => setSelectedSection('reviews')}
+            onClick={() => setSelectedSection("reviews")}
             className={`font-heading px-lg py-md rounded-lg transition-colors ${
-              selectedSection === 'reviews'
-                ? 'bg-warning-500 text-white'
-                : 'bg-white text-neutral-700 hover:bg-neutral-100'
+              selectedSection === "reviews"
+                ? "bg-warning-500 text-white"
+                : "bg-white text-neutral-700 hover:bg-neutral-100"
             }`}
           >
             Avis uniquement
@@ -355,7 +358,7 @@ export const TrustPageCustomConfig: React.FC = () => {
         <TrustPage
           securityBadges={customSecurityBadges}
           showSections={showSectionsConfig}
-          onViewAllReviews={() => alert('Navigation vers tous les avis')}
+          onViewAllReviews={() => alert("Navigation vers tous les avis")}
         />
       </div>
     </div>
@@ -371,36 +374,36 @@ export const TrustPageCustomConfig: React.FC = () => {
  */
 export const TrustPageFooter: React.FC = () => {
   const compactBrands: PartnerBrand[] = [
-    { id: 'bosch', name: 'Bosch', logoUrl: '/images/brands/bosch.png' },
-    { id: 'valeo', name: 'Valeo', logoUrl: '/images/brands/valeo.png' },
-    { id: 'mann', name: 'MANN', logoUrl: '/images/brands/mann.png' },
-    { id: 'brembo', name: 'Brembo', logoUrl: '/images/brands/brembo.png' },
+    { id: "bosch", name: "Bosch", logoUrl: "/images/brands/bosch.png" },
+    { id: "valeo", name: "Valeo", logoUrl: "/images/brands/valeo.png" },
+    { id: "mann", name: "MANN", logoUrl: "/images/brands/mann.png" },
+    { id: "brembo", name: "Brembo", logoUrl: "/images/brands/brembo.png" },
   ];
 
   const compactBadges: SecurityBadge[] = [
     {
-      id: 'payment',
-      type: 'payment',
-      title: 'Paiement sécurisé',
-      description: 'SSL + 3D Secure',
-      icon: '🔒',
-      variant: 'success',
+      id: "payment",
+      type: "payment",
+      title: "Paiement sécurisé",
+      description: "SSL + 3D Secure",
+      icon: "🔒",
+      variant: "success",
     },
     {
-      id: 'warranty',
-      type: 'warranty',
-      title: 'Garantie 1 an',
-      description: 'Sur toutes nos pièces',
-      icon: '✓',
-      variant: 'success',
+      id: "warranty",
+      type: "warranty",
+      title: "Garantie 1 an",
+      description: "Sur toutes nos pièces",
+      icon: "✓",
+      variant: "success",
     },
     {
-      id: 'delivery',
-      type: 'delivery',
-      title: 'Livraison 24h',
-      description: 'Expédition express',
-      icon: '🚚',
-      variant: 'primary',
+      id: "delivery",
+      type: "delivery",
+      title: "Livraison 24h",
+      description: "Expédition express",
+      icon: "🚚",
+      variant: "primary",
     },
   ];
 
@@ -441,7 +444,9 @@ export const TrustPageShowcase: React.FC = () => {
       {/* Exemple 2 */}
       <div>
         <div className="bg-secondary-500 text-white py-md px-lg mb-md">
-          <h2 className="font-heading text-2xl">Exemple 2: Section logos seule</h2>
+          <h2 className="font-heading text-2xl">
+            Exemple 2: Section logos seule
+          </h2>
         </div>
         <TrustPagePartnersOnly />
       </div>
@@ -449,7 +454,9 @@ export const TrustPageShowcase: React.FC = () => {
       {/* Exemple 3 */}
       <div>
         <div className="bg-success-500 text-white py-md px-lg mb-md">
-          <h2 className="font-heading text-2xl">Exemple 3: Section avis seule</h2>
+          <h2 className="font-heading text-2xl">
+            Exemple 3: Section avis seule
+          </h2>
         </div>
         <TrustPageReviewsOnly />
       </div>
@@ -457,7 +464,9 @@ export const TrustPageShowcase: React.FC = () => {
       {/* Exemple 4 */}
       <div>
         <div className="bg-warning-500 text-white py-md px-lg mb-md">
-          <h2 className="font-heading text-2xl">Exemple 4: Configuration personnalisée</h2>
+          <h2 className="font-heading text-2xl">
+            Exemple 4: Configuration personnalisée
+          </h2>
         </div>
         <TrustPageCustomConfig />
       </div>

@@ -1,0 +1,18 @@
+{
+  "file": "/opt/automecanik/app/frontend/app/routes/checkout.tsx",
+  "route": "/checkout",
+  "timestamp": "2026-01-29T19:42:23.892Z",
+  "global_score": 9.6,
+  "scores": {
+    "mobile_first": 10,
+    "responsive": 10,
+    "touch_ux": 9.5,
+    "readability": 10,
+    "ecommerce_ux": 9,
+    "a11y": 10,
+    "design_system": 9
+  },
+  "hard_rule_violations": [],
+  "top_risks": [],
+  "quick_wins": []
+}

@@ -1,11 +1,19 @@
 // 🎨 PAGE ADMIN - VISUALISATION DES COULEURS CONSTRUCTEURS
 // Affiche tous les gradients de couleurs par marque automobile
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { ChevronLeft, Car } from "lucide-react";
 import { brandColorsService } from "../services/brand-colors.service";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Couleurs Constructeurs - Admin");
 
 interface Brand {
   marque_id: number;

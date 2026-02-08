@@ -1,4 +1,5 @@
 import { json } from "@remix-run/node";
+import { logger } from "~/utils/logger";
 
 export async function loader({ request }: { request: Request }) {
   try {
@@ -29,12 +30,12 @@ export async function loader({ request }: { request: Request }) {
         });
       }
     } catch (apiError) {
-      console.error("Erreur lors de l'appel API redirections:", apiError);
+      logger.error("Erreur lors de l'appel API redirections:", apiError);
     }
 
     return json({ destination: null, permanent: false, found: false });
   } catch (error) {
-    console.error("Erreur lors de la vérification de redirection:", error);
+    logger.error("Erreur lors de la vérification de redirection:", error);
     return json({ destination: null, permanent: false, found: false });
   }
 }

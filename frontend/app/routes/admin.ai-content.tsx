@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { AiContentGenerator } from "~/components/ai/AiContentGenerator";
 import { ProductDescriptionGenerator } from "~/components/ai/ProductDescriptionGenerator";
 import { SEOMetaGenerator } from "~/components/ai/SEOMetaGenerator";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -45,7 +46,7 @@ export default function AiContentDashboard() {
         redis: redisCheck,
       });
     } catch (error) {
-      console.error("Error checking providers:", error);
+      logger.error("Error checking providers:", error);
     }
   };
 
@@ -193,7 +194,7 @@ export default function AiContentDashboard() {
                 </p>
                 <AiContentGenerator
                   onContentGenerated={(content) => {
-                    console.log("Contenu généré:", content);
+                    logger.log("Contenu généré:", content);
                     // Vous pouvez ajouter ici une notification de succès
                   }}
                 />
@@ -211,7 +212,7 @@ export default function AiContentDashboard() {
                 </p>
                 <ProductDescriptionGenerator
                   onGenerated={(description) => {
-                    console.log("Description générée:", description);
+                    logger.log("Description générée:", description);
                     // Vous pouvez ajouter ici la logique pour sauvegarder
                   }}
                 />
@@ -229,7 +230,7 @@ export default function AiContentDashboard() {
                 </p>
                 <SEOMetaGenerator
                   onGenerated={(meta) => {
-                    console.log("Meta générée:", meta);
+                    logger.log("Meta générée:", meta);
                     // Vous pouvez ajouter ici la logique pour sauvegarder
                   }}
                 />

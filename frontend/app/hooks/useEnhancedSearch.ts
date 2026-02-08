@@ -1,11 +1,12 @@
 /**
  * 🚀 useEnhancedSearch Hook
- * 
+ *
  * Hook personnalisé pour utiliser le service de recherche enhanced
  * avec gestion d'état, cache, et métriques intégrées
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
+import { logger } from "~/utils/logger";
 
 interface EnhancedSearchOptions {
   enableCache?: boolean;
@@ -57,8 +58,10 @@ export function useEnhancedSearch() {
         ...(params.limit && { limit: params.limit.toString() }),
       });
 
-      const response = await fetch(`/api/search-existing/search?${searchParams}`);
-      
+      const response = await fetch(
+        `/api/search-existing/search?${searchParams}`,
+      );
+
       if (!response.ok) {
         throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
@@ -67,9 +70,10 @@ export function useEnhancedSearch() {
       setResults(data);
       return data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errorMessage =
+        err instanceof Error ? err.message : "Erreur inconnue";
       setError(errorMessage);
-      console.error('Erreur recherche enhanced:', err);
+      logger.error("Erreur recherche enhanced:", err);
       return null;
     } finally {
       setLoading(false);
@@ -81,16 +85,18 @@ export function useEnhancedSearch() {
     if (query.length < 2) return [];
 
     try {
-      const response = await fetch(`/api/search-existing/autocomplete?q=${encodeURIComponent(query)}`);
-      
+      const response = await fetch(
+        `/api/search-existing/autocomplete?q=${encodeURIComponent(query)}`,
+      );
+
       if (!response.ok) {
-        throw new Error('Erreur autocomplete');
+        throw new Error("Erreur autocomplete");
       }
 
       const data = await response.json();
       return data.suggestions || [];
     } catch (err) {
-      console.warn('Erreur autocomplete:', err);
+      logger.warn("Erreur autocomplete:", err);
       return [];
     }
   }, []);
@@ -98,17 +104,17 @@ export function useEnhancedSearch() {
   // Charger les métriques
   const loadMetrics = useCallback(async () => {
     try {
-      const response = await fetch('/api/search-existing/metrics');
-      
+      const response = await fetch("/api/search-existing/metrics");
+
       if (!response.ok) {
-        throw new Error('Erreur métriques');
+        throw new Error("Erreur métriques");
       }
 
       const data = await response.json();
       setMetrics(data);
       return data;
     } catch (err) {
-      console.warn('Erreur métriques:', err);
+      logger.warn("Erreur métriques:", err);
       return null;
     }
   }, []);
@@ -116,17 +122,20 @@ export function useEnhancedSearch() {
   // Vérifier le status du service
   const checkHealth = useCallback(async () => {
     try {
-      const response = await fetch('/api/search-existing/health');
-      
+      const response = await fetch("/api/search-existing/health");
+
       if (!response.ok) {
-        throw new Error('Service indisponible');
+        throw new Error("Service indisponible");
       }
 
       const data = await response.json();
       return data;
     } catch (err) {
-      console.warn('Erreur health check:', err);
-      return { status: 'error', error: err instanceof Error ? err.message : 'Erreur inconnue' };
+      logger.warn("Erreur health check:", err);
+      return {
+        status: "error",
+        error: err instanceof Error ? err.message : "Erreur inconnue",
+      };
     }
   }, []);
 
@@ -157,7 +166,7 @@ export function useEnhancedSearch() {
 /**
  * Hook simplifié pour la recherche avec debounce
  */
-export function useEnhancedSearchWithDebounce(initialQuery = '', delay = 300) {
+export function useEnhancedSearchWithDebounce(initialQuery = "", delay = 300) {
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const { search, loading, results, error } = useEnhancedSearch();
@@ -212,7 +221,7 @@ export function useEnhancedAutocomplete(query: string, delay = 300) {
         const results = await autocomplete(query);
         setSuggestions(results);
       } catch (err) {
-        console.warn('Erreur autocomplete:', err);
+        logger.warn("Erreur autocomplete:", err);
         setSuggestions([]);
       } finally {
         setLoading(false);

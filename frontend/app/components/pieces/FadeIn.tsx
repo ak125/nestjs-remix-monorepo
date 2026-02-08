@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from "react";
 
 interface FadeInProps {
   children: React.ReactNode;
@@ -7,11 +7,11 @@ interface FadeInProps {
   className?: string;
 }
 
-export default function FadeIn({ 
-  children, 
-  delay = 0, 
-  duration = 500, 
-  className = '' 
+const FadeIn = memo(function FadeIn({
+  children,
+  delay = 0,
+  duration = 500,
+  className = "",
 }: FadeInProps) {
   const [isVisible, setIsVisible] = React.useState(false);
 
@@ -24,16 +24,18 @@ export default function FadeIn({
   }, [delay]);
 
   return (
-    <div 
+    <div
       className={`transition-all duration-${duration} ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       } ${className}`}
-      style={{ 
+      style={{
         transitionDuration: `${duration}ms`,
-        transitionDelay: `${delay}ms`
+        transitionDelay: `${delay}ms`,
       }}
     >
       {children}
     </div>
   );
-}
+});
+
+export default FadeIn;

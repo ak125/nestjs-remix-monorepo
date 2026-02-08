@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -49,7 +50,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Erreur lors du chargement des données système:", error);
+    logger.error("Erreur lors du chargement des données système:", error);
     return json({
       initialHealth: null,
       initialMetrics: null,
@@ -108,7 +109,7 @@ export default function AdminSystem() {
 
         setLastUpdate(new Date().toISOString());
       } catch (err) {
-        console.error("Erreur lors du rafraîchissement:", err);
+        logger.error("Erreur lors du rafraîchissement:", err);
       }
     };
 

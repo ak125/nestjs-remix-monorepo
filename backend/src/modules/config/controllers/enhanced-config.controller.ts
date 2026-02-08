@@ -89,11 +89,13 @@ export class EnhancedConfigController {
         data,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown exception';
       return {
         status: 'ERROR',
         message: 'Exception occurred',
-        error: error?.message || 'Unknown exception',
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }

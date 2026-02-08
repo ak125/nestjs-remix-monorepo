@@ -11,6 +11,19 @@ import { OrderCalculationService } from './order-calculation.service';
 import { OrderStatusService } from './order-status.service';
 import { ShippingService } from '../../shipping/shipping.service';
 
+/** Postal address for billing or shipping */
+export interface OrderAddress {
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  addressLine2?: string;
+  zipCode?: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  [key: string]: unknown;
+}
+
 export interface CreateOrderData {
   customerId: number;
   orderLines: Array<{
@@ -21,18 +34,18 @@ export interface CreateOrderData {
     unitPrice: number;
     vatRate?: number;
     discount?: number;
-    consigne_unit?: number; // ✅ Phase 5: Consigne unitaire
-    has_consigne?: boolean; // ✅ Phase 5: Produit avec consigne
+    consigne_unit?: number; // Phase 5: Consigne unitaire
+    has_consigne?: boolean; // Phase 5: Produit avec consigne
   }>;
-  billingAddress: any;
-  shippingAddress: any;
+  billingAddress: OrderAddress;
+  shippingAddress: OrderAddress;
   customerNote?: string;
   shippingMethod?: string;
 }
 
 export interface UpdateOrderData {
-  billingAddress?: any;
-  shippingAddress?: any;
+  billingAddress?: OrderAddress;
+  shippingAddress?: OrderAddress;
   customerNote?: string;
   status?: number;
 }
@@ -60,6 +73,47 @@ export interface OrderLine {
   vatRate: number;
   discount: number;
   subtotal: number;
+}
+
+/** Full order with customer and lines (returned by getOrderById) */
+export interface OrderWithDetails extends Record<string, unknown> {
+  ord_id?: string;
+  ord_cst_id?: string;
+  ord_date?: string;
+  ord_total_ttc?: string;
+  ord_ords_id?: string;
+  order_status?: number;
+  customer: Record<string, unknown> | null;
+  lines: Record<string, unknown>[];
+  statusHistory: Record<string, unknown>[];
+}
+
+/** Paginated list result */
+export interface OrderListResult {
+  data: Record<string, unknown>[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+/** Order statistics */
+export interface OrderStats {
+  totalOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
+  statusBreakdown: Record<string, number>;
+}
+
+/** Simple operation result */
+export interface OrderOperationResult {
+  success: boolean;
+  message: string;
+  ord_id?: string;
 }
 
 /**
@@ -92,7 +146,9 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Créer une commande complète
    */
-  async createOrder(orderData: CreateOrderData): Promise<any> {
+  async createOrder(
+    orderData: CreateOrderData,
+  ): Promise<OrderWithDetails | OrderOperationResult> {
     try {
       this.logger.log(`Création commande pour client ${orderData.customerId}`);
 
@@ -224,7 +280,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Retourner commande complète
       return await this.getOrderById(orderId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur createOrder:', error);
       throw error;
     }
@@ -234,7 +290,7 @@ export class OrdersService extends SupabaseBaseService {
    * Récupérer une commande par ID
    * 🚀 P7.2 PERF: Paralléliser order + lines, puis customer
    */
-  async getOrderById(orderId: string): Promise<any> {
+  async getOrderById(orderId: string): Promise<OrderWithDetails> {
     try {
       // 🚀 P7.2 PERF: Paralléliser order et lines (indépendants)
       const [orderResult, linesResult] = await Promise.all([
@@ -278,7 +334,7 @@ export class OrdersService extends SupabaseBaseService {
         lines: lines || [],
         statusHistory: [],
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur getOrderById(${orderId}):`, error);
       throw error;
     }
@@ -287,7 +343,7 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Lister les commandes avec filtres
    */
-  async listOrders(filters: OrderFilters = {}): Promise<any> {
+  async listOrders(filters: OrderFilters = {}): Promise<OrderListResult> {
     try {
       const page = filters.page || 1;
       const limit = filters.limit || 20;
@@ -352,7 +408,7 @@ export class OrdersService extends SupabaseBaseService {
           hasPreviousPage: page > 1,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur listOrders:', error);
       throw error;
     }
@@ -364,7 +420,7 @@ export class OrdersService extends SupabaseBaseService {
   async updateOrder(
     orderId: string,
     updateData: UpdateOrderData,
-  ): Promise<any> {
+  ): Promise<OrderWithDetails> {
     try {
       // Vérifier existence
       const existing = await this.getOrderById(orderId);
@@ -376,7 +432,7 @@ export class OrdersService extends SupabaseBaseService {
         );
       }
 
-      const dataToUpdate: any = {
+      const dataToUpdate: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
 
@@ -417,7 +473,7 @@ export class OrdersService extends SupabaseBaseService {
 
       this.logger.log(`Commande #${orderId} mise à jour`);
       return await this.getOrderById(orderId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur updateOrder(${orderId}):`, error);
       throw error;
     }
@@ -426,7 +482,10 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Annuler une commande
    */
-  async cancelOrder(orderId: string, reason?: string): Promise<any> {
+  async cancelOrder(
+    orderId: string,
+    reason?: string,
+  ): Promise<OrderOperationResult> {
     try {
       const order = await this.getOrderById(orderId);
 
@@ -447,7 +506,7 @@ export class OrdersService extends SupabaseBaseService {
 
       this.logger.log(`Commande #${orderId} annulée`);
       return { success: true, message: 'Commande annulée' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur cancelOrder(${orderId}):`, error);
       throw error;
     }
@@ -456,7 +515,7 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Supprimer une commande (soft delete)
    */
-  async deleteOrder(orderId: string): Promise<any> {
+  async deleteOrder(orderId: string): Promise<OrderOperationResult> {
     try {
       const order = await this.getOrderById(orderId);
 
@@ -485,7 +544,7 @@ export class OrdersService extends SupabaseBaseService {
 
       this.logger.log(`Commande #${orderId} supprimée`);
       return { success: true, message: 'Commande supprimée' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur deleteOrder(${orderId}):`, error);
       throw error;
     }
@@ -498,14 +557,14 @@ export class OrdersService extends SupabaseBaseService {
     customerId: number,
     page = 1,
     limit = 20,
-  ): Promise<any> {
+  ): Promise<OrderListResult> {
     return this.listOrders({ customerId, page, limit });
   }
 
   /**
    * Obtenir statistiques commandes
    */
-  async getOrderStats(customerId?: number): Promise<any> {
+  async getOrderStats(customerId?: number): Promise<OrderStats> {
     try {
       let query = this.supabase.from(TABLES.xtr_order).select('*', {
         count: 'exact',
@@ -538,7 +597,7 @@ export class OrdersService extends SupabaseBaseService {
         averageOrderValue: count && count > 0 ? totalRevenue / count : 0,
         statusBreakdown: statusCounts,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur getOrderStats:', error);
       throw error;
     }

@@ -1,9 +1,9 @@
-import { Package, Truck, Clock, CheckCircle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Package, Truck, Clock, CheckCircle } from "lucide-react";
+import { useEffect, useState, memo } from "react";
 
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface UserShipment {
   id: string;
@@ -35,15 +35,21 @@ interface UserShipmentsProps {
 }
 
 const statusConfig = {
-  pending: { label: 'En attente', color: 'bg-gray-100 text-gray-800', icon: Clock },
-  shipped: { label: 'Expédié', color: 'info', icon: Package },
-  in_transit: { label: 'En transit', color: 'warning', icon: Truck },
-  out_for_delivery: { label: 'En livraison', color: 'orange', icon: Truck },
-  delivered: { label: 'Livré', color: 'success', icon: CheckCircle },
-  returned: { label: 'Retourné', color: 'error', icon: Package },
+  pending: {
+    label: "En attente",
+    color: "bg-gray-100 text-gray-800",
+    icon: Clock,
+  },
+  shipped: { label: "Expédié", color: "info", icon: Package },
+  in_transit: { label: "En transit", color: "warning", icon: Truck },
+  out_for_delivery: { label: "En livraison", color: "orange", icon: Truck },
+  delivered: { label: "Livré", color: "success", icon: CheckCircle },
+  returned: { label: "Retourné", color: "error", icon: Package },
 };
 
-export function UserShipments({ userId }: UserShipmentsProps) {
+export const UserShipments = memo(function UserShipments({
+  userId,
+}: UserShipmentsProps) {
   const [shipments, setShipments] = useState<UserShipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +63,12 @@ export function UserShipments({ userId }: UserShipmentsProps) {
         if (data.success && data.data.success) {
           setShipments(data.data.shipments);
         } else {
-          setError(data.data.error || 'Erreur lors du chargement des expéditions');
+          setError(
+            data.data.error || "Erreur lors du chargement des expéditions",
+          );
         }
       } catch (err) {
-        setError('Erreur de connexion');
+        setError("Erreur de connexion");
       } finally {
         setLoading(false);
       }
@@ -138,7 +146,9 @@ export function UserShipments({ userId }: UserShipmentsProps) {
       <CardContent>
         <div className="space-y-4">
           {shipments.slice(0, 3).map((shipment) => {
-            const statusInfo = statusConfig[shipment.status as keyof typeof statusConfig] || statusConfig.pending;
+            const statusInfo =
+              statusConfig[shipment.status as keyof typeof statusConfig] ||
+              statusConfig.pending;
             const StatusIcon = statusInfo.icon;
 
             return (
@@ -152,13 +162,15 @@ export function UserShipments({ userId }: UserShipmentsProps) {
                       <StatusIcon className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{shipment.orderNumber}</p>
-                      <p className="text-xs text-gray-500">N° suivi: {shipment.trackingNumber}</p>
+                      <p className="font-medium text-sm">
+                        {shipment.orderNumber}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        N° suivi: {shipment.trackingNumber}
+                      </p>
                     </div>
                   </div>
-                  <Badge className={statusInfo.color}>
-                    {statusInfo.label}
-                  </Badge>
+                  <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-gray-500">
@@ -167,16 +179,22 @@ export function UserShipments({ userId }: UserShipmentsProps) {
                     <span>🚚 {shipment.carrier.name}</span>
                   </div>
                   <span>
-                    Livraison prévue: {new Date(shipment.estimatedDelivery).toLocaleDateString('fr-FR')}
+                    Livraison prévue:{" "}
+                    {new Date(shipment.estimatedDelivery).toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </span>
                 </div>
 
                 {shipment.events.length > 0 && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <p className="text-xs text-gray-600">
-                      <strong>Dernière mise à jour:</strong> {shipment.events[0].description} 
+                      <strong>Dernière mise à jour:</strong>{" "}
+                      {shipment.events[0].description}
                       <span className="ml-2 text-gray-500">
-                        {new Date(shipment.events[0].timestamp).toLocaleString('fr-FR')}
+                        {new Date(shipment.events[0].timestamp).toLocaleString(
+                          "fr-FR",
+                        )}
                       </span>
                     </p>
                   </div>
@@ -196,4 +214,4 @@ export function UserShipments({ userId }: UserShipmentsProps) {
       </CardContent>
     </Card>
   );
-}
+});

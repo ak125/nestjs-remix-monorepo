@@ -4,51 +4,52 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-import { useState } from 'react';
-import { QuickCartDrawer, type CartItem } from './QuickCartDrawer';
+import { useState } from "react";
+import { QuickCartDrawer, type CartItem } from "./QuickCartDrawer";
+import { logger } from "~/utils/logger";
 
 // Mock data
 const MOCK_CART_ITEMS: CartItem[] = [
   {
-    id: '1',
-    productId: 'prod-1',
-    name: 'Plaquettes de frein avant',
-    oemRef: '7701208265',
-    imageUrl: '/images/plaquettes-frein.jpg',
-    price: 45.90,
+    id: "1",
+    productId: "prod-1",
+    name: "Plaquettes de frein avant",
+    oemRef: "7701208265",
+    imageUrl: "/images/plaquettes-frein.jpg",
+    price: 45.9,
     quantity: 2,
     isCompatible: true,
-    stockStatus: 'in-stock',
+    stockStatus: "in-stock",
   },
   {
-    id: '2',
-    productId: 'prod-2',
-    name: 'Disques de frein (x2)',
-    oemRef: '7701207795',
-    imageUrl: '/images/disques-frein.jpg',
-    price: 89.00,
+    id: "2",
+    productId: "prod-2",
+    name: "Disques de frein (x2)",
+    oemRef: "7701207795",
+    imageUrl: "/images/disques-frein.jpg",
+    price: 89.0,
     quantity: 1,
     isCompatible: true,
-    stockStatus: 'low-stock',
+    stockStatus: "low-stock",
   },
   {
-    id: '3',
-    productId: 'prod-3',
-    name: 'Filtre à huile',
-    oemRef: '8200768913',
-    imageUrl: '/images/filtre-huile.jpg',
-    price: 12.50,
+    id: "3",
+    productId: "prod-3",
+    name: "Filtre à huile",
+    oemRef: "8200768913",
+    imageUrl: "/images/filtre-huile.jpg",
+    price: 12.5,
     quantity: 1,
     isCompatible: false,
-    stockStatus: 'out-of-stock',
+    stockStatus: "out-of-stock",
   },
 ];
 
 const MOCK_VEHICLE = {
-  brand: 'Peugeot',
-  model: '208',
+  brand: "Peugeot",
+  model: "208",
   year: 2016,
-  engine: '1.6 HDi',
+  engine: "1.6 HDi",
 };
 
 /**
@@ -59,13 +60,11 @@ const MOCK_VEHICLE = {
 export function QuickCartDrawerBasic() {
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>(MOCK_CART_ITEMS);
-  const [selectedDelivery, setSelectedDelivery] = useState('standard');
+  const [selectedDelivery, setSelectedDelivery] = useState("standard");
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
+      prev.map((item) => (item.id === itemId ? { ...item, quantity } : item)),
     );
   };
 
@@ -74,8 +73,8 @@ export function QuickCartDrawerBasic() {
   };
 
   const handleCheckout = () => {
-    console.log('Checkout:', { items, selectedDelivery });
-    alert('Redirection vers paiement...');
+    logger.log("Checkout:", { items, selectedDelivery });
+    alert("Redirection vers paiement...");
   };
 
   return (
@@ -116,11 +115,13 @@ export function QuickCartDrawerBasic() {
 export function QuickCartDrawerWithInstantAdd() {
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
-  const [selectedDelivery, setSelectedDelivery] = useState('standard');
+  const [selectedDelivery, setSelectedDelivery] = useState("standard");
   const [justAdded, setJustAdded] = useState<string | null>(null);
 
-  const handleAddToCart = (product: Omit<CartItem, 'id' | 'quantity'>) => {
-    const existingItem = items.find((item) => item.productId === product.productId);
+  const handleAddToCart = (product: Omit<CartItem, "id" | "quantity">) => {
+    const existingItem = items.find(
+      (item) => item.productId === product.productId,
+    );
 
     if (existingItem) {
       // Incrémenter quantité
@@ -128,8 +129,8 @@ export function QuickCartDrawerWithInstantAdd() {
         prev.map((item) =>
           item.productId === product.productId
             ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+            : item,
+        ),
       );
     } else {
       // Ajouter nouveau
@@ -151,9 +152,7 @@ export function QuickCartDrawerWithInstantAdd() {
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
+      prev.map((item) => (item.id === itemId ? { ...item, quantity } : item)),
     );
   };
 
@@ -162,37 +161,37 @@ export function QuickCartDrawerWithInstantAdd() {
   };
 
   const handleCheckout = () => {
-    console.log('Checkout:', items);
+    logger.log("Checkout:", items);
   };
 
   // Produits disponibles
   const products = [
     {
-      productId: 'prod-1',
-      name: 'Plaquettes de frein avant',
-      oemRef: '7701208265',
-      imageUrl: '/images/plaquettes-frein.jpg',
-      price: 45.90,
+      productId: "prod-1",
+      name: "Plaquettes de frein avant",
+      oemRef: "7701208265",
+      imageUrl: "/images/plaquettes-frein.jpg",
+      price: 45.9,
       isCompatible: true,
-      stockStatus: 'in-stock' as const,
+      stockStatus: "in-stock" as const,
     },
     {
-      productId: 'prod-2',
-      name: 'Disques de frein (x2)',
-      oemRef: '7701207795',
-      imageUrl: '/images/disques-frein.jpg',
-      price: 89.00,
+      productId: "prod-2",
+      name: "Disques de frein (x2)",
+      oemRef: "7701207795",
+      imageUrl: "/images/disques-frein.jpg",
+      price: 89.0,
       isCompatible: true,
-      stockStatus: 'low-stock' as const,
+      stockStatus: "low-stock" as const,
     },
     {
-      productId: 'prod-3',
-      name: 'Filtre à huile',
-      oemRef: '8200768913',
-      imageUrl: '/images/filtre-huile.jpg',
-      price: 12.50,
+      productId: "prod-3",
+      name: "Filtre à huile",
+      oemRef: "8200768913",
+      imageUrl: "/images/filtre-huile.jpg",
+      price: 12.5,
       isCompatible: false,
-      stockStatus: 'in-stock' as const,
+      stockStatus: "in-stock" as const,
     },
   ];
 
@@ -206,7 +205,10 @@ export function QuickCartDrawerWithInstantAdd() {
         {/* Grille produits */}
         <div className="grid grid-cols-3 gap-lg mb-xl">
           {products.map((product) => (
-            <div key={product.productId} className="bg-white rounded-lg p-md shadow-md">
+            <div
+              key={product.productId}
+              className="bg-white rounded-lg p-md shadow-md"
+            >
               <img
                 src={product.imageUrl}
                 alt={product.name}
@@ -222,13 +224,14 @@ export function QuickCartDrawerWithInstantAdd() {
                 onClick={() => handleAddToCart(product)}
                 className={`
                   w-full py-sm rounded-lg font-heading font-semibold transition-all
-                  ${justAdded === product.productId
-                    ? 'bg-success-500 text-white'
-                    : 'bg-primary-500 text-white hover:bg-primary-600'
+                  ${
+                    justAdded === product.productId
+                      ? "bg-success-500 text-white"
+                      : "bg-primary-500 text-white hover:bg-primary-600"
                   }
                 `}
               >
-                {justAdded === product.productId ? '✓ Ajouté' : 'Ajouter'}
+                {justAdded === product.productId ? "✓ Ajouté" : "Ajouter"}
               </button>
             </div>
           ))}
@@ -264,34 +267,36 @@ export function QuickCartDrawerWithInstantAdd() {
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export function QuickCartDrawerShowcase() {
-  const [scenario, setScenario] = useState<'empty' | 'compatible' | 'mixed'>('compatible');
+  const [scenario, setScenario] = useState<"empty" | "compatible" | "mixed">(
+    "compatible",
+  );
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState('standard');
+  const [selectedDelivery, setSelectedDelivery] = useState("standard");
 
   const scenarios = {
     empty: [],
     compatible: [
       {
-        id: '1',
-        productId: 'prod-1',
-        name: 'Plaquettes de frein avant',
-        oemRef: '7701208265',
-        imageUrl: '/images/plaquettes-frein.jpg',
-        price: 45.90,
+        id: "1",
+        productId: "prod-1",
+        name: "Plaquettes de frein avant",
+        oemRef: "7701208265",
+        imageUrl: "/images/plaquettes-frein.jpg",
+        price: 45.9,
         quantity: 2,
         isCompatible: true,
-        stockStatus: 'in-stock' as const,
+        stockStatus: "in-stock" as const,
       },
       {
-        id: '2',
-        productId: 'prod-2',
-        name: 'Disques de frein (x2)',
-        oemRef: '7701207795',
-        imageUrl: '/images/disques-frein.jpg',
-        price: 89.00,
+        id: "2",
+        productId: "prod-2",
+        name: "Disques de frein (x2)",
+        oemRef: "7701207795",
+        imageUrl: "/images/disques-frein.jpg",
+        price: 89.0,
         quantity: 1,
         isCompatible: true,
-        stockStatus: 'low-stock' as const,
+        stockStatus: "low-stock" as const,
       },
     ],
     mixed: MOCK_CART_ITEMS,
@@ -306,9 +311,7 @@ export function QuickCartDrawerShowcase() {
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
+      prev.map((item) => (item.id === itemId ? { ...item, quantity } : item)),
     );
   };
 
@@ -317,7 +320,7 @@ export function QuickCartDrawerShowcase() {
   };
 
   const handleCheckout = () => {
-    console.log('Checkout');
+    logger.log("Checkout");
   };
 
   return (
@@ -334,28 +337,28 @@ export function QuickCartDrawerShowcase() {
           </h2>
           <div className="flex flex-wrap gap-sm">
             <button
-              onClick={() => handleScenarioChange('empty')}
+              onClick={() => handleScenarioChange("empty")}
               className={`
                 px-md py-sm rounded-lg font-heading text-sm transition-colors
-                ${scenario === 'empty' ? 'bg-primary-500 text-white' : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'}
+                ${scenario === "empty" ? "bg-primary-500 text-white" : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300"}
               `}
             >
               Panier Vide
             </button>
             <button
-              onClick={() => handleScenarioChange('compatible')}
+              onClick={() => handleScenarioChange("compatible")}
               className={`
                 px-md py-sm rounded-lg font-heading text-sm transition-colors
-                ${scenario === 'compatible' ? 'bg-primary-500 text-white' : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'}
+                ${scenario === "compatible" ? "bg-primary-500 text-white" : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300"}
               `}
             >
               Produits Compatibles (2)
             </button>
             <button
-              onClick={() => handleScenarioChange('mixed')}
+              onClick={() => handleScenarioChange("mixed")}
               className={`
                 px-md py-sm rounded-lg font-heading text-sm transition-colors
-                ${scenario === 'mixed' ? 'bg-primary-500 text-white' : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'}
+                ${scenario === "mixed" ? "bg-primary-500 text-white" : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300"}
               `}
             >
               Mix Compatible/Incompatible (3)
@@ -378,7 +381,7 @@ export function QuickCartDrawerShowcase() {
           <h2 className="font-heading text-2xl font-bold text-neutral-900 mb-lg">
             📚 Features
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
             <div className="bg-primary-50 border border-primary-200 rounded-lg p-md">
               <h3 className="font-heading text-lg font-bold text-primary-900 mb-sm">

@@ -6,7 +6,7 @@
  * ✨ Utilise HtmlContent pour le maillage interne (liens SPA + tracking)
  */
 
-import { Alert } from "~/components/ui/alert";
+import { memo } from "react";
 import { type SEOEnrichedContent } from "../../types/pieces-route.types";
 import {
   cleanOrphanParagraphs,
@@ -14,6 +14,7 @@ import {
 } from "../../utils/seo-clean.utils";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../seo/HtmlContent";
+import { Alert } from "~/components/ui/alert";
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;
@@ -24,7 +25,7 @@ interface PiecesSEOSectionProps {
 /**
  * Section SEO principale avec contenu structuré
  */
-export function PiecesSEOSection({
+export const PiecesSEOSection = memo(function PiecesSEOSection({
   content,
   vehicleName,
   gammeName,
@@ -176,7 +177,7 @@ export function PiecesSEOSection({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Helper pour générer du contenu contextuel par section

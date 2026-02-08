@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -31,6 +35,15 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getOrderDetails } from "../services/orders.server";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+  createNoIndexMeta(
+    data?.order?.orderNumber
+      ? `Commande #${data.order.orderNumber}`
+      : "Commande",
+  );
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   // Authentification requise
@@ -64,7 +77,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur lors du chargement du détail de commande:", error);
+    logger.error("Erreur lors du chargement du détail de commande:", error);
     throw new Response("Erreur lors du chargement de la commande", {
       status: 500,
     });

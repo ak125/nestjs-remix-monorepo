@@ -1,9 +1,9 @@
 import { Link } from "@remix-run/react";
-import { useEffect } from "react";
-import { Alert } from "~/components/ui/alert";
+import { useEffect, memo } from "react";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 import { ErrorSearchBar } from "./ErrorSearchBar";
 import { PopularCategories } from "./PopularCategories";
+import { Alert } from "~/components/ui/alert";
 
 interface Error410Props {
   url?: string;
@@ -14,7 +14,11 @@ interface Error410Props {
   method?: string;
 }
 
-export function Error410({ url, isOldLink, redirectTo }: Error410Props) {
+export const Error410 = memo(function Error410({
+  url,
+  isOldLink,
+  redirectTo,
+}: Error410Props) {
   // Reporting centralisé via hook
   useErrorAutoReport({
     code: 410,
@@ -355,4 +359,4 @@ export function Error410({ url, isOldLink, redirectTo }: Error410Props) {
       </div>
     </div>
   );
-}
+});

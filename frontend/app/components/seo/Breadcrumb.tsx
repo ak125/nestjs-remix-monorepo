@@ -7,6 +7,8 @@
  * ✅ Personnalisable (couleurs, tailles)
  */
 
+import { memo } from "react";
+
 export interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -21,7 +23,7 @@ interface BreadcrumbProps {
   showHome?: boolean;
 }
 
-export function Breadcrumb({
+export const Breadcrumb = memo(function Breadcrumb({
   items,
   theme = "light",
   className = "",
@@ -109,7 +111,7 @@ export function Breadcrumb({
       </nav>
     </>
   );
-}
+});
 
 /**
  * 🎯 Hook pour générer automatiquement le breadcrumb depuis l'URL

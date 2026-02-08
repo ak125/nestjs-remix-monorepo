@@ -1,8 +1,8 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { pluralizePieceName } from '~/lib/seo-utils';
-import { cn } from '~/lib/utils';
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState, memo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { cn } from "~/lib/utils";
 
 interface FAQItem {
   question: string;
@@ -19,23 +19,27 @@ interface FAQSectionProps {
  * Section FAQ avec schema.org FAQPage markup
  * Optimisé pour les featured snippets Google
  */
-export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
+export const FAQSection = memo(function FAQSection({
+  faq,
+  gammeName,
+  className,
+}: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   if (!faq || faq.length === 0) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pieceType = gammeName?.toLowerCase() || "pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   // Schema.org FAQPage structured data
   const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
     mainEntity: faq.map((item) => ({
-      '@type': 'Question',
+      "@type": "Question",
       name: item.question,
       acceptedAnswer: {
-        '@type': 'Answer',
+        "@type": "Answer",
         text: item.answer,
       },
     })),
@@ -46,7 +50,7 @@ export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
   };
 
   return (
-    <section className={cn('py-8', className)} aria-labelledby="faq-title">
+    <section className={cn("py-8", className)} aria-labelledby="faq-title">
       {/* Schema.org JSON-LD */}
       <script
         type="application/ld+json"
@@ -92,8 +96,8 @@ export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
                   <div
                     id={`faq-answer-${index}`}
                     className={cn(
-                      'overflow-hidden transition-all duration-300',
-                      openIndex === index ? 'max-h-96' : 'max-h-0'
+                      "overflow-hidden transition-all duration-300",
+                      openIndex === index ? "max-h-96" : "max-h-0",
                     )}
                   >
                     <div className="p-4 pt-0 border-t border-purple-100">
@@ -110,6 +114,6 @@ export function FAQSection({ faq, gammeName, className }: FAQSectionProps) {
       </div>
     </section>
   );
-}
+});
 
 export default FAQSection;

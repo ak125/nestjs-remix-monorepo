@@ -94,10 +94,10 @@ interface RpcV3Result {
   oem_refs: string[];
 
   // Données pièces
-  pieces: any[];
-  grouped_pieces: any[];
-  blocs: any[];
-  filters: any;
+  pieces: Record<string, unknown>[];
+  grouped_pieces: Record<string, unknown>[];
+  blocs: Record<string, unknown>[];
+  filters: Record<string, unknown>;
   count: number;
   minPrice: number;
   relations_found: number;
@@ -154,10 +154,10 @@ export interface UnifiedPageData {
   oemRefs: string[];
 
   // Pièces
-  pieces: any[];
-  groupedPieces: any[];
-  blocs: any[];
-  filters: any;
+  pieces: Record<string, unknown>[];
+  groupedPieces: Record<string, unknown>[];
+  blocs: Record<string, unknown>[];
+  filters: Record<string, unknown>;
   count: number;
   minPrice: number;
 
@@ -298,17 +298,21 @@ export class UnifiedPageDataService extends SupabaseBaseService {
     // 🎯 V3: Les OEM refs sont maintenant intégrées DIRECTEMENT dans grouped_pieces
     // Plus besoin d'enrichissement côté JS - tout est fait dans la RPC PostgreSQL
     const groupedPiecesWithOem = (rpcResult.grouped_pieces || []).map(
-      (g: any) => ({
+      (g: Record<string, unknown>) => ({
         ...g,
         // La RPC V3 fournit déjà oemRefs et oemRefsCount par groupe (avec déduplication globale)
-        oemRefs: g.oemRefs || [],
-        oemRefsCount: g.oemRefsCount || g.oemRefs?.length || 0,
+        oemRefs: (g.oemRefs as unknown[]) || [],
+        oemRefsCount:
+          (g.oemRefsCount as number) ||
+          (g.oemRefs as unknown[] | undefined)?.length ||
+          0,
       }),
     );
 
     // Compter le total des OEM refs par groupe pour le log
     const totalGroupOem = groupedPiecesWithOem.reduce(
-      (sum: number, g: any) => sum + (g.oemRefsCount || 0),
+      (sum: number, g: Record<string, unknown>) =>
+        sum + ((g.oemRefsCount as number) || 0),
       0,
     );
 
@@ -319,21 +323,31 @@ export class UnifiedPageDataService extends SupabaseBaseService {
 
     // 🖼️ Optimiser les URLs d'images avec WebP + compression
     const piecesWithOptimizedImages = (rpcResult.pieces || []).map(
-      (piece: any) => ({
+      (piece: Record<string, unknown>) => ({
         ...piece,
-        image: getOptimizedImageUrl(piece.image),
-        thumb: getOptimizedImageUrl(piece.thumb || piece.image),
+        image: getOptimizedImageUrl(piece.image as string | null | undefined),
+        thumb: getOptimizedImageUrl(
+          (piece.thumb as string | null | undefined) ||
+            (piece.image as string | null | undefined),
+        ),
       }),
     );
 
     const groupedPiecesWithOptimizedImages = groupedPiecesWithOem.map(
-      (group: any) => ({
+      (group: Record<string, unknown>) => ({
         ...group,
-        pieces: (group.pieces || []).map((piece: any) => ({
-          ...piece,
-          image: getOptimizedImageUrl(piece.image),
-          thumb: getOptimizedImageUrl(piece.thumb || piece.image),
-        })),
+        pieces: ((group.pieces as Record<string, unknown>[]) || []).map(
+          (piece: Record<string, unknown>) => ({
+            ...piece,
+            image: getOptimizedImageUrl(
+              piece.image as string | null | undefined,
+            ),
+            thumb: getOptimizedImageUrl(
+              (piece.thumb as string | null | undefined) ||
+                (piece.image as string | null | undefined),
+            ),
+          }),
+        ),
       }),
     );
 

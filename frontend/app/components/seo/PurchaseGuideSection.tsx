@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { cn } from "~/lib/utils";
@@ -58,7 +59,7 @@ interface PurchaseGuideSectionProps {
  * Composant complet du guide d'achat (pour rétrocompatibilité)
  * Contient toutes les sections ensemble
  */
-export function PurchaseGuideSection({
+export const PurchaseGuideSection = memo(function PurchaseGuideSection({
   guide,
   gammeName,
   className,
@@ -73,7 +74,7 @@ export function PurchaseGuideSection({
       <ArgumentsSection arguments={guide.arguments} gammeName={gammeName} />
     </div>
   );
-}
+});
 
 // ============================================================================
 // SECTIONS EXPORTÉES INDIVIDUELLEMENT (pour nouvelle structure avec H2)
@@ -89,7 +90,7 @@ interface IntroSectionProps {
  * Section 1: À quoi ça sert / Rôle et sécurité
  * H2: {Gamme} : rôle et sécurité
  */
-export function IntroSection({
+export const IntroSection = memo(function IntroSection({
   intro,
   gammeName,
   className,
@@ -150,7 +151,7 @@ export function IntroSection({
       </div>
     </section>
   );
-}
+});
 
 interface RiskSectionProps {
   risk: PurchaseGuideData["risk"];
@@ -162,7 +163,11 @@ interface RiskSectionProps {
  * Section 2: Pourquoi c'est critique
  * H2: Pourquoi ne jamais rouler avec {gamme} usée ?
  */
-export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
+export const RiskSection = memo(function RiskSection({
+  risk,
+  gammeName,
+  className,
+}: RiskSectionProps) {
   if (!risk.title && !risk.explanation) return null;
 
   const pieceType = gammeName?.toLowerCase() || "cette pièce";
@@ -236,7 +241,7 @@ export function RiskSection({ risk, gammeName, className }: RiskSectionProps) {
       </div>
     </section>
   );
-}
+});
 
 interface TimingSectionProps {
   timing: PurchaseGuideData["timing"];
@@ -248,7 +253,7 @@ interface TimingSectionProps {
  * Section 3: Quand changer
  * H2: Quand faut-il changer {gamme} ?
  */
-export function TimingSection({
+export const TimingSection = memo(function TimingSection({
   timing,
   gammeName,
   className,
@@ -323,7 +328,7 @@ export function TimingSection({
       </div>
     </section>
   );
-}
+});
 
 interface ArgumentsSectionProps {
   arguments: PurchaseGuideData["arguments"];
@@ -335,7 +340,7 @@ interface ArgumentsSectionProps {
  * Section 4: Pourquoi acheter chez nous
  * H2: Pourquoi acheter votre {gamme} sur Automecanik ?
  */
-export function ArgumentsSection({
+export const ArgumentsSection = memo(function ArgumentsSection({
   arguments: args,
   gammeName,
   className,
@@ -401,6 +406,6 @@ export function ArgumentsSection({
       </div>
     </section>
   );
-}
+});
 
 export default PurchaseGuideSection;

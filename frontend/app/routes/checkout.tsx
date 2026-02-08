@@ -32,6 +32,7 @@ import {
 } from "~/components/layout/MobileBottomBar";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackBeginCheckout } from "~/utils/analytics";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // Phase 9: PageRole pour analytics
@@ -60,11 +61,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getOptionalUser({ context });
   const userId = user?.id || null;
 
-  console.log("🔍 Checkout loader - User:", userId || "guest");
+  logger.log("🔍 Checkout loader - User:", userId || "guest");
 
   try {
     const cart = await getCart(request, context);
-    console.log("🔍 Checkout loader - Cart data received:", {
+    logger.log("🔍 Checkout loader - Cart data received:", {
       hasCart: !!cart,
       itemsLength: cart?.items?.length,
       itemsIsArray: Array.isArray(cart?.items),
@@ -74,7 +75,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     // ✅ Vérification plus robuste du panier
     if (!cart || !cart.items) {
-      console.warn("⚠️ Checkout loader - Structure panier invalide");
+      logger.warn("⚠️ Checkout loader - Structure panier invalide");
       return json({
         cart: null,
         error: "Erreur de structure du panier. Veuillez recharger.",
@@ -85,13 +86,13 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const itemsCount = Array.isArray(cart.items) ? cart.items.length : 0;
     const totalItems = cart?.summary?.total_items || 0;
 
-    console.log("🔍 Checkout loader - Items check:", {
+    logger.log("🔍 Checkout loader - Items check:", {
       itemsCount,
       totalItems,
     });
 
     if (itemsCount === 0 && totalItems === 0) {
-      console.warn("⚠️ Checkout loader - Panier vide");
+      logger.warn("⚠️ Checkout loader - Panier vide");
       return json({
         cart: null,
         error:
@@ -99,7 +100,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       });
     }
 
-    console.log(
+    logger.log(
       "✅ Checkout loader - Panier OK:",
       itemsCount,
       "lignes,",
@@ -108,16 +109,16 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     );
     return json({ cart, user });
   } catch (error) {
-    console.error("❌ Erreur chargement panier checkout:", error);
-    console.error(
+    logger.error("❌ Erreur chargement panier checkout:", error);
+    logger.error(
       "❌ Error type:",
       error instanceof Error ? error.constructor.name : typeof error,
     );
-    console.error(
+    logger.error(
       "❌ Message:",
       error instanceof Error ? error.message : String(error),
     );
-    console.error("❌ Stack:", error instanceof Error ? error.stack : "N/A");
+    logger.error("❌ Stack:", error instanceof Error ? error.stack : "N/A");
     return json({
       cart: null,
       error: "Erreur lors du chargement du panier. Veuillez réessayer.",
@@ -126,31 +127,31 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log("🔵 [Checkout Action] Début de l'action");
-  console.log("🔵 [Checkout Action] Request URL:", request.url);
-  console.log("🔵 [Checkout Action] Request method:", request.method);
+  logger.log("🔵 [Checkout Action] Début de l'action");
+  logger.log("🔵 [Checkout Action] Request URL:", request.url);
+  logger.log("🔵 [Checkout Action] Request method:", request.method);
 
   try {
     // Lire guestEmail depuis l'URL (query param) car formData() bloque avec NestJS middleware
     const url = new URL(request.url);
     const guestEmail = url.searchParams.get("guestEmail") || null;
-    console.log(
+    logger.log(
       "🔵 [Checkout Action] guestEmail:",
       guestEmail || "none (authenticated user)",
     );
 
     // 1. Récupérer le panier
-    console.log("🛒 [Checkout Action] Récupération du panier...");
+    logger.log("🛒 [Checkout Action] Récupération du panier...");
     const cartResponse = await fetch("http://127.0.0.1:3000/api/cart", {
       headers: {
         Cookie: request.headers.get("Cookie") || "",
       },
     });
 
-    console.log("🛒 [Checkout Action] Statut panier:", cartResponse.status);
+    logger.log("🛒 [Checkout Action] Statut panier:", cartResponse.status);
 
     if (!cartResponse.ok) {
-      console.error("❌ [Checkout Action] Erreur récupération panier");
+      logger.error("❌ [Checkout Action] Erreur récupération panier");
       return json(
         {
           success: false,
@@ -161,7 +162,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const cartData = await cartResponse.json();
-    console.log(
+    logger.log(
       "🛒 [Checkout Action] Panier récupéré:",
       cartData.items?.length || 0,
       "articles",
@@ -218,14 +219,14 @@ export async function action({ request }: ActionFunctionArgs) {
       shippingMethod: "standard",
     };
 
-    console.log(
+    logger.log(
       "📦 [Checkout Action] Payload commande:",
       JSON.stringify(orderPayload, null, 2),
     );
 
     // Debug: Vérifier les cookies
     const cookieHeader = request.headers.get("Cookie") || "";
-    console.log(
+    logger.log(
       "🍪 [Checkout Action] Cookie header:",
       cookieHeader ? `${cookieHeader.substring(0, 50)}...` : "VIDE",
     );
@@ -238,7 +239,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const payload = isGuest ? { ...orderPayload, guestEmail } : orderPayload;
 
-    console.log(
+    logger.log(
       `🚀 [Checkout Action] Envoi requête ${isGuest ? "guest" : "auth"} création commande...`,
     );
 
@@ -251,13 +252,13 @@ export async function action({ request }: ActionFunctionArgs) {
       body: JSON.stringify(payload),
     });
 
-    console.log(
+    logger.log(
       "📦 [Checkout Action] Statut création commande:",
       response.status,
     );
 
     if (!response.ok) {
-      console.error(
+      logger.error(
         "❌ [Checkout Action] Erreur création commande, statut:",
         response.status,
       );
@@ -288,43 +289,43 @@ export async function action({ request }: ActionFunctionArgs) {
       const error = await response
         .json()
         .catch(() => ({ message: "Erreur serveur" }));
-      console.error("❌ [Checkout Action] Détails erreur:", error);
+      logger.error("❌ [Checkout Action] Détails erreur:", error);
       throw new Error(
         error.message || "Erreur lors de la création de la commande",
       );
     }
 
     const order = await response.json();
-    console.log("✅ [Checkout Action] Commande créée:", order);
+    logger.log("✅ [Checkout Action] Commande créée:", order);
 
     // ✅ Phase 7: Retourner l'orderId à l'action data pour redirection côté client
     // L'API retourne un objet avec ord_id (format BDD)
-    console.log(
+    logger.log(
       "📦 Réponse API création commande:",
       JSON.stringify(order, null, 2),
     );
 
     const orderId = order.ord_id || order.order_id || order.id;
-    console.log("🔍 orderId extrait:", orderId);
+    logger.log("🔍 orderId extrait:", orderId);
 
     if (!orderId || orderId === "créé") {
       // Fallback si on n'a pas l'ID
-      console.log(
+      logger.log(
         "✅ Commande créée sans ID, redirection vers la liste des commandes",
       );
       return redirect("/account/orders?created=true");
     }
 
     const redirectUrl = `/checkout-payment?orderId=${orderId}`;
-    console.log(
+    logger.log(
       `✅ [Checkout Action] Commande ${orderId} créée, redirection vers: ${redirectUrl}`,
     );
 
     // ✅ SOLUTION: Utiliser redirect() au lieu de json() pour une vraie redirection
     return redirect(redirectUrl);
   } catch (error) {
-    console.error("❌ [Checkout Action] Erreur création commande:", error);
-    console.error(
+    logger.error("❌ [Checkout Action] Erreur création commande:", error);
+    logger.error(
       "❌ [Checkout Action] Stack:",
       error instanceof Error ? error.stack : "No stack",
     );
@@ -357,7 +358,7 @@ export default function CheckoutPage() {
     submit(null, { method: "post", action });
   };
 
-  console.log(
+  logger.log(
     "🔍 CheckoutPage render, actionData:",
     actionData ? "present" : "null",
   );

@@ -11,7 +11,7 @@
  */
 
 import { ChevronDown } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 import {
   type PieceData,
   type PiecesFilters,
@@ -110,7 +110,7 @@ function applyFilters(
     .sort((a, b) => (a.price || 0) - (b.price || 0)); // ✅ Tri par prix croissant
 }
 
-export function PiecesGroupedDisplay({
+export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   groupedPieces,
   activeFilters,
   viewMode,
@@ -253,4 +253,4 @@ export function PiecesGroupedDisplay({
       })}
     </div>
   );
-}
+});

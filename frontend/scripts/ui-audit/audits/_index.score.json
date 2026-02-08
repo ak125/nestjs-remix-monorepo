@@ -1,0 +1,44 @@
+{
+  "file": "/opt/automecanik/app/frontend/app/routes/_index.tsx",
+  "route": "/",
+  "timestamp": "2026-01-29T19:42:23.900Z",
+  "global_score": 4.3,
+  "scores": {
+    "mobile_first": 4,
+    "responsive": 1.5,
+    "touch_ux": 6,
+    "readability": 4.25,
+    "ecommerce_ux": 7,
+    "a11y": 5,
+    "design_system": 0
+  },
+  "hard_rule_violations": [
+    {
+      "rule": "HR-001",
+      "line": 469,
+      "note": "Grid sans base mobile grid-cols-1. Fix: Ajouter grid-cols-1 avant les breakpoints: grid-cols-1 sm:grid-cols-2 lg:grid-cols-{N}"
+    },
+    {
+      "rule": "HR-001",
+      "line": 638,
+      "note": "Grid sans base mobile grid-cols-1. Fix: Ajouter grid-cols-1 avant les breakpoints: grid-cols-1 sm:grid-cols-2 lg:grid-cols-{N}"
+    }
+  ],
+  "top_risks": [
+    {
+      "id": "RISK-HR-001",
+      "severity": "high",
+      "note": "grid-mobile-first: 2 violation(s) - Grid sans base mobile grid-cols-1",
+      "category": "mobile_first"
+    }
+  ],
+  "quick_wins": [
+    {
+      "id": "QW-HR-001",
+      "impact": "high",
+      "effort": "low",
+      "note": "Fix 2 grid-mobile-first violation(s): Ajouter grid-cols-1 avant les breakpoints: grid-cols-1 sm:grid-cols-2 lg:grid-cols-{N}",
+      "patchRef": "PATCH-HR-001"
+    }
+  ]
+}

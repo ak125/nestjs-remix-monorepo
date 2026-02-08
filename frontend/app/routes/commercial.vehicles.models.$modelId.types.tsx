@@ -5,7 +5,12 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
-import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
@@ -18,6 +23,11 @@ import {
 } from "../components/ui/card";
 import { Badge, Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Types par Modele - Commercial");
 
 interface VehicleType {
   type_id: string;
@@ -123,7 +133,7 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
 
     return json({ types, model } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement types:", error);
+    logger.error("Erreur chargement types:", error);
     return json({
       types: [],
       model: null,

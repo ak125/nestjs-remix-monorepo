@@ -2,6 +2,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -15,6 +16,10 @@ import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Stock - Admin");
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {
@@ -125,7 +130,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       success: true,
     });
   } catch (error) {
-    console.error("Erreur chargement stock:", error);
+    logger.error("Erreur chargement stock:", error);
     return json({
       dashboard: null,
       stockData: { items: [], total: 0, stats: {} },
@@ -204,7 +209,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return json({ success: false, error: "Action non reconnue" });
     }
   } catch (error) {
-    console.error("Erreur action stock:", error);
+    logger.error("Erreur action stock:", error);
     return json({
       success: false,
       error: "Erreur lors de l'exécution de l'action",
@@ -231,7 +236,7 @@ export default function AdminStock() {
   useEffect(() => {
     if (actionData?.success) {
       // Notification de succès
-      console.log("✅ Action réussie");
+      logger.log("✅ Action réussie");
     }
   }, [actionData]);
 

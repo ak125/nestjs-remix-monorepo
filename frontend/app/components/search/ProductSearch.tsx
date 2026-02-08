@@ -4,13 +4,13 @@
 
 import { useNavigate } from "@remix-run/react";
 import { Search, Package, TrendingUp, X } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { Badge } from "~/components/ui";
-import { PartImage } from "~/components/ui/ResponsiveImage";
+import { useState, useEffect, useRef, memo } from "react";
 import {
   useProductSearch,
   type ProductSearchResult,
 } from "../../hooks/useProductSearch";
+import { Badge } from "~/components/ui";
+import { PartImage } from "~/components/ui/ResponsiveImage";
 
 interface ProductSearchProps {
   variant?: "hero" | "compact"; // hero = grande pour homepage, compact = petite pour navbar
@@ -19,7 +19,7 @@ interface ProductSearchProps {
   showSubtext?: boolean; // Afficher le texte sous la barre
 }
 
-export function ProductSearch({
+export const ProductSearch = memo(function ProductSearch({
   variant = "hero",
   className = "",
   placeholder,
@@ -240,4 +240,4 @@ export function ProductSearch({
       )}
     </div>
   );
-}
+});

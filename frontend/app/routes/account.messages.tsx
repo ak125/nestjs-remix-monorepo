@@ -32,6 +32,7 @@ import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { formatRelativeTime } from "../utils/date";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Ma messagerie | AutoMecanik" },
@@ -115,7 +116,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       user,
     });
   } catch (error) {
-    console.error("Erreur API messages:", error);
+    logger.error("Erreur API messages:", error);
 
     return json<LoaderData>({
       messages: [],

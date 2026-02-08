@@ -4,13 +4,19 @@
  */
 
 import { Clock, Package, User, Shield, MapPin } from "lucide-react";
+import { memo } from "react";
 
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 export interface ActivityItem {
   id: string;
-  type: "login" | "order" | "profile_update" | "password_change" | "address_add";
+  type:
+    | "login"
+    | "order"
+    | "profile_update"
+    | "password_change"
+    | "address_add";
   title: string;
   description: string;
   timestamp: Date;
@@ -84,14 +90,14 @@ function formatTimeAgo(date: Date): string {
   if (diffMins < 60) return `Il y a ${diffMins} min`;
   if (diffHours < 24) return `Il y a ${diffHours}h`;
   if (diffDays < 7) return `Il y a ${diffDays}j`;
-  
+
   return date.toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "short",
   });
 }
 
-export function ActivityTimeline({
+export const ActivityTimeline = memo(function ActivityTimeline({
   activities,
   maxItems = 10,
 }: ActivityTimelineProps) {
@@ -151,10 +157,10 @@ export function ActivityTimeline({
       </CardContent>
     </Card>
   );
-}
+});
 
 // Variante compacte
-export function ActivityTimelineCompact({
+export const ActivityTimelineCompact = memo(function ActivityTimelineCompact({
   activities,
   maxItems = 5,
 }: ActivityTimelineProps) {
@@ -182,4 +188,4 @@ export function ActivityTimelineCompact({
       ))}
     </div>
   );
-}
+});

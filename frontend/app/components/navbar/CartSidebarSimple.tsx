@@ -14,16 +14,12 @@
 
 import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
-
-import { Badge } from "~/components/ui";
+import { memo } from "react";
 
 import { cn } from "../../lib/utils";
 import { useRootCart } from "../../root";
-import {
-  Sheet,
-  SheetContent,
-  SheetClose,
-} from "../ui/sheet";
+import { Sheet, SheetContent, SheetClose } from "../ui/sheet";
+import { Badge } from "~/components/ui";
 
 interface CartSidebarSimpleProps {
   isOpen: boolean;
@@ -38,7 +34,10 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
+export const CartSidebarSimple = memo(function CartSidebarSimple({
+  isOpen,
+  onClose,
+}: CartSidebarSimpleProps) {
   // Données du root loader (SSR) - pas besoin de fetch supplémentaire
   const rootCart = useRootCart();
 
@@ -200,6 +199,6 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
       </SheetContent>
     </Sheet>
   );
-}
+});
 
 export default CartSidebarSimple;

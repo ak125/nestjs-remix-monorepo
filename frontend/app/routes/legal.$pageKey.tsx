@@ -16,6 +16,7 @@ import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -304,10 +305,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         });
       }
     } catch (error) {
-      console.warn(
-        `Failed to fetch legal page from API for ${pageKey}:`,
-        error,
-      );
+      logger.warn(`Failed to fetch legal page from API for ${pageKey}:`, error);
     }
   }
 

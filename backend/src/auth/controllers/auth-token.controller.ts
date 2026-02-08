@@ -42,8 +42,9 @@ export class AuthTokenController {
           isAdmin: user.isAdmin,
         },
       };
-    } catch (error: any) {
-      return { valid: false, userId: null, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { valid: false, userId: null, error: message };
     }
   }
 
@@ -122,7 +123,7 @@ export class AuthTokenController {
           'Mot de passe défini avec succès. Vous pouvez maintenant vous connecter.',
         email,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Error in set-password:', error);
       return {
         success: false,

@@ -1,22 +1,30 @@
 // app/routes/admin.suppliers.tsx
 // Interface de gestion des fournisseurs optimisée appliquant "vérifier existant et utiliser le meilleur"
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Outlet, useLoaderData, NavLink } from '@remix-run/react';
-import { 
-  Building2, 
-  TrendingUp, 
-  Users, 
-  CheckCircle, 
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { Outlet, useLoaderData, NavLink } from "@remix-run/react";
+import {
+  Building2,
+  TrendingUp,
+  Users,
+  CheckCircle,
   Clock,
   Package,
   AlertTriangle,
   FileText,
-  Settings
-} from 'lucide-react';
-import { Alert } from '~/components/ui';
-import { Badge } from '~/components/ui/badge';
-import { requireAuth } from '../auth/unified.server';
+  Settings,
+} from "lucide-react";
+import { requireAuth } from "../auth/unified.server";
+import { Alert } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Fournisseurs - Admin");
 
 // Interface pour les données des fournisseurs
 interface SupplierStats {
@@ -31,10 +39,12 @@ interface SupplierStats {
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireAuth(request);
-  
+
   // Vérifier permissions admin (niveau 7+)
   if (!user.level || user.level < 7) {
-    throw new Response('Accès refusé - Permissions administrateur requises', { status: 403 });
+    throw new Response("Accès refusé - Permissions administrateur requises", {
+      status: 403,
+    });
   }
 
   // En production, récupérer les vraies données des fournisseurs
@@ -45,7 +55,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     totalProducts: 12847,
     averageDeliveryTime: 3.2,
     topPerformingSuppliers: 23,
-    contractsExpiring: 12
+    contractsExpiring: 12,
   };
 
   return json({ user, supplierStats });
@@ -55,17 +65,22 @@ export default function AdminSuppliersLayout() {
   const { supplierStats } = useLoaderData<typeof loader>();
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('fr-FR').format(num);
+    return new Intl.NumberFormat("fr-FR").format(num);
   };
 
   const calculatePerformanceRate = () => {
     if (supplierStats.totalSuppliers === 0) return 0;
-    return Math.round((supplierStats.topPerformingSuppliers / supplierStats.totalSuppliers) * 100);
+    return Math.round(
+      (supplierStats.topPerformingSuppliers / supplierStats.totalSuppliers) *
+        100,
+    );
   };
 
   const calculateActiveRate = () => {
     if (supplierStats.totalSuppliers === 0) return 0;
-    return Math.round((supplierStats.activeSuppliers / supplierStats.totalSuppliers) * 100);
+    return Math.round(
+      (supplierStats.activeSuppliers / supplierStats.totalSuppliers) * 100,
+    );
   };
 
   return (
@@ -82,11 +97,13 @@ export default function AdminSuppliersLayout() {
               </p>
             </div>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur px-6 py-3 rounded-lg">
             <div className="flex items-center gap-2 text-indigo-200">
               <TrendingUp className="h-5 w-5" />
-              <span className="font-semibold">{calculateActiveRate()}% actifs</span>
+              <span className="font-semibold">
+                {calculateActiveRate()}% actifs
+              </span>
             </div>
             <div className="text-sm text-indigo-100 mt-1">
               Sur {formatNumber(supplierStats.totalSuppliers)} fournisseurs
@@ -102,13 +119,15 @@ export default function AdminSuppliersLayout() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Building2 className="h-8 w-8 text-indigo-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Fournisseurs</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Fournisseurs
+              </h2>
             </div>
             <div className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-sm font-medium">
               TOTAL
             </div>
           </div>
-          
+
           <div className="text-3xl font-bold text-gray-900 mb-2">
             {formatNumber(supplierStats.totalSuppliers)}
           </div>
@@ -117,9 +136,7 @@ export default function AdminSuppliersLayout() {
               <CheckCircle className="h-4 w-4" />
               {formatNumber(supplierStats.activeSuppliers)} actifs
             </div>
-            <div className="text-indigo-600">
-              {calculateActiveRate()}%
-            </div>
+            <div className="text-indigo-600">{calculateActiveRate()}%</div>
           </div>
         </div>
 
@@ -132,7 +149,7 @@ export default function AdminSuppliersLayout() {
             </div>
             <Alert intent="success">CATALOGUE</Alert>
           </div>
-          
+
           <div className="text-3xl font-bold text-gray-900 mb-2">
             {formatNumber(supplierStats.totalProducts)}
           </div>
@@ -150,11 +167,18 @@ export default function AdminSuppliersLayout() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Clock className="h-8 w-8 text-orange-600" />
-              <h2 className="text-lg font-semibold text-gray-900">En Attente</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                En Attente
+              </h2>
             </div>
-            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">PENDING</Badge>
+            <Badge
+              className="px-2 py-1 rounded text-sm font-medium"
+              variant="orange"
+            >
+              PENDING
+            </Badge>
           </div>
-          
+
           <div className="text-3xl font-bold text-gray-900 mb-2">
             {formatNumber(supplierStats.pendingApprovals)}
           </div>
@@ -172,19 +196,24 @@ export default function AdminSuppliersLayout() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-purple-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Performance
+              </h2>
             </div>
-            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="purple">TOP</Badge>
+            <Badge
+              className="px-2 py-1 rounded text-sm font-medium"
+              variant="purple"
+            >
+              TOP
+            </Badge>
           </div>
-          
+
           <div className="text-3xl font-bold text-gray-900 mb-2">
             {formatNumber(supplierStats.topPerformingSuppliers)}
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Excellents</span>
-            <div className="text-purple-600">
-              {calculatePerformanceRate()}%
-            </div>
+            <div className="text-purple-600">{calculatePerformanceRate()}%</div>
           </div>
         </div>
       </div>
@@ -197,22 +226,24 @@ export default function AdminSuppliersLayout() {
             <Clock className="h-5 w-5" />
             Délais de Livraison
           </h2>
-          
+
           <div className="text-center">
             <div className="text-4xl font-bold text-blue-600 mb-2">
               {supplierStats.averageDeliveryTime} j
             </div>
             <p className="text-gray-600 text-sm">Délai moyen</p>
-            
+
             <div className="mt-4 bg-primary/5 rounded-lg p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Objectif</span>
                 <span className="font-medium text-blue-600">≤ 3 jours</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-primary h-2 rounded-full" 
-                  style={{ width: `${Math.min((3 / supplierStats.averageDeliveryTime) * 100, 100)}%` }}
+                <div
+                  className="bg-primary h-2 rounded-full"
+                  style={{
+                    width: `${Math.min((3 / supplierStats.averageDeliveryTime) * 100, 100)}%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -225,7 +256,7 @@ export default function AdminSuppliersLayout() {
             <FileText className="h-5 w-5" />
             Contrats
           </h2>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-success/5 rounded-lg">
               <span className="font-medium text-green-900">Actifs</span>
@@ -233,7 +264,7 @@ export default function AdminSuppliersLayout() {
                 {formatNumber(supplierStats.activeSuppliers)}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center p-3 bg-destructive/5 rounded-lg">
               <span className="font-medium text-red-900">Expirent bientôt</span>
               <span className="text-2xl font-bold text-red-600">
@@ -249,16 +280,16 @@ export default function AdminSuppliersLayout() {
             <Settings className="h-5 w-5" />
             Actions Rapides
           </h2>
-          
+
           <div className="space-y-3">
             <button className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
               Nouveau fournisseur
             </button>
-            
+
             <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
               Approuver en attente ({supplierStats.pendingApprovals})
             </button>
-            
+
             <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
               Renouveler contrats ({supplierStats.contractsExpiring})
             </button>
@@ -269,56 +300,56 @@ export default function AdminSuppliersLayout() {
       {/* Navigation des sous-routes */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <nav className="flex space-x-8">
-          <NavLink 
-            to="/admin/suppliers" 
+          <NavLink
+            to="/admin/suppliers"
             end
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               `flex items-center gap-2 pb-4 border-b-2 transition-colors ${
-                isActive 
-                  ? 'border-indigo-500 text-indigo-600' 
-                  : 'border-transparent text-gray-600 hover:text-indigo-600'
+                isActive
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-600 hover:text-indigo-600"
               }`
             }
           >
             <Building2 className="h-5 w-5" />
             Vue d'ensemble
           </NavLink>
-          
-          <NavLink 
+
+          <NavLink
             to="/admin/suppliers/list"
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               `flex items-center gap-2 pb-4 border-b-2 transition-colors ${
-                isActive 
-                  ? 'border-indigo-500 text-indigo-600' 
-                  : 'border-transparent text-gray-600 hover:text-indigo-600'
+                isActive
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-600 hover:text-indigo-600"
               }`
             }
           >
             <Users className="h-5 w-5" />
             Liste complète
           </NavLink>
-          
-          <NavLink 
+
+          <NavLink
             to="/admin/suppliers/new"
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               `flex items-center gap-2 pb-4 border-b-2 transition-colors ${
-                isActive 
-                  ? 'border-indigo-500 text-indigo-600' 
-                  : 'border-transparent text-gray-600 hover:text-indigo-600'
+                isActive
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-600 hover:text-indigo-600"
               }`
             }
           >
             <Package className="h-5 w-5" />
             Nouveau
           </NavLink>
-          
-          <NavLink 
+
+          <NavLink
             to="/admin/suppliers/contracts"
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               `flex items-center gap-2 pb-4 border-b-2 transition-colors ${
-                isActive 
-                  ? 'border-indigo-500 text-indigo-600' 
-                  : 'border-transparent text-gray-600 hover:text-indigo-600'
+                isActive
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-600 hover:text-indigo-600"
               }`
             }
           >

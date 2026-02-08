@@ -1,6 +1,6 @@
 /**
  * 🎯 HEADER V8 MODULAIRE - Approche hybride optimale
- * 
+ *
  * UN seul Header avec variants spécialisés :
  * - HeaderV8.Basic (minimal)
  * - HeaderV8.Ecommerce (complet)
@@ -8,15 +8,16 @@
  * - HeaderV8.Custom (configurable)
  */
 
+import { memo } from "react";
 import { HeaderV8Enhanced } from "./HeaderV8Enhanced";
 
 // 🏢 Header V8 Basic - Sites vitrines, landing pages
-export function HeaderV8Basic(props: any) {
+export const HeaderV8Basic = memo(function HeaderV8Basic(props: any) {
   return (
     <HeaderV8Enhanced
       {...props}
       variant="basic"
-      features={['logo', 'navigation']}
+      features={["logo", "navigation"]}
       showTopBar={false}
       showSecondaryNav={false}
       showSearch={false}
@@ -24,15 +25,15 @@ export function HeaderV8Basic(props: any) {
       className="header--v8-basic"
     />
   );
-}
+});
 
 // 🛒 Header V8 Ecommerce - E-commerce complet
-export function HeaderV8Ecommerce(props: any) {
+export const HeaderV8Ecommerce = memo(function HeaderV8Ecommerce(props: any) {
   return (
     <HeaderV8Enhanced
       {...props}
       variant="ecommerce"
-      features={['logo', 'navigation', 'search', 'cart', 'user']}
+      features={["logo", "navigation", "search", "cart", "user"]}
       showTopBar={true}
       showSecondaryNav={true}
       showSearch={true}
@@ -40,15 +41,15 @@ export function HeaderV8Ecommerce(props: any) {
       className="header--v8-ecommerce"
     />
   );
-}
+});
 
 // ⚙️ Header V8 Admin - Interface administration
-export function HeaderV8Admin(props: any) {
+export const HeaderV8Admin = memo(function HeaderV8Admin(props: any) {
   return (
     <HeaderV8Enhanced
       {...props}
       variant="admin"
-      features={['logo', 'navigation', 'search', 'user', 'notifications']}
+      features={["logo", "navigation", "search", "user", "notifications"]}
       showTopBar={false}
       showSecondaryNav={true}
       showSearch={true}
@@ -57,10 +58,10 @@ export function HeaderV8Admin(props: any) {
       className="header--v8-admin"
     />
   );
-}
+});
 
 // 🎨 Header V8 Custom - Configurable
-export function HeaderV8Custom(props: any) {
+export const HeaderV8Custom = memo(function HeaderV8Custom(props: any) {
   return (
     <HeaderV8Enhanced
       {...props}
@@ -68,20 +69,20 @@ export function HeaderV8Custom(props: any) {
       className="header--v8-custom"
     />
   );
-}
+});
 
 // 🚀 Export principal - Auto-détection du variant
-export function HeaderV8(props: any) {
-  const { variant = 'auto', context = 'public', ...otherProps } = props;
+export const HeaderV8 = memo(function HeaderV8(props: any) {
+  const { variant = "auto", context = "public", ...otherProps } = props;
 
   // Auto-détection basée sur le contexte
-  if (variant === 'auto') {
+  if (variant === "auto") {
     switch (context) {
-      case 'admin':
+      case "admin":
         return <HeaderV8Admin {...otherProps} context={context} />;
-      case 'commercial':
+      case "commercial":
         return <HeaderV8Ecommerce {...otherProps} context={context} />;
-      case 'public':
+      case "public":
       default:
         return <HeaderV8Ecommerce {...otherProps} context={context} />;
     }
@@ -89,18 +90,18 @@ export function HeaderV8(props: any) {
 
   // Variant explicite
   switch (variant) {
-    case 'basic':
+    case "basic":
       return <HeaderV8Basic {...otherProps} context={context} />;
-    case 'ecommerce':
+    case "ecommerce":
       return <HeaderV8Ecommerce {...otherProps} context={context} />;
-    case 'admin':
+    case "admin":
       return <HeaderV8Admin {...otherProps} context={context} />;
-    case 'custom':
+    case "custom":
       return <HeaderV8Custom {...otherProps} context={context} />;
     default:
       return <HeaderV8Enhanced {...otherProps} context={context} />;
   }
-}
+});
 
 // 🎯 Usage examples:
 /*

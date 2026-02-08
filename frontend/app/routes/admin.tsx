@@ -18,6 +18,7 @@ import { getOptionalUser, getAuthUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -94,7 +95,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       }
     }
   } catch (error) {
-    console.error("❌ Erreur lors du chargement des stats sidebar:", error);
+    logger.error("❌ Erreur lors du chargement des stats sidebar:", error);
   }
 
   return { user, stats };

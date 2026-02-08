@@ -30,6 +30,7 @@ import { Input } from "../components/ui/input";
 import { VehicleCard } from "../components/vehicles/VehicleCard";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche CNIT
@@ -103,7 +104,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("API Error:", response.status, errorText);
+      logger.error("API Error:", response.status, errorText);
 
       if (response.status === 404) {
         return json<LoaderData>({
@@ -130,7 +131,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
   } catch (error) {
-    console.error("Search error:", error);
+    logger.error("Search error:", error);
     return json<LoaderData>({
       searchTerm: cnitCode,
       error: "Erreur lors de la recherche. Veuillez réessayer.",

@@ -10,12 +10,13 @@
  */
 
 import { ChevronRight, Home } from "lucide-react";
+import { memo } from "react";
 
 interface BreadcrumbItem {
   label: string;
-  href?: string;          // URL du lien (aussi utilisé pour Schema.org)
+  href?: string; // URL du lien (aussi utilisé pour Schema.org)
   icon?: React.ReactNode;
-  current?: boolean;      // 🆕 Si true, affiche comme texte même si href existe (pour Schema.org)
+  current?: boolean; // 🆕 Si true, affiche comme texte même si href existe (pour Schema.org)
 }
 
 interface BreadcrumbsProps {
@@ -27,7 +28,7 @@ interface BreadcrumbsProps {
   enableSchema?: boolean; // Active JSON-LD schema.org
 }
 
-export function Breadcrumbs({
+export const Breadcrumbs = memo(function Breadcrumbs({
   items = [],
   separator = "chevron",
   showHome = true,
@@ -37,7 +38,12 @@ export function Breadcrumbs({
 }: BreadcrumbsProps) {
   // Utiliser les items fournis ou générer automatiquement
   // SSR-safe: ne pas appeler generateFromPath() côté serveur (window n'existe pas)
-  let breadcrumbItems = items.length > 0 ? items : (typeof window !== 'undefined' ? generateFromPath() : []);
+  let breadcrumbItems =
+    items.length > 0
+      ? items
+      : typeof window !== "undefined"
+        ? generateFromPath()
+        : [];
 
   // S'assurer que "Accueil" est toujours le premier élément si showHome = true
   if (
@@ -207,11 +213,16 @@ export function Breadcrumbs({
                   aria-current={item.current ? "page" : undefined}
                   itemProp={item.href ? "item" : undefined}
                   itemScope={item.href ? true : undefined}
-                  itemType={item.href ? "https://schema.org/WebPage" : undefined}
+                  itemType={
+                    item.href ? "https://schema.org/WebPage" : undefined
+                  }
                 >
                   {/* 🔧 FIX: Inclure URL cachée pour Schema.org si href existe */}
                   {item.href && (
-                    <meta itemProp="url" content={`https://www.automecanik.com${item.href}`} />
+                    <meta
+                      itemProp="url"
+                      content={`https://www.automecanik.com${item.href}`}
+                    />
                   )}
                   {item.icon}
                   <span itemProp="name">{item.label}</span>
@@ -233,4 +244,4 @@ export function Breadcrumbs({
       )}
     </>
   );
-}
+});

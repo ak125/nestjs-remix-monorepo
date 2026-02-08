@@ -5,7 +5,7 @@
  * Dashboard de statistiques visuelles
  */
 
-import React from "react";
+import React, { memo } from "react";
 import { type PieceData } from "../../types/pieces-route.types";
 
 interface PiecesStatisticsProps {
@@ -17,7 +17,7 @@ interface PiecesStatisticsProps {
 /**
  * Section statistiques avec métriques visuelles
  */
-export function PiecesStatistics({
+export const PiecesStatistics = memo(function PiecesStatistics({
   pieces,
   vehicleName,
   gammeName,
@@ -279,4 +279,4 @@ export function PiecesStatistics({
       </div>
     </div>
   );
-}
+});

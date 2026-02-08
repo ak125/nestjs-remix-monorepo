@@ -35,7 +35,7 @@ export class VehicleFilteredCatalogV4Controller {
       return {
         success: true,
         catalog: result.catalog,
-        popularParts: result.catalog.popularParts || [],
+        popularParts: [],
         seoValidation: result.catalog.seoValidation || {
           familyCount: result.catalog.totalFamilies || 0,
           gammeCount: result.catalog.totalGammes || 0,

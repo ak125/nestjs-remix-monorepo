@@ -24,11 +24,12 @@ export class AuthPermissionsController {
       );
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         hasAccess: false,
         reason: 'Access check failed',
-        error: error.message,
+        error: message,
       };
     }
   }
@@ -93,7 +94,7 @@ export class AuthPermissionsController {
       );
 
       return permissions;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Error fetching user permissions: ${error}`);
       return {};
     }

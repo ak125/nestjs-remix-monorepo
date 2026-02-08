@@ -8,7 +8,11 @@
  * - URLs à risque
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Activity,
@@ -40,6 +44,8 @@ import {
 } from "~/components/ui/select";
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface CrawlActivity {
   date: string;
@@ -65,6 +71,9 @@ interface UrlAtRisk {
   lastCrawled: string | null;
   pageType: string;
 }
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Monitoring SEO - Admin");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -102,7 +111,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Monitoring] Loader error:", error);
+    logger.error("[SEO Monitoring] Loader error:", error);
     return json({
       crawlActivity: [],
       indexChanges: [],

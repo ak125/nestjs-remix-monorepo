@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { Alert } from "~/components/ui/alert";
 
 interface YearData {
@@ -17,7 +17,7 @@ interface YearSelectorProps {
   showDecades?: boolean;
 }
 
-export function YearSelector({
+export const YearSelector = memo(function YearSelector({
   typeId,
   onSelect,
   className = "",
@@ -146,7 +146,7 @@ export function YearSelector({
       )}
     </div>
   );
-}
+});
 
 // Export du type pour réutilisation
 export type { YearData };

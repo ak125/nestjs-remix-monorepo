@@ -5,7 +5,11 @@
  * Route: /brands/$brandId/models/$modelId/types
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -28,6 +32,7 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -40,6 +45,30 @@ export const handle = {
     clusterId: "brands",
     canonicalEntity: "vehicle-types",
   }),
+};
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data?.brand || !data?.model) {
+    return [
+      { title: "Motorisations | Automecanik" },
+      { name: "robots", content: "noindex, nofollow" },
+    ];
+  }
+
+  const title = `${data.brand.marque_name} ${data.model.modele_name} - Motorisations | Automecanik`;
+  const description = `Découvrez les ${data.stats?.totalTypes || ""} motorisations ${data.brand.marque_name} ${data.model.modele_name}. Trouvez vos pièces détachées par type de moteur.`;
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { name: "robots", content: "index, follow" },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+  ];
 };
 
 interface VehicleType {
@@ -170,7 +199,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json({ types, model, brand, stats } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement types:", error);
+    logger.error("Erreur chargement types:", error);
     return json({
       types: [],
       model: null,

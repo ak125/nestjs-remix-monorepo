@@ -23,7 +23,7 @@
  */
 
 import { Eye, ShoppingCart, Star, Package } from "lucide-react";
-import { type ReactNode } from "react";
+import { type ReactNode, memo } from "react";
 
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -57,7 +57,7 @@ interface ProductQuickViewPopoverProps {
   align?: "start" | "center" | "end";
 }
 
-export function ProductQuickViewPopover({
+export const ProductQuickViewPopover = memo(function ProductQuickViewPopover({
   product,
   onViewDetails,
   onAddToCart,
@@ -238,4 +238,4 @@ export function ProductQuickViewPopover({
       </PopoverContent>
     </Popover>
   );
-}
+});

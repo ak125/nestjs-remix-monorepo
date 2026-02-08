@@ -1,5 +1,12 @@
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { requireAdmin } from "../auth/unified.server";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Paiements - Admin");
 
 /**
  * Route par défaut pour /admin/payments
@@ -7,7 +14,7 @@ import { requireAdmin } from "../auth/unified.server";
  */
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireAdmin({ context });
-  
+
   // Rediriger vers le dashboard des paiements
   return redirect("/admin/payments/dashboard");
 }

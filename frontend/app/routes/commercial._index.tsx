@@ -5,7 +5,12 @@
  * Route: /commercial
  */
 
-import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   Package,
@@ -25,6 +30,11 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Tableau de Bord - Commercial");
 
 // Types pour les données du dashboard
 interface DashboardData {
@@ -71,7 +81,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
   try {
     // Récupérer les données depuis l'API Dashboard unifiée
     const API_BASE = getInternalApiUrl("");
-    console.log("🔗 API_BASE:", API_BASE);
+    logger.log("🔗 API_BASE:", API_BASE);
 
     const [dashboardResponse, suppliersResponse, recentOrdersResponse] =
       await Promise.all([
@@ -86,7 +96,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
         }),
       ]);
 
-    console.log("📊 Response status:", {
+    logger.log("📊 Response status:", {
       dashboard: dashboardResponse.status,
       suppliers: suppliersResponse.status,
       orders: recentOrdersResponse.status,
@@ -151,7 +161,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    console.error("❌ Erreur dashboard commercial:", error);
+    logger.error("❌ Erreur dashboard commercial:", error);
 
     // Données de fallback
     return json({

@@ -2,12 +2,13 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 🛒 PRODUCT CARD E-COMMERCE - EXEMPLES D'UTILISATION
  * ═══════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Exemples concrets d'utilisation de la ProductCard optimisée conversion
  * avec différents scénarios e-commerce réels.
  */
 
-import { ProductCard } from './ProductCard';
+import { ProductCard } from "./ProductCard";
+import { logger } from "~/utils/logger";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -24,20 +25,20 @@ export function ProductCardInStockWithDiscount() {
         oemRef="7701208265"
         imageUrl="/images/products/plaquettes-frein.jpg"
         imageAlt="Plaquettes de frein avant Renault Clio 4"
-        price={36.90}
-        originalPrice={45.90}
+        price={36.9}
+        originalPrice={45.9}
         discountPercent={20}
         stockStatus="in-stock"
         stockQuantity={15}
         isCompatible={true}
         compatibilityNote="Compatible avec votre Renault Clio 4 1.5 dCi 2016"
         onAddToCart={(id) => {
-          console.log('✅ Produit ajouté:', id);
+          logger.log("✅ Produit ajouté:", id);
           // Appel API backend
           // fetch('/api/cart/add', { method: 'POST', body: JSON.stringify({ productId: id }) })
         }}
         onImageClick={(id) => {
-          console.log('🔍 Image cliquée:', id);
+          logger.log("🔍 Image cliquée:", id);
           // Ouvrir modal zoom ou redirection
           // window.location.href = `/products/${id}`;
         }}
@@ -61,13 +62,13 @@ export function ProductCardLowStock() {
         oemRef="7701207795"
         imageUrl="/images/products/disques-frein.jpg"
         imageAlt="Disques de frein Renault Mégane"
-        price={89.00}
+        price={89.0}
         stockStatus="low-stock"
         stockQuantity={2}
         isCompatible={true}
         showDescription={true}
         showCompatibility={true}
-        onAddToCart={(id) => console.log('Ajout panier:', id)}
+        onAddToCart={(id) => logger.log("Ajout panier:", id)}
       />
     </div>
   );
@@ -87,11 +88,11 @@ export function ProductCardOutOfStock() {
         oemRef="8200768913"
         imageUrl="/images/products/filtre-huile.jpg"
         imageAlt="Filtre à huile Renault Scenic"
-        price={12.50}
+        price={12.5}
         stockStatus="out-of-stock"
         isCompatible={true}
         showDescription={false}
-        onAddToCart={(id) => console.log('Produit indisponible:', id)}
+        onAddToCart={(id) => logger.log("Produit indisponible:", id)}
       />
     </div>
   );
@@ -112,12 +113,12 @@ export function ProductCardIncompatible() {
         oemRef="7701477028"
         imageUrl="/images/products/courroie-distribution.jpg"
         imageAlt="Courroie de distribution"
-        price={189.00}
+        price={189.0}
         stockStatus="in-stock"
         isCompatible={false}
         compatibilityNote="⚠️ Non compatible avec votre Renault Clio 4 1.5 dCi"
         showCompatibility={true}
-        onAddToCart={(id) => console.log('Produit incompatible:', id)}
+        onAddToCart={(id) => logger.log("Produit incompatible:", id)}
       />
     </div>
   );
@@ -137,13 +138,13 @@ export function ProductCardCompact() {
         oemRef="7700500155"
         imageUrl="/images/products/bougies.jpg"
         imageAlt="Bougies d'allumage"
-        price={24.90}
+        price={24.9}
         stockStatus="in-stock"
         isCompatible={true}
         compactMode={true}
         showDescription={false}
         showCompatibility={false}
-        onAddToCart={(id) => console.log('Ajout panier compact:', id)}
+        onAddToCart={(id) => logger.log("Ajout panier compact:", id)}
       />
     </div>
   );
@@ -157,38 +158,38 @@ export function ProductCardCompact() {
 export function ProductGridExample() {
   const products = [
     {
-      id: 'plaquettes-1',
-      name: 'Plaquettes de frein AV',
-      oemRef: 'REF-001',
-      price: 45.90,
-      originalPrice: 55.90,
-      stockStatus: 'in-stock' as const,
-      imageUrl: '/images/products/plaquettes-1.jpg',
+      id: "plaquettes-1",
+      name: "Plaquettes de frein AV",
+      oemRef: "REF-001",
+      price: 45.9,
+      originalPrice: 55.9,
+      stockStatus: "in-stock" as const,
+      imageUrl: "/images/products/plaquettes-1.jpg",
     },
     {
-      id: 'disques-1',
-      name: 'Disques de frein (x2)',
-      oemRef: 'REF-002',
-      price: 89.00,
-      stockStatus: 'low-stock' as const,
+      id: "disques-1",
+      name: "Disques de frein (x2)",
+      oemRef: "REF-002",
+      price: 89.0,
+      stockStatus: "low-stock" as const,
       stockQuantity: 3,
-      imageUrl: '/images/products/disques-1.jpg',
+      imageUrl: "/images/products/disques-1.jpg",
     },
     {
-      id: 'filtre-1',
-      name: 'Filtre à huile',
-      oemRef: 'REF-003',
-      price: 12.50,
-      stockStatus: 'out-of-stock' as const,
-      imageUrl: '/images/products/filtre-1.jpg',
+      id: "filtre-1",
+      name: "Filtre à huile",
+      oemRef: "REF-003",
+      price: 12.5,
+      stockStatus: "out-of-stock" as const,
+      imageUrl: "/images/products/filtre-1.jpg",
     },
     {
-      id: 'courroie-1',
-      name: 'Courroie distribution',
-      oemRef: 'REF-004',
-      price: 189.00,
-      stockStatus: 'in-stock' as const,
-      imageUrl: '/images/products/courroie-1.jpg',
+      id: "courroie-1",
+      name: "Courroie distribution",
+      oemRef: "REF-004",
+      price: 189.0,
+      stockStatus: "in-stock" as const,
+      imageUrl: "/images/products/courroie-1.jpg",
       isCompatible: false,
     },
   ];
@@ -216,12 +217,12 @@ export function ProductGridExample() {
             showDescription={false}
             compactMode={true}
             onAddToCart={(id) => {
-              console.log('✅ Ajouté au panier:', id);
+              logger.log("✅ Ajouté au panier:", id);
               // Mise à jour state panier
               // updateCart(id);
             }}
             onImageClick={(id) => {
-              console.log('🔍 Voir détails:', id);
+              logger.log("🔍 Voir détails:", id);
               // Redirection fiche produit
               // navigate(`/products/${id}`);
             }}
@@ -240,28 +241,28 @@ export function ProductGridExample() {
 export function SearchResultsExample() {
   const searchResults = [
     {
-      id: 'search-1',
-      name: 'Plaquettes de frein avant Bosch',
-      description: 'Plaquettes céramique haute performance',
-      oemRef: 'BOSCH-0986494',
-      price: 52.90,
-      originalPrice: 62.90,
-      stockStatus: 'in-stock' as const,
-      imageUrl: '/images/products/bosch-plaquettes.jpg',
+      id: "search-1",
+      name: "Plaquettes de frein avant Bosch",
+      description: "Plaquettes céramique haute performance",
+      oemRef: "BOSCH-0986494",
+      price: 52.9,
+      originalPrice: 62.9,
+      stockStatus: "in-stock" as const,
+      imageUrl: "/images/products/bosch-plaquettes.jpg",
       isCompatible: true,
-      compatibilityNote: '✓ Compatible Renault Clio 4 (2012-2019)',
+      compatibilityNote: "✓ Compatible Renault Clio 4 (2012-2019)",
     },
     {
-      id: 'search-2',
-      name: 'Plaquettes de frein avant Brembo',
-      description: 'Plaquettes sport haute température',
-      oemRef: 'BREMBO-P68033',
-      price: 68.90,
-      stockStatus: 'low-stock' as const,
+      id: "search-2",
+      name: "Plaquettes de frein avant Brembo",
+      description: "Plaquettes sport haute température",
+      oemRef: "BREMBO-P68033",
+      price: 68.9,
+      stockStatus: "low-stock" as const,
       stockQuantity: 2,
-      imageUrl: '/images/products/brembo-plaquettes.jpg',
+      imageUrl: "/images/products/brembo-plaquettes.jpg",
       isCompatible: true,
-      compatibilityNote: '✓ Compatible Renault Clio 4 RS (2013+)',
+      compatibilityNote: "✓ Compatible Renault Clio 4 RS (2013+)",
     },
   ];
 
@@ -286,8 +287,8 @@ export function SearchResultsExample() {
             showDescription={true}
             showCompatibility={true}
             compactMode={false}
-            onAddToCart={(id) => console.log('Ajout:', id)}
-            onImageClick={(id) => console.log('Détails:', id)}
+            onAddToCart={(id) => logger.log("Ajout:", id)}
+            onImageClick={(id) => logger.log("Détails:", id)}
           />
         ))}
       </div>

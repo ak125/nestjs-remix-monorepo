@@ -31,6 +31,7 @@ import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Messages | Admin AutoMecanik" },
@@ -106,15 +107,15 @@ export async function action({ request, context }: ActionFunctionArgs) {
       );
 
       if (response.ok) {
-        console.log(`✅ Message ${messageId} fermé avec succès`);
+        logger.log(`✅ Message ${messageId} fermé avec succès`);
       } else {
-        console.error(
+        logger.error(
           `❌ Erreur fermeture message ${messageId}:`,
           response.status,
         );
       }
     } catch (error) {
-      console.error(`❌ Erreur réseau fermeture message:`, error);
+      logger.error(`❌ Erreur réseau fermeture message:`, error);
     }
   }
 
@@ -137,7 +138,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const statusFilter = url.searchParams.get("status") || "all";
 
   try {
-    console.log("📧 Chargement messages depuis l'API...");
+    logger.log("📧 Chargement messages depuis l'API...");
 
     // Construction de l'URL API avec filtres
     const apiUrl = new URL("http://127.0.0.1:3000/api/messages");
@@ -180,9 +181,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       const messagesData = await messagesResponse.json();
       const statsData = await statsResponse.json();
 
-      console.log(
-        `✅ ${messagesData.messages?.length || 0} messages récupérés`,
-      );
+      logger.log(`✅ ${messagesData.messages?.length || 0} messages récupérés`);
 
       return json({
         messages: messagesData.messages || [],
@@ -193,7 +192,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         fallbackMode: false,
       } as MessageData);
     } else {
-      console.error(
+      logger.error(
         "❌ Erreur API messages:",
         messagesResponse.status,
         statsResponse.status,
@@ -210,7 +209,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       } as MessageData);
     }
   } catch (error: any) {
-    console.error("❌ Erreur lors du chargement des messages:", error);
+    logger.error("❌ Erreur lors du chargement des messages:", error);
 
     return json({
       messages: [],

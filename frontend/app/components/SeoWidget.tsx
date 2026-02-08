@@ -1,6 +1,16 @@
 // app/components/SeoWidget.tsx
 import { Link } from "@remix-run/react";
-import { Search, Globe, FileText, BarChart3, AlertTriangle, CheckCircle, Zap, Target } from "lucide-react";
+import {
+  Search,
+  Globe,
+  FileText,
+  BarChart3,
+  AlertTriangle,
+  CheckCircle,
+  Zap,
+  Target,
+} from "lucide-react";
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface SeoStats {
@@ -15,18 +25,21 @@ interface SeoWidgetProps {
   className?: string;
 }
 
-export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
+export const SeoWidget = memo(function SeoWidget({
+  stats,
+  className = "",
+}: SeoWidgetProps) {
   const seoData = stats || {
     totalPages: 714000,
     pagesWithSeo: 680000,
     sitemapEntries: 714336,
-    completionRate: 95.2
+    completionRate: 95.2,
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 95) return 'border-l-4 border-success bg-success/10';
-    if (rate >= 80) return 'border-l-4 border-warning bg-warning/10';
-    return 'border-l-4 border-destructive bg-destructive/10';
+    if (rate >= 95) return "border-l-4 border-success bg-success/10";
+    if (rate >= 80) return "border-l-4 border-warning bg-warning/10";
+    return "border-l-4 border-destructive bg-destructive/10";
   };
 
   const getStatusIcon = (rate: number) => {
@@ -42,14 +55,18 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
   };
 
   return (
-    <Card className={`${className} border-green-200 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}>
+    <Card
+      className={`${className} border-green-200 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}
+    >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-green-800">
           <div className="p-1 bg-success/10 rounded-lg">
             <Search className="h-5 w-5" />
           </div>
           Module SEO Enterprise
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ml-auto flex items-center gap-1 ${getStatusColor(seoData.completionRate)}`}>
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-bold ml-auto flex items-center gap-1 ${getStatusColor(seoData.completionRate)}`}
+          >
             {getStatusIcon(seoData.completionRate)}
             {seoData.completionRate.toFixed(1)}%
           </div>
@@ -67,7 +84,7 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
               Pages indexées
             </div>
           </div>
-          
+
           <div className="text-center p-4 bg-white/70 rounded-xl border border-blue-100 hover:bg-white/90 transition-colors group">
             <div className="text-2xl font-bold text-blue-700 group-hover:scale-110 transition-transform">
               {seoData.pagesWithSeo.toLocaleString()}
@@ -84,16 +101,18 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Target className="h-4 w-4 text-gray-600" />
-              <span className="font-medium text-gray-700">Performance Globale</span>
+              <span className="font-medium text-gray-700">
+                Performance Globale
+              </span>
             </div>
             <span className="font-bold text-gray-800">
               {getStatusText(seoData.completionRate)}
             </span>
           </div>
-          
+
           <div className="relative">
             <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
-              <div 
+              <div
                 className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 h-3 rounded-full transition-all duration-1000 shadow-sm relative overflow-hidden"
                 style={{ width: `${seoData.completionRate}%` }}
               >
@@ -108,16 +127,16 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
 
         {/* Actions rapides */}
         <div className="grid grid-cols-2 gap-2">
-          <Link 
-            to="/admin/seo?tab=analytics" 
+          <Link
+            to="/admin/seo?tab=analytics"
             className="flex items-center gap-2 p-3 bg-white/80 hover:bg-white transition-all duration-200 rounded-xl border border-green-100 text-xs font-medium text-green-700 hover:text-green-800 hover:shadow-md group"
           >
             <BarChart3 className="h-4 w-4 group-hover:scale-110 transition-transform" />
             <span>Analytics</span>
           </Link>
-          
-          <Link 
-            to="/admin/seo?tab=batch" 
+
+          <Link
+            to="/admin/seo?tab=batch"
             className="flex items-center gap-2 p-3 bg-white/80 hover:bg-white transition-all duration-200 rounded-xl border border-blue-100 text-xs font-medium text-blue-700 hover:text-blue-800 hover:shadow-md group"
           >
             <Zap className="h-4 w-4 group-hover:scale-110 transition-transform" />
@@ -126,7 +145,9 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
         </div>
 
         {/* Indicateur de statut */}
-        <div className={`p-3 rounded-xl border-2 ${getStatusColor(seoData.completionRate)} transition-all duration-300`}>
+        <div
+          className={`p-3 rounded-xl border-2 ${getStatusColor(seoData.completionRate)} transition-all duration-300`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {getStatusIcon(seoData.completionRate)}
@@ -134,21 +155,22 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
                 {getStatusText(seoData.completionRate)}
               </span>
             </div>
-            <Link 
-              to="/admin/seo" 
+            <Link
+              to="/admin/seo"
               className="text-xs font-medium hover:underline"
             >
               Détails →
             </Link>
           </div>
-          
+
           {seoData.completionRate < 95 && (
             <div className="mt-2 text-xs opacity-90">
-              💡 {(seoData.totalPages - seoData.pagesWithSeo).toLocaleString()} pages nécessitent une optimisation
+              💡 {(seoData.totalPages - seoData.pagesWithSeo).toLocaleString()}{" "}
+              pages nécessitent une optimisation
             </div>
           )}
         </div>
       </CardContent>
     </Card>
   );
-}
+});

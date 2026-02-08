@@ -3,10 +3,20 @@
  * Compatible avec le LegalService adapté utilisant les tables existantes
  */
 
+import { logger } from "~/utils/logger";
+
 export interface LegalPage {
   msg_id: string;
   id: string;
-  type: 'terms' | 'privacy' | 'cookies' | 'gdpr' | 'returns' | 'shipping' | 'warranty' | 'custom';
+  type:
+    | "terms"
+    | "privacy"
+    | "cookies"
+    | "gdpr"
+    | "returns"
+    | "shipping"
+    | "warranty"
+    | "custom";
   title: string;
   content: string;
   version: string;
@@ -42,20 +52,20 @@ export interface LegalPageVersion {
 
 // Mapping des clés de pages légales compatibles avec le backend
 const PAGE_MAPPING = {
-  cgv: 'terms',
-  'conditions-generales-vente': 'terms',
-  'charte-protection-utilisateur-consommateur': 'privacy',
-  'conditions-utilisation': 'terms',
-  'garanties-conformite-retour-garanties': 'warranty',
-  livraison: 'shipping',
-  'mentions-legales': 'terms',
-  'paiement-securise': 'terms',
-  reclamations: 'returns',
-  'qui-sommes-nous': 'custom',
-  'politique-confidentialite': 'privacy',
-  'politique-cookies': 'cookies',
-  gdpr: 'gdpr',
-  retours: 'returns',
+  cgv: "terms",
+  "conditions-generales-vente": "terms",
+  "charte-protection-utilisateur-consommateur": "privacy",
+  "conditions-utilisation": "terms",
+  "garanties-conformite-retour-garanties": "warranty",
+  livraison: "shipping",
+  "mentions-legales": "terms",
+  "paiement-securise": "terms",
+  reclamations: "returns",
+  "qui-sommes-nous": "custom",
+  "politique-confidentialite": "privacy",
+  "politique-cookies": "cookies",
+  gdpr: "gdpr",
+  retours: "returns",
 } as const;
 
 /**
@@ -67,25 +77,28 @@ export async function getLegalPage(
     version?: string;
     language?: string;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<LegalPage> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     // Mapper la clé si nécessaire
-    const mappedKey = PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
-    
+    const mappedKey =
+      PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
+
     // Construire les paramètres de requête
     const searchParams = new URLSearchParams();
     if (options.version) {
-      searchParams.append('version', options.version);
+      searchParams.append("version", options.version);
     }
     if (options.language) {
-      searchParams.append('language', options.language);
+      searchParams.append("language", options.language);
     }
-    
-    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    
+
+    const queryString = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
+
     // Préparer les headers
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -104,7 +117,7 @@ export async function getLegalPage(
       {
         method: "GET",
         headers,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -115,7 +128,7 @@ export async function getLegalPage(
     }
 
     const result = await response.json();
-    
+
     return {
       msg_id: result.msg_id,
       id: result.id,
@@ -126,14 +139,17 @@ export async function getLegalPage(
       effectiveDate: result.effectiveDate,
       lastUpdated: result.lastUpdated,
       published: result.published,
-      language: result.language || 'fr',
+      language: result.language || "fr",
       slug: result.slug || pageKey,
       metadata: result.metadata,
       createdBy: result.createdBy,
       updatedBy: result.updatedBy,
     };
   } catch (error) {
-    console.error(`Erreur lors de la récupération de la page légale "${pageKey}":`, error);
+    logger.error(
+      `Erreur lors de la récupération de la page légale "${pageKey}":`,
+      error,
+    );
     throw error;
   }
 }
@@ -146,21 +162,23 @@ export async function getAllLegalPages(
     language?: string;
     published?: boolean;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<LegalPage[]> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams();
     if (options.language) {
-      searchParams.append('language', options.language);
+      searchParams.append("language", options.language);
     }
     if (options.published !== undefined) {
-      searchParams.append('published', options.published.toString());
+      searchParams.append("published", options.published.toString());
     }
-    
-    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    
+
+    const queryString = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
+
     const headers: HeadersInit = {
       Accept: "application/json",
     };
@@ -172,13 +190,10 @@ export async function getAllLegalPages(
       }
     }
 
-    const response = await fetch(
-      `${baseUrl}/api/support/legal${queryString}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
+    const response = await fetch(`${baseUrl}/api/support/legal${queryString}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -187,7 +202,7 @@ export async function getAllLegalPages(
     const result = await response.json();
     return result.pages || [];
   } catch (error) {
-    console.error("Erreur lors de la récupération des pages légales:", error);
+    logger.error("Erreur lors de la récupération des pages légales:", error);
     throw error;
   }
 }
@@ -203,13 +218,14 @@ export async function acceptLegalPage(
     ipAddress?: string;
     userAgent?: string;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{ success: boolean; acceptance: LegalAcceptance }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
-    const mappedKey = PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
-    
+    const mappedKey =
+      PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -235,7 +251,7 @@ export async function acceptLegalPage(
         method: "POST",
         headers,
         body: JSON.stringify(payload),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -244,13 +260,16 @@ export async function acceptLegalPage(
     }
 
     const result = await response.json();
-    
+
     return {
       success: true,
-      acceptance: result.acceptance
+      acceptance: result.acceptance,
     };
   } catch (error) {
-    console.error(`Erreur lors de l'acceptation de la page légale "${pageKey}":`, error);
+    logger.error(
+      `Erreur lors de l'acceptation de la page légale "${pageKey}":`,
+      error,
+    );
     throw error;
   }
 }
@@ -261,13 +280,14 @@ export async function acceptLegalPage(
 export async function hasAcceptedLegalPage(
   pageKey: string,
   userId: string,
-  request?: Request
+  request?: Request,
 ): Promise<boolean> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
-    const mappedKey = PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
-    
+    const mappedKey =
+      PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
+
     const headers: HeadersInit = {
       Accept: "application/json",
     };
@@ -284,7 +304,7 @@ export async function hasAcceptedLegalPage(
       {
         method: "GET",
         headers,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -297,7 +317,10 @@ export async function hasAcceptedLegalPage(
     const result = await response.json();
     return result.accepted || false;
   } catch (error) {
-    console.error(`Erreur lors de la vérification d'acceptation "${pageKey}":`, error);
+    logger.error(
+      `Erreur lors de la vérification d'acceptation "${pageKey}":`,
+      error,
+    );
     return false;
   }
 }
@@ -307,13 +330,14 @@ export async function hasAcceptedLegalPage(
  */
 export async function getLegalPageVersions(
   pageKey: string,
-  request?: Request
+  request?: Request,
 ): Promise<LegalPageVersion[]> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
-    const mappedKey = PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
-    
+    const mappedKey =
+      PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
+
     const headers: HeadersInit = {
       Accept: "application/json",
     };
@@ -330,7 +354,7 @@ export async function getLegalPageVersions(
       {
         method: "GET",
         headers,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -340,7 +364,10 @@ export async function getLegalPageVersions(
     const result = await response.json();
     return result.versions || [];
   } catch (error) {
-    console.error(`Erreur lors de la récupération des versions "${pageKey}":`, error);
+    logger.error(
+      `Erreur lors de la récupération des versions "${pageKey}":`,
+      error,
+    );
     throw error;
   }
 }
@@ -354,23 +381,26 @@ export async function downloadLegalPagePDF(
     version?: string;
     language?: string;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<Blob> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
-    const mappedKey = PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
-    
+    const mappedKey =
+      PAGE_MAPPING[pageKey as keyof typeof PAGE_MAPPING] || pageKey;
+
     const searchParams = new URLSearchParams();
     if (options.version) {
-      searchParams.append('version', options.version);
+      searchParams.append("version", options.version);
     }
     if (options.language) {
-      searchParams.append('language', options.language);
+      searchParams.append("language", options.language);
     }
-    
-    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    
+
+    const queryString = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
+
     const headers: HeadersInit = {
       Accept: "application/pdf",
     };
@@ -387,7 +417,7 @@ export async function downloadLegalPagePDF(
       {
         method: "GET",
         headers,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -396,7 +426,7 @@ export async function downloadLegalPagePDF(
 
     return await response.blob();
   } catch (error) {
-    console.error(`Erreur lors du téléchargement PDF "${pageKey}":`, error);
+    logger.error(`Erreur lors du téléchargement PDF "${pageKey}":`, error);
     throw error;
   }
 }

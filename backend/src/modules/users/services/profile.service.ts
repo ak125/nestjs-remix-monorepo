@@ -70,11 +70,14 @@ export class ProfileService extends SupabaseBaseService {
 
       this.logger.log(`✅ Profil récupéré: ${profile.email}`);
       return profile;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`❌ Erreur récupération profil ${userId}:`, error);
       if (error instanceof NotFoundException) throw error;
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la récupération du profil',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération du profil',
       });
     }
   }
@@ -134,7 +137,7 @@ export class ProfileService extends SupabaseBaseService {
 
       this.logger.log(`✅ Profil mis à jour: ${updatedProfile.email}`);
       return updatedProfile;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`❌ Erreur mise à jour profil ${userId}:`, error);
       if (
         error instanceof NotFoundException ||
@@ -142,7 +145,10 @@ export class ProfileService extends SupabaseBaseService {
       )
         throw error;
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la mise à jour du profil',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la mise à jour du profil',
       });
     }
   }
@@ -166,7 +172,7 @@ export class ProfileService extends SupabaseBaseService {
       const profile = this.mapToUserResponse(user);
       this.logger.log(`✅ Utilisateur trouvé: ${profile.email}`);
       return profile;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`❌ Erreur recherche par ID ${id}:`, error);
       return null;
     }
@@ -196,7 +202,7 @@ export class ProfileService extends SupabaseBaseService {
       const profile = this.mapToUserResponse(data);
       this.logger.log(`✅ Utilisateur trouvé par email: ${profile.id}`);
       return profile;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`❌ Erreur recherche par email ${email}:`, error);
       return null;
     }

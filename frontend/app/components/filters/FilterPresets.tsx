@@ -1,14 +1,15 @@
 /**
  * 🔍 FILTER PRESETS - Sauvegarde et chargement de filtres prédéfinis
- * 
+ *
  * Permet aux utilisateurs de sauvegarder leurs combinaisons de filtres favorites
  * (marque, prix, catégorie) et de les recharger rapidement.
- * 
+ *
  * Stockage: localStorage pour persistence côté client
  */
 
-import { ChevronDown, Save, Trash2, Star } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ChevronDown, Save, Trash2, Star } from "lucide-react";
+import { useState, useEffect, memo } from "react";
+import { logger } from "~/utils/logger";
 
 export interface FilterPreset {
   id: string;
@@ -25,21 +26,21 @@ export interface FilterPreset {
 }
 
 interface FilterPresetsProps {
-  currentFilters: FilterPreset['filters'];
-  onLoadPreset: (filters: FilterPreset['filters']) => void;
+  currentFilters: FilterPreset["filters"];
+  onLoadPreset: (filters: FilterPreset["filters"]) => void;
   className?: string;
 }
 
-const STORAGE_KEY = 'filter_presets_v1';
+const STORAGE_KEY = "filter_presets_v1";
 
-export function FilterPresets({
+export const FilterPresets = memo(function FilterPresets({
   currentFilters,
   onLoadPreset,
-  className = '',
+  className = "",
 }: FilterPresetsProps) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [presetName, setPresetName] = useState('');
+  const [presetName, setPresetName] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   // Charger les presets depuis localStorage au montage
@@ -61,13 +62,13 @@ export function FilterPresets({
         setPresets(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Erreur chargement presets:', error);
+      logger.error("Erreur chargement presets:", error);
     }
   };
 
   const saveCurrentFilters = () => {
     if (!presetName.trim()) {
-      alert('Veuillez entrer un nom pour ce preset');
+      alert("Veuillez entrer un nom pour ce preset");
       return;
     }
 
@@ -80,7 +81,7 @@ export function FilterPresets({
     };
 
     setPresets([...presets, newPreset]);
-    setPresetName('');
+    setPresetName("");
     setShowSaveDialog(false);
   };
 
@@ -119,7 +120,7 @@ export function FilterPresets({
             Presets ({presets.length})
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -150,11 +151,7 @@ export function FilterPresets({
             <div className="p-2 space-y-1">
               {presets
                 .sort((a, b) =>
-                  a.isFavorite === b.isFavorite
-                    ? 0
-                    : a.isFavorite
-                      ? -1
-                      : 1,
+                  a.isFavorite === b.isFavorite ? 0 : a.isFavorite ? -1 : 1,
                 )
                 .map((preset) => (
                   <div
@@ -167,7 +164,7 @@ export function FilterPresets({
                       className="flex-shrink-0"
                     >
                       <Star
-                        className={`w-4 h-4 ${preset.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                        className={`w-4 h-4 ${preset.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
                       />
                     </button>
 
@@ -180,7 +177,7 @@ export function FilterPresets({
                         {preset.name}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {preset.filters.brands?.length || 0} marque(s),{' '}
+                        {preset.filters.brands?.length || 0} marque(s),{" "}
                         {preset.filters.categories?.length || 0} catégorie(s)
                       </p>
                     </button>
@@ -221,21 +218,20 @@ export function FilterPresets({
             <div className="mt-4 p-3 bg-gray-50 rounded text-xs space-y-1">
               {currentFilters.brands && currentFilters.brands.length > 0 && (
                 <p>
-                  <strong>Marques:</strong> {currentFilters.brands.join(', ')}
+                  <strong>Marques:</strong> {currentFilters.brands.join(", ")}
                 </p>
               )}
               {(currentFilters.priceMin || currentFilters.priceMax) && (
                 <p>
-                  <strong>Prix:</strong>{' '}
-                  {currentFilters.priceMin || 0}€ -{' '}
-                  {currentFilters.priceMax || '∞'}€
+                  <strong>Prix:</strong> {currentFilters.priceMin || 0}€ -{" "}
+                  {currentFilters.priceMax || "∞"}€
                 </p>
               )}
               {currentFilters.categories &&
                 currentFilters.categories.length > 0 && (
                   <p>
-                    <strong>Catégories:</strong>{' '}
-                    {currentFilters.categories.join(', ')}
+                    <strong>Catégories:</strong>{" "}
+                    {currentFilters.categories.join(", ")}
                   </p>
                 )}
             </div>
@@ -259,6 +255,6 @@ export function FilterPresets({
       )}
     </div>
   );
-}
+});
 
 export default FilterPresets;

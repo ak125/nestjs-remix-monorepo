@@ -1,5 +1,5 @@
-import { Link } from '@remix-run/react';
-import React, { useState } from 'react';
+import { Link } from "@remix-run/react";
+import React, { useState, memo } from "react";
 
 interface CatalogueItem {
   name: string;
@@ -26,17 +26,23 @@ interface CatalogueSectionProps {
   verbSwitches?: SeoSwitch[];
 }
 
-export default function CatalogueSection({ catalogueMameFamille, verbSwitches = [] }: CatalogueSectionProps) {
+const CatalogueSection = memo(function CatalogueSection({
+  catalogueMameFamille,
+  verbSwitches = [],
+}: CatalogueSectionProps) {
   // Use array instead of Set to avoid React hydration issues
-  const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>([]);
-  
+  const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>(
+    [],
+  );
+
   if (!catalogueMameFamille?.items || catalogueMameFamille.items.length === 0) {
     return null;
   }
 
   // 🔧 Dédupliquer les items par nom (éviter doublons de la BDD)
-  const uniqueItems = catalogueMameFamille.items.filter((item, index, self) => 
-    index === self.findIndex(t => t.name === item.name)
+  const uniqueItems = catalogueMameFamille.items.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.name === item.name),
   );
 
   /**
@@ -46,20 +52,20 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
   const getAnchorText = (item: CatalogueItem, index: number): string => {
     if (verbSwitches.length > 0) {
       const switchItem = verbSwitches[index % verbSwitches.length];
-      const verb = switchItem?.content || switchItem?.sis_content || '';
+      const verb = switchItem?.content || switchItem?.sis_content || "";
       if (verb) {
         // Capitaliser la première lettre du verbe
         const capitalizedVerb = verb.charAt(0).toUpperCase() + verb.slice(1);
         return `${capitalizedVerb} ${item.name.toLowerCase()}`;
       }
     }
-    
+
     // Ancres par défaut avec rotation pour variation minimale
     const defaultAnchors = [
-      'Voir le produit',
-      'Découvrir',
-      'En savoir plus',
-      'Voir les prix'
+      "Voir le produit",
+      "Découvrir",
+      "En savoir plus",
+      "Voir les prix",
     ];
     return defaultAnchors[index % defaultAnchors.length];
   };
@@ -67,15 +73,15 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
   const toggleDescription = (index: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setExpandedDescriptions(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    setExpandedDescriptions((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
   };
 
   // Truncate description to ~120 chars
   const truncateText = (text: string, maxLength: number = 120): string => {
     if (!text || text.length <= maxLength) return text;
-    return text.substring(0, maxLength).replace(/\s+\S*$/, '') + '...';
+    return text.substring(0, maxLength).replace(/\s+\S*$/, "") + "...";
   };
 
   return (
@@ -88,19 +94,21 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
           </span>
         </h2>
       </div>
-      
+
       <div className="p-3 md:p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {uniqueItems.map((item, index) => {
             const isExpanded = expandedDescriptions.includes(index);
-            const hasDescription = item.description && item.description.length > 0;
-            const displayDescription = isExpanded 
-              ? item.description 
+            const hasDescription =
+              item.description && item.description.length > 0;
+            const displayDescription = isExpanded
+              ? item.description
               : truncateText(item.description);
-            const needsTruncation = hasDescription && item.description.length > 120;
+            const needsTruncation =
+              hasDescription && item.description.length > 120;
             // 🔗 Ancre SEO variée pour maillage interne
             const anchorText = getAnchorText(item, index);
-            
+
             return (
               <Link
                 key={index}
@@ -122,26 +130,36 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          e.currentTarget.src = '/images/default-piece.jpg';
+                          e.currentTarget.src = "/images/default-piece.jpg";
                         }}
                       />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-sm md:text-base text-neutral-900 group-hover:text-semantic-action transition-colors mb-1 line-clamp-2 leading-tight">
                         {item.name}
                       </h3>
-                      
+
                       {/* 🔗 Ancre SEO variée au lieu de "Voir le produit" statique */}
                       <div className="flex items-center text-xs text-semantic-action font-medium group-hover:text-semantic-action/80">
                         {anchorText}
-                        <svg className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                          className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Description SEO riche */}
                   {hasDescription && (
                     <div className="mt-auto pt-2 border-t border-neutral-100">
@@ -153,7 +171,7 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
                           onClick={(e) => toggleDescription(index, e)}
                           className="text-xs text-semantic-action/70 hover:text-semantic-action mt-1 font-medium"
                         >
-                          {isExpanded ? 'Voir moins' : 'Lire plus'}
+                          {isExpanded ? "Voir moins" : "Lire plus"}
                         </button>
                       )}
                     </div>
@@ -166,4 +184,6 @@ export default function CatalogueSection({ catalogueMameFamille, verbSwitches = 
       </div>
     </section>
   );
-}
+});
+
+export default CatalogueSection;

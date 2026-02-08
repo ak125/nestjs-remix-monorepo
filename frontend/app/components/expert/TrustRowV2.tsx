@@ -26,7 +26,7 @@ import {
   BadgeCheck,
   CheckCircle2,
 } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, memo } from "react";
 import { cn } from "~/lib/utils";
 
 // ============================================================================
@@ -378,105 +378,107 @@ function CertificateBadge({
 // Main Component
 // ============================================================================
 
-const TrustRowV2 = forwardRef<HTMLDivElement, TrustRowV2Props>(
-  (
-    {
-      badges,
-      rating,
-      reviewCount,
-      warrantyYears,
-      returnDays,
-      deliveryText,
-      isOemQuality,
-      compact = false,
-      variant = "row",
-      className,
-    },
-    ref,
-  ) => {
-    // Build badges array from props if not provided
-    const computedBadges: TrustBadgeV2[] = badges || [];
+const TrustRowV2 = memo(
+  forwardRef<HTMLDivElement, TrustRowV2Props>(
+    (
+      {
+        badges,
+        rating,
+        reviewCount,
+        warrantyYears,
+        returnDays,
+        deliveryText,
+        isOemQuality,
+        compact = false,
+        variant = "row",
+        className,
+      },
+      ref,
+    ) => {
+      // Build badges array from props if not provided
+      const computedBadges: TrustBadgeV2[] = badges || [];
 
-    if (!badges) {
-      if (warrantyYears) {
+      if (!badges) {
+        if (warrantyYears) {
+          computedBadges.push({
+            type: "warranty",
+            label: `Garantie ${warrantyYears} an${warrantyYears > 1 ? "s" : ""}`,
+            sublabel: "Constructeur",
+          });
+        }
+
+        if (returnDays) {
+          computedBadges.push({
+            type: "returns",
+            label: `Retour ${returnDays}j`,
+            sublabel: "Satisfait ou remboursé",
+          });
+        }
+
+        if (isOemQuality) {
+          computedBadges.push({
+            type: "oem",
+            label: "Qualité OEM",
+            sublabel: "Équipementier d'origine",
+            highlighted: true,
+          });
+        }
+
+        if (deliveryText) {
+          computedBadges.push({
+            type: "delivery",
+            label: deliveryText,
+          });
+        }
+
+        // Always add secure payment
         computedBadges.push({
-          type: "warranty",
-          label: `Garantie ${warrantyYears} an${warrantyYears > 1 ? "s" : ""}`,
-          sublabel: "Constructeur",
+          type: "secure",
+          label: "Paiement sécurisé",
+          sublabel: "Chiffrement SSL 256-bit",
         });
       }
 
-      if (returnDays) {
-        computedBadges.push({
-          type: "returns",
-          label: `Retour ${returnDays}j`,
-          sublabel: "Satisfait ou remboursé",
-        });
-      }
+      // Layout classes by variant
+      const layoutClasses = {
+        row: "flex flex-wrap items-stretch gap-2 sm:gap-3",
+        grid: "grid grid-cols-2 lg:grid-cols-4 gap-3",
+        stack: "flex flex-col gap-2",
+        certificates: "grid grid-cols-2 sm:grid-cols-4 gap-4",
+      };
 
-      if (isOemQuality) {
-        computedBadges.push({
-          type: "oem",
-          label: "Qualité OEM",
-          sublabel: "Équipementier d'origine",
-          highlighted: true,
-        });
-      }
-
-      if (deliveryText) {
-        computedBadges.push({
-          type: "delivery",
-          label: deliveryText,
-        });
-      }
-
-      // Always add secure payment
-      computedBadges.push({
-        type: "secure",
-        label: "Paiement sécurisé",
-        sublabel: "Chiffrement SSL 256-bit",
-      });
-    }
-
-    // Layout classes by variant
-    const layoutClasses = {
-      row: "flex flex-wrap items-stretch gap-2 sm:gap-3",
-      grid: "grid grid-cols-2 lg:grid-cols-4 gap-3",
-      stack: "flex flex-col gap-2",
-      certificates: "grid grid-cols-2 sm:grid-cols-4 gap-4",
-    };
-
-    return (
-      <div ref={ref} className={cn("w-full", className)}>
-        {/* Rating row (if provided) */}
-        {rating !== undefined && (
-          <div className="mb-4 pb-4 border-b border-slate-100">
-            <RatingDisplayV2 rating={rating} reviewCount={reviewCount} />
-          </div>
-        )}
-
-        {/* Trust badges */}
-        <div className={cn(layoutClasses[variant])}>
-          {computedBadges.map((badge, index) =>
-            variant === "certificates" ? (
-              <CertificateBadge
-                key={`${badge.type}-${index}`}
-                badge={badge}
-                index={index}
-              />
-            ) : (
-              <TrustBadgeV2Component
-                key={`${badge.type}-${index}`}
-                badge={badge}
-                compact={compact}
-                index={index}
-              />
-            ),
+      return (
+        <div ref={ref} className={cn("w-full", className)}>
+          {/* Rating row (if provided) */}
+          {rating !== undefined && (
+            <div className="mb-4 pb-4 border-b border-slate-100">
+              <RatingDisplayV2 rating={rating} reviewCount={reviewCount} />
+            </div>
           )}
+
+          {/* Trust badges */}
+          <div className={cn(layoutClasses[variant])}>
+            {computedBadges.map((badge, index) =>
+              variant === "certificates" ? (
+                <CertificateBadge
+                  key={`${badge.type}-${index}`}
+                  badge={badge}
+                  index={index}
+                />
+              ) : (
+                <TrustBadgeV2Component
+                  key={`${badge.type}-${index}`}
+                  badge={badge}
+                  compact={compact}
+                  index={index}
+                />
+              ),
+            )}
+          </div>
         </div>
-      </div>
-    );
-  },
+      );
+    },
+  ),
 );
 
 TrustRowV2.displayName = "TrustRowV2";
@@ -488,7 +490,7 @@ TrustRowV2.displayName = "TrustRowV2";
 /**
  * Product page trust row (Pack Confiance V2)
  */
-export function ProductTrustRowV2({
+export const ProductTrustRowV2 = memo(function ProductTrustRowV2({
   rating,
   reviewCount,
   warrantyYears = 2,
@@ -507,12 +509,12 @@ export function ProductTrustRowV2({
       className={className}
     />
   );
-}
+});
 
 /**
  * Compact trust badges for mobile
  */
-export function CompactTrustBadgesV2({
+export const CompactTrustBadgesV2 = memo(function CompactTrustBadgesV2({
   warrantyYears = 2,
   isOemQuality = false,
   className,
@@ -526,12 +528,16 @@ export function CompactTrustBadgesV2({
       className={className}
     />
   );
-}
+});
 
 /**
  * Footer trust row with certificate style
  */
-export function FooterTrustRowV2({ className }: { className?: string }) {
+export const FooterTrustRowV2 = memo(function FooterTrustRowV2({
+  className,
+}: {
+  className?: string;
+}) {
   const badges: TrustBadgeV2[] = [
     {
       type: "secure",
@@ -558,6 +564,6 @@ export function FooterTrustRowV2({ className }: { className?: string }) {
   return (
     <TrustRowV2 badges={badges} variant="certificates" className={className} />
   );
-}
+});
 
 export { TrustRowV2 };

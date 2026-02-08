@@ -1,6 +1,6 @@
 /**
  * 🎯 FILTRES PRODUITS - Composant barre de filtrage avancée
- * 
+ *
  * Features:
  * - Recherche texte (nom, référence)
  * - Filtre par gamme (dropdown)
@@ -10,13 +10,13 @@
  * - Reset filtres
  */
 
-import { useSearchParams, useNavigate } from '@remix-run/react';
-import { Search, Filter, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { useSearchParams, useNavigate } from "@remix-run/react";
+import { Search, Filter, X } from "lucide-react";
+import { useState, useEffect, memo } from "react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface Gamme {
   id: string;
@@ -34,21 +34,20 @@ interface ProductFiltersProps {
   activeFiltersCount: number;
 }
 
-export function ProductFilters({
+export const ProductFilters = memo(function ProductFilters({
   gammes,
   brands,
   activeFiltersCount,
 }: ProductFiltersProps) {
-
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const currentSearch = searchParams.get('search') || '';
-  const currentGamme = searchParams.get('gammeId') || '';
-  const currentBrand = searchParams.get('brandId') || '';
-  const currentLowStock = searchParams.get('lowStock') === 'true';
+  const currentSearch = searchParams.get("search") || "";
+  const currentGamme = searchParams.get("gammeId") || "";
+  const currentBrand = searchParams.get("brandId") || "";
+  const currentLowStock = searchParams.get("lowStock") === "true";
   // Par défaut actifs = true (sauf si explicitement false)
-  const currentActiveOnly = searchParams.get('isActive') !== 'false';
+  const currentActiveOnly = searchParams.get("isActive") !== "false";
 
   // États locaux pour les sélections
   const [selectedGamme, setSelectedGamme] = useState(currentGamme);
@@ -71,13 +70,13 @@ export function ProductFilters({
     activeOnly?: boolean;
   }) => {
     const urlParams = new URLSearchParams();
-    urlParams.set('page', '1'); // Reset à la page 1
+    urlParams.set("page", "1"); // Reset à la page 1
 
-    if (params.search?.trim()) urlParams.set('search', params.search.trim());
-    if (params.gammeId) urlParams.set('gammeId', params.gammeId);
-    if (params.brandId) urlParams.set('brandId', params.brandId);
-    if (params.lowStock) urlParams.set('lowStock', 'true');
-    if (params.activeOnly) urlParams.set('activeOnly', 'true');
+    if (params.search?.trim()) urlParams.set("search", params.search.trim());
+    if (params.gammeId) urlParams.set("gammeId", params.gammeId);
+    if (params.brandId) urlParams.set("brandId", params.brandId);
+    if (params.lowStock) urlParams.set("lowStock", "true");
+    if (params.activeOnly) urlParams.set("activeOnly", "true");
 
     navigate(`?${urlParams.toString()}`);
   };
@@ -85,7 +84,7 @@ export function ProductFilters({
   // Handler pour le changement de gamme
   const handleGammeChange = (gammeId: string) => {
     setSelectedGamme(gammeId);
-    
+
     // Appliquer automatiquement
     buildAndNavigate({
       gammeId: gammeId || undefined,
@@ -99,7 +98,7 @@ export function ProductFilters({
   // Handler pour le changement de marque
   const handleBrandChange = (brandId: string) => {
     setSelectedBrand(brandId);
-    
+
     // Appliquer automatiquement
     buildAndNavigate({
       gammeId: selectedGamme || undefined,
@@ -112,28 +111,31 @@ export function ProductFilters({
 
   // Handle apply filters - can be called from button or form submit
   const applyFilters = () => {
-    
     // Get values from form elements by ID
-    const searchInput = document.getElementById('search') as HTMLInputElement;
-    const gammeSelect = document.getElementById('gammeId') as HTMLSelectElement;
-    const brandSelect = document.getElementById('brandId') as HTMLSelectElement;
-    const lowStockCheckbox = document.querySelector('input[name="lowStock"]') as HTMLInputElement;
-    const activeOnlyCheckbox = document.querySelector('input[name="activeOnly"]') as HTMLInputElement;
-    
-    const search = searchInput?.value || '';
-    const gammeId = gammeSelect?.value || '';
-    const brandId = brandSelect?.value || '';
-    const lowStock = lowStockCheckbox?.checked ? 'true' : '';
-    const activeOnly = activeOnlyCheckbox?.checked ? 'true' : '';
-    
-    const params = new URLSearchParams();
-    params.set('page', '1');
+    const searchInput = document.getElementById("search") as HTMLInputElement;
+    const gammeSelect = document.getElementById("gammeId") as HTMLSelectElement;
+    const brandSelect = document.getElementById("brandId") as HTMLSelectElement;
+    const lowStockCheckbox = document.querySelector(
+      'input[name="lowStock"]',
+    ) as HTMLInputElement;
+    const activeOnlyCheckbox = document.querySelector(
+      'input[name="activeOnly"]',
+    ) as HTMLInputElement;
 
-    if (search.trim()) params.set('search', search.trim());
-    if (gammeId) params.set('gammeId', gammeId);
-    if (brandId) params.set('brandId', brandId);
-    if (lowStock === 'true') params.set('lowStock', 'true');
-    if (activeOnly === 'true') params.set('activeOnly', 'true');
+    const search = searchInput?.value || "";
+    const gammeId = gammeSelect?.value || "";
+    const brandId = brandSelect?.value || "";
+    const lowStock = lowStockCheckbox?.checked ? "true" : "";
+    const activeOnly = activeOnlyCheckbox?.checked ? "true" : "";
+
+    const params = new URLSearchParams();
+    params.set("page", "1");
+
+    if (search.trim()) params.set("search", search.trim());
+    if (gammeId) params.set("gammeId", gammeId);
+    if (brandId) params.set("brandId", brandId);
+    if (lowStock === "true") params.set("lowStock", "true");
+    if (activeOnly === "true") params.set("activeOnly", "true");
 
     navigate(`?${params.toString()}`);
   };
@@ -160,7 +162,7 @@ export function ProductFilters({
             variant="outline"
             size="sm"
             className="flex items-center gap-1"
-            onClick={() => window.location.href = window.location.pathname}
+            onClick={() => (window.location.href = window.location.pathname)}
           >
             <X className="h-4 w-4" />
             Réinitialiser
@@ -171,7 +173,7 @@ export function ProductFilters({
       <form className="space-y-4" onSubmit={handleSubmit}>
         {/* Champs hidden pour les valeurs sélectionnées (compatibilité Form) */}
         <input type="hidden" name="page" value="1" />
-        
+
         {/* Ligne 1: Recherche + Gamme */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Recherche */}
@@ -261,7 +263,7 @@ export function ProductFilters({
 
         {/* Boutons d'action */}
         <div className="flex justify-end gap-2">
-          <button 
+          <button
             type="button"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium"
             onClick={(e) => {
@@ -276,4 +278,4 @@ export function ProductFilters({
       </form>
     </div>
   );
-}
+});

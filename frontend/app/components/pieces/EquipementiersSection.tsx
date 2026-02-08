@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 
 interface EquipementierItem {
   pm_id: number;
@@ -31,7 +32,7 @@ function getEquipementierUrl(pmName: string): string {
   return `/pieces-${slug}.html`;
 }
 
-export default function EquipementiersSection({
+const EquipementiersSection = memo(function EquipementiersSection({
   equipementiers,
 }: EquipementiersSectionProps) {
   if (!equipementiers?.items || equipementiers.items.length === 0) {
@@ -131,4 +132,6 @@ export default function EquipementiersSection({
       </div>
     </section>
   );
-}
+});
+
+export default EquipementiersSection;

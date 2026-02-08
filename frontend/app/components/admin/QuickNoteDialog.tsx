@@ -1,12 +1,12 @@
 /**
  * 📝 Quick Note Dialog - Composant réutilisable pour ajouter des notes rapides
- * 
+ *
  * Cas d'usage :
  * - Ajouter une note sur une commande
  * - Commentaire rapide sur un client
  * - Remarque interne sur un produit
  * - Todo admin rapide
- * 
+ *
  * @example
  * ```tsx
  * <QuickNoteDialog
@@ -18,10 +18,10 @@
  * ```
  */
 
-import { MessageSquarePlus } from 'lucide-react';
-import { useState } from 'react';
+import { MessageSquarePlus } from "lucide-react";
+import { memo, useState } from "react";
 
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -29,9 +29,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { logger } from "~/utils/logger";
 
 interface QuickNoteDialogProps {
   open: boolean;
@@ -44,31 +45,31 @@ interface QuickNoteDialogProps {
   maxLength?: number;
 }
 
-export function QuickNoteDialog({
+export const QuickNoteDialog = memo(function QuickNoteDialog({
   open,
   onOpenChange,
-  title = 'Ajouter une note',
-  description = 'Saisissez votre note ci-dessous',
-  placeholder = 'Votre note...',
+  title = "Ajouter une note",
+  description = "Saisissez votre note ci-dessous",
+  placeholder = "Votre note...",
   onSubmit,
-  submitLabel = 'Enregistrer',
+  submitLabel = "Enregistrer",
   maxLength = 500,
 }: QuickNoteDialogProps) {
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!note.trim()) return;
 
     setIsSubmitting(true);
     try {
       await onSubmit(note);
-      setNote(''); // Reset après succès
+      setNote(""); // Reset après succès
       onOpenChange(false);
     } catch (error) {
-      console.error('Erreur lors de la soumission:', error);
+      logger.error("Erreur lors de la soumission:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,11 +116,11 @@ export function QuickNoteDialog({
               Annuler
             </Button>
             <Button type="submit" disabled={!note.trim() || isSubmitting}>
-              {isSubmitting ? 'Enregistrement...' : submitLabel}
+              {isSubmitting ? "Enregistrement..." : submitLabel}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+});

@@ -1,6 +1,6 @@
 /**
  * 💰 PricingDisplay - Affichage prix avec persuasion
- * 
+ *
  * Règles prix barré crédible:
  * - Ancien prix max +50% du prix actuel
  * - Réduction min 5%, max 70%
@@ -9,6 +9,7 @@
  */
 
 import { TrendingDown } from "lucide-react";
+import { memo } from "react";
 import { cn } from "~/lib/utils";
 
 interface PricingDisplayProps {
@@ -20,7 +21,7 @@ interface PricingDisplayProps {
   className?: string;
 }
 
-export function PricingDisplay({
+export const PricingDisplay = memo(function PricingDisplay({
   price,
   originalPrice,
   currency = "€",
@@ -33,7 +34,9 @@ export function PricingDisplay({
   const hasDiscount = validatedOriginalPrice && validatedOriginalPrice > price;
   const savings = hasDiscount ? validatedOriginalPrice - price : 0;
   const discountPercent = hasDiscount
-    ? Math.round(((validatedOriginalPrice - price) / validatedOriginalPrice) * 100)
+    ? Math.round(
+        ((validatedOriginalPrice - price) / validatedOriginalPrice) * 100,
+      )
     : 0;
 
   const sizeClasses = {
@@ -46,7 +49,9 @@ export function PricingDisplay({
     <div className={cn("flex flex-col gap-1", className)}>
       {/* Prix principal */}
       <div className="flex items-baseline gap-3">
-        <div className={cn("font-bold text-gray-900", sizeClasses[size].current)}>
+        <div
+          className={cn("font-bold text-gray-900", sizeClasses[size].current)}
+        >
           {formatPrice(price)} {currency}
         </div>
 
@@ -56,7 +61,7 @@ export function PricingDisplay({
             <div
               className={cn(
                 "font-medium text-gray-400 line-through",
-                sizeClasses[size].original
+                sizeClasses[size].original,
               )}
             >
               {formatPrice(validatedOriginalPrice)} {currency}
@@ -64,8 +69,7 @@ export function PricingDisplay({
 
             {/* Badge réduction */}
             <div className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-bold">
-              <TrendingDown className="w-3 h-3" />
-              -{discountPercent}%
+              <TrendingDown className="w-3 h-3" />-{discountPercent}%
             </div>
           </>
         )}
@@ -86,7 +90,7 @@ export function PricingDisplay({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Valider prix barré selon règles e-commerce
@@ -94,7 +98,7 @@ export function PricingDisplay({
  */
 function validateOriginalPrice(
   currentPrice: number,
-  originalPrice?: number
+  originalPrice?: number,
 ): number | null {
   if (!originalPrice || originalPrice <= currentPrice) {
     return null;
@@ -143,12 +147,18 @@ interface PriceComparisonProps {
   className?: string;
 }
 
-export function PriceComparison({ prices, className }: PriceComparisonProps) {
+export const PriceComparison = memo(function PriceComparison({
+  prices,
+  className,
+}: PriceComparisonProps) {
   const currentPrice = prices.find((p) => p.isCurrent);
-  const minCompetitor = Math.min(...prices.filter((p) => !p.isCurrent).map((p) => p.price));
-  const savings = currentPrice && minCompetitor > currentPrice.price
-    ? minCompetitor - currentPrice.price
-    : 0;
+  const minCompetitor = Math.min(
+    ...prices.filter((p) => !p.isCurrent).map((p) => p.price),
+  );
+  const savings =
+    currentPrice && minCompetitor > currentPrice.price
+      ? minCompetitor - currentPrice.price
+      : 0;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -161,7 +171,9 @@ export function PriceComparison({ prices, className }: PriceComparisonProps) {
           key={i}
           className={cn(
             "flex items-center justify-between p-3 rounded-lg",
-            item.isCurrent ? "bg-green-50 border border-green-200" : "bg-gray-50"
+            item.isCurrent
+              ? "bg-green-50 border border-green-200"
+              : "bg-gray-50",
           )}
         >
           <div className="flex items-center gap-2">
@@ -179,10 +191,11 @@ export function PriceComparison({ prices, className }: PriceComparisonProps) {
       {savings > 0 && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm font-semibold text-blue-900">
-            💰 Vous économisez {formatPrice(savings)} € par rapport à la concurrence
+            💰 Vous économisez {formatPrice(savings)} € par rapport à la
+            concurrence
           </p>
         </div>
       )}
     </div>
   );
-}
+});

@@ -4,10 +4,12 @@
  */
 
 import { Package, Plus } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { memo } from "react";
 import { type OrdersHeaderProps } from "../../types/orders.types";
+import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
-export function OrdersHeader({
+export const OrdersHeader = memo(function OrdersHeader({
   permissions,
   userRole,
   totalOrders,
@@ -41,7 +43,7 @@ export function OrdersHeader({
             <Button
               className="flex items-center gap-2 px-4 py-2  rounded-lg"
               variant="blue"
-              onClick={() => console.log("Nouvelle commande")}
+              onClick={() => logger.log("Nouvelle commande")}
             >
               <Plus className="w-4 h-4" />
               Nouvelle commande
@@ -51,4 +53,4 @@ export function OrdersHeader({
       </div>
     </div>
   );
-}
+});

@@ -1,12 +1,17 @@
 /**
  * 📄 COMPOSANT PAGINATION SERVEUR OPTIMISÉ
- * 
+ *
  * Pagination haute performance pour de gros volumes (59k+ items)
  * avec navigation intelligente et saut rapide
  */
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import { useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { useState, memo } from "react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -27,7 +32,7 @@ interface ServerPaginationProps {
   showQuickJump?: boolean;
 }
 
-export function ServerPagination({
+export const ServerPagination = memo(function ServerPagination({
   currentPage,
   totalPages,
   totalItems,
@@ -39,22 +44,21 @@ export function ServerPagination({
   onPageChange,
   onNext,
   onPrevious,
-  showQuickJump = true
+  showQuickJump = true,
 }: ServerPaginationProps) {
-  const [jumpPage, setJumpPage] = useState('');
+  const [jumpPage, setJumpPage] = useState("");
 
   const handleQuickJump = () => {
     const page = parseInt(jumpPage, 10);
     if (page >= 1 && page <= totalPages) {
       onPageChange(page);
-      setJumpPage('');
+      setJumpPage("");
     }
   };
 
   return (
     <Card className="p-4">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        
         {/* 📊 Informations sur la plage */}
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span className="font-medium">
@@ -68,7 +72,6 @@ export function ServerPagination({
 
         {/* 🔄 Navigation principale */}
         <div className="flex items-center gap-2">
-          
           {/* ⏮️ Première page */}
           <Button
             variant="outline"
@@ -99,7 +102,11 @@ export function ServerPagination({
                 variant={page === currentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className={page === currentPage ? "bg-primary text-primary-foreground" : ""}
+                className={
+                  page === currentPage
+                    ? "bg-primary text-primary-foreground"
+                    : ""
+                }
               >
                 {page}
               </Button>
@@ -140,7 +147,7 @@ export function ServerPagination({
               value={jumpPage}
               onChange={(e) => setJumpPage(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   handleQuickJump();
                 }
               }}
@@ -150,7 +157,11 @@ export function ServerPagination({
             <Button
               size="sm"
               onClick={handleQuickJump}
-              disabled={!jumpPage || parseInt(jumpPage, 10) < 1 || parseInt(jumpPage, 10) > totalPages}
+              disabled={
+                !jumpPage ||
+                parseInt(jumpPage, 10) < 1 ||
+                parseInt(jumpPage, 10) > totalPages
+              }
             >
               OK
             </Button>
@@ -169,11 +180,13 @@ export function ServerPagination({
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-1">
             <span>Page 1</span>
-            <span>Page {currentPage} / {totalPages}</span>
+            <span>
+              Page {currentPage} / {totalPages}
+            </span>
             <span>Page {totalPages}</span>
           </div>
         </div>
       )}
     </Card>
   );
-}
+});

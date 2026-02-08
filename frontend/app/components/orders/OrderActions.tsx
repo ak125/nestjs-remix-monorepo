@@ -6,9 +6,10 @@ import {
   Trash2,
   Truck,
   XCircle,
-} from 'lucide-react';
-import { type Order } from '../../types/orders.types';
-import { type UserPermissions } from '../../utils/permissions';
+} from "lucide-react";
+import { memo } from "react";
+import { type Order } from "../../types/orders.types";
+import { type UserPermissions } from "../../utils/permissions";
 
 interface OrderActionsProps {
   order: Order;
@@ -23,7 +24,7 @@ interface OrderActionsProps {
   onDelete?: (orderId: string) => void;
 }
 
-export function OrderActions({
+export const OrderActions = memo(function OrderActions({
   order,
   permissions,
   onMarkPaid,
@@ -37,12 +38,13 @@ export function OrderActions({
 }: OrderActionsProps) {
   const isProcessing = false; // Géré par les handlers parent
   const canMarkPaid = !order.ord_is_pay && permissions.canMarkPaid;
-  const canValidate = order.ord_ords_id === '1' && permissions.canValidate;
-  const canStartProcessing = order.ord_ords_id === '2' && permissions.canValidate;
-  const canMarkReady = order.ord_ords_id === '3' && permissions.canShip;
-  const canShip = order.ord_ords_id === '4' && permissions.canShip;
-  const canDeliver = order.ord_ords_id === '5' && permissions.canDeliver;
-  const canCancel = order.ord_ords_id !== '7' && permissions.canCancel;
+  const canValidate = order.ord_ords_id === "1" && permissions.canValidate;
+  const canStartProcessing =
+    order.ord_ords_id === "2" && permissions.canValidate;
+  const canMarkReady = order.ord_ords_id === "3" && permissions.canShip;
+  const canShip = order.ord_ords_id === "4" && permissions.canShip;
+  const canDeliver = order.ord_ords_id === "5" && permissions.canDeliver;
+  const canCancel = order.ord_ords_id !== "7" && permissions.canCancel;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -131,12 +133,12 @@ export function OrderActions({
       )}
 
       {/* Supprimer (admin seulement) */}
-      {permissions.canCancel && order.ord_ords_id === '7' && onDelete && (
+      {permissions.canCancel && order.ord_ords_id === "7" && onDelete && (
         <button
           onClick={() => {
             if (
               confirm(
-                'Êtes-vous sûr de vouloir supprimer définitivement cette commande ? Cette action est irréversible.',
+                "Êtes-vous sûr de vouloir supprimer définitivement cette commande ? Cette action est irréversible.",
               )
             ) {
               onDelete(order.ord_id);
@@ -151,4 +153,4 @@ export function OrderActions({
       )}
     </div>
   );
-}
+});

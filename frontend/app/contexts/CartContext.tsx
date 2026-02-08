@@ -1,9 +1,9 @@
 /**
  * 🛒 CartContext - État global du panier
- * 
+ *
  * Fournit un contexte React pour partager l'état du panier
  * entre tous les composants (Navbar, Sidebar, Pages, Boutons).
- * 
+ *
  * Utilise cart.api.ts pour TOUS les appels API.
  */
 
@@ -14,9 +14,10 @@ import {
   useCallback,
   useEffect,
   type ReactNode,
-} from 'react';
-import { cartApi } from '../services/cart.api';
-import { type CartItem, type CartSummary, type CartData } from '../types/cart';
+} from "react";
+import { cartApi } from "../services/cart.api";
+import { type CartItem, type CartSummary, type CartData } from "../types/cart";
+import { logger } from "~/utils/logger";
 
 // ============================================================================
 // TYPES
@@ -56,7 +57,7 @@ const defaultSummary: CartSummary = {
   tax_amount: 0,
   shipping_cost: 0,
   consigne_total: 0,
-  currency: 'EUR',
+  currency: "EUR",
 };
 
 // ============================================================================
@@ -79,7 +80,9 @@ interface CartProviderProps {
 
 export function CartProvider({ children, initialData }: CartProviderProps) {
   const [items, setItems] = useState<CartItem[]>(initialData?.items || []);
-  const [summary, setSummary] = useState<CartSummary>(initialData?.summary || defaultSummary);
+  const [summary, setSummary] = useState<CartSummary>(
+    initialData?.summary || defaultSummary,
+  );
   const [_isInitialized, setIsInitialized] = useState(!!initialData);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +93,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
   // ──────────────────────────────────────────────────────────────────────────
 
   const extractProductId = (itemId: string): number => {
-    const parts = itemId.split('-');
+    const parts = itemId.split("-");
     if (parts.length >= 2) {
       const productId = parseInt(parts[1], 10);
       if (!isNaN(productId)) return productId;
@@ -111,7 +114,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
   }, []);
 
   const emitCartUpdated = () => {
-    window.dispatchEvent(new Event('cart:updated'));
+    window.dispatchEvent(new Event("cart:updated"));
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -133,7 +136,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
       if (result.success && result.data) {
         updateCartState(result.data);
       } else {
-        setError(result.error || 'Erreur lors du chargement');
+        setError(result.error || "Erreur lors du chargement");
       }
     } finally {
       setIsLoading(false);
@@ -157,20 +160,20 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
           return false;
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [openCart, updateCartState]
+    [openCart, updateCartState],
   );
 
   const removeItem = useCallback(
     async (itemId: string): Promise<boolean> => {
       const productId = extractProductId(itemId);
       if (!productId) {
-        setError('ID produit invalide');
+        setError("ID produit invalide");
         return false;
       }
 
@@ -184,24 +187,24 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
           emitCartUpdated();
           return true;
         } else {
-          setError(result.error || 'Erreur lors de la suppression');
+          setError(result.error || "Erreur lors de la suppression");
           return false;
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [updateCartState]
+    [updateCartState],
   );
 
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number): Promise<boolean> => {
       const productId = extractProductId(itemId);
       if (!productId) {
-        setError('ID produit invalide');
+        setError("ID produit invalide");
         return false;
       }
 
@@ -219,17 +222,17 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
           emitCartUpdated();
           return true;
         } else {
-          setError(result.error || 'Erreur lors de la mise à jour');
+          setError(result.error || "Erreur lors de la mise à jour");
           return false;
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [removeItem, updateCartState]
+    [removeItem, updateCartState],
   );
 
   const clearCart = useCallback(async (): Promise<boolean> => {
@@ -244,11 +247,11 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
         emitCartUpdated();
         return true;
       } else {
-        setError(result.error || 'Erreur lors du vidage');
+        setError(result.error || "Erreur lors du vidage");
         return false;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
       return false;
     } finally {
       setIsLoading(false);
@@ -266,7 +269,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
       setSummary(newSummary);
       setError(null);
     },
-    []
+    [],
   );
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -278,7 +281,11 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
   // Cela évite les problèmes de session entre serveur et client
   useEffect(() => {
     if (initialData) {
-      console.log('🛒 [CartContext] Initialisé avec données serveur:', initialData.items?.length || 0, 'items');
+      logger.log(
+        "🛒 [CartContext] Initialisé avec données serveur:",
+        initialData.items?.length || 0,
+        "items",
+      );
       setIsInitialized(true);
     }
   }, [initialData]);
@@ -314,7 +321,7 @@ export function CartProvider({ children, initialData }: CartProviderProps) {
 export function useCartContext(): CartContextType {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCartContext must be used within a CartProvider');
+    throw new Error("useCartContext must be used within a CartProvider");
   }
   return context;
 }

@@ -3,13 +3,15 @@
  * Gestion des questions fréquemment posées
  */
 
+import { logger } from "~/utils/logger";
+
 export interface FAQFormData {
   question: string;
   answer: string;
   category: string;
   tags?: string[];
-  priority: 'high' | 'medium' | 'low';
-  status: 'draft' | 'published' | 'archived';
+  priority: "high" | "medium" | "low";
+  status: "draft" | "published" | "archived";
 }
 
 export interface FAQRecord {
@@ -18,8 +20,8 @@ export interface FAQRecord {
   answer: string;
   category: string;
   tags: string[];
-  priority: 'high' | 'medium' | 'low';
-  status: 'draft' | 'published' | 'archived';
+  priority: "high" | "medium" | "low";
+  status: "draft" | "published" | "archived";
   views: number;
   helpful_count: number;
   not_helpful_count: number;
@@ -46,10 +48,10 @@ export interface FAQStats {
  */
 export async function createFAQ(
   faqData: FAQFormData,
-  request?: Request
+  request?: Request,
 ): Promise<FAQRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -76,7 +78,7 @@ export async function createFAQ(
     const newFAQ = await response.json();
     return newFAQ;
   } catch (error) {
-    console.error("Erreur lors de la création de la FAQ:", error);
+    logger.error("Erreur lors de la création de la FAQ:", error);
     throw error;
   }
 }
@@ -86,10 +88,10 @@ export async function createFAQ(
  */
 export async function getFAQ(
   faqId: string,
-  request?: Request
+  request?: Request,
 ): Promise<FAQRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -114,7 +116,7 @@ export async function getFAQ(
     const faq = await response.json();
     return faq;
   } catch (error) {
-    console.error("Erreur lors de la récupération de la FAQ:", error);
+    logger.error("Erreur lors de la récupération de la FAQ:", error);
     throw error;
   }
 }
@@ -127,10 +129,10 @@ export async function getAllFAQs(
     page?: number;
     limit?: number;
     category?: string;
-    status?: 'draft' | 'published' | 'archived' | 'all';
+    status?: "draft" | "published" | "archived" | "all";
     search?: string;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   faqs: FAQRecord[];
   pagination: {
@@ -141,7 +143,7 @@ export async function getAllFAQs(
   };
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
@@ -149,7 +151,8 @@ export async function getAllFAQs(
     });
 
     if (options.category) searchParams.append("category", options.category);
-    if (options.status && options.status !== "all") searchParams.append("status", options.status);
+    if (options.status && options.status !== "all")
+      searchParams.append("status", options.status);
     if (options.search) searchParams.append("search", options.search);
 
     const headers: HeadersInit = {
@@ -175,7 +178,7 @@ export async function getAllFAQs(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des FAQs:", error);
+    logger.error("Erreur lors de la récupération des FAQs:", error);
     throw error;
   }
 }
@@ -186,10 +189,10 @@ export async function getAllFAQs(
 export async function updateFAQ(
   faqId: string,
   updateData: Partial<FAQFormData>,
-  request?: Request
+  request?: Request,
 ): Promise<FAQRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -216,7 +219,7 @@ export async function updateFAQ(
     const updatedFAQ = await response.json();
     return updatedFAQ;
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de la FAQ:", error);
+    logger.error("Erreur lors de la mise à jour de la FAQ:", error);
     throw error;
   }
 }
@@ -226,10 +229,10 @@ export async function updateFAQ(
  */
 export async function deleteFAQ(
   faqId: string,
-  request?: Request
+  request?: Request,
 ): Promise<void> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -251,7 +254,7 @@ export async function deleteFAQ(
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
-    console.error("Erreur lors de la suppression de la FAQ:", error);
+    logger.error("Erreur lors de la suppression de la FAQ:", error);
     throw error;
   }
 }
@@ -259,11 +262,9 @@ export async function deleteFAQ(
 /**
  * Récupérer les statistiques des FAQs
  */
-export async function getFAQStats(
-  request?: Request
-): Promise<FAQStats> {
+export async function getFAQStats(request?: Request): Promise<FAQStats> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -288,7 +289,7 @@ export async function getFAQStats(
     const stats = await response.json();
     return stats;
   } catch (error) {
-    console.error("Erreur lors de la récupération des stats FAQ:", error);
+    logger.error("Erreur lors de la récupération des stats FAQ:", error);
     throw error;
   }
 }
@@ -299,10 +300,10 @@ export async function getFAQStats(
 export async function markFAQHelpful(
   faqId: string,
   helpful: boolean,
-  request?: Request
+  request?: Request,
 ): Promise<void> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -316,17 +317,20 @@ export async function markFAQHelpful(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/faq/${faqId}/feedback`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ helpful }),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/faq/${faqId}/feedback`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ helpful }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
-    console.error("Erreur lors du feedback FAQ:", error);
+    logger.error("Erreur lors du feedback FAQ:", error);
     throw error;
   }
 }
@@ -340,10 +344,10 @@ export async function searchFAQs(
     category?: string;
     limit?: number;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<FAQRecord[]> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       q: query,
@@ -363,10 +367,13 @@ export async function searchFAQs(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/faq/search?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/faq/search?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -375,7 +382,7 @@ export async function searchFAQs(
     const results = await response.json();
     return results;
   } catch (error) {
-    console.error("Erreur lors de la recherche FAQ:", error);
+    logger.error("Erreur lors de la recherche FAQ:", error);
     throw error;
   }
 }
@@ -383,11 +390,9 @@ export async function searchFAQs(
 /**
  * Récupérer les catégories de FAQs
  */
-export async function getFAQCategories(
-  request?: Request
-): Promise<string[]> {
+export async function getFAQCategories(request?: Request): Promise<string[]> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -412,7 +417,7 @@ export async function getFAQCategories(
     const categories = await response.json();
     return categories;
   } catch (error) {
-    console.error("Erreur lors de la récupération des catégories FAQ:", error);
+    logger.error("Erreur lors de la récupération des catégories FAQ:", error);
     throw error;
   }
 }

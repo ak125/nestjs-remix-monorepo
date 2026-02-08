@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-02-03T14:00:00Z",
+  "description": "RPC DANGEROUS - Bloquer selon niveau enforce",
+  "total": 64,
+  "categories": {
+    "P0_CRITICAL": {
+      "count": 7,
+      "access": "BLOCK_ALL",
+      "functions": [
+        {"name": "delete_duplicates_batch", "risk": "DELETE massif jusqu'a 31M lignes"},
+        {"name": "delete_first_records_batch", "risk": "DELETE massif jusqu'a 31M lignes"},
+        {"name": "rollback_switch", "risk": "Rollback etat production"},
+        {"name": "switch_to_next", "risk": "Switch etat production"},
+        {"name": "run_import_pipeline", "risk": "Pipeline import complet"},
+        {"name": "apply_decisions_shadow", "risk": "Apply batch decisions"},
+        {"name": "exec_sql", "risk": "SQL INJECTION - execution SQL arbitraire", "severity": "P0", "reason": "CRITICAL: Permet execution de n'importe quelle requete SQL"}
+      ]
+    },
+    "P1_HIGH": {
+      "count": 17,
+      "access": "SERVICE_ROLE_ONLY",
+      "functions": [
+        {"name": "execute_diff_apply_workflow", "risk": "Workflow diff + apply"},
+        {"name": "apply_quarantine_rules", "risk": "Modifie quarantine items"},
+        {"name": "finalize_import_batch", "risk": "Finalise import batch"},
+        {"name": "prepare_shadow_tables", "risk": "Prepare shadow tables"},
+        {"name": "move_decisions_to_quarantine", "risk": "Move to quarantine"},
+        {"name": "create_index_async", "risk": "DDL CREATE INDEX"},
+        {"name": "create_composite_index_async", "risk": "DDL CREATE INDEX"},
+        {"name": "create_rm_listing_products_partition", "risk": "DDL partition"},
+        {"name": "ensure_rm_partition", "risk": "DDL partition"},
+        {"name": "get_or_create_brand_nk", "risk": "INSERT on conflict"},
+        {"name": "build_article_decisions", "risk": "Build decisions"},
+        {"name": "build_brand_decisions", "risk": "Build decisions"},
+        {"name": "resolve_quarantine_item", "risk": "UPDATE quarantine"},
+        {"name": "normalize_batch_brands", "risk": "UPDATE batch"},
+        {"name": "resolve_batch_brands", "risk": "UPDATE batch"},
+        {"name": "resolve_brand_multilevel", "risk": "UPDATE brand"},
+        {"name": "validate_shadow", "risk": "Validate shadow"}
+      ]
+    },
+    "P2_MEDIUM": {
+      "count": 40,
+      "access": "SERVICE_ROLE_ALLOWLIST",
+      "reason": "SECURITY_DEFINER - fonctions avec elevation de privileges (12 read-only migrees vers allowlist 2026-02-03)",
+      "functions": [
+        "acquire_import_lock",
+        "add_to_quarantine",
+        "all_gates_passed",
+        "can_merge_batch",
+        "check_all_gates",
+        "check_anti_purge",
+        "check_gate",
+        "check_gate_g0",
+        "check_gate_g1",
+        "check_gate_g2",
+        "check_gate_g3",
+        "check_gate_g4",
+        "check_manifest_complete",
+        "cleanup_old_pipeline_logs",
+        "complete_pipeline_step",
+        "create_batch_contract",
+        "create_batch_contract_v2",
+        "create_import_batch",
+        "diagnose_symptoms",
+        "fail_pipeline_step",
+        "get_batch_report",
+        "get_context_questions",
+        "get_decision_report",
+        "get_import_gate_report",
+        "get_listing_products_for_build",
+        "get_nk_stats",
+        "get_pieces_for_type_gamme_v2",
+        "get_pieces_for_type_gamme_v4",
+        "get_purchase_excluded_ids",
+        "get_quarantine_dashboard",
+        "get_quarantine_stats",
+        "get_seo_excluded_ids",
+        "get_symptoms_by_subsystem",
+        "init_import_gates",
+        "is_quarantined",
+        "log_pipeline_event",
+        "populate_golden_set",
+        "release_import_lock",
+        "rm_health",
+        "update_batch_contract"
+      ]
+    }
+  }
+}

@@ -1,9 +1,11 @@
 /**
  * 🔧 Service Admin Dashboard - Intégration Backend
- * 
+ *
  * Service optimisé pour récupérer les données du dashboard admin
  * Compatible avec l'architecture NestJS existante
  */
+
+import { logger } from "~/utils/logger";
 
 // Types pour l'API Response standardisée
 interface ApiResponse<T> {
@@ -33,8 +35,8 @@ export interface OrderStats {
 export interface StockAlert {
   id: string;
   product_id: string;
-  alert_type: 'OUT_OF_STOCK' | 'LOW_STOCK' | 'OVERSTOCK';
-  alert_level: 'CRITICAL' | 'WARNING' | 'INFO';
+  alert_type: "OUT_OF_STOCK" | "LOW_STOCK" | "OVERSTOCK";
+  alert_level: "CRITICAL" | "WARNING" | "INFO";
   message: string;
   resolved: boolean;
   created_at: string;
@@ -66,17 +68,19 @@ export interface DashboardData {
  * Récupère les données du dashboard admin
  * Utilise les endpoints NestJS avec gestion d'erreurs robuste
  */
-export async function getAdminDashboard(request?: Request): Promise<DashboardData> {
-  const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+export async function getAdminDashboard(
+  request?: Request,
+): Promise<DashboardData> {
+  const baseUrl = process.env.BACKEND_URL || "http://localhost:3000";
   const headers = {
-    'Content-Type': 'application/json',
-    ...(request?.headers.get('Cookie') && {
-      'Cookie': request.headers.get('Cookie')!,
+    "Content-Type": "application/json",
+    ...(request?.headers.get("Cookie") && {
+      Cookie: request.headers.get("Cookie")!,
     }),
   };
 
   try {
-    console.log('🔄 Récupération des données dashboard admin...');
+    logger.log("🔄 Récupération des données dashboard admin...");
 
     // Paralléliser les appels API pour optimiser les performances
     const [stockResult, ordersResult, alertsResult] = await Promise.allSettled([
@@ -86,11 +90,20 @@ export async function getAdminDashboard(request?: Request): Promise<DashboardDat
     ]);
 
     // Traitement des résultats avec fallbacks
-    const stockData = stockResult.status === 'fulfilled' ? stockResult.value : getDefaultStockData();
-    const ordersData = ordersResult.status === 'fulfilled' ? ordersResult.value : getDefaultOrdersData();
-    const alertsData = alertsResult.status === 'fulfilled' ? alertsResult.value : { alerts: [], counts: { critical: 0, warning: 0, info: 0 } };
+    const stockData =
+      stockResult.status === "fulfilled"
+        ? stockResult.value
+        : getDefaultStockData();
+    const ordersData =
+      ordersResult.status === "fulfilled"
+        ? ordersResult.value
+        : getDefaultOrdersData();
+    const alertsData =
+      alertsResult.status === "fulfilled"
+        ? alertsResult.value
+        : { alerts: [], counts: { critical: 0, warning: 0, info: 0 } };
 
-    console.log('✅ Données dashboard récupérées avec succès');
+    logger.log("✅ Données dashboard récupérées avec succès");
 
     return {
       stock: stockData,
@@ -100,9 +113,11 @@ export async function getAdminDashboard(request?: Request): Promise<DashboardDat
       recentOrders: [], // À implémenter selon besoins
       recentActivities: [], // À implémenter selon besoins
     };
-
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération des données dashboard:', error);
+    logger.error(
+      "❌ Erreur lors de la récupération des données dashboard:",
+      error,
+    );
     return getDefaultDashboardData();
   }
 }
@@ -110,7 +125,10 @@ export async function getAdminDashboard(request?: Request): Promise<DashboardDat
 /**
  * Récupère les données de stock via l'API NestJS
  */
-async function fetchStockData(baseUrl: string, headers: Record<string, string>): Promise<StockStats> {
+async function fetchStockData(
+  baseUrl: string,
+  headers: Record<string, string>,
+): Promise<StockStats> {
   try {
     const response = await fetch(`${baseUrl}/admin/stock/dashboard`, {
       headers,
@@ -122,23 +140,26 @@ async function fetchStockData(baseUrl: string, headers: Record<string, string>):
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    const result: ApiResponse<{ items: any[], stats: StockStats }> = await response.json();
-    
+    const result: ApiResponse<{ items: any[]; stats: StockStats }> =
+      await response.json();
+
     if (!result.success) {
       throw new Error(result.message);
     }
 
     // Calculer la valeur totale du stock si pas fournie
-    const stockValue = result.data.stats.totalValue || calculateStockValue(result.data.items);
-    
+    const stockValue =
+      result.data.stats.totalValue || calculateStockValue(result.data.items);
+
     return {
       ...result.data.stats,
       totalValue: stockValue,
-      turnoverRate: result.data.stats.turnoverRate || calculateTurnoverRate(result.data.items),
+      turnoverRate:
+        result.data.stats.turnoverRate ||
+        calculateTurnoverRate(result.data.items),
     };
-
   } catch (error) {
-    console.warn('⚠️ Échec récupération données stock:', error);
+    logger.warn("⚠️ Échec récupération données stock:", error);
     return getDefaultStockData();
   }
 }
@@ -146,7 +167,10 @@ async function fetchStockData(baseUrl: string, headers: Record<string, string>):
 /**
  * Récupère les données de commandes
  */
-async function fetchOrdersData(baseUrl: string, headers: Record<string, string>): Promise<OrderStats> {
+async function fetchOrdersData(
+  baseUrl: string,
+  headers: Record<string, string>,
+): Promise<OrderStats> {
   try {
     const response = await fetch(`${baseUrl}/api/legacy-orders/stats`, {
       headers,
@@ -158,16 +182,15 @@ async function fetchOrdersData(baseUrl: string, headers: Record<string, string>)
     }
 
     const result = await response.json();
-    
+
     return {
       totalOrders: result.totalOrders || 0,
       pendingOrders: result.pendingOrders || 0,
       todayCount: result.todayCount || 0,
       monthlyRevenue: result.monthlyRevenue || 0,
     };
-
   } catch (error) {
-    console.warn('⚠️ Échec récupération données commandes:', error);
+    logger.warn("⚠️ Échec récupération données commandes:", error);
     return getDefaultOrdersData();
   }
 }
@@ -175,9 +198,12 @@ async function fetchOrdersData(baseUrl: string, headers: Record<string, string>)
 /**
  * Récupère les alertes de stock
  */
-async function fetchAlertsData(baseUrl: string, headers: Record<string, string>): Promise<{
+async function fetchAlertsData(
+  baseUrl: string,
+  headers: Record<string, string>,
+): Promise<{
   alerts: StockAlert[];
-  counts: { critical: number; warning: number; info: number; };
+  counts: { critical: number; warning: number; info: number };
 }> {
   try {
     const response = await fetch(`${baseUrl}/admin/stock/alerts`, {
@@ -190,28 +216,27 @@ async function fetchAlertsData(baseUrl: string, headers: Record<string, string>)
     }
 
     const result: ApiResponse<StockAlert[]> = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message);
     }
 
     const alerts = result.data || [];
-    
+
     // Compter les alertes par niveau
     const counts = alerts.reduce(
       (acc, alert) => {
-        if (alert.alert_level === 'CRITICAL') acc.critical++;
-        else if (alert.alert_level === 'WARNING') acc.warning++;
+        if (alert.alert_level === "CRITICAL") acc.critical++;
+        else if (alert.alert_level === "WARNING") acc.warning++;
         else acc.info++;
         return acc;
       },
-      { critical: 0, warning: 0, info: 0 }
+      { critical: 0, warning: 0, info: 0 },
     );
 
     return { alerts, counts };
-
   } catch (error) {
-    console.warn('⚠️ Échec récupération alertes:', error);
+    logger.warn("⚠️ Échec récupération alertes:", error);
     return {
       alerts: [],
       counts: { critical: 0, warning: 0, info: 0 },
@@ -224,11 +249,11 @@ async function fetchAlertsData(baseUrl: string, headers: Record<string, string>)
  */
 function calculateStockValue(items: any[]): number {
   if (!Array.isArray(items)) return 0;
-  
+
   return items.reduce((total, item) => {
     const price = item.pieces?.price || item.price || 0;
     const quantity = item.available || item.quantity || 0;
-    return total + (price * quantity);
+    return total + price * quantity;
   }, 0);
 }
 
@@ -237,15 +262,15 @@ function calculateStockValue(items: any[]): number {
  */
 function calculateTurnoverRate(items: any[]): number {
   if (!Array.isArray(items) || items.length === 0) return 0;
-  
+
   // Calcul simplifié basé sur le ratio stock minimum/stock actuel
   const totalRatio = items.reduce((sum, item) => {
     if (item.min_stock && item.available) {
-      return sum + (item.available / item.min_stock);
+      return sum + item.available / item.min_stock;
     }
     return sum;
   }, 0);
-  
+
   return Math.round((totalRatio / items.length) * 100) || 0;
 }
 

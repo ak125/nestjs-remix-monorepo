@@ -22,6 +22,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Sécurité du compte | AutoMecanik" },
@@ -140,7 +141,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur chargement sécurité:", error);
+    logger.error("Erreur chargement sécurité:", error);
     throw new Response("Erreur chargement sécurité", { status: 500 });
   }
 };

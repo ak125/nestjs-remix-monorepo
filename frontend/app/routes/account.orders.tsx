@@ -35,6 +35,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes commandes | AutoMecanik" },
@@ -54,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // ✅ Vérification et adaptation de la structure utilisateur
     const userId = user?.id || (user as any)?.cst_id;
     if (!user || !userId) {
-      console.error("User or user.id is undefined:", user);
+      logger.error("User or user.id is undefined:", user);
       throw new Response("Utilisateur non trouvé", { status: 401 });
     }
 
@@ -64,7 +65,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const yearParam = url.searchParams.get("year");
     const year = yearParam ? parseInt(yearParam) : undefined;
 
-    console.log("Fetching orders for user:", userId);
+    logger.log("Fetching orders for user:", userId);
 
     const { orders, pagination } = await getUserOrders({
       userId: userId,
@@ -86,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ orders, pagination, user, stats });
   } catch (error) {
-    console.error("Error in loader:", error);
+    logger.error("Error in loader:", error);
 
     // Retour avec des données vides en cas d'erreur
     return json({

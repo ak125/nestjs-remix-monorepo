@@ -8,6 +8,7 @@ import _LegalPageComponent from "./legal.$pageKey";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -63,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
   } catch (error) {
-    console.warn("Failed to fetch CGV:", error);
+    logger.warn("Failed to fetch CGV:", error);
   }
 
   return json({

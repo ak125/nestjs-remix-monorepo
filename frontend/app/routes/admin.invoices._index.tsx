@@ -5,11 +5,19 @@
  * Intégration avec le service InvoicesService nouvellement créé
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Factures - Admin");
 
 // Types pour la gestion des factures (utilisé dans le loader/action)
 // interface Invoice { inv_id, inv_number, inv_status, inv_date, inv_amount, etc. }
@@ -118,7 +126,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       searchTerm: search,
     });
   } catch (error) {
-    console.error("Erreur lors de la récupération des factures:", error);
+    logger.error("Erreur lors de la récupération des factures:", error);
 
     // Données par défaut en cas d'erreur
     return json({

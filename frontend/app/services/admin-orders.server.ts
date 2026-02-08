@@ -4,6 +4,7 @@
  */
 
 import { type Order } from "../utils/orders";
+import { logger } from "~/utils/logger";
 
 export interface GetAdminOrdersParams {
   page?: number;
@@ -118,7 +119,7 @@ export async function getAdminOrders(
 
     return { orders, pagination };
   } catch (error) {
-    console.error("Error fetching admin orders:", error);
+    logger.error("Error fetching admin orders:", error);
 
     // Retour de données vides en cas d'erreur
     return {
@@ -296,7 +297,7 @@ export async function getAdminOrderDetail(
       internalNotes: order.internalNotes || order.internal_notes,
     };
   } catch (error) {
-    console.error("Error fetching admin order detail:", error);
+    logger.error("Error fetching admin order detail:", error);
     throw error;
   }
 }
@@ -349,7 +350,7 @@ export async function updateOrderStatus(params: {
     const data = await response.json();
     return data.success || false;
   } catch (error) {
-    console.error("Error updating order status:", error);
+    logger.error("Error updating order status:", error);
     return false;
   }
 }

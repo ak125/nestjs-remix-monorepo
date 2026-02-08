@@ -3,7 +3,11 @@
  * Utilise les vraies données et inclut la gestion des messages
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   Shield,
@@ -16,6 +20,10 @@ import {
 } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Staff - Admin");
 
 // Interface pour les données staff basée sur les vraies données users
 interface StaffMember {
@@ -48,7 +56,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   try {
-    console.log("🔄 Chargement du staff depuis l'endpoint test-staff...");
+    logger.log("🔄 Chargement du staff depuis l'endpoint test-staff...");
 
     // ✅ Utiliser l'endpoint test-staff (public, sans auth)
     const baseUrl = "http://127.0.0.1:3000";
@@ -63,7 +71,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         const staffData = await staffResponse.json();
 
         if (staffData.success && staffData.data) {
-          console.log(
+          logger.log(
             `✅ Endpoint test-staff utilisé avec succès - ${staffData.total} membres trouvés`,
           );
 
@@ -80,7 +88,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         }
       }
     } catch (staffApiError) {
-      console.log(
+      logger.log(
         "ℹ️ Endpoint test-staff non disponible, fallback vers API users:",
         staffApiError,
       );
@@ -106,7 +114,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const data = await response.json();
-      console.log("📊 Réponse API users reçue:", JSON.stringify(data, null, 2));
+      logger.log("📊 Réponse API users reçue:", JSON.stringify(data, null, 2));
 
       // Valider la structure des données users
       let allUsers: any[] = [];
@@ -118,7 +126,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       } else if (data && Array.isArray(data)) {
         allUsers = data;
       } else {
-        console.warn(
+        logger.warn(
           "⚠️ Structure de données inattendue, utilisation mode minimal",
         );
         return json({
@@ -135,7 +143,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         return member && member.level && Number(member.level) >= 7;
       });
 
-      console.log(
+      logger.log(
         `✅ ${staffMembers.length} membres du staff trouvés sur ${allUsers.length} utilisateurs`,
       );
 
@@ -147,7 +155,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         apiSource: "users-api",
       } as StaffData);
     } else {
-      console.error("❌ Erreur API:", response.status, response.statusText);
+      logger.error("❌ Erreur API:", response.status, response.statusText);
 
       return json({
         staff: [],
@@ -158,7 +166,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       } as StaffData);
     }
   } catch (error: any) {
-    console.error("❌ Erreur lors du chargement du staff:", error);
+    logger.error("❌ Erreur lors du chargement du staff:", error);
 
     // Mode fallback d'urgence
     return json({

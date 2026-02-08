@@ -13,7 +13,7 @@
  * ⚡ Optimisé INP: Scroll listener throttlé à 100ms
  */
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, memo } from "react";
 
 import { throttle } from "../../utils/performance.utils";
 import { Navbar } from "../Navbar";
@@ -30,18 +30,18 @@ interface NavigationHeaderProps {
   user?: {
     firstName?: string;
     lastName?: string;
-    gender?: 'M' | 'F' | 'Autre';
+    gender?: "M" | "F" | "Autre";
   } | null;
 }
 
-export function NavigationHeader({
+export const NavigationHeader = memo(function NavigationHeader({
   logo,
   topBarConfig = {
     tagline: "Pièces auto à prix pas cher",
     phone: "01 48 49 78 69",
-    showQuickLinks: true
+    showQuickLinks: true,
   },
-  user
+  user,
 }: NavigationHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   // Garder référence au handler throttlé pour cleanup
@@ -53,10 +53,12 @@ export function NavigationHeader({
       setIsScrolled(window.scrollY > 40); // TopBar height
     }, 100);
 
-    window.addEventListener('scroll', throttledHandlerRef.current, { passive: true });
+    window.addEventListener("scroll", throttledHandlerRef.current, {
+      passive: true,
+    });
     return () => {
       if (throttledHandlerRef.current) {
-        window.removeEventListener('scroll', throttledHandlerRef.current);
+        window.removeEventListener("scroll", throttledHandlerRef.current);
       }
     };
   }, []);
@@ -64,28 +66,28 @@ export function NavigationHeader({
   return (
     <div className="relative">
       {/* TopBar - Slide up au scroll */}
-      <div 
+      <div
         className={`transition-all duration-normal ${
-          isScrolled 
-            ? '-translate-y-full opacity-0 pointer-events-none' 
-            : 'translate-y-0 opacity-100'
+          isScrolled
+            ? "-translate-y-full opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100"
         }`}
-        style={{ 
-          position: isScrolled ? 'absolute' : 'static',
-          willChange: 'transform, opacity'
+        style={{
+          position: isScrolled ? "absolute" : "static",
+          willChange: "transform, opacity",
         }}
       >
         <TopBar config={topBarConfig} user={user} />
       </div>
 
       {/* Navbar - Reste visible (sticky) */}
-      <div 
+      <div
         className={`transition-all duration-normal ${
-          isScrolled ? 'shadow-xl' : 'shadow-sm'
+          isScrolled ? "shadow-xl" : "shadow-sm"
         }`}
       >
         <Navbar logo={logo} />
       </div>
     </div>
   );
-}
+});

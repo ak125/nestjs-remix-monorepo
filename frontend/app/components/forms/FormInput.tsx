@@ -1,13 +1,13 @@
 /**
  * 🎨 FormInput - Input avec états normalisés (loading, error, success, disabled)
- * 
+ *
  * États visuels:
  * - default: Neutre
  * - loading/validating: Spinner + opacity
  * - error: Bordure rouge + icône
  * - success: Bordure verte + check
  * - disabled: Grisé + cursor-not-allowed
- * 
+ *
  * Auto-format:
  * - Immatriculation FR: AA-123-BB
  * - VIN: 17 caractères uppercase
@@ -18,9 +18,20 @@ import { AlertCircle, Check, Loader2 } from "lucide-react";
 import * as React from "react";
 import { cn } from "~/lib/utils";
 
-type FormInputState = "default" | "loading" | "validating" | "error" | "success" | "disabled";
+type FormInputState =
+  | "default"
+  | "loading"
+  | "validating"
+  | "error"
+  | "success"
+  | "disabled";
 
-type AutoFormatType = "immatriculation" | "vin" | "type-mine" | "phone-fr" | "none";
+type AutoFormatType =
+  | "immatriculation"
+  | "vin"
+  | "type-mine"
+  | "phone-fr"
+  | "none";
 
 export interface FormInputProps extends React.ComponentProps<"input"> {
   label?: string;
@@ -30,150 +41,161 @@ export interface FormInputProps extends React.ComponentProps<"input"> {
   autoFormat?: AutoFormatType;
 }
 
-const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
-  (
-    {
-      className,
-      type = "text",
-      label,
-      error,
-      helperText,
-      state = "default",
-      autoFormat = "none",
-      id: providedId,
-      onChange,
-      required,
-      ...props
-    },
-    ref
-  ) => {
-    const generatedId = React.useId();
-    const id = providedId || generatedId;
-    const errorId = `${id}-error`;
-    const helperId = `${id}-helper`;
+const FormInput = React.memo(
+  React.forwardRef<HTMLInputElement, FormInputProps>(
+    (
+      {
+        className,
+        type = "text",
+        label,
+        error,
+        helperText,
+        state = "default",
+        autoFormat = "none",
+        id: providedId,
+        onChange,
+        required,
+        ...props
+      },
+      ref,
+    ) => {
+      const generatedId = React.useId();
+      const id = providedId || generatedId;
+      const errorId = `${id}-error`;
+      const helperId = `${id}-helper`;
 
-    // Auto-détection de l'état
-    const computedState = React.useMemo((): FormInputState => {
-      if (props.disabled) return "disabled";
-      if (error) return "error";
-      return state;
-    }, [state, error, props.disabled]);
+      // Auto-détection de l'état
+      const computedState = React.useMemo((): FormInputState => {
+        if (props.disabled) return "disabled";
+        if (error) return "error";
+        return state;
+      }, [state, error, props.disabled]);
 
-    // Auto-format handlers
-    const handleAutoFormat = (value: string): string => {
-      switch (autoFormat) {
-        case "immatriculation":
-          return formatImmatriculation(value);
-        case "vin":
-          return formatVIN(value);
-        case "type-mine":
-          return formatTypeMine(value);
-        case "phone-fr":
-          return formatPhoneFR(value);
-        default:
-          return value;
-      }
-    };
+      // Auto-format handlers
+      const handleAutoFormat = (value: string): string => {
+        switch (autoFormat) {
+          case "immatriculation":
+            return formatImmatriculation(value);
+          case "vin":
+            return formatVIN(value);
+          case "type-mine":
+            return formatTypeMine(value);
+          case "phone-fr":
+            return formatPhoneFR(value);
+          default:
+            return value;
+        }
+      };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (autoFormat !== "none") {
-        const formatted = handleAutoFormat(e.target.value);
-        e.target.value = formatted;
-      }
-      onChange?.(e);
-    };
+      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (autoFormat !== "none") {
+          const formatted = handleAutoFormat(e.target.value);
+          e.target.value = formatted;
+        }
+        onChange?.(e);
+      };
 
-    // Styles selon l'état
-    const stateStyles = {
-      default: "border-input focus-visible:ring-ring",
-      loading: "border-input opacity-70 cursor-wait",
-      validating: "border-blue-300 focus-visible:ring-blue-500",
-      error: "border-red-500 focus-visible:ring-red-500",
-      success: "border-green-500 focus-visible:ring-green-500",
-      disabled: "opacity-50 cursor-not-allowed bg-gray-50",
-    };
+      // Styles selon l'état
+      const stateStyles = {
+        default: "border-input focus-visible:ring-ring",
+        loading: "border-input opacity-70 cursor-wait",
+        validating: "border-blue-300 focus-visible:ring-blue-500",
+        error: "border-red-500 focus-visible:ring-red-500",
+        success: "border-green-500 focus-visible:ring-green-500",
+        disabled: "opacity-50 cursor-not-allowed bg-gray-50",
+      };
 
-    // Icône de fin selon l'état
-    const EndIcon = () => {
-      switch (computedState) {
-        case "loading":
-        case "validating":
-          return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />;
-        case "error":
-          return <AlertCircle className="w-4 h-4 text-red-500" />;
-        case "success":
-          return <Check className="w-4 h-4 text-green-500" />;
-        default:
-          return null;
-      }
-    };
+      // Icône de fin selon l'état
+      const EndIcon = () => {
+        switch (computedState) {
+          case "loading":
+          case "validating":
+            return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />;
+          case "error":
+            return <AlertCircle className="w-4 h-4 text-red-500" />;
+          case "success":
+            return <Check className="w-4 h-4 text-green-500" />;
+          default:
+            return null;
+        }
+      };
 
-    const showIcon = ["loading", "validating", "error", "success"].includes(computedState);
+      const showIcon = ["loading", "validating", "error", "success"].includes(
+        computedState,
+      );
 
-    return (
-      <div className="space-y-1.5">
-        {/* Label */}
-        {label && (
-          <label
-            htmlFor={id}
-            className={cn(
-              "text-sm font-medium leading-none",
-              computedState === "disabled" ? "text-gray-400" : "text-foreground"
+      return (
+        <div className="space-y-1.5">
+          {/* Label */}
+          {label && (
+            <label
+              htmlFor={id}
+              className={cn(
+                "text-sm font-medium leading-none",
+                computedState === "disabled"
+                  ? "text-gray-400"
+                  : "text-foreground",
+              )}
+            >
+              {label}
+              {required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+          )}
+
+          {/* Input avec icône */}
+          <div className="relative">
+            <input
+              type={type}
+              id={id}
+              ref={ref}
+              aria-invalid={computedState === "error"}
+              aria-describedby={
+                error ? errorId : helperText ? helperId : undefined
+              }
+              disabled={computedState === "disabled"}
+              onChange={handleChange}
+              className={cn(
+                "flex h-10 w-full rounded-md border bg-background px-3 py-2 text-base ring-offset-background",
+                "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
+                "placeholder:text-muted-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                "transition-colors duration-200",
+                stateStyles[computedState],
+                showIcon && "pr-10", // Espace pour l'icône
+                className,
+              )}
+              {...props}
+            />
+
+            {/* Icône de fin */}
+            {showIcon && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <EndIcon />
+              </div>
             )}
-          >
-            {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
-          </label>
-        )}
+          </div>
 
-        {/* Input avec icône */}
-        <div className="relative">
-          <input
-            type={type}
-            id={id}
-            ref={ref}
-            aria-invalid={computedState === "error"}
-            aria-describedby={error ? errorId : helperText ? helperId : undefined}
-            disabled={computedState === "disabled"}
-            onChange={handleChange}
-            className={cn(
-              "flex h-10 w-full rounded-md border bg-background px-3 py-2 text-base ring-offset-background",
-              "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
-              "placeholder:text-muted-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-              "transition-colors duration-200",
-              stateStyles[computedState],
-              showIcon && "pr-10", // Espace pour l'icône
-              className
-            )}
-            {...props}
-          />
+          {/* Messages d'erreur */}
+          {error && (
+            <p
+              id={errorId}
+              className="text-sm text-red-600 flex items-center gap-1.5"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </p>
+          )}
 
-          {/* Icône de fin */}
-          {showIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <EndIcon />
-            </div>
+          {/* Helper text */}
+          {helperText && !error && (
+            <p id={helperId} className="text-xs text-muted-foreground">
+              {helperText}
+            </p>
           )}
         </div>
-
-        {/* Messages d'erreur */}
-        {error && (
-          <p id={errorId} className="text-sm text-red-600 flex items-center gap-1.5">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </p>
-        )}
-
-        {/* Helper text */}
-        {helperText && !error && (
-          <p id={helperId} className="text-xs text-muted-foreground">
-            {helperText}
-          </p>
-        )}
-      </div>
-    );
-  }
+      );
+    },
+  ),
 );
 
 FormInput.displayName = "FormInput";

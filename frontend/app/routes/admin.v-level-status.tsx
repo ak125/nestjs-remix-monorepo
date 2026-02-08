@@ -38,6 +38,7 @@ import {
 } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "V-Level Status - Admin" },
@@ -106,7 +107,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("Error fetching V-Level stats:", error);
+    logger.error("Error fetching V-Level stats:", error);
     return json({
       stats: null,
       error: "Erreur de connexion au serveur",
@@ -132,7 +133,7 @@ export default function VLevelStatusPage() {
         setValidationResult(data.data);
       }
     } catch (err) {
-      console.error("Validation error:", err);
+      logger.error("Validation error:", err);
     } finally {
       setIsValidating(false);
     }

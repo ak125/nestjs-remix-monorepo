@@ -4,11 +4,14 @@
  */
 
 import { CheckCircle, Clock, DollarSign, Package } from "lucide-react";
+import { memo } from "react";
 
 import { type OrdersStatsProps } from "../../types/orders.types";
 import { formatPrice } from "../../utils/orders.utils";
 
-export function OrdersStats({ stats }: OrdersStatsProps) {
+export const OrdersStats = memo(function OrdersStats({
+  stats,
+}: OrdersStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 py-6">
       {/* Total Commandes */}
@@ -72,4 +75,4 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
       </div>
     </div>
   );
-}
+});

@@ -11,10 +11,12 @@
  */
 
 import { Package, Zap, Award, AlertCircle } from "lucide-react";
+import { memo } from "react";
 
 import { AddToCartButton } from "../cart/AddToCartButton";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
+import { logger } from "~/utils/logger";
 
 interface SearchResultItem {
   id: string;
@@ -42,7 +44,7 @@ interface SearchResultsEnhancedProps {
   className?: string;
 }
 
-export function SearchResultsEnhanced({
+export const SearchResultsEnhanced = memo(function SearchResultsEnhanced({
   items = [],
   viewMode = "grid",
   isCached = false,
@@ -146,7 +148,7 @@ export function SearchResultsEnhanced({
       stock: item.inStock !== false ? "available" : "unavailable",
       reference: item.reference,
     };
-    console.log("🛒 mapToPieceData:", { original: item, mapped: pieceData });
+    logger.log("🛒 mapToPieceData:", { original: item, mapped: pieceData });
     return pieceData;
   };
 
@@ -423,4 +425,4 @@ export function SearchResultsEnhanced({
       {viewMode === "grid" ? renderGridView() : renderListView()}
     </div>
   );
-}
+});

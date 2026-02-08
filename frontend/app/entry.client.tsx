@@ -7,21 +7,19 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { logger } from "~/utils/logger";
 
 // Nettoyage des service workers existants
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister().then(function(boolean) {
-        console.log('Service Worker désenregistré:', boolean);
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function (registrations) {
+    for (let registration of registrations) {
+      registration.unregister().then(function (boolean) {
+        logger.log("Service Worker désenregistré:", boolean);
       });
     }
   });
 }
 
 startTransition(() => {
-  hydrateRoot(
-    document,
-    <RemixBrowser />
-  );
+  hydrateRoot(document, <RemixBrowser />);
 });

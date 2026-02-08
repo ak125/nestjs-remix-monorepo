@@ -1,6 +1,6 @@
 /**
  * 🎨 LAYOUT UNIFIÉ AMÉLIORÉ
- * 
+ *
  * Composant React principal pour le système de layout complet
  * ✅ Support Core/Massdoc layouts dédiés
  * ✅ Sections modulaires et réutilisables
@@ -8,10 +8,15 @@
  * ✅ Configuration centralisée
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Button } from '~/components/ui/button';
-import  { type LayoutData, type LayoutConfig, type ModularSection } from '../../types/layout';
-import { FooterEnhanced } from './FooterEnhanced';
+import React, { memo, useEffect, useState, useCallback } from "react";
+import {
+  type LayoutData,
+  type LayoutConfig,
+  type ModularSection,
+} from "../../types/layout";
+import { FooterEnhanced } from "./FooterEnhanced";
+import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 // TODO: Créer les fichiers Header.tsx et ModularSections.tsx
 // import { Header } from './Header';
 // import { SectionsContainer } from './ModularSections';
@@ -29,173 +34,182 @@ interface LayoutUnifiedProps {
   className?: string;
 }
 
-export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
-  config,
-  children,
-  isEditable = false,
-  onEditSection,
-  onAddSection,
-  className = '',
-}) => {
-  const [layoutData, setLayoutData] = useState<LayoutData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const LayoutUnified: React.FC<LayoutUnifiedProps> = memo(
+  function LayoutUnified({
+    config,
+    children,
+    isEditable = false,
+    onEditSection,
+    onAddSection,
+    className = "",
+  }) {
+    const [layoutData, setLayoutData] = useState<LayoutData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const loadLayoutData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+    const loadLayoutData = useCallback(async () => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const params = new URLSearchParams({
-        type: config.type,
-        ...(config.page && { page: config.page }),
-        ...(config.version && { version: config.version }),
-        ...(config.theme && { theme: config.theme }),
-      });
+      try {
+        const params = new URLSearchParams({
+          type: config.type,
+          ...(config.page && { page: config.page }),
+          ...(config.version && { version: config.version }),
+          ...(config.theme && { theme: config.theme }),
+        });
 
-      const response = await fetch(`/api/layout?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        const response = await fetch(`/api/layout?${params}`);
+
+        if (!response.ok) {
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          setLayoutData(result.data);
+        } else {
+          throw new Error(
+            result.message || "Erreur lors du chargement du layout",
+          );
+        }
+      } catch (err) {
+        logger.error("Erreur loadLayoutData:", err);
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
+
+        // Layout de fallback
+        setLayoutData({
+          header: {
+            show: true,
+            logo: { src: "/logo-fallback.svg", alt: "Logo", link: "/" },
+            navigation: { show: false, items: [] },
+          },
+          footer: { show: false },
+          sections: [],
+          navigation: { main: [], secondary: [] },
+        });
+      } finally {
+        setIsLoading(false);
       }
+    }, [config]);
 
-      const result = await response.json();
-      
-      if (result.success) {
-        setLayoutData(result.data);
-      } else {
-        throw new Error(result.message || 'Erreur lors du chargement du layout');
-      }
-    } catch (err) {
-      console.error('Erreur loadLayoutData:', err);
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      
-      // Layout de fallback
-      setLayoutData({
-        header: {
-          show: true,
-          logo: { src: '/logo-fallback.svg', alt: 'Logo', link: '/' },
-          navigation: { show: false, items: [] },
-        },
-        footer: { show: false },
-        sections: [],
-        navigation: { main: [], secondary: [] },
-      });
-    } finally {
-      setIsLoading(false);
+    // Charger les données de layout
+    useEffect(() => {
+      loadLayoutData();
+    }, [loadLayoutData]);
+
+    // Affichage pendant le chargement
+    if (isLoading) {
+      return (
+        <div className="layout-loading">
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Chargement du layout...</p>
+            </div>
+          </div>
+        </div>
+      );
     }
-  }, [config]);
 
-  // Charger les données de layout
-  useEffect(() => {
-    loadLayoutData();
-  }, [loadLayoutData]);
-
-  // Affichage pendant le chargement
-  if (isLoading) {
-    return (
-      <div className="layout-loading">
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement du layout...</p>
+    // Affichage en cas d'erreur
+    if (error && !layoutData) {
+      return (
+        <div className="layout-error">
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-red-500 text-6xl mb-4">⚠️</div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Erreur de chargement
+              </h1>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button
+                className="px-4 py-2 rounded"
+                variant="blue"
+                onClick={loadLayoutData}
+              >
+                \n Réessayer\n
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // Affichage en cas d'erreur
-  if (error && !layoutData) {
+    if (!layoutData) {
+      return null;
+    }
+
+    // Classes CSS dynamiques basées sur la configuration
+    const layoutClasses = [
+      "layout-unified",
+      `layout-type--${config.type}`,
+      config.theme && `layout-theme--${config.theme}`,
+      config.page && `layout-page--${config.page}`,
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    // Filtrer le type de contexte pour les composants qui n'acceptent pas "core" ou "massdoc"
+    const validContext =
+      config.type === "core" || config.type === "massdoc"
+        ? "public"
+        : config.type;
+
     return (
-      <div className="layout-error">
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Erreur de chargement
-            </h1>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button className="px-4 py-2 rounded" variant="blue" onClick={loadLayoutData}>\n  Réessayer\n</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!layoutData) {
-    return null;
-  }
-
-  // Classes CSS dynamiques basées sur la configuration
-  const layoutClasses = [
-    'layout-unified',
-    `layout-type--${config.type}`,
-    config.theme && `layout-theme--${config.theme}`,
-    config.page && `layout-page--${config.page}`,
-    className,
-  ].filter(Boolean).join(' ');
-
-  // Filtrer le type de contexte pour les composants qui n'acceptent pas "core" ou "massdoc"
-  const validContext = (config.type === 'core' || config.type === 'massdoc') ? 'public' : config.type;
-
-  return (
-    <div className={layoutClasses}>
-      {/* Header */}
-      {config.showHeader !== false && layoutData.header?.show && (
-        <Header
-          config={layoutData.header}
-          context={validContext}
-          isEditable={isEditable}
-        />
-      )}
-
-      {/* Contenu principal */}
-      <main className="layout-main">
-        {/* Sections modulaires avant le contenu */}
-        {layoutData.sections && layoutData.sections.length > 0 && (
-          <SectionsContainer
-            sections={layoutData.sections}
+      <div className={layoutClasses}>
+        {/* Header */}
+        {config.showHeader !== false && layoutData.header?.show && (
+          <Header
+            config={layoutData.header}
             context={validContext}
             isEditable={isEditable}
-            onEditSection={onEditSection}
-            onAddSection={onAddSection}
-            className="layout-sections"
           />
         )}
 
-        {/* Contenu passé en props */}
-        {children && (
-          <div className="layout-content">
-            {children}
-          </div>
+        {/* Contenu principal */}
+        <main className="layout-main">
+          {/* Sections modulaires avant le contenu */}
+          {layoutData.sections && layoutData.sections.length > 0 && (
+            <SectionsContainer
+              sections={layoutData.sections}
+              context={validContext}
+              isEditable={isEditable}
+              onEditSection={onEditSection}
+              onAddSection={onAddSection}
+              className="layout-sections"
+            />
+          )}
+
+          {/* Contenu passé en props */}
+          {children && <div className="layout-content">{children}</div>}
+        </main>
+
+        {/* Footer */}
+        {config.showFooter !== false && layoutData.footer?.show && (
+          <FooterEnhanced
+            config={layoutData.footer}
+            context={validContext}
+            isEditable={isEditable}
+          />
         )}
-      </main>
 
-      {/* Footer */}
-      {config.showFooter !== false && layoutData.footer?.show && (
-        <FooterEnhanced
-          config={layoutData.footer}
-          context={validContext}
-          isEditable={isEditable}
-        />
-      )}
+        {/* Métadonnées et scripts dynamiques */}
+        {layoutData.metaTags && <MetaTags tags={layoutData.metaTags} />}
 
-      {/* Métadonnées et scripts dynamiques */}
-      {layoutData.metaTags && (
-        <MetaTags tags={layoutData.metaTags} />
-      )}
+        {/* Styles personnalisés pour le layout */}
+        <style>{getLayoutStyles(config, layoutData)}</style>
 
-      {/* Styles personnalisés pour le layout */}
-      <style>{getLayoutStyles(config, layoutData)}</style>
-
-      {/* Indicateur de performance en mode debug */}
-      {isEditable && layoutData.performance && (
-        <PerformanceIndicator performance={layoutData.performance} />
-      )}
-    </div>
-  );
-};
+        {/* Indicateur de performance en mode debug */}
+        {isEditable && layoutData.performance && (
+          <PerformanceIndicator performance={layoutData.performance} />
+        )}
+      </div>
+    );
+  },
+);
 
 /**
  * 🏷️ Composant pour les métadonnées
@@ -215,11 +229,11 @@ const MetaTags: React.FC<MetaTagsProps> = ({ tags }) => {
     if (tags.description) {
       let metaDesc = document.querySelector('meta[name="description"]');
       if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('name', 'description');
+        metaDesc = document.createElement("meta");
+        metaDesc.setAttribute("name", "description");
         document.head.appendChild(metaDesc);
       }
-      metaDesc.setAttribute('content', tags.description);
+      metaDesc.setAttribute("content", tags.description);
     }
   }, [tags]);
 
@@ -233,11 +247,15 @@ interface PerformanceIndicatorProps {
   performance: any;
 }
 
-const PerformanceIndicator: React.FC<PerformanceIndicatorProps> = ({ performance }) => {
+const PerformanceIndicator: React.FC<PerformanceIndicatorProps> = ({
+  performance,
+}) => {
   return (
     <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs p-2 rounded z-50">
       <div>Cache: {performance.cacheKey}</div>
-      <div>Mis à jour: {new Date(performance.lastUpdated).toLocaleTimeString()}</div>
+      <div>
+        Mis à jour: {new Date(performance.lastUpdated).toLocaleTimeString()}
+      </div>
       <div>Expire: {performance.expires}s</div>
     </div>
   );
@@ -246,12 +264,15 @@ const PerformanceIndicator: React.FC<PerformanceIndicatorProps> = ({ performance
 /**
  * 🎨 Génère les styles CSS personnalisés pour le layout
  */
-function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string {
+function getLayoutStyles(
+  config: LayoutConfig,
+  _layoutData: LayoutData,
+): string {
   const styles: string[] = [];
 
   // Styles basés sur le type de layout
   switch (config.type) {
-    case 'core':
+    case "core":
       styles.push(`
         .layout-type--core {
           --primary-color: #3b82f6;
@@ -260,7 +281,7 @@ function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string 
         }
       `);
       break;
-    case 'massdoc':
+    case "massdoc":
       styles.push(`
         .layout-type--massdoc {
           --primary-color: #059669;
@@ -269,7 +290,7 @@ function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string 
         }
       `);
       break;
-    case 'admin':
+    case "admin":
       styles.push(`
         .layout-type--admin {
           --primary-color: #7c3aed;
@@ -281,7 +302,7 @@ function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string 
   }
 
   // Styles basés sur le thème
-  if (config.theme === 'dark') {
+  if (config.theme === "dark") {
     styles.push(`
       .layout-theme--dark {
         --background-color: #1f2937;
@@ -312,7 +333,7 @@ function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string 
     }
   `);
 
-  return styles.join('\n');
+  return styles.join("\n");
 }
 
 export default LayoutUnified;

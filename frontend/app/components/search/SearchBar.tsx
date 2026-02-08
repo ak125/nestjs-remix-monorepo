@@ -19,7 +19,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 
 import {
   useEnhancedSearchWithDebounce,
@@ -27,6 +27,7 @@ import {
 } from "../../hooks/useEnhancedSearch";
 import { cn } from "../../lib/utils";
 import { searchApi } from "../../services/api/search.api";
+import { logger } from "~/utils/logger";
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -49,7 +50,7 @@ interface Suggestion {
   data?: any;
 }
 
-export function SearchBar({
+export const SearchBar = memo(function SearchBar({
   initialQuery = "",
   version = "enhanced",
   placeholder = "Rechercher une pièce, référence, véhicule...",
@@ -97,7 +98,7 @@ export function SearchBar({
       const data = await response.json();
       setMetrics(data);
     } catch (error) {
-      console.warn("Erreur métriques:", error);
+      logger.warn("Erreur métriques:", error);
     }
   }, [showMetrics, enhancedMode]);
 
@@ -205,7 +206,7 @@ export function SearchBar({
           setSuggestions(newSuggestions);
         }
       } catch (error) {
-        console.warn("Erreur suggestions:", error);
+        logger.warn("Erreur suggestions:", error);
         setSuggestions([]);
       } finally {
         setLoading(false);
@@ -551,4 +552,4 @@ export function SearchBar({
       </Form>
     </div>
   );
-}
+});

@@ -1,6 +1,6 @@
 /**
  * 🏆 TrustBadge - Badges de confiance pour rassurer l'acheteur
- * 
+ *
  * Types:
  * - oem: Pièce d'origine équipementier
  * - warranty: Garantie 1 an
@@ -11,9 +11,16 @@
  */
 
 import { Shield, Package, Truck, CheckCircle, Leaf } from "lucide-react";
+import { memo } from "react";
 import { cn } from "~/lib/utils";
 
-export type BadgeType = "oem" | "warranty" | "stock" | "fast-delivery" | "certified" | "eco";
+export type BadgeType =
+  | "oem"
+  | "warranty"
+  | "stock"
+  | "fast-delivery"
+  | "certified"
+  | "eco";
 
 interface TrustBadgeProps {
   type: BadgeType;
@@ -69,7 +76,11 @@ const COLOR_VARIANTS = {
   teal: "bg-teal-50 text-teal-700 border-teal-200",
 } as const;
 
-export function TrustBadge({ type, className, variant = "default" }: TrustBadgeProps) {
+export const TrustBadge = memo(function TrustBadge({
+  type,
+  className,
+  variant = "default",
+}: TrustBadgeProps) {
   const config = BADGE_CONFIG[type];
   const Icon = config.icon;
   const colorClass = COLOR_VARIANTS[config.color];
@@ -81,7 +92,9 @@ export function TrustBadge({ type, className, variant = "default" }: TrustBadgeP
         className={cn("inline-flex items-center justify-center", className)}
         title={config.description}
       >
-        <Icon className={cn("w-4 h-4", config.color === "blue" && "text-blue-600")} />
+        <Icon
+          className={cn("w-4 h-4", config.color === "blue" && "text-blue-600")}
+        />
       </div>
     );
   }
@@ -93,7 +106,7 @@ export function TrustBadge({ type, className, variant = "default" }: TrustBadgeP
         className={cn(
           "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border",
           colorClass,
-          className
+          className,
         )}
         title={config.description}
       >
@@ -109,7 +122,7 @@ export function TrustBadge({ type, className, variant = "default" }: TrustBadgeP
       className={cn(
         "inline-flex items-start gap-2 px-3 py-2 rounded-lg border",
         colorClass,
-        className
+        className,
       )}
     >
       <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
@@ -119,7 +132,7 @@ export function TrustBadge({ type, className, variant = "default" }: TrustBadgeP
       </div>
     </div>
   );
-}
+});
 
 /**
  * TrustBadgeGroup - Groupe de badges pour affichage cohérent
@@ -130,7 +143,11 @@ interface TrustBadgeGroupProps {
   className?: string;
 }
 
-export function TrustBadgeGroup({ badges, variant = "compact", className }: TrustBadgeGroupProps) {
+export const TrustBadgeGroup = memo(function TrustBadgeGroup({
+  badges,
+  variant = "compact",
+  className,
+}: TrustBadgeGroupProps) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {badges.map((type) => (
@@ -138,4 +155,4 @@ export function TrustBadgeGroup({ badges, variant = "compact", className }: Trus
       ))}
     </div>
   );
-}
+});

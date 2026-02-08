@@ -2,151 +2,187 @@
  * Page Rapports - Analyses et rapports avec Context7
  */
 
-import  { type LoaderFunction , json } from "@remix-run/node";
+import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { BarChart3, TrendingUp, Download, Eye, Calendar, PieChart, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  BarChart3,
+  TrendingUp,
+  Download,
+  Eye,
+  Calendar,
+  PieChart,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
+import { requireUser } from "../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { getRemixApiService } from "~/server/remix-api.server";
-import { requireUser } from "../auth/unified.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Rapports - Admin");
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });
-  
+
   // Vérifier les permissions admin
-  const userLevel = parseInt(user.level?.toString() || '0', 10);
+  const userLevel = parseInt(user.level?.toString() || "0", 10);
   if (!user.level || userLevel < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
   }
 
   try {
-    console.log('📊 Chargement des rapports via Context7...');
-    
+    logger.log("📊 Chargement des rapports via Context7...");
+
     const remixService = await getRemixApiService(context);
-    
+
     // Récupérer les statistiques pour générer les rapports
-  const ordersResult: any = await remixService.getOrdersForRemix({ page: 1, limit: 10 });
-    
+    const ordersResult: any = await remixService.getOrdersForRemix({
+      page: 1,
+      limit: 10,
+    });
+
     // Génération des rapports basée sur les vraies données
     const reports = [
-      { 
-        id: 1, 
-        name: "Ventes Mensuelles", 
-        type: "sales", 
-        period: "Janvier 2025", 
-        status: "ready", 
+      {
+        id: 1,
+        name: "Ventes Mensuelles",
+        type: "sales",
+        period: "Janvier 2025",
+        status: "ready",
         generated: "2025-01-21",
         size: "2.3 MB",
         format: "PDF",
-  dataCount: ordersResult?.success ? ordersResult?.orders?.length || 0 : 0
+        dataCount: ordersResult?.success
+          ? ordersResult?.orders?.length || 0
+          : 0,
       },
-      { 
-        id: 2, 
-        name: "Analyse Commandes", 
-        type: "orders", 
-        period: "Décembre 2024", 
-  status: ordersResult?.success ? "ready" : "generating",
-  generated: ordersResult?.success ? "2025-01-21" : "En cours...",
-  size: ordersResult?.success ? "1.8 MB" : "~1.8 MB",
+      {
+        id: 2,
+        name: "Analyse Commandes",
+        type: "orders",
+        period: "Décembre 2024",
+        status: ordersResult?.success ? "ready" : "generating",
+        generated: ordersResult?.success ? "2025-01-21" : "En cours...",
+        size: ordersResult?.success ? "1.8 MB" : "~1.8 MB",
         format: "Excel",
-  dataCount: ordersResult?.success ? ordersResult?.total || 0 : 0
+        dataCount: ordersResult?.success ? ordersResult?.total || 0 : 0,
       },
-      { 
-        id: 3, 
-        name: "Performance Paiements", 
-        type: "payments", 
-        period: "Q4 2024", 
-        status: "ready", 
+      {
+        id: 3,
+        name: "Performance Paiements",
+        type: "payments",
+        period: "Q4 2024",
+        status: "ready",
         generated: "2025-01-20",
         size: "4.1 MB",
         format: "PDF",
-        dataCount: 125
+        dataCount: 125,
       },
-      { 
-        id: 4, 
-        name: "Rapport d'Activité", 
-        type: "activity", 
-        period: "2024", 
-        status: "scheduled", 
+      {
+        id: 4,
+        name: "Rapport d'Activité",
+        type: "activity",
+        period: "2024",
+        status: "scheduled",
         generated: "31 Jan 2025",
         size: "~5.2 MB",
         format: "PDF",
-        dataCount: 0
+        dataCount: 0,
       },
     ];
 
     const analytics = {
       totalReports: reports.length,
-      readyReports: reports.filter(r => r.status === 'ready').length,
-      generatingReports: reports.filter(r => r.status === 'generating').length,
-      scheduledReports: reports.filter(r => r.status === 'scheduled').length,
+      readyReports: reports.filter((r) => r.status === "ready").length,
+      generatingReports: reports.filter((r) => r.status === "generating")
+        .length,
+      scheduledReports: reports.filter((r) => r.status === "scheduled").length,
     };
-    
-    return json({ 
-      reports, 
+
+    return json({
+      reports,
       analytics,
       context7: {
-  servicesAvailable: !!ordersResult?.success,
-  fallbackMode: !ordersResult?.success
-      }
+        servicesAvailable: !!ordersResult?.success,
+        fallbackMode: !ordersResult?.success,
+      },
     });
   } catch (error) {
-    console.error('❌ Erreur lors du chargement des rapports:', error);
-    
+    logger.error("❌ Erreur lors du chargement des rapports:", error);
+
     // Fallback avec données par défaut
     const fallbackReports = [
-      { 
-        id: 1, 
-        name: "Ventes Mensuelles", 
-        type: "sales", 
-        period: "Janvier 2025", 
-        status: "error", 
+      {
+        id: 1,
+        name: "Ventes Mensuelles",
+        type: "sales",
+        period: "Janvier 2025",
+        status: "error",
         generated: "Erreur",
         size: "0 MB",
         format: "PDF",
-        dataCount: 0
-      }
+        dataCount: 0,
+      },
     ];
-    
-    return json({ 
-      reports: fallbackReports, 
+
+    return json({
+      reports: fallbackReports,
       analytics: {
         totalReports: 1,
         readyReports: 0,
         generatingReports: 0,
         scheduledReports: 0,
       },
-      error: 'Erreur de connexion aux services de rapports',
+      error: "Erreur de connexion aux services de rapports",
       context7: {
         servicesAvailable: false,
         fallbackMode: true,
-        errorMode: true
-      }
+        errorMode: true,
+      },
     });
   }
 };
 
 export default function AdminReports() {
-  const { reports, analytics, error, context7 } = useLoaderData<typeof loader>();
+  const { reports, analytics, error, context7 } =
+    useLoaderData<typeof loader>();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ready': return 'default';
-      case 'generating': return 'secondary';
-      case 'scheduled': return 'outline';
-      case 'error': return 'destructive';
-      default: return 'secondary';
+      case "ready":
+        return "default";
+      case "generating":
+        return "secondary";
+      case "scheduled":
+        return "outline";
+      case "error":
+        return "destructive";
+      default:
+        return "secondary";
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'sales': return <TrendingUp className="h-4 w-4" />;
-      case 'users': return <Eye className="h-4 w-4" />;
-      case 'payments': return <BarChart3 className="h-4 w-4" />;
-      case 'activity': return <PieChart className="h-4 w-4" />;
-      default: return <BarChart3 className="h-4 w-4" />;
+      case "sales":
+        return <TrendingUp className="h-4 w-4" />;
+      case "users":
+        return <Eye className="h-4 w-4" />;
+      case "payments":
+        return <BarChart3 className="h-4 w-4" />;
+      case "activity":
+        return <PieChart className="h-4 w-4" />;
+      default:
+        return <BarChart3 className="h-4 w-4" />;
     }
   };
 
@@ -164,9 +200,18 @@ export default function AdminReports() {
               Générez et consultez vos rapports d'analyse détaillés
             </p>
             {context7 && (
-              <Badge variant={context7.servicesAvailable ? "default" : "secondary"} className="flex items-center gap-1">
-                {context7.servicesAvailable ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-                {context7.servicesAvailable ? "Context7 Actif" : "Mode Fallback"}
+              <Badge
+                variant={context7.servicesAvailable ? "default" : "secondary"}
+                className="flex items-center gap-1"
+              >
+                {context7.servicesAvailable ? (
+                  <CheckCircle className="h-3 w-3" />
+                ) : (
+                  <AlertTriangle className="h-3 w-3" />
+                )}
+                {context7.servicesAvailable
+                  ? "Context7 Actif"
+                  : "Mode Fallback"}
               </Badge>
             )}
           </div>
@@ -193,15 +238,19 @@ export default function AdminReports() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Rapports</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Rapports
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.totalReports}</div>
-            <p className="text-xs text-muted-foreground">Tous types confondus</p>
+            <p className="text-xs text-muted-foreground">
+              Tous types confondus
+            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Prêts</CardTitle>
@@ -209,7 +258,9 @@ export default function AdminReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.readyReports}</div>
-            <p className="text-xs text-muted-foreground">Disponibles au téléchargement</p>
+            <p className="text-xs text-muted-foreground">
+              Disponibles au téléchargement
+            </p>
           </CardContent>
         </Card>
 
@@ -219,7 +270,9 @@ export default function AdminReports() {
             <div className="h-2 w-2 bg-warning rounded-full animate-pulse" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.generatingReports}</div>
+            <div className="text-2xl font-bold">
+              {analytics.generatingReports}
+            </div>
             <p className="text-xs text-muted-foreground">Génération en cours</p>
           </CardContent>
         </Card>
@@ -230,7 +283,9 @@ export default function AdminReports() {
             <div className="h-2 w-2 bg-primary rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.scheduledReports}</div>
+            <div className="text-2xl font-bold">
+              {analytics.scheduledReports}
+            </div>
             <p className="text-xs text-muted-foreground">À venir</p>
           </CardContent>
         </Card>
@@ -282,21 +337,28 @@ export default function AdminReports() {
         <CardContent>
           <div className="space-y-4">
             {reports.map((report: any) => (
-              <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div
+                key={report.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     {getTypeIcon(report.type)}
                   </div>
                   <div>
                     <p className="font-medium">{report.name}</p>
-                    <p className="text-sm text-muted-foreground">{report.period}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {report.period}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-medium">{report.size}</p>
-                    <p className="text-xs text-muted-foreground">{report.format}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {report.format}
+                    </p>
                   </div>
                   <Badge variant={getStatusColor(report.status)}>
                     {report.status}
@@ -304,14 +366,20 @@ export default function AdminReports() {
                   <p className="text-xs text-muted-foreground w-20">
                     {report.generated}
                   </p>
-                  {report.status === 'ready' ? (
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  {report.status === "ready" ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
                       <Download className="h-3 w-3" />
                       Télécharger
                     </Button>
                   ) : (
                     <Button variant="outline" size="sm" disabled>
-                      {report.status === 'generating' ? 'En cours...' : 'Programmé'}
+                      {report.status === "generating"
+                        ? "En cours..."
+                        : "Programmé"}
                     </Button>
                   )}
                 </div>

@@ -23,6 +23,7 @@ import {
   Package,
   Tag,
 } from "lucide-react";
+import { memo } from "react";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -51,7 +52,7 @@ const SORT_OPTIONS = [
   { value: "brand", label: "Par marque", icon: Tag },
 ] as const;
 
-export function PiecesToolbar({
+export const PiecesToolbar = memo(function PiecesToolbar({
   viewMode,
   setViewMode,
   sortBy,
@@ -69,7 +70,9 @@ export function PiecesToolbar({
           {/* Badge nombre compact */}
           <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-blue-100">
             <Package className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-bold text-blue-600">{filteredCount}</span>
+            <span className="text-sm font-bold text-blue-600">
+              {filteredCount}
+            </span>
           </div>
 
           {/* Dropdown Tri mobile - Select natif simplifié */}
@@ -147,8 +150,8 @@ export function PiecesToolbar({
           <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
             <Package className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-semibold text-gray-900">
-              <span className="text-blue-600">{filteredCount}</span>{" "}
-              pièce{filteredCount > 1 ? "s" : ""}
+              <span className="text-blue-600">{filteredCount}</span> pièce
+              {filteredCount > 1 ? "s" : ""}
             </span>
           </div>
 
@@ -274,6 +277,6 @@ export function PiecesToolbar({
       </div>
     </div>
   );
-}
+});
 
 export default PiecesToolbar;

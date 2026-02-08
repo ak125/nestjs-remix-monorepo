@@ -30,7 +30,11 @@
  * - /products/admin?enhanced=true (interface avancée)
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -55,6 +59,11 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Produits - Interface Commerciale");
 
 // API Product Interface (from backend)
 interface APIProduct {
@@ -164,8 +173,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   // Paramètres URL
   const url = new URL(request.url);
-  console.log("🌐 [LOADER] Full URL:", url.toString());
-  console.log(
+  logger.log("🌐 [LOADER] Full URL:", url.toString());
+  logger.log(
     "🌐 [LOADER] Search params:",
     Object.fromEntries(url.searchParams.entries()),
   );
@@ -181,7 +190,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const isActive = activeOnly === "true" || activeOnly === null ? "true" : "";
   const lowStock = url.searchParams.get("lowStock") || "";
 
-  console.log("🔍 [LOADER] Extracted params:", {
+  logger.log("🔍 [LOADER] Extracted params:", {
     gammeId,
     brandId,
     search,
@@ -248,14 +257,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       if (lowStock) queryParams.set("lowStock", lowStock);
 
       const apiUrl = `${baseUrl}/api/products/admin/list?${queryParams.toString()}`;
-      console.log("📡 [LOADER] Calling API:", apiUrl);
+      logger.log("📡 [LOADER] Calling API:", apiUrl);
 
       // Construire URL pour les filtres dynamiques
       const filtersParams = new URLSearchParams();
       if (gammeId) filtersParams.set("gammeId", gammeId);
       if (brandId) filtersParams.set("brandId", brandId);
       const filtersUrl = `${baseUrl}/api/products/filters/lists?${filtersParams.toString()}`;
-      console.log("📡 [LOADER] Calling Filters API:", filtersUrl);
+      logger.log("📡 [LOADER] Calling Filters API:", filtersUrl);
 
       const [productsResponse, filtersResponse] = await Promise.all([
         fetch(apiUrl, {
@@ -304,7 +313,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         filterLists = await filtersResponse.json();
       }
     } catch (error) {
-      console.error("❌ Erreur chargement produits:", error);
+      logger.error("❌ Erreur chargement produits:", error);
       // Continuer avec tableau vide
     }
 
@@ -326,7 +335,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       recentBrands: responses[2]?.ok ? await responses[2].json() : [],
     });
   } catch (error) {
-    console.error("Products data loading error:", error);
+    logger.error("Products data loading error:", error);
     return json<ProductsData>({
       user: {
         id: user.id,

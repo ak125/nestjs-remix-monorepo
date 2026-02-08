@@ -1,7 +1,8 @@
-import { useFetcher } from '@remix-run/react';
-import { Download, FileText, Mail, Printer } from 'lucide-react';
-import { type Order, type OrderFilters } from '../../types/orders.types';
-import { downloadCSV, generateOrdersCSV } from '../../utils/orders.utils';
+import { useFetcher } from "@remix-run/react";
+import { Download, FileText, Mail, Printer } from "lucide-react";
+import { memo } from "react";
+import { type Order, type OrderFilters } from "../../types/orders.types";
+import { downloadCSV, generateOrdersCSV } from "../../utils/orders.utils";
 
 interface OrderExportButtonsProps {
   filters: OrderFilters;
@@ -9,7 +10,7 @@ interface OrderExportButtonsProps {
   allOrders?: Order[];
 }
 
-export function OrderExportButtons({
+export const OrderExportButtons = memo(function OrderExportButtons({
   filters: _filters,
   selectedOrders,
   allOrders = [],
@@ -23,34 +24,34 @@ export function OrderExportButtons({
         : allOrders;
 
     if (ordersToExport.length === 0) {
-      alert('Aucune commande à exporter');
+      alert("Aucune commande à exporter");
       return;
     }
 
     const csv = generateOrdersCSV(ordersToExport);
-    downloadCSV(csv, 'commandes');
+    downloadCSV(csv, "commandes");
   };
 
   const handleGenerateInvoice = () => {
     if (selectedOrders.length === 0) {
-      alert('Veuillez sélectionner au moins une commande');
+      alert("Veuillez sélectionner au moins une commande");
       return;
     }
 
     if (selectedOrders.length > 1) {
-      alert('Sélectionnez une seule commande pour générer une facture');
+      alert("Sélectionnez une seule commande pour générer une facture");
       return;
     }
 
     fetcher.submit(
-      { intent: 'generateInvoice', orderId: selectedOrders[0] },
-      { method: 'post' },
+      { intent: "generateInvoice", orderId: selectedOrders[0] },
+      { method: "post" },
     );
   };
 
   const handleSendEmail = () => {
     if (selectedOrders.length === 0) {
-      alert('Veuillez sélectionner au moins une commande');
+      alert("Veuillez sélectionner au moins une commande");
       return;
     }
 
@@ -64,7 +65,7 @@ export function OrderExportButtons({
     window.print();
   };
 
-  const isProcessing = fetcher.state !== 'idle';
+  const isProcessing = fetcher.state !== "idle";
   const hasOrders = allOrders.length > 0;
   const hasSelection = selectedOrders.length > 0;
 
@@ -119,4 +120,4 @@ export function OrderExportButtons({
       )}
     </div>
   );
-}
+});

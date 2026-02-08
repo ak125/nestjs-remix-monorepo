@@ -30,6 +30,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -257,7 +258,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const data = await res.json();
 
     if (!data?.success || !data.data?.families) {
-      console.error("Format de réponse inattendu:", data);
+      logger.error("Format de réponse inattendu:", data);
       return json<LoaderData>({
         groupedArticles: [],
         familyGroups: [],
@@ -296,7 +297,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   } catch (e) {
-    console.error("Erreur loader conseils:", e);
+    logger.error("Erreur loader conseils:", e);
     return json<LoaderData>({
       groupedArticles: [],
       familyGroups: [],

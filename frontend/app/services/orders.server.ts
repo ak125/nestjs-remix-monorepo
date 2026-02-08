@@ -4,6 +4,7 @@
  */
 
 import { type Order } from "../utils/orders";
+import { logger } from "~/utils/logger";
 
 export interface GetUserOrdersParams {
   userId: string;
@@ -22,9 +23,9 @@ export async function getUserOrders(params: {
   status?: string;
   year?: number;
   request: Request;
-}): Promise<{ 
-  orders: Order[]; 
-  total: number; 
+}): Promise<{
+  orders: Order[];
+  total: number;
   page: number;
   pagination: {
     currentPage: number;
@@ -66,13 +67,10 @@ export async function getUserOrders(params: {
     }
 
     // Appel à l'API backend consolidée (userId récupéré via AuthenticatedGuard)
-    const response = await fetch(
-      `${baseUrl}/api/orders?${searchParams}`,
-      {
-        method: "GET",
-        headers,
-      },
-    );
+    const response = await fetch(`${baseUrl}/api/orders?${searchParams}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch orders: ${response.status}`);
@@ -82,22 +80,37 @@ export async function getUserOrders(params: {
 
     // Mapping des données depuis la réponse du backend
     // ✅ Adaptation pour structure legacy (ord_id, ord_total_ttc, etc.)
-    const orders: Order[] = (data.data || data.orders || []).map((order: any) => ({
-      id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
-      orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-      status: parseInt(order.ord_ords_id || order.status || 1),
-      totalTTC: parseFloat(order.ord_total_ttc || order.totalTTC || order.total_ttc || 0),
-      createdAt: order.ord_date || order.createdAt || order.created_at,
-      lines: (order.lines || order.orderLines || []).map((line: any) => ({
-        id: line.orl_id || line.id?.toString(),
-        productId: line.orl_pg_id || line.productId || line.product_id,
-        productName: line.orl_pg_name || line.productName || line.product_name || "Produit",
-        productImage:
-          line.productImage || line.product_image || "/images/placeholder.jpg",
-        quantity: parseInt(line.orl_art_quantity || line.quantity || 1),
-        unitPrice: parseFloat(line.orl_art_price_sell_unit_ttc || line.unitPrice || line.unit_price || 0),
-      })),
-    }));
+    const orders: Order[] = (data.data || data.orders || []).map(
+      (order: any) => ({
+        id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
+        orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
+        status: parseInt(order.ord_ords_id || order.status || 1),
+        totalTTC: parseFloat(
+          order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
+        ),
+        createdAt: order.ord_date || order.createdAt || order.created_at,
+        lines: (order.lines || order.orderLines || []).map((line: any) => ({
+          id: line.orl_id || line.id?.toString(),
+          productId: line.orl_pg_id || line.productId || line.product_id,
+          productName:
+            line.orl_pg_name ||
+            line.productName ||
+            line.product_name ||
+            "Produit",
+          productImage:
+            line.productImage ||
+            line.product_image ||
+            "/images/placeholder.jpg",
+          quantity: parseInt(line.orl_art_quantity || line.quantity || 1),
+          unitPrice: parseFloat(
+            line.orl_art_price_sell_unit_ttc ||
+              line.unitPrice ||
+              line.unit_price ||
+              0,
+          ),
+        })),
+      }),
+    );
 
     // Pagination du backend ou par défaut
     const pagination = data.pagination || {
@@ -106,14 +119,14 @@ export async function getUserOrders(params: {
       totalCount: orders.length,
     };
 
-    return { 
-      orders, 
+    return {
+      orders,
       pagination,
       total: pagination.totalCount,
       page: pagination.currentPage,
     };
   } catch (error) {
-    console.error("Error fetching user orders:", error);
+    logger.error("Error fetching user orders:", error);
 
     // Retour de données vides en cas d'erreur
     return {
@@ -163,13 +176,10 @@ export async function getOrderDetails(params: {
     }
 
     // Appel à l'API backend consolidée pour le détail de la commande
-    const response = await fetch(
-      `${baseUrl}/api/orders/${orderId}`,
-      {
-        method: "GET",
-        headers,
-      },
-    );
+    const response = await fetch(`${baseUrl}/api/orders/${orderId}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -188,7 +198,7 @@ export async function getOrderDetails(params: {
     const order = response_data.data;
 
     // 🔍 DEBUG: Afficher les données reçues
-    console.log('🔍 [getOrderDetail] Raw order data:', {
+    logger.log("🔍 [getOrderDetail] Raw order data:", {
       ord_id: order.ord_id,
       ord_ords_id: order.ord_ords_id,
       ord_total_ttc: order.ord_total_ttc,
@@ -201,7 +211,9 @@ export async function getOrderDetails(params: {
       id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
       orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
       status: parseInt(order.ord_ords_id || order.status || 1),
-      totalTTC: parseFloat(order.ord_total_ttc || order.totalTTC || order.total_ttc || 0),
+      totalTTC: parseFloat(
+        order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
+      ),
       totalPrice: parseFloat(
         order.ord_total_ttc ||
           order.totalPrice ||
@@ -210,16 +222,30 @@ export async function getOrderDetails(params: {
           order.total_ttc ||
           0,
       ),
-      subtotalHT: parseFloat(order.ord_amount_ht || order.subtotalHT || order.subtotal_ht || 0),
+      subtotalHT: parseFloat(
+        order.ord_amount_ht || order.subtotalHT || order.subtotal_ht || 0,
+      ),
       subtotalPrice: parseFloat(
-        order.ord_amount_ttc || order.subtotalPrice || order.subtotal_price || order.subtotalHT || 0,
+        order.ord_amount_ttc ||
+          order.subtotalPrice ||
+          order.subtotal_price ||
+          order.subtotalHT ||
+          0,
       ),
       tva: parseFloat(order.ord_tva || order.tva || order.tax_amount || 0),
       shippingFee: parseFloat(
-        order.ord_shipping_fee_ttc || order.shippingFee || order.shipping_fee || order.deliveryPrice || 0,
+        order.ord_shipping_fee_ttc ||
+          order.shippingFee ||
+          order.shipping_fee ||
+          order.deliveryPrice ||
+          0,
       ),
       deliveryPrice: parseFloat(
-        order.ord_shipping_fee_ttc || order.deliveryPrice || order.delivery_price || order.shippingFee || 0,
+        order.ord_shipping_fee_ttc ||
+          order.deliveryPrice ||
+          order.delivery_price ||
+          order.shippingFee ||
+          0,
       ),
       discountAmount: parseFloat(
         order.discountAmount || order.discount_amount || 0,
@@ -240,20 +266,37 @@ export async function getOrderDetails(params: {
       lines: (order.lines || order.orderLines || []).map((line: any) => ({
         id: line.orl_id || line.id?.toString(),
         productId: line.orl_pg_id || line.productId || line.product_id,
-        productName: line.orl_pg_name || line.productName || line.product_name || "Produit",
-        productRef: line.orl_art_ref || line.productRef || line.product_ref || line.sku,
+        productName:
+          line.orl_pg_name ||
+          line.productName ||
+          line.product_name ||
+          "Produit",
+        productRef:
+          line.orl_art_ref || line.productRef || line.product_ref || line.sku,
         productImage:
           line.productImage || line.product_image || "/images/placeholder.jpg",
         quantity: parseInt(line.orl_art_quantity || line.quantity || 1),
-        unitPrice: parseFloat(line.orl_art_price_sell_unit_ttc || line.unitPrice || line.unit_price || 0),
+        unitPrice: parseFloat(
+          line.orl_art_price_sell_unit_ttc ||
+            line.unitPrice ||
+            line.unit_price ||
+            0,
+        ),
         totalPrice: parseFloat(
           line.orl_art_price_sell_ttc ||
             line.totalPrice ||
             line.total_price ||
-            (parseFloat(line.orl_art_price_sell_unit_ttc || 0) * parseInt(line.orl_art_quantity || 1)) ||
+            parseFloat(line.orl_art_price_sell_unit_ttc || 0) *
+              parseInt(line.orl_art_quantity || 1) ||
             0,
         ),
-        status: parseInt(line.orl_orls_id || line.status || order.ord_ords_id || order.status || 1),
+        status: parseInt(
+          line.orl_orls_id ||
+            line.status ||
+            order.ord_ords_id ||
+            order.status ||
+            1,
+        ),
       })),
 
       // Adresses
@@ -313,7 +356,9 @@ export async function getOrderDetails(params: {
       statusHistory: order.statusHistory ||
         order.status_history || [
           {
-            label: getOrderStatusLabel(parseInt(order.ord_ords_id || order.status || '1')),
+            label: getOrderStatusLabel(
+              parseInt(order.ord_ords_id || order.status || "1"),
+            ),
             date:
               order.ord_date ||
               order.updatedAt ||
@@ -326,7 +371,7 @@ export async function getOrderDetails(params: {
     };
 
     // 🔍 DEBUG: Afficher les données mappées
-    console.log('✅ [getOrderDetail] Mapped order:', {
+    logger.log("✅ [getOrderDetail] Mapped order:", {
       id: mappedOrder.id,
       orderNumber: mappedOrder.orderNumber,
       status: mappedOrder.status,
@@ -336,7 +381,7 @@ export async function getOrderDetails(params: {
 
     return mappedOrder;
   } catch (error) {
-    console.error("Error fetching order detail:", error);
+    logger.error("Error fetching order detail:", error);
     throw error;
   }
 }

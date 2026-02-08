@@ -14,6 +14,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+import { logger } from "~/utils/logger";
 
 // Types
 interface Observable {
@@ -66,7 +67,7 @@ export async function loader() {
     const data = await response.json();
     return json({ observables: data || [], error: null });
   } catch (error) {
-    console.error("Loader error:", error);
+    logger.error("Loader error:", error);
     return json({ observables: [], error: "Service indisponible" });
   }
 }
@@ -96,7 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return json(await response.json());
   } catch (error) {
-    console.error("Action error:", error);
+    logger.error("Action error:", error);
     return json({ error: "Service de diagnostic indisponible" });
   }
 }

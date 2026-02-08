@@ -1,11 +1,12 @@
 /**
  * 🎨 CAROUSEL LOGOS DE MARQUES
- * 
+ *
  * Composant pour afficher les logos des marques automobiles
  * Réplique la section PHP "Marques les plus consultées"
  */
 
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 
 interface Brand {
   id: number;
@@ -24,7 +25,7 @@ interface BrandLogosCarouselProps {
   columns?: number;
 }
 
-export function BrandLogosCarousel({
+export const BrandLogosCarousel = memo(function BrandLogosCarousel({
   brands,
   title = "🏭 Marques automobiles",
   columns = 6,
@@ -33,11 +34,12 @@ export function BrandLogosCarousel({
     return null;
   }
 
-  const gridColsClass = {
-    4: "grid-cols-2 md:grid-cols-4",
-    6: "grid-cols-3 md:grid-cols-4 lg:grid-cols-6",
-    8: "grid-cols-4 md:grid-cols-6 lg:grid-cols-8",
-  }[columns] || "grid-cols-3 md:grid-cols-4 lg:grid-cols-6";
+  const gridColsClass =
+    {
+      4: "grid-cols-2 md:grid-cols-4",
+      6: "grid-cols-3 md:grid-cols-4 lg:grid-cols-6",
+      8: "grid-cols-4 md:grid-cols-6 lg:grid-cols-8",
+    }[columns] || "grid-cols-3 md:grid-cols-4 lg:grid-cols-6";
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -119,4 +121,4 @@ export function BrandLogosCarousel({
       </div>
     </div>
   );
-}
+});

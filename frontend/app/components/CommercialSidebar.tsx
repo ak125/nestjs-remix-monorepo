@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@remix-run/react"
+import { Link, useLocation } from "@remix-run/react";
 import {
   Home,
   ShoppingCart,
@@ -11,19 +11,20 @@ import {
   LogOut,
   TrendingUp,
   AlertTriangle,
-} from "lucide-react"
-import * as React from "react"
+} from "lucide-react";
+import * as React from "react";
+import { memo } from "react";
 
-import { Badge } from '~/components/ui';
-import { Button } from "./ui/button"
+import { Button } from "./ui/button";
+import { Badge } from "~/components/ui";
 
 // Fonction utilitaire pour combiner les classes CSS
 function cn(...classes: (string | undefined | false | null)[]): string {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 interface CommercialSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string
+  className?: string;
   stats?: {
     totalUsers: number;
     totalOrders: number;
@@ -35,56 +36,63 @@ interface CommercialSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   };
 }
 
-export function CommercialSidebar({ className, stats, ...props }: CommercialSidebarProps) {
-  const location = useLocation()
-  const [isOpen, setIsOpen] = React.useState(false)
+export const CommercialSidebar = memo(function CommercialSidebar({
+  className,
+  stats,
+  ...props
+}: CommercialSidebarProps) {
+  const location = useLocation();
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const navigation = [
     {
       name: "Dashboard",
       href: "/commercial",
       icon: Home,
-      description: "Vue d'ensemble"
+      description: "Vue d'ensemble",
     },
     {
       name: "Commandes",
       href: "/commercial/orders",
       icon: ShoppingCart,
       description: "Gestion des commandes",
-      badge: stats?.pendingOrders && stats.pendingOrders > 0 ? stats.pendingOrders.toString() : undefined
+      badge:
+        stats?.pendingOrders && stats.pendingOrders > 0
+          ? stats.pendingOrders.toString()
+          : undefined,
     },
     {
       name: "Stock",
-      href: "/commercial/stock", 
+      href: "/commercial/stock",
       icon: Package,
-      description: "Gestion du stock"
+      description: "Gestion du stock",
     },
     {
       name: "Expédition",
       href: "/commercial/shipping",
       icon: Truck,
-      description: "Suivi des expéditions"
+      description: "Suivi des expéditions",
     },
     {
       name: "Clients",
       href: "/commercial/customers",
       icon: Users,
-      description: "Base clients"
+      description: "Base clients",
     },
     {
       name: "Analyses",
       href: "/commercial/analytics",
       icon: BarChart3,
-      description: "Rapports et analyses"
-    }
-  ]
+      description: "Rapports et analyses",
+    },
+  ];
 
   const isActive = (href: string) => {
-    if (href === '/commercial') {
-      return location.pathname === '/commercial'
+    if (href === "/commercial") {
+      return location.pathname === "/commercial";
     }
-    return location.pathname.startsWith(href)
-  }
+    return location.pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -102,18 +110,21 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
 
       {/* Sidebar overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={cn(
-        "fixed left-0 top-0 z-40 h-screen w-64 transform bg-white border-r border-gray-200 transition-transform duration-200 ease-in-out lg:translate-x-0",
-        isOpen ? "translate-x-0" : "-translate-x-full",
-        className
-      )} {...props}>
+      <div
+        className={cn(
+          "fixed left-0 top-0 z-40 h-screen w-64 transform bg-white border-r border-gray-200 transition-transform duration-200 ease-in-out lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          className,
+        )}
+        {...props}
+      >
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex h-16 items-center border-b border-gray-200 px-4">
@@ -121,7 +132,9 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
               <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">C</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">Commercial</span>
+              <span className="text-lg font-semibold text-gray-900">
+                Commercial
+              </span>
             </Link>
           </div>
 
@@ -134,28 +147,38 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                     <ShoppingCart className="h-3 w-3 text-blue-600" />
                     <span className="text-blue-900 font-medium">Commandes</span>
                   </div>
-                  <div className="text-blue-700 font-bold">{stats.totalOrders?.toLocaleString()}</div>
+                  <div className="text-blue-700 font-bold">
+                    {stats.totalOrders?.toLocaleString()}
+                  </div>
                 </div>
                 <div className="bg-success/5 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <TrendingUp className="h-3 w-3 text-green-600" />
                     <span className="text-green-900 font-medium">CA</span>
                   </div>
-                  <div className="text-green-700 font-bold">{(stats.totalRevenue / 1000).toFixed(0)}k€</div>
+                  <div className="text-green-700 font-bold">
+                    {(stats.totalRevenue / 1000).toFixed(0)}k€
+                  </div>
                 </div>
                 <div className="bg-orange-50 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <AlertTriangle className="h-3 w-3 text-orange-600" />
-                    <span className="text-orange-900 font-medium">En attente</span>
+                    <span className="text-orange-900 font-medium">
+                      En attente
+                    </span>
                   </div>
-                  <div className="text-orange-700 font-bold">{stats.pendingOrders}</div>
+                  <div className="text-orange-700 font-bold">
+                    {stats.pendingOrders}
+                  </div>
                 </div>
                 <div className="bg-purple-50 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <Users className="h-3 w-3 text-purple-600" />
                     <span className="text-purple-900 font-medium">Clients</span>
                   </div>
-                  <div className="text-purple-700 font-bold">{(stats.totalUsers / 1000).toFixed(0)}k</div>
+                  <div className="text-purple-700 font-bold">
+                    {(stats.totalUsers / 1000).toFixed(0)}k
+                  </div>
                 </div>
               </div>
             </div>
@@ -164,9 +187,9 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {
-              const Icon = item.icon
-              const active = isActive(item.href)
-              
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
               return (
                 <Link
                   key={item.name}
@@ -176,36 +199,44 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                     "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
                     active
                       ? "bg-primary/15 text-blue-900"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                   )}
                 >
                   <div className="flex items-center">
-                    <Icon className={cn(
-                      "mr-3 h-5 w-5 flex-shrink-0",
-                      active ? "text-blue-600" : "text-gray-400 group-hover:text-gray-600"
-                    )} />
+                    <Icon
+                      className={cn(
+                        "mr-3 h-5 w-5 flex-shrink-0",
+                        active
+                          ? "text-blue-600"
+                          : "text-gray-400 group-hover:text-gray-600",
+                      )}
+                    />
                     <div>
                       <div className="text-sm">{item.name}</div>
-                      <div className={cn(
-                        "text-xs",
-                        active ? "text-blue-700" : "text-gray-500"
-                      )}>
+                      <div
+                        className={cn(
+                          "text-xs",
+                          active ? "text-blue-700" : "text-gray-500",
+                        )}
+                      >
                         {item.description}
                       </div>
                     </div>
                   </div>
-                  {item.badge && (
-                    <Badge variant="error">{item.badge}</Badge>
-                  )}
+                  {item.badge && <Badge variant="error">{item.badge}</Badge>}
                 </Link>
-              )
+              );
             })}
           </nav>
 
           {/* Footer */}
           <div className="border-t border-gray-200 p-4">
             <form action="/logout" method="post">
-              <Button variant="secondary" size="sm" className="w-full justify-start text-gray-700 hover:text-gray-900">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full justify-start text-gray-700 hover:text-gray-900"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Déconnexion
               </Button>
@@ -214,7 +245,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
         </div>
       </div>
     </>
-  )
-}
+  );
+});
 
-export default CommercialSidebar
+export default CommercialSidebar;

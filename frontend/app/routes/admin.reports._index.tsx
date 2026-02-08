@@ -24,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,7 +39,7 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = async () => {
   try {
-    console.log("📊 Chargement des données pour les rapports...");
+    logger.log("📊 Chargement des données pour les rapports...");
 
     // Récupérer les données depuis les différentes APIs
     const [usersResponse, ordersResponse, ordersStatsResponse] =
@@ -143,11 +144,11 @@ export const loader: LoaderFunction = async () => {
         ? (reportData.users.verified / reportData.users.total) * 100
         : 0;
 
-    console.log("✅ Données des rapports chargées:", reportData);
+    logger.log("✅ Données des rapports chargées:", reportData);
 
     return json({ reportData });
   } catch (error) {
-    console.error("❌ Erreur lors du chargement des rapports:", error);
+    logger.error("❌ Erreur lors du chargement des rapports:", error);
     return json({
       reportData: {
         users: { total: 0, active: 0, professional: 0, verified: 0 },

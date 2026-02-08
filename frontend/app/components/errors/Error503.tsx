@@ -6,7 +6,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
@@ -16,7 +16,7 @@ interface Error503Props {
   url?: string;
 }
 
-export function Error503({
+export const Error503 = memo(function Error503({
   retryAfter = 30,
   message,
   url,
@@ -47,11 +47,11 @@ export function Error503({
   useEffect(() => {
     const meta = document.querySelector('meta[name="robots"]');
     if (meta) {
-      meta.setAttribute('content', 'noindex, follow');
+      meta.setAttribute("content", "noindex, follow");
     } else {
-      const newMeta = document.createElement('meta');
-      newMeta.name = 'robots';
-      newMeta.content = 'noindex, follow';
+      const newMeta = document.createElement("meta");
+      newMeta.name = "robots";
+      newMeta.content = "noindex, follow";
       document.head.appendChild(newMeta);
     }
   }, []);
@@ -163,4 +163,4 @@ export function Error503({
       </div>
     </div>
   );
-}
+});

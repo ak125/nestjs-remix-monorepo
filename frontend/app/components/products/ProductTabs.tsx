@@ -1,12 +1,12 @@
 /**
  * 🛍️ Product Tabs - Composant d'onglets pour fiche produit
- * 
+ *
  * Organise les informations produit en onglets :
  * - Description détaillée
  * - Caractéristiques techniques
  * - Avis clients
  * - Guide d'installation (optionnel)
- * 
+ *
  * Features:
  * - Navigation par clavier (Tab, flèches)
  * - Liens profonds (URL hash)
@@ -15,23 +15,12 @@
  * - Responsive mobile/desktop
  */
 
-import {
-  FileText,
-  MessageSquare,
-  Settings2,
-  Wrench,
-} from 'lucide-react';
-import { useState } from 'react';
-import { HtmlContent } from '../seo/HtmlContent';
+import { FileText, MessageSquare, Settings2, Wrench } from "lucide-react";
+import { useState, memo } from "react";
+import { HtmlContent } from "../seo/HtmlContent";
 
-
-import { Badge } from '../ui/badge';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../ui/tabs';
+import { Badge } from "../ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface ProductTabsProps {
   /** Description HTML ou texte du produit */
@@ -49,25 +38,28 @@ interface ProductTabsProps {
   /** Guide d'installation (optionnel) */
   installationGuide?: string;
   /** Onglet par défaut */
-  defaultTab?: 'description' | 'specs' | 'reviews' | 'installation';
+  defaultTab?: "description" | "specs" | "reviews" | "installation";
   /** Classe CSS additionnelle */
   className?: string;
 }
 
-export function ProductTabs({
+export const ProductTabs = memo(function ProductTabs({
   description,
   specifications = {},
   reviews = [],
   installationGuide,
-  defaultTab = 'description',
-  className = '',
+  defaultTab = "description",
+  className = "",
 }: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
   // Calculer note moyenne
-  const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-    : 0;
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+        ).toFixed(1)
+      : 0;
 
   return (
     <Tabs
@@ -110,7 +102,7 @@ export function ProductTabs({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Description du produit
           </h3>
-          <HtmlContent 
+          <HtmlContent
             html={description}
             className="text-gray-700 leading-relaxed"
           />
@@ -160,8 +152,8 @@ export function ProductTabs({
                   {averageRating}
                 </span>
                 <div className="flex items-center text-yellow-400">
-                  {'★'.repeat(Math.round(Number(averageRating)))}
-                  {'☆'.repeat(5 - Math.round(Number(averageRating)))}
+                  {"★".repeat(Math.round(Number(averageRating)))}
+                  {"☆".repeat(5 - Math.round(Number(averageRating)))}
                 </div>
               </div>
             )}
@@ -182,8 +174,8 @@ export function ProductTabs({
                       <p className="text-sm text-gray-500">{review.date}</p>
                     </div>
                     <div className="flex items-center text-yellow-400">
-                      {'★'.repeat(review.rating)}
-                      {'☆'.repeat(5 - review.rating)}
+                      {"★".repeat(review.rating)}
+                      {"☆".repeat(5 - review.rating)}
                     </div>
                   </div>
                   <p className="text-gray-700 leading-relaxed">
@@ -211,7 +203,7 @@ export function ProductTabs({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Guide d'installation
             </h3>
-            <HtmlContent 
+            <HtmlContent
               html={installationGuide}
               className="text-gray-700 leading-relaxed"
             />
@@ -220,4 +212,4 @@ export function ProductTabs({
       )}
     </Tabs>
   );
-}
+});

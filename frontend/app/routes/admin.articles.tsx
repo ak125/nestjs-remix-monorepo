@@ -21,6 +21,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 // Icons
 const PencilIcon = ({ className }: { className: string }) => (
@@ -210,7 +211,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       isError: false,
     });
   } catch (error) {
-    console.error("Erreur lors du chargement des articles:", error);
+    logger.error("Erreur lors du chargement des articles:", error);
 
     return json<LoaderData>({
       articles: [],

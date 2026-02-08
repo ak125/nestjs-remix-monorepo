@@ -4,14 +4,16 @@
  * Version mise à jour pour la compatibilité complète
  */
 
+import { logger } from "~/utils/logger";
+
 export interface ContactFormData {
   name: string;
   email: string;
   phone?: string;
   subject: string;
   message: string;
-  priority: 'urgent' | 'high' | 'normal' | 'low';
-  category: 'general' | 'technical' | 'billing' | 'complaint' | 'suggestion';
+  priority: "urgent" | "high" | "normal" | "low";
+  category: "general" | "technical" | "billing" | "complaint" | "suggestion";
   vehicle_info?: {
     brand?: string;
     model?: string;
@@ -31,8 +33,8 @@ export interface ContactTicket {
   msg_subject: string;
   msg_content: string;
   msg_parent_id?: string;
-  msg_open: '0' | '1';
-  msg_close: '0' | '1';
+  msg_open: "0" | "1";
+  msg_close: "0" | "1";
   priority?: string;
   category?: string;
   customer?: {
@@ -44,7 +46,7 @@ export interface ContactTicket {
 }
 
 export interface ContactTicketWithStatus extends ContactTicket {
-  status: 'open' | 'closed';
+  status: "open" | "closed";
   lastUpdate: string;
   responseCount: number;
   assignedTo?: string;
@@ -62,10 +64,10 @@ export interface ContactStats {
  */
 export async function createContact(
   contactData: ContactFormData,
-  request?: Request
+  request?: Request,
 ): Promise<ContactTicket> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     // Préparer les headers
     const headers: HeadersInit = {
@@ -95,7 +97,7 @@ export async function createContact(
     const ticket = await response.json();
     return ticket;
   } catch (error) {
-    console.error("Erreur lors de la création du ticket:", error);
+    logger.error("Erreur lors de la création du ticket:", error);
     throw error;
   }
 }
@@ -105,10 +107,10 @@ export async function createContact(
  */
 export async function getTicket(
   ticketId: string,
-  request?: Request
+  request?: Request,
 ): Promise<ContactTicket> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -121,10 +123,13 @@ export async function getTicket(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/ticket/${ticketId}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/contact/ticket/${ticketId}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -133,7 +138,7 @@ export async function getTicket(
     const ticket = await response.json();
     return ticket;
   } catch (error) {
-    console.error("Erreur lors de la récupération du ticket:", error);
+    logger.error("Erreur lors de la récupération du ticket:", error);
     throw error;
   }
 }
@@ -145,9 +150,9 @@ export async function getAllTickets(
   options: {
     page?: number;
     limit?: number;
-    status?: 'open' | 'closed' | 'all';
+    status?: "open" | "closed" | "all";
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   tickets: ContactTicket[];
   total: number;
@@ -155,15 +160,15 @@ export async function getAllTickets(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
       limit: (options.limit || 10).toString(),
     });
 
-    if (options.status && options.status !== 'all') {
-      searchParams.append('status', options.status);
+    if (options.status && options.status !== "all") {
+      searchParams.append("status", options.status);
     }
 
     const headers: HeadersInit = {
@@ -177,10 +182,13 @@ export async function getAllTickets(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/tickets?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/contact/tickets?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -189,7 +197,7 @@ export async function getAllTickets(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des tickets:", error);
+    logger.error("Erreur lors de la récupération des tickets:", error);
     throw error;
   }
 }
@@ -198,10 +206,10 @@ export async function getAllTickets(
  * Récupérer les statistiques des tickets
  */
 export async function getContactStats(
-  request?: Request
+  request?: Request,
 ): Promise<ContactStats> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -226,7 +234,7 @@ export async function getContactStats(
     const stats = await response.json();
     return stats;
   } catch (error) {
-    console.error("Erreur lors de la récupération des statistiques:", error);
+    logger.error("Erreur lors de la récupération des statistiques:", error);
     throw error;
   }
 }
@@ -236,11 +244,11 @@ export async function getContactStats(
  */
 export async function updateTicketStatus(
   ticketId: string,
-  status: 'open' | 'closed',
-  request?: Request
+  status: "open" | "closed",
+  request?: Request,
 ): Promise<ContactTicket> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -254,11 +262,14 @@ export async function updateTicketStatus(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/ticket/${ticketId}/status`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ status }),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/contact/ticket/${ticketId}/status`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -267,7 +278,7 @@ export async function updateTicketStatus(
     const ticket = await response.json();
     return ticket;
   } catch (error) {
-    console.error("Erreur lors de la mise à jour du statut:", error);
+    logger.error("Erreur lors de la mise à jour du statut:", error);
     throw error;
   }
 }
@@ -288,7 +299,7 @@ export async function searchTickets(
     page?: number;
     limit?: number;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   tickets: ContactTicket[];
   total: number;
@@ -296,7 +307,7 @@ export async function searchTickets(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
@@ -321,10 +332,13 @@ export async function searchTickets(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/search?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/contact/search?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -333,7 +347,7 @@ export async function searchTickets(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la recherche de tickets:", error);
+    logger.error("Erreur lors de la recherche de tickets:", error);
     throw error;
   }
 }

@@ -1,6 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
+/** Properties used from order objects in email templates */
+interface OrderEmailData {
+  ord_id: string | number;
+  ord_total_ttc: string | number;
+  ord_date: string;
+}
+
+/** Properties used from customer objects in email templates */
+interface CustomerEmailData {
+  cst_mail: string;
+  cst_fname: string;
+  cst_name: string;
+}
+
 /**
  * EMAIL SERVICE - Notifications via Gmail OAuth2 (Nodemailer)
  *
@@ -74,7 +88,10 @@ export class EmailService {
   /**
    * 📧 Email confirmation commande (après paiement validé)
    */
-  async sendOrderConfirmation(order: any, customer: any): Promise<void> {
+  async sendOrderConfirmation(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+  ): Promise<void> {
     if (!this.checkConfigured('sendOrderConfirmation')) return;
 
     try {
@@ -88,8 +105,10 @@ export class EmailService {
       });
 
       this.logger.log(`✅ Email confirmation envoyé à ${customer.cst_mail}`);
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur envoi email: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ Erreur envoi email: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -97,8 +116,8 @@ export class EmailService {
    * 📦 Email notification d'expédition
    */
   async sendShippingNotification(
-    order: any,
-    customer: any,
+    order: OrderEmailData,
+    customer: CustomerEmailData,
     trackingNumber: string,
   ): Promise<void> {
     if (!this.checkConfigured('sendShippingNotification')) return;
@@ -114,15 +133,20 @@ export class EmailService {
       });
 
       this.logger.log(`📦 Email expédition envoyé à ${customer.cst_mail}`);
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur envoi email: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ Erreur envoi email: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   /**
    * 💳 Email rappel de paiement
    */
-  async sendPaymentReminder(order: any, customer: any): Promise<void> {
+  async sendPaymentReminder(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+  ): Promise<void> {
     if (!this.checkConfigured('sendPaymentReminder')) return;
 
     try {
@@ -136,8 +160,10 @@ export class EmailService {
       });
 
       this.logger.log(`💳 Email rappel envoyé à ${customer.cst_mail}`);
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur envoi email: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ Erreur envoi email: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -145,8 +171,8 @@ export class EmailService {
    * ❌ Email annulation commande
    */
   async sendCancellationEmail(
-    order: any,
-    customer: any,
+    order: OrderEmailData,
+    customer: CustomerEmailData,
     reason: string,
   ): Promise<void> {
     if (!this.checkConfigured('sendCancellationEmail')) return;
@@ -162,8 +188,10 @@ export class EmailService {
       });
 
       this.logger.log(`❌ Email annulation envoyé à ${customer.cst_mail}`);
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur envoi email: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ Erreur envoi email: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -188,8 +216,10 @@ export class EmailService {
       });
 
       this.logger.log(`🔑 Email activation envoyé à ${email}`);
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur envoi email activation: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ Erreur envoi email activation: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -206,8 +236,10 @@ export class EmailService {
       await this.transporter.verify();
       this.logger.log('Connexion Gmail OAuth2 OK');
       return true;
-    } catch (error: any) {
-      this.logger.error(`Test connexion echoue: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Test connexion echoue: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return false;
     }
   }
@@ -216,7 +248,10 @@ export class EmailService {
   // TEMPLATES HTML
   // ============================================================
 
-  private getOrderConfirmationTemplate(order: any, customer: any): string {
+  private getOrderConfirmationTemplate(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+  ): string {
     return `
 <!DOCTYPE html>
 <html>
@@ -325,7 +360,7 @@ export class EmailService {
         </div>
         <div class="detail-row">
           <span class="detail-label">Montant total</span>
-          <strong>${parseFloat(order.ord_total_ttc || 0).toFixed(2)} €</strong>
+          <strong>${parseFloat(String(order.ord_total_ttc || 0)).toFixed(2)} €</strong>
         </div>
         <div class="detail-row">
           <span class="detail-label">Date</span>
@@ -361,8 +396,8 @@ export class EmailService {
   }
 
   private getShippingTemplate(
-    order: any,
-    customer: any,
+    order: OrderEmailData,
+    customer: CustomerEmailData,
     trackingNumber: string,
   ): string {
     return `
@@ -471,7 +506,10 @@ export class EmailService {
     `.trim();
   }
 
-  private getPaymentReminderTemplate(order: any, customer: any): string {
+  private getPaymentReminderTemplate(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+  ): string {
     return `
 <!DOCTYPE html>
 <html>
@@ -551,7 +589,7 @@ export class EmailService {
       <div class="warning-box">
         <p style="margin: 0; font-weight: 600; color: #d97706;">⏰ Montant à régler</p>
         <p style="font-size: 32px; font-weight: 700; color: #d97706; margin: 12px 0;">
-          ${parseFloat(order.ord_total_ttc || 0).toFixed(2)} €
+          ${parseFloat(String(order.ord_total_ttc || 0)).toFixed(2)} €
         </p>
       </div>
 
@@ -579,8 +617,8 @@ export class EmailService {
   }
 
   private getCancellationTemplate(
-    order: any,
-    customer: any,
+    order: OrderEmailData,
+    customer: CustomerEmailData,
     reason: string,
   ): string {
     return `

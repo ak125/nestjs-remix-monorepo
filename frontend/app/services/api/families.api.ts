@@ -1,6 +1,8 @@
 // 📁 frontend/app/services/api/families.api.ts
 // 🏭 Service API pour récupérer les familles de produits
 
+import { logger } from "~/utils/logger";
+
 export interface FamilyCategory {
   pg_id: string;
   pg_alias: string;
@@ -26,9 +28,10 @@ class FamiliesApiService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin 
-      : 'http://localhost:3000';
+    this.baseUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000";
   }
 
   /**
@@ -36,8 +39,10 @@ class FamiliesApiService {
    */
   async getFamilies(): Promise<FamiliesResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/catalog/pieces-gammes/families`);
-      
+      const response = await fetch(
+        `${this.baseUrl}/api/catalog/pieces-gammes/families`,
+      );
+
       if (!response.ok) {
         throw new Error(`Erreur API: ${response.status}`);
       }
@@ -45,7 +50,7 @@ class FamiliesApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Erreur récupération familles:', error);
+      logger.error("Erreur récupération familles:", error);
       return {};
     }
   }
@@ -56,7 +61,7 @@ class FamiliesApiService {
   async getAllFamilies(): Promise<FamiliesResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/api/catalog/families/all`);
-      
+
       if (!response.ok) {
         throw new Error(`Erreur API: ${response.status}`);
       }
@@ -64,7 +69,7 @@ class FamiliesApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Erreur récupération toutes les familles:', error);
+      logger.error("Erreur récupération toutes les familles:", error);
       return {};
     }
   }
@@ -72,28 +77,31 @@ class FamiliesApiService {
   /**
    * 🏷️ Obtient le nom d'affichage pour une famille
    */
-  getFamilyDisplayName(familyId: string, _categories: FamilyCategory[]): string {
+  getFamilyDisplayName(
+    familyId: string,
+    _categories: FamilyCategory[],
+  ): string {
     // Mapping des IDs vers des noms d'affichage basé sur le HTML fourni
     const familyNames: { [key: string]: string } = {
-      '7': 'Système de filtration',
-      '402': 'Système de freinage',
-      '10': 'Courroie, galet, poulie et chaîne',
-      '243': 'Préchauffage et allumage',
-      '2066': 'Direction et liaison au sol',
-      '854': 'Amortisseur et suspension',
-      '247': 'Support moteur',
-      '479': 'Embrayage',
-      '13': 'Transmission',
-      '4': 'Système électrique',
-      '805': 'Capteurs',
-      '3927': 'Système d\'alimentation',
-      '318': 'Moteur',
-      '1260': 'Refroidissement',
-      '2669': 'Climatisation',
-      '429': 'Echappement',
-      '259': 'Eclairage',
-      '298': 'Accessoires',
-      '2234': 'Turbo'
+      "7": "Système de filtration",
+      "402": "Système de freinage",
+      "10": "Courroie, galet, poulie et chaîne",
+      "243": "Préchauffage et allumage",
+      "2066": "Direction et liaison au sol",
+      "854": "Amortisseur et suspension",
+      "247": "Support moteur",
+      "479": "Embrayage",
+      "13": "Transmission",
+      "4": "Système électrique",
+      "805": "Capteurs",
+      "3927": "Système d'alimentation",
+      "318": "Moteur",
+      "1260": "Refroidissement",
+      "2669": "Climatisation",
+      "429": "Echappement",
+      "259": "Eclairage",
+      "298": "Accessoires",
+      "2234": "Turbo",
     };
 
     return familyNames[familyId] || `Famille ${familyId}`;
@@ -104,28 +112,28 @@ class FamiliesApiService {
    */
   getFamilyIcon(familyId: string): string {
     const familyIcons: { [key: string]: string } = {
-      '1': '🔍',      // Filtres
-      '2': '🛑',      // Freinage
-      '3': '⚙️',      // Courroie, galet, poulie et chaîne
-      '4': '⚡',      // Préchauffage et allumage
-      '5': '🎯',      // Direction et liaison au sol
-      '6': '🌊',      // Amortisseur et suspension
-      '7': '🔧',      // Support moteur
-      '9': '🔄',      // Embrayage
-      '10': '🔩',     // Transmission
-      '11': '🔌',     // Système électrique
-      '12': '📡',     // Capteurs
-      '13': '⛽',     // Système d'alimentation
-      '14': '🏭',     // Moteur
-      '15': '❄️',     // Refroidissement
-      '16': '🌡️',    // Climatisation
-      '17': '💨',     // Echappement
-      '18': '💡',     // Eclairage
-      '19': '🔧',     // Accessoires
-      '20': '🌪️'     // Turbo
+      "1": "🔍", // Filtres
+      "2": "🛑", // Freinage
+      "3": "⚙️", // Courroie, galet, poulie et chaîne
+      "4": "⚡", // Préchauffage et allumage
+      "5": "🎯", // Direction et liaison au sol
+      "6": "🌊", // Amortisseur et suspension
+      "7": "🔧", // Support moteur
+      "9": "🔄", // Embrayage
+      "10": "🔩", // Transmission
+      "11": "🔌", // Système électrique
+      "12": "📡", // Capteurs
+      "13": "⛽", // Système d'alimentation
+      "14": "🏭", // Moteur
+      "15": "❄️", // Refroidissement
+      "16": "🌡️", // Climatisation
+      "17": "💨", // Echappement
+      "18": "💡", // Eclairage
+      "19": "🔧", // Accessoires
+      "20": "🌪️", // Turbo
     };
 
-    return familyIcons[familyId] || '📦';
+    return familyIcons[familyId] || "📦";
   }
 }
 

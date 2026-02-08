@@ -10,8 +10,12 @@
 
 import { Link } from "@remix-run/react";
 import { Link2 } from "lucide-react";
+import { memo } from "react";
 
-import { type GammeData, type VehicleData } from "../../types/pieces-route.types";
+import {
+  type GammeData,
+  type VehicleData,
+} from "../../types/pieces-route.types";
 import { type VoirAussiLinks } from "../../utils/url-builder.utils";
 import { Badge } from "../ui/badge";
 
@@ -22,7 +26,7 @@ interface PiecesVoirAussiProps {
   onLinkClick: (url: string, anchorText: string) => void;
 }
 
-export function PiecesVoirAussi({
+export const PiecesVoirAussi = memo(function PiecesVoirAussi({
   links,
   gamme,
   vehicle,
@@ -50,20 +54,20 @@ export function PiecesVoirAussi({
       label: "Catalogue complet",
       title: "Toutes les pièces auto",
     },
-  ].filter(link => link.url && link.url.startsWith('/'));
+  ].filter((link) => link.url && link.url.startsWith("/"));
 
   // Schema.org ItemList pour SEO
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "Voir aussi",
-    "description": `Liens utiles pour ${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
-    "numberOfItems": seoLinks.length,
-    "itemListElement": seoLinks.map((link, i) => ({
+    name: "Voir aussi",
+    description: `Liens utiles pour ${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
+    numberOfItems: seoLinks.length,
+    itemListElement: seoLinks.map((link, i) => ({
       "@type": "ListItem",
-      "position": i + 1,
-      "name": link.label,
-      "url": `https://www.automecanik.com${link.url}`,
+      position: i + 1,
+      name: link.label,
+      url: `https://www.automecanik.com${link.url}`,
     })),
   };
 
@@ -95,7 +99,9 @@ export function PiecesVoirAussi({
                 variant="outline"
                 className="w-full justify-start gap-2 py-2 px-3 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
               >
-                <span className="text-gray-400 group-hover:text-blue-500">→</span>
+                <span className="text-gray-400 group-hover:text-blue-500">
+                  →
+                </span>
                 <span className="text-gray-700 group-hover:text-blue-700 truncate">
                   {link.label}
                 </span>
@@ -112,4 +118,4 @@ export function PiecesVoirAussi({
       </div>
     </section>
   );
-}
+});

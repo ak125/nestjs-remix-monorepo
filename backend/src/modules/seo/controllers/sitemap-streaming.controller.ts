@@ -68,11 +68,12 @@ export class SitemapStreamingController {
           : 'Generation completed with errors',
         data: result,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Generation failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Generation failed: ${message}`);
       return {
         success: false,
-        message: `Generation failed: ${error.message}`,
+        message: `Generation failed: ${message}`,
       };
     }
   }
@@ -93,8 +94,9 @@ export class SitemapStreamingController {
         success: true,
         data: files,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Failed to list files: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Failed to list files: ${message}`);
       return {
         success: false,
         data: [],
@@ -135,11 +137,12 @@ export class SitemapStreamingController {
         message: `Successfully deleted ${deletedCount} sitemap files`,
         deletedCount,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Cleanup failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Cleanup failed: ${message}`);
       return {
         success: false,
-        message: `Cleanup failed: ${error.message}`,
+        message: `Cleanup failed: ${message}`,
         deletedCount: 0,
       };
     }

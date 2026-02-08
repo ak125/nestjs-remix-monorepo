@@ -23,14 +23,14 @@ import {
   Instagram,
   Linkedin,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { memo, useState, useEffect } from "react";
 
 // Imports des modules
-import { Alert } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "../../root";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 interface HeaderData {
   title: string;
@@ -84,7 +84,7 @@ interface HeaderV8EnhancedProps {
   staticData?: HeaderData; // Pour fallback ou données statiques
 }
 
-export function HeaderV8Enhanced({
+export const HeaderV8Enhanced = memo(function HeaderV8Enhanced({
   context = "public",
   theme = "default",
   onMobileMenuToggle,
@@ -410,7 +410,7 @@ export function HeaderV8Enhanced({
       )}
     </header>
   );
-}
+});
 
 // 🧭 Composant pour les items de navigation avec dropdown
 function NavItem({ item }: { item: any }) {

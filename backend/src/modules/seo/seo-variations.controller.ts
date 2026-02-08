@@ -48,17 +48,16 @@ export class SeoVariationsController extends SupabaseBaseService {
         variations: data || [],
         count: data?.length || 0,
       };
-    } catch (error: any) {
-      this.logger.error(
-        `❌ Erreur dans getVariations: ${error.message}`,
-        error.stack,
-      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`❌ Erreur dans getVariations: ${message}`, stack);
 
       return {
         success: false,
         variations: [],
         count: 0,
-        error: error.message,
+        error: message,
       };
     }
   }

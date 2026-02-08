@@ -1,6 +1,6 @@
 /**
  * DatePickerPopover - Sélecteur de date avec calendrier dans un popover
- * 
+ *
  * @features
  * - Calendrier interactif pour sélection de date
  * - Navigation par mois (précédent/suivant)
@@ -8,7 +8,7 @@
  * - Placeholder personnalisable
  * - Callback onChange avec Date object
  * - Désactivation des dates passées (optionnel)
- * 
+ *
  * @example
  * <DatePickerPopover
  *   value={selectedDate}
@@ -18,14 +18,10 @@
  * />
  */
 
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, memo } from "react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface DatePickerPopoverProps {
   /** Date sélectionnée */
@@ -44,33 +40,33 @@ interface DatePickerPopoverProps {
   className?: string;
 }
 
-export function DatePickerPopover({
+export const DatePickerPopover = memo(function DatePickerPopover({
   value,
   onChange,
-  placeholder = 'Sélectionner une date',
+  placeholder = "Sélectionner une date",
   disablePast = false,
   minDate,
   maxDate,
-  className = '',
+  className = "",
 }: DatePickerPopoverProps) {
   const [currentMonth, setCurrentMonth] = useState(
-    value ? new Date(value.getFullYear(), value.getMonth(), 1) : new Date()
+    value ? new Date(value.getFullYear(), value.getMonth(), 1) : new Date(),
   );
 
   // Format date pour affichage
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     }).format(date);
   };
 
   // Format mois/année pour header
   const formatMonthYear = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      month: 'long',
-      year: 'numeric',
+    return new Intl.DateTimeFormat("fr-FR", {
+      month: "long",
+      year: "numeric",
     }).format(date);
   };
 
@@ -132,13 +128,13 @@ export function DatePickerPopover({
   // Navigation mois
   const goToPreviousMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
     );
   };
 
   const goToNextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
     );
   };
 
@@ -157,7 +153,7 @@ export function DatePickerPopover({
         <button
           className={`flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-left text-sm hover:border-blue-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 ${className}`}
         >
-          <span className={value ? 'text-gray-900' : 'text-gray-500'}>
+          <span className={value ? "text-gray-900" : "text-gray-500"}>
             {value ? formatDate(value) : placeholder}
           </span>
           <Calendar className="h-4 w-4 text-gray-400" />
@@ -186,7 +182,7 @@ export function DatePickerPopover({
 
           {/* Jours de la semaine */}
           <div className="grid grid-cols-7 gap-1">
-            {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day) => (
+            {["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"].map((day) => (
               <div
                 key={day}
                 className="text-center text-xs font-medium text-gray-500"
@@ -214,12 +210,12 @@ export function DatePickerPopover({
                   disabled={disabled}
                   className={`aspect-square rounded-md text-sm transition-colors ${
                     selected
-                      ? 'bg-blue-600 font-semibold text-white hover:bg-blue-700'
+                      ? "bg-blue-600 font-semibold text-white hover:bg-blue-700"
                       : today
-                        ? 'border-2 border-blue-600 bg-white font-semibold text-blue-600 hover:bg-blue-50'
+                        ? "border-2 border-blue-600 bg-white font-semibold text-blue-600 hover:bg-blue-50"
                         : disabled
-                          ? 'cursor-not-allowed text-gray-300'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? "cursor-not-allowed text-gray-300"
+                          : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   {date.getDate()}
@@ -249,4 +245,4 @@ export function DatePickerPopover({
       </PopoverContent>
     </Popover>
   );
-}
+});

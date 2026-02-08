@@ -1,6 +1,7 @@
-import { Info } from 'lucide-react';
-import { pluralizePieceName } from '~/lib/seo-utils';
-import { cn } from '~/lib/utils';
+import { Info } from "lucide-react";
+import { memo } from "react";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { cn } from "~/lib/utils";
 
 interface UXMessageBoxProps {
   gammeName?: string;
@@ -11,15 +12,18 @@ interface UXMessageBoxProps {
  * Encadré UX - Message de réassurance pour guider l'utilisateur
  * "Pas besoin de connaître la référence. Sélectionnez votre véhicule..."
  */
-export function UXMessageBox({ gammeName, className }: UXMessageBoxProps) {
-  const pieceType = gammeName?.toLowerCase() || 'pièce';
+export const UXMessageBox = memo(function UXMessageBox({
+  gammeName,
+  className,
+}: UXMessageBoxProps) {
+  const pieceType = gammeName?.toLowerCase() || "pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   return (
     <div
       className={cn(
-        'container mx-auto px-4 -mt-4 mb-6 relative z-10',
-        className
+        "container mx-auto px-4 -mt-4 mb-6 relative z-10",
+        className,
       )}
     >
       <div className="max-w-4xl mx-auto">
@@ -33,13 +37,14 @@ export function UXMessageBox({ gammeName, className }: UXMessageBoxProps) {
               Pas besoin de connaître la référence ni le type de {pluralType}.
             </p>
             <p className="text-blue-700 text-sm mt-1">
-              Sélectionnez votre véhicule : nous affichons uniquement les {pluralType} compatibles (avant/arrière).
+              Sélectionnez votre véhicule : nous affichons uniquement les{" "}
+              {pluralType} compatibles (avant/arrière).
             </p>
           </div>
         </div>
       </div>
     </div>
   );
-}
+});
 
 export default UXMessageBox;

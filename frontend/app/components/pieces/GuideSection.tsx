@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { ArrowRight, BookOpen, Calendar, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 import { HtmlContent } from "../seo/HtmlContent";
 
@@ -22,7 +22,7 @@ interface GuideSectionProps {
   familleName?: string;
 }
 
-export default function GuideSection({
+const GuideSection = memo(function GuideSection({
   guide,
   familleColor = "from-emerald-600 to-emerald-700",
   familleName,
@@ -33,7 +33,7 @@ export default function GuideSection({
   useEffect(() => {
     if (guide?.date) {
       const daysAgo = Math.floor(
-        (Date.now() - new Date(guide.date).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - new Date(guide.date).getTime()) / (1000 * 60 * 60 * 24),
       );
       setIsNew(daysAgo < 30);
     }
@@ -187,4 +187,6 @@ export default function GuideSection({
       </div>
     </section>
   );
-}
+});
+
+export default GuideSection;

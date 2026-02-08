@@ -2,6 +2,7 @@
 // 🏗️ Service API pour la hiérarchie Familles → Gammes (sous-catégories)
 
 import { type CatalogGamme } from "../../types/catalog.types";
+import { logger } from "~/utils/logger";
 
 export interface FamilyWithGammes {
   mf_id: string | number; // Peut être string ou number selon la source
@@ -68,7 +69,7 @@ class HierarchyApiService {
    */
   async getFullHierarchy(): Promise<HomepageHierarchyData> {
     try {
-      console.log("🏗️ Récupération hiérarchie complète...");
+      logger.log("🏗️ Récupération hiérarchie complète...");
 
       const baseUrl = this.getBaseUrl();
       const response = await fetcher(`${baseUrl}/api/catalog/gammes/hierarchy`);
@@ -113,12 +114,12 @@ class HierarchyApiService {
         total_available: response.stats?.total_families || 0,
       };
 
-      console.log(
+      logger.log(
         `✅ Hiérarchie: ${data.families.length} familles, ${data.stats.total_gammes} gammes`,
       );
       return data;
     } catch (error) {
-      console.error("❌ Erreur hiérarchie complète:", error);
+      logger.error("❌ Erreur hiérarchie complète:", error);
       return {
         families: [],
         stats: {
@@ -138,7 +139,7 @@ class HierarchyApiService {
    */
   async getHomepageData(): Promise<HomepageHierarchyData> {
     try {
-      console.log("🏠 Récupération données homepage...");
+      logger.log("🏠 Récupération données homepage...");
 
       const baseUrl = this.getBaseUrl();
       const response = await fetcher(`${baseUrl}/api/catalog/gammes/hierarchy`);
@@ -183,12 +184,12 @@ class HierarchyApiService {
         total_available: response.stats?.total_families || 0,
       };
 
-      console.log(
+      logger.log(
         `✅ Homepage: ${data.display_count}/${data.total_available} familles, ${data.stats.total_gammes} gammes`,
       );
       return data;
     } catch (error) {
-      console.error("❌ Erreur données homepage:", error);
+      logger.error("❌ Erreur données homepage:", error);
       return {
         families: [],
         stats: {
@@ -210,7 +211,7 @@ class HierarchyApiService {
     familyId: string,
   ): Promise<FamilyWithGammes | null> {
     try {
-      console.log(`🏗️ Récupération famille ${familyId} avec gammes...`);
+      logger.log(`🏗️ Récupération famille ${familyId} avec gammes...`);
 
       const baseUrl = this.getBaseUrl();
       const response: HierarchyApiResponse = await fetcher(
@@ -218,16 +219,16 @@ class HierarchyApiService {
       );
 
       if (!response.success) {
-        console.warn(`⚠️ Famille ${familyId} non trouvée:`, response.error);
+        logger.warn(`⚠️ Famille ${familyId} non trouvée:`, response.error);
         return null;
       }
 
-      console.log(
+      logger.log(
         `✅ Famille ${familyId} avec ${response.data?.gammes_count || 0} gammes récupérée`,
       );
       return response.data || null;
     } catch (error) {
-      console.error(`❌ Erreur famille ${familyId} avec gammes:`, error);
+      logger.error(`❌ Erreur famille ${familyId} avec gammes:`, error);
       return null;
     }
   }

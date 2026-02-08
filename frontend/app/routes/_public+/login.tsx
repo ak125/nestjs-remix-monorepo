@@ -6,6 +6,7 @@ import {
 } from "@remix-run/node";
 import { useSearchParams, Link } from "@remix-run/react";
 import { useState } from "react";
+import { getOptionalUser } from "../../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -17,8 +18,8 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { getOptionalUser } from "../../auth/unified.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {
@@ -69,9 +70,9 @@ export default function LoginPage() {
     // ✅ Récupérer le redirectTo pour rediriger après connexion
     const redirectTo = searchParams.get("redirectTo");
 
-    console.log("� [Login] Connexion en cours...");
+    logger.log("🔄 [Login] Connexion en cours...");
     if (redirectTo) {
-      console.log("� [Login] Redirection après connexion:", redirectTo);
+      logger.log("🔄 [Login] Redirection après connexion:", redirectTo);
     }
 
     // Soumettre directement au backend via navigation native
@@ -98,7 +99,7 @@ export default function LoginPage() {
       redirectInput.name = "redirectTo";
       redirectInput.value = redirectTo;
       tempForm.appendChild(redirectInput);
-      console.log("✅ [Login] RedirectTo ajouté:", redirectTo);
+      logger.log("✅ [Login] RedirectTo ajouté:", redirectTo);
     }
 
     // 🔑 Capturer et envoyer la session invité pour fusion de panier
@@ -119,14 +120,14 @@ export default function LoginPage() {
           sessionInput.name = "guestSessionId";
           sessionInput.value = guestSessionId;
           tempForm.appendChild(sessionInput);
-          console.log("✅ [Login] Session invité envoyée:", guestSessionId);
+          logger.log("✅ [Login] Session invité envoyée:", guestSessionId);
         }
       } catch (err) {
-        console.warn("⚠️ [Login] Erreur parsing cookie:", err);
+        logger.warn("⚠️ [Login] Erreur parsing cookie:", err);
       }
     }
 
-    console.log("📤 [Login] Soumission du formulaire vers /authenticate");
+    logger.log("📤 [Login] Soumission du formulaire vers /authenticate");
     document.body.appendChild(tempForm);
     tempForm.submit();
   };

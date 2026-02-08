@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { VehicleCard } from "~/components/vehicles/VehicleCard";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche code mine
@@ -98,7 +99,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("API Error:", response.status, errorText);
+      logger.error("API Error:", response.status, errorText);
 
       if (response.status === 404) {
         return json<LoaderData>({
@@ -125,7 +126,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
   } catch (error) {
-    console.error("Search error:", error);
+    logger.error("Search error:", error);
     return json<LoaderData>({
       searchTerm: mineCode,
       error: "Erreur lors de la recherche. Veuillez réessayer.",

@@ -23,6 +23,7 @@ import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -91,7 +92,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   };
 
   try {
-    console.log("🔄 Chargement des fournisseurs depuis l'API...");
+    logger.log("🔄 Chargement des fournisseurs depuis l'API...");
 
     // Utiliser l'API suppliers existante
     const apiUrl = `http://127.0.0.1:3000/api/suppliers`;
@@ -136,7 +137,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
             };
           }
         } catch (error) {
-          console.warn(
+          logger.warn(
             `Erreur enrichissement fournisseur ${supplier.id}:`,
             error,
           );
@@ -193,7 +194,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       ],
     };
 
-    console.log(
+    logger.log(
       `✅ ${paginatedSuppliers.length} fournisseurs chargés (${filteredSuppliers.length} total après filtre)`,
     );
 
@@ -206,7 +207,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       params,
     });
   } catch (error) {
-    console.error("❌ Erreur lors du chargement des fournisseurs:", error);
+    logger.error("❌ Erreur lors du chargement des fournisseurs:", error);
 
     // Données de fallback pour éviter les erreurs d'interface
     return json({

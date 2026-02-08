@@ -8,6 +8,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -40,6 +41,8 @@ import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface Reference {
   slug: string;
@@ -77,6 +80,9 @@ type _ActionData =
   | { success: true; action: "update" | "publish" }
   | { success: false; errors: string[] };
 
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Référence SEO - Admin");
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -109,7 +115,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[R4 Edit] Loader error:", error);
+    logger.error("[R4 Edit] Loader error:", error);
     return json<LoaderData>({
       reference: null,
       gammes: [],
@@ -200,7 +206,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     return json({ success: true, action: "update" });
   } catch (error) {
-    console.error("[R4 Edit] Action error:", error);
+    logger.error("[R4 Edit] Action error:", error);
     return json({ success: false, errors: ["Erreur serveur"] });
   }
 }

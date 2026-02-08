@@ -4,10 +4,11 @@
  */
 
 import { Search, X } from "lucide-react";
+import { memo } from "react";
 
 import { type OrdersFiltersProps } from "../../types/orders.types";
 
-export function OrdersFilters({
+export const OrdersFilters = memo(function OrdersFilters({
   filters,
   onFilterChange,
   onReset,
@@ -88,4 +89,4 @@ export function OrdersFilters({
       </div>
     </div>
   );
-}
+});

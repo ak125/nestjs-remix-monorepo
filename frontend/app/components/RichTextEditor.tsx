@@ -1,16 +1,16 @@
 /**
  * 📝 RICH TEXT EDITOR COMPONENT
- * 
+ *
  * Éditeur WYSIWYG basé sur TipTap
  * Supporte: gras, italique, listes, liens
  * Usage: Édition contenu SEO marques/gammes
  */
 
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useEffect } from 'react';
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useEffect, memo } from "react";
 
 interface RichTextEditorProps {
   content?: string;
@@ -19,13 +19,12 @@ interface RichTextEditorProps {
   name?: string;
 }
 
-export function RichTextEditor({ 
-  content = '', 
-  onChange, 
-  placeholder = 'Commencez à écrire...',
-  name = 'content'
+export const RichTextEditor = memo(function RichTextEditor({
+  content = "",
+  onChange,
+  placeholder = "Commencez à écrire...",
+  name = "content",
 }: RichTextEditorProps) {
-  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -39,7 +38,7 @@ export function RichTextEditor({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4',
+        class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4",
       },
     },
     onUpdate: ({ editor }) => {
@@ -67,12 +66,24 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('bold') ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+            editor.isActive("bold")
+              ? "bg-blue-100 text-blue-700"
+              : "text-gray-700"
           }`}
           title="Gras (Ctrl+B)"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={3}
+              d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"
+            />
           </svg>
         </button>
 
@@ -80,12 +91,24 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('italic') ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+            editor.isActive("italic")
+              ? "bg-blue-100 text-blue-700"
+              : "text-gray-700"
           }`}
           title="Italique (Ctrl+I)"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h6M14 4v16m-2 0H6" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 4h6M14 4v16m-2 0H6"
+            />
           </svg>
         </button>
 
@@ -95,12 +118,24 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('bulletList') ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+            editor.isActive("bulletList")
+              ? "bg-blue-100 text-blue-700"
+              : "text-gray-700"
           }`}
           title="Liste à puces"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+            />
           </svg>
         </button>
 
@@ -108,12 +143,24 @@ export function RichTextEditor({
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive('orderedList') ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+            editor.isActive("orderedList")
+              ? "bg-blue-100 text-blue-700"
+              : "text-gray-700"
           }`}
           title="Liste numérotée"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
           </svg>
         </button>
 
@@ -126,8 +173,18 @@ export function RichTextEditor({
           className="p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
           title="Annuler (Ctrl+Z)"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+            />
           </svg>
         </button>
 
@@ -138,8 +195,18 @@ export function RichTextEditor({
           className="p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
           title="Rétablir (Ctrl+Y)"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"
+            />
           </svg>
         </button>
 
@@ -154,11 +221,7 @@ export function RichTextEditor({
       <EditorContent editor={editor} className="bg-white" />
 
       {/* Input hidden pour formulaire */}
-      <input
-        type="hidden"
-        name={name}
-        value={editor.getHTML()}
-      />
+      <input type="hidden" name={name} value={editor.getHTML()} />
 
       {/* Placeholder personnalisé */}
       {!editor.getText() && (
@@ -168,4 +231,4 @@ export function RichTextEditor({
       )}
     </div>
   );
-}
+});

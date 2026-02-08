@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface PerformanceIndicatorProps {
   performance?: {
     total_time_ms: number;
@@ -11,7 +13,7 @@ interface PerformanceIndicatorProps {
   };
 }
 
-export default function PerformanceIndicator({
+const PerformanceIndicator = memo(function PerformanceIndicator({
   performance,
 }: PerformanceIndicatorProps) {
   if (!performance) return null;
@@ -96,4 +98,6 @@ export default function PerformanceIndicator({
       </div>
     </div>
   );
-}
+});
+
+export default PerformanceIndicator;

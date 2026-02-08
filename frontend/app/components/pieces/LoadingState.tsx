@@ -1,9 +1,11 @@
+import { memo } from "react";
+
 interface LoadingStateProps {
   message?: string;
   size?: "sm" | "md" | "lg";
 }
 
-export default function LoadingState({
+const LoadingState = memo(function LoadingState({
   message = "Chargement...",
   size = "md",
 }: LoadingStateProps) {
@@ -21,4 +23,6 @@ export default function LoadingState({
       <p className="text-gray-600 animate-pulse">{message}</p>
     </div>
   );
-}
+});
+
+export default LoadingState;

@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 // Types Section K
 interface SectionKMetrics {
@@ -85,7 +86,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const data: LoaderData = await response.json();
     return json(data);
   } catch (error) {
-    console.error("Section K loader error:", error);
+    logger.error("Section K loader error:", error);
     // Retourner des données vides en cas d'erreur
     return json({
       metrics: [],

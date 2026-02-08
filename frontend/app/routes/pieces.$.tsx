@@ -26,6 +26,7 @@ import {
 import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
 
 // ====================================
 // 🎯 INTERFACES & TYPES
@@ -84,7 +85,7 @@ async function testUrlMigration(
       metadata: data.migration?.metadata,
     };
   } catch (error) {
-    console.error("Erreur test migration:", error);
+    logger.error("Erreur test migration:", error);
     return {
       success: false,
       legacy_url: legacyUrl,
@@ -120,7 +121,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Get base URL from request origin (server-side only)
   const baseUrl = url.origin;
 
-  console.log(`🔄 Interception URL: ${legacyUrl}`);
+  logger.log(`🔄 Interception URL: ${legacyUrl}`);
 
   // Vérifier si c'est bien une URL de pièce
   if (!legacyUrl.includes("/pieces/") || !legacyUrl.endsWith(".html")) {
@@ -130,7 +131,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Vérifier si c'est une URL de pièces avec véhicule (4 segments)
   const vehiclePattern = /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/;
   if (vehiclePattern.test(legacyUrl)) {
-    console.log(
+    logger.log(
       "🔧 [PIECES V4] URL pièces avec véhicule détectée, laissant passer pour pieces.$gamme.$marque.$modele.$type.tsx",
     );
     throw new Response(
@@ -144,7 +145,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (newPatternMatch) {
     const [, alias, gammeId] = newPatternMatch;
-    console.log(
+    logger.log(
       `✅ [PIECES V4] URL gamme simple détectée: alias=${alias}, gammeId=${gammeId}`,
     );
     // URL gamme simple - rediriger vers pieces.$slug.tsx

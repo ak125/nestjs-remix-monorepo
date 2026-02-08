@@ -16,6 +16,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔒 SEO Meta Tags - noindex pour espace compte utilisateur
@@ -85,7 +86,7 @@ interface LoaderData {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
-  console.log("🔄 Dashboard unifié - Loader started");
+  logger.log("🔄 Dashboard unifié - Loader started");
 
   try {
     // Détecter le mode depuis les paramètres URL
@@ -95,14 +96,14 @@ export const loader: LoaderFunction = async ({ request }) => {
     const debug = url.searchParams.get("debug") === "true";
 
     const mode = { enhanced, authenticated, debug };
-    console.log("🎯 Dashboard mode:", mode);
+    logger.log("🎯 Dashboard mode:", mode);
 
     // Auth validation
     const authResult = await requireAuth(request);
 
     // Auth stricte si demandée
     if (authenticated && !authResult) {
-      console.log("🔒 Strict auth required - redirecting");
+      logger.log("🔒 Strict auth required - redirecting");
       return json({ authenticated: false }, { status: 401 });
     }
 
@@ -117,7 +118,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
     );
 
-    console.log("📡 Dashboard API status:", dashboardResponse.status);
+    logger.log("📡 Dashboard API status:", dashboardResponse.status);
 
     if (!dashboardResponse.ok) {
       throw new Response(`Erreur dashboard: ${dashboardResponse.status}`, {
@@ -166,10 +167,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       ...(debug && { sessionInfo: authResult }),
     };
 
-    console.log("✅ Dashboard unifié - Data loaded successfully");
+    logger.log("✅ Dashboard unifié - Data loaded successfully");
     return json(responseData);
   } catch (error) {
-    console.error("❌ Dashboard unifié - Error:", error);
+    logger.error("❌ Dashboard unifié - Error:", error);
 
     if (error instanceof Response) {
       throw error;

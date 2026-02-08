@@ -16,7 +16,12 @@
  * Route: /commercial/vehicles/brands
  */
 
-import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { ArrowLeft, Car, Search } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
@@ -32,6 +37,11 @@ import { Input } from "../components/ui/input";
 import { useImagePreloader } from "../hooks/useImagePreloader";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Marques Vehicules - Commercial");
 
 interface Brand {
   marque_id: number;
@@ -91,7 +101,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       totalBrands: brands.length,
     } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement marques:", error);
+    logger.error("Erreur chargement marques:", error);
     return json({
       brands: [],
       totalBrands: 0,
@@ -200,7 +210,7 @@ export default function CommercialVehiclesBrands() {
 
   useEffect(() => {
     setMounted(true);
-    console.log("🚀 Page montée côté client");
+    logger.log("🚀 Page montée côté client");
 
     // Précharger les logos des marques visibles
     if (brands && brands.length > 0) {
@@ -209,7 +219,7 @@ export default function CommercialVehiclesBrands() {
       // Log des statistiques de cache après un délai
       setTimeout(() => {
         const stats = getCacheStats();
-        console.log("📊 Cache des logos:", stats);
+        logger.log("📊 Cache des logos:", stats);
       }, 2000);
     }
   }, [brands, preloadVisibleBrands, getCacheStats]);

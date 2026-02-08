@@ -3,6 +3,7 @@ import {
   json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   Form,
@@ -33,6 +34,11 @@ import { Textarea } from "../components/ui/textarea";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("SEO Administration - Admin");
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireUser({ context });
@@ -51,7 +57,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           "Content-Type": "application/json",
         },
       }).catch((err) => {
-        console.warn("[SEO Admin] Analytics API error:", err);
+        logger.warn("[SEO Admin] Analytics API error:", err);
         return null;
       }),
       fetch(`${backendUrl}/api/seo/kpis/dashboard`, {
@@ -60,7 +66,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           "Content-Type": "application/json",
         },
       }).catch((err) => {
-        console.warn("[SEO Admin] KPIs API error:", err);
+        logger.warn("[SEO Admin] KPIs API error:", err);
         return null;
       }),
       fetch(`${backendUrl}/api/seo/pages-without-seo?limit=50`, {
@@ -69,7 +75,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           "Content-Type": "application/json",
         },
       }).catch((err) => {
-        console.warn("[SEO Admin] Pages API error:", err);
+        logger.warn("[SEO Admin] Pages API error:", err);
         return null;
       }),
     ]);
@@ -94,7 +100,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Admin] Erreur:", error);
+    logger.error("[SEO Admin] Erreur:", error);
     return json({
       analytics: null,
       kpis: null,
@@ -188,7 +194,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         return json({ success: false, error: "Action non reconnue" });
     }
   } catch (error) {
-    console.error("[SEO Admin Action] Erreur:", error);
+    logger.error("[SEO Admin Action] Erreur:", error);
     return json({
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue",

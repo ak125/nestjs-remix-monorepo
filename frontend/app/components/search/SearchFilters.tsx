@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, memo } from "react";
 import { Badge, FilterSection, ScrollArea } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 export interface FilterFacet {
   field: string;
@@ -69,7 +70,7 @@ export const SearchFilters = memo(function SearchFilters({
         try {
           JSON.parse(lastFilters);
         } catch (error) {
-          console.error("Erreur restauration filtres:", error);
+          logger.error("Erreur restauration filtres:", error);
         }
       }
     }
@@ -92,7 +93,7 @@ export const SearchFilters = memo(function SearchFilters({
         setSavedPresets(presets);
       }
     } catch (error) {
-      console.error("Erreur chargement presets:", error);
+      logger.error("Erreur chargement presets:", error);
       setSavedPresets([]);
     }
   };

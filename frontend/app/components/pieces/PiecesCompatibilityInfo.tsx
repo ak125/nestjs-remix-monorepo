@@ -5,8 +5,9 @@
  * Affichage des infos de compatibilité moteur/années
  */
 
-import { Alert } from "~/components/ui/alert";
+import { memo } from "react";
 import { type CompatibilityInfo } from "../../types/pieces-route.types";
+import { Alert } from "~/components/ui/alert";
 
 interface PiecesCompatibilityInfoProps {
   compatibility: CompatibilityInfo;
@@ -19,7 +20,7 @@ interface PiecesCompatibilityInfoProps {
 /**
  * Section compatibilité détaillée
  */
-export function PiecesCompatibilityInfo({
+export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
   compatibility,
   vehicleName,
   motorCodesFormatted,
@@ -249,4 +250,4 @@ export function PiecesCompatibilityInfo({
       </div>
     </div>
   );
-}
+});

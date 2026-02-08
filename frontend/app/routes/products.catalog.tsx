@@ -47,6 +47,7 @@ import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)
@@ -201,7 +202,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       enhanced,
     });
   } catch (error) {
-    console.error("Catalog loading error:", error);
+    logger.error("Catalog loading error:", error);
     return json<CatalogData>({
       user: {
         id: user.id,

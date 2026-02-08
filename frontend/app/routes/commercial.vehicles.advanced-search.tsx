@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
   Search,
@@ -22,6 +26,11 @@ import {
 import { YearSelector } from "../components/forms/YearSelector";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Recherche Vehicules Avancee - Commercial");
 
 // Types pour les produits compatibles avec nouvelles propriétés
 interface CompatibleProduct {
@@ -90,7 +99,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       stats.totalProducts = dashboardData.totalOrders * 10 || 15000; // Estimation basée sur les commandes
     }
   } catch (error) {
-    console.warn("Impossible de récupérer les stats dashboard:", error);
+    logger.warn("Impossible de récupérer les stats dashboard:", error);
   }
 
   // Recherche de produits compatibles si des critères sont fournis

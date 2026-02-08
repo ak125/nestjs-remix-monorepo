@@ -1,6 +1,6 @@
 /**
  * 🖼️ Product Gallery - Carousel d'images produit professionnel
- * 
+ *
  * Features:
  * - Carousel principal avec navigation
  * - Thumbnails cliquables
@@ -11,10 +11,10 @@
  * - Responsive mobile/desktop
  */
 
-import { X, ZoomIn } from 'lucide-react';
-import { useState } from 'react';
+import { X, ZoomIn } from "lucide-react";
+import { useState, memo } from "react";
 
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
 import {
   Carousel,
   CarouselContent,
@@ -22,7 +22,7 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from '../ui/carousel';
+} from "../ui/carousel";
 
 interface ProductImage {
   id: string;
@@ -42,11 +42,11 @@ interface ProductGalleryProps {
   className?: string;
 }
 
-export function ProductGallery({
+export const ProductGallery = memo(function ProductGallery({
   images,
   productName,
   showThumbnails = true,
-  className = '',
+  className = "",
 }: ProductGalleryProps) {
   const [mainApi, setMainApi] = useState<CarouselApi>();
   const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
@@ -63,7 +63,7 @@ export function ProductGallery({
   useState(() => {
     if (!mainApi) return;
 
-    mainApi.on('select', () => {
+    mainApi.on("select", () => {
       const selected = mainApi.selectedScrollSnap();
       setCurrent(selected);
       thumbnailApi?.scrollTo(selected);
@@ -96,7 +96,7 @@ export function ProductGallery({
           setApi={setMainApi}
           className="w-full"
           opts={{
-            align: 'start',
+            align: "start",
             loop: true,
           }}
         >
@@ -140,7 +140,7 @@ export function ProductGallery({
         <Carousel
           setApi={setThumbnailApi}
           opts={{
-            align: 'start',
+            align: "start",
             dragFree: true,
           }}
           className="w-full"
@@ -155,8 +155,8 @@ export function ProductGallery({
                   onClick={() => handleThumbnailClick(index)}
                   className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                     index === current
-                      ? 'border-blue-600 ring-2 ring-blue-200'
-                      : 'border-gray-200 hover:border-gray-400'
+                      ? "border-blue-600 ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   <img
@@ -191,7 +191,7 @@ export function ProductGallery({
           <div className="relative w-full h-full flex items-center justify-center p-8">
             <Carousel
               opts={{
-                align: 'center',
+                align: "center",
                 loop: true,
                 startIndex: current,
               }}
@@ -223,4 +223,4 @@ export function ProductGallery({
       )}
     </div>
   );
-}
+});

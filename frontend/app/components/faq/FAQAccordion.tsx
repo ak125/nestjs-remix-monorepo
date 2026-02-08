@@ -23,7 +23,7 @@
  */
 
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -55,7 +55,7 @@ interface FAQAccordionProps {
   className?: string;
 }
 
-export function FAQAccordion({
+export const FAQAccordion = memo(function FAQAccordion({
   categories,
   searchable = true,
   searchPlaceholder = "Rechercher une question...",
@@ -191,4 +191,4 @@ export function FAQAccordion({
       )}
     </div>
   );
-}
+});

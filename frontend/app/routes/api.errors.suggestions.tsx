@@ -1,4 +1,5 @@
 import { type ActionFunctionArgs, json } from "@remix-run/node";
+import { logger } from "~/utils/logger";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -41,13 +42,13 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         if (!response.ok) {
-          console.error(
+          logger.error(
             "Erreur lors de l'envoi à l'API de logging:",
             response.statusText,
           );
         }
       } catch (apiError) {
-        console.error("Erreur lors de l'appel API de logging:", apiError);
+        logger.error("Erreur lors de l'appel API de logging:", apiError);
       }
 
       return json({ success: true });
@@ -55,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return json({ error: "Action non reconnue" }, { status: 400 });
   } catch (error) {
-    console.error("Erreur dans l'API de rapport d'erreurs:", error);
+    logger.error("Erreur dans l'API de rapport d'erreurs:", error);
     return json({ error: "Erreur interne" }, { status: 500 });
   }
 }
@@ -85,12 +86,12 @@ export async function loader({ request }: { request: Request }) {
         return json({ suggestions: data.suggestions || [] });
       }
     } catch (apiError) {
-      console.error("Erreur lors de l'appel API suggestions:", apiError);
+      logger.error("Erreur lors de l'appel API suggestions:", apiError);
     }
 
     return json({ suggestions: [] });
   } catch (error) {
-    console.error("Erreur lors de la récupération des suggestions:", error);
+    logger.error("Erreur lors de la récupération des suggestions:", error);
     return json({ suggestions: [] });
   }
 }

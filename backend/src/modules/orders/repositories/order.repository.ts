@@ -3,13 +3,70 @@ import { OrdersService } from '../../../database/services/orders.service';
 import { UserDataService } from '../../../database/services/user-data.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+/** Raw Supabase row from ___xtr_order (all columns are TEXT) */
+export interface OrderRow extends Record<string, unknown> {
+  order_id?: string;
+  customer_id?: string;
+  status?: number;
+  total?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Data required to create a new order */
+export interface CreateOrderInput {
+  customer_id: string;
+  order_lines?: Record<string, unknown>[];
+  billing_address?: Record<string, unknown>;
+  shipping_address?: Record<string, unknown>;
+  customer_note?: string;
+  shipping_method?: string;
+}
+
+/** Data allowed when updating an order */
+export interface UpdateOrderInput {
+  status?: number;
+  billing_address?: Record<string, unknown>;
+  shipping_address?: Record<string, unknown>;
+  customer_note?: string;
+}
+
+/** Filters for paginated order queries */
+export interface OrderPaginationFilters {
+  status?: string;
+  customerId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+/** Paginated result set */
+export interface PaginatedOrders {
+  data: OrderRow[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/** Order statistics summary */
+export interface OrderStatistics {
+  total_orders: number;
+  total: number;
+  pending_orders: number;
+  completed_orders: number;
+}
+
 export interface OrderRepositoryInterface {
-  findById(id: string): Promise<any>;
-  findByCustomerId(customerId: string): Promise<any[]>;
-  create(orderData: any): Promise<any>;
-  update(id: string, updateData: any): Promise<any>;
+  findById(id: string): Promise<OrderRow | null>;
+  findByCustomerId(customerId: string): Promise<OrderRow[]>;
+  create(orderData: CreateOrderInput): Promise<OrderRow | null>;
+  update(id: string, updateData: UpdateOrderInput): Promise<OrderRow | null>;
   delete(id: string): Promise<void>;
-  findWithPagination(page: number, limit: number, filters?: any): Promise<any>;
+  findWithPagination(
+    page: number,
+    limit: number,
+    filters?: OrderPaginationFilters,
+  ): Promise<PaginatedOrders>;
 }
 
 @Injectable()
@@ -29,7 +86,7 @@ export class OrderRepository
   /**
    * Trouve une commande par son ID
    */
-  async findById(id: string): Promise<any> {
+  async findById(id: string): Promise<OrderRow | null> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')
@@ -59,7 +116,7 @@ export class OrderRepository
   /**
    * Trouve toutes les commandes d'un client
    */
-  async findByCustomerId(customerId: string): Promise<any[]> {
+  async findByCustomerId(customerId: string): Promise<OrderRow[]> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')
@@ -94,7 +151,7 @@ export class OrderRepository
   /**
    * Crée une nouvelle commande
    */
-  async create(orderData: any): Promise<any> {
+  async create(orderData: CreateOrderInput): Promise<OrderRow | null> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')
@@ -120,7 +177,10 @@ export class OrderRepository
   /**
    * Met à jour une commande
    */
-  async update(id: string, updateData: any): Promise<any> {
+  async update(
+    id: string,
+    updateData: UpdateOrderInput,
+  ): Promise<OrderRow | null> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')
@@ -170,8 +230,8 @@ export class OrderRepository
   async findWithPagination(
     page: number,
     limit: number,
-    filters?: any,
-  ): Promise<any> {
+    filters?: OrderPaginationFilters,
+  ): Promise<PaginatedOrders> {
     try {
       const offset = (page - 1) * limit;
 
@@ -225,7 +285,7 @@ export class OrderRepository
   /**
    * Obtient les statistiques des commandes pour un client
    */
-  async getOrderStatistics(customerId: string): Promise<any> {
+  async getOrderStatistics(customerId: string): Promise<OrderStatistics> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')
@@ -244,13 +304,13 @@ export class OrderRepository
         total_orders: data?.length || 0,
         total:
           data?.reduce(
-            (sum: number, order: any) => sum + (order.total || 0),
+            (sum: number, order: OrderRow) => sum + (Number(order.total) || 0),
             0,
           ) || 0,
         pending_orders:
-          data?.filter((order: any) => order.status === 1).length || 0,
+          data?.filter((order: OrderRow) => order.status === 1).length || 0,
         completed_orders:
-          data?.filter((order: any) => order.status === 3).length || 0,
+          data?.filter((order: OrderRow) => order.status === 3).length || 0,
       };
     } catch (error) {
       this.logger.error(
@@ -264,7 +324,7 @@ export class OrderRepository
   /**
    * Recherche des commandes par terme
    */
-  async searchOrders(searchTerm: string): Promise<any[]> {
+  async searchOrders(searchTerm: string): Promise<OrderRow[]> {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_order')

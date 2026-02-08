@@ -1,11 +1,12 @@
 /**
  * 📝 BLOG METADATA HELPER - Frontend Remix
- * 
+ *
  * Hooks et utilitaires pour utiliser les métadonnées SEO
  * dans toutes les pages du blog
  */
 
-import { Fragment } from 'react';
+import { Fragment } from "react";
+import { logger } from "~/utils/logger";
 
 export interface BlogMetadata {
   title: string;
@@ -24,7 +25,7 @@ export interface BlogMetadataLoaderData {
 /**
  * Charger les métadonnées depuis l'API backend
  * À utiliser dans le loader Remix
- * 
+ *
  * @example
  * export const loader = async () => {
  *   const metadata = await loadBlogMetadata('constructeurs');
@@ -33,25 +34,26 @@ export interface BlogMetadataLoaderData {
  */
 export async function loadBlogMetadata(
   alias: string,
-  backendUrl?: string
+  backendUrl?: string,
 ): Promise<BlogMetadata | null> {
   try {
-    const url = backendUrl || process.env.BACKEND_URL || "http://localhost:3000";
-    
+    const url =
+      backendUrl || process.env.BACKEND_URL || "http://localhost:3000";
+
     const response = await fetch(`${url}/api/blog/metadata/${alias}`, {
       headers: { "Content-Type": "application/json" },
     });
 
     if (!response.ok) {
-      console.warn(`⚠️ Erreur chargement métadonnées pour "${alias}"`);
+      logger.warn(`⚠️ Erreur chargement métadonnées pour "${alias}"`);
       return null;
     }
 
     const data = await response.json();
-    
+
     return data?.success && data?.data ? data.data : null;
   } catch (error) {
-    console.error(`❌ Erreur loadBlogMetadata("${alias}"):`, error);
+    logger.error(`❌ Erreur loadBlogMetadata("${alias}"):`, error);
     return null;
   }
 }
@@ -59,7 +61,7 @@ export async function loadBlogMetadata(
 /**
  * Générer les meta tags pour Remix à partir des métadonnées
  * À utiliser dans l'export meta
- * 
+ *
  * @example
  * export const meta: MetaFunction<typeof loader> = ({ data }) => {
  *   return generateBlogMeta(data?.metadata, {
@@ -76,25 +78,26 @@ export function generateBlogMeta(
     defaultDescription?: string;
     defaultKeywords?: string;
     ogImage?: string;
-    twitterCard?: 'summary' | 'summary_large_image';
-  }
+    twitterCard?: "summary" | "summary_large_image";
+  },
 ) {
   const opts = {
-    titleSuffix: options?.titleSuffix || '',
-    defaultTitle: options?.defaultTitle || 'Automecanik',
-    defaultDescription: options?.defaultDescription || 'Pièces détachées automobiles',
-    defaultKeywords: options?.defaultKeywords || 'pièces auto',
+    titleSuffix: options?.titleSuffix || "",
+    defaultTitle: options?.defaultTitle || "Automecanik",
+    defaultDescription:
+      options?.defaultDescription || "Pièces détachées automobiles",
+    defaultKeywords: options?.defaultKeywords || "pièces auto",
     ogImage: options?.ogImage,
-    twitterCard: options?.twitterCard || 'summary_large_image',
+    twitterCard: options?.twitterCard || "summary_large_image",
   };
 
-  const title = metadata?.title 
-    ? `${metadata.title}${opts.titleSuffix}` 
+  const title = metadata?.title
+    ? `${metadata.title}${opts.titleSuffix}`
     : opts.defaultTitle;
-  
+
   const description = metadata?.description || opts.defaultDescription;
   const keywords = metadata?.keywords || opts.defaultKeywords;
-  const robots = metadata?.relfollow || 'index, follow';
+  const robots = metadata?.relfollow || "index, follow";
 
   const metaTags = [
     { title },
@@ -109,7 +112,7 @@ export function generateBlogMeta(
       { property: "og:title", content: title } as any,
       { property: "og:description", content: description } as any,
       { property: "og:image", content: opts.ogImage } as any,
-      { property: "og:type", content: "website" } as any
+      { property: "og:type", content: "website" } as any,
     );
   }
 
@@ -117,7 +120,7 @@ export function generateBlogMeta(
   metaTags.push(
     { name: "twitter:card", content: opts.twitterCard },
     { name: "twitter:title", content: title },
-    { name: "twitter:description", content: description }
+    { name: "twitter:description", content: description },
   );
 
   return metaTags;
@@ -126,32 +129,32 @@ export function generateBlogMeta(
 /**
  * Parser le fil d'Ariane (breadcrumb) depuis mta_ariane
  * Format attendu: "Accueil > Section > Page"
- * 
+ *
  * @example
  * const breadcrumb = parseBreadcrumb(metadata?.ariane);
  * // Returns: [{ label: 'Accueil', url: '/' }, { label: 'Section', url: '/section' }]
  */
 export function parseBreadcrumb(
   ariane: string | null | undefined,
-  urlMap?: Record<string, string>
+  urlMap?: Record<string, string>,
 ): Array<{ label: string; url?: string }> {
   if (!ariane) {
-    return [{ label: 'Accueil', url: '/' }];
+    return [{ label: "Accueil", url: "/" }];
   }
 
   const defaultUrlMap: Record<string, string> = {
-    'Accueil': '/',
-    'Blog': '/blog',
-    'Conseils': '/blog-pieces-auto/conseils',
-    'Constructeurs': '/blog-pieces-auto/auto',
-    'Pièces Auto': '/blog-pieces-auto',
-    'Guides': '/guides',
+    Accueil: "/",
+    Blog: "/blog",
+    Conseils: "/blog-pieces-auto/conseils",
+    Constructeurs: "/blog-pieces-auto/auto",
+    "Pièces Auto": "/blog-pieces-auto",
+    Guides: "/guides",
     ...(urlMap || {}),
   };
 
-  return ariane.split('>').map((item, index, array) => {
+  return ariane.split(">").map((item, index, array) => {
     const label = item.trim();
-    
+
     // Dernier élément = page actuelle (pas de lien)
     if (index === array.length - 1) {
       return { label };
@@ -159,7 +162,7 @@ export function parseBreadcrumb(
 
     // Chercher l'URL dans le mapping
     const url = defaultUrlMap[label];
-    
+
     return { label, url };
   });
 }
@@ -167,18 +170,18 @@ export function parseBreadcrumb(
 /**
  * Hook React pour utiliser les métadonnées dans un composant
  * (si besoin d'accès direct aux métadonnées dans le component)
- * 
+ *
  * @example
  * const { metadata, h1, breadcrumb } = useBlogMetadata(loaderData);
  */
 export function useBlogMetadata(data: BlogMetadataLoaderData) {
   const metadata = data?.metadata;
-  
+
   return {
     metadata,
-    h1: metadata?.h1 || '',
-    title: metadata?.title || '',
-    description: metadata?.description || '',
+    h1: metadata?.h1 || "",
+    title: metadata?.title || "",
+    description: metadata?.description || "",
     breadcrumb: parseBreadcrumb(metadata?.ariane),
     content: metadata?.content,
     hasMetadata: !!metadata,
@@ -187,16 +190,16 @@ export function useBlogMetadata(data: BlogMetadataLoaderData) {
 
 /**
  * Composant React pour afficher le fil d'Ariane
- * 
+ *
  * @example
  * <Breadcrumb ariane={metadata?.ariane} className="mb-4" />
  */
 export function Breadcrumb({
   ariane,
-  separator = '/',
-  className = '',
-  itemClassName = '',
-  activeClassName = 'text-white font-medium',
+  separator = "/",
+  className = "",
+  itemClassName = "",
+  activeClassName = "text-white font-medium",
 }: {
   ariane?: string | null;
   separator?: string;
@@ -216,7 +219,10 @@ export function Breadcrumb({
         <Fragment key={index}>
           {index > 0 && <span className={itemClassName}>{separator}</span>}
           {item.url ? (
-            <a href={item.url} className={`${itemClassName} hover:text-white transition-colors`}>
+            <a
+              href={item.url}
+              className={`${itemClassName} hover:text-white transition-colors`}
+            >
               {item.label}
             </a>
           ) : (

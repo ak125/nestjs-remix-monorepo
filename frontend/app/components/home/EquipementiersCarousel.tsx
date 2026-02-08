@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 
 import { type Equipementier } from "../../types/catalog.types";
 import { getOptimizedLogoUrl } from "../../utils/image-optimizer";
@@ -18,7 +18,7 @@ interface EquipementiersCarouselProps {
  * Affiche les fournisseurs équipementiers de la table PIECES_MARQUE
  * Basé sur: SELECT DISTINCT pm_name, pm_id FROM pieces_marque
  */
-export function EquipementiersCarousel({
+export const EquipementiersCarousel = memo(function EquipementiersCarousel({
   equipementiersData,
   className = "",
   title: _title = "Nos partenaires équipementiers",
@@ -98,6 +98,6 @@ export function EquipementiersCarousel({
       </div>
     </div>
   );
-}
+});
 
 export default EquipementiersCarousel;

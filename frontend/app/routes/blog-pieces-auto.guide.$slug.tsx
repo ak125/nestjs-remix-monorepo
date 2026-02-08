@@ -43,6 +43,7 @@ import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
@@ -157,7 +158,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       guide: data.data as Guide,
     });
   } catch (error) {
-    console.error("❌ Erreur chargement guide:", error);
+    logger.error("❌ Erreur chargement guide:", error);
     throw new Response("Guide non trouvé", { status: 404 });
   }
 }

@@ -2,11 +2,19 @@
  * Route Admin Menu - Navigation principale
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
-import { Button } from '~/components/ui/button';
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
 import { requireAdmin } from "../auth/unified.server";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Button } from "~/components/ui/button";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Menu Navigation - Admin");
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireAdmin({ context });
@@ -14,43 +22,43 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   return json({
     user,
     menu: {
-      title: 'Administration',
+      title: "Administration",
       sections: [
         {
-          name: 'Dashboard',
-          path: '/admin',
-          description: 'Statistiques et métriques générales',
-          icon: '📊',
+          name: "Dashboard",
+          path: "/admin",
+          description: "Statistiques et métriques générales",
+          icon: "📊",
         },
         {
-          name: 'Commandes',
-          path: '/admin/orders',
-          description: 'Gestion des commandes clients',
-          icon: '📦',
+          name: "Commandes",
+          path: "/admin/orders",
+          description: "Gestion des commandes clients",
+          icon: "📦",
         },
         {
-          name: 'Staff',
-          path: '/admin/staff',
-          description: 'Administration du personnel',
-          icon: '👥',
+          name: "Staff",
+          path: "/admin/staff",
+          description: "Administration du personnel",
+          icon: "👥",
         },
         {
-          name: 'Fournisseurs',
-          path: '/admin/suppliers',
-          description: 'Gestion des fournisseurs',
-          icon: '🏭',
+          name: "Fournisseurs",
+          path: "/admin/suppliers",
+          description: "Gestion des fournisseurs",
+          icon: "🏭",
         },
         {
-          name: 'Messages',
-          path: '/admin/messages',
-          description: 'Communication client/staff',
-          icon: '💬',
+          name: "Messages",
+          path: "/admin/messages",
+          description: "Communication client/staff",
+          icon: "💬",
         },
         {
-          name: 'Rapports',
-          path: '/admin/reports',
-          description: 'Analyses et rapports',
-          icon: '📈',
+          name: "Rapports",
+          path: "/admin/reports",
+          description: "Analyses et rapports",
+          icon: "📈",
         },
       ],
     },
@@ -70,7 +78,8 @@ export default function AdminMenu() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{menu.title}</h1>
           <p className="text-gray-600 mt-2">
-            Connecté en tant que {user.firstName} {user.lastName || ''} ({user.email})
+            Connecté en tant que {user.firstName} {user.lastName || ""} (
+            {user.email})
           </p>
         </div>
 
@@ -117,10 +126,34 @@ export default function AdminMenu() {
             Actions rapides
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Button className="px-4 py-2 rounded-md  text-center" variant="blue" asChild><Link to="/admin/orders/new">Nouvelle commande</Link></Button>
-            <Button className="px-4 py-2 rounded-md  text-center" variant="green" asChild><Link to="/admin/staff">Gérer le staff</Link></Button>
-            <Button className="px-4 py-2 rounded-md  text-center" variant="purple" asChild><Link to="/admin/suppliers/new">Nouveau fournisseur</Link></Button>
-            <Button className="px-4 py-2 rounded-md  text-center" variant="orange" asChild><Link to="/admin/reports">Voir rapports</Link></Button>
+            <Button
+              className="px-4 py-2 rounded-md  text-center"
+              variant="blue"
+              asChild
+            >
+              <Link to="/admin/orders/new">Nouvelle commande</Link>
+            </Button>
+            <Button
+              className="px-4 py-2 rounded-md  text-center"
+              variant="green"
+              asChild
+            >
+              <Link to="/admin/staff">Gérer le staff</Link>
+            </Button>
+            <Button
+              className="px-4 py-2 rounded-md  text-center"
+              variant="purple"
+              asChild
+            >
+              <Link to="/admin/suppliers/new">Nouveau fournisseur</Link>
+            </Button>
+            <Button
+              className="px-4 py-2 rounded-md  text-center"
+              variant="orange"
+              asChild
+            >
+              <Link to="/admin/reports">Voir rapports</Link>
+            </Button>
           </div>
         </div>
 

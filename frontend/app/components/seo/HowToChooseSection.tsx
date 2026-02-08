@@ -1,6 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { pluralizePieceName } from '~/lib/seo-utils';
-import { cn } from '~/lib/utils';
+import { memo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { cn } from "~/lib/utils";
 
 interface HowToChooseSectionProps {
   content?: string | null;
@@ -12,19 +13,19 @@ interface HowToChooseSectionProps {
  * Section "Comment choisir la bonne pièce ?"
  * Contenu sur les matériaux, qualité OE, type de conduite
  */
-export function HowToChooseSection({
+export const HowToChooseSection = memo(function HowToChooseSection({
   content,
   gammeName,
   className,
 }: HowToChooseSectionProps) {
   if (!content) return null;
 
-  const pieceType = gammeName?.toLowerCase() || 'pièce';
+  const pieceType = gammeName?.toLowerCase() || "pièce";
   const pluralType = pluralizePieceName(pieceType);
 
   return (
     <section
-      className={cn('py-8', className)}
+      className={cn("py-8", className)}
       aria-labelledby="how-to-choose-title"
     >
       <div className="container mx-auto px-4">
@@ -53,6 +54,6 @@ export function HowToChooseSection({
       </div>
     </section>
   );
-}
+});
 
 export default HowToChooseSection;

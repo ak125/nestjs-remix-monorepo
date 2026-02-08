@@ -7,7 +7,11 @@
  * - Articles Blog
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   BookOpen,
@@ -29,6 +33,8 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface ContentStats {
   r4References: {
@@ -56,6 +62,9 @@ interface ContentStats {
   };
 }
 
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Contenu SEO Hub - Admin");
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -75,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: data?.success === false ? "Erreur chargement stats" : null,
     });
   } catch (error) {
-    console.error("[SEO Content] Loader error:", error);
+    logger.error("[SEO Content] Loader error:", error);
     return json({
       stats: null,
       error: "Erreur connexion backend",

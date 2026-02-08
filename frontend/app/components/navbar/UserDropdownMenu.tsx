@@ -25,6 +25,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
+import { memo } from "react";
 
 import { Badge } from "../ui/badge";
 import {
@@ -50,7 +51,7 @@ interface UserDropdownMenuProps {
   className?: string;
 }
 
-export function UserDropdownMenu({
+export const UserDropdownMenu = memo(function UserDropdownMenu({
   user,
   showName = false,
   className = "",
@@ -271,4 +272,4 @@ export function UserDropdownMenu({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

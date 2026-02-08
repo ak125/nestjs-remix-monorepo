@@ -15,7 +15,11 @@
  * - /products/brands?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -35,6 +39,10 @@ import {
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Marques Produits");
 
 interface Brand {
   marque_id: number;
@@ -129,7 +137,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       enhanced,
     });
   } catch (error) {
-    console.error("Brands loading error:", error);
+    logger.error("Brands loading error:", error);
     return json<BrandsData>({
       user: {
         id: user.id,

@@ -18,6 +18,7 @@ import { formatPrice } from "../utils/orders";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui";
 import { trackPurchase } from "~/utils/analytics";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // Phase 9: PageRole pour analytics
@@ -63,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     url.searchParams.get("vads_trans_id");
 
   if (!transactionId) {
-    console.log(
+    logger.log(
       "❌ Missing transaction ID, params:",
       Object.fromEntries(url.searchParams),
     );
@@ -88,7 +89,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("❌ Payment return error:", error);
+    logger.error("❌ Payment return error:", error);
     throw new Response("Erreur lors du traitement du paiement", {
       status: 500,
     });

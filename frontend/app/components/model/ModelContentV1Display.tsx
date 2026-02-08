@@ -25,12 +25,12 @@ import {
   FileText,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
-import { HtmlContent } from "~/components/seo/HtmlContent";
+import { useState, memo } from "react";
 import {
   MotorisationsTable,
   type MotorisationEntry,
 } from "./MotorisationsTable";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 
 export interface ModelContentV1Data {
   id: number;
@@ -75,7 +75,7 @@ interface ModelContentV1DisplayProps {
   className?: string;
 }
 
-export function ModelContentV1Display({
+export const ModelContentV1Display = memo(function ModelContentV1Display({
   content,
   collapsedByDefault = false,
   className = "",
@@ -283,7 +283,7 @@ export function ModelContentV1Display({
       )}
     </section>
   );
-}
+});
 
 // Helper component for content sections
 function ContentSection({

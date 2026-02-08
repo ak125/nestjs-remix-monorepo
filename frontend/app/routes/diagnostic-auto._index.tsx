@@ -43,6 +43,7 @@ import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -187,7 +188,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ featured, faqSchema });
   } catch (error) {
-    console.error("[diagnostic-auto._index] Loader error:", error);
+    logger.error("[diagnostic-auto._index] Loader error:", error);
     return json({ featured: [], faqSchema: null });
   }
 }

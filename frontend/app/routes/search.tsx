@@ -75,6 +75,7 @@ import {
 } from "../utils/search-mappers";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 // ===============================
 // TYPES
@@ -200,7 +201,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    console.error("Erreur lors de la recherche:", error);
+    logger.error("Erreur lors de la recherche:", error);
 
     return json<SearchPageData>({
       results: null,

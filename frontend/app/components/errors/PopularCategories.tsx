@@ -9,6 +9,7 @@ import {
   Car,
   Wrench,
 } from "lucide-react";
+import { memo } from "react";
 
 interface Category {
   name: string;
@@ -78,7 +79,7 @@ interface PopularCategoriesProps {
  * Grille de catégories populaires pour les pages d'erreur
  * Aide les utilisateurs à trouver rapidement ce qu'ils cherchent
  */
-export function PopularCategories({
+export const PopularCategories = memo(function PopularCategories({
   className = "",
   title = "Catégories populaires",
   columns = 4,
@@ -122,6 +123,6 @@ export function PopularCategories({
       </div>
     </div>
   );
-}
+});
 
 export default PopularCategories;

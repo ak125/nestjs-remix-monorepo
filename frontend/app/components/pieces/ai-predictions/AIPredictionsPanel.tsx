@@ -1,9 +1,9 @@
 // 🤖 Composant IA Prédictions V5.2 - Architecture Modulaire
-import React from 'react';
+import React, { memo } from "react";
 
 interface RiskAnalysis {
   component: string;
-  level: 'critical' | 'high' | 'medium' | 'low';
+  level: "critical" | "high" | "medium" | "low";
   probability: number;
   description: string;
   timeframe: string;
@@ -37,16 +37,16 @@ interface AIPredictionsPanelProps {
   piecesCount: number;
 }
 
-export const AIPredictionsPanel: React.FC<AIPredictionsPanelProps> = ({
+export const AIPredictionsPanel = memo(function AIPredictionsPanel({
   predictions,
   vehicle,
-  piecesCount
-}) => {
+  piecesCount,
+}: AIPredictionsPanelProps) {
   return (
     <div className="relative bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 rounded-2xl shadow-xl border border-violet-100 p-8 mt-8 overflow-hidden group hover:shadow-2xl transition-all duration-500">
       {/* Animated background effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-violet-400/10 via-indigo-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      
+
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-3">
@@ -60,14 +60,14 @@ export const AIPredictionsPanel: React.FC<AIPredictionsPanelProps> = ({
             <span className="text-sm font-medium text-gray-700">IA Active</span>
           </div>
         </div>
-        
+
         {/* Analyse des risques et optimisation */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
           {/* Analyse des risques */}
           <RiskAnalysisCard risks={predictions.riskAnalysis} />
-          
+
           {/* Optimisation des coûts */}
-          <CostOptimizationCard 
+          <CostOptimizationCard
             optimization={predictions.costOptimization}
             maintenance={predictions.predictiveMaintenance}
           />
@@ -78,7 +78,7 @@ export const AIPredictionsPanel: React.FC<AIPredictionsPanelProps> = ({
       </div>
     </div>
   );
-};
+});
 
 // Composant Analyse des Risques
 const RiskAnalysisCard: React.FC<{ risks: RiskAnalysis[] }> = ({ risks }) => (
@@ -94,7 +94,7 @@ const RiskAnalysisCard: React.FC<{ risks: RiskAnalysis[] }> = ({ risks }) => (
         <span className="text-xs font-medium text-red-700">Temps Réel</span>
       </div>
     </div>
-    
+
     <div className="space-y-4">
       {risks.map((risk, index) => (
         <RiskItem key={index} risk={risk} />
@@ -105,39 +105,51 @@ const RiskAnalysisCard: React.FC<{ risks: RiskAnalysis[] }> = ({ risks }) => (
 
 // Composant Item de Risque
 const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
-  const getRiskStyles = (level: string) => ({
-    'critical': 'from-red-50 to-red-100 border-red-500 shadow-red-200/50',
-    'high': 'from-orange-50 to-orange-100 border-orange-500 shadow-orange-200/50',
-    'medium': 'from-yellow-50 to-yellow-100 border-yellow-500 shadow-yellow-200/50',
-    'low': 'from-green-50 to-green-100 border-green-500 shadow-green-200/50'
-  }[level] || 'from-gray-50 to-gray-100 border-gray-500');
+  const getRiskStyles = (level: string) =>
+    ({
+      critical: "from-red-50 to-red-100 border-red-500 shadow-red-200/50",
+      high: "from-orange-50 to-orange-100 border-orange-500 shadow-orange-200/50",
+      medium:
+        "from-yellow-50 to-yellow-100 border-yellow-500 shadow-yellow-200/50",
+      low: "from-green-50 to-green-100 border-green-500 shadow-green-200/50",
+    })[level] || "from-gray-50 to-gray-100 border-gray-500";
 
-  const getBadgeStyles = (level: string) => ({
-    'critical': 'bg-destructive text-white border-red-600 shadow-red-300/50',
-    'high': 'bg-orange-600 text-white border-orange-600 shadow-orange-300/50',
-    'medium': 'bg-warning text-white border-yellow-600 shadow-yellow-300/50',
-    'low': 'bg-success text-white border-green-600 shadow-green-300/50'
-  }[level] || 'bg-gray-500 text-white border-gray-600');
+  const getBadgeStyles = (level: string) =>
+    ({
+      critical: "bg-destructive text-white border-red-600 shadow-red-300/50",
+      high: "bg-orange-600 text-white border-orange-600 shadow-orange-300/50",
+      medium: "bg-warning text-white border-yellow-600 shadow-yellow-300/50",
+      low: "bg-success text-white border-green-600 shadow-green-300/50",
+    })[level] || "bg-gray-500 text-white border-gray-600";
 
-  const getDotColor = (level: string) => ({
-    'critical': 'bg-destructive',
-    'high': 'bg-orange-500', 
-    'medium': 'bg-warning',
-    'low': 'bg-success'
-  }[level] || 'bg-gray-500');
+  const getDotColor = (level: string) =>
+    ({
+      critical: "bg-destructive",
+      high: "bg-orange-500",
+      medium: "bg-warning",
+      low: "bg-success",
+    })[level] || "bg-gray-500";
 
   return (
-    <div className={`relative p-4 rounded-xl border-l-4 bg-gradient-to-r transition-all duration-300 hover:scale-[1.02] ${getRiskStyles(risk.level)} shadow-lg`}>
+    <div
+      className={`relative p-4 rounded-xl border-l-4 bg-gradient-to-r transition-all duration-300 hover:scale-[1.02] ${getRiskStyles(risk.level)} shadow-lg`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full animate-pulse ${getDotColor(risk.level)}`} />
+          <div
+            className={`w-3 h-3 rounded-full animate-pulse ${getDotColor(risk.level)}`}
+          />
           <span className="font-semibold text-gray-900">{risk.component}</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className={`px-3 py-1 text-xs font-bold rounded-full border-2 ${getBadgeStyles(risk.level)} shadow-lg transform hover:scale-110 transition-transform`}>
+          <div
+            className={`px-3 py-1 text-xs font-bold rounded-full border-2 ${getBadgeStyles(risk.level)} shadow-lg transform hover:scale-110 transition-transform`}
+          >
             {risk.level.toUpperCase()}
           </div>
-          <span className="text-sm font-medium text-gray-600">{risk.probability}%</span>
+          <span className="text-sm font-medium text-gray-600">
+            {risk.probability}%
+          </span>
         </div>
       </div>
       <p className="text-sm text-gray-600 mb-2">{risk.description}</p>
@@ -150,7 +162,9 @@ const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
         </summary>
         <ul className="mt-2 pl-4 space-y-1">
           {risk.prevention.map((prev, i) => (
-            <li key={i} className="text-xs text-gray-600">• {prev}</li>
+            <li key={i} className="text-xs text-gray-600">
+              • {prev}
+            </li>
           ))}
         </ul>
       </details>
@@ -159,7 +173,7 @@ const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
 };
 
 // Composant Optimisation des Coûts
-const CostOptimizationCard: React.FC<{ 
+const CostOptimizationCard: React.FC<{
   optimization: CostOptimization;
   maintenance: PredictiveMaintenance;
 }> = ({ optimization, maintenance }) => (
@@ -175,7 +189,7 @@ const CostOptimizationCard: React.FC<{
         <span className="text-xs font-medium text-green-700">Intelligent</span>
       </div>
     </div>
-    
+
     <div className="space-y-6">
       {/* Économies potentielles */}
       <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -184,19 +198,29 @@ const CostOptimizationCard: React.FC<{
             <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
               <span className="text-white text-xs">💸</span>
             </div>
-            <span className="text-lg font-bold text-green-800">Économies potentielles</span>
+            <span className="text-lg font-bold text-green-800">
+              Économies potentielles
+            </span>
           </div>
           <div className="text-right">
             <div className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               {optimization.potentialSavings}€
             </div>
-            <div className="text-xs text-green-600 font-medium">Sur 12 mois</div>
+            <div className="text-xs text-green-600 font-medium">
+              Sur 12 mois
+            </div>
           </div>
         </div>
-        <p className="text-sm text-green-700 mb-3">{optimization.bundleRecommendation}</p>
+        <p className="text-sm text-green-700 mb-3">
+          {optimization.bundleRecommendation}
+        </p>
         <div className="bg-white rounded px-3 py-2">
-          <span className="text-xs font-medium text-gray-600">Timing optimal :</span>
-          <span className="ml-2 text-sm text-gray-900">{optimization.optimalTiming}</span>
+          <span className="text-xs font-medium text-gray-600">
+            Timing optimal :
+          </span>
+          <span className="ml-2 text-sm text-gray-900">
+            {optimization.optimalTiming}
+          </span>
         </div>
       </div>
 
@@ -206,22 +230,33 @@ const CostOptimizationCard: React.FC<{
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center animate-pulse">
             <span className="text-white text-sm">🔧</span>
           </div>
-          <h4 className="text-lg font-bold text-blue-800">Maintenance Prédictive</h4>
+          <h4 className="text-lg font-bold text-blue-800">
+            Maintenance Prédictive
+          </h4>
           <div className="ml-auto bg-muted rounded-full px-2 py-1">
             <div className="w-2 h-2 bg-info rounded-full animate-ping" />
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-blue-700">Prochaine intervention :</span>
-            <span className="text-sm font-medium text-blue-900">{maintenance.estimatedDate}</span>
+            <span className="text-sm text-blue-700">
+              Prochaine intervention :
+            </span>
+            <span className="text-sm font-medium text-blue-900">
+              {maintenance.estimatedDate}
+            </span>
           </div>
           <p className="text-sm text-blue-700">{maintenance.nextService}</p>
           <div className="mt-3">
-            <span className="text-xs font-medium text-blue-600">Composants critiques :</span>
+            <span className="text-xs font-medium text-blue-600">
+              Composants critiques :
+            </span>
             <div className="flex flex-wrap gap-1 mt-1">
               {maintenance.criticalComponents.map((comp, i) => (
-                <span key={i} className="px-2 py-1 bg-info/20 text-info text-xs rounded">
+                <span
+                  key={i}
+                  className="px-2 py-1 bg-info/20 text-info text-xs rounded"
+                >
                   {comp}
                 </span>
               ))}
@@ -234,7 +269,7 @@ const CostOptimizationCard: React.FC<{
 );
 
 // Composant Footer IA
-const AIFooter: React.FC<{ 
+const AIFooter: React.FC<{
   vehicle: { marque: string; modele: string };
   piecesCount: number;
 }> = ({ vehicle, piecesCount }) => (
@@ -267,7 +302,9 @@ const AIFooter: React.FC<{
       </div>
       <div className="text-right">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-700">Fiabilité IA</span>
+          <span className="text-sm font-medium text-gray-700">
+            Fiabilité IA
+          </span>
           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div className="w-[87%] h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-pulse" />
           </div>

@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -9,6 +13,10 @@ import { useState } from "react";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Support IA");
 
 // Interfaces simplifiées pour éviter les problèmes d'import
 interface SentimentAnalysis {
@@ -237,7 +245,7 @@ export default function AIDemoPage() {
       const result = await simulateAIAnalysis(ticketId);
       setAnalysis(result);
     } catch (error) {
-      console.error("Erreur analyse:", error);
+      logger.error("Erreur analyse:", error);
     } finally {
       setLoading(false);
     }

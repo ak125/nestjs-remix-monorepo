@@ -1,4 +1,5 @@
 import { Car, List } from "lucide-react";
+import { memo } from "react";
 
 interface MobileStickyBarProps {
   gammeName?: string;
@@ -6,7 +7,7 @@ interface MobileStickyBarProps {
   minPrice?: number | null;
 }
 
-export default function MobileStickyBar({
+const MobileStickyBar = memo(function MobileStickyBar({
   gammeName: _gammeName = "pièces",
   hasCompatibilities = true,
   minPrice,
@@ -52,4 +53,6 @@ export default function MobileStickyBar({
       )}
     </div>
   );
-}
+});
+
+export default MobileStickyBar;

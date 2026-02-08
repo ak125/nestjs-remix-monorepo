@@ -5,7 +5,12 @@
  * Route: /commercial/vehicles
  */
 
-import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
@@ -19,6 +24,11 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Vehicules - Commercial");
 
 interface VehicleStats {
   totalBrands: number;
@@ -73,7 +83,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       error,
     });
   } catch (err) {
-    console.error("Erreur loader véhicules:", err);
+    logger.error("Erreur loader véhicules:", err);
     return json<LoaderData>({
       user,
       stats: null,

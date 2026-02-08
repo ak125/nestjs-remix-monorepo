@@ -5,7 +5,11 @@
  * Utilise les APIs existantes dashboard et legacy-orders
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   BarChart3,
@@ -19,6 +23,11 @@ import {
 } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Rapports - Commercial");
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // Vérifier l'accès commercial (niveau 3+)
@@ -71,7 +80,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       recentOrders: recentOrders.orders || [],
     });
   } catch (error) {
-    console.error("Erreur chargement rapports:", error);
+    logger.error("Erreur chargement rapports:", error);
     return json({
       statistics: {
         totalOrders: 0,

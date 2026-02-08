@@ -1,8 +1,22 @@
 // app/routes/$.tsx - Catch-all route pour 404 - Version Optimisée
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
 import { Error410 } from "~/components/errors/Error410";
+import { logger } from "~/utils/logger";
+
+export const meta: MetaFunction = () => [
+  { title: "Page non trouvée | Automecanik" },
+  {
+    name: "description",
+    content: "La page que vous recherchez n'existe pas ou a été déplacée.",
+  },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -41,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
       );
     } catch (logError) {
-      console.error("Erreur lors du logging 404:", logError);
+      logger.error("Erreur lors du logging 404:", logError);
       // Continue malgré l'erreur de logging
     }
 
@@ -74,7 +88,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         // Re-throw les redirections valides
         throw redirectError;
       }
-      console.error(
+      logger.error(
         "Erreur lors de la vérification de redirection:",
         redirectError,
       );
@@ -98,7 +112,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
           if (legacyData.found && legacyData.destination) {
             // Gamme trouvée - 301 redirect vers la nouvelle URL
-            console.log(
+            logger.log(
               `[SEO] Legacy URL resolved: ${pathname} → ${legacyData.destination}`,
             );
             throw new Response(null, {
@@ -111,7 +125,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             });
           } else {
             // Gamme non trouvée - 410 Gone
-            console.log(
+            logger.log(
               `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
             );
             throw json(
@@ -136,7 +150,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         if (legacyError instanceof Response) {
           throw legacyError;
         }
-        console.error("Erreur résolution URL legacy:", legacyError);
+        logger.error("Erreur résolution URL legacy:", legacyError);
         // En cas d'erreur, continuer vers le 404 standard
       }
     }
@@ -156,7 +170,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         suggestions = suggestionsData.suggestions || [];
       }
     } catch (suggestionsError) {
-      console.error(
+      logger.error(
         "Erreur lors de la récupération des suggestions:",
         suggestionsError,
       );
@@ -212,7 +226,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // Pour toute autre erreur, fallback vers 404 basique
-    console.error("Erreur dans catch-all route:", error);
+    logger.error("Erreur dans catch-all route:", error);
     throw json(
       {
         url: pathname,
@@ -262,7 +276,7 @@ async function checkIfOldLink(pathname: string): Promise<boolean> {
 
     return knownOldLinks.includes(pathname);
   } catch (error) {
-    console.error("Erreur lors de la vérification ancien lien:", error);
+    logger.error("Erreur lors de la vérification ancien lien:", error);
     return false; // En cas d'erreur, on assume que ce n'est pas un ancien lien
   }
 }

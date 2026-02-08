@@ -27,6 +27,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /* ===========================
    Types
@@ -166,9 +167,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (data?.success && data.data?.guides) {
       guides = data.data.guides as BlogGuide[];
-      console.log(`✅ Chargé ${guides.length} guides d'achat`);
+      logger.log(`✅ Chargé ${guides.length} guides d'achat`);
     } else {
-      console.log("⚠️ Aucun guide trouvé dans la réponse API");
+      logger.log("⚠️ Aucun guide trouvé dans la réponse API");
     }
 
     // Créer les catégories avec compteur basé sur les guides réels
@@ -254,7 +255,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   } catch (error) {
-    console.error("❌ Erreur chargement guides:", error);
+    logger.error("❌ Erreur chargement guides:", error);
     return json<LoaderData>({
       groupedGuides: [],
       allGuides: [],

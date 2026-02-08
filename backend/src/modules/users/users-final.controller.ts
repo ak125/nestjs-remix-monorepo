@@ -36,9 +36,9 @@ import {
   UserFiltersSchema,
 } from './dto/user.dto';
 
-interface RequestWithUser extends Request {
-  user?: any;
-}
+type RequestWithUser = Request & {
+  user?: Record<string, unknown>;
+};
 
 @Controller('api/users')
 export class UsersFinalController {
@@ -75,7 +75,9 @@ export class UsersFinalController {
   @UseGuards(AuthenticatedGuard)
   async getProfile(@Req() req: RequestWithUser) {
     const user = req.user;
-    this.logger.log(`GET /api/users/profile - User: ${user?.email}`);
+    this.logger.log(
+      `GET /api/users/profile - User: ${user?.email as string | undefined}`,
+    );
 
     if (!user?.id) {
       throw new AuthenticationException({
@@ -84,15 +86,18 @@ export class UsersFinalController {
     }
 
     try {
-      const profile = await this.usersService.getUserById(user.id);
+      const profile = await this.usersService.getUserById(user.id as string);
       return {
         success: true,
         data: profile,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur getProfile:', error);
       throw new OperationFailedException({
-        message: error.message || 'Erreur lors de la récupération du profil',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération du profil',
       });
     }
   }
@@ -107,7 +112,9 @@ export class UsersFinalController {
     @Body() updates: UpdateUserDto,
   ) {
     const user = req.user;
-    this.logger.log(`PUT /api/users/profile - User: ${user?.email}`);
+    this.logger.log(
+      `PUT /api/users/profile - User: ${user?.email as string | undefined}`,
+    );
 
     if (!user?.id) {
       throw new AuthenticationException({
@@ -120,7 +127,7 @@ export class UsersFinalController {
       const validatedData = UpdateUserSchema.parse(updates);
 
       const updatedUser = await this.usersService.updateUser(
-        user.id,
+        user.id as string,
         validatedData,
       );
 
@@ -129,10 +136,13 @@ export class UsersFinalController {
         message: 'Profil mis à jour avec succès',
         data: updatedUser,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur updateProfile:', error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors de la mise à jour du profil',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la mise à jour du profil',
       });
     }
   }
@@ -144,7 +154,9 @@ export class UsersFinalController {
   @UseGuards(AuthenticatedGuard)
   async getDashboard(@Req() req: RequestWithUser) {
     const user = req.user;
-    this.logger.log(`GET /api/users/dashboard - User: ${user?.email}`);
+    this.logger.log(
+      `GET /api/users/dashboard - User: ${user?.email as string | undefined}`,
+    );
 
     if (!user?.id) {
       throw new AuthenticationException({
@@ -153,15 +165,20 @@ export class UsersFinalController {
     }
 
     try {
-      const dashboard = await this.usersService.getDashboardData(user.id);
+      const dashboard = await this.usersService.getDashboardData(
+        user.id as string,
+      );
       return {
         success: true,
         data: dashboard,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur getDashboard:', error);
       throw new OperationFailedException({
-        message: error.message || 'Erreur lors de la récupération du dashboard',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération du dashboard',
       });
     }
   }
@@ -175,7 +192,7 @@ export class UsersFinalController {
    */
   @Get()
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  async getUsers(@Query() query: any) {
+  async getUsers(@Query() query: Record<string, string | undefined>) {
     this.logger.log(`GET /api/users - Filters: ${JSON.stringify(query)}`);
 
     try {
@@ -199,11 +216,13 @@ export class UsersFinalController {
         success: true,
         ...result,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur getUsers:', error);
       throw new OperationFailedException({
         message:
-          error.message || 'Erreur lors de la récupération des utilisateurs',
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération des utilisateurs',
       });
     }
   }
@@ -222,11 +241,13 @@ export class UsersFinalController {
         success: true,
         data: stats,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur getStats:', error);
       throw new OperationFailedException({
         message:
-          error.message || 'Erreur lors de la récupération des statistiques',
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération des statistiques',
       });
     }
   }
@@ -260,10 +281,13 @@ export class UsersFinalController {
         total: users.length,
         searchTerm,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur searchUsers:', error);
       throw new OperationFailedException({
-        message: error.message || 'Erreur lors de la recherche',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la recherche',
       });
     }
   }
@@ -282,10 +306,11 @@ export class UsersFinalController {
         success: true,
         data: user,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur getUser ${id}:`, error);
       throw new DomainNotFoundException({
-        message: error.message || 'Utilisateur non trouvé',
+        message:
+          error instanceof Error ? error.message : 'Utilisateur non trouvé',
       });
     }
   }
@@ -304,11 +329,13 @@ export class UsersFinalController {
         success: true,
         data: stats,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur getUserStats ${id}:`, error);
       throw new OperationFailedException({
         message:
-          error.message || 'Erreur lors de la récupération des statistiques',
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la récupération des statistiques',
       });
     }
   }
@@ -332,10 +359,11 @@ export class UsersFinalController {
         message: 'Utilisateur créé avec succès',
         data: user,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur createUser:', error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors de la création',
+        message:
+          error instanceof Error ? error.message : 'Erreur lors de la création',
       });
     }
   }
@@ -359,10 +387,13 @@ export class UsersFinalController {
         message: 'Utilisateur mis à jour avec succès',
         data: user,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur updateUser ${id}:`, error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors de la mise à jour',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la mise à jour',
       });
     }
   }
@@ -382,10 +413,13 @@ export class UsersFinalController {
         success: true,
         message: 'Utilisateur désactivé avec succès',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur deleteUser ${id}:`, error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors de la suppression',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la suppression',
       });
     }
   }
@@ -406,10 +440,13 @@ export class UsersFinalController {
         message: 'Utilisateur réactivé avec succès',
         data: user,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur reactivateUser ${id}:`, error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors de la réactivation',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors de la réactivation',
       });
     }
   }
@@ -438,10 +475,13 @@ export class UsersFinalController {
         success: true,
         message: 'Mot de passe mis à jour avec succès',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Erreur updatePassword ${id}:`, error);
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors du changement de mot de passe',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Erreur lors du changement de mot de passe',
       });
     }
   }
@@ -462,10 +502,11 @@ export class UsersFinalController {
         data: csv,
         filename: `users-${new Date().toISOString().split('T')[0]}.csv`,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur exportUsers:', error);
       throw new OperationFailedException({
-        message: error.message || "Erreur lors de l'export",
+        message:
+          error instanceof Error ? error.message : "Erreur lors de l'export",
       });
     }
   }

@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 🛒 PRODUCT CARD - Optimisée Conversion E-Commerce
  * ═══════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Carte produit optimisée pour maximiser la conversion avec :
  * • Image claire avec zoom au hover
  * • Référence OEM en Roboto Mono (précision)
@@ -10,7 +10,7 @@
  * • Prix + remise visuellement claire
  * • CTA unique (rouge Primary) sans distraction
  * • Focus sur l'action d'achat
- * 
+ *
  * Design System intégré :
  * • Primary #FF3B30 → CTA "Ajouter au panier"
  * • Success #27AE60 → Badge "En stock"
@@ -22,39 +22,40 @@
  * • Espacement 8px grid
  */
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from "react";
+import { logger } from "~/utils/logger";
 
 // Types
 interface ProductCardProps {
   // Identifiant unique
   id: string;
-  
+
   // Informations produit
   name: string;
   description?: string;
   oemRef: string;
-  
+
   // Image
   imageUrl: string;
   imageAlt?: string;
-  
+
   // Prix
   price: number;
   originalPrice?: number; // Prix avant remise
   discountPercent?: number; // % de remise
-  
+
   // Stock
-  stockStatus: 'in-stock' | 'low-stock' | 'out-of-stock';
+  stockStatus: "in-stock" | "low-stock" | "out-of-stock";
   stockQuantity?: number;
-  
+
   // Compatibilité (optionnel)
   isCompatible?: boolean;
   compatibilityNote?: string;
-  
+
   // Actions
   onAddToCart?: (productId: string) => void;
   onImageClick?: (productId: string) => void;
-  
+
   // Options
   showDescription?: boolean;
   showCompatibility?: boolean;
@@ -66,7 +67,7 @@ interface ProductCardProps {
  * 🎯 PRODUCT CARD COMPONENT
  * ═══════════════════════════════════════════════════════════════════════════
  */
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   id,
   name,
   description,
@@ -90,51 +91,54 @@ export function ProductCard({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Helper: Calculer remise si non fournie
-  const calculatedDiscount = discountPercent || 
-    (originalPrice && originalPrice > price 
+  const calculatedDiscount =
+    discountPercent ||
+    (originalPrice && originalPrice > price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0);
 
   // Helper: Badge stock (couleur + texte)
   const stockBadge = {
-    'in-stock': {
-      color: 'bg-success-500',
-      textColor: 'text-white',
-      icon: '✓',
-      label: 'En stock',
+    "in-stock": {
+      color: "bg-success-500",
+      textColor: "text-white",
+      icon: "✓",
+      label: "En stock",
     },
-    'low-stock': {
-      color: 'bg-warning-500',
-      textColor: 'text-white',
-      icon: '⚠',
-      label: stockQuantity ? `${stockQuantity} restant${stockQuantity > 1 ? 's' : ''}` : 'Stock faible',
+    "low-stock": {
+      color: "bg-warning-500",
+      textColor: "text-white",
+      icon: "⚠",
+      label: stockQuantity
+        ? `${stockQuantity} restant${stockQuantity > 1 ? "s" : ""}`
+        : "Stock faible",
     },
-    'out-of-stock': {
-      color: 'bg-error-500',
-      textColor: 'text-white',
-      icon: '✕',
-      label: 'Rupture de stock',
+    "out-of-stock": {
+      color: "bg-error-500",
+      textColor: "text-white",
+      icon: "✕",
+      label: "Rupture de stock",
     },
   }[stockStatus];
 
   // Handle add to cart
-  const handleAddToCart = async () => {
-    if (stockStatus === 'out-of-stock') return;
-    
+  const handleAddToCart = useCallback(async () => {
+    if (stockStatus === "out-of-stock") return;
+
     setIsAddingToCart(true);
-    
+
     try {
       await onAddToCart?.(id);
-      
+
       // Animation feedback (optionnel)
       setTimeout(() => {
         setIsAddingToCart(false);
       }, 1000);
     } catch (error) {
-      console.error('Erreur ajout panier:', error);
+      logger.error("Erreur ajout panier:", error);
       setIsAddingToCart(false);
     }
-  };
+  }, [stockStatus, onAddToCart, id]);
 
   return (
     <article
@@ -142,7 +146,7 @@ export function ProductCard({
         bg-white rounded-lg shadow-md border border-neutral-200
         hover:shadow-xl hover:border-neutral-300
         transition-all duration-300
-        ${compactMode ? 'p-sm' : 'p-md'}
+        ${compactMode ? "p-sm" : "p-md"}
         relative
         group
       `}
@@ -159,7 +163,7 @@ export function ProductCard({
       <div
         className={`
           relative 
-          ${compactMode ? 'aspect-square mb-sm' : 'aspect-[4/3] mb-md'}
+          ${compactMode ? "aspect-square mb-sm" : "aspect-[4/3] mb-md"}
           overflow-hidden rounded-lg
           bg-neutral-50
           cursor-pointer
@@ -179,7 +183,7 @@ export function ProductCard({
           className={`
             w-full h-full object-cover
             transition-transform duration-500
-            ${isImageZoomed ? 'scale-110' : 'scale-100'}
+            ${isImageZoomed ? "scale-110" : "scale-100"}
           `}
         />
 
@@ -191,13 +195,15 @@ export function ProductCard({
         */}
         {calculatedDiscount > 0 && (
           <div className="absolute top-xs left-xs">
-            <span className="
+            <span
+              className="
               bg-error-500 text-white
               px-sm py-xs
               font-heading text-sm font-bold
               rounded
               shadow-md
-            ">
+            "
+            >
               -{calculatedDiscount}%
             </span>
           </div>
@@ -209,14 +215,16 @@ export function ProductCard({
           • Couleur dynamique selon status
         */}
         <div className="absolute top-xs right-xs">
-          <span className={`
+          <span
+            className={`
             ${stockBadge.color} ${stockBadge.textColor}
             px-sm py-xs
             font-sans text-xs font-semibold
             rounded
             shadow-md
             flex items-center gap-xs
-          `}>
+          `}
+          >
             <span>{stockBadge.icon}</span>
             <span>{stockBadge.label}</span>
           </span>
@@ -229,26 +237,30 @@ export function ProductCard({
         */}
         {showCompatibility && isCompatible !== undefined && (
           <div className="absolute bottom-xs left-xs">
-            <span className={`
-              ${isCompatible ? 'bg-success-500' : 'bg-error-500'}
+            <span
+              className={`
+              ${isCompatible ? "bg-success-500" : "bg-error-500"}
               text-white
               px-sm py-xs
               font-sans text-xs font-semibold
               rounded
               shadow-md
-            `}>
-              {isCompatible ? '✓ Compatible' : '✕ Incompatible'}
+            `}
+            >
+              {isCompatible ? "✓ Compatible" : "✕ Incompatible"}
             </span>
           </div>
         )}
 
         {/* Overlay zoom (effet visuel) */}
-        <div className={`
+        <div
+          className={`
           absolute inset-0
           bg-black/0 group-hover:bg-black/5
           transition-colors duration-300
           pointer-events-none
-        `} />
+        `}
+        />
       </div>
 
       {/* 
@@ -256,7 +268,7 @@ export function ProductCard({
         CONTENT SECTION
         ═════════════════════════════════════════════════════════════════════
       */}
-      <div className={compactMode ? 'space-y-xs' : 'space-y-sm'}>
+      <div className={compactMode ? "space-y-xs" : "space-y-sm"}>
         {/* 
           Référence OEM (Roboto Mono)
           • font-mono → Précision technique
@@ -264,13 +276,15 @@ export function ProductCard({
           • bg-neutral-100 → Contraste subtil
         */}
         <div>
-          <code className="
+          <code
+            className="
             font-mono text-xs text-neutral-600
             bg-neutral-100
             px-xs py-xs
             rounded
             inline-block
-          ">
+          "
+          >
             REF: {oemRef}
           </code>
         </div>
@@ -281,11 +295,13 @@ export function ProductCard({
           • text-lg/xl → Hiérarchie claire
           • line-clamp-2 → Max 2 lignes
         */}
-        <h3 className={`
+        <h3
+          className={`
           font-heading font-bold text-neutral-900
-          ${compactMode ? 'text-base' : 'text-lg'}
+          ${compactMode ? "text-base" : "text-lg"}
           line-clamp-2
-        `}>
+        `}
+        >
           {name}
         </h3>
 
@@ -296,10 +312,12 @@ export function ProductCard({
           • line-clamp-2 → Max 2 lignes
         */}
         {showDescription && description && !compactMode && (
-          <p className="
+          <p
+            className="
             font-sans text-sm text-neutral-600
             line-clamp-2
-          ">
+          "
+          >
             {description}
           </p>
         )}
@@ -309,10 +327,12 @@ export function ProductCard({
           • Affichée uniquement si présente
         */}
         {showCompatibility && compatibilityNote && (
-          <p className="
+          <p
+            className="
             font-sans text-xs text-neutral-500
             italic
-          ">
+          "
+          >
             {compatibilityNote}
           </p>
         )}
@@ -325,29 +345,35 @@ export function ProductCard({
           • Prix original barré si remise
           • Économie calculée affichée
         */}
-        <div className={compactMode ? 'mt-sm' : 'mt-md'}>
+        <div className={compactMode ? "mt-sm" : "mt-md"}>
           {/* Prix barré (si remise) */}
           {originalPrice && originalPrice > price && (
             <div className="flex items-center gap-xs mb-xs">
-              <span className="
+              <span
+                className="
                 font-mono text-sm text-neutral-400
                 line-through
-              ">
+              "
+              >
                 {originalPrice.toFixed(2)} €
               </span>
-              <span className="
+              <span
+                className="
                 font-sans text-xs text-error-500 font-semibold
-              ">
+              "
+              >
                 Économisez {(originalPrice - price).toFixed(2)} €
               </span>
             </div>
           )}
 
           {/* Prix actuel (Roboto Mono) */}
-          <div className={`
+          <div
+            className={`
             font-mono font-bold text-neutral-900
-            ${compactMode ? 'text-2xl' : 'text-3xl'}
-          `}>
+            ${compactMode ? "text-2xl" : "text-3xl"}
+          `}
+          >
             {price.toFixed(2)} <span className="text-xl">€</span>
           </div>
 
@@ -369,20 +395,20 @@ export function ProductCard({
         */}
         <button
           onClick={handleAddToCart}
-          disabled={stockStatus === 'out-of-stock' || isAddingToCart}
+          disabled={stockStatus === "out-of-stock" || isAddingToCart}
           className={`
             w-full
-            ${compactMode ? 'py-sm px-md' : 'py-md px-lg'}
+            ${compactMode ? "py-sm px-md" : "py-md px-lg"}
             ${
-              stockStatus === 'out-of-stock'
-                ? 'bg-neutral-300 cursor-not-allowed'
+              stockStatus === "out-of-stock"
+                ? "bg-neutral-300 cursor-not-allowed"
                 : isAddingToCart
-                ? 'bg-primary-600 cursor-wait'
-                : 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
+                  ? "bg-primary-600 cursor-wait"
+                  : "bg-primary-500 hover:bg-primary-600 active:bg-primary-700"
             }
             text-white
             font-heading font-bold
-            ${compactMode ? 'text-sm' : 'text-base'}
+            ${compactMode ? "text-sm" : "text-base"}
             rounded-lg
             shadow-md hover:shadow-lg
             transition-all duration-200
@@ -410,7 +436,7 @@ export function ProductCard({
               </svg>
               <span>Ajout en cours...</span>
             </>
-          ) : stockStatus === 'out-of-stock' ? (
+          ) : stockStatus === "out-of-stock" ? (
             <>
               <span>✕</span>
               <span>Indisponible</span>
@@ -418,7 +444,12 @@ export function ProductCard({
           ) : (
             <>
               {/* Icône panier */}
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -436,8 +467,9 @@ export function ProductCard({
           • Visible uniquement si low-stock
           • Crée urgence sans être CTA
         */}
-        {stockStatus === 'low-stock' && (
-          <p className="
+        {stockStatus === "low-stock" && (
+          <p
+            className="
             font-sans text-xs text-warning-700
             bg-warning-50
             border border-warning-200
@@ -445,13 +477,14 @@ export function ProductCard({
             rounded
             text-center
             mt-xs
-          ">
+          "
+          >
             ⚠ Dernières pièces disponibles
           </p>
         )}
       </div>
     </article>
   );
-}
+});
 
 export default ProductCard;

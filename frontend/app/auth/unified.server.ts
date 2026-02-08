@@ -1,5 +1,6 @@
 import { redirect, type AppLoadContext } from "@remix-run/node";
 import { z } from "zod";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔐 SYSTÈME D'AUTHENTIFICATION UNIFIÉ
@@ -69,7 +70,7 @@ export const getOptionalUser = async ({
 
     return null;
   } catch (error) {
-    console.error("❌ [Unified Auth] Erreur dans getOptionalUser:", error);
+    logger.error("❌ [Unified Auth] Erreur dans getOptionalUser:", error);
     return null;
   }
 };
@@ -116,7 +117,7 @@ export const getAuthUser = async (
     }
 
     // Si validation échoue, essayer l'endpoint profile (avec guard) pour compatibilité
-    console.log(
+    logger.log(
       "❌ [Unified Auth] Session validation failed, trying profile endpoint",
     );
 
@@ -131,10 +132,10 @@ export const getAuthUser = async (
     // Gérer les erreurs 403/401 comme non-authentifié (pas une vraie erreur)
     if (!profileResponse.ok) {
       if (profileResponse.status === 403 || profileResponse.status === 401) {
-        console.log("❌ [Unified Auth] User not authenticated (403/401)");
+        logger.log("❌ [Unified Auth] User not authenticated (403/401)");
         return null;
       }
-      console.log(
+      logger.log(
         "❌ [Unified Auth] Profile endpoint error:",
         profileResponse.status,
       );
@@ -144,7 +145,7 @@ export const getAuthUser = async (
     const userData = await profileResponse.json();
 
     if (userData.error || !userData.id) {
-      console.log("❌ [Unified Auth] Invalid user data:", userData);
+      logger.log("❌ [Unified Auth] Invalid user data:", userData);
       return null;
     }
 
@@ -163,7 +164,7 @@ export const getAuthUser = async (
       isActive: userData.isActive !== false,
     };
   } catch (error) {
-    console.error("❌ [Unified Auth] Erreur dans getAuthUser:", error);
+    logger.error("❌ [Unified Auth] Erreur dans getAuthUser:", error);
     return null;
   }
 };
@@ -179,7 +180,7 @@ export const requireUser = async ({
 }): Promise<AuthUser> => {
   const user = await getOptionalUser({ context });
   if (!user) {
-    console.log("❌ [Unified Auth] requireUser: Pas d'utilisateur connecté");
+    logger.log("❌ [Unified Auth] requireUser: Pas d'utilisateur connecté");
     throw redirect("/login");
   }
   return user;
@@ -202,7 +203,7 @@ export const requireAuth = async (
 
   const user = await getAuthUser(request);
   if (!user) {
-    console.log("❌ [Unified Auth] requireAuth: Redirection vers login");
+    logger.log("❌ [Unified Auth] requireAuth: Redirection vers login");
     const url = request.url;
     if (url && url !== "undefined") {
       const pathname = new URL(url).pathname;
@@ -225,7 +226,7 @@ export const requireUserWithRedirect = async ({
   if (!user) {
     const url = new URL(request.url);
     const redirectTo = url.pathname + url.search;
-    console.log(
+    logger.log(
       "❌ [Unified Auth] requireUserWithRedirect: Redirection avec URL",
     );
     throw redirect(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
@@ -245,21 +246,21 @@ export const requireAdmin = async ({
   const user = await getOptionalUser({ context });
 
   if (!user) {
-    console.log("❌ [Unified Auth] requireAdmin: Pas d'utilisateur connecté");
+    logger.log("❌ [Unified Auth] requireAdmin: Pas d'utilisateur connecté");
     throw redirect("/login");
   }
 
   // Vérifier si c'est un admin (niveau 7+ ou isAdmin)
   const userLevel = user.level || (user.isPro ? 5 : 1);
   if (!user.isAdmin && userLevel < 7) {
-    console.log("❌ [Unified Auth] requireAdmin: Utilisateur non admin", {
+    logger.log("❌ [Unified Auth] requireAdmin: Utilisateur non admin", {
       level: userLevel,
       isAdmin: user.isAdmin,
     });
     throw redirect("/unauthorized");
   }
 
-  console.log("✅ [Unified Auth] Admin autorisé", {
+  logger.log("✅ [Unified Auth] Admin autorisé", {
     level: userLevel,
     isAdmin: user.isAdmin,
   });
@@ -277,7 +278,7 @@ export const redirectIfAuthenticated = async ({
 }) => {
   const user = await getOptionalUser({ context });
   if (user) {
-    console.log(
+    logger.log(
       "🔄 [Unified Auth] Utilisateur déjà connecté, redirection vers dashboard",
     );
     throw redirect("/");

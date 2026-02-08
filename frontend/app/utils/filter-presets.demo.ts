@@ -1,9 +1,11 @@
 /**
  * 💾 DEMO - Exemples de presets de filtres
- * 
+ *
  * Ce fichier contient des exemples de presets prédéfinis
  * pour démontrer la fonctionnalité de sauvegarde.
  */
+
+import { logger } from "~/utils/logger";
 
 export interface FilterPreset {
   id: string;
@@ -17,46 +19,46 @@ export interface FilterPreset {
  */
 export const DEMO_PRESETS: FilterPreset[] = [
   {
-    id: 'demo-1',
-    name: '🔧 Filtres à huile BOSCH',
+    id: "demo-1",
+    name: "🔧 Filtres à huile BOSCH",
     filters: {
-      marque: ['BOSCH'],
-      category: ['Filtres'],
+      marque: ["BOSCH"],
+      category: ["Filtres"],
       priceMax: 50,
-      inStock: 'true',
+      inStock: "true",
     },
-    createdAt: new Date('2025-10-25T10:00:00Z').toISOString(),
+    createdAt: new Date("2025-10-25T10:00:00Z").toISOString(),
   },
   {
-    id: 'demo-2',
-    name: '⚡ Bougies d\'allumage économiques',
+    id: "demo-2",
+    name: "⚡ Bougies d'allumage économiques",
     filters: {
-      category: ['Allumage'],
+      category: ["Allumage"],
       priceMax: 30,
-      inStock: 'true',
-      onSale: 'true',
+      inStock: "true",
+      onSale: "true",
     },
-    createdAt: new Date('2025-10-25T10:30:00Z').toISOString(),
+    createdAt: new Date("2025-10-25T10:30:00Z").toISOString(),
   },
   {
-    id: 'demo-3',
-    name: '🚗 Pièces OES haut de gamme',
+    id: "demo-3",
+    name: "🚗 Pièces OES haut de gamme",
     filters: {
-      qualityLevel: '1', // OES
+      qualityLevel: "1", // OES
       priceMin: 100,
-      inStock: 'true',
+      inStock: "true",
     },
-    createdAt: new Date('2025-10-25T11:00:00Z').toISOString(),
+    createdAt: new Date("2025-10-25T11:00:00Z").toISOString(),
   },
   {
-    id: 'demo-4',
-    name: '💰 Promotions du moment',
+    id: "demo-4",
+    name: "💰 Promotions du moment",
     filters: {
-      onSale: 'true',
+      onSale: "true",
       priceMax: 100,
-      inStock: 'true',
+      inStock: "true",
     },
-    createdAt: new Date('2025-10-25T12:00:00Z').toISOString(),
+    createdAt: new Date("2025-10-25T12:00:00Z").toISOString(),
   },
 ];
 
@@ -65,24 +67,25 @@ export const DEMO_PRESETS: FilterPreset[] = [
  * Ajoute les presets de démo si localStorage vide
  */
 export function loadPresetsWithDefaults(): FilterPreset[] {
-  const STORAGE_KEY = 'search_filters_presets';
-  
+  const STORAGE_KEY = "search_filters_presets";
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const presets = JSON.parse(stored);
-      console.log(`📦 ${presets.length} preset(s) chargé(s) depuis localStorage`);
+      logger.log(
+        `📦 ${presets.length} preset(s) chargé(s) depuis localStorage`,
+      );
       return presets;
     }
-    
+
     // Aucun preset sauvegardé → charger les démos
-    console.log('📋 Aucun preset sauvegardé, chargement des démos...');
+    logger.log("📋 Aucun preset sauvegardé, chargement des démos...");
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_PRESETS));
     return DEMO_PRESETS;
-    
   } catch (error) {
-    console.error('❌ Erreur chargement presets:', error);
+    logger.error("❌ Erreur chargement presets:", error);
     return [];
   }
 }
@@ -90,24 +93,26 @@ export function loadPresetsWithDefaults(): FilterPreset[] {
 /**
  * 💾 Sauvegarder un preset
  */
-export function savePreset(preset: Omit<FilterPreset, 'id' | 'createdAt'>): FilterPreset {
-  const STORAGE_KEY = 'search_filters_presets';
-  
+export function savePreset(
+  preset: Omit<FilterPreset, "id" | "createdAt">,
+): FilterPreset {
+  const STORAGE_KEY = "search_filters_presets";
+
   const newPreset: FilterPreset = {
     id: `preset-${Date.now()}`,
     name: preset.name,
     filters: preset.filters,
     createdAt: new Date().toISOString(),
   };
-  
+
   try {
     const existing = loadPresetsWithDefaults();
     const updated = [...existing, newPreset];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    console.log('✅ Preset sauvegardé:', newPreset.name);
+    logger.log("✅ Preset sauvegardé:", newPreset.name);
     return newPreset;
   } catch (error) {
-    console.error('❌ Erreur sauvegarde preset:', error);
+    logger.error("❌ Erreur sauvegarde preset:", error);
     throw error;
   }
 }
@@ -116,15 +121,15 @@ export function savePreset(preset: Omit<FilterPreset, 'id' | 'createdAt'>): Filt
  * 🗑️ Supprimer un preset
  */
 export function deletePreset(presetId: string): void {
-  const STORAGE_KEY = 'search_filters_presets';
-  
+  const STORAGE_KEY = "search_filters_presets";
+
   try {
     const existing = loadPresetsWithDefaults();
-    const updated = existing.filter(p => p.id !== presetId);
+    const updated = existing.filter((p) => p.id !== presetId);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    console.log('🗑️ Preset supprimé:', presetId);
+    logger.log("🗑️ Preset supprimé:", presetId);
   } catch (error) {
-    console.error('❌ Erreur suppression preset:', error);
+    logger.error("❌ Erreur suppression preset:", error);
     throw error;
   }
 }
@@ -133,9 +138,9 @@ export function deletePreset(presetId: string): void {
  * 🔄 Réinitialiser aux presets de démo
  */
 export function resetToDemoPresets(): void {
-  const STORAGE_KEY = 'search_filters_presets';
+  const STORAGE_KEY = "search_filters_presets";
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_PRESETS));
-  console.log('🔄 Presets réinitialisés aux démos');
+  logger.log("🔄 Presets réinitialisés aux démos");
 }
 
 /**
@@ -151,14 +156,17 @@ export interface PresetStats {
 
 export function getPresetStats(): PresetStats {
   const presets = loadPresetsWithDefaults();
-  const demoIds = DEMO_PRESETS.map(p => p.id);
-  
+  const demoIds = DEMO_PRESETS.map((p) => p.id);
+
   return {
     totalPresets: presets.length,
-    demoPresets: presets.filter(p => demoIds.includes(p.id)).length,
-    userPresets: presets.filter(p => !demoIds.includes(p.id)).length,
+    demoPresets: presets.filter((p) => demoIds.includes(p.id)).length,
+    userPresets: presets.filter((p) => !demoIds.includes(p.id)).length,
     recentlyUsed: presets
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
       .slice(0, 5),
   };
 }
@@ -168,9 +176,7 @@ export function getPresetStats(): PresetStats {
  */
 export function findPresetByName(name: string): FilterPreset | undefined {
   const presets = loadPresetsWithDefaults();
-  return presets.find(p => 
-    p.name.toLowerCase().includes(name.toLowerCase())
-  );
+  return presets.find((p) => p.name.toLowerCase().includes(name.toLowerCase()));
 }
 
 /**
@@ -185,26 +191,26 @@ export function exportPresetsAsJSON(): string {
  * 📥 Import presets depuis JSON
  */
 export function importPresetsFromJSON(json: string): void {
-  const STORAGE_KEY = 'search_filters_presets';
-  
+  const STORAGE_KEY = "search_filters_presets";
+
   try {
     const imported = JSON.parse(json) as FilterPreset[];
-    
+
     // Validation basique
     if (!Array.isArray(imported)) {
-      throw new Error('Format JSON invalide : attendu un array');
+      throw new Error("Format JSON invalide : attendu un array");
     }
-    
+
     imported.forEach((preset, idx) => {
       if (!preset.id || !preset.name || !preset.filters) {
         throw new Error(`Preset ${idx} invalide : champs manquants`);
       }
     });
-    
+
     localStorage.setItem(STORAGE_KEY, json);
-    console.log(`✅ ${imported.length} preset(s) importé(s)`);
+    logger.log(`✅ ${imported.length} preset(s) importé(s)`);
   } catch (error) {
-    console.error('❌ Erreur import presets:', error);
+    logger.error("❌ Erreur import presets:", error);
     throw error;
   }
 }

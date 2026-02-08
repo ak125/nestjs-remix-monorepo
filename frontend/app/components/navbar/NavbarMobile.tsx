@@ -34,8 +34,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
+import { useState, memo } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -43,6 +42,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Sheet, SheetContent, SheetClose, SheetTrigger } from "../ui/sheet";
+import { Button } from "~/components/ui/button";
 
 interface NavbarMobileProps {
   user?: {
@@ -53,7 +53,10 @@ interface NavbarMobileProps {
   onSearchClick?: () => void;
 }
 
-export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
+export const NavbarMobile = memo(function NavbarMobile({
+  user,
+  onSearchClick,
+}: NavbarMobileProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // 🔗 Navigation items
@@ -373,4 +376,4 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
       </SheetContent>
     </Sheet>
   );
-}
+});

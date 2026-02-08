@@ -25,6 +25,7 @@ import {
 import { Error404 } from "~/components/errors/Error404";
 import { Badge, Alert } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -52,7 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const ticket = await getTicket(ticketId, request);
     return json<LoaderData>({ ticket });
   } catch (error) {
-    console.error("Erreur lors du chargement du ticket:", error);
+    logger.error("Erreur lors du chargement du ticket:", error);
     throw new Response("Ticket non trouvé", { status: 404 });
   }
 }
@@ -90,7 +91,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     return json<ActionData>({ error: "Action non reconnue" }, { status: 400 });
   } catch (error) {
-    console.error("Erreur lors de l'action:", error);
+    logger.error("Erreur lors de l'action:", error);
     return json<ActionData>(
       {
         error:

@@ -1,10 +1,10 @@
 // 📁 frontend/app/components/vehicle/VehicleCombobox.tsx
 // 🚗 Combobox intelligent pour sélection rapide de véhicule
 
-import { Car, ChevronDown, Search, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-
+import { Car, ChevronDown, Search, X } from "lucide-react";
+import { memo, useEffect, useRef, useState } from "react";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
+import { logger } from "~/utils/logger";
 
 interface VehicleComboboxProps {
   placeholder?: string;
@@ -31,20 +31,21 @@ interface VehicleOption {
   type: any;
 }
 
-export default function VehicleCombobox({
+const VehicleCombobox = memo(function VehicleCombobox({
   placeholder = "🚗 Recherchez votre véhicule (ex: Peugeot 208 1.6 HDI)",
   onSelect: _onSelect,
   currentVehicle: _currentVehicle,
-  className = ""
+  className = "",
 }: VehicleComboboxProps) {
-  
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<VehicleOption[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(
+    null,
+  );
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +61,7 @@ export default function VehicleCombobox({
       try {
         await searchVehicles(query);
       } catch (error) {
-        console.error('❌ Erreur recherche véhicules:', error);
+        logger.error("❌ Erreur recherche véhicules:", error);
         setOptions([]);
       } finally {
         setLoading(false);
@@ -78,10 +79,13 @@ export default function VehicleCombobox({
     try {
       // Rechercher uniquement les marques (pas de cascade)
       const brands = await enhancedVehicleApi.getBrands();
-      const matchingBrands = brands.filter(b => 
-        b.marque_name.toLowerCase().includes(term) ||
-        (b.marque_alias && b.marque_alias.toLowerCase().includes(term))
-      ).slice(0, 5); // Max 5 marques
+      const matchingBrands = brands
+        .filter(
+          (b) =>
+            b.marque_name.toLowerCase().includes(term) ||
+            (b.marque_alias && b.marque_alias.toLowerCase().includes(term)),
+        )
+        .slice(0, 5); // Max 5 marques
 
       // Pour chaque marque, créer une suggestion simple
       for (const brand of matchingBrands) {
@@ -91,24 +95,23 @@ export default function VehicleCombobox({
           label: `${brand.marque_name} (tous modèles)`,
           brand,
           year: new Date().getFullYear(), // Année courante
-          model: { 
-            modele_id: 0, 
-            modele_name: 'À sélectionner',
-            modele_alias: 'a-selectionner'
+          model: {
+            modele_id: 0,
+            modele_name: "À sélectionner",
+            modele_alias: "a-selectionner",
           },
-          type: { 
-            type_id: 0, 
-            type_name: 'À sélectionner',
-            type_alias: 'a-selectionner'
-          }
+          type: {
+            type_id: 0,
+            type_name: "À sélectionner",
+            type_alias: "a-selectionner",
+          },
         });
       }
 
       setOptions(results);
       setHighlightedIndex(0);
-      
     } catch (error) {
-      console.error('❌ Erreur recherche:', error);
+      logger.error("❌ Erreur recherche:", error);
       setOptions([]);
     }
   };
@@ -116,16 +119,18 @@ export default function VehicleCombobox({
   // 🎯 Sélection - Pour l'instant, on redirige vers le sélecteur complet
   const handleSelect = (option: VehicleOption) => {
     setSelectedVehicle(option);
-    setQuery('');
+    setQuery("");
     setIsOpen(false);
-    
+
     // Note: Comme on n'a que la marque, on ne peut pas encore faire la sélection complète
     // L'utilisateur devra utiliser le sélecteur complet pour choisir modèle/type
-    console.log('🚗 Marque sélectionnée:', option.brand.marque_name);
-    
+    logger.log("🚗 Marque sélectionnée:", option.brand.marque_name);
+
     // Afficher un message pour guider l'utilisateur
-    alert(`Marque ${option.brand.marque_name} sélectionnée.\n\nPour une sélection complète (modèle + type), utilisez le sélecteur détaillé ci-dessous.`);
-    
+    alert(
+      `Marque ${option.brand.marque_name} sélectionnée.\n\nPour une sélection complète (modèle + type), utilisez le sélecteur détaillé ci-dessous.`,
+    );
+
     // On ne peut pas appeler onSelect car on n'a pas de modèle/type valides
     // if (onSelect) {
     //   onSelect({
@@ -142,23 +147,23 @@ export default function VehicleCombobox({
     if (!isOpen || options.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex(prev => 
-          prev < options.length - 1 ? prev + 1 : prev
+        setHighlightedIndex((prev) =>
+          prev < options.length - 1 ? prev + 1 : prev,
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex(prev => prev > 0 ? prev - 1 : 0);
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (options[highlightedIndex]) {
           handleSelect(options[highlightedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setIsOpen(false);
         break;
     }
@@ -177,14 +182,14 @@ export default function VehicleCombobox({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // 🧹 Clear selection
   const handleClear = () => {
     setSelectedVehicle(null);
-    setQuery('');
+    setQuery("");
     setOptions([]);
     inputRef.current?.focus();
   };
@@ -228,7 +233,9 @@ export default function VehicleCombobox({
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-semantic-info border-t-transparent"></div>
             </div>
           ) : (
-            <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            />
           )}
         </div>
 
@@ -246,7 +253,9 @@ export default function VehicleCombobox({
             ) : options.length === 0 ? (
               <div className="px-4 py-8 text-center text-neutral-500">
                 <p className="text-sm">Aucune marque trouvée</p>
-                <p className="text-xs mt-1">Essayez : Peugeot, Renault, Citroën...</p>
+                <p className="text-xs mt-1">
+                  Essayez : Peugeot, Renault, Citroën...
+                </p>
               </div>
             ) : (
               <ul className="py-2">
@@ -256,8 +265,8 @@ export default function VehicleCombobox({
                       onClick={() => handleSelect(option)}
                       className={`w-full px-4 py-3 text-left hover:bg-semantic-info/5 transition-colors border-l-4 ${
                         index === highlightedIndex
-                          ? 'bg-semantic-info/10 border-semantic-info'
-                          : 'border-transparent'
+                          ? "bg-semantic-info/10 border-semantic-info"
+                          : "border-transparent"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -284,4 +293,6 @@ export default function VehicleCombobox({
       </div>
     </div>
   );
-}
+});
+
+export default VehicleCombobox;

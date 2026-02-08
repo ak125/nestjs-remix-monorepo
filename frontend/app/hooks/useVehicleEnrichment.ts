@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { logger } from "~/utils/logger";
 
 /**
  * Interface pour un véhicule enrichi
@@ -31,7 +32,7 @@ export function useVehicleEnrichment(typeIds: number[]) {
   return useQuery({
     queryKey: ["vehicle-enrichment", validIds.sort().join(",")],
     queryFn: async (): Promise<Record<number, EnrichedVehicleType>> => {
-      console.log(
+      logger.log(
         "[useVehicleEnrichment] Starting fetch for IDs:",
         validIds.slice(0, 10),
         "... (total:",
@@ -40,7 +41,7 @@ export function useVehicleEnrichment(typeIds: number[]) {
       );
 
       if (validIds.length === 0) {
-        console.log("[useVehicleEnrichment] No valid IDs, returning empty");
+        logger.log("[useVehicleEnrichment] No valid IDs, returning empty");
         return {};
       }
 
@@ -52,14 +53,14 @@ export function useVehicleEnrichment(typeIds: number[]) {
           body: JSON.stringify({ type_ids: validIds }),
         });
 
-        console.log(
+        logger.log(
           "[useVehicleEnrichment] Response status:",
           response.status,
           response.statusText,
         );
 
         if (!response.ok) {
-          console.error(
+          logger.error(
             "[useVehicleEnrichment] Failed to resolve vehicle types:",
             response.status,
             response.statusText,
@@ -68,7 +69,7 @@ export function useVehicleEnrichment(typeIds: number[]) {
         }
 
         const data = await response.json();
-        console.log(
+        logger.log(
           "[useVehicleEnrichment] Response data keys:",
           Object.keys(data).slice(0, 5),
           "... (total:",
@@ -77,7 +78,7 @@ export function useVehicleEnrichment(typeIds: number[]) {
         );
         return data as Record<number, EnrichedVehicleType>;
       } catch (error) {
-        console.error(
+        logger.error(
           "[useVehicleEnrichment] Error fetching vehicle enrichment:",
           error,
         );

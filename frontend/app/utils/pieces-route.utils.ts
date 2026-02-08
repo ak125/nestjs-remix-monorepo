@@ -12,6 +12,7 @@ import {
   type GuideContent,
   type PieceData,
 } from "../types/pieces-route.types";
+import { logger } from "~/utils/logger";
 
 /**
  * Convertit un slug en titre formaté
@@ -34,7 +35,7 @@ export function parseUrlParam(param: string | undefined): {
 } {
   // Protection contre undefined/null
   if (!param) {
-    console.warn("⚠️ [PARSE-URL] Paramètre undefined ou null reçu");
+    logger.warn("⚠️ [PARSE-URL] Paramètre undefined ou null reçu");
     return { alias: "undefined", id: 0 };
   }
 
@@ -85,7 +86,7 @@ export function validateVehicleIds(params: {
 
   if (errors.length > 0) {
     const errorMsg = `❌ [VALIDATION-IDS] IDs manquants ou invalides:\n${errors.join("\n")}`;
-    console.error(errorMsg, {
+    logger.error(errorMsg, {
       source: params.source || "unknown",
       receivedParams: params,
     });
@@ -97,7 +98,7 @@ export function validateVehicleIds(params: {
     );
   }
 
-  console.log("✅ [VALIDATION-IDS] Tous les IDs sont valides:", params);
+  logger.log("✅ [VALIDATION-IDS] Tous les IDs sont valides:", params);
 }
 
 /**
@@ -262,7 +263,7 @@ export async function resolveVehicleIds(
 ) {
   // Validation des paramètres
   if (!marqueParam || !modeleParam || !typeParam) {
-    console.error(`❌ [RESOLVE-VEHICLE] Paramètres invalides:`, {
+    logger.error(`❌ [RESOLVE-VEHICLE] Paramètres invalides:`, {
       marqueParam,
       modeleParam,
       typeParam,
@@ -286,7 +287,7 @@ export async function resolveVehicleIds(
     };
   }
 
-  console.warn(
+  logger.warn(
     `⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`,
   );
 
@@ -324,13 +325,13 @@ export async function resolveVehicleIds(
       }
     }
   } catch (error) {
-    console.error("❌ [RESOLVE-VEHICLE] Erreur appel API:", error);
+    logger.error("❌ [RESOLVE-VEHICLE] Erreur appel API:", error);
   }
 
   // 🛡️ Fallback: Retourner les IDs parsés depuis l'URL (peuvent être 0 si invalides)
   // Note: Le RM V2 RPC validera ensuite et retournera 404 HTTP si IDs inexistants en DB
   // Ceci est le comportement attendu pour les URLs malformées ou obsolètes
-  console.warn(
+  logger.warn(
     `⚠️ [RESOLVE-VEHICLE] Fallback IDs URL: marque=${marque.alias}(${marque.id}), modele=${modele.alias}(${modele.id}), type=${type.alias}(${type.id})`,
   );
   return {
@@ -370,7 +371,7 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   // Le RM V2 RPC fait déjà la validation de l'existence de la gamme en interne
   // Supprimer l'appel redondant à /api/catalog/gammes (économise ~50-100ms)
   if (gamme.id > 0) {
-    console.log(
+    logger.log(
       `✅ [GAMME-ID] ID trouvé dans l'URL: ${gamme.id} (validation déléguée au RM V2)`,
     );
     return gamme.id;
@@ -379,7 +380,7 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   const gammeId = knownGammeMap[gamme.alias];
 
   if (gammeId) {
-    console.log(`✅ [GAMME-ID] Mapping trouvé pour ${gamme.alias}: ${gammeId}`);
+    logger.log(`✅ [GAMME-ID] Mapping trouvé pour ${gamme.alias}: ${gammeId}`);
     return gammeId;
   }
 
@@ -393,23 +394,23 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     if (response.ok) {
       const result = await response.json();
       if (result.success && result.data?.id) {
-        console.log(
+        logger.log(
           `✅ [GAMME-ID] API fallback trouvé pour ${gamme.alias}: ${result.data.id}`,
         );
         return result.data.id;
       }
     }
 
-    console.warn(
+    logger.warn(
       `⚠️ [GAMME-ID] API fallback: alias "${gamme.alias}" non trouvé en base`,
     );
   } catch (error) {
-    console.error(`❌ [GAMME-ID] Erreur API fallback:`, error);
+    logger.error(`❌ [GAMME-ID] Erreur API fallback:`, error);
   }
 
   // 🛡️ Sécurité SEO: Ne pas retourner un ID incorrect si gamme inconnue
   // Le RM V2 RPC gérera la validation et retournera 404 si nécessaire
-  console.error(
+  logger.error(
     `❌ [GAMME-ID] Gamme inconnue: ${gamme.alias} - retour 0 pour validation RM V2`,
   );
   return 0; // Le RM V2 RPC validera et retournera 404 si gamme inexistante

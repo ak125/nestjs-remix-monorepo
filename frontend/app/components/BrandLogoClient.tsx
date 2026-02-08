@@ -1,13 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
+import { logger } from "~/utils/logger";
 
 interface BrandLogoClientProps {
   logoPath: string | null;
   brandName: string;
 }
 
-export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
+export const BrandLogoClient = memo(function BrandLogoClient({
+  logoPath,
+  brandName,
+}: BrandLogoClientProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -88,11 +92,11 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
         className="w-full h-full object-contain p-2"
         onLoad={() => {
           setImageLoaded(true);
-          console.log(`🎨 Logo affiché: ${brandName} (${logoPath})`);
+          logger.log(`🎨 Logo affiché: ${brandName} (${logoPath})`);
         }}
         onError={() => {
           setImageError(true);
-          console.log(`❌ Logo échoué: ${brandName} (${logoPath})`);
+          logger.log(`❌ Logo échoué: ${brandName} (${logoPath})`);
         }}
       />
 
@@ -110,4 +114,4 @@ export function BrandLogoClient({ logoPath, brandName }: BrandLogoClientProps) {
       )}
     </div>
   );
-}
+});

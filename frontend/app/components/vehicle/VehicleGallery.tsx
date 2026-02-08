@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { type VehicleData } from "~/types/vehicle.types";
 
 interface VehicleGalleryProps {
@@ -6,7 +6,10 @@ interface VehicleGalleryProps {
   images?: string[];
 }
 
-export function VehicleGallery({ vehicle, images = [] }: VehicleGalleryProps) {
+export const VehicleGallery = memo(function VehicleGallery({
+  vehicle,
+  images = [],
+}: VehicleGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
 
   // Images par défaut si aucune fournie
@@ -144,4 +147,4 @@ export function VehicleGallery({ vehicle, images = [] }: VehicleGalleryProps) {
       </div>
     </div>
   );
-}
+});

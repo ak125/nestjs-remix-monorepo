@@ -9,7 +9,11 @@
  * - Audit (Historique unifié)
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
 import {
   LayoutDashboard,
@@ -26,6 +30,8 @@ import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 // Navigation items
 const navItems = [
@@ -67,6 +73,8 @@ const navItems = [
   },
 ];
 
+export const meta: MetaFunction = () => createNoIndexMeta("SEO Hub - Admin");
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -87,7 +95,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Hub] Loader error:", error);
+    logger.error("[SEO Hub] Loader error:", error);
     return json({
       summary: null,
       error: "Erreur chargement summary",

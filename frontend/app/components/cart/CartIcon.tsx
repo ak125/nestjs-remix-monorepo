@@ -8,16 +8,19 @@
  */
 import { Link } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 import { useRootCart } from "../../root";
 import { Badge } from "../ui/badge";
+import { logger } from "~/utils/logger";
 
 interface CartIconProps {
   className?: string;
 }
 
-export function CartIcon({ className = "" }: CartIconProps) {
+export const CartIcon = memo(function CartIcon({
+  className = "",
+}: CartIconProps) {
   const rootCart = useRootCart(); // Données SSR du root loader
   const [itemCount, setItemCount] = useState(0);
 
@@ -54,7 +57,7 @@ export function CartIcon({ className = "" }: CartIconProps) {
             }
           }
         } catch (error) {
-          console.error("CartIcon: erreur fetch cart", error);
+          logger.error("CartIcon: erreur fetch cart", error);
         }
       }, 1000);
     };
@@ -86,4 +89,4 @@ export function CartIcon({ className = "" }: CartIconProps) {
       )}
     </Link>
   );
-}
+});

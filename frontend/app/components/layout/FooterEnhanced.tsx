@@ -1,6 +1,6 @@
 /**
  * 🦶 FOOTER ENHANCED - Footer moderne et responsive
- * 
+ *
  * Remplace le Footer basique par un système complet :
  * ✅ Backend API integration
  * ✅ 3 variantes (complete/simple/minimal)
@@ -9,19 +9,19 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
   Linkedin,
   ArrowRight,
-  Heart
+  Heart,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Button } from '~/components/ui/button';
+import { memo, useState, useEffect } from "react";
+import { Button } from "~/components/ui/button";
 
 interface FooterData {
   company: {
@@ -52,8 +52,8 @@ interface FooterData {
 }
 
 interface FooterEnhancedProps {
-  variant?: 'complete' | 'simple' | 'minimal';
-  context?: 'admin' | 'commercial' | 'public';
+  variant?: "complete" | "simple" | "minimal";
+  context?: "admin" | "commercial" | "public";
   theme?: string;
   className?: string;
   staticData?: FooterData;
@@ -63,20 +63,24 @@ interface FooterEnhancedProps {
   isEditable?: boolean;
 }
 
-export function FooterEnhanced({ 
-  variant = 'complete',
-  context = 'public',
-  theme = 'default',
+export const FooterEnhanced = memo(function FooterEnhanced({
+  variant = "complete",
+  context = "public",
+  theme = "default",
   className = "",
   staticData,
   showNewsletter = true,
-  showSocial = true
+  showSocial = true,
 }: FooterEnhancedProps) {
-  const [footerData, setFooterData] = useState<FooterData | null>(staticData || null);
+  const [footerData, setFooterData] = useState<FooterData | null>(
+    staticData || null,
+  );
   const [loading, setLoading] = useState(!staticData);
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
   const fetcher = useFetcher();
 
   // 🔌 Connexion API backend
@@ -88,7 +92,11 @@ export function FooterEnhanced({
 
   // Mise à jour des données
   useEffect(() => {
-    if (fetcher.data && typeof fetcher.data === 'object' && fetcher.data !== null) {
+    if (
+      fetcher.data &&
+      typeof fetcher.data === "object" &&
+      fetcher.data !== null
+    ) {
       const data = fetcher.data as any;
       if (!data.error) {
         setFooterData(data as FooterData);
@@ -103,7 +111,7 @@ export function FooterEnhanced({
       name: "Pièces Auto",
       address: "123 Rue de l'Automobile, 75001 Paris",
       phone: "+33 1 23 45 67 89",
-      email: "contact@pieces-auto.fr"
+      email: "contact@pieces-auto.fr",
     },
     links: [
       {
@@ -112,8 +120,8 @@ export function FooterEnhanced({
           { label: "Accueil", url: "/" },
           { label: "Catalogue", url: "/catalogue" },
           { label: "Marques", url: "/marques" },
-          { label: "Aide", url: "/aide" }
-        ]
+          { label: "Aide", url: "/aide" },
+        ],
       },
       {
         title: "Services",
@@ -121,8 +129,8 @@ export function FooterEnhanced({
           { label: "Livraison", url: "/livraison" },
           { label: "Retours", url: "/retours" },
           { label: "Garantie", url: "/garantie" },
-          { label: "Support", url: "/support" }
-        ]
+          { label: "Support", url: "/support" },
+        ],
       },
       {
         title: "Mon Compte",
@@ -130,24 +138,28 @@ export function FooterEnhanced({
           { label: "Connexion", url: "/login" },
           { label: "Mes Commandes", url: "/orders" },
           { label: "Favoris", url: "/favorites" },
-          { label: "Mon Garage", url: "/garage" }
-        ]
-      }
+          { label: "Mon Garage", url: "/garage" },
+        ],
+      },
     ],
     social: [
       { platform: "facebook", url: "https://facebook.com", icon: "facebook" },
       { platform: "twitter", url: "https://twitter.com", icon: "twitter" },
-      { platform: "instagram", url: "https://instagram.com", icon: "instagram" },
-      { platform: "linkedin", url: "https://linkedin.com", icon: "linkedin" }
+      {
+        platform: "instagram",
+        url: "https://instagram.com",
+        icon: "instagram",
+      },
+      { platform: "linkedin", url: "https://linkedin.com", icon: "linkedin" },
     ],
     legal: [
       { label: "CGV", url: "/cgv" },
       { label: "Mentions Légales", url: "/mentions" },
       { label: "Confidentialité", url: "/privacy" },
-      { label: "Cookies", url: "/cookies" }
+      { label: "Cookies", url: "/cookies" },
     ],
     copyright: `© ${new Date().getFullYear()} Pièces Auto - Tous droits réservés`,
-    showNewsletter: true
+    showNewsletter: true,
   };
 
   const data = footerData || fallbackData;
@@ -157,31 +169,38 @@ export function FooterEnhanced({
     e.preventDefault();
     if (!newsletterEmail) return;
 
-    setNewsletterStatus('loading');
-    
+    setNewsletterStatus("loading");
+
     // Simulation API newsletter
     setTimeout(() => {
-      setNewsletterStatus('success');
-      setNewsletterEmail('');
-      setTimeout(() => setNewsletterStatus('idle'), 3000);
+      setNewsletterStatus("success");
+      setNewsletterEmail("");
+      setTimeout(() => setNewsletterStatus("idle"), 3000);
     }, 1000);
   };
 
   // Icônes sociales
   const getSocialIcon = (iconName: string) => {
     switch (iconName) {
-      case 'facebook': return <Facebook className="w-5 h-5" />;
-      case 'twitter': return <Twitter className="w-5 h-5" />;
-      case 'instagram': return <Instagram className="w-5 h-5" />;
-      case 'linkedin': return <Linkedin className="w-5 h-5" />;
-      default: return null;
+      case "facebook":
+        return <Facebook className="w-5 h-5" />;
+      case "twitter":
+        return <Twitter className="w-5 h-5" />;
+      case "instagram":
+        return <Instagram className="w-5 h-5" />;
+      case "linkedin":
+        return <Linkedin className="w-5 h-5" />;
+      default:
+        return null;
     }
   };
 
   // 🎨 Footer Minimal
-  if (variant === 'minimal') {
+  if (variant === "minimal") {
     return (
-      <footer className={`footer footer--minimal bg-gray-100 border-t ${className} ${theme === 'dark' ? 'dark' : ''}`}>
+      <footer
+        className={`footer footer--minimal bg-gray-100 border-t ${className} ${theme === "dark" ? "dark" : ""}`}
+      >
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
             <div className="mb-4 md:mb-0">
@@ -189,7 +208,11 @@ export function FooterEnhanced({
             </div>
             <div className="flex items-center space-x-4">
               {data.legal?.slice(0, 3).map((item, index) => (
-                <Link key={index} to={item.url} className="hover:text-gray-900 transition-colors">
+                <Link
+                  key={index}
+                  to={item.url}
+                  className="hover:text-gray-900 transition-colors"
+                >
                   {item.label}
                 </Link>
               ))}
@@ -204,14 +227,14 @@ export function FooterEnhanced({
   }
 
   // 🎨 Footer Simple
-  if (variant === 'simple') {
+  if (variant === "simple") {
     return (
-      <footer className={`footer footer--simple bg-gray-50 border-t ${className} ${theme === 'dark' ? 'dark' : ''}`}>
+      <footer
+        className={`footer footer--simple bg-gray-50 border-t ${className} ${theme === "dark" ? "dark" : ""}`}
+      >
         <div className="container mx-auto px-4 py-8">
-          
           {/* Informations principales */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            
             {/* Entreprise */}
             <div>
               <h3 className="font-bold text-lg mb-4">{data.company.name}</h3>
@@ -236,9 +259,9 @@ export function FooterEnhanced({
               <h4 className="font-semibold mb-4">Navigation</h4>
               <div className="space-y-2">
                 {data.links[0]?.items.slice(0, 4).map((item, index) => (
-                  <Link 
-                    key={index} 
-                    to={item.url} 
+                  <Link
+                    key={index}
+                    to={item.url}
                     className="block text-sm text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     {item.label}
@@ -253,10 +276,10 @@ export function FooterEnhanced({
                 <h4 className="font-semibold mb-4">Nous suivre</h4>
                 <div className="flex space-x-4">
                   {data.social.map((social, index) => (
-                    <a 
+                    <a
                       key={index}
-                      href={social.url} 
-                      target="_blank" 
+                      href={social.url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-600 hover:text-gray-900 transition-colors"
                     >
@@ -279,12 +302,12 @@ export function FooterEnhanced({
 
   // 🎨 Footer Complete (par défaut)
   return (
-    <footer className={`footer footer--complete bg-gray-900 text-white ${className} ${theme === 'dark' ? 'dark' : ''}`}>
-      
+    <footer
+      className={`footer footer--complete bg-gray-900 text-white ${className} ${theme === "dark" ? "dark" : ""}`}
+    >
       {/* Section principale */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
           {/* Informations entreprise */}
           <div className="lg:col-span-1">
             <h3 className="font-bold text-xl mb-6">{data.company.name}</h3>
@@ -315,10 +338,10 @@ export function FooterEnhanced({
                 <h4 className="font-medium mb-4">Nous suivre</h4>
                 <div className="flex space-x-4">
                   {data.social.map((social, index) => (
-                    <a 
+                    <a
                       key={index}
-                      href={social.url} 
-                      target="_blank" 
+                      href={social.url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -336,7 +359,7 @@ export function FooterEnhanced({
               <h4 className="font-semibold mb-6">{section.title}</h4>
               <div className="space-y-3">
                 {section.items.map((item, itemIndex) => (
-                  <Link 
+                  <Link
                     key={itemIndex}
                     to={item.url}
                     className="block text-sm text-gray-300 hover:text-white transition-colors"
@@ -355,7 +378,7 @@ export function FooterEnhanced({
               <p className="text-sm text-gray-300 mb-4">
                 Recevez nos dernières offres et actualités
               </p>
-              
+
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
                 <div className="flex">
                   <input
@@ -364,23 +387,33 @@ export function FooterEnhanced({
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     placeholder="Votre email"
                     className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                    disabled={newsletterStatus === 'loading'}
+                    disabled={newsletterStatus === "loading"}
                   />
-                  <Button className="disabled: px-4 py-2 rounded-r-lg" variant="blue" type="submit"
-                    disabled={newsletterStatus === 'loading' || !newsletterEmail}>
-                    {newsletterStatus === 'loading' ? (
+                  <Button
+                    className="disabled: px-4 py-2 rounded-r-lg"
+                    variant="blue"
+                    type="submit"
+                    disabled={
+                      newsletterStatus === "loading" || !newsletterEmail
+                    }
+                  >
+                    {newsletterStatus === "loading" ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <ArrowRight className="w-5 h-5" />
                     )}
                   </Button>
                 </div>
-                
-                {newsletterStatus === 'success' && (
-                  <p className="text-green-400 text-sm">✅ Inscription réussie !</p>
+
+                {newsletterStatus === "success" && (
+                  <p className="text-green-400 text-sm">
+                    ✅ Inscription réussie !
+                  </p>
                 )}
-                {newsletterStatus === 'error' && (
-                  <p className="text-red-400 text-sm">❌ Erreur, veuillez réessayer</p>
+                {newsletterStatus === "error" && (
+                  <p className="text-red-400 text-sm">
+                    ❌ Erreur, veuillez réessayer
+                  </p>
                 )}
               </form>
             </div>
@@ -392,7 +425,6 @@ export function FooterEnhanced({
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            
             <div className="mb-4 md:mb-0 flex items-center">
               <span>{data.copyright}</span>
               <Heart className="w-4 h-4 mx-2 text-red-500" />
@@ -401,9 +433,9 @@ export function FooterEnhanced({
 
             <div className="flex flex-wrap justify-center md:justify-end space-x-6">
               {data.legal?.map((item, index) => (
-                <Link 
+                <Link
                   key={index}
-                  to={item.url} 
+                  to={item.url}
                   className="hover:text-white transition-colors"
                 >
                   {item.label}
@@ -422,4 +454,4 @@ export function FooterEnhanced({
       )}
     </footer>
   );
-}
+});

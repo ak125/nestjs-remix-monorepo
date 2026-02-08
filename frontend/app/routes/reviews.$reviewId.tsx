@@ -40,6 +40,7 @@ import {
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -72,7 +73,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const review = await getReviewById(Number(reviewId), request);
     return json<LoaderData>({ review });
   } catch (error) {
-    console.error("Erreur lors du chargement de l'avis:", error);
+    logger.error("Erreur lors du chargement de l'avis:", error);
     throw new Response("Avis non trouvé", { status: 404 });
   }
 }
@@ -111,7 +112,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
         );
     }
   } catch (error) {
-    console.error("Erreur lors de l'action:", error);
+    logger.error("Erreur lors de l'action:", error);
     return json<ActionData>(
       { error: "Erreur lors de l'action" },
       { status: 500 },

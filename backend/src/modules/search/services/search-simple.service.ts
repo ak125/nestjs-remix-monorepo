@@ -23,6 +23,68 @@ type SearchParams = {
   includeEquivalences?: boolean;
 };
 
+interface SearchResultData {
+  items: Record<string, unknown>[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  executionTime: number;
+  facets: Array<{
+    field: string;
+    label: string;
+    values: Array<{ value: string; label: string; count: number }>;
+  }>;
+  fallbackType?: string;
+  matchedGammes?: Array<{ id: number; name: string; alias: string }>;
+}
+
+interface SearchResult {
+  success: boolean;
+  data: SearchResultData;
+  executionTime?: number;
+  cached?: boolean;
+}
+
+/** Row from pieces_marque */
+interface PiecesMarqueRow {
+  pm_id: string;
+  pm_name: string;
+  pm_oes: string | null;
+  pm_alias: string | null;
+}
+
+/** Row from pieces_gamme (search context) */
+interface PiecesGammeRow {
+  pg_id: string;
+  pg_name: string;
+  pg_alias: string | null;
+}
+
+/** Row from pieces_media_img */
+interface PiecesMediaImgRow {
+  pmi_piece_id: string;
+  pmi_folder: string;
+  pmi_name: string;
+}
+
+/** Enriched piece row flowing through processResults */
+interface SearchPieceRecord {
+  piece_id: number;
+  piece_pm_id: number;
+  piece_pg_id: number;
+  piece_ref: string;
+  _priceVenteTTC: number | null;
+  _priceConsigneTTC: number | null;
+  _isOEM: boolean;
+  _oemRef: string | null;
+  _prsKind: number | null;
+  _qualityLevel?: number;
+  _isExactMatch?: boolean;
+  _isVariantMatch?: boolean;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class SearchSimpleService extends SupabaseBaseService {
   protected readonly logger = new Logger(SearchSimpleService.name);
@@ -186,8 +248,8 @@ export class SearchSimpleService extends SupabaseBaseService {
           cacheKey,
         );
         if (result.data) {
-          (result.data as any).fallbackType = 'gamme-name';
-          (result.data as any).matchedGammes = gammeResult.matchedGammes;
+          result.data.fallbackType = 'gamme-name';
+          result.data.matchedGammes = gammeResult.matchedGammes;
         }
         return result;
       }
@@ -249,8 +311,8 @@ export class SearchSimpleService extends SupabaseBaseService {
             cacheKey,
           );
           if (result.data) {
-            (result.data as any).fallbackType = 'gamme-name';
-            (result.data as any).matchedGammes = gammeResult.matchedGammes;
+            result.data.fallbackType = 'gamme-name';
+            result.data.matchedGammes = gammeResult.matchedGammes;
           }
           return result;
         }
@@ -315,7 +377,10 @@ export class SearchSimpleService extends SupabaseBaseService {
       const enrichedPieces = pieces.map((p) => {
         const key = `${p.piece_id}-${p.piece_pm_id}`;
         const price = priceMap.get(key);
-        const _prsKind = prsKindMap.get(String(p.piece_id)) ?? '0';
+        const _prsKind = parseInt(
+          prsKindMap.get(String(p.piece_id)) ?? '0',
+          10,
+        );
 
         return {
           ...p,
@@ -323,13 +388,19 @@ export class SearchSimpleService extends SupabaseBaseService {
           _price: price ? parseFloat(price.pri_vente_ttc || '0') : 0,
           _deposit: price ? parseFloat(price.pri_consigne_ttc || '0') : 0,
           _hasPrice: !!price,
+          _priceVenteTTC: price ? parseFloat(price.pri_vente_ttc || '0') : 0,
+          _priceConsigneTTC: price
+            ? parseFloat(price.pri_consigne_ttc || '0')
+            : 0,
+          _isOEM: false,
+          _oemRef: null as string | null,
         };
       });
 
       // Tri par prs_kind puis prix*quantité
       const sortedPieces = enrichedPieces.sort((a, b) => {
-        const kindA = parseInt(a._prsKind) || 99;
-        const kindB = parseInt(b._prsKind) || 99;
+        const kindA = a._prsKind || 99;
+        const kindB = b._prsKind || 99;
         if (kindA !== kindB) return kindA - kindB;
         const priceA = (a._price || 0) * (a.piece_qty_sale || 1);
         const priceB = (b._price || 0) * (b.piece_qty_sale || 1);
@@ -507,7 +578,7 @@ export class SearchSimpleService extends SupabaseBaseService {
   }
 
   private async processResults(
-    pieces: any[],
+    pieces: SearchPieceRecord[],
     cleanQuery: string,
     filters: SearchFilters | undefined,
     page: number,
@@ -516,7 +587,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     startTime: number,
     categoryFilter: string | null = null,
     cacheKey: string,
-  ) {
+  ): Promise<SearchResult> {
     if (!pieces || pieces.length === 0) {
       this.logger.log(`❌ 0 résultat pour "${cleanQuery}"`);
       const empty = {
@@ -563,13 +634,13 @@ export class SearchSimpleService extends SupabaseBaseService {
             .from(TABLES.pieces_marque)
             .select('pm_id, pm_name, pm_oes, pm_alias')
             .in('pm_id', marqueIds.map(String))
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] as PiecesMarqueRow[] }),
       gammeIds.length
         ? this.client
             .from(TABLES.pieces_gamme)
             .select('pg_id, pg_name, pg_alias')
             .in('pg_id', gammeIds.map(String))
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] as PiecesGammeRow[] }),
       // 🖼️ Charger les images principales
       pieceIds.length
         ? this.client
@@ -577,7 +648,7 @@ export class SearchSimpleService extends SupabaseBaseService {
             .select('pmi_piece_id, pmi_folder, pmi_name')
             .in('pmi_piece_id', pieceIds)
             .eq('pmi_display', 1)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] as PiecesMediaImgRow[] }),
     ]);
 
     const marqueMap = new Map<

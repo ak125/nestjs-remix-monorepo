@@ -51,10 +51,10 @@ export class RagProxyService {
       const data = await response.json();
 
       return {
-        answer: data.answer,
+        answer: data.context || data.response || '',
         sources: data.sources || [],
         sessionId: data.session_id,
-        confidence: data.confidence || 0,
+        confidence: data.truth_metadata?.composite_confidence ?? 0,
       };
     } catch (error) {
       if (error instanceof HttpException) {

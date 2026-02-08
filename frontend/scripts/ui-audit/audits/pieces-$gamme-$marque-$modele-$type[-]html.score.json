@@ -1,0 +1,18 @@
+{
+  "file": "/opt/automecanik/app/frontend/app/routes/pieces.$gamme.$marque.$modele.$type[.]html.tsx",
+  "route": "/pieces/:gamme/:marque/:modele/:typehtml",
+  "timestamp": "2026-01-29T19:59:45.602Z",
+  "global_score": 10,
+  "scores": {
+    "mobile_first": 10,
+    "responsive": 10,
+    "touch_ux": 10,
+    "readability": 10,
+    "ecommerce_ux": 10,
+    "a11y": 10,
+    "design_system": 10
+  },
+  "hard_rule_violations": [],
+  "top_risks": [],
+  "quick_wins": []
+}

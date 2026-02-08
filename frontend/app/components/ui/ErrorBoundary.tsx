@@ -1,5 +1,6 @@
 import { type ErrorInfo, type ReactNode, Component } from "react";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 interface Props {
   children: ReactNode;
@@ -24,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    logger.error("ErrorBoundary caught an error:", error, errorInfo);
 
     // Appel du callback d'erreur si fourni
     if (this.props.onError) {
@@ -173,7 +174,7 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook pour utilisation dans les composants fonctionnels
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error("Error caught by useErrorHandler:", error, errorInfo);
+    logger.error("Error caught by useErrorHandler:", error, errorInfo);
 
     // Analytics
     if (typeof gtag !== "undefined") {

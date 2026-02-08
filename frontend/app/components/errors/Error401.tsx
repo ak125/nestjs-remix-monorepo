@@ -6,7 +6,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 
@@ -17,7 +17,7 @@ interface Error401Props {
   countdown?: number; // secondes avant redirect (défaut: 5)
 }
 
-export function Error401({
+export const Error401 = memo(function Error401({
   redirectTo,
   message,
   url,
@@ -54,11 +54,11 @@ export function Error401({
   useEffect(() => {
     const meta = document.querySelector('meta[name="robots"]');
     if (meta) {
-      meta.setAttribute('content', 'noindex, follow');
+      meta.setAttribute("content", "noindex, follow");
     } else {
-      const newMeta = document.createElement('meta');
-      newMeta.name = 'robots';
-      newMeta.content = 'noindex, follow';
+      const newMeta = document.createElement("meta");
+      newMeta.name = "robots";
+      newMeta.content = "noindex, follow";
       document.head.appendChild(newMeta);
     }
   }, []);
@@ -150,10 +150,7 @@ export function Error401({
                 Mot de passe oublié
               </Link>{" "}
               ou{" "}
-              <Link
-                to="/contact"
-                className="text-blue-600 hover:underline"
-              >
+              <Link to="/contact" className="text-blue-600 hover:underline">
                 contactez le support
               </Link>
             </p>
@@ -162,4 +159,4 @@ export function Error401({
       </div>
     </div>
   );
-}
+});

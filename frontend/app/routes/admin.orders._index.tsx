@@ -46,6 +46,7 @@ import {
 } from "../types/orders.types";
 import { getUserPermissions, getUserRole } from "../utils/permissions";
 import { Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 // ========================================
 // 📄 META
@@ -68,7 +69,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   // 🔐 Authentification
   const user = await requireUser({ context });
   if (!user || !user.level || user.level < 3) {
-    console.error(`🚫 [Action] Accès refusé`);
+    logger.error(`🚫 [Action] Accès refusé`);
     return json<ActionData>({ error: "Accès refusé" }, { status: 403 });
   }
 
@@ -79,7 +80,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const intent = formData.get("intent") || formData.get("_action");
   const orderId = formData.get("orderId");
 
-  console.log(
+  logger.log(
     `🔒 [Action] User: ${user.email} | Level: ${user.level} | Role: ${userRole.label} | Intent: ${intent}`,
   );
 
@@ -109,7 +110,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`💰 Order #${orderId} marked as paid`);
+        logger.log(`💰 Order #${orderId} marked as paid`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} marquée comme payée`,
@@ -136,7 +137,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`✅ Order #${orderId} validated`);
+        logger.log(`✅ Order #${orderId} validated`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} validée`,
@@ -167,7 +168,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`📦 Order #${orderId} processing started`);
+        logger.log(`📦 Order #${orderId} processing started`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} mise en préparation`,
@@ -198,7 +199,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`✅ Order #${orderId} marked as ready`);
+        logger.log(`✅ Order #${orderId} marked as ready`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} prête à expédier`,
@@ -225,7 +226,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`🚚 Order #${orderId} shipped`);
+        logger.log(`🚚 Order #${orderId} shipped`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} expédiée`,
@@ -252,7 +253,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`✅ Order #${orderId} delivered`);
+        logger.log(`✅ Order #${orderId} delivered`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} livrée`,
@@ -279,7 +280,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`❌ Order #${orderId} cancelled`);
+        logger.log(`❌ Order #${orderId} cancelled`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} annulée`,
@@ -306,7 +307,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`🗑️ Order #${orderId} deleted`);
+        logger.log(`🗑️ Order #${orderId} deleted`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} supprimée`,
@@ -347,7 +348,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 500 },
           );
         }
-        console.log(`✏️ Order #${orderId} updated`);
+        logger.log(`✏️ Order #${orderId} updated`);
         return json<ActionData>({
           success: true,
           message: `Commande #${orderId} modifiée avec succès`,
@@ -360,7 +361,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
             { status: 403 },
           );
         }
-        console.log(`📄 Export CSV by ${user.email}`);
+        logger.log(`📄 Export CSV by ${user.email}`);
         return json<ActionData>({
           success: true,
           message: "Export CSV généré",
@@ -370,7 +371,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         return json<ActionData>({ error: "Action inconnue" }, { status: 400 });
     }
   } catch (error) {
-    console.error("❌ Action error:", error);
+    logger.error("❌ Action error:", error);
     return json<ActionData>(
       {
         error: error instanceof Error ? error.message : "Erreur inconnue",
@@ -393,7 +394,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const permissions = getUserPermissions(user.level || 0);
   const userRole = getUserRole(user.level || 0);
 
-  console.log(
+  logger.log(
     `👤 [Orders] ${user.email} | Level ${user.level} | ${userRole.label}`,
   );
 
@@ -544,7 +545,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const startIndex = (page - 1) * limit;
     const paginatedOrders = sortedOrders.slice(startIndex, startIndex + limit);
 
-    console.log(
+    logger.log(
       `📄 Page ${page}/${totalPages} - ${paginatedOrders.length}/${filteredOrders.length} orders`,
     );
 
@@ -559,7 +560,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       user: { level: user.level || 0, email: user.email, role: userRole },
     });
   } catch (error) {
-    console.error("❌ Loader error:", error);
+    logger.error("❌ Loader error:", error);
     return json<LoaderData>({
       orders: [],
       stats: {
@@ -661,7 +662,7 @@ export default function OrdersRoute() {
           try {
             await promise;
           } catch (error) {
-            console.error("Erreur paiement:", error);
+            logger.error("Erreur paiement:", error);
           } finally {
             setIsLoading(false);
           }
@@ -707,7 +708,7 @@ export default function OrdersRoute() {
             try {
               await promise;
             } catch (error) {
-              console.error("Erreur validation:", error);
+              logger.error("Erreur validation:", error);
             } finally {
               setIsLoading(false);
             }
@@ -756,7 +757,7 @@ export default function OrdersRoute() {
     try {
       await promise;
     } catch (error) {
-      console.error("Erreur expédition:", error);
+      logger.error("Erreur expédition:", error);
     } finally {
       setIsLoading(false);
     }
@@ -797,7 +798,7 @@ export default function OrdersRoute() {
     try {
       await promise;
     } catch (error) {
-      console.error("Erreur annulation:", error);
+      logger.error("Erreur annulation:", error);
     } finally {
       setIsLoading(false);
     }
@@ -846,7 +847,7 @@ export default function OrdersRoute() {
           try {
             await promise;
           } catch (error) {
-            console.error("Erreur startProcessing:", error);
+            logger.error("Erreur startProcessing:", error);
           } finally {
             setIsLoading(false);
           }
@@ -892,7 +893,7 @@ export default function OrdersRoute() {
           try {
             await promise;
           } catch (error) {
-            console.error("Erreur markReady:", error);
+            logger.error("Erreur markReady:", error);
           } finally {
             setIsLoading(false);
           }
@@ -936,7 +937,7 @@ export default function OrdersRoute() {
           try {
             await promise;
           } catch (error) {
-            console.error("Erreur deliver:", error);
+            logger.error("Erreur deliver:", error);
           } finally {
             setIsLoading(false);
           }

@@ -8,6 +8,7 @@ import {
   redirect,
   type ActionFunction,
   type LoaderFunction,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   Form,
@@ -38,6 +39,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Nouvelle Commande");
 
 interface FormData {
   items: Array<{
@@ -155,7 +160,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     return redirect(`/orders/${result.order.id}`);
   } catch (error) {
-    console.error("Error creating order:", error);
+    logger.error("Error creating order:", error);
     return json<ActionData>(
       {
         error: "Erreur lors de la création de la commande",

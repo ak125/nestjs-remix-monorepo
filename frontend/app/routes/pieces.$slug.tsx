@@ -56,6 +56,7 @@ import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -352,7 +353,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 🛑 410 Gone - URLs sans ID (ex: /pieces/suspension)
   // Ces pages n'existent plus - gammes sans véhicule supprimées
   if (!match) {
-    console.log(`🛑 [410] /pieces/${slug}`);
+    logger.log(`🛑 [410] /pieces/${slug}`);
     throw new Response(null, { status: 410 });
   }
 
@@ -402,7 +403,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         .catch(() => ({ data: null })),
     ]).finally(() => clearTimeout(timeoutId));
 
-    console.log(
+    logger.log(
       "🚗 Véhicule depuis cookie:",
       selectedVehicle
         ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
@@ -440,7 +441,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           }
         : undefined;
 
-    console.log(
+    logger.log(
       `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
     );
 
@@ -492,14 +493,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       null, // Pas de véhicule sur page gamme seule
     );
 
-    console.log(
+    logger.log(
       "🍞 Breadcrumb généré:",
       breadcrumbItems.map((i) => i.label).join(" → "),
     );
 
     // 🔄 Log substitution status
     if (substitutionResponse) {
-      console.log(
+      logger.log(
         `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
       );
     }
@@ -539,7 +540,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur lors du chargement des données:", error);
+    logger.error("Erreur lors du chargement des données:", error);
     throw new Response("Internal Server Error", { status: 500 });
   }
 }
@@ -725,7 +726,7 @@ export default function PiecesDetailPage() {
 
   useEffect(() => {
     if (isLoading) {
-      console.log("⏳ Chargement des données en cours...");
+      logger.log("⏳ Chargement des données en cours...");
     }
   }, [isLoading]);
 

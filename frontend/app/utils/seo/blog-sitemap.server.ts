@@ -3,7 +3,8 @@
  * Petit volume optimisé avec cache HTTP natif
  */
 
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
+import { logger } from "~/utils/logger";
 
 interface BlogArticle {
   slug: string;
@@ -44,7 +45,7 @@ export async function generateBlogSitemap(): Promise<SitemapResult> {
   const xml = buildBlogSitemapXml(articles);
 
   // Calculer ETag (hash du contenu)
-  const etag = `"${createHash('md5').update(xml).digest('hex')}"`;
+  const etag = `"${createHash("md5").update(xml).digest("hex")}"`;
 
   // Last-Modified = article le plus récent
   const lastModified = getLatestModifiedDate(articles);
@@ -67,9 +68,9 @@ export async function generateBlogSitemap(): Promise<SitemapResult> {
  */
 async function fetchBlogArticles(): Promise<BlogArticle[]> {
   try {
-    const response = await fetch('http://localhost:3000/blog/articles', {
+    const response = await fetch("http://localhost:3000/blog/articles", {
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     });
 
@@ -80,7 +81,7 @@ async function fetchBlogArticles(): Promise<BlogArticle[]> {
     const data = await response.json();
     return data.articles || [];
   } catch (error) {
-    console.error('Failed to fetch blog articles:', error);
+    logger.error("Failed to fetch blog articles:", error);
     // Fallback: retourner données mockées
     return getMockArticles();
   }
@@ -93,7 +94,7 @@ function buildBlogSitemapXml(articles: BlogArticle[]): string {
   const urls = articles.map((article) => {
     const loc = `https://www.automecanik.com/blog/${article.slug}`;
     const lastmod = article.updatedAt || article.publishedAt;
-    const changefreq = 'monthly';
+    const changefreq = "monthly";
     const priority = 0.6;
 
     return `  <url>
@@ -106,7 +107,7 @@ function buildBlogSitemapXml(articles: BlogArticle[]): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join('\n')}
+${urls.join("\n")}
 </urlset>`;
 }
 
@@ -120,7 +121,9 @@ function getLatestModifiedDate(articles: BlogArticle[]): string {
 
   const latest = articles.reduce((max, article) => {
     const date = new Date(article.updatedAt || article.publishedAt);
-    return date > new Date(max) ? article.updatedAt || article.publishedAt : max;
+    return date > new Date(max)
+      ? article.updatedAt || article.publishedAt
+      : max;
   }, articles[0].updatedAt || articles[0].publishedAt);
 
   return new Date(latest).toUTCString();
@@ -131,11 +134,11 @@ function getLatestModifiedDate(articles: BlogArticle[]): string {
  */
 function escapeXml(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 /**
@@ -144,25 +147,25 @@ function escapeXml(text: string): string {
 function getMockArticles(): BlogArticle[] {
   return [
     {
-      slug: 'comment-changer-filtre-huile',
-      title: 'Comment changer un filtre à huile',
-      publishedAt: '2025-01-15T10:00:00.000Z',
-      updatedAt: '2025-01-20T14:30:00.000Z',
-      category: 'entretien',
+      slug: "comment-changer-filtre-huile",
+      title: "Comment changer un filtre à huile",
+      publishedAt: "2025-01-15T10:00:00.000Z",
+      updatedAt: "2025-01-20T14:30:00.000Z",
+      category: "entretien",
     },
     {
-      slug: 'choisir-plaquettes-frein',
-      title: 'Guide pour choisir ses plaquettes de frein',
-      publishedAt: '2025-01-10T09:00:00.000Z',
-      updatedAt: '2025-01-18T11:00:00.000Z',
-      category: 'guide',
+      slug: "choisir-plaquettes-frein",
+      title: "Guide pour choisir ses plaquettes de frein",
+      publishedAt: "2025-01-10T09:00:00.000Z",
+      updatedAt: "2025-01-18T11:00:00.000Z",
+      category: "guide",
     },
     {
-      slug: 'vidange-moteur-etapes',
-      title: 'Les étapes d\'une vidange moteur',
-      publishedAt: '2025-01-05T08:00:00.000Z',
-      updatedAt: '2025-01-05T08:00:00.000Z',
-      category: 'entretien',
+      slug: "vidange-moteur-etapes",
+      title: "Les étapes d'une vidange moteur",
+      publishedAt: "2025-01-05T08:00:00.000Z",
+      updatedAt: "2025-01-05T08:00:00.000Z",
+      category: "entretien",
     },
   ];
 }

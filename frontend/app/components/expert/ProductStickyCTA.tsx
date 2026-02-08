@@ -12,7 +12,7 @@
  */
 
 import { ShoppingCart, Check, AlertTriangle, Loader2 } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -181,161 +181,165 @@ function CompatibilityBadge({
 // Skeleton Loading
 // ============================================================================
 
-export function ProductStickyCTASkeleton() {
-  return (
-    <div
-      className={cn(
-        // Fixed height to prevent CLS
-        "h-[88px] md:h-auto",
-        "fixed bottom-0 left-0 right-0 z-40 md:relative md:z-auto",
-        "bg-white border-t md:border md:rounded-xl",
-        "shadow-lg md:shadow-md",
-        "px-4 py-3 md:p-4",
-      )}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-8 w-24" />
-          <Skeleton className="h-5 w-32" />
+export const ProductStickyCTASkeleton = memo(
+  function ProductStickyCTASkeleton() {
+    return (
+      <div
+        className={cn(
+          // Fixed height to prevent CLS
+          "h-[88px] md:h-auto",
+          "fixed bottom-0 left-0 right-0 z-40 md:relative md:z-auto",
+          "bg-white border-t md:border md:rounded-xl",
+          "shadow-lg md:shadow-md",
+          "px-4 py-3 md:p-4",
+        )}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+          <Skeleton className="h-12 w-40" />
         </div>
-        <Skeleton className="h-12 w-40" />
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-const ProductStickyCTA = forwardRef<HTMLDivElement, ProductStickyCTAProps>(
-  (
-    {
-      price,
-      originalPrice,
-      stockQuantity,
-      isCompatible,
-      vehicleContext,
-      productRef,
-      isLoading = false,
-      disabled = false,
-      onAddToCart,
-      onVerifyCompatibility,
-      className,
-    },
-    ref,
-  ) => {
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
+const ProductStickyCTA = memo(
+  forwardRef<HTMLDivElement, ProductStickyCTAProps>(
+    (
+      {
+        price,
+        originalPrice,
+        stockQuantity,
+        isCompatible,
+        vehicleContext,
+        productRef,
+        isLoading = false,
+        disabled = false,
+        onAddToCart,
+        onVerifyCompatibility,
+        className,
+      },
+      ref,
+    ) => {
+      const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-    const handleAddToCart = async () => {
-      if (isAddingToCart || disabled || stockQuantity <= 0) return;
+      const handleAddToCart = async () => {
+        if (isAddingToCart || disabled || stockQuantity <= 0) return;
 
-      setIsAddingToCart(true);
-      try {
-        await onAddToCart?.();
-      } finally {
-        setIsAddingToCart(false);
+        setIsAddingToCart(true);
+        try {
+          await onAddToCart?.();
+        } finally {
+          setIsAddingToCart(false);
+        }
+      };
+
+      const isOutOfStock = stockQuantity <= 0;
+      const isDisabled = disabled || isOutOfStock || isLoading;
+
+      // Show skeleton while loading
+      if (isLoading) {
+        return <ProductStickyCTASkeleton />;
       }
-    };
 
-    const isOutOfStock = stockQuantity <= 0;
-    const isDisabled = disabled || isOutOfStock || isLoading;
-
-    // Show skeleton while loading
-    if (isLoading) {
-      return <ProductStickyCTASkeleton />;
-    }
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          // Fixed height to prevent CLS - CRITICAL
-          "min-h-[88px] md:min-h-0",
-          // Sticky on mobile, normal on desktop
-          "fixed bottom-0 left-0 right-0 z-40",
-          "md:relative md:z-auto",
-          // Background and borders
-          "bg-white border-t border-gray-200",
-          "md:border md:rounded-xl md:border-gray-200",
-          // Shadow - stronger on mobile (floating feel)
-          "shadow-[0_-4px_20px_rgba(0,0,0,0.08)]",
-          "md:shadow-md",
-          // Padding
-          "px-4 py-3 md:p-4",
-          // Safe area for mobile notch
-          "pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
-          "md:pb-4",
-          className,
-        )}
-      >
-        {/* Main content */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Price + Stock */}
-          <div className="flex-1 min-w-0 space-y-1">
-            <PriceDisplay price={price} originalPrice={originalPrice} />
-            <div className="flex items-center gap-3 flex-wrap">
-              <StockIndicator quantity={stockQuantity} />
-              <CompatibilityBadge
-                isCompatible={isCompatible}
-                vehicleContext={vehicleContext}
-                onVerify={onVerifyCompatibility}
-              />
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            // Fixed height to prevent CLS - CRITICAL
+            "min-h-[88px] md:min-h-0",
+            // Sticky on mobile, normal on desktop
+            "fixed bottom-0 left-0 right-0 z-40",
+            "md:relative md:z-auto",
+            // Background and borders
+            "bg-white border-t border-gray-200",
+            "md:border md:rounded-xl md:border-gray-200",
+            // Shadow - stronger on mobile (floating feel)
+            "shadow-[0_-4px_20px_rgba(0,0,0,0.08)]",
+            "md:shadow-md",
+            // Padding
+            "px-4 py-3 md:p-4",
+            // Safe area for mobile notch
+            "pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
+            "md:pb-4",
+            className,
+          )}
+        >
+          {/* Main content */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Price + Stock */}
+            <div className="flex-1 min-w-0 space-y-1">
+              <PriceDisplay price={price} originalPrice={originalPrice} />
+              <div className="flex items-center gap-3 flex-wrap">
+                <StockIndicator quantity={stockQuantity} />
+                <CompatibilityBadge
+                  isCompatible={isCompatible}
+                  vehicleContext={vehicleContext}
+                  onVerify={onVerifyCompatibility}
+                />
+              </div>
             </div>
+
+            {/* Right: CTA Button */}
+            <Button
+              onClick={handleAddToCart}
+              disabled={isDisabled}
+              className={cn(
+                // Size
+                "h-12 px-6",
+                // Colors - Pack Confiance green
+                "bg-[#34C759] hover:bg-[#2DB84E] active:bg-[#28A745]",
+                "text-white font-semibold",
+                // Typography - Montserrat (heading font)
+                "font-heading text-base",
+                // Transition - 200ms as per Pack Confiance
+                "transition-all duration-200 ease-out",
+                // Hover effect - subtle elevation
+                "hover:shadow-lg hover:-translate-y-0.5",
+                "active:translate-y-0 active:shadow-md",
+                // Disabled state
+                "disabled:bg-gray-300 disabled:cursor-not-allowed",
+                "disabled:hover:shadow-none disabled:hover:translate-y-0",
+                // Focus ring for accessibility
+                "focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2",
+              )}
+            >
+              {isAddingToCart ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="hidden sm:inline">Ajout...</span>
+                </>
+              ) : isOutOfStock ? (
+                <span>Indisponible</span>
+              ) : (
+                <>
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="hidden sm:inline">Ajouter au panier</span>
+                  <span className="sm:hidden">Ajouter</span>
+                </>
+              )}
+            </Button>
           </div>
 
-          {/* Right: CTA Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={isDisabled}
-            className={cn(
-              // Size
-              "h-12 px-6",
-              // Colors - Pack Confiance green
-              "bg-[#34C759] hover:bg-[#2DB84E] active:bg-[#28A745]",
-              "text-white font-semibold",
-              // Typography - Montserrat (heading font)
-              "font-heading text-base",
-              // Transition - 200ms as per Pack Confiance
-              "transition-all duration-200 ease-out",
-              // Hover effect - subtle elevation
-              "hover:shadow-lg hover:-translate-y-0.5",
-              "active:translate-y-0 active:shadow-md",
-              // Disabled state
-              "disabled:bg-gray-300 disabled:cursor-not-allowed",
-              "disabled:hover:shadow-none disabled:hover:translate-y-0",
-              // Focus ring for accessibility
-              "focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2",
-            )}
-          >
-            {isAddingToCart ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="hidden sm:inline">Ajout...</span>
-              </>
-            ) : isOutOfStock ? (
-              <span>Indisponible</span>
-            ) : (
-              <>
-                <ShoppingCart className="h-5 w-5" />
-                <span className="hidden sm:inline">Ajouter au panier</span>
-                <span className="sm:hidden">Ajouter</span>
-              </>
-            )}
-          </Button>
+          {/* Product reference (subtle, for SEO and trust) */}
+          {productRef && (
+            <div className="hidden md:block mt-2 pt-2 border-t border-gray-100">
+              <span className="text-xs text-gray-400 font-mono">
+                Réf: {productRef}
+              </span>
+            </div>
+          )}
         </div>
-
-        {/* Product reference (subtle, for SEO and trust) */}
-        {productRef && (
-          <div className="hidden md:block mt-2 pt-2 border-t border-gray-100">
-            <span className="text-xs text-gray-400 font-mono">
-              Réf: {productRef}
-            </span>
-          </div>
-        )}
-      </div>
-    );
-  },
+      );
+    },
+  ),
 );
 
 ProductStickyCTA.displayName = "ProductStickyCTA";

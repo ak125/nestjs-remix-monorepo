@@ -27,6 +27,7 @@ import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -329,7 +330,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const sortBy = url.searchParams.get("sortBy") || "name";
   const limit = 24;
 
-  console.log("[API] Constructeurs loader with params:", {
+  logger.log("[API] Constructeurs loader with params:", {
     page,
     search,
     letter,
@@ -355,7 +356,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
       // Convertir les données manufacturers en format constructeurs
       const manufacturers = apiData.data || [];
-      console.log("[API] Success:", manufacturers.length, "constructeurs");
+      logger.log("[API] Success:", manufacturers.length, "constructeurs");
 
       // Filtrer localement
       let filtered = manufacturers;
@@ -412,11 +413,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
   } catch (error) {
-    console.warn("[API] Error, using fallback data:", error);
+    logger.warn("[API] Error, using fallback data:", error);
   }
 
   // FALLBACK: Utiliser les données de démo
-  console.log("[DEMO] Using fallback data");
+  logger.log("[DEMO] Using fallback data");
 
   // Filtrage des données de démo
   let filteredConstructeurs = DEMO_CONSTRUCTEURS;

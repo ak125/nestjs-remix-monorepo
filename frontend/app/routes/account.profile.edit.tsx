@@ -20,6 +20,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Modifier mon profil | AutoMecanik" },
@@ -71,7 +72,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
     return json<LoaderData>({ user });
   } catch (error) {
-    console.error("Erreur chargement profil:", error);
+    logger.error("Erreur chargement profil:", error);
     throw redirect("/account/profile");
   }
 };
@@ -123,7 +124,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     });
 
     if (!response.ok) {
-      console.error(`Update profile API error: ${response.status}`);
+      logger.error(`Update profile API error: ${response.status}`);
       return json<ActionData>(
         {
           error: "Erreur lors de la mise à jour du profil",
@@ -134,7 +135,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     return redirect("/account/profile?updated=true");
   } catch (error) {
-    console.error("Erreur mise à jour profil:", error);
+    logger.error("Erreur mise à jour profil:", error);
     return json<ActionData>(
       {
         error: "Erreur lors de la mise à jour du profil",

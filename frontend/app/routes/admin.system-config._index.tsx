@@ -13,6 +13,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
@@ -37,6 +38,10 @@ import { useState, useEffect } from "react";
 import SystemBreadcrumb from "../components/admin/SystemBreadcrumb";
 import { Button } from "~/components/ui/button";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Configuration Systeme - Admin");
 
 // Types pour les configurations
 interface SystemOverview {

@@ -1,7 +1,8 @@
 // 📁 frontend/app/hooks/useProductSearch.ts
 // 🔍 Hook réutilisable pour la recherche de produits avec debounce
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { logger } from "~/utils/logger";
 
 export interface ProductSearchResult {
   id?: string; // Alias de piece_id pour compatibilité
@@ -24,13 +25,9 @@ interface UseProductSearchOptions {
 
 export function useProductSearch(
   query: string,
-  options: UseProductSearchOptions = {}
+  options: UseProductSearchOptions = {},
 ) {
-  const {
-    debounceMs = 300,
-    minQueryLength = 2,
-    limit = 8
-  } = options;
+  const { debounceMs = 300, minQueryLength = 2, limit = 8 } = options;
 
   const [results, setResults] = useState<ProductSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +49,7 @@ export function useProductSearch(
 
       try {
         const response = await fetch(
-          `/api/products/search?query=${encodeURIComponent(query)}&limit=${limit}`
+          `/api/products/search?query=${encodeURIComponent(query)}&limit=${limit}`,
         );
 
         if (!response.ok) {
@@ -62,8 +59,8 @@ export function useProductSearch(
         const data = await response.json();
         setResults(data.results || []);
       } catch (err) {
-        console.error('Erreur recherche produits:', err);
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        logger.error("Erreur recherche produits:", err);
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
         setResults([]);
       } finally {
         setIsLoading(false);
@@ -78,6 +75,7 @@ export function useProductSearch(
     isLoading,
     error,
     hasResults: results.length > 0,
-    isEmpty: !isLoading && query.length >= minQueryLength && results.length === 0
+    isEmpty:
+      !isLoading && query.length >= minQueryLength && results.length === 0,
   };
 }

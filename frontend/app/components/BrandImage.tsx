@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
 interface BrandImageProps {
@@ -6,7 +6,10 @@ interface BrandImageProps {
   brandName: string;
 }
 
-export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
+export const BrandImage = memo(function BrandImage({
+  brandLogo,
+  brandName,
+}: BrandImageProps) {
   const [imageError, setImageError] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -98,4 +101,4 @@ export function BrandImage({ brandLogo, brandName }: BrandImageProps) {
       onLoad={() => setImageError(false)}
     />
   );
-}
+});

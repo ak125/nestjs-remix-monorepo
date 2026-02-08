@@ -4,6 +4,7 @@
  */
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { memo } from "react";
 
 import { type OrdersTableProps } from "../../types/orders.types";
 import {
@@ -17,7 +18,7 @@ import {
 } from "../../utils/orders.utils";
 import { OrderActions } from "./OrderActions";
 
-export function OrdersTable({
+export const OrdersTable = memo(function OrdersTable({
   orders,
   permissions,
   currentPage,
@@ -192,4 +193,4 @@ export function OrdersTable({
       </div>
     </div>
   );
-}
+});

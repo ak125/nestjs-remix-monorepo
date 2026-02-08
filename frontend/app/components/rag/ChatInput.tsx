@@ -8,7 +8,7 @@
  */
 
 import { Send, Loader2 } from "lucide-react";
-import  { type KeyboardEvent , useState, useRef, useEffect } from "react";
+import { type KeyboardEvent, useState, useRef, useEffect, memo } from "react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -16,7 +16,7 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-export default function ChatInput({
+const ChatInput = memo(function ChatInput({
   onSend,
   isLoading = false,
   placeholder = "Posez votre question...",
@@ -30,7 +30,7 @@ export default function ChatInput({
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(
         textareaRef.current.scrollHeight,
-        120
+        120,
       )}px`;
     }
   }, [message]);
@@ -76,4 +76,6 @@ export default function ChatInput({
       </button>
     </div>
   );
-}
+});
+
+export default ChatInput;

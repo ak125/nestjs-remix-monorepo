@@ -11,6 +11,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Form, useNavigation, Link } from "@remix-run/react";
 import {
@@ -25,6 +26,11 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Nouvelle Expedition - Commercial");
 
 // Types pour la création d'expédition
 interface Order {
@@ -231,7 +237,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur chargement création expédition:", error);
+    logger.error("Erreur chargement création expédition:", error);
     throw new Response("Erreur serveur", { status: 500 });
   }
 }

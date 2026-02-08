@@ -19,6 +19,7 @@ import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
+import { logger } from "~/utils/logger";
 
 // ⚡ Mappings de couleurs pré-calculés (hors du render loop)
 const RELIABILITY_COLORS = [
@@ -422,7 +423,7 @@ export function PiecesGridView({
         await addToCart(pieceId, 1);
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
-        console.error("❌ Erreur ajout panier:", error);
+        logger.error("❌ Erreur ajout panier:", error);
       } finally {
         setLoadingItems((prev) => {
           const next = new Set(prev);

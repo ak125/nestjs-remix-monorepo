@@ -1,15 +1,16 @@
 /**
  * 🔍 SEARCH API SERVICE - Version Enterprise v3.0
- * 
+ *
  * Service client pour interfacer avec le SearchService backend optimisé
  * Compatible avec toutes les fonctionnalités v3.0
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
+import { logger } from "~/utils/logger";
 
 export interface SearchParams {
   query: string;
-  type?: 'v7' | 'v8' | 'text' | 'vin' | 'mine' | 'reference' | 'instant';
+  type?: "v7" | "v8" | "text" | "vin" | "mine" | "reference" | "instant";
   filters?: {
     brandId?: number;
     categoryId?: number;
@@ -24,8 +25,8 @@ export interface SearchParams {
     };
   };
   sort?: {
-    field: 'relevance' | 'price' | 'name' | 'date';
-    order: 'asc' | 'desc';
+    field: "relevance" | "price" | "name" | "date";
+    order: "asc" | "desc";
   };
   pagination?: {
     page: number;
@@ -63,7 +64,7 @@ export interface InstantSearchResult {
     designation: string;
     price: number;
     image?: string;
-    type: 'product' | 'vehicle';
+    type: "product" | "vehicle";
   }>;
   query: string;
 }
@@ -71,12 +72,13 @@ export interface InstantSearchResult {
 class SearchApiService {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string = '') {
+  constructor(baseUrl: string = "") {
     // Utiliser l'URL de l'environnement ou valeur par défaut
-    this.baseUrl = baseUrl || 
-      (typeof window !== 'undefined' 
-        ? window.ENV?.API_BASE_URL || '' 
-        : process.env.INTERNAL_API_BASE_URL || 'http://localhost:3000'); // Corrigé: port 3000
+    this.baseUrl =
+      baseUrl ||
+      (typeof window !== "undefined"
+        ? window.ENV?.API_BASE_URL || ""
+        : process.env.INTERNAL_API_BASE_URL || "http://localhost:3000"); // Corrigé: port 3000
   }
 
   /**
@@ -84,24 +86,26 @@ class SearchApiService {
    */
   async search(params: SearchParams, userId?: string): Promise<SearchResult> {
     const url = new URL(`${this.baseUrl}/api/search`);
-    
+
     // Construire les paramètres de requête
     this.buildSearchParams(url, params, userId);
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        ...(userId && { 'X-User-ID': userId }),
+        "Content-Type": "application/json",
+        ...(userId && { "X-User-ID": userId }),
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur de recherche: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Erreur de recherche: ${response.status} ${response.statusText}`,
+      );
     }
 
     const result: SearchResult = await response.json();
-    
+
     // Enrichir avec métadonnées côté client si nécessaire
     return this.enrichSearchResult(result, params);
   }
@@ -115,39 +119,42 @@ class SearchApiService {
     }
 
     const url = new URL(`${this.baseUrl}/api/search/instant`);
-    url.searchParams.set('q', query);
+    url.searchParams.set("q", query);
 
     try {
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         // Timeout pour recherche instantanée
         signal: AbortSignal.timeout(2000),
       });
 
       if (!response.ok) {
-        console.warn(`Instant search failed: ${response.status}`);
+        logger.warn(`Instant search failed: ${response.status}`);
         return { suggestions: [], products: [], query };
       }
 
       const result = await response.json();
-      
+
       return {
         suggestions: result.suggestions || [],
-        products: result.items?.map((item: any) => ({
-          id: item.id,
-          reference: item.reference || `${item.brand} ${item.model}`,
-          designation: item.designation || `${item.brand} ${item.model} ${item.year || ''}`,
-          price: item.price || 0,
-          image: item.image,
-          type: item.source || item.type || 'product',
-        })) || [],
+        products:
+          result.items?.map((item: any) => ({
+            id: item.id,
+            reference: item.reference || `${item.brand} ${item.model}`,
+            designation:
+              item.designation ||
+              `${item.brand} ${item.model} ${item.year || ""}`,
+            price: item.price || 0,
+            image: item.image,
+            type: item.source || item.type || "product",
+          })) || [],
         query,
       };
     } catch (error) {
-      console.warn('Instant search error:', error);
+      logger.warn("Instant search error:", error);
       return { suggestions: [], products: [], query };
     }
   }
@@ -160,17 +167,21 @@ class SearchApiService {
     parts: any[];
     count: number;
   }> {
-    const url = new URL(`${this.baseUrl}/api/search/mine/${encodeURIComponent(mineCode)}`);
+    const url = new URL(
+      `${this.baseUrl}/api/search/mine/${encodeURIComponent(mineCode)}`,
+    );
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Recherche MINE échouée: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Recherche MINE échouée: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -182,7 +193,7 @@ class SearchApiService {
   async searchByVin(vinCode: string): Promise<SearchResult> {
     return this.search({
       query: vinCode,
-      type: 'vin',
+      type: "vin",
       options: {
         facets: true,
         suggestions: true,
@@ -194,17 +205,21 @@ class SearchApiService {
    * 📄 Récupérer fiche produit complète
    */
   async getProductSheet(reference: string): Promise<any> {
-    const url = new URL(`${this.baseUrl}/api/search/product/${encodeURIComponent(reference)}`);
+    const url = new URL(
+      `${this.baseUrl}/api/search/product/${encodeURIComponent(reference)}`,
+    );
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Fiche produit introuvable: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Fiche produit introuvable: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -213,13 +228,17 @@ class SearchApiService {
   /**
    * � Vérifier la santé du service de recherche
    */
-  async healthCheck(): Promise<{ status: string; service: string; timestamp: string }> {
+  async healthCheck(): Promise<{
+    status: string;
+    service: string;
+    timestamp: string;
+  }> {
     const url = new URL(`${this.baseUrl}/api/search/health`);
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -237,9 +256,9 @@ class SearchApiService {
     const url = new URL(`${this.baseUrl}/api/search/stats`);
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -255,17 +274,17 @@ class SearchApiService {
    */
   async advancedSearch(params: {
     query: string;
-    category?: 'all' | 'vehicles' | 'products' | 'pages';
+    category?: "all" | "vehicles" | "products" | "pages";
     page?: number;
     limit?: number;
     filters?: Record<string, any>;
   }): Promise<SearchResult> {
     return this.search({
       query: params.query,
-      type: 'v8',
-      pagination: { 
-        page: params.page || 1, 
-        limit: params.limit || 20 
+      type: "v8",
+      pagination: {
+        page: params.page || 1,
+        limit: params.limit || 20,
       },
       filters: params.filters,
       options: {
@@ -281,29 +300,36 @@ class SearchApiService {
    * 🔧 MÉTHODES UTILITAIRES PRIVÉES
    */
 
-  private buildSearchParams(url: URL, params: SearchParams, userId?: string): void {
+  private buildSearchParams(
+    url: URL,
+    params: SearchParams,
+    userId?: string,
+  ): void {
     // Paramètres de base
-    url.searchParams.set('q', params.query);
-    if (params.type) url.searchParams.set('type', params.type);
-    if (userId) url.searchParams.set('userId', userId);
+    url.searchParams.set("q", params.query);
+    if (params.type) url.searchParams.set("type", params.type);
+    if (userId) url.searchParams.set("userId", userId);
 
     // Pagination
     if (params.pagination?.page) {
-      url.searchParams.set('page', params.pagination.page.toString());
+      url.searchParams.set("page", params.pagination.page.toString());
     }
     if (params.pagination?.limit) {
-      url.searchParams.set('limit', params.pagination.limit.toString());
+      url.searchParams.set("limit", params.pagination.limit.toString());
     }
 
     // Filtres
     if (params.filters) {
       Object.entries(params.filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (typeof value === 'object' && key === 'compatibility') {
+          if (typeof value === "object" && key === "compatibility") {
             // Filtres de compatibilité véhicule
             Object.entries(value).forEach(([subKey, subValue]) => {
               if (subValue !== undefined && subValue !== null) {
-                url.searchParams.set(`compatibility.${subKey}`, subValue.toString());
+                url.searchParams.set(
+                  `compatibility.${subKey}`,
+                  subValue.toString(),
+                );
               }
             });
           } else {
@@ -315,21 +341,24 @@ class SearchApiService {
 
     // Tri
     if (params.sort) {
-      url.searchParams.set('sortField', params.sort.field);
-      url.searchParams.set('sortOrder', params.sort.order);
+      url.searchParams.set("sortField", params.sort.field);
+      url.searchParams.set("sortOrder", params.sort.order);
     }
 
     // Options
     if (params.options) {
       Object.entries(params.options).forEach(([key, value]) => {
         if (value === true) {
-          url.searchParams.set(key, 'true');
+          url.searchParams.set(key, "true");
         }
       });
     }
   }
 
-  private enrichSearchResult(result: SearchResult, params: SearchParams): SearchResult {
+  private enrichSearchResult(
+    result: SearchResult,
+    params: SearchParams,
+  ): SearchResult {
     // Ajouter des métadonnées côté client
     const enriched = {
       ...result,
@@ -339,7 +368,7 @@ class SearchApiService {
 
     // Traitement des highlights côté client si nécessaire
     if (params.options?.highlight && result.items) {
-      enriched.items = result.items.map(item => ({
+      enriched.items = result.items.map((item) => ({
         ...item,
         clientHighlights: this.generateClientHighlights(item, params.query),
       }));
@@ -351,24 +380,27 @@ class SearchApiService {
   private generateClientHighlights(item: any, query: string): string[] {
     const highlights: string[] = [];
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    
+
     const fields = [
-      item.designation, 
-      item.description, 
-      item.brand, 
-      item.model, 
-      item.reference
+      item.designation,
+      item.description,
+      item.brand,
+      item.model,
+      item.reference,
     ];
 
-    fields.forEach(field => {
-      if (field && typeof field === 'string') {
+    fields.forEach((field) => {
+      if (field && typeof field === "string") {
         let highlightedText = field;
         let hasMatch = false;
 
-        terms.forEach(term => {
+        terms.forEach((term) => {
           if (field.toLowerCase().includes(term)) {
-            const regex = new RegExp(`(${this.escapeRegex(term)})`, 'gi');
-            highlightedText = highlightedText.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+            const regex = new RegExp(`(${this.escapeRegex(term)})`, "gi");
+            highlightedText = highlightedText.replace(
+              regex,
+              '<mark class="bg-yellow-200">$1</mark>',
+            );
             hasMatch = true;
           }
         });
@@ -383,7 +415,7 @@ class SearchApiService {
   }
 
   private escapeRegex(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   /**
@@ -394,7 +426,7 @@ class SearchApiService {
   async legacySearch(query: string, options: any = {}): Promise<any[]> {
     const result = await this.search({
       query,
-      type: 'v8',
+      type: "v8",
       ...options,
     });
 
@@ -416,8 +448,8 @@ export { SearchApiService };
  * Hook pour recherche avec debounce
  */
 export function useSearchWithDebounce(
-  initialQuery: string = '',
-  delay: number = 300
+  initialQuery: string = "",
+  delay: number = 300,
 ) {
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
@@ -457,8 +489,8 @@ export function useSearchWithDebounce(
  */
 export function useSearchState() {
   const [searchParams, setSearchParams] = useState<SearchParams>({
-    query: '',
-    type: 'v8',
+    query: "",
+    type: "v8",
     pagination: { page: 1, limit: 20 },
     options: { highlight: true, facets: true, suggestions: true },
   });
@@ -480,7 +512,7 @@ export function useSearchState() {
       const result = await searchApi.search(searchParams);
       setResults(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de recherche');
+      setError(err instanceof Error ? err.message : "Erreur de recherche");
       setResults(null);
     } finally {
       setLoading(false);

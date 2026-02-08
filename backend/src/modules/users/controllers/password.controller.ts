@@ -57,11 +57,15 @@ export class PasswordController {
         message: 'Mot de passe modifié avec succès',
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur changePassword:', error);
       if (error instanceof AuthenticationException) throw error;
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors du changement de mot de passe';
       throw new DomainValidationException({
-        message: error.message || 'Erreur lors du changement de mot de passe',
+        message,
       });
     }
   }
@@ -85,7 +89,7 @@ export class PasswordController {
           'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation',
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur requestPasswordReset:', error);
       // Ne pas révéler si l'email existe pour des raisons de sécurité
       return {
@@ -118,11 +122,14 @@ export class PasswordController {
         message: 'Mot de passe réinitialisé avec succès',
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur resetPassword:', error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la réinitialisation du mot de passe';
       throw new DomainValidationException({
-        message:
-          error.message || 'Erreur lors de la réinitialisation du mot de passe',
+        message,
       });
     }
   }
@@ -150,11 +157,15 @@ export class PasswordController {
         deletedCount,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Erreur cleanupExpiredTokens:', error);
       if (error instanceof AuthenticationException) throw error;
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors du nettoyage des tokens';
       throw new OperationFailedException({
-        message: error.message || 'Erreur lors du nettoyage des tokens',
+        message,
       });
     }
   }

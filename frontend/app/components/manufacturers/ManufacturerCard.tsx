@@ -1,12 +1,13 @@
 /**
  * 🏭 MANUFACTURER CARD COMPONENT
- * 
+ *
  * Composant réutilisable pour afficher une carte manufacturer
  * Compatible avec le design system existant (shadcn/ui)
  */
 
 import { Link } from "@remix-run/react";
 import { Car, ArrowRight } from "lucide-react";
+import { memo } from "react";
 import { BrandLogoClient } from "../BrandLogoClient";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -22,22 +23,23 @@ interface ManufacturerCardProps {
     types_count?: number;
     country?: string;
   };
-  viewMode?: 'grid' | 'list';
+  viewMode?: "grid" | "list";
   linkTo?: string; // Override du lien si nécessaire
 }
 
-export function ManufacturerCard({ 
-  manufacturer, 
-  viewMode = 'grid', 
-  linkTo 
+export const ManufacturerCard = memo(function ManufacturerCard({
+  manufacturer,
+  viewMode = "grid",
+  linkTo,
 }: ManufacturerCardProps) {
-  const defaultLink = linkTo || `/brands/${manufacturer.slug || manufacturer.id}`;
+  const defaultLink =
+    linkTo || `/brands/${manufacturer.slug || manufacturer.id}`;
   const displayName = manufacturer.display_name || manufacturer.name;
   const modelsCount = manufacturer.models_count || 0;
   const typesCount = manufacturer.types_count || 0;
 
   // Mode liste - compact et horizontal
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
       <Link to={defaultLink} className="block">
         <Card className="hover:shadow-md transition-all duration-200 hover:border-blue-300">
@@ -59,7 +61,9 @@ export function ManufacturerCard({
                   {displayName}
                 </h3>
                 {manufacturer.country && (
-                  <p className="text-sm text-gray-600 truncate">{manufacturer.country}</p>
+                  <p className="text-sm text-gray-600 truncate">
+                    {manufacturer.country}
+                  </p>
                 )}
               </div>
 
@@ -135,4 +139,4 @@ export function ManufacturerCard({
       </Card>
     </Link>
   );
-}
+});

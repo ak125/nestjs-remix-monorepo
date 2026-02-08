@@ -17,6 +17,7 @@
  */
 
 import { type CartData, type CartItem, type CartSummary } from "../types/cart";
+import { logger } from "~/utils/logger";
 
 // ============================================================================
 // TYPES
@@ -128,7 +129,7 @@ export const cartApi = {
         data: normalizeCartData(data),
       };
     } catch (error) {
-      console.error("❌ [cartApi.getCart] Erreur:", error);
+      logger.error("❌ [cartApi.getCart] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -147,7 +148,7 @@ export const cartApi = {
     quantity: number = 1,
   ): Promise<AddItemResponse> {
     try {
-      console.log("➕ [cartApi.addItem]", { productId, quantity });
+      logger.log("➕ [cartApi.addItem]", { productId, quantity });
 
       const response = await fetch(`${API_BASE}/items`, {
         method: "POST",
@@ -165,7 +166,7 @@ export const cartApi = {
         if (handle401Redirect(response)) {
           return { success: false, error: "Session expirée" };
         }
-        console.error(
+        logger.error(
           "❌ [cartApi.addItem] Erreur HTTP:",
           response.status,
           data,
@@ -176,14 +177,14 @@ export const cartApi = {
         };
       }
 
-      console.log("✅ [cartApi.addItem] Succès");
+      logger.log("✅ [cartApi.addItem] Succès");
       return {
         success: true,
         cart: data.cart ? normalizeCartData(data.cart) : undefined,
         item: data.item,
       };
     } catch (error) {
-      console.error("❌ [cartApi.addItem] Erreur:", error);
+      logger.error("❌ [cartApi.addItem] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -202,7 +203,7 @@ export const cartApi = {
     quantity: number,
   ): Promise<UpdateQuantityResponse> {
     try {
-      console.log("🔄 [cartApi.updateQuantity]", { productId, quantity });
+      logger.log("🔄 [cartApi.updateQuantity]", { productId, quantity });
 
       if (quantity < 1) {
         // Si quantité < 1, supprimer l'article
@@ -226,7 +227,7 @@ export const cartApi = {
         if (handle401Redirect(response)) {
           return { success: false, error: "Session expirée" };
         }
-        console.error(
+        logger.error(
           "❌ [cartApi.updateQuantity] Erreur HTTP:",
           response.status,
           data,
@@ -237,13 +238,13 @@ export const cartApi = {
         };
       }
 
-      console.log("✅ [cartApi.updateQuantity] Succès");
+      logger.log("✅ [cartApi.updateQuantity] Succès");
       return {
         success: true,
         cart: data.cart ? normalizeCartData(data.cart) : undefined,
       };
     } catch (error) {
-      console.error("❌ [cartApi.updateQuantity] Erreur:", error);
+      logger.error("❌ [cartApi.updateQuantity] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -258,7 +259,7 @@ export const cartApi = {
    */
   async removeItem(productId: number): Promise<RemoveItemResponse> {
     try {
-      console.log("🗑️ [cartApi.removeItem]", { productId });
+      logger.log("🗑️ [cartApi.removeItem]", { productId });
 
       const response = await fetch(`${API_BASE}/items/${productId}`, {
         method: "DELETE",
@@ -272,7 +273,7 @@ export const cartApi = {
         if (handle401Redirect(response)) {
           return { success: false, error: "Session expirée" };
         }
-        console.error(
+        logger.error(
           "❌ [cartApi.removeItem] Erreur HTTP:",
           response.status,
           data,
@@ -283,13 +284,13 @@ export const cartApi = {
         };
       }
 
-      console.log("✅ [cartApi.removeItem] Succès");
+      logger.log("✅ [cartApi.removeItem] Succès");
       return {
         success: true,
         cart: data.cart ? normalizeCartData(data.cart) : undefined,
       };
     } catch (error) {
-      console.error("❌ [cartApi.removeItem] Erreur:", error);
+      logger.error("❌ [cartApi.removeItem] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -302,7 +303,7 @@ export const cartApi = {
    */
   async clearCart(): Promise<ClearCartResponse> {
     try {
-      console.log("🧹 [cartApi.clearCart]");
+      logger.log("🧹 [cartApi.clearCart]");
 
       const response = await fetch(API_BASE, {
         method: "DELETE",
@@ -316,7 +317,7 @@ export const cartApi = {
         if (handle401Redirect(response)) {
           return { success: false, error: "Session expirée" };
         }
-        console.error(
+        logger.error(
           "❌ [cartApi.clearCart] Erreur HTTP:",
           response.status,
           data,
@@ -327,13 +328,13 @@ export const cartApi = {
         };
       }
 
-      console.log("✅ [cartApi.clearCart] Succès");
+      logger.log("✅ [cartApi.clearCart] Succès");
       return {
         success: true,
         message: data.message || "Panier vidé",
       };
     } catch (error) {
-      console.error("❌ [cartApi.clearCart] Erreur:", error);
+      logger.error("❌ [cartApi.clearCart] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -348,7 +349,7 @@ export const cartApi = {
    */
   async applyPromoCode(code: string): Promise<CartApiResponse<CartData>> {
     try {
-      console.log("🎁 [cartApi.applyPromoCode]", { code });
+      logger.log("🎁 [cartApi.applyPromoCode]", { code });
 
       const response = await fetch(`${API_BASE}/promo`, {
         method: "POST",
@@ -375,7 +376,7 @@ export const cartApi = {
         message: data.message,
       };
     } catch (error) {
-      console.error("❌ [cartApi.applyPromoCode] Erreur:", error);
+      logger.error("❌ [cartApi.applyPromoCode] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",
@@ -411,7 +412,7 @@ export const cartApi = {
         data: data.cart ? normalizeCartData(data.cart) : undefined,
       };
     } catch (error) {
-      console.error("❌ [cartApi.removePromoCode] Erreur:", error);
+      logger.error("❌ [cartApi.removePromoCode] Erreur:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erreur réseau",

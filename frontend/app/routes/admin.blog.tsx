@@ -14,6 +14,7 @@ import { useState } from "react";
 import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 // Icons simplifiés
 const ChartBarIcon = ({ className }: { className: string }) => (
@@ -123,15 +124,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const apiUrl = `${backendUrl}/api/blog/dashboard`;
 
-  console.log("[ADMIN BLOG SIMPLE] Début du chargement");
-  console.log(`[ADMIN BLOG SIMPLE] Backend URL: ${backendUrl}`);
+  logger.log("[ADMIN BLOG SIMPLE] Début du chargement");
+  logger.log(`[ADMIN BLOG SIMPLE] Backend URL: ${backendUrl}`);
 
   try {
     // Test de connectivité avec timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
 
-    console.log(`[ADMIN BLOG SIMPLE] Appel API: ${apiUrl}`);
+    logger.log(`[ADMIN BLOG SIMPLE] Appel API: ${apiUrl}`);
 
     const response = await fetch(apiUrl, {
       signal: controller.signal,
@@ -143,10 +144,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     clearTimeout(timeoutId);
 
-    console.log(`[ADMIN BLOG SIMPLE] Réponse API: Status ${response.status}`);
+    logger.log(`[ADMIN BLOG SIMPLE] Réponse API: Status ${response.status}`);
 
     if (!response.ok) {
-      console.error(
+      logger.error(
         `[ADMIN BLOG SIMPLE] Erreur HTTP: ${response.status} ${response.statusText}`,
       );
 
@@ -170,7 +171,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const data = await response.json();
-    console.log(
+    logger.log(
       `[ADMIN BLOG SIMPLE] Données reçues:`,
       JSON.stringify(data).substring(0, 200) + "...",
     );
@@ -199,7 +200,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    console.error("[ADMIN BLOG SIMPLE] Erreur loader:", error);
+    logger.error("[ADMIN BLOG SIMPLE] Erreur loader:", error);
 
     // Fallback complet en cas d'erreur
     return json<LoaderData>({

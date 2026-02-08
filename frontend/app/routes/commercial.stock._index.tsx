@@ -7,7 +7,11 @@
  * ✅ Données réelles de pieces_price
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
 import {
   Package,
@@ -24,6 +28,10 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Stock - Commercial");
 
 interface StockItem {
   pri_piece_id: string;
@@ -105,7 +113,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       filters: { search, available, minPrice, maxPrice },
     });
   } catch (error) {
-    console.error("Erreur chargement stock commercial:", error);
+    logger.error("Erreur chargement stock commercial:", error);
     return json({
       stats: {
         availableItems: 0,

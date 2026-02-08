@@ -19,6 +19,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /* ===========================
    Types
@@ -157,7 +158,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       metadata,
     });
   } catch (e) {
-    console.error("Erreur loader marque:", e);
+    logger.error("Erreur loader marque:", e);
     if (e instanceof Response) throw e;
     throw new Response("Erreur lors du chargement de la marque", {
       status: 500,
@@ -272,7 +273,7 @@ export default function BlogPiecesAutoMarque() {
   // Debug: vérifier si les carburants arrivent
   React.useEffect(() => {
     if (models.length > 0) {
-      console.log("🔍 Premier modèle:", {
+      logger.log("🔍 Premier modèle:", {
         name: models[0].name,
         motorisationsCount: models[0].motorisationsCount,
         modele_fuel_types: models[0].modele_fuel_types,

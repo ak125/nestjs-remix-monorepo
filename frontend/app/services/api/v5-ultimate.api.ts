@@ -1,16 +1,19 @@
 /**
  * 🔧 API Catalogue Unifié
- * 
- * Service pour récupérer les pièces via l'API NestJS backend 
+ *
+ * Service pour récupérer les pièces via l'API NestJS backend
  * en utilisant les types partagés du monorepo
- * 
+ *
  * @package @monorepo/frontend
  */
 
+import { logger } from "~/utils/logger";
+
 // Configuration API Base URL
-const API_BASE = typeof window !== 'undefined' 
-  ? '/api' // Côté client: utilisation relative
-  : process.env.API_BASE_URL || 'http://localhost:3000'; // Côté serveur
+const API_BASE =
+  typeof window !== "undefined"
+    ? "/api" // Côté client: utilisation relative
+    : process.env.API_BASE_URL || "http://localhost:3000"; // Côté serveur
 
 // Types pour les résultats cross-selling
 export interface CrossSellingV5Result {
@@ -71,22 +74,27 @@ export interface AdvancedSeoV5Result {
  * @param alias Alias de la gamme de pièces
  * @returns Recommandations de cross-selling
  */
-export async function getCrossSellingV5ByAlias(alias: string): Promise<CrossSellingV5Result> {
+export async function getCrossSellingV5ByAlias(
+  alias: string,
+): Promise<CrossSellingV5Result> {
   try {
-    const response = await fetch(`${API_BASE}/cross-selling/v5/by-alias/${encodeURIComponent(alias)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/cross-selling/v5/by-alias/${encodeURIComponent(alias)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    
+
     return {
       success: true,
       crossSelling: {
@@ -94,17 +102,17 @@ export async function getCrossSellingV5ByAlias(alias: string): Promise<CrossSell
         relatedProducts: data.relatedProducts || [],
       },
       metadata: {
-        source: 'v5-ultimate-cross-selling',
+        source: "v5-ultimate-cross-selling",
         responseTime: data.responseTime || 0,
         alias,
       },
     };
   } catch (error) {
-    console.error('Erreur cross-selling V5 Ultimate:', error);
+    logger.error("Erreur cross-selling V5 Ultimate:", error);
     return {
       success: false,
       metadata: {
-        source: 'v5-ultimate-cross-selling-error',
+        source: "v5-ultimate-cross-selling-error",
         responseTime: 0,
         alias,
       },
@@ -131,32 +139,41 @@ export async function getAdvancedSeoV5(params: {
       type: params.type,
     });
 
-    const response = await fetch(`${API_BASE}/advanced-seo-v5/generate-complex-seo?${queryParams}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/advanced-seo-v5/generate-complex-seo?${queryParams}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    
+
     return {
       success: true,
       seo: {
-        title: data.seo?.title || `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
-        h1: data.seo?.h1 || `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
-        description: data.seo?.description || `Pièces ${params.gamme} compatibles avec ${params.marque} ${params.modele} ${params.type}`,
-        longDescription: data.seo?.longDescription || '',
+        title:
+          data.seo?.title ||
+          `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
+        h1:
+          data.seo?.h1 ||
+          `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
+        description:
+          data.seo?.description ||
+          `Pièces ${params.gamme} compatibles avec ${params.marque} ${params.modele} ${params.type}`,
+        longDescription: data.seo?.longDescription || "",
         technicalSpecs: data.seo?.technicalSpecs || [],
         faqItems: data.seo?.faqItems || [],
       },
       metadata: {
-        source: 'v5-ultimate-seo',
+        source: "v5-ultimate-seo",
         responseTime: data.responseTime || 0,
         gamme: params.gamme,
         marque: params.marque,
@@ -165,11 +182,11 @@ export async function getAdvancedSeoV5(params: {
       },
     };
   } catch (error) {
-    console.error('Erreur SEO V5 Ultimate:', error);
+    logger.error("Erreur SEO V5 Ultimate:", error);
     return {
       success: false,
       metadata: {
-        source: 'v5-ultimate-seo-error',
+        source: "v5-ultimate-seo-error",
         responseTime: 0,
         gamme: params.gamme,
         marque: params.marque,
@@ -187,8 +204,8 @@ export interface V5UltimateSearchResult {
   results: Array<{
     piece_id: string;
     reference: string;
-    supplier: string;  // Fournisseur (ACR, DCA, etc.)
-    brand: string;     // Vraie marque (BOSCH, DAYCO, etc.)
+    supplier: string; // Fournisseur (ACR, DCA, etc.)
+    brand: string; // Vraie marque (BOSCH, DAYCO, etc.)
     designation: string;
     stock_status: string;
     raw_price_ht: string;
@@ -227,7 +244,7 @@ export interface V5UltimatePricing {
 }
 
 export interface V5UltimateHealth {
-  status: 'healthy' | 'degraded' | 'error';
+  status: "healthy" | "degraded" | "error";
   services: {
     technical_data_v5: any;
     enhancement_v5: any;
@@ -247,15 +264,20 @@ export interface V5UltimateHealth {
  * @param reference Référence de pièce à rechercher
  * @returns Résultats avec distinction supplier/brand
  */
-export async function searchPieceByReference(reference: string): Promise<V5UltimateSearchResult> {
+export async function searchPieceByReference(
+  reference: string,
+): Promise<V5UltimateSearchResult> {
   try {
-    const response = await fetch(`${API_BASE}/api/products/search/${encodeURIComponent(reference)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/api/products/search/${encodeURIComponent(reference)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -263,7 +285,7 @@ export async function searchPieceByReference(reference: string): Promise<V5Ultim
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur recherche par référence:', error);
+    logger.error("Erreur recherche par référence:", error);
     return {
       success: false,
       search_query: reference,
@@ -271,63 +293,75 @@ export async function searchPieceByReference(reference: string): Promise<V5Ultim
       results: [],
       _metadata: {
         response_time: 0,
-        search_type: 'error',
-        methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - ERROR',
+        search_type: "error",
+        methodology:
+          "vérifier existant avant et utiliser le meilleur et améliorer - ERROR",
       },
     };
   }
 }
 
 /**
- * 💰 PRICING AVANCÉ - Service V5 Ultimate Final  
+ * 💰 PRICING AVANCÉ - Service V5 Ultimate Final
  * @param pieceId ID de la pièce
  * @returns Pricing avancé avec cache et recommandations
  */
-export async function getAdvancedPricing(pieceId: string): Promise<V5UltimatePricing> {
+export async function getAdvancedPricing(
+  pieceId: string,
+): Promise<V5UltimatePricing> {
   try {
-    const response = await fetch(`${API_BASE}/api/test-v5/pricing-final-advanced/${pieceId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/api/test-v5/pricing-final-advanced/${pieceId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    
+
     return {
       success: true,
       pricing: {
-        base_prices: data.advanced ? [{
-          type: 'standard',
-          price_ht: data.advanced.price_ht,
-          price_ttc: data.advanced.unit_price_ttc,
-          quantity: data.advanced.quantity_sale,
-          total_ht: data.advanced.price_ht * data.advanced.total_units,
-          total_ttc: data.priceTTC,
-        }] : [],
+        base_prices: data.advanced
+          ? [
+              {
+                type: "standard",
+                price_ht: data.advanced.price_ht,
+                price_ttc: data.advanced.unit_price_ttc,
+                quantity: data.advanced.quantity_sale,
+                total_ht: data.advanced.price_ht * data.advanced.total_units,
+                total_ttc: data.priceTTC,
+              },
+            ]
+          : [],
         recommendations: {
-          best_deal: 'Prix actuel',
+          best_deal: "Prix actuel",
           savings: 0,
           alternative_suppliers: [],
         },
       },
       _metadata: data._metadata || {
         response_time: 0,
-        methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE',
+        methodology:
+          "vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE",
       },
     };
   } catch (error) {
-    console.error('Erreur pricing V5 Ultimate:', error);
+    logger.error("Erreur pricing V5 Ultimate:", error);
     return {
       success: false,
       _metadata: {
         response_time: 0,
-        methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - ERROR',
+        methodology:
+          "vérifier existant avant et utiliser le meilleur et améliorer - ERROR",
       },
     };
   }
@@ -340,10 +374,10 @@ export async function getAdvancedPricing(pieceId: string): Promise<V5UltimatePri
 export async function getV5UltimateHealth(): Promise<V5UltimateHealth> {
   try {
     const response = await fetch(`${API_BASE}/api/test-v5/health`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
@@ -353,15 +387,16 @@ export async function getV5UltimateHealth(): Promise<V5UltimateHealth> {
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur health check V5 Ultimate:', error);
+    logger.error("Erreur health check V5 Ultimate:", error);
     return {
-      status: 'error',
+      status: "error",
       services: {
         technical_data_v5: null,
         enhancement_v5: null,
         pricing_v5: null,
       },
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - ERROR',
+      methodology:
+        "vérifier existant avant et utiliser le meilleur et améliorer - ERROR",
       summary: {
         total_services: 0,
         all_healthy: false,
@@ -377,13 +412,16 @@ export async function getV5UltimateHealth(): Promise<V5UltimateHealth> {
  */
 export async function getV5UltimateStats() {
   try {
-    const response = await fetch(`${API_BASE}/api/test-v5/pricing-final-stats`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/api/test-v5/pricing-final-stats`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -391,11 +429,12 @@ export async function getV5UltimateStats() {
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur stats V5 Ultimate:', error);
+    logger.error("Erreur stats V5 Ultimate:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erreur inconnue',
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - STATS ERROR',
+      error: error instanceof Error ? error.message : "Erreur inconnue",
+      methodology:
+        "vérifier existant avant et utiliser le meilleur et améliorer - STATS ERROR",
     };
   }
 }
@@ -406,13 +445,16 @@ export async function getV5UltimateStats() {
  */
 export async function clearV5UltimateCache() {
   try {
-    const response = await fetch(`${API_BASE}/api/test-v5/pricing-final-clear-cache`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/api/test-v5/pricing-final-clear-cache`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -420,11 +462,12 @@ export async function clearV5UltimateCache() {
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur nettoyage cache V5 Ultimate:', error);
+    logger.error("Erreur nettoyage cache V5 Ultimate:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erreur inconnue',
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - CACHE CLEAR ERROR',
+      error: error instanceof Error ? error.message : "Erreur inconnue",
+      methodology:
+        "vérifier existant avant et utiliser le meilleur et améliorer - CACHE CLEAR ERROR",
     };
   }
 }
@@ -435,13 +478,16 @@ export async function clearV5UltimateCache() {
  */
 export async function getEnhancedCatalogData(typeId: number, pgId: number) {
   try {
-    const response = await fetch(`${API_BASE}/api/catalog/pieces/debug/${typeId}/${pgId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    const response = await fetch(
+      `${API_BASE}/api/catalog/pieces/debug/${typeId}/${pgId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -449,13 +495,13 @@ export async function getEnhancedCatalogData(typeId: number, pgId: number) {
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur catalog V5 Ultimate:', error);
+    logger.error("Erreur catalog V5 Ultimate:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erreur inconnue',
+      error: error instanceof Error ? error.message : "Erreur inconnue",
       debug: {
         v5_ultimate_active: false,
-        pricing_service: 'Error',
+        pricing_service: "Error",
       },
     };
   }

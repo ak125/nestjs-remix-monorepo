@@ -6,7 +6,7 @@
  */
 
 import { Car, Package, Shield, Truck } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 
 import { brandColorsService } from "../../services/brand-colors.service";
 import {
@@ -29,7 +29,7 @@ interface PiecesHeaderProps {
  * Header premium avec gradient dynamique (style page véhicule)
  * ⚠️ URLs breadcrumb strictement préservées
  */
-export function PiecesHeader({
+export const PiecesHeader = memo(function PiecesHeader({
   vehicle,
   gamme,
   count,
@@ -257,4 +257,4 @@ export function PiecesHeader({
       </section>
     </>
   );
-}
+});

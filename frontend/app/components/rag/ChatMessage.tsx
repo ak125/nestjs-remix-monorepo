@@ -7,6 +7,7 @@
  */
 
 import { User, Bot, ExternalLink } from "lucide-react";
+import { memo } from "react";
 
 export interface ChatMessageData {
   id: string;
@@ -21,13 +22,11 @@ interface ChatMessageProps {
   message: ChatMessageData;
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
-    <div
-      className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}
-    >
+    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
@@ -59,7 +58,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             <p className="text-xs text-gray-500 mb-1">Sources :</p>
             <ul className="space-y-1">
               {message.sources.map((source, index) => (
-                <li key={index} className="flex items-center gap-1 text-xs text-gray-600">
+                <li
+                  key={index}
+                  className="flex items-center gap-1 text-xs text-gray-600"
+                >
                   <ExternalLink className="w-3 h-3" />
                   <span>{source.replace("knowledge/", "")}</span>
                 </li>
@@ -77,8 +79,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                   message.confidence >= 0.8
                     ? "bg-green-500"
                     : message.confidence >= 0.5
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
                 }`}
                 style={{ width: `${message.confidence * 100}%` }}
               />
@@ -91,4 +93,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       </div>
     </div>
   );
-}
+});
+
+export default ChatMessage;

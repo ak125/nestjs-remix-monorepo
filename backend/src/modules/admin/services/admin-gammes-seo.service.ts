@@ -1415,8 +1415,8 @@ export class AdminGammesSeoService extends SupabaseBaseService {
           // Date de dernière mise à jour V-Level (plus récente)
           vLevel_last_updated:
             vLevelData && vLevelData.length > 0
-              ? (vLevelData as any[]).reduce(
-                  (latest: string | null, v: any) => {
+              ? (vLevelData as Array<{ updated_at?: string | null }>).reduce(
+                  (latest: string | null, v) => {
                     if (!v.updated_at) return latest;
                     if (!latest) return v.updated_at;
                     return new Date(v.updated_at) > new Date(latest)

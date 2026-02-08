@@ -1,5 +1,6 @@
-import { Check } from 'lucide-react';
-import { type Order } from '../../types/orders.types';
+import { Check } from "lucide-react";
+import { memo } from "react";
+import { type Order } from "../../types/orders.types";
 import {
   formatDate,
   formatOrderId,
@@ -7,8 +8,8 @@ import {
   getPaymentBadgeColor,
   getPaymentLabel,
   getStatusBadgeColor,
-} from '../../utils/orders.utils';
-import { type UserPermissions } from '../../utils/permissions';
+} from "../../utils/orders.utils";
+import { type UserPermissions } from "../../utils/permissions";
 
 interface OrderRowProps {
   order: Order;
@@ -19,7 +20,7 @@ interface OrderRowProps {
   onEdit?: (orderId: string) => void;
 }
 
-export function OrderRow({
+export const OrderRow = memo(function OrderRow({
   order,
   permissions,
   isSelected,
@@ -30,7 +31,7 @@ export function OrderRow({
   return (
     <tr
       className={`hover:bg-gray-50 transition-colors ${
-        isSelected ? 'bg-primary/5' : ''
+        isSelected ? "bg-primary/5" : ""
       }`}
     >
       {/* Checkbox */}
@@ -76,7 +77,7 @@ export function OrderRow({
             order.ord_ords_id,
           )}`}
         >
-          {order.statusDetails?.ords_named || 'Inconnu'}
+          {order.statusDetails?.ords_named || "Inconnu"}
         </span>
       </td>
 
@@ -120,4 +121,4 @@ export function OrderRow({
       )}
     </tr>
   );
-}
+});

@@ -14,6 +14,7 @@ import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
+import { logger } from "~/utils/logger";
 
 interface PiecesListViewProps {
   pieces: PieceData[];
@@ -70,11 +71,11 @@ export const PiecesListView = React.memo(
     const handleAddToCart = async (pieceId: number) => {
       // Vérifier si déjà en cours d'ajout
       if (loadingItems.has(pieceId)) {
-        console.log("⚠️ Ajout déjà en cours pour:", pieceId);
+        logger.log("⚠️ Ajout déjà en cours pour:", pieceId);
         return;
       }
 
-      console.log("🛒 Click Ajouter panier (ListView), piece:", pieceId);
+      logger.log("🛒 Click Ajouter panier (ListView), piece:", pieceId);
 
       // GA4: Tracker l'ajout au panier
       const piece = pieces.find((p) => p.id === pieceId);
@@ -98,7 +99,7 @@ export const PiecesListView = React.memo(
         // Petit délai avant de réactiver (debounce)
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
-        console.error("❌ Erreur ajout panier:", error);
+        logger.error("❌ Erreur ajout panier:", error);
       } finally {
         // Retirer du loading
         setLoadingItems((prev) => {

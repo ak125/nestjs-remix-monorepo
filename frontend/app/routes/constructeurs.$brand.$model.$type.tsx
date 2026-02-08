@@ -47,6 +47,7 @@ import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -417,17 +418,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const cacheKey = `${params.brand}-${params.model}-${params.type}`;
   const cached = loaderCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
+    logger.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
     return json(cached.data);
   }
 
-  console.log("🚀 [RPC] Vehicle detail loader avec params:", params);
+  logger.log("🚀 [RPC] Vehicle detail loader avec params:", params);
 
   // Validation des paramètres
   const { brand, model, type } = params;
 
   if (!brand || !model || !type) {
-    console.error("❌ Paramètres manquants:", { brand, model, type });
+    logger.error("❌ Paramètres manquants:", { brand, model, type });
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
@@ -435,7 +436,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // Raison: 412 est traité comme 4xx par Google → désindexation
   // 301 préserve le PageRank et guide vers la page marque existante
   if (!brand.includes("-") || !model.includes("-")) {
-    console.log("🔄 [301] Format legacy détecté, redirect vers page marque:", {
+    logger.log("🔄 [301] Format legacy détecté, redirect vers page marque:", {
       brand,
       model,
       type,
@@ -458,7 +459,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // ========================================
   // 🚀 APPEL RPC OPTIMISÉ (1 seul appel au lieu de 4)
   // ========================================
-  console.log(`⚡ [RPC] Appel page-data-rpc pour type_id=${type_id}`);
+  logger.log(`⚡ [RPC] Appel page-data-rpc pour type_id=${type_id}`);
 
   let rpcResponse: Response;
   let rpcResult: any;
@@ -473,7 +474,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     );
 
     if (!rpcResponse.ok) {
-      console.error(
+      logger.error(
         `❌ [RPC] Erreur HTTP ${rpcResponse.status} pour type_id=${type_id}`,
       );
       throw new Response("Service indisponible", { status: 500 });
@@ -486,7 +487,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       error instanceof Error &&
       (error.name === "AbortError" || error.name === "TimeoutError")
     ) {
-      console.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
+      logger.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -496,16 +497,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
       throw error;
     }
     // Autres erreurs
-    console.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
     throw new Response("Erreur serveur", { status: 500 });
   }
 
   if (!rpcResult.success || !rpcResult.data?.vehicle) {
-    console.error("❌ [RPC] Données invalides:", rpcResult);
+    logger.error("❌ [RPC] Données invalides:", rpcResult);
     throw new Response("Véhicule supprimé du catalogue", { status: 410 });
   }
 
-  console.log(
+  logger.log(
     `✅ [RPC] Données reçues en ${rpcResult._performance?.totalTime?.toFixed(0) || "N/A"}ms`,
   );
 
@@ -519,9 +520,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // Si l'alias dans l'URL ne correspond pas à l'alias canonique → 301
   if (urlTypeAlias && urlTypeAlias !== canonicalTypeAlias) {
     const canonicalUrl = `/constructeurs/${brand}/${model}/${canonicalTypeAlias}-${type_id}.html`;
-    console.log(
-      `🔄 [301] Redirect "${urlTypeAlias}" → "${canonicalTypeAlias}"`,
-    );
+    logger.log(`🔄 [301] Redirect "${urlTypeAlias}" → "${canonicalTypeAlias}"`);
     return redirect(canonicalUrl, 301);
   }
 
@@ -546,7 +545,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     loaderCache.delete(oldestKey);
   }
 
-  console.log("✅ [RPC] Données générées:", {
+  logger.log("✅ [RPC] Données générées:", {
     vehicle: `${loaderData.vehicle.marque_name} ${loaderData.vehicle.modele_name}`,
     families: loaderData.catalogFamilies.length,
     parts: loaderData.popularParts.length,
@@ -1588,7 +1587,7 @@ export function ErrorBoundary() {
   }
 
   // Generic error for other cases
-  console.error("🔥 ERROR BOUNDARY:", error);
+  logger.error("🔥 ERROR BOUNDARY:", error);
   return (
     <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl">

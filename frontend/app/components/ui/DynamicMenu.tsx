@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 interface MenuItemData {
   id: string | number;
@@ -73,7 +74,7 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
         setMenuItems([]);
       }
     } catch (err) {
-      console.error(`Erreur chargement menu ${module}:`, err);
+      logger.error(`Erreur chargement menu ${module}:`, err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setMenuItems([]);
     } finally {

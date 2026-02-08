@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@remix-run/react";
 import { Search } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 
 interface ErrorSearchBarProps {
   placeholder?: string;
@@ -11,7 +11,7 @@ interface ErrorSearchBarProps {
  * Barre de recherche réutilisable pour les pages d'erreur
  * Permet aux utilisateurs de trouver rapidement ce qu'ils cherchent
  */
-export function ErrorSearchBar({
+export const ErrorSearchBar = memo(function ErrorSearchBar({
   placeholder = "Rechercher une pièce, un véhicule...",
   className = "",
 }: ErrorSearchBarProps) {
@@ -25,7 +25,7 @@ export function ErrorSearchBar({
         navigate(`/search?q=${encodeURIComponent(query.trim())}`);
       }
     },
-    [query, navigate]
+    [query, navigate],
   );
 
   return (
@@ -77,6 +77,6 @@ export function ErrorSearchBar({
       </div>
     </form>
   );
-}
+});
 
 export default ErrorSearchBar;

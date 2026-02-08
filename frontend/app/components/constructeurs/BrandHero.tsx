@@ -3,11 +3,13 @@
 
 import { Link } from "@remix-run/react";
 import { Car, Home, ChevronRight } from "lucide-react";
+import { memo } from "react";
 
+import VehicleSelector from "../vehicle/VehicleSelector";
 import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
-import VehicleSelector from "../vehicle/VehicleSelector";
+import { logger } from "~/utils/logger";
 
 interface BrandHeroProps {
   brand: {
@@ -27,11 +29,11 @@ interface BrandHeroProps {
   className?: string;
 }
 
-const BrandHero: React.FC<BrandHeroProps> = ({
+const BrandHero = memo(function BrandHero({
   brand,
   seo,
   className = "",
-}) => {
+}: BrandHeroProps) {
   return (
     <div
       className={`bg-gradient-to-br from-blue-50 via-white to-gray-50 border-b border-gray-200 ${className}`}
@@ -159,7 +161,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({
               redirectOnSelect={true}
               redirectTo="vehicle-page"
               onVehicleSelect={(selection) => {
-                console.log(
+                logger.log(
                   "🚗 Sélection véhicule depuis page marque:",
                   selection,
                 );
@@ -193,6 +195,6 @@ const BrandHero: React.FC<BrandHeroProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default BrandHero;

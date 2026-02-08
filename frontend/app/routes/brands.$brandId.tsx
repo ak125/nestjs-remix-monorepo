@@ -23,6 +23,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -128,7 +129,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json({ models, brand, types } as LoaderData);
   } catch (error) {
-    console.error("Erreur chargement marque:", error);
+    logger.error("Erreur chargement marque:", error);
     return json({
       models: [],
       brand: null,

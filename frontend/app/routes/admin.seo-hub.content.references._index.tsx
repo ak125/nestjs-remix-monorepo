@@ -12,6 +12,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -71,6 +72,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface Reference {
   slug: string;
@@ -91,6 +94,9 @@ interface LoaderData {
   error: string | null;
   authError?: boolean;
 }
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Références SEO - Admin");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -153,7 +159,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[R4 List] Loader error:", error);
+    logger.error("[R4 List] Loader error:", error);
     return json<LoaderData>({
       references: [],
       drafts: [],
@@ -195,7 +201,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return json({ success: false, error: "Action non reconnue" });
     }
   } catch (error) {
-    console.error("[R4 Action] Error:", error);
+    logger.error("[R4 Action] Error:", error);
     return json({ success: false, error: "Erreur serveur" });
   }
 }

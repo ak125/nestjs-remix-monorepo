@@ -18,6 +18,7 @@ import {
   type VehicleData,
 } from "../../types/pieces-route.types";
 import { slugify } from "../../utils/pieces-route.utils";
+import { logger } from "~/utils/logger";
 
 // 🔧 FIX: URL backend configurable (était hardcodé localhost:3000)
 // En SSR (server-side), utilise BACKEND_URL ou fallback localhost:3000
@@ -169,7 +170,7 @@ export async function fetchCrossSellingGammes(
   gammeId: number,
 ): Promise<CrossSellingGamme[]> {
   try {
-    console.log(
+    logger.log(
       `🔄 [CrossSelling] Fetching for type=${typeId}, gamme=${gammeId}`,
     );
 
@@ -179,7 +180,7 @@ export async function fetchCrossSellingGammes(
     );
 
     if (!response.ok) {
-      console.warn(`❌ Cross-selling API non disponible: ${response.status}`);
+      logger.warn(`❌ Cross-selling API non disponible: ${response.status}`);
 
       // Fallback avec gammes de test pour démonstration
       return [
@@ -211,7 +212,7 @@ export async function fetchCrossSellingGammes(
     }
 
     const data = await response.json();
-    console.log(`✅ Cross-selling data:`, data);
+    logger.log(`✅ Cross-selling data:`, data);
 
     // ⚡ CORRECTION: L'API V5 retourne { data: { cross_gammes: [] } }
     const crossGammes =
@@ -234,10 +235,10 @@ export async function fetchCrossSellingGammes(
       }));
     }
 
-    console.warn(`⚠️ Aucune gamme cross-selling trouvée dans la réponse API`);
+    logger.warn(`⚠️ Aucune gamme cross-selling trouvée dans la réponse API`);
     return [];
   } catch (error) {
-    console.error("❌ Erreur fetchCrossSellingGammes:", error);
+    logger.error("❌ Erreur fetchCrossSellingGammes:", error);
     return [];
   }
 }
@@ -257,7 +258,7 @@ export async function fetchBlogArticle(
   gamme: GammeData,
   _vehicle: VehicleData,
 ): Promise<BlogArticle | null> {
-  console.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
+  logger.log(`🔄 [Blog] Recherche article par gamme: ${gamme.alias}`);
 
   // ⚠️ URLs API EXACTES - NE PAS MODIFIER
   const endpoints = [
@@ -293,7 +294,7 @@ export async function fetchRelatedArticlesForGamme(
   gamme: GammeData,
   _vehicle: VehicleData,
 ): Promise<BlogArticle[]> {
-  console.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
+  logger.log(`📚 [RelatedArticles] Fetching for gamme: ${gamme.alias}`);
 
   // Parser spécialisé pour extraire article principal + articles liés
   const parseRelatedArticles = (data: unknown): BlogArticle[] | null => {

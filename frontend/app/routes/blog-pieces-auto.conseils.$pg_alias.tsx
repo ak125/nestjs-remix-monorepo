@@ -66,6 +66,7 @@ import {
   trackBookmark,
 } from "~/utils/analytics";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
@@ -200,7 +201,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         adjacentArticles = adjacentData.data;
       }
     } catch (error) {
-      console.error("[Adjacent] Error loading adjacent articles", error);
+      logger.error("[Adjacent] Error loading adjacent articles", error);
       // Silently fail - not critical
     }
 
@@ -222,7 +223,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           seoSwitches = switchesData.data || [];
         }
       } catch (error) {
-        console.error("[SEO] Error loading SEO switches", error);
+        logger.error("[SEO] Error loading SEO switches", error);
         // Silently fail - not critical
       }
     }
@@ -245,7 +246,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           conseil = conseilData.data;
         }
       } catch (error) {
-        console.error("[CONSEIL] Error loading conseil", error);
+        logger.error("[CONSEIL] Error loading conseil", error);
         // Silently fail - not critical
       }
     }
@@ -263,7 +264,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       throw error;
     }
     // Pour les vraies erreurs (réseau, parsing), retourner 500
-    console.error(
+    logger.error(
       `[Legacy URL] Error loading article for gamme: ${pg_alias}`,
       error,
     );

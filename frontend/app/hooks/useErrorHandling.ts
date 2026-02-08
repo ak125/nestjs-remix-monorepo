@@ -1,4 +1,5 @@
 import { useSubmit } from "@remix-run/react";
+import { logger } from "~/utils/logger";
 
 /**
  * Hook pour intégrer avec le service ErrorService backend
@@ -32,45 +33,47 @@ export function useErrorReporting() {
             metadata: {
               screen: {
                 width: screen.width,
-                height: screen.height
+                height: screen.height,
               },
               viewport: {
                 width: window.innerWidth,
-                height: window.innerHeight
+                height: window.innerHeight,
               },
               language: navigator.language,
-              platform: navigator.platform
-            }
-          })
+              platform: navigator.platform,
+            },
+          }),
         },
         {
           method: "post",
           action: "/api/errors/report",
-          encType: "application/json"
-        }
+          encType: "application/json",
+        },
       );
     } catch (error) {
       // En cas d'erreur lors du reporting, on log simplement en console
-      console.error("Erreur lors du reporting d'erreur:", error);
+      logger.error("Erreur lors du reporting d'erreur:", error);
     }
   };
 
   const getSuggestions = async (url: string): Promise<string[]> => {
     try {
-      const response = await fetch(`/api/errors/suggestions?url=${encodeURIComponent(url)}`);
+      const response = await fetch(
+        `/api/errors/suggestions?url=${encodeURIComponent(url)}`,
+      );
       if (response.ok) {
         const data = await response.json();
         return data.suggestions || [];
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des suggestions:", error);
+      logger.error("Erreur lors de la récupération des suggestions:", error);
     }
     return [];
   };
 
   return {
     reportError,
-    getSuggestions
+    getSuggestions,
   };
 }
 
@@ -80,13 +83,15 @@ export function useErrorReporting() {
 export function useRedirectHandler() {
   const checkRedirect = async (url: string): Promise<string | null> => {
     try {
-      const response = await fetch(`/api/redirects/check?url=${encodeURIComponent(url)}`);
+      const response = await fetch(
+        `/api/redirects/check?url=${encodeURIComponent(url)}`,
+      );
       if (response.ok) {
         const data = await response.json();
         return data.destination || null;
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification de redirection:", error);
+      logger.error("Erreur lors de la vérification de redirection:", error);
     }
     return null;
   };
@@ -101,7 +106,7 @@ export function useRedirectHandler() {
 
   return {
     checkRedirect,
-    performRedirect
+    performRedirect,
   };
 }
 
@@ -141,6 +146,6 @@ export function useErrorHandling() {
     reportError,
     getSuggestions,
     checkRedirect,
-    performRedirect
+    performRedirect,
   };
 }

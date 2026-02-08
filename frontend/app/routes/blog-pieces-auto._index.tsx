@@ -62,6 +62,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -219,10 +220,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         };
       }
     } else {
-      console.warn(`API returned ${response.status}: ${response.statusText}`);
+      logger.warn(`API returned ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
-    console.warn(
+    logger.warn(
       "Blog API error:",
       error instanceof Error ? error.message : "Unknown error",
     );

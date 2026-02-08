@@ -16,7 +16,12 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
 import { StockService } from '../services/stock.service';
-import { CreateProductDto, UpdateProductDto, UpdateStockDto } from '../dto';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  UpdateStockDto,
+  SearchProductDto,
+} from '../dto';
 import {
   CreateProductSchema,
   UpdateProductSchema,
@@ -39,7 +44,7 @@ export class ProductsCoreController {
    * Récupérer toutes les pièces avec filtres
    */
   @Get('pieces')
-  async getPieces(@Query() filters: any) {
+  async getPieces(@Query() filters: SearchProductDto) {
     return this.productsService.findAll(filters);
   }
 
@@ -64,7 +69,7 @@ export class ProductsCoreController {
    * Récupérer toutes les pièces (endpoint principal)
    */
   @Get()
-  async findAll(@Query() filters: any) {
+  async findAll(@Query() filters: SearchProductDto) {
     return this.productsService.findAll(filters);
   }
 
@@ -207,10 +212,10 @@ export class ProductsCoreController {
         ...product,
         stock,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(
         `Impossible de récupérer le stock pour le produit ${id}:`,
-        error?.message || error,
+        error instanceof Error ? error.message : error,
       );
       return {
         ...product,

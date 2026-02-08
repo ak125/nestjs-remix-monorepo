@@ -7,6 +7,7 @@
 
 import { type AppLoadContext } from "@remix-run/node";
 import { type CartItem, type CartSummary, type CartData } from "../types/cart";
+import { logger } from "~/utils/logger";
 
 // Re-export des types pour compatibilité
 export type { CartItem, CartSummary, CartData } from "../types/cart";
@@ -74,15 +75,12 @@ class CartServerService {
         // console.log("🔄 [CartServer] Données normalisées:", JSON.stringify(normalized.summary, null, 2));
         return normalized;
       } else {
-        console.warn(
+        logger.warn(
           "⚠️ [CartServer] Backend non disponible, utilisation des données de démo",
         );
       }
     } catch (error) {
-      console.warn(
-        "⚠️ [CartServer] Erreur backend, fallback vers démo:",
-        error,
-      );
+      logger.warn("⚠️ [CartServer] Erreur backend, fallback vers démo:", error);
     }
 
     // Fallback : simulation avec données de démo
@@ -153,7 +151,7 @@ class CartServerService {
     context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      console.log(`➕ [CartServer] Ajout article ${productId} x${quantity}`);
+      logger.log(`➕ [CartServer] Ajout article ${productId} x${quantity}`);
 
       // Tentative d'utilisation de l'API service existant
       if (this.apiService?.cart?.addItem) {
@@ -167,7 +165,7 @@ class CartServerService {
         cart: await this.getCartAsLegacyFormat(request, context),
       };
     } catch (error) {
-      console.error("❌ [CartServer] Erreur addItem:", error);
+      logger.error("❌ [CartServer] Erreur addItem:", error);
       return {
         success: false,
         error: "Erreur lors de l'ajout au panier",
@@ -185,9 +183,7 @@ class CartServerService {
     context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      console.log(
-        `🔄 [CartServer] Mise à jour quantité ${itemId}: ${quantity}`,
-      );
+      logger.log(`🔄 [CartServer] Mise à jour quantité ${itemId}: ${quantity}`);
 
       if (quantity <= 0) {
         return await this.removeFromCart(request, itemId, context);
@@ -209,7 +205,7 @@ class CartServerService {
         cart: await this.getCartAsLegacyFormat(request, context),
       };
     } catch (error) {
-      console.error("❌ [CartServer] Erreur updateQuantity:", error);
+      logger.error("❌ [CartServer] Erreur updateQuantity:", error);
       return {
         success: false,
         error: "Erreur lors de la mise à jour",
@@ -226,7 +222,7 @@ class CartServerService {
     context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      console.log(`🗑️ [CartServer] Suppression article ${itemId}`);
+      logger.log(`🗑️ [CartServer] Suppression article ${itemId}`);
 
       // Tentative d'utilisation de l'API service existant
       if (this.apiService?.cart?.removeItem) {
@@ -240,7 +236,7 @@ class CartServerService {
         cart: await this.getCartAsLegacyFormat(request, context),
       };
     } catch (error) {
-      console.error("❌ [CartServer] Erreur removeFromCart:", error);
+      logger.error("❌ [CartServer] Erreur removeFromCart:", error);
       return {
         success: false,
         error: "Erreur lors de la suppression",
@@ -256,7 +252,7 @@ class CartServerService {
     context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      console.log("🧹 [CartServer] Vidage du panier");
+      logger.log("🧹 [CartServer] Vidage du panier");
 
       // Faire un appel direct au backend avec les cookies de la requête
       const url = new URL(request.url);
@@ -285,7 +281,7 @@ class CartServerService {
       }
 
       const result = await response.json();
-      console.log("✅ [CartServer] Panier vidé:", result);
+      logger.log("✅ [CartServer] Panier vidé:", result);
 
       return {
         success: true,
@@ -306,7 +302,7 @@ class CartServerService {
         },
       };
     } catch (error) {
-      console.error("❌ [CartServer] Erreur clearCart:", error);
+      logger.error("❌ [CartServer] Erreur clearCart:", error);
       return {
         success: false,
         error:
@@ -358,7 +354,7 @@ class CartServerService {
         cart: await this.getCartAsLegacyFormat(request, context),
       };
     } catch (error) {
-      console.error("❌ [CartServer] Erreur validateCart:", error);
+      logger.error("❌ [CartServer] Erreur validateCart:", error);
       return {
         success: false,
         error: "Erreur lors de la validation",
@@ -514,7 +510,7 @@ class CartServerService {
    */
   setApiService(apiService: any) {
     this.apiService = apiService;
-    console.log("🔗 [CartServer] API Service connecté");
+    logger.log("🔗 [CartServer] API Service connecté");
   }
 }
 

@@ -21,6 +21,7 @@
 
 import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useRef } from "react";
+import { logger } from "~/utils/logger";
 
 // Types de liens supportés
 export type LinkType =
@@ -163,7 +164,7 @@ async function flushImpressions() {
     );
   } catch (error) {
     // Silencieux en cas d'erreur - ne pas bloquer l'UX
-    console.debug("[SEO Tracking] Impression tracking failed:", error);
+    logger.debug("[SEO Tracking] Impression tracking failed:", error);
   }
 }
 
@@ -255,10 +256,7 @@ export function useSeoLinkTracking(): UseSeoLinkTrackingReturn {
             body: JSON.stringify(payload),
             keepalive: true,
           }).catch((err) =>
-            console.debug(
-              "[SEO Tracking] Click tracking fallback failed:",
-              err,
-            ),
+            logger.debug("[SEO Tracking] Click tracking fallback failed:", err),
           );
         }
       } catch {

@@ -29,6 +29,7 @@ import {
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 
 import { Badge } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 interface GlobalSearchProps {
   isOpen: boolean;
@@ -115,7 +116,7 @@ export const GlobalSearch = memo(function GlobalSearch({
         setSearchHistory(JSON.parse(saved));
       }
     } catch (error) {
-      console.warn("Erreur chargement historique recherche:", error);
+      logger.warn("Erreur chargement historique recherche:", error);
     }
   }, []);
 
@@ -144,7 +145,7 @@ export const GlobalSearch = memo(function GlobalSearch({
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
         } catch (error) {
-          console.warn("Erreur sauvegarde historique:", error);
+          logger.warn("Erreur sauvegarde historique:", error);
         }
 
         return newHistory;

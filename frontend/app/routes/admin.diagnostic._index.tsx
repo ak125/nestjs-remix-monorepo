@@ -55,6 +55,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { logger } from "~/utils/logger";
 
 // Types
 interface Observable {
@@ -162,7 +163,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: undefined as string | undefined,
     });
   } catch (error) {
-    console.error("Loader error:", error);
+    logger.error("Loader error:", error);
     return json({
       observables: [],
       stats: {
@@ -267,7 +268,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return json({ success: false, error: "Action inconnue" });
     }
   } catch (error) {
-    console.error("Action error:", error);
+    logger.error("Action error:", error);
     return json({ success: false, error: "Erreur serveur" });
   }
 }

@@ -8,9 +8,6 @@ import { CheckCircle2, ChevronRight, Shield, Truck, Users } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
-import { formatCatalogCount } from "~/utils/format-catalog-count";
-import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import HomeBlogSection from "../components/home/HomeBlogSection";
 import HomeBottomSections from "../components/home/HomeBottomSections";
@@ -27,6 +24,10 @@ import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
 // hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { formatCatalogCount } from "~/utils/format-catalog-count";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -183,7 +184,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const loadTime = Date.now() - startTime;
-    console.log(`⚡ Homepage RPC loader: ${loadTime}ms`);
+    logger.log(`⚡ Homepage RPC loader: ${loadTime}ms`);
 
     // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
     const generateLogoUrl = (filename?: string): string | undefined => {
@@ -213,7 +214,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    console.error("Loader error:", error);
+    logger.error("Loader error:", error);
     // NO fallback - throw error to show ErrorBoundary
     throw new Response("Homepage data unavailable", { status: 500 });
   }
@@ -637,7 +638,7 @@ export default function TestHomepageModern() {
                               width="200"
                               height="200"
                               onError={(e) => {
-                                console.error(
+                                logger.error(
                                   "❌ Erreur chargement logo:",
                                   brand.name,
                                   brand.logo,

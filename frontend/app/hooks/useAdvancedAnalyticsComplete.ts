@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { logger } from "~/utils/logger";
 
 interface ABTestConfig {
   name: string;
@@ -62,7 +63,7 @@ export function useAdvancedAnalyticsComplete() {
       // Stocker localement pour persistance
       localStorage.setItem(`ab_test_${testId}`, JSON.stringify(test));
 
-      console.log(
+      logger.log(
         `🧪 A/B Test démarré: ${testId} -> variante ${selectedVariant}`,
       );
 
@@ -88,7 +89,7 @@ export function useAdvancedAnalyticsComplete() {
         setActiveTests((prev) => new Map(prev).set(testId, test));
         return test.variant;
       } catch (e) {
-        console.warn("Erreur parsing test A/B stocké:", e);
+        logger.warn("Erreur parsing test A/B stocké:", e);
       }
     }
 
@@ -113,7 +114,7 @@ export function useAdvancedAnalyticsComplete() {
       setEvents((prev) => [...prev, event]);
 
       // Log en console pour le développement
-      console.log(`📊 Événement tracké: ${eventType}`, event);
+      logger.log(`📊 Événement tracké: ${eventType}`, event);
 
       // Envoyer vers le service de monitoring si disponible
       if (typeof window !== "undefined") {
@@ -126,7 +127,7 @@ export function useAdvancedAnalyticsComplete() {
             sessionId: currentSessionId,
             timestamp: new Date().toISOString(),
           }),
-        }).catch((err) => console.warn("Erreur envoi analytics:", err));
+        }).catch((err) => logger.warn("Erreur envoi analytics:", err));
       }
     },
     [],
@@ -203,7 +204,7 @@ export function useAdvancedAnalyticsComplete() {
           setActiveTests((prev) => new Map(prev).set(test.id, test));
         }
       } catch (e) {
-        console.warn("Erreur chargement test A/B:", e);
+        logger.warn("Erreur chargement test A/B:", e);
       }
     });
   }, []);

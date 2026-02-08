@@ -1,11 +1,15 @@
 /**
  * 🧾 LAYOUT FACTURES - Admin Interface
- * 
+ *
  * Layout parent pour toutes les pages de gestion des factures
  * Fournit navigation et structure commune
  */
 
+import { type MetaFunction } from "@remix-run/node";
 import { Outlet, Link, useLocation } from "@remix-run/react";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Factures - Admin");
 
 export default function InvoicesLayout() {
   const location = useLocation();

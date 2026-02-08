@@ -11,7 +11,11 @@
  * Route: /admin/products/gammes/:gammeId
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, Form, useSearchParams } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -44,6 +48,11 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Gamme Produits - Admin");
 
 interface AdminProduct {
   piece_id: number;
@@ -195,7 +204,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       stats,
     });
   } catch (error) {
-    console.error("❌ Erreur loader admin gamme:", error);
+    logger.error("❌ Erreur loader admin gamme:", error);
 
     return json<AdminGammeData>({
       user: {

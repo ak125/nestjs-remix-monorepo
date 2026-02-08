@@ -10,6 +10,7 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from "@remix-run/node";
+import { logger } from "~/utils/logger";
 
 const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 
@@ -19,7 +20,7 @@ const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const cookie = request.headers.get("Cookie") || "";
-    console.log(
+    logger.log(
       "[API Cart Remix] Cookie reçu:",
       cookie ? cookie.substring(0, 50) + "..." : "AUCUN",
     );
@@ -34,7 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      console.error(
+      logger.error(
         "[API Cart] Erreur fetch:",
         response.status,
         response.statusText,
@@ -53,7 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const data = await response.json();
 
-    console.log(
+    logger.log(
       "[API Cart Remix] Réponse backend:",
       data.totals?.total_items,
       "articles",
@@ -67,7 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       consigneTotal: data.totals?.consigne_total || 0,
     });
   } catch (error) {
-    console.error("[API Cart] Erreur:", error);
+    logger.error("[API Cart] Erreur:", error);
     return json(
       {
         items: [],
@@ -89,7 +90,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
 
-  console.log("[API Cart Action] Intent:", intent);
+  logger.log("[API Cart Action] Intent:", intent);
 
   try {
     if (intent === "update") {
@@ -97,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const productId = formData.get("productId") as string;
       const quantity = parseInt(formData.get("quantity") as string, 10);
 
-      console.log(
+      logger.log(
         `[API Cart] Update: productId=${productId}, quantity=${quantity}`,
       );
 
@@ -116,7 +117,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
 
       const data = await response.json();
-      console.log("[API Cart] Update response:", data.success ? "OK" : "FAIL");
+      logger.log("[API Cart] Update response:", data.success ? "OK" : "FAIL");
       return json(data);
     }
 
@@ -124,7 +125,7 @@ export async function action({ request }: ActionFunctionArgs) {
       // Supprimer un article - DELETE /api/cart/items/:productId
       const productId = formData.get("productId") as string;
 
-      console.log(`[API Cart] Remove: productId=${productId}`);
+      logger.log(`[API Cart] Remove: productId=${productId}`);
 
       const response = await fetch(`${API_BASE}/api/cart/items/${productId}`, {
         method: "DELETE",
@@ -136,13 +137,13 @@ export async function action({ request }: ActionFunctionArgs) {
       });
 
       const data = await response.json();
-      console.log("[API Cart] Remove response:", data.success ? "OK" : "FAIL");
+      logger.log("[API Cart] Remove response:", data.success ? "OK" : "FAIL");
       return json(data);
     }
 
     if (intent === "clear") {
       // Vider le panier - DELETE /api/cart
-      console.log("[API Cart] Clear cart");
+      logger.log("[API Cart] Clear cart");
 
       const response = await fetch(`${API_BASE}/api/cart`, {
         method: "DELETE",
@@ -154,14 +155,14 @@ export async function action({ request }: ActionFunctionArgs) {
       });
 
       const data = await response.json();
-      console.log("[API Cart] Clear response:", data.success ? "OK" : "FAIL");
+      logger.log("[API Cart] Clear response:", data.success ? "OK" : "FAIL");
       return json(data);
     }
 
-    console.error("[API Cart] Intent inconnu:", intent);
+    logger.error("[API Cart] Intent inconnu:", intent);
     return json({ error: "Intent inconnu", intent }, { status: 400 });
   } catch (error) {
-    console.error("[API Cart Action] Erreur:", error);
+    logger.error("[API Cart Action] Erreur:", error);
     return json(
       { error: "Erreur serveur", details: String(error) },
       { status: 500 },

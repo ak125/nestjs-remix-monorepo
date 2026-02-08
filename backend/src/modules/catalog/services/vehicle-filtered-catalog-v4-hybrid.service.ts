@@ -6,6 +6,67 @@ import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { sleep } from '../../../utils/promise-helpers';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 
+export interface CatalogGamme {
+  pg_id: number;
+  pg_alias: string;
+  pg_name: string;
+  pg_name_meta: string;
+  pg_img: string;
+  mc_sort?: number;
+  pg_sort?: number;
+}
+
+interface CatalogFamily {
+  mf_id: number | string;
+  mf_name: string;
+  mf_name_system: string;
+  mf_description: string;
+  mf_pic: string;
+  mf_sort: number;
+  gammes_count: number;
+  gammes: CatalogGamme[];
+}
+
+export interface SeoValidation {
+  familyCount: number;
+  gammeCount: number;
+  isIndexable: boolean;
+}
+
+export interface FilteredCatalog {
+  queryType: string;
+  families: CatalogFamily[];
+  totalFamilies: number;
+  totalGammes: number;
+  seoValidation?: SeoValidation;
+  optimizationLevel?: string;
+  message?: string;
+}
+
+interface GammeRow {
+  pg_id: number | string;
+  pg_alias: string;
+  pg_name: string;
+  pg_name_meta: string;
+  pg_img: string;
+  pg_level?: string;
+}
+
+interface FamilyRow {
+  mf_id: string;
+  mf_name: string;
+  mf_name_system: string;
+  mf_description: string;
+  mf_pic: string;
+  mf_sort: string;
+}
+
+interface CatalogGammeRow {
+  mc_pg_id: string;
+  mc_mf_id: string;
+  mc_sort: string;
+}
+
 interface CatalogMetrics {
   responseTime: number;
   cacheHitRatio: number;
@@ -22,13 +83,13 @@ interface VehiclePopularityStats {
 }
 
 interface CatalogResult {
-  catalog: any;
+  catalog: FilteredCatalog;
   metrics: CatalogMetrics;
   timestamp: Date;
 }
 
 interface CacheEntry {
-  data: any;
+  data: FilteredCatalog;
   timestamp: Date;
   ttl: number;
 }
@@ -121,10 +182,10 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
         },
         timestamp: new Date(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
       this.logger.error(
-        `❌ [ERROR] V4 type_id ${typeId}: ${error.message} (${responseTime}ms)`,
+        `❌ [ERROR] V4 type_id ${typeId}: ${error instanceof Error ? error.message : String(error)} (${responseTime}ms)`,
       );
       throw error;
     }
@@ -142,7 +203,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    * - Index composite: 1-2s (si vue stale/indisponible)
    * - Catalogue complet: 50-100ms (si aucune donnée compatible)
    */
-  private async buildCatalogParallel(typeId: number): Promise<any> {
+  private async buildCatalogParallel(typeId: number): Promise<FilteredCatalog> {
     this.logger.log(`🔍 [V4 HYBRID] Catalogue pour type_id ${typeId}`);
 
     // ============================================
@@ -198,7 +259,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       // JOIN pieces_gamme ON pg_id = piece_pg_id
       // WHERE rtp_type_id = ? AND piece_display = true AND pg_display = '1' AND pg_level IN ('1','2')
 
-      const { data: rpcData, error: rpcError } = await this.callRpc<any[]>(
+      const { data: rpcData, error: rpcError } = await this.callRpc<
+        Array<{ pg_id: number }>
+      >(
         'get_vehicle_compatible_gammes_php',
         { p_type_id: typeId },
         { source: 'api' },
@@ -247,7 +310,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   private async fetchCatalogFromGammes(
     pgIds: number[],
     queryType: string,
-  ): Promise<any> {
+  ): Promise<FilteredCatalog> {
     // 🔧 Conversion des IDs en strings pour compatibilité avec colonnes text
     const pgIdsAsStrings = pgIds.map((id) => id.toString());
 
@@ -305,15 +368,15 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    * 💡 À partir des données déjà récupérées (familles, catalog_gamme, pieces_gamme)
    */
   private buildFilteredCatalogFromParts(
-    familiesData: any[],
-    catalogGammeData: any[],
-    gammesData: any[],
+    familiesData: FamilyRow[],
+    catalogGammeData: CatalogGammeRow[],
+    gammesData: GammeRow[],
     queryType: string = 'V4_FILTERED',
-  ): any {
+  ): FilteredCatalog {
     // 🔧 Maps avec clés STRING (Supabase retourne pg_id=integer mais mf_id=string)
     const gammeMap = new Map(gammesData.map((g) => [String(g.pg_id), g]));
     const familyMap = new Map(familiesData.map((f) => [String(f.mf_id), f]));
-    const familyGammesMap = new Map<string, any[]>();
+    const familyGammesMap = new Map<string, CatalogGamme[]>();
 
     // Regrouper les gammes par famille
     catalogGammeData.forEach((cg) => {
@@ -329,7 +392,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
 
       familyGammesMap.get(cg.mc_mf_id)!.push({
-        pg_id: gamme.pg_id,
+        pg_id: Number(gamme.pg_id),
         pg_alias: gamme.pg_alias,
         pg_name: gamme.pg_name,
         pg_name_meta: gamme.pg_name_meta,
@@ -342,7 +405,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     const finalFamilies = familiesData
       .map((family) => {
         const gammes = (familyGammesMap.get(String(family.mf_id)) || []).sort(
-          (a, b) => a.mc_sort - b.mc_sort,
+          (a, b) => (a.mc_sort ?? 0) - (b.mc_sort ?? 0),
         );
 
         if (gammes.length === 0) return null;
@@ -358,7 +421,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
           gammes,
         };
       })
-      .filter(Boolean)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
       .sort((a, b) => a.mf_sort - b.mf_sort);
 
     const totalGammes = finalFamilies.reduce(
@@ -380,7 +443,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
 
     return {
       queryType,
-      families: finalFamilies,
+      families: finalFamilies as CatalogFamily[],
       totalFamilies: finalFamilies.length,
       totalGammes,
       seoValidation,
@@ -391,7 +454,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    * 🔄 FALLBACK: Catalogue complet sans filtrage
    * 💡 Utilisé quand pieces_relation_type est vide
    */
-  private async buildCompleteCatalogFallback(): Promise<any> {
+  private async buildCompleteCatalogFallback(): Promise<FilteredCatalog> {
     this.logger.log(
       '🔄 [FALLBACK] Construction catalogue complet sans filtrage...',
     );
@@ -437,15 +500,15 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    * 💡 Pas de filtrage, juste assemblage des données
    */
   private buildCompleteCatalog(
-    families: any[],
-    liaisons: any[],
-    gammes: any[],
-  ): any {
+    families: FamilyRow[],
+    liaisons: CatalogGammeRow[],
+    gammes: GammeRow[],
+  ): FilteredCatalog {
     // 🔥 CRITIQUE: Convertir les IDs en nombres (Supabase retourne des strings)
-    const gammeMap = new Map(gammes.map((g) => [parseInt(g.pg_id), g]));
+    const gammeMap = new Map(gammes.map((g) => [parseInt(String(g.pg_id)), g]));
 
     // Grouper gammes par famille
-    const familyGammesMap = new Map<number, any[]>();
+    const familyGammesMap = new Map<number, CatalogGamme[]>();
 
     liaisons.forEach((liaison) => {
       const gamme = gammeMap.get(parseInt(liaison.mc_pg_id));
@@ -457,7 +520,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
 
       familyGammesMap.get(familyId)!.push({
-        pg_id: gamme.pg_id,
+        pg_id: Number(gamme.pg_id),
         pg_alias: gamme.pg_alias,
         pg_name: gamme.pg_name,
         pg_name_meta: gamme.pg_name_meta,
@@ -472,7 +535,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
         const familyGammes = familyGammesMap.get(parseInt(family.mf_id)) || [];
 
         // Trier gammes par mc_sort
-        const sortedGammes = familyGammes.sort((a, b) => a.pg_sort - b.pg_sort);
+        const sortedGammes = familyGammes.sort(
+          (a, b) => (a.pg_sort ?? 0) - (b.pg_sort ?? 0),
+        );
 
         return {
           mf_id: parseInt(family.mf_id),
@@ -509,7 +574,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   /**
    * 🚀 RÉCUPÉRATION RELATIONS OPTIMISÉE
    */
-  private async getCompleteRelations(typeId: number): Promise<any[]> {
+  private async getCompleteRelations(
+    typeId: number,
+  ): Promise<Record<string, unknown>[]> {
     const startTime = Date.now();
 
     try {
@@ -539,10 +606,10 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
 
       return relationData || [];
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
       this.logger.error(
-        `❌ [RELATIONS] Erreur type_id ${typeId}: ${error.message} (${responseTime}ms)`,
+        `❌ [RELATIONS] Erreur type_id ${typeId}: ${error instanceof Error ? error.message : String(error)} (${responseTime}ms)`,
       );
 
       // 🔥 FALLBACK: Retourner tableau vide au lieu de crasher
@@ -556,7 +623,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   /**
    * 💾 CACHE INTELLIGENT AVEC TTL ADAPTATIF
    */
-  private getCachedCatalog(typeId: number): any | null {
+  private getCachedCatalog(typeId: number): FilteredCatalog | null {
     try {
       const cacheKey = `catalog:v4:${typeId}`;
       const cacheEntry = this.memoryCache.get(cacheKey);
@@ -571,15 +638,15 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       }
 
       return cacheEntry.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(
-        `⚠️ [CACHE READ] Erreur type_id ${typeId}: ${error.message}`,
+        `⚠️ [CACHE READ] Erreur type_id ${typeId}: ${error instanceof Error ? error.message : String(error)}`,
       );
       return null;
     }
   }
 
-  private setCachedCatalog(typeId: number, catalog: any): void {
+  private setCachedCatalog(typeId: number, catalog: FilteredCatalog): void {
     try {
       const cacheKey = `catalog:v4:${typeId}`;
       const ttl = this.getSmartTTL(typeId);
@@ -591,9 +658,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       });
 
       this.logger.log(`💾 [CACHE SET] type_id ${typeId} cached for ${ttl}s`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.warn(
-        `⚠️ [CACHE WRITE] Erreur type_id ${typeId}: ${error.message}`,
+        `⚠️ [CACHE WRITE] Erreur type_id ${typeId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -658,9 +725,9 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
             try {
               await this.getCatalogV4Optimized(typeId);
               this.logger.log(`✅ [PRECOMPUTE] type_id ${typeId} cached`);
-            } catch (error: any) {
+            } catch (error: unknown) {
               this.logger.warn(
-                `⚠️ [PRECOMPUTE] Échec type_id ${typeId}: ${error.message}`,
+                `⚠️ [PRECOMPUTE] Échec type_id ${typeId}: ${error instanceof Error ? error.message : String(error)}`,
               );
             }
           }),
@@ -673,15 +740,17 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       this.logger.log(
         `🎉 [PRECOMPUTE] Terminé! ${allToPrecompute.length} véhicules en cache`,
       );
-    } catch (error: any) {
-      this.logger.error(`❌ [PRECOMPUTE] Erreur: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `❌ [PRECOMPUTE] Erreur: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   /**
    * 📊 MÉTRIQUES DE PERFORMANCE AVANCÉES
    */
-  async getAdvancedMetrics(): Promise<any> {
+  async getAdvancedMetrics(): Promise<Record<string, unknown>> {
     const cacheKeys = Array.from(this.memoryCache.keys());
     const totalCached = cacheKeys.length;
 
@@ -718,12 +787,12 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   /**
    * 🔍 CALCUL SCORE DE COMPLÉTUDE
    */
-  private calculateCompleteness(catalog: any): number {
+  private calculateCompleteness(catalog: FilteredCatalog): number {
     if (!catalog?.families?.length) return 0;
 
     const totalFamilies = catalog.families.length;
     const familiesWithGammes = catalog.families.filter(
-      (f: any) => f.gammes_count > 0,
+      (f: CatalogFamily) => f.gammes_count > 0,
     ).length;
 
     return Math.round((familiesWithGammes / totalFamilies) * 100);
@@ -732,7 +801,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   /**
    * 🔄 CATALOGUE GÉNÉRIQUE FALLBACK
    */
-  private async getGenericCatalog(typeId: number): Promise<any> {
+  private async getGenericCatalog(typeId: number): Promise<FilteredCatalog> {
     this.logger.log(
       `🔄 [FALLBACK] Catalogue générique pour type_id: ${typeId}`,
     );

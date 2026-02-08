@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useAiContent } from '~/hooks/useAiContent';
+import { memo, useState } from "react";
+import { useAiContent } from "~/hooks/useAiContent";
+import { logger } from "~/utils/logger";
 
 interface SEOMetaGeneratorProps {
   initialPageTitle?: string;
@@ -7,22 +8,22 @@ interface SEOMetaGeneratorProps {
   className?: string;
 }
 
-export function SEOMetaGenerator({
-  initialPageTitle = '',
+export const SEOMetaGenerator = memo(function SEOMetaGenerator({
+  initialPageTitle = "",
   onGenerated,
-  className = '',
+  className = "",
 }: SEOMetaGeneratorProps) {
   const { generateSEOMeta, isLoading, error } = useAiContent();
 
   const [pageTitle, setPageTitle] = useState(initialPageTitle);
-  const [pageUrl, setPageUrl] = useState('');
-  const [targetKeyword, setTargetKeyword] = useState('');
-  const [keywords, setKeywords] = useState<string[]>(['']);
-  const [businessType, setBusinessType] = useState('');
+  const [pageUrl, setPageUrl] = useState("");
+  const [targetKeyword, setTargetKeyword] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([""]);
+  const [businessType, setBusinessType] = useState("");
   const [generatedMeta, setGeneratedMeta] = useState<string | null>(null);
 
   const handleAddKeyword = () => {
-    setKeywords([...keywords, '']);
+    setKeywords([...keywords, ""]);
   };
 
   const handleRemoveKeyword = (index: number) => {
@@ -48,7 +49,7 @@ export function SEOMetaGenerator({
       });
 
       setGeneratedMeta(result.content);
-      
+
       if (onGenerated) {
         onGenerated({
           title: pageTitle,
@@ -56,7 +57,7 @@ export function SEOMetaGenerator({
         });
       }
     } catch (err) {
-      console.error('Error generating SEO meta:', err);
+      logger.error("Error generating SEO meta:", err);
     }
   };
 
@@ -195,7 +196,7 @@ export function SEOMetaGenerator({
           disabled={isLoading || !pageTitle.trim()}
           className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? 'Génération en cours...' : 'Générer la méta description'}
+          {isLoading ? "Génération en cours..." : "Générer la méta description"}
         </button>
 
         {/* Generated Content */}
@@ -214,12 +215,12 @@ export function SEOMetaGenerator({
                 📋 Copier
               </button>
             </div>
-            
+
             <div className="space-y-3">
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-gray-800">{generatedMeta}</p>
               </div>
-              
+
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">
                   Longueur : {generatedMeta.length} caractères
@@ -227,15 +228,15 @@ export function SEOMetaGenerator({
                 <span
                   className={`font-medium ${
                     generatedMeta.length >= 150 && generatedMeta.length <= 160
-                      ? 'text-green-600'
-                      : 'text-orange-600'
+                      ? "text-green-600"
+                      : "text-orange-600"
                   }`}
                 >
                   {generatedMeta.length >= 150 && generatedMeta.length <= 160
-                    ? '✓ Longueur optimale'
+                    ? "✓ Longueur optimale"
                     : generatedMeta.length < 150
-                      ? '⚠ Trop court'
-                      : '⚠ Trop long'}
+                      ? "⚠ Trop court"
+                      : "⚠ Trop long"}
                 </span>
               </div>
             </div>
@@ -244,4 +245,4 @@ export function SEOMetaGenerator({
       </div>
     </div>
   );
-}
+});

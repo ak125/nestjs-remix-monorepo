@@ -1,11 +1,16 @@
-import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment";
+import {
+  type Payment,
+  type PaymentStats,
+  PaymentStatus,
+} from "../types/payment";
+import { logger } from "~/utils/logger";
 
 /**
  * Obtenir l'URL du backend à partir des variables d'environnement
  * Unused but kept for future use
  */
 function _getBackendUrl(): string {
-  return process.env.BACKEND_URL || 'http://localhost:3000';
+  return process.env.BACKEND_URL || "http://localhost:3000";
 }
 
 /**
@@ -41,14 +46,17 @@ export interface AdminPaymentListResult {
 export async function getPaymentById(id: string): Promise<Payment | null> {
   try {
     // Extraire l'ID de commande du payment ID
-    const orderId = id.replace('payment_', '');
-    
-    const response = await fetch(`http://localhost:3000/api/legacy-orders/${orderId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const orderId = id.replace("payment_", "");
+
+    const response = await fetch(
+      `http://localhost:3000/api/legacy-orders/${orderId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (response.status === 404) {
       return null;
@@ -66,23 +74,28 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
       id: `payment_${order.ord_id}`,
       orderId: order.ord_id,
       userId: order.ord_cst_id,
-      amount: parseFloat(order.ord_total_ttc || '0'),
-      currency: 'EUR',
-      status: order.ord_is_pay === '1' ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
-      paymentMethod: 'stripe',
+      amount: parseFloat(order.ord_total_ttc || "0"),
+      currency: "EUR",
+      status:
+        order.ord_is_pay === "1"
+          ? PaymentStatus.COMPLETED
+          : PaymentStatus.PENDING,
+      paymentMethod: "stripe",
       transactionId: order.ord_id,
       createdAt: order.ord_date || new Date().toISOString(),
       updatedAt: order.ord_date || new Date().toISOString(),
-      gatewayData: order.ord_info ? (() => {
-        try {
-          return JSON.parse(order.ord_info);
-        } catch {
-          return {};
-        }
-      })() : {},
+      gatewayData: order.ord_info
+        ? (() => {
+            try {
+              return JSON.parse(order.ord_info);
+            } catch {
+              return {};
+            }
+          })()
+        : {},
     };
   } catch (error) {
-    console.error(`❌ Failed to fetch payment ${id}:`, error);
+    logger.error(`❌ Failed to fetch payment ${id}:`, error);
     return null;
   }
 }
@@ -90,18 +103,20 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
 /**
  * Récupérer la liste des paiements pour l'admin (basé sur les commandes)
  */
-export async function getAdminPayments(params: AdminPaymentListParams = {}): Promise<AdminPaymentListResult> {
+export async function getAdminPayments(
+  params: AdminPaymentListParams = {},
+): Promise<AdminPaymentListResult> {
   try {
-    const { page = 1, limit = 10, search = '' } = params;
-    
+    const { page = 1, limit = 10, search = "" } = params;
+
     // Utiliser l'API legacy orders car les paiements sont intégrés aux commandes
     const response = await fetch(
-      `http://localhost:3000/api/legacy-orders?page=${page}&limit=${limit}${search ? `&search=${search}` : ''}`,
+      `http://localhost:3000/api/legacy-orders?page=${page}&limit=${limit}${search ? `&search=${search}` : ""}`,
       {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -109,35 +124,36 @@ export async function getAdminPayments(params: AdminPaymentListParams = {}): Pro
     }
 
     const data = await response.json();
-    
-    console.log('🔧 DEBUG - Orders data structure:', {
+
+    logger.log("🔧 DEBUG - Orders data structure:", {
       success: data.success,
       dataLength: data.data?.length,
       firstOrder: data.data?.[0],
-      pagination: data.pagination
+      pagination: data.pagination,
     });
-    
+
     // ✅ Le filtrage est maintenant géré côté BACKEND (excludePending=true par défaut)
     // Plus besoin de filtrer ici, toutes les commandes reçues sont déjà payées et confirmées
     const orders = data.data || [];
-    
-    console.log('🔧 DEBUG - Orders received (already filtered by backend):', {
+
+    logger.log("🔧 DEBUG - Orders received (already filtered by backend):", {
       ordersCount: orders.length,
       paginationTotal: data.pagination?.total,
     });
-    
+
     // Convertir les commandes en données de paiement (format BDD)
     const payments: Payment[] = orders.map((order: any) => {
       // Extraire le nom du client
       const customer = order.customer;
-      const customerName = customer 
-        ? `${customer.cst_fname || ''} ${customer.cst_name || ''}`.trim() || `Client #${order.ord_cst_id}`
+      const customerName = customer
+        ? `${customer.cst_fname || ""} ${customer.cst_name || ""}`.trim() ||
+          `Client #${order.ord_cst_id}`
         : `Client #${order.ord_cst_id}`;
-      const customerEmail = customer?.cst_mail || '';
+      const customerEmail = customer?.cst_mail || "";
 
       // ✨ Extraire la vraie méthode de paiement depuis ic_postback
       const postback = order.postback;
-      const paymentMethod = postback?.paymentmethod || 'card'; // card, paypal, etc.
+      const paymentMethod = postback?.paymentmethod || "card"; // card, paypal, etc.
       const transactionId = postback?.transactionid || order.ord_id;
       const paymentDate = postback?.datepayment || order.ord_date;
 
@@ -147,9 +163,12 @@ export async function getAdminPayments(params: AdminPaymentListParams = {}): Pro
         userId: order.ord_cst_id,
         customerName,
         customerEmail,
-        amount: parseFloat(order.ord_total_ttc || '0'),
-        currency: 'EUR',
-        status: order.ord_is_pay === '1' ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
+        amount: parseFloat(order.ord_total_ttc || "0"),
+        currency: "EUR",
+        status:
+          order.ord_is_pay === "1"
+            ? PaymentStatus.COMPLETED
+            : PaymentStatus.PENDING,
         paymentMethod, // ✨ Vraie méthode depuis ic_postback
         transactionId, // ✨ Vrai ID transaction
         createdAt: order.ord_date || new Date().toISOString(),
@@ -172,7 +191,7 @@ export async function getAdminPayments(params: AdminPaymentListParams = {}): Pro
       stats: await getPaymentStats(), // Sera calculé séparément
     };
   } catch (error) {
-    console.error('❌ Failed to fetch admin payments:', error);
+    logger.error("❌ Failed to fetch admin payments:", error);
     throw error;
   }
 }
@@ -187,9 +206,9 @@ export async function getPaymentStats(): Promise<PaymentStats> {
       `http://localhost:3000/api/legacy-orders/stats`,
       {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -202,7 +221,10 @@ export async function getPaymentStats(): Promise<PaymentStats> {
     return {
       totalRevenue: stats.totalRevenue || 0,
       totalTransactions: stats.totalOrders || 0,
-      successRate: stats.totalOrders > 0 ? (stats.paidOrders / stats.totalOrders) * 100 : 0,
+      successRate:
+        stats.totalOrders > 0
+          ? (stats.paidOrders / stats.totalOrders) * 100
+          : 0,
       averageAmount: stats.averageOrderValue || 0,
       monthlyGrowth: 0, // Pas disponible dans les stats actuelles
       statusDistribution: {
@@ -220,7 +242,7 @@ export async function getPaymentStats(): Promise<PaymentStats> {
       recentPayments: [], // Sera rempli par une autre requête si nécessaire
     };
   } catch (error) {
-    console.error('❌ Failed to fetch payment stats:', error);
+    logger.error("❌ Failed to fetch payment stats:", error);
     // Retourner des stats par défaut en cas d'erreur
     return {
       totalRevenue: 0,
@@ -254,10 +276,10 @@ export async function getAdminPayment(paymentId: string): Promise<Payment> {
       `${process.env.BACKEND_URL}/api/admin/payments/${paymentId}`,
       {
         headers: {
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -267,7 +289,7 @@ export async function getAdminPayment(paymentId: string): Promise<Payment> {
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error('❌ Failed to fetch payment:', error);
+    logger.error("❌ Failed to fetch payment:", error);
     throw error;
   }
 }
@@ -278,33 +300,35 @@ export async function getAdminPayment(paymentId: string): Promise<Payment> {
 export async function updatePaymentStatus(
   paymentId: string,
   status: string,
-  reason?: string
+  reason?: string,
 ): Promise<Payment> {
   try {
     const response = await fetch(
       `${process.env.BACKEND_URL}/api/admin/payments/${paymentId}/status`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Content-Type": "application/json",
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
         body: JSON.stringify({
           status,
           reason,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to update payment status: ${response.statusText}`);
+      throw new Error(
+        `Failed to update payment status: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error('❌ Failed to update payment status:', error);
+    logger.error("❌ Failed to update payment status:", error);
     throw error;
   }
 }
@@ -315,23 +339,23 @@ export async function updatePaymentStatus(
 export async function processRefund(
   paymentId: string,
   amount?: number,
-  reason?: string
+  reason?: string,
 ): Promise<{ success: boolean; refundId?: string; message: string }> {
   try {
     const response = await fetch(
       `${process.env.BACKEND_URL}/api/admin/payments/${paymentId}/refund`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Content-Type": "application/json",
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
         body: JSON.stringify({
           amount,
           reason,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -341,7 +365,7 @@ export async function processRefund(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Failed to process refund:', error);
+    logger.error("❌ Failed to process refund:", error);
     throw error;
   }
 }
@@ -351,25 +375,25 @@ export async function processRefund(
  */
 export async function exportPayments(
   filters: AdminPaymentListParams = {},
-  format: 'csv' | 'xlsx' = 'csv'
+  format: "csv" | "xlsx" = "csv",
 ): Promise<Blob> {
   try {
     const queryParams = new URLSearchParams();
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value) queryParams.append(key, value.toString());
     });
-    
-    queryParams.append('format', format);
+
+    queryParams.append("format", format);
 
     const response = await fetch(
       `${process.env.BACKEND_URL}/api/admin/payments/export?${queryParams}`,
       {
         headers: {
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -378,7 +402,7 @@ export async function exportPayments(
 
     return await response.blob();
   } catch (error) {
-    console.error('❌ Failed to export payments:', error);
+    logger.error("❌ Failed to export payments:", error);
     throw error;
   }
 }
@@ -388,31 +412,33 @@ export async function exportPayments(
  */
 export async function getCyberplusTransactions(
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ): Promise<any[]> {
   try {
     const queryParams = new URLSearchParams();
-    if (startDate) queryParams.append('startDate', startDate);
-    if (endDate) queryParams.append('endDate', endDate);
+    if (startDate) queryParams.append("startDate", startDate);
+    if (endDate) queryParams.append("endDate", endDate);
 
     const response = await fetch(
       `${process.env.BACKEND_URL}/api/admin/payments/cyberplus/transactions?${queryParams}`,
       {
         headers: {
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch Cyberplus transactions: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch Cyberplus transactions: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    console.error('❌ Failed to fetch Cyberplus transactions:', error);
+    logger.error("❌ Failed to fetch Cyberplus transactions:", error);
     return [];
   }
 }
@@ -429,12 +455,12 @@ export async function testCyberplusConnection(): Promise<{
     const response = await fetch(
       `${process.env.BACKEND_URL}/api/admin/payments/cyberplus/test`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Internal-Call': 'true',
-          'X-Admin-Request': 'true',
+          "Internal-Call": "true",
+          "X-Admin-Request": "true",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -444,10 +470,10 @@ export async function testCyberplusConnection(): Promise<{
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ Cyberplus test failed:', error);
+    logger.error("❌ Cyberplus test failed:", error);
     return {
       success: false,
-      message: `Test échoué: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+      message: `Test échoué: ${error instanceof Error ? error.message : "Erreur inconnue"}`,
     };
   }
 }

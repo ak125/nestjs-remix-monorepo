@@ -1,6 +1,6 @@
 /**
  * 🔔 NOTIFICATION CENTER - Centre de notifications avancé
- * 
+ *
  * Centre de notifications sophisticated avec:
  * ✅ Auto-refresh configurable (30s par défaut)
  * ✅ Types multiples (info, success, warning, error)
@@ -13,32 +13,32 @@
  */
 
 import { useFetcher } from "@remix-run/react";
-import { 
-  Bell, 
-  X, 
-  CheckCheck, 
-  Trash2, 
+import {
+  Bell,
+  X,
+  CheckCheck,
+  Trash2,
   Info,
   AlertCircle,
   CheckCircle,
   XCircle,
   Clock,
   Eye,
-  EyeOff
+  EyeOff,
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { memo, useState, useEffect, useRef, useCallback } from "react";
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   isRead: boolean;
   createdAt: string;
   actions?: Array<{
     label: string;
     action: string;
-    variant?: 'primary' | 'secondary' | 'danger';
+    variant?: "primary" | "secondary" | "danger";
   }>;
   metadata?: {
     userId?: string;
@@ -54,33 +54,39 @@ interface NotificationCenterProps {
 }
 
 const NOTIFICATION_TYPES = {
-  info: { icon: Info, color: 'blue' },
-  success: { icon: CheckCircle, color: 'green' },
-  warning: { icon: AlertCircle, color: 'yellow' },
-  error: { icon: XCircle, color: 'red' },
+  info: { icon: Info, color: "blue" },
+  success: { icon: CheckCircle, color: "green" },
+  warning: { icon: AlertCircle, color: "yellow" },
+  error: { icon: XCircle, color: "red" },
 } as const;
 
 const FILTER_OPTIONS = [
-  { key: 'all', label: 'Toutes' },
-  { key: 'unread', label: 'Non lues' },
-  { key: 'read', label: 'Lues' },
-  { key: 'info', label: 'Info' },
-  { key: 'success', label: 'Succès' },
-  { key: 'warning', label: 'Attention' },
-  { key: 'error', label: 'Erreurs' },
+  { key: "all", label: "Toutes" },
+  { key: "unread", label: "Non lues" },
+  { key: "read", label: "Lues" },
+  { key: "info", label: "Info" },
+  { key: "success", label: "Succès" },
+  { key: "warning", label: "Attention" },
+  { key: "error", label: "Erreurs" },
 ] as const;
 
-export function NotificationCenter({ 
+export const NotificationCenter = memo(function NotificationCenter({
   autoRefreshInterval = 30000, // 30 secondes
   maxNotifications = 50,
-  className = ""
+  className = "",
 }: NotificationCenterProps) {
-  const fetcher = useFetcher<{ notifications: Notification[]; total: number; unreadCount: number }>();
+  const fetcher = useFetcher<{
+    notifications: Notification[];
+    total: number;
+    unreadCount: number;
+  }>();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [selectedNotifications, setSelectedNotifications] = useState<
+    Set<string>
+  >(new Set());
   const [showActions, setShowActions] = useState<string | null>(null);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout>();
 
@@ -88,7 +94,7 @@ export function NotificationCenter({
   const loadNotifications = useCallback(() => {
     const params = new URLSearchParams({
       filter: selectedFilter,
-      limit: maxNotifications.toString()
+      limit: maxNotifications.toString(),
     });
     fetcher.load(`/api/notifications?${params}`);
   }, [fetcher, selectedFilter, maxNotifications]);
@@ -96,7 +102,10 @@ export function NotificationCenter({
   // Auto-refresh
   useEffect(() => {
     if (autoRefreshInterval > 0) {
-      refreshIntervalRef.current = setInterval(loadNotifications, autoRefreshInterval);
+      refreshIntervalRef.current = setInterval(
+        loadNotifications,
+        autoRefreshInterval,
+      );
       return () => {
         if (refreshIntervalRef.current) {
           clearInterval(refreshIntervalRef.current);
@@ -113,46 +122,62 @@ export function NotificationCenter({
   // Fermer le dropdown si clic à l'extérieur
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setShowActions(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Actions sur notifications
-  const markAsRead = useCallback((notificationIds: string[]) => {
-    fetcher.submit(
-      { action: 'mark-read', ids: JSON.stringify(notificationIds) },
-      { method: 'post', action: '/api/notifications/actions' }
-    );
-  }, [fetcher]);
-
-  const markAsUnread = useCallback((notificationIds: string[]) => {
-    fetcher.submit(
-      { action: 'mark-unread', ids: JSON.stringify(notificationIds) },
-      { method: 'post', action: '/api/notifications/actions' }
-    );
-  }, [fetcher]);
-
-  const deleteNotifications = useCallback((notificationIds: string[]) => {
-    if (confirm(`Supprimer ${notificationIds.length} notification${notificationIds.length > 1 ? 's' : ''} ?`)) {
+  const markAsRead = useCallback(
+    (notificationIds: string[]) => {
       fetcher.submit(
-        { action: 'delete', ids: JSON.stringify(notificationIds) },
-        { method: 'post', action: '/api/notifications/actions' }
+        { action: "mark-read", ids: JSON.stringify(notificationIds) },
+        { method: "post", action: "/api/notifications/actions" },
       );
-      setSelectedNotifications(new Set());
-    }
-  }, [fetcher]);
+    },
+    [fetcher],
+  );
+
+  const markAsUnread = useCallback(
+    (notificationIds: string[]) => {
+      fetcher.submit(
+        { action: "mark-unread", ids: JSON.stringify(notificationIds) },
+        { method: "post", action: "/api/notifications/actions" },
+      );
+    },
+    [fetcher],
+  );
+
+  const deleteNotifications = useCallback(
+    (notificationIds: string[]) => {
+      if (
+        confirm(
+          `Supprimer ${notificationIds.length} notification${notificationIds.length > 1 ? "s" : ""} ?`,
+        )
+      ) {
+        fetcher.submit(
+          { action: "delete", ids: JSON.stringify(notificationIds) },
+          { method: "post", action: "/api/notifications/actions" },
+        );
+        setSelectedNotifications(new Set());
+      }
+    },
+    [fetcher],
+  );
 
   const markAllAsRead = useCallback(() => {
     const unreadIds = (fetcher.data?.notifications || [])
-      .filter(n => !n.isRead)
-      .map(n => n.id);
-    
+      .filter((n) => !n.isRead)
+      .map((n) => n.id);
+
     if (unreadIds.length > 0) {
       markAsRead(unreadIds);
     }
@@ -160,7 +185,7 @@ export function NotificationCenter({
 
   // Gestion de la sélection
   const toggleSelection = useCallback((id: string) => {
-    setSelectedNotifications(prev => {
+    setSelectedNotifications((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -172,7 +197,7 @@ export function NotificationCenter({
   }, []);
 
   const selectAll = useCallback(() => {
-    const allIds = fetcher.data?.notifications.map(n => n.id) || [];
+    const allIds = fetcher.data?.notifications.map((n) => n.id) || [];
     setSelectedNotifications(new Set(allIds));
   }, [fetcher.data?.notifications]);
 
@@ -189,16 +214,16 @@ export function NotificationCenter({
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMinutes < 1) return 'À l\'instant';
+    if (diffMinutes < 1) return "À l'instant";
     if (diffMinutes < 60) return `${diffMinutes}m`;
     if (diffHours < 24) return `${diffHours}h`;
     if (diffDays < 7) return `${diffDays}j`;
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   }, []);
 
   const notifications = fetcher.data?.notifications || [];
   const unreadCount = fetcher.data?.unreadCount || 0;
-  const isLoading = fetcher.state === 'loading';
+  const isLoading = fetcher.state === "loading";
   const hasSelection = selectedNotifications.size > 0;
 
   return (
@@ -211,7 +236,7 @@ export function NotificationCenter({
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
@@ -226,11 +251,11 @@ export function NotificationCenter({
                 Notifications
                 {unreadCount > 0 && (
                   <span className="ml-2 text-sm font-normal text-gray-500">
-                    ({unreadCount} non lue{unreadCount > 1 ? 's' : ''})
+                    ({unreadCount} non lue{unreadCount > 1 ? "s" : ""})
                   </span>
                 )}
               </h3>
-              
+
               <div className="flex items-center space-x-2">
                 {unreadCount > 0 && (
                   <button
@@ -258,8 +283,8 @@ export function NotificationCenter({
                   onClick={() => setSelectedFilter(key)}
                   className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     selectedFilter === key
-                      ? 'bg-primary/15 text-blue-700'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? "bg-primary/15 text-blue-700"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
                   {label}
@@ -271,25 +296,32 @@ export function NotificationCenter({
             {hasSelection && (
               <div className="flex items-center justify-between mt-3 p-2 bg-primary/5 rounded-lg">
                 <span className="text-sm text-blue-700">
-                  {selectedNotifications.size} sélectionnée{selectedNotifications.size > 1 ? 's' : ''}
+                  {selectedNotifications.size} sélectionnée
+                  {selectedNotifications.size > 1 ? "s" : ""}
                 </span>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => markAsRead(Array.from(selectedNotifications))}
+                    onClick={() =>
+                      markAsRead(Array.from(selectedNotifications))
+                    }
                     className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
                     title="Marquer comme lu"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => markAsUnread(Array.from(selectedNotifications))}
+                    onClick={() =>
+                      markAsUnread(Array.from(selectedNotifications))
+                    }
                     className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
                     title="Marquer comme non lu"
                   >
                     <EyeOff className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => deleteNotifications(Array.from(selectedNotifications))}
+                    onClick={() =>
+                      deleteNotifications(Array.from(selectedNotifications))
+                    }
                     className="text-sm text-red-600 hover:text-red-700 transition-colors"
                     title="Supprimer"
                   >
@@ -324,127 +356,160 @@ export function NotificationCenter({
               </div>
             )}
 
-            {!isLoading && notifications.map((notification) => {
-              const TypeIcon = NOTIFICATION_TYPES[notification.type].icon;
-              const typeColor = NOTIFICATION_TYPES[notification.type].color;
-              const isSelected = selectedNotifications.has(notification.id);
-              const showActionsMenu = showActions === notification.id;
+            {!isLoading &&
+              notifications.map((notification) => {
+                const TypeIcon = NOTIFICATION_TYPES[notification.type].icon;
+                const typeColor = NOTIFICATION_TYPES[notification.type].color;
+                const isSelected = selectedNotifications.has(notification.id);
+                const showActionsMenu = showActions === notification.id;
 
-              return (
-                <div
-                  key={notification.id}
-                  className={`border-b border-gray-100 last:border-b-0 transition-colors ${
-                    notification.isRead ? 'bg-white' : 'bg-primary/5'
-                  } ${isSelected ? 'bg-primary/15' : ''}`}
-                >
-                  <div className="p-4">
-                    <div className="flex items-start space-x-3">
-                      {/* Checkbox de sélection */}
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelection(notification.id)}
-                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
+                return (
+                  <div
+                    key={notification.id}
+                    className={`border-b border-gray-100 last:border-b-0 transition-colors ${
+                      notification.isRead ? "bg-white" : "bg-primary/5"
+                    } ${isSelected ? "bg-primary/15" : ""}`}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-start space-x-3">
+                        {/* Checkbox de sélection */}
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelection(notification.id)}
+                          className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
 
-                      {/* Icône du type */}
-                      <div className={`flex-shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}>
-                        <TypeIcon className={`w-4 h-4 text-${typeColor}-600`} />
-                      </div>
-
-                      {/* Contenu */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className={`text-sm font-medium ${notification.isRead ? 'text-gray-700' : 'text-gray-900'}`}>
-                              {notification.title}
-                            </p>
-                            <p className={`text-sm mt-1 ${notification.isRead ? 'text-gray-500' : 'text-gray-700'}`}>
-                              {notification.message}
-                            </p>
-
-                            {/* Actions rapides */}
-                            {notification.actions && notification.actions.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                {notification.actions.map((action, index) => (
-                                  <button
-                                    key={index}
-                                    onClick={() => {
-                                      // Traiter l'action
-                                      fetcher.submit(
-                                        { action: action.action, notificationId: notification.id },
-                                        { method: 'post', action: '/api/notifications/actions' }
-                                      );
-                                    }}
-                                    className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                                      action.variant === 'danger'
-                                        ? 'border-red-300 text-destructive hover:bg-destructive/10'
-                                        : action.variant === 'primary'
-                                        ? 'border-blue-300 text-blue-700 hover:bg-info/20'
-                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    {action.label}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Menu d'actions */}
-                          <div className="relative ml-2">
-                            <button
-                              onClick={() => setShowActions(showActionsMenu ? null : notification.id)}
-                              className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
-                            >
-                              <span className="sr-only">Actions</span>
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                              </svg>
-                            </button>
-
-                            {showActionsMenu && (
-                              <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                                <button
-                                  onClick={() => {
-                                    if (notification.isRead) {
-                                      markAsUnread([notification.id]);
-                                    } else {
-                                      markAsRead([notification.id]);
-                                    }
-                                    setShowActions(null);
-                                  }}
-                                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                                >
-                                  {notification.isRead ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-                                  {notification.isRead ? 'Marquer non lu' : 'Marquer lu'}
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    deleteNotifications([notification.id]);
-                                    setShowActions(null);
-                                  }}
-                                  className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Supprimer
-                                </button>
-                              </div>
-                            )}
-                          </div>
+                        {/* Icône du type */}
+                        <div
+                          className={`flex-shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}
+                        >
+                          <TypeIcon
+                            className={`w-4 h-4 text-${typeColor}-600`}
+                          />
                         </div>
 
-                        {/* Horodatage */}
-                        <div className="flex items-center mt-2 text-xs text-gray-400">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {formatTime(notification.createdAt)}
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p
+                                className={`text-sm font-medium ${notification.isRead ? "text-gray-700" : "text-gray-900"}`}
+                              >
+                                {notification.title}
+                              </p>
+                              <p
+                                className={`text-sm mt-1 ${notification.isRead ? "text-gray-500" : "text-gray-700"}`}
+                              >
+                                {notification.message}
+                              </p>
+
+                              {/* Actions rapides */}
+                              {notification.actions &&
+                                notification.actions.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    {notification.actions.map(
+                                      (action, index) => (
+                                        <button
+                                          key={index}
+                                          onClick={() => {
+                                            // Traiter l'action
+                                            fetcher.submit(
+                                              {
+                                                action: action.action,
+                                                notificationId: notification.id,
+                                              },
+                                              {
+                                                method: "post",
+                                                action:
+                                                  "/api/notifications/actions",
+                                              },
+                                            );
+                                          }}
+                                          className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                                            action.variant === "danger"
+                                              ? "border-red-300 text-destructive hover:bg-destructive/10"
+                                              : action.variant === "primary"
+                                                ? "border-blue-300 text-blue-700 hover:bg-info/20"
+                                                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                                          }`}
+                                        >
+                                          {action.label}
+                                        </button>
+                                      ),
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+
+                            {/* Menu d'actions */}
+                            <div className="relative ml-2">
+                              <button
+                                onClick={() =>
+                                  setShowActions(
+                                    showActionsMenu ? null : notification.id,
+                                  )
+                                }
+                                className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                              >
+                                <span className="sr-only">Actions</span>
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                              </button>
+
+                              {showActionsMenu && (
+                                <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                  <button
+                                    onClick={() => {
+                                      if (notification.isRead) {
+                                        markAsUnread([notification.id]);
+                                      } else {
+                                        markAsRead([notification.id]);
+                                      }
+                                      setShowActions(null);
+                                    }}
+                                    className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                  >
+                                    {notification.isRead ? (
+                                      <EyeOff className="w-4 h-4 mr-2" />
+                                    ) : (
+                                      <Eye className="w-4 h-4 mr-2" />
+                                    )}
+                                    {notification.isRead
+                                      ? "Marquer non lu"
+                                      : "Marquer lu"}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      deleteNotifications([notification.id]);
+                                      setShowActions(null);
+                                    }}
+                                    className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Supprimer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Horodatage */}
+                          <div className="flex items-center mt-2 text-xs text-gray-400">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {formatTime(notification.createdAt)}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
 
           {/* Footer */}
@@ -470,7 +535,7 @@ export function NotificationCenter({
       )}
     </div>
   );
-}
+});
 
 // Hook pour utiliser le centre de notifications
 export function useNotificationCenter() {
@@ -478,12 +543,12 @@ export function useNotificationCenter() {
 
   // Charger le nombre de notifications non lues
   const loadUnreadCount = useCallback(() => {
-    fetcher.load('/api/notifications/count');
+    fetcher.load("/api/notifications/count");
   }, [fetcher]);
 
   useEffect(() => {
     loadUnreadCount();
-    
+
     // Rafraîchir toutes les 60 secondes
     const interval = setInterval(loadUnreadCount, 60000);
     return () => clearInterval(interval);
@@ -491,6 +556,6 @@ export function useNotificationCenter() {
 
   return {
     unreadCount: fetcher.data?.unreadCount || 0,
-    refresh: loadUnreadCount
+    refresh: loadUnreadCount,
   };
 }

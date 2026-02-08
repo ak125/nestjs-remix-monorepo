@@ -1,15 +1,15 @@
 /**
  * 🔎 REFERENCE SEARCH MODAL
- * 
+ *
  * Modal pour la recherche par référence OEM ou commerciale
- * 
+ *
  * Features :
  * - Formulaire de recherche avec validation
  * - Input avec bouton clear
  * - Boutons submit et annulation
  * - Section d'aide avec exemples de références
  * - Animations d'entrée/sortie
- * 
+ *
  * Props :
  * - isOpen: État d'ouverture du modal
  * - searchReference: Valeur de l'input
@@ -19,6 +19,7 @@
  */
 
 import { ChevronRight, Search } from "lucide-react";
+import { memo } from "react";
 
 interface ReferenceSearchModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ interface ReferenceSearchModalProps {
   onClose: () => void;
 }
 
-export default function ReferenceSearchModal({
+const ReferenceSearchModal = memo(function ReferenceSearchModal({
   isOpen,
   searchReference,
   onSearchReferenceChange,
@@ -47,8 +48,12 @@ export default function ReferenceSearchModal({
               <Search className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Recherche par référence</h3>
-              <p className="text-sm text-gray-600">Entrez une référence OEM ou commerciale</p>
+              <h3 className="text-xl font-bold text-gray-900">
+                Recherche par référence
+              </h3>
+              <p className="text-sm text-gray-600">
+                Entrez une référence OEM ou commerciale
+              </p>
             </div>
           </div>
           <button
@@ -104,15 +109,34 @@ export default function ReferenceSearchModal({
 
           {/* Aide */}
           <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-            <p className="text-sm text-orange-900 font-medium mb-2">💡 Exemples de références :</p>
+            <p className="text-sm text-orange-900 font-medium mb-2">
+              💡 Exemples de références :
+            </p>
             <ul className="text-sm text-orange-800 space-y-1">
-              <li>• Référence OEM constructeur : <code className="font-mono bg-white px-2 py-0.5 rounded">7701208265</code></li>
-              <li>• Référence commerciale : <code className="font-mono bg-white px-2 py-0.5 rounded">KTBWP8841</code></li>
-              <li>• Référence VAG : <code className="font-mono bg-white px-2 py-0.5 rounded">04C115561H</code></li>
+              <li>
+                • Référence OEM constructeur :{" "}
+                <code className="font-mono bg-white px-2 py-0.5 rounded">
+                  7701208265
+                </code>
+              </li>
+              <li>
+                • Référence commerciale :{" "}
+                <code className="font-mono bg-white px-2 py-0.5 rounded">
+                  KTBWP8841
+                </code>
+              </li>
+              <li>
+                • Référence VAG :{" "}
+                <code className="font-mono bg-white px-2 py-0.5 rounded">
+                  04C115561H
+                </code>
+              </li>
             </ul>
           </div>
         </div>
       </div>
     </div>
   );
-}
+});
+
+export default ReferenceSearchModal;

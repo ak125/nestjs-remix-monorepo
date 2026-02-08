@@ -15,10 +15,11 @@ import {
   RotateCcw,
   FileText,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { logger } from "~/utils/logger";
 
 interface VehicleSelectorProps {
   // 🎨 Mode d'affichage
@@ -56,7 +57,7 @@ interface VehicleSelectorProps {
   context?: "homepage" | "detail" | "pieces" | "search";
 }
 
-export default function VehicleSelector({
+const VehicleSelector = memo(function VehicleSelector({
   mode = "full",
   enableTypeMineSearch = false,
   onVehicleSelect,
@@ -141,7 +142,7 @@ export default function VehicleSelector({
             );
             setYears(yearsData.sort((a, b) => b - a));
           } catch (error) {
-            console.warn(
+            logger.warn(
               "❌ Erreur chargement années pour marque pré-sélectionnée:",
               error,
             );
@@ -149,7 +150,7 @@ export default function VehicleSelector({
         }
       }
     } catch (error) {
-      console.error("❌ Erreur chargement marques:", error);
+      logger.error("❌ Erreur chargement marques:", error);
       setBrands([]);
     } finally {
       setLoadingBrands(false);
@@ -176,7 +177,7 @@ export default function VehicleSelector({
           );
           setYears(yearsData.sort((a, b) => b - a));
         } catch (error) {
-          console.warn("❌ Erreur chargement années:", error);
+          logger.warn("❌ Erreur chargement années:", error);
           setYears([]);
         } finally {
           setLoadingYears(false);
@@ -209,7 +210,7 @@ export default function VehicleSelector({
           );
           setModels(modelsData);
         } catch (error) {
-          console.warn("❌ Erreur chargement modèles:", error);
+          logger.warn("❌ Erreur chargement modèles:", error);
           setModels([]);
         } finally {
           setLoadingModels(false);
@@ -234,7 +235,7 @@ export default function VehicleSelector({
           });
           setTypes(typesData);
         } catch (error) {
-          console.warn("❌ Erreur chargement types:", error);
+          logger.warn("❌ Erreur chargement types:", error);
           setTypes([]);
         } finally {
           setLoadingTypes(false);
@@ -707,4 +708,6 @@ export default function VehicleSelector({
       </CardContent>
     </Card>
   );
-}
+});
+
+export default VehicleSelector;

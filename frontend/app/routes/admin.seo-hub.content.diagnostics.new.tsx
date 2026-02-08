@@ -9,6 +9,7 @@ import {
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -40,6 +41,8 @@ import { Switch } from "~/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface Gamme {
   pgId: number;
@@ -50,6 +53,9 @@ interface LoaderData {
   gammes: Gamme[];
   r4Slugs: string[];
 }
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Nouveau Diagnostic - Admin");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -73,7 +79,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       r4Slugs: (r4Data.references || []).map((r: { slug: string }) => r.slug),
     });
   } catch (error) {
-    console.error("[R5 New] Loader error:", error);
+    logger.error("[R5 New] Loader error:", error);
     return json<LoaderData>({ gammes: [], r4Slugs: [] });
   }
 }
@@ -162,7 +168,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirect(`/admin/seo-hub/content/diagnostics/${slug}`);
   } catch (error) {
-    console.error("[R5 New] Action error:", error);
+    logger.error("[R5 New] Action error:", error);
     return json({ success: false, errors: ["Erreur serveur"] });
   }
 }

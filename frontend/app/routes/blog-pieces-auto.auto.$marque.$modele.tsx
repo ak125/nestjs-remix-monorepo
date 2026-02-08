@@ -19,6 +19,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /* ===========================
    Types
@@ -134,7 +135,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
     // Gestion spécifique des timeouts - retourne 503 au lieu de 500
     if (e instanceof Error && e.name === "AbortError") {
-      console.error("Timeout fetching model:", marque, modele);
+      logger.error("Timeout fetching model:", marque, modele);
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -145,7 +146,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       throw e;
     }
 
-    console.error("Erreur loader modèle:", e);
+    logger.error("Erreur loader modèle:", e);
     throw new Response("Erreur lors du chargement du modèle", { status: 500 });
   }
 };

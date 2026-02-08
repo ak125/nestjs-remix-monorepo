@@ -12,12 +12,33 @@ import {
   Param,
   Body,
   Logger,
+  HttpException,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import {
   OperationFailedException,
   DomainNotFoundException,
 } from '../../common/exceptions';
+
+/** Extract message string from an unknown error */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+/** Check if an unknown error has a specific HTTP status */
+function hasHttpStatus(error: unknown, status: number): boolean {
+  if (error instanceof HttpException) return error.getStatus() === status;
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'status' in error &&
+    typeof (error as Record<string, unknown>).status === 'number'
+  ) {
+    return (error as Record<string, unknown>).status === status;
+  }
+  return false;
+}
 
 @Controller('api/messages')
 export class MessagesController {
@@ -66,8 +87,8 @@ export class MessagesController {
           totalPages: Math.ceil(result.total / result.limit),
         },
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors de la récupération des messages',
       });
@@ -90,10 +111,10 @@ export class MessagesController {
         success: true,
         data: message,
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
 
-      if (error.status === 404) {
+      if (hasHttpStatus(error, 404)) {
         throw new DomainNotFoundException({
           message: 'Message non trouvé',
         });
@@ -132,8 +153,8 @@ export class MessagesController {
         data: newMessage,
         message: 'Message créé avec succès',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors de la création du message',
       });
@@ -157,8 +178,8 @@ export class MessagesController {
         data: message,
         message: 'Message fermé avec succès',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors de la fermeture du message',
       });
@@ -191,8 +212,8 @@ export class MessagesController {
         data: message,
         message: 'Message marqué comme lu',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors du marquage du message',
       });
@@ -215,8 +236,8 @@ export class MessagesController {
         success: true,
         data: stats,
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Stats Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors du calcul des statistiques',
       });
@@ -239,8 +260,8 @@ export class MessagesController {
         success: true,
         data: stats,
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Stats Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors du calcul des statistiques',
       });
@@ -264,8 +285,8 @@ export class MessagesController {
         success: true,
         data: customers,
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors de la récupération des clients',
       });
@@ -295,10 +316,10 @@ export class MessagesController {
         data: message,
         message: 'Message archivé avec succès',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
 
-      if (error.status === 404) {
+      if (hasHttpStatus(error, 404)) {
         throw new DomainNotFoundException({
           message: 'Message non trouvé ou accès refusé',
         });
@@ -329,10 +350,10 @@ export class MessagesController {
         success: true,
         message: 'Message supprimé avec succès',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
 
-      if (error.status === 404) {
+      if (hasHttpStatus(error, 404)) {
         throw new DomainNotFoundException({
           message: 'Message non trouvé ou accès refusé',
         });
@@ -370,10 +391,10 @@ export class MessagesController {
         data: replyMessage,
         message: 'Réponse envoyée avec succès',
       };
-    } catch (error: any) {
-      this.logger.error(`API Messages Error: ${error.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
 
-      if (error.status === 404) {
+      if (hasHttpStatus(error, 404)) {
         throw new DomainNotFoundException({
           message: 'Message non trouvé ou accès refusé',
         });

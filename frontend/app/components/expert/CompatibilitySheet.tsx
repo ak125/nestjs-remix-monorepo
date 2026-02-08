@@ -23,7 +23,7 @@ import {
   Copy,
   CheckCircle2,
 } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -299,198 +299,202 @@ function CompatibilityStatus({
 // Main Component
 // ============================================================================
 
-const CompatibilitySheet = forwardRef<HTMLDivElement, CompatibilitySheetProps>(
-  (
-    {
-      open,
-      onOpenChange,
-      isCompatible,
-      currentVehicle,
-      compatibleVehicles = [],
-      oemReferences = [],
-      productName,
-      trigger,
-      onConfirmCompatibility,
-      onChangeVehicle,
-      className,
-    },
-    ref,
-  ) => {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
+const CompatibilitySheet = memo(
+  forwardRef<HTMLDivElement, CompatibilitySheetProps>(
+    (
+      {
+        open,
+        onOpenChange,
+        isCompatible,
+        currentVehicle,
+        compatibleVehicles = [],
+        oemReferences = [],
+        productName,
+        trigger,
+        onConfirmCompatibility,
+        onChangeVehicle,
+        className,
+      },
+      ref,
+    ) => {
+      return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
 
-        <SheetContent
-          ref={ref}
-          side="bottom"
-          className={cn(
-            // Height - max 90vh on mobile
-            "max-h-[90vh]",
-            // Rounded top corners
-            "rounded-t-2xl",
-            // Padding
-            "px-4 py-6 sm:px-6",
-            // Safe area
-            "pb-[calc(1.5rem+env(safe-area-inset-bottom))]",
-            className,
-          )}
-        >
-          <SheetHeader className="text-left mb-6">
-            <SheetTitle className="text-xl font-heading">
-              Compatibilité véhicule
-            </SheetTitle>
-            {productName && (
-              <SheetDescription className="text-gray-500">
-                Vérifiez la compatibilité pour {productName}
-              </SheetDescription>
+          <SheetContent
+            ref={ref}
+            side="bottom"
+            className={cn(
+              // Height - max 90vh on mobile
+              "max-h-[90vh]",
+              // Rounded top corners
+              "rounded-t-2xl",
+              // Padding
+              "px-4 py-6 sm:px-6",
+              // Safe area
+              "pb-[calc(1.5rem+env(safe-area-inset-bottom))]",
+              className,
             )}
-          </SheetHeader>
+          >
+            <SheetHeader className="text-left mb-6">
+              <SheetTitle className="text-xl font-heading">
+                Compatibilité véhicule
+              </SheetTitle>
+              {productName && (
+                <SheetDescription className="text-gray-500">
+                  Vérifiez la compatibilité pour {productName}
+                </SheetDescription>
+              )}
+            </SheetHeader>
 
-          {/* Compatibility status banner */}
-          <CompatibilityStatus isCompatible={isCompatible} />
+            {/* Compatibility status banner */}
+            <CompatibilityStatus isCompatible={isCompatible} />
 
-          {/* Current vehicle section */}
-          {currentVehicle && (
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">Votre véhicule</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onChangeVehicle}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                >
-                  Modifier
-                </Button>
+            {/* Current vehicle section */}
+            {currentVehicle && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900">
+                    Votre véhicule
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onChangeVehicle}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    Modifier
+                  </Button>
+                </div>
+                <VehicleCard vehicle={currentVehicle} isCurrent />
               </div>
-              <VehicleCard vehicle={currentVehicle} isCurrent />
-            </div>
-          )}
+            )}
 
-          {/* OEM References */}
-          {oemReferences.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Références OEM
-              </h3>
-              <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-                {oemReferences.map((ref, index) => (
-                  <CopyableCode
-                    key={index}
-                    label={`Réf. ${index + 1}`}
-                    value={ref}
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Ces références permettent de vérifier la compatibilité exacte
-              </p>
-            </div>
-          )}
-
-          {/* Technical codes (if current vehicle has them) */}
-          {currentVehicle &&
-            (currentVehicle.cnit || currentVehicle.typeMine) && (
+            {/* OEM References */}
+            {oemReferences.length > 0 && (
               <div className="mt-6">
                 <h3 className="font-semibold text-gray-900 mb-3">
-                  Codes techniques
+                  Références OEM
                 </h3>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  {currentVehicle.cnit && (
+                <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                  {oemReferences.map((ref, index) => (
                     <CopyableCode
-                      label="Code CNIT"
-                      value={currentVehicle.cnit}
+                      key={index}
+                      label={`Réf. ${index + 1}`}
+                      value={ref}
                     />
-                  )}
-                  {currentVehicle.typeMine && (
-                    <CopyableCode
-                      label="Type Mine"
-                      value={currentVehicle.typeMine}
-                    />
-                  )}
+                  ))}
                 </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Ces références permettent de vérifier la compatibilité exacte
+                </p>
               </div>
             )}
 
-          {/* Compatible vehicles (collapsed, expandable) */}
-          {compatibleVehicles.length > 0 && (
-            <div className="mt-6">
-              <details className="group">
-                <summary className="flex items-center justify-between cursor-pointer">
-                  <h3 className="font-semibold text-gray-900">
-                    Véhicules compatibles
+            {/* Technical codes (if current vehicle has them) */}
+            {currentVehicle &&
+              (currentVehicle.cnit || currentVehicle.typeMine) && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    Codes techniques
                   </h3>
-                  <Badge variant="outline" size="sm">
-                    {compatibleVehicles.length} véhicules
-                  </Badge>
-                </summary>
-                <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
-                  {compatibleVehicles.slice(0, 10).map((vehicle, index) => (
-                    <VehicleCard
-                      key={index}
-                      vehicle={vehicle}
-                      onSelect={
-                        onConfirmCompatibility
-                          ? () => onConfirmCompatibility(vehicle)
-                          : undefined
-                      }
-                    />
-                  ))}
-                  {compatibleVehicles.length > 10 && (
-                    <p className="text-sm text-gray-400 text-center py-2">
-                      Et {compatibleVehicles.length - 10} autres véhicules...
-                    </p>
-                  )}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    {currentVehicle.cnit && (
+                      <CopyableCode
+                        label="Code CNIT"
+                        value={currentVehicle.cnit}
+                      />
+                    )}
+                    {currentVehicle.typeMine && (
+                      <CopyableCode
+                        label="Type Mine"
+                        value={currentVehicle.typeMine}
+                      />
+                    )}
+                  </div>
                 </div>
-              </details>
+              )}
+
+            {/* Compatible vehicles (collapsed, expandable) */}
+            {compatibleVehicles.length > 0 && (
+              <div className="mt-6">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer">
+                    <h3 className="font-semibold text-gray-900">
+                      Véhicules compatibles
+                    </h3>
+                    <Badge variant="outline" size="sm">
+                      {compatibleVehicles.length} véhicules
+                    </Badge>
+                  </summary>
+                  <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+                    {compatibleVehicles.slice(0, 10).map((vehicle, index) => (
+                      <VehicleCard
+                        key={index}
+                        vehicle={vehicle}
+                        onSelect={
+                          onConfirmCompatibility
+                            ? () => onConfirmCompatibility(vehicle)
+                            : undefined
+                        }
+                      />
+                    ))}
+                    {compatibleVehicles.length > 10 && (
+                      <p className="text-sm text-gray-400 text-center py-2">
+                        Et {compatibleVehicles.length - 10} autres véhicules...
+                      </p>
+                    )}
+                  </div>
+                </details>
+              </div>
+            )}
+
+            <Separator className="my-6" />
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3">
+              {!currentVehicle && (
+                <Button
+                  onClick={onChangeVehicle}
+                  className={cn(
+                    "w-full h-12",
+                    // Pack Confiance CTA color
+                    "bg-[#34C759] hover:bg-[#2DB84E]",
+                    "text-white font-semibold font-heading",
+                  )}
+                >
+                  <Car className="h-5 w-5 mr-2" />
+                  Sélectionner mon véhicule
+                </Button>
+              )}
+
+              {currentVehicle && isCompatible && onConfirmCompatibility && (
+                <Button
+                  onClick={() => onConfirmCompatibility(currentVehicle)}
+                  className={cn(
+                    "w-full h-12",
+                    "bg-[#34C759] hover:bg-[#2DB84E]",
+                    "text-white font-semibold font-heading",
+                  )}
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  Confirmer la compatibilité
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange?.(false)}
+                className="w-full"
+              >
+                Fermer
+              </Button>
             </div>
-          )}
-
-          <Separator className="my-6" />
-
-          {/* Actions */}
-          <div className="flex flex-col gap-3">
-            {!currentVehicle && (
-              <Button
-                onClick={onChangeVehicle}
-                className={cn(
-                  "w-full h-12",
-                  // Pack Confiance CTA color
-                  "bg-[#34C759] hover:bg-[#2DB84E]",
-                  "text-white font-semibold font-heading",
-                )}
-              >
-                <Car className="h-5 w-5 mr-2" />
-                Sélectionner mon véhicule
-              </Button>
-            )}
-
-            {currentVehicle && isCompatible && onConfirmCompatibility && (
-              <Button
-                onClick={() => onConfirmCompatibility(currentVehicle)}
-                className={cn(
-                  "w-full h-12",
-                  "bg-[#34C759] hover:bg-[#2DB84E]",
-                  "text-white font-semibold font-heading",
-                )}
-              >
-                <Check className="h-5 w-5 mr-2" />
-                Confirmer la compatibilité
-              </Button>
-            )}
-
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange?.(false)}
-              className="w-full"
-            >
-              Fermer
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  },
+          </SheetContent>
+        </Sheet>
+      );
+    },
+  ),
 );
 
 CompatibilitySheet.displayName = "CompatibilitySheet";

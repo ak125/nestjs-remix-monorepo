@@ -3,7 +3,7 @@
  * Affiche toutes les informations d'une commande spécifique avec adresses
  */
 
-import { json, type LoaderFunction } from "@remix-run/node";
+import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -27,6 +27,8 @@ import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 /**
  * 🎯 FORMAT BDD SUPABASE - Format legacy consolidé
@@ -108,6 +110,11 @@ interface LoaderData {
   error?: string;
 }
 
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+  createNoIndexMeta(
+    data?.order?.ord_id ? `Commande #${data.order.ord_id}` : "Commande",
+  );
+
 export const loader: LoaderFunction = async ({ params, request }) => {
   const orderId = params.id;
 
@@ -115,7 +122,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     return json<LoaderData>({ order: null, error: "ID de commande manquant" });
   }
 
-  console.log(`🔍 [Frontend] Chargement commande avec ID: ${orderId}`);
+  logger.log(`🔍 [Frontend] Chargement commande avec ID: ${orderId}`);
 
   try {
     const cookie = request.headers.get("Cookie") || "";
@@ -132,7 +139,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
+      logger.error(
         `❌ [Frontend] API /api/legacy-orders/${orderId} returned ${response.status}:`,
         errorText,
       );
@@ -147,20 +154,20 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     const order = data.data || data.order || data;
 
     if (!order || !order.ord_id) {
-      console.error(`❌ [Frontend] Commande non trouvée ou structure invalide`);
+      logger.error(`❌ [Frontend] Commande non trouvée ou structure invalide`);
       return json<LoaderData>({
         order: null,
         error: "Commande non trouvée",
       });
     }
 
-    console.log(`✅ [Frontend] Commande ${orderId} chargée (format BDD)`);
+    logger.log(`✅ [Frontend] Commande ${orderId} chargée (format BDD)`);
     return json<LoaderData>({
       order: order,
       error: undefined,
     });
   } catch (error) {
-    console.error("❌ [Frontend] Error loading order:", error);
+    logger.error("❌ [Frontend] Error loading order:", error);
     return json<LoaderData>({
       order: null,
       error: "Erreur lors du chargement de la commande",

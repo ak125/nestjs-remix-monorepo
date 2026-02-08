@@ -2,7 +2,7 @@
 // 🏗️ Composant d'affichage de la hiérarchie Familles → Gammes (sous-catégories)
 
 import { Link } from "@remix-run/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 import {
   type FamilyWithGammes,
@@ -59,7 +59,7 @@ interface FamilyGammeHierarchyProps {
   } | null;
 }
 
-export default function FamilyGammeHierarchy({
+const FamilyGammeHierarchy = memo(function FamilyGammeHierarchy({
   className = "",
   hierarchyData,
 }: FamilyGammeHierarchyProps) {
@@ -339,4 +339,6 @@ export default function FamilyGammeHierarchy({
       </div>
     </div>
   );
-}
+});
+
+export default FamilyGammeHierarchy;

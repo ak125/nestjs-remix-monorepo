@@ -1,0 +1,280 @@
+{
+  "extraction_meta": {
+    "date": "2026-01-29",
+    "scope": "E-commerce patterns observed in codebase (faithful extraction)"
+  },
+  "patterns": {
+    "PLP": {
+      "name": "Product Listing Page",
+      "routes": [
+        "pieces.$gamme.$marque.$modele.$type[.]html.tsx",
+        "pieces.catalogue.tsx",
+        "products.catalog.tsx",
+        "products.$category.$subcategory.tsx"
+      ],
+      "structure": {
+        "header": {
+          "components": ["VehicleHeader", "Breadcrumb"],
+          "info": "Vehicle context + navigation path"
+        },
+        "filters": {
+          "component": "PiecesFilterSidebar",
+          "desktop": "hidden lg:block w-64",
+          "mobile": "Sheet/Drawer trigger"
+        },
+        "grid": {
+          "component": "PiecesGrid",
+          "columns": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+          "density_toggle": true
+        },
+        "pagination": {
+          "component": "Pagination (shadcn)",
+          "position": "bottom"
+        }
+      },
+      "features": [
+        "Vehicle-based filtering",
+        "Brand/equipementier filters",
+        "Price range filters",
+        "Sort options",
+        "Density toggle (compact/comfortable/spacious)"
+      ]
+    },
+    "PDP": {
+      "name": "Product Detail Page",
+      "routes": [
+        "pieces.$slug.tsx",
+        "products.$id.tsx"
+      ],
+      "structure": {
+        "header": {
+          "components": ["Breadcrumb", "VehicleHeader"],
+          "info": "Navigation + vehicle context"
+        },
+        "main": {
+          "layout": "flex flex-col lg:flex-row gap-6",
+          "left": {
+            "component": "ProductGallery",
+            "features": ["carousel", "zoom", "thumbnails"]
+          },
+          "right": {
+            "sections": [
+              "Product title + brand",
+              "Price box (current, original, discount)",
+              "Availability status",
+              "Quantity selector",
+              "Add to cart CTA",
+              "Compatibility info"
+            ]
+          }
+        },
+        "tabs": {
+          "component": "Tabs (shadcn)",
+          "items": ["Description", "Specs", "Compatibility", "Reviews"]
+        },
+        "related": {
+          "component": "ProductGrid",
+          "label": "Produits similaires"
+        }
+      },
+      "cta": {
+        "primary": "Ajouter au panier",
+        "component": "Button",
+        "height": "h-11 (44px minimum)",
+        "mobile_sticky": "observed in some pages, not all"
+      }
+    },
+    "Cart": {
+      "name": "Shopping Cart",
+      "routes": [
+        "cart.tsx"
+      ],
+      "structure": {
+        "layout": "max-w-4xl mx-auto",
+        "items_list": {
+          "desktop": "Table layout",
+          "mobile": "Card layout",
+          "item_info": ["image", "title", "price", "quantity", "subtotal", "remove"]
+        },
+        "summary": {
+          "position": "right sidebar on desktop, bottom on mobile",
+          "sections": ["Subtotal", "Shipping", "Tax", "Total"],
+          "cta": "Proceed to checkout"
+        }
+      },
+      "sidebar": {
+        "component": "CartSidebar",
+        "trigger": "Cart icon in header",
+        "type": "Drawer (Sheet) on all sizes"
+      }
+    },
+    "Checkout": {
+      "name": "Checkout Flow",
+      "routes": [
+        "checkout.tsx",
+        "checkout-payment.tsx",
+        "checkout-payment-return.tsx"
+      ],
+      "structure": {
+        "layout": "max-w-2xl mx-auto",
+        "steps": [
+          {
+            "step": 1,
+            "name": "Information",
+            "fields": ["email", "name", "phone"]
+          },
+          {
+            "step": 2,
+            "name": "Shipping",
+            "fields": ["address", "city", "postal_code", "country"]
+          },
+          {
+            "step": 3,
+            "name": "Payment",
+            "gateways": ["Paybox", "SystemPay"]
+          }
+        ],
+        "order_summary": {
+          "position": "right sidebar or collapsible on mobile"
+        }
+      },
+      "payment_flow": {
+        "redirect": "External gateway pages",
+        "return": "checkout-payment-return.tsx",
+        "states": ["success", "error", "cancelled"]
+      }
+    },
+    "Search": {
+      "name": "Search Experience",
+      "routes": [
+        "search.tsx",
+        "search.results.tsx",
+        "search.cnit.tsx"
+      ],
+      "components": {
+        "search_bar": {
+          "component": "ProductSearch",
+          "features": ["autocomplete", "suggestions", "recent searches"],
+          "desktop": "Full width in header",
+          "mobile": "Icon trigger + expandable"
+        },
+        "results": {
+          "layout": "Similar to PLP",
+          "filters": true,
+          "sorting": true
+        }
+      },
+      "special": {
+        "cnit_search": "Vehicle lookup by CNIT code"
+      }
+    },
+    "Account": {
+      "name": "User Account",
+      "routes": [
+        "account.tsx",
+        "account.dashboard.tsx",
+        "account.orders.tsx",
+        "account.profile.tsx",
+        "account.profile.edit.tsx",
+        "account.addresses.tsx",
+        "account.security.tsx",
+        "account.settings.tsx",
+        "account.messages._index.tsx",
+        "account.messages.$messageId.tsx",
+        "account.messages.compose.tsx"
+      ],
+      "structure": {
+        "layout": "Sidebar navigation + main content",
+        "sidebar": {
+          "desktop": "Visible sidebar with links",
+          "mobile": "Sheet/Drawer or top tabs"
+        },
+        "sections": [
+          {
+            "name": "Dashboard",
+            "route": "account.dashboard.tsx",
+            "components": ["ActivityTimeline", "Recent orders", "Quick stats"]
+          },
+          {
+            "name": "Orders",
+            "route": "account.orders.tsx",
+            "features": ["Order list", "Order details", "Invoice download"]
+          },
+          {
+            "name": "Profile",
+            "route": "account.profile.tsx",
+            "features": ["Personal info", "Edit mode"]
+          },
+          {
+            "name": "Addresses",
+            "route": "account.addresses.tsx",
+            "features": ["Address list", "Add/Edit address", "Default selection"]
+          },
+          {
+            "name": "Security",
+            "route": "account.security.tsx",
+            "features": ["Password change", "2FA (if enabled)"]
+          },
+          {
+            "name": "Messages",
+            "route": "account.messages._index.tsx",
+            "features": ["Inbox", "Compose", "Message detail"]
+          }
+        ]
+      }
+    }
+  },
+  "shared_patterns": {
+    "breadcrumb": {
+      "component": "Breadcrumb (shadcn)",
+      "usage": "All catalog and account pages",
+      "structure": "Home > Category > Subcategory > Current"
+    },
+    "vehicle_context": {
+      "components": ["VehicleHeader", "useVehicleContext"],
+      "persistence": "useVehiclePersistence hook",
+      "display": "Shows selected vehicle on relevant pages"
+    },
+    "loading_states": {
+      "skeleton": "ProductCardSkeleton for product grids",
+      "spinner": "Loading spinner for actions"
+    },
+    "error_states": {
+      "component": "Alert (shadcn)",
+      "variants": ["error", "warning", "info"]
+    },
+    "empty_states": {
+      "cart_empty": "Illustrated empty state with CTA",
+      "no_results": "Search suggestion with CTA"
+    }
+  },
+  "mobile_specific": {
+    "sticky_cta": {
+      "pattern": "fixed bottom-0 left-0 right-0 z-50 lg:hidden",
+      "usage": ["PDP add to cart", "Checkout proceed"],
+      "observed": "Partial implementation"
+    },
+    "bottom_nav": {
+      "observed": false,
+      "note": "Not implemented - uses header menu"
+    },
+    "swipe_gestures": {
+      "product_gallery": "Swipe for carousel",
+      "cart_item": "Swipe to remove (not observed)"
+    }
+  },
+  "conversion_elements": {
+    "trust_badges": {
+      "location": "Footer, Checkout",
+      "items": ["Secure payment", "Fast delivery", "Customer service"]
+    },
+    "urgency": {
+      "stock_indicator": "Low stock warning",
+      "delivery_estimate": "Estimated delivery date"
+    },
+    "social_proof": {
+      "reviews": "Product reviews (if available)",
+      "ratings": "Star rating display"
+    }
+  }
+}

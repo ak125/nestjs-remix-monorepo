@@ -1,13 +1,16 @@
-import { json, type LoaderFunction } from "@remix-run/node";
+import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { requireUser } from "../auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 /**
  * Layout parent minimal pour toutes les pages compte utilisateur
  * Les routes enfants (account.dashboard, account.orders, etc.)
  * gèrent leur propre layout avec AccountLayout component
  */
+
+export const meta: MetaFunction = () => createNoIndexMeta("Mon Compte");
 
 export const loader: LoaderFunction = async ({ context }) => {
   const user = await requireUser({ context });

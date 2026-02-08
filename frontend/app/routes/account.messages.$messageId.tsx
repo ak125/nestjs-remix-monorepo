@@ -1,4 +1,9 @@
-import { json, redirect, type LoaderFunction } from "@remix-run/node";
+import {
+  json,
+  redirect,
+  type LoaderFunction,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -17,11 +22,15 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 /**
  * Route: /account/messages/:messageId
  * Affiche un message individuel (équivalent du PHP msg_fil.php)
  */
+
+export const meta: MetaFunction = () => createNoIndexMeta("Message");
 
 interface Message {
   MSG_ID: number;
@@ -89,7 +98,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
 
     return json({ message, user });
   } catch (error) {
-    console.error("Erreur chargement message:", error);
+    logger.error("Erreur chargement message:", error);
     throw redirect("/account/messages?error=not_found");
   }
 };

@@ -1,10 +1,13 @@
-import  { type VehicleData } from "~/types/vehicle.types";
+import { memo } from "react";
+import { type VehicleData } from "~/types/vehicle.types";
 
 interface VehicleHeaderProps {
   vehicle: VehicleData;
 }
 
-export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
+export const VehicleHeader = memo(function VehicleHeader({
+  vehicle,
+}: VehicleHeaderProps) {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -14,7 +17,7 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
               {vehicle.brand} {vehicle.model}
             </h1>
             <p className="text-lg text-gray-600 mt-1">
-              {vehicle.type} - {vehicle.year || 'Toutes années'}
+              {vehicle.type} - {vehicle.year || "Toutes années"}
             </p>
             {vehicle.engine && (
               <p className="text-sm text-gray-500 mt-1">
@@ -22,7 +25,7 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
               </p>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {vehicle.imageUrl && (
               <img
@@ -32,7 +35,7 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
                 loading="lazy"
               />
             )}
-            
+
             <div className="text-right">
               <div className="text-sm text-gray-500">Pièces disponibles</div>
               <div className="text-2xl font-bold text-blue-600">
@@ -41,13 +44,13 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
             </div>
           </div>
         </div>
-        
+
         {vehicle.description && (
           <div className="mt-4">
             <p className="text-gray-700">{vehicle.description}</p>
           </div>
         )}
-        
+
         {/* Breadcrumb */}
         <nav className="mt-4" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
@@ -64,7 +67,7 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
             </li>
             <li>›</li>
             <li>
-              <a 
+              <a
                 href={`/vehicles/${vehicle.brand.toLowerCase()}`}
                 className="hover:text-gray-700"
               >
@@ -73,7 +76,7 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
             </li>
             <li>›</li>
             <li>
-              <a 
+              <a
                 href={`/vehicles/${vehicle.brand.toLowerCase()}/${vehicle.model.toLowerCase()}`}
                 className="hover:text-gray-700"
               >
@@ -81,12 +84,10 @@ export function VehicleHeader({ vehicle }: VehicleHeaderProps) {
               </a>
             </li>
             <li>›</li>
-            <li className="text-gray-900 font-medium">
-              {vehicle.type}
-            </li>
+            <li className="text-gray-900 font-medium">{vehicle.type}</li>
           </ol>
         </nav>
       </div>
     </header>
   );
-}
+});

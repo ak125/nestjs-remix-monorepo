@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes messages | AutoMecanik" },
@@ -79,7 +80,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
     return json({ messages, stats, user });
   } catch (error) {
-    console.error("Erreur chargement messages:", error);
+    logger.error("Erreur chargement messages:", error);
     return json({
       messages: [],
       stats: { total: 0, unread: 0, withOrder: 0 },

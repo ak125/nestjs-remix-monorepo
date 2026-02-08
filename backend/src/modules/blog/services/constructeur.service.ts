@@ -487,9 +487,11 @@ export class ConstructeurService {
     const cacheKey = 'constructeurs_alpha';
 
     try {
-      const cached = await this.cacheService.get(cacheKey);
+      const cached = await this.cacheService.get<{
+        [letter: string]: BlogArticle[];
+      }>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();
@@ -769,10 +771,15 @@ export class ConstructeurService {
     });
 
     try {
-      const cached = await this.cacheService.get(cacheKey);
+      const cached = await this.cacheService.get<{
+        results: BlogArticle[];
+        total: number;
+        suggestions?: string[];
+        searchTime: number;
+      }>(cacheKey);
       if (cached) {
         this.updatePerformanceMetrics(startTime, true);
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();
@@ -928,8 +935,11 @@ export class ConstructeurService {
     const cacheKey = `constructeur_tags:${limit}`;
 
     try {
-      const cached = await this.cacheService.get(cacheKey);
-      if (cached) return cached as any;
+      const cached =
+        await this.cacheService.get<Array<{ tag: string; count: number }>>(
+          cacheKey,
+        );
+      if (cached) return cached;
 
       const client = this.supabaseService.getClient();
       const { data: constructeurs } = await client

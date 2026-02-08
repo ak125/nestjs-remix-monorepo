@@ -1,10 +1,10 @@
-import { Form, useFetcher } from '@remix-run/react';
-import { Save, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { Form, useFetcher } from "@remix-run/react";
+import { Save, X } from "lucide-react";
+import { useEffect, memo } from "react";
 
-import { Alert } from '~/components/ui';
-import { Button } from '~/components/ui/button';
-import { type ActionData, type Order } from '../../types/orders.types';
+import { type ActionData, type Order } from "../../types/orders.types";
+import { Alert } from "~/components/ui";
+import { Button } from "~/components/ui/button";
 
 interface OrderEditFormProps {
   order: Order;
@@ -13,7 +13,7 @@ interface OrderEditFormProps {
   onSuccess?: () => void;
 }
 
-export function OrderEditForm({
+export const OrderEditForm = memo(function OrderEditForm({
   order,
   isOpen,
   onClose,
@@ -24,15 +24,15 @@ export function OrderEditForm({
   // Fermer avec Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === "Escape" && isOpen) onClose();
     };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   // Gérer le succès
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data?.success) {
+    if (fetcher.state === "idle" && fetcher.data?.success) {
       onSuccess?.();
       onClose();
     }
@@ -40,7 +40,7 @@ export function OrderEditForm({
 
   if (!isOpen) return null;
 
-  const isSubmitting = fetcher.state === 'submitting';
+  const isSubmitting = fetcher.state === "submitting";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -96,11 +96,14 @@ export function OrderEditForm({
                 type="checkbox"
                 id="isPaid"
                 name="isPaid"
-                defaultChecked={order.ord_is_pay === '1'}
+                defaultChecked={order.ord_is_pay === "1"}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 disabled={isSubmitting}
               />
-              <label htmlFor="isPaid" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="isPaid"
+                className="text-sm font-medium text-gray-700"
+              >
                 Commande payée
               </label>
             </div>
@@ -137,7 +140,7 @@ export function OrderEditForm({
                 id="orderInfo"
                 name="orderInfo"
                 rows={4}
-                defaultValue={order.ord_info || ''}
+                defaultValue={order.ord_info || ""}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                 placeholder="Ajoutez des notes ou informations..."
                 disabled={isSubmitting}
@@ -156,7 +159,7 @@ export function OrderEditForm({
                 type="email"
                 id="customerEmail"
                 name="customerEmail"
-                defaultValue={order.customerEmail || ''}
+                defaultValue={order.customerEmail || ""}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={isSubmitting}
               />
@@ -165,7 +168,9 @@ export function OrderEditForm({
 
           {/* Error message */}
           {fetcher.data?.error && (
-            <Alert intent="error"><p>{fetcher.data.error}</p></Alert>
+            <Alert intent="error">
+              <p>{fetcher.data.error}</p>
+            </Alert>
           )}
 
           {/* Actions */}
@@ -178,13 +183,18 @@ export function OrderEditForm({
             >
               Annuler
             </button>
-            <Button className="flex items-center gap-2 px-4 py-2  rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit" disabled={isSubmitting}>
+            <Button
+              className="flex items-center gap-2 px-4 py-2  rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="blue"
+              type="submit"
+              disabled={isSubmitting}
+            >
               <Save className="w-4 h-4" />
-              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>
         </Form>
       </div>
     </div>
   );
-}
+});

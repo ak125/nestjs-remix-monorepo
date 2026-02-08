@@ -19,6 +19,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes adresses | AutoMecanik" },
@@ -92,7 +93,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur chargement adresses:", error);
+    logger.error("Erreur chargement adresses:", error);
     throw new Response("Erreur chargement adresses", { status: 500 });
   }
 };

@@ -3,10 +3,11 @@
  */
 
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 
-import { Alert } from "~/components/ui";
 import { useNotifications } from "../notifications/NotificationContainer";
+import { Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
 
 interface PieceData {
   id: number;
@@ -29,7 +30,7 @@ interface AddToCartButtonProps {
   showQuantitySelector?: boolean;
 }
 
-export function AddToCartButton({
+export const AddToCartButton = memo(function AddToCartButton({
   piece,
   quantity: initialQuantity = 1,
   variant = "default",
@@ -102,7 +103,7 @@ export function AddToCartButton({
       } else {
         // ❌ Échec - revert optimistic update
         const errorData = await response.json().catch((err) => {
-          console.debug("[AddToCart] Failed to parse error response:", err);
+          logger.debug("[AddToCart] Failed to parse error response:", err);
           return {};
         });
         const error = errorData.message || "Erreur lors de l'ajout au panier";
@@ -116,11 +117,11 @@ export function AddToCartButton({
         // Notification d'erreur
         showError(`❌ ${error}`);
 
-        console.error("❌ [AddToCart] Erreur HTTP:", response.status, error);
+        logger.error("❌ [AddToCart] Erreur HTTP:", response.status, error);
       }
     } catch (error) {
       // ❌ Erreur réseau - revert optimistic update
-      console.error("❌ [AddToCart] Erreur réseau:", error);
+      logger.error("❌ [AddToCart] Erreur réseau:", error);
       const errorMsg =
         error instanceof Error
           ? `Erreur: ${error.message}`
@@ -331,6 +332,6 @@ export function AddToCartButton({
       </div>
     </div>
   );
-}
+});
 
 export default AddToCartButton;

@@ -21,6 +21,7 @@ import {
 import { Slider } from "~/components/ui/slider";
 import { Switch } from "~/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { logger } from "~/utils/logger";
 
 // Types
 interface Observable {
@@ -74,7 +75,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     return json({ observable });
   } catch (error) {
-    console.error("Loader error:", error);
+    logger.error("Loader error:", error);
     throw new Response("Erreur serveur", { status: 500 });
   }
 }
@@ -121,7 +122,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     return redirect("/admin/diagnostic?updated=true");
   } catch (error) {
-    console.error("Action error:", error);
+    logger.error("Action error:", error);
     return json({ success: false, error: "Erreur serveur" });
   }
 }

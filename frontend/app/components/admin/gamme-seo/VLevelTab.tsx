@@ -10,10 +10,7 @@ import {
   RefreshCw,
   Upload,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { useVehicleEnrichment } from "~/hooks/useVehicleEnrichment";
+import { memo, useMemo, useState } from "react";
 import {
   SectionKCard,
   type ExtraTypeId,
@@ -29,6 +26,10 @@ import {
 } from "./types";
 import { checkV2Violations, exportVLevelToCSV, filterByEnergy } from "./utils";
 import { VLevelCard } from "./VLevelCard";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { useVehicleEnrichment } from "~/hooks/useVehicleEnrichment";
+import { logger } from "~/utils/logger";
 
 interface VLevelTabProps {
   detail: GammeDetail;
@@ -41,7 +42,7 @@ interface VLevelTabProps {
   };
 }
 
-export function VLevelTab({
+export const VLevelTab = memo(function VLevelTab({
   detail,
   freshness,
   onShowImport,
@@ -80,7 +81,7 @@ export function VLevelTab({
   }, [detail.vLevel]);
 
   // Debug: Log collected type_ids
-  console.log(
+  logger.log(
     "[VLevelTab] allTypeIds collected:",
     allTypeIds.slice(0, 10),
     "... (total:",
@@ -93,7 +94,7 @@ export function VLevelTab({
     useVehicleEnrichment(allTypeIds);
 
   // Debug: Log enrichment result
-  console.log(
+  logger.log(
     "[VLevelTab] enrichedTypes:",
     enrichedTypes ? Object.keys(enrichedTypes).length : 0,
     "entries, isLoading:",
@@ -114,7 +115,7 @@ export function VLevelTab({
         window.location.reload();
       }
     } catch (error) {
-      console.error("Erreur recalcul V-Level:", error);
+      logger.error("Erreur recalcul V-Level:", error);
     } finally {
       setIsRecalculating(false);
     }
@@ -131,7 +132,7 @@ export function VLevelTab({
         setValidationResult(data.data);
       }
     } catch (error) {
-      console.error("Erreur validation V1:", error);
+      logger.error("Erreur validation V1:", error);
     } finally {
       setIsValidating(false);
     }
@@ -410,4 +411,4 @@ export function VLevelTab({
       )}
     </div>
   );
-}
+});

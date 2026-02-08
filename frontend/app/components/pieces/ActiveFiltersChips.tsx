@@ -15,6 +15,7 @@
  */
 
 import { X, RotateCcw } from "lucide-react";
+import { memo } from "react";
 import { type PiecesFilters } from "../../types/pieces-route.types";
 
 interface ActiveFiltersChipsProps {
@@ -53,7 +54,7 @@ const NOTE_LABELS: Record<number, string> = {
   9: "★★★★★ 9+",
 };
 
-export function ActiveFiltersChips({
+export const ActiveFiltersChips = memo(function ActiveFiltersChips({
   filters,
   onRemoveFilter,
   onClearAll,
@@ -153,6 +154,6 @@ export function ActiveFiltersChips({
       )}
     </div>
   );
-}
+});
 
 export default ActiveFiltersChips;

@@ -2,14 +2,19 @@
  * 🔧 Configuration Admin - Version Simplifiée Compatible
  */
 
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import { 
-  Settings, 
-  Database, 
-  Mail, 
-  Activity, 
-  Shield, 
+import {
+  Settings,
+  Database,
+  Mail,
+  Activity,
+  Shield,
   Zap,
   Save,
   CheckCircle,
@@ -17,20 +22,25 @@ import {
   Eye,
   EyeOff,
   Copy,
-  Search
+  Search,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
-import { Button } from '~/components/ui/button';
+import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Configuration - Admin");
 
 // Types simplifiés pour les configurations
 interface ConfigItem {
   key: string;
   value: any;
   category: string;
-  type: 'string' | 'number' | 'boolean' | 'json';
+  type: "string" | "number" | "boolean" | "json";
   description?: string;
   isSensitive?: boolean;
   requiresRestart?: boolean;
@@ -47,47 +57,47 @@ interface ConfigCategory {
 
 // Configuration des catégories
 const CATEGORIES: ConfigCategory[] = [
-  { 
-    key: 'general', 
-    label: 'Configuration Générale', 
+  {
+    key: "general",
+    label: "Configuration Générale",
     icon: Settings,
-    description: 'Paramètres globaux de l\'application',
-    color: 'bg-gray-500' 
+    description: "Paramètres globaux de l'application",
+    color: "bg-gray-500",
   },
-  { 
-    key: 'database', 
-    label: 'Base de données', 
+  {
+    key: "database",
+    label: "Base de données",
     icon: Database,
-    description: 'Configuration des connexions et pools',
-    color: 'bg-primary' 
+    description: "Configuration des connexions et pools",
+    color: "bg-primary",
   },
-  { 
-    key: 'email', 
-    label: 'Email & Notifications', 
+  {
+    key: "email",
+    label: "Email & Notifications",
     icon: Mail,
-    description: 'Services d\'envoi et templates',
-    color: 'bg-success' 
+    description: "Services d'envoi et templates",
+    color: "bg-success",
   },
-  { 
-    key: 'analytics', 
-    label: 'Analytics & Tracking', 
+  {
+    key: "analytics",
+    label: "Analytics & Tracking",
     icon: Activity,
-    description: 'Google Analytics, Matomo, métriques',
-    color: 'bg-purple-500' 
+    description: "Google Analytics, Matomo, métriques",
+    color: "bg-purple-500",
   },
-  { 
-    key: 'security', 
-    label: 'Sécurité', 
+  {
+    key: "security",
+    label: "Sécurité",
     icon: Shield,
-    description: 'JWT, cryptage, permissions',
-    color: 'bg-destructive' 
+    description: "JWT, cryptage, permissions",
+    color: "bg-destructive",
   },
-  { 
-    key: 'performance', 
-    label: 'Performance & Cache', 
+  {
+    key: "performance",
+    label: "Performance & Cache",
     icon: Zap,
-    description: 'Redis, optimisations, CDN',
-    color: 'bg-warning' 
+    description: "Redis, optimisations, CDN",
+    color: "bg-warning",
   },
 ];
 
@@ -96,91 +106,94 @@ const mockConfigApi = {
   async getAllConfigs(): Promise<ConfigItem[]> {
     return [
       {
-        key: 'app.name',
-        value: 'MonApp Admin',
-        category: 'general',
-        type: 'string',
-        description: 'Nom de l\'application'
+        key: "app.name",
+        value: "MonApp Admin",
+        category: "general",
+        type: "string",
+        description: "Nom de l'application",
       },
       {
-        key: 'app.debug',
+        key: "app.debug",
         value: true,
-        category: 'general',
-        type: 'boolean',
-        description: 'Mode debug activé'
+        category: "general",
+        type: "boolean",
+        description: "Mode debug activé",
       },
       {
-        key: 'database.host',
-        value: 'localhost',
-        category: 'database',
-        type: 'string',
-        description: 'Hôte de la base de données'
+        key: "database.host",
+        value: "localhost",
+        category: "database",
+        type: "string",
+        description: "Hôte de la base de données",
       },
       {
-        key: 'database.password',
-        value: '********',
-        category: 'database',
-        type: 'string',
-        description: 'Mot de passe de la base de données',
-        isSensitive: true
+        key: "database.password",
+        value: "********",
+        category: "database",
+        type: "string",
+        description: "Mot de passe de la base de données",
+        isSensitive: true,
       },
       {
-        key: 'analytics.google_id',
-        value: 'GA_MEASUREMENT_ID_TEST',
-        category: 'analytics',
-        type: 'string',
-        description: 'ID de mesure Google Analytics'
+        key: "analytics.google_id",
+        value: "GA_MEASUREMENT_ID_TEST",
+        category: "analytics",
+        type: "string",
+        description: "ID de mesure Google Analytics",
       },
       {
-        key: 'cache.ttl',
+        key: "cache.ttl",
         value: 3600,
-        category: 'performance',
-        type: 'number',
-        description: 'Durée de vie du cache en secondes'
-      }
+        category: "performance",
+        type: "number",
+        description: "Durée de vie du cache en secondes",
+      },
     ];
   },
 
   async updateConfig(key: string, value: any): Promise<void> {
-    console.log(`Mise à jour configuration: ${key} = ${value}`);
+    logger.log(`Mise à jour configuration: ${key} = ${value}`);
     // Simulation de l'API
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  },
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
   await requireAdmin({ context });
-  
+
   try {
     const configs = await mockConfigApi.getAllConfigs();
     const stats = {
       totalConfigs: configs.length,
-      configsByCategory: configs.reduce((acc, config) => {
-        acc[config.category] = (acc[config.category] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
+      configsByCategory: configs.reduce(
+        (acc, config) => {
+          acc[config.category] = (acc[config.category] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
     };
-    
-    return json({ 
-      categories: CATEGORIES, 
+
+    return json({
+      categories: CATEGORIES,
       configs,
-      stats
+      stats,
     });
   } catch (error) {
-    console.error('❌ Erreur chargement configurations:', error);
-    
-    return json({ 
-      categories: CATEGORIES, 
+    logger.error("❌ Erreur chargement configurations:", error);
+
+    return json({
+      categories: CATEGORIES,
       configs: [],
       stats: { totalConfigs: 0, configsByCategory: {} },
-      error: 'Erreur lors du chargement des configurations'
+      error: "Erreur lors du chargement des configurations",
     });
   }
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
   await requireAdmin({ context });
-  
+
   const formData = await request.formData();
   const action = formData.get("_action") as string;
 
@@ -190,73 +203,85 @@ export async function action({ request, context }: ActionFunctionArgs) {
         const key = formData.get("key") as string;
         const value = formData.get("value") as string;
         const type = formData.get("type") as string;
-        
+
         // Conversion du type si nécessaire
         let processedValue: any = value;
-        if (type === 'boolean') {
-          processedValue = value === 'true';
-        } else if (type === 'number') {
+        if (type === "boolean") {
+          processedValue = value === "true";
+        } else if (type === "number") {
           processedValue = Number(value);
-        } else if (type === 'json') {
+        } else if (type === "json") {
           try {
             processedValue = JSON.parse(value);
           } catch {
-            return json({ 
-              error: "Format JSON invalide",
-              field: key 
-            }, { status: 400 });
+            return json(
+              {
+                error: "Format JSON invalide",
+                field: key,
+              },
+              { status: 400 },
+            );
           }
         }
-        
+
         await mockConfigApi.updateConfig(key, processedValue);
-        return json({ 
-          success: true, 
+        return json({
+          success: true,
           message: `Configuration "${key}" mise à jour avec succès`,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-      
+
       case "backup": {
-        return json({ 
-          success: true, 
-          backupId: 'backup-' + Date.now(),
+        return json({
+          success: true,
+          backupId: "backup-" + Date.now(),
           message: "Sauvegarde créée avec succès",
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-      
+
       default:
         return json({ error: "Action inconnue" }, { status: 400 });
     }
   } catch (error) {
-    console.error(`❌ Erreur action ${action}:`, error);
-    return json({ 
-      error: `Erreur lors de l'action ${action}`,
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    logger.error(`❌ Erreur action ${action}:`, error);
+    return json(
+      {
+        error: `Erreur lors de l'action ${action}`,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
   }
 }
 
 export default function AdminConfigIndexPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  
+
   // Type guards pour gérer les types de retour possibles
-  const categories = 'categories' in data ? data.categories : CATEGORIES;
-  const configs = useMemo(() => 'configs' in data ? data.configs : [], [data]);
-  const stats = 'stats' in data ? data.stats : { totalConfigs: 0, configsByCategory: {} };
-  const error = 'error' in data ? data.error : undefined;
-  
-  const [selectedCategory, setSelectedCategory] = useState('general');
+  const categories = "categories" in data ? data.categories : CATEGORIES;
+  const configs = useMemo(
+    () => ("configs" in data ? data.configs : []),
+    [data],
+  );
+  const stats =
+    "stats" in data ? data.stats : { totalConfigs: 0, configsByCategory: {} };
+  const error = "error" in data ? data.error : undefined;
+
+  const [selectedCategory, setSelectedCategory] = useState("general");
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({});
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Auto-sélectionner la première catégorie qui a des configurations
   useEffect(() => {
     if (configs && configs.length > 0) {
-      const categoriesWithConfigs = categories.filter(cat => 
-        configs.some(config => config.category === cat.key)
+      const categoriesWithConfigs = categories.filter((cat) =>
+        configs.some((config) => config.category === cat.key),
       );
       if (categoriesWithConfigs.length > 0) {
         setSelectedCategory(categoriesWithConfigs[0].key);
@@ -264,22 +289,25 @@ export default function AdminConfigIndexPage() {
     }
   }, [configs, categories]);
 
-  const filteredConfigs = (configs?.filter(config => {
+  const filteredConfigs = (configs?.filter((config) => {
     if (!config) return false;
     const matchesCategory = config.category === selectedCategory;
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       config.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
       config.description?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || []) as ConfigItem[];
 
-  const selectedCategoryData = categories.find(cat => cat.key === selectedCategory);
+  const selectedCategoryData = categories.find(
+    (cat) => cat.key === selectedCategory,
+  );
   const configsInCategory = stats?.configsByCategory?.[selectedCategory] || 0;
 
   const toggleSensitiveVisibility = (key: string) => {
-    setShowSensitive(prev => ({
+    setShowSensitive((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
@@ -287,15 +315,22 @@ export default function AdminConfigIndexPage() {
     try {
       await navigator.clipboard.writeText(text);
     } catch (error) {
-      console.error('Erreur copie:', error);
+      logger.error("Erreur copie:", error);
     }
   };
 
-  const hasSuccess = actionData && 'success' in actionData && actionData.success;
-  const hasError = actionData && 'error' in actionData;
-  const successMessage = (hasSuccess && 'message' in actionData ? actionData.message : '') as string;
-  const errorMessage = (hasError && 'error' in actionData ? actionData.error : '') as string;
-  const backupId = (hasSuccess && 'backupId' in actionData ? actionData.backupId : undefined) as string | undefined;
+  const hasSuccess =
+    actionData && "success" in actionData && actionData.success;
+  const hasError = actionData && "error" in actionData;
+  const successMessage = (
+    hasSuccess && "message" in actionData ? actionData.message : ""
+  ) as string;
+  const errorMessage = (
+    hasError && "error" in actionData ? actionData.error : ""
+  ) as string;
+  const backupId = (
+    hasSuccess && "backupId" in actionData ? actionData.backupId : undefined
+  ) as string | undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -319,14 +354,22 @@ export default function AdminConfigIndexPage() {
               <div className="flex items-center space-x-3">
                 {/* Statistiques rapides */}
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">Total configurations</div>
-                  <div className="text-2xl font-bold text-blue-600">{stats?.totalConfigs || 0}</div>
+                  <div className="text-sm text-gray-500">
+                    Total configurations
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats?.totalConfigs || 0}
+                  </div>
                 </div>
-                
+
                 {/* Actions rapides */}
                 <Form method="post" className="inline">
                   <input type="hidden" name="_action" value="backup" />
-                  <Button className="px-4 py-2  rounded-md flex items-center" variant="blue" type="submit">
+                  <Button
+                    className="px-4 py-2  rounded-md flex items-center"
+                    variant="blue"
+                    type="submit"
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder
                   </Button>
@@ -343,10 +386,18 @@ export default function AdminConfigIndexPage() {
           )}
 
           {hasSuccess && (
-            <Alert intent="success" variant="solid" icon={<CheckCircle />} title={successMessage}>
+            <Alert
+              intent="success"
+              variant="solid"
+              icon={<CheckCircle />}
+              title={successMessage}
+            >
               {backupId && (
                 <p className="text-sm mt-1">
-                  ID de sauvegarde : <Badge variant="success" size="sm">{backupId}</Badge>
+                  ID de sauvegarde :{" "}
+                  <Badge variant="success" size="sm">
+                    {backupId}
+                  </Badge>
                 </p>
               )}
             </Alert>
@@ -381,23 +432,27 @@ export default function AdminConfigIndexPage() {
 
               {/* Navigation des catégories */}
               <nav className="p-4">
-                {categories.map(category => {
+                {categories.map((category) => {
                   const Icon = category.icon;
                   const count = stats?.configsByCategory?.[category.key] || 0;
-                  
+
                   return (
                     <button
                       key={category.key}
                       onClick={() => setSelectedCategory(category.key)}
                       className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
                         selectedCategory === category.key
-                          ? 'bg-primary/10 text-primary border border-blue-200 shadow-sm'
-                          : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                          ? "bg-primary/10 text-primary border border-blue-200 shadow-sm"
+                          : "hover:bg-gray-50 text-gray-700 border border-transparent"
                       }`}
                     >
                       <div className="flex items-center">
-                        <div className={`p-2 rounded-md mr-3 ${category.color} bg-opacity-10`}>
-                          <Icon className={`h-4 w-4 ${category.color.replace('bg-', 'text-')}`} />
+                        <div
+                          className={`p-2 rounded-md mr-3 ${category.color} bg-opacity-10`}
+                        >
+                          <Icon
+                            className={`h-4 w-4 ${category.color.replace("bg-", "text-")}`}
+                          />
                         </div>
                         <div className="flex-1">
                           <div className="font-medium">{category.label}</div>
@@ -406,7 +461,7 @@ export default function AdminConfigIndexPage() {
                           </div>
                           {count > 0 && (
                             <div className="text-xs text-blue-600 mt-1">
-                              {count} configuration{count > 1 ? 's' : ''}
+                              {count} configuration{count > 1 ? "s" : ""}
                             </div>
                           )}
                         </div>
@@ -424,17 +479,25 @@ export default function AdminConfigIndexPage() {
                 <div className="mb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`p-3 rounded-lg mr-4 ${selectedCategoryData.color} bg-opacity-10`}>
-                        <selectedCategoryData.icon className={`h-6 w-6 ${selectedCategoryData.color.replace('bg-', 'text-')}`} />
+                      <div
+                        className={`p-3 rounded-lg mr-4 ${selectedCategoryData.color} bg-opacity-10`}
+                      >
+                        <selectedCategoryData.icon
+                          className={`h-6 w-6 ${selectedCategoryData.color.replace("bg-", "text-")}`}
+                        />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
                           {selectedCategoryData.label}
                         </h2>
-                        <p className="text-gray-600">{selectedCategoryData.description}</p>
+                        <p className="text-gray-600">
+                          {selectedCategoryData.description}
+                        </p>
                         {configsInCategory > 0 && (
                           <p className="text-sm text-blue-600 mt-1">
-                            {configsInCategory} configuration{configsInCategory > 1 ? 's' : ''} disponible{configsInCategory > 1 ? 's' : ''}
+                            {configsInCategory} configuration
+                            {configsInCategory > 1 ? "s" : ""} disponible
+                            {configsInCategory > 1 ? "s" : ""}
                           </p>
                         )}
                       </div>
@@ -451,48 +514,55 @@ export default function AdminConfigIndexPage() {
                     Aucune configuration trouvée
                   </h3>
                   <p className="text-gray-600">
-                    {searchTerm 
-                      ? "Aucune configuration ne correspond à votre recherche." 
-                      : "Aucune configuration disponible dans cette catégorie."
-                    }
+                    {searchTerm
+                      ? "Aucune configuration ne correspond à votre recherche."
+                      : "Aucune configuration disponible dans cette catégorie."}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredConfigs.map(config => (
-                    <div key={config.key} className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                  {filteredConfigs.map((config) => (
+                    <div
+                      key={config.key}
+                      className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow"
+                    >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           {/* Header de la configuration */}
                           <div className="flex items-center flex-wrap gap-2 mb-2">
-                            <h3 className="font-medium text-gray-900">{config.key}</h3>
-                            
+                            <h3 className="font-medium text-gray-900">
+                              {config.key}
+                            </h3>
+
                             {/* Badges */}
                             <div className="flex gap-2">
-                              <Badge 
+                              <Badge
                                 variant={
-                                  config.type === 'boolean' ? 'success' :
-                                  config.type === 'number' ? 'info' :
-                                  config.type === 'json' ? 'purple' :
-                                  'default'
+                                  config.type === "boolean"
+                                    ? "success"
+                                    : config.type === "number"
+                                      ? "info"
+                                      : config.type === "json"
+                                        ? "purple"
+                                        : "default"
                                 }
                                 size="sm"
                               >
                                 {config.type}
                               </Badge>
-                              
+
                               {config.isSensitive && (
                                 <Badge variant="error" size="sm">
                                   Sensible
                                 </Badge>
                               )}
-                              
+
                               {config.requiresRestart && (
                                 <Badge variant="warning" size="sm">
                                   Redémarrage requis
                                 </Badge>
                               )}
-                              
+
                               {config.isRequired && (
                                 <Badge variant="orange" size="sm">
                                   Requis
@@ -500,20 +570,34 @@ export default function AdminConfigIndexPage() {
                               )}
                             </div>
                           </div>
-                          
+
                           {/* Description */}
                           {config.description && (
-                            <p className="text-sm text-gray-600 mb-3">{config.description}</p>
+                            <p className="text-sm text-gray-600 mb-3">
+                              {config.description}
+                            </p>
                           )}
-                          
+
                           {/* Formulaire d'édition ou affichage de la valeur */}
                           {editingKey === config.key ? (
                             <Form method="post" className="mt-3">
-                              <input type="hidden" name="_action" value="update" />
-                              <input type="hidden" name="key" value={config.key} />
-                              <input type="hidden" name="type" value={config.type} />
+                              <input
+                                type="hidden"
+                                name="_action"
+                                value="update"
+                              />
+                              <input
+                                type="hidden"
+                                name="key"
+                                value={config.key}
+                              />
+                              <input
+                                type="hidden"
+                                name="type"
+                                value={config.type}
+                              />
                               <div className="flex items-center space-x-2">
-                                {config.type === 'boolean' ? (
+                                {config.type === "boolean" ? (
                                   <select
                                     name="value"
                                     defaultValue={String(config.value)}
@@ -522,17 +606,21 @@ export default function AdminConfigIndexPage() {
                                     <option value="true">Activé</option>
                                     <option value="false">Désactivé</option>
                                   </select>
-                                ) : config.type === 'number' ? (
+                                ) : config.type === "number" ? (
                                   <input
                                     type="number"
                                     name="value"
                                     defaultValue={config.value}
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   />
-                                ) : config.type === 'json' ? (
+                                ) : config.type === "json" ? (
                                   <textarea
                                     name="value"
-                                    defaultValue={typeof config.value === 'object' ? JSON.stringify(config.value, null, 2) : config.value}
+                                    defaultValue={
+                                      typeof config.value === "object"
+                                        ? JSON.stringify(config.value, null, 2)
+                                        : config.value
+                                    }
                                     rows={4}
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                                     placeholder="Format JSON valide"
@@ -541,12 +629,26 @@ export default function AdminConfigIndexPage() {
                                   <input
                                     type="text"
                                     name="value"
-                                    defaultValue={config.isSensitive && !showSensitive[config.key] ? '' : config.value}
-                                    placeholder={config.isSensitive && !showSensitive[config.key] ? '••••••••' : ''}
+                                    defaultValue={
+                                      config.isSensitive &&
+                                      !showSensitive[config.key]
+                                        ? ""
+                                        : config.value
+                                    }
+                                    placeholder={
+                                      config.isSensitive &&
+                                      !showSensitive[config.key]
+                                        ? "••••••••"
+                                        : ""
+                                    }
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 )}
-                                <Button className="px-4 py-2  rounded-md flex items-center" variant="green" type="submit">
+                                <Button
+                                  className="px-4 py-2  rounded-md flex items-center"
+                                  variant="green"
+                                  type="submit"
+                                >
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Valider
                                 </Button>
@@ -564,28 +666,40 @@ export default function AdminConfigIndexPage() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2 flex-1">
                                   <code className="px-3 py-2 bg-gray-50 border rounded text-sm font-mono flex-1 break-all">
-                                    {config.isSensitive && !showSensitive[config.key] 
-                                      ? '••••••••••••••••' 
-                                      : config.type === 'json' 
+                                    {config.isSensitive &&
+                                    !showSensitive[config.key]
+                                      ? "••••••••••••••••"
+                                      : config.type === "json"
                                         ? JSON.stringify(config.value, null, 2)
-                                        : String(config.value)
-                                    }
+                                        : String(config.value)}
                                   </code>
-                                  
+
                                   {/* Actions sur la valeur */}
                                   <div className="flex space-x-1">
                                     {config.isSensitive && (
                                       <button
-                                        onClick={() => toggleSensitiveVisibility(config.key)}
+                                        onClick={() =>
+                                          toggleSensitiveVisibility(config.key)
+                                        }
                                         className="p-2 text-gray-400 hover:text-gray-600 rounded"
-                                        title={showSensitive[config.key] ? "Masquer" : "Afficher"}
+                                        title={
+                                          showSensitive[config.key]
+                                            ? "Masquer"
+                                            : "Afficher"
+                                        }
                                       >
-                                        {showSensitive[config.key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        {showSensitive[config.key] ? (
+                                          <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                          <Eye className="h-4 w-4" />
+                                        )}
                                       </button>
                                     )}
-                                    
+
                                     <button
-                                      onClick={() => copyToClipboard(String(config.value))}
+                                      onClick={() =>
+                                        copyToClipboard(String(config.value))
+                                      }
                                       className="p-2 text-gray-400 hover:text-gray-600 rounded"
                                       title="Copier la valeur"
                                     >
@@ -593,7 +707,7 @@ export default function AdminConfigIndexPage() {
                                     </button>
                                   </div>
                                 </div>
-                                
+
                                 <button
                                   onClick={() => setEditingKey(config.key)}
                                   className="ml-3 px-3 py-1 text-sm bg-info/80 text-info-foreground hover:bg-info rounded  transition-colors"
@@ -621,14 +735,21 @@ export default function AdminConfigIndexPage() {
           >
             <div className="flex items-center mb-3">
               <Database className="h-6 w-6 text-blue-600 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Base de données</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Base de données
+              </h3>
             </div>
-            <p className="text-gray-600">Gérer les connexions et paramètres de base de données</p>
+            <p className="text-gray-600">
+              Gérer les connexions et paramètres de base de données
+            </p>
             <div className="text-sm text-blue-600 mt-2">
-              {(stats?.configsByCategory as any)?.database || 0} configuration{((stats?.configsByCategory as any)?.database || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.database || 0} configuration
+              {((stats?.configsByCategory as any)?.database || 0) !== 1
+                ? "s"
+                : ""}
             </div>
           </Link>
-          
+
           <Link
             to="/admin/config/email"
             className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
@@ -637,12 +758,15 @@ export default function AdminConfigIndexPage() {
               <Mail className="h-6 w-6 text-green-600 mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Email</h3>
             </div>
-            <p className="text-gray-600">Configurer les services d'envoi d'emails</p>
+            <p className="text-gray-600">
+              Configurer les services d'envoi d'emails
+            </p>
             <div className="text-sm text-green-600 mt-2">
-              {(stats?.configsByCategory as any)?.email || 0} configuration{((stats?.configsByCategory as any)?.email || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.email || 0} configuration
+              {((stats?.configsByCategory as any)?.email || 0) !== 1 ? "s" : ""}
             </div>
           </Link>
-          
+
           <Link
             to="/admin/config/analytics"
             className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
@@ -651,9 +775,14 @@ export default function AdminConfigIndexPage() {
               <Activity className="h-6 w-6 text-purple-600 mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
             </div>
-            <p className="text-gray-600">Paramétrer le tracking et les analytics</p>
+            <p className="text-gray-600">
+              Paramétrer le tracking et les analytics
+            </p>
             <div className="text-sm text-purple-600 mt-2">
-              {(stats?.configsByCategory as any)?.analytics || 0} configuration{((stats?.configsByCategory as any)?.analytics || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.analytics || 0} configuration
+              {((stats?.configsByCategory as any)?.analytics || 0) !== 1
+                ? "s"
+                : ""}
             </div>
           </Link>
         </div>

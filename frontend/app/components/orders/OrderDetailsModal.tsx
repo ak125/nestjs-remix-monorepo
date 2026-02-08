@@ -6,8 +6,9 @@ import {
   Package,
   Phone,
   User,
-} from 'lucide-react';
-import { type Order } from '../../types/orders.types';
+} from "lucide-react";
+import { memo } from "react";
+import { type Order } from "../../types/orders.types";
 import {
   formatDate,
   formatDateTime,
@@ -16,9 +17,9 @@ import {
   getPaymentBadgeColor,
   getPaymentLabel,
   getStatusBadgeColor,
-} from '../../utils/orders.utils';
-import { type UserPermissions } from '../../utils/permissions';
-import { Button } from '../ui/button';
+} from "../../utils/orders.utils";
+import { type UserPermissions } from "../../utils/permissions";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from "../ui/dialog";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -37,7 +38,7 @@ interface OrderDetailsModalProps {
   onCancel?: (orderId: string) => void;
 }
 
-export function OrderDetailsModal({
+export const OrderDetailsModal = memo(function OrderDetailsModal({
   order,
   permissions,
   isOpen,
@@ -77,7 +78,7 @@ export function OrderDetailsModal({
                   order.ord_ords_id,
                 )}`}
               >
-                {order.statusDetails?.ords_named || 'Inconnu'}
+                {order.statusDetails?.ords_named || "Inconnu"}
               </span>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -137,7 +138,8 @@ export function OrderDetailsModal({
                     <p className="text-sm text-gray-500">Adresse</p>
                     <p className="font-medium text-gray-900">
                       {order.customer.cst_address}
-                      {order.customer.cst_zip_code && `, ${order.customer.cst_zip_code}`}
+                      {order.customer.cst_zip_code &&
+                        `, ${order.customer.cst_zip_code}`}
                       {order.customer.cst_city && ` ${order.customer.cst_city}`}
                     </p>
                   </div>
@@ -187,7 +189,7 @@ export function OrderDetailsModal({
               Marquer comme payé
             </Button>
           )}
-          {order.ord_ords_id !== '7' && permissions.canCancel && onCancel && (
+          {order.ord_ords_id !== "7" && permissions.canCancel && onCancel && (
             <Button
               onClick={() => onCancel(order.ord_id)}
               variant="destructive"
@@ -195,14 +197,11 @@ export function OrderDetailsModal({
               Annuler la commande
             </Button>
           )}
-          <Button
-            onClick={onClose}
-            variant="outline"
-          >
+          <Button onClick={onClose} variant="outline">
             Fermer
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+});

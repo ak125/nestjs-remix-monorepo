@@ -5,13 +5,14 @@
  */
 import { Link, useLocation } from "@remix-run/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { Alert } from "~/components/ui/alert";
+import { memo, useState, useEffect, useCallback } from "react";
 import {
   type MenuItem,
   type NavigationResponse,
   type UserPreferences,
 } from "../../types/navigation";
+import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
 
 interface DynamicMenuProps {
   module: "commercial" | "expedition" | "seo";
@@ -20,7 +21,7 @@ interface DynamicMenuProps {
   className?: string;
 }
 
-export function DynamicMenu({
+export const DynamicMenu = memo(function DynamicMenu({
   module,
   userId,
   userRole = "public",
@@ -68,11 +69,11 @@ export function DynamicMenu({
             setCollapsed(prefs.collapsed_items || []);
           }
         } catch (prefsError) {
-          console.warn("Failed to load user preferences:", prefsError);
+          logger.warn("Failed to load user preferences:", prefsError);
         }
       }
     } catch (error) {
-      console.error(`Error loading ${module} menu:`, error);
+      logger.error(`Error loading ${module} menu:`, error);
       setError(`Erreur de chargement du menu ${module}`);
 
       // Fallback menu pour ne pas avoir d'écran blanc
@@ -118,7 +119,7 @@ export function DynamicMenu({
           }),
         });
       } catch (error) {
-        console.warn("Failed to save preferences:", error);
+        logger.warn("Failed to save preferences:", error);
       }
     }
   };
@@ -336,4 +337,4 @@ export function DynamicMenu({
       )}
     </nav>
   );
-}
+});

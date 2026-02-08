@@ -9,7 +9,7 @@
  */
 
 import { MessageCircle, X, Minimize2 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";
@@ -18,7 +18,7 @@ interface ChatWidgetProps {
   apiUrl?: string;
 }
 
-export default function ChatWidget({
+const ChatWidget = memo(function ChatWidget({
   apiUrl = "/api/rag/chat",
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +38,9 @@ export default function ChatWidget({
   // Generate session ID on first open
   useEffect(() => {
     if (isOpen && !sessionId) {
-      setSessionId(`session-${Date.now()}-${Math.random().toString(36).substring(7)}`);
+      setSessionId(
+        `session-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      );
     }
   }, [isOpen, sessionId]);
 
@@ -138,7 +140,9 @@ export default function ChatWidget({
             <MessageCircle className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-sm">Assistant AutoMecanik</h3>
+            <h3 className="text-white font-semibold text-sm">
+              Assistant AutoMecanik
+            </h3>
             <p className="text-white/80 text-xs">
               {isLoading ? "En train de répondre..." : "En ligne"}
             </p>
@@ -172,7 +176,8 @@ export default function ChatWidget({
                 <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm font-medium">Bienvenue !</p>
                 <p className="text-xs mt-1">
-                  Posez-moi une question sur les livraisons, retours, ou garanties.
+                  Posez-moi une question sur les livraisons, retours, ou
+                  garanties.
                 </p>
               </div>
             ) : (
@@ -187,4 +192,6 @@ export default function ChatWidget({
       )}
     </div>
   );
-}
+});
+
+export default ChatWidget;

@@ -5,10 +5,15 @@
  */
 
 import { PassThrough } from "node:stream";
-import { createReadableStreamFromReadable, type AppLoadContext, type EntryContext } from "@remix-run/node";
+import {
+  createReadableStreamFromReadable,
+  type AppLoadContext,
+  type EntryContext,
+} from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
+import { logger } from "~/utils/logger";
 
 const ABORT_DELAY = 5_000;
 
@@ -20,20 +25,20 @@ export default function handleRequest(
   // This is ignored so we can keep it in the template for visibility.  Feel
   // free to delete this parameter in your app if you're not using it!
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  loadContext: AppLoadContext
+  loadContext: AppLoadContext,
 ) {
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        remixContext,
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext
+        remixContext,
       );
 }
 
@@ -41,7 +46,7 @@ function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -63,7 +68,7 @@ function handleBotRequest(
             new Response(stream, {
               headers: responseHeaders,
               status: responseStatusCode,
-            })
+            }),
           );
 
           pipe(body);
@@ -77,10 +82,10 @@ function handleBotRequest(
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
           if (shellRendered) {
-            console.error(error);
+            logger.error(error);
           }
         },
-      }
+      },
     );
 
     setTimeout(abort, ABORT_DELAY);
@@ -91,7 +96,7 @@ function handleBrowserRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -112,7 +117,10 @@ function handleBrowserRequest(
           // 🚀 TTFB Optimization: Early Hints pour preload ressources critiques
           // Permet au navigateur de commencer à télécharger pendant le streaming
           const url = new URL(request.url);
-          if (url.pathname.startsWith("/pieces/") && url.pathname.endsWith(".html")) {
+          if (
+            url.pathname.startsWith("/pieces/") &&
+            url.pathname.endsWith(".html")
+          ) {
             // Pages produit: preconnect aux domaines externes
             responseHeaders.set(
               "Link",
@@ -120,7 +128,7 @@ function handleBrowserRequest(
                 "<https://fonts.googleapis.com>; rel=preconnect",
                 "<https://fonts.gstatic.com>; rel=preconnect; crossorigin",
                 "<https://cxpojprgwgubzjyqzmoq.supabase.co>; rel=preconnect",
-              ].join(", ")
+              ].join(", "),
             );
           }
 
@@ -128,7 +136,7 @@ function handleBrowserRequest(
             new Response(stream, {
               headers: responseHeaders,
               status: responseStatusCode,
-            })
+            }),
           );
 
           pipe(body);
@@ -142,10 +150,10 @@ function handleBrowserRequest(
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
           if (shellRendered) {
-            console.error(error);
+            logger.error(error);
           }
         },
-      }
+      },
     );
 
     setTimeout(abort, ABORT_DELAY);

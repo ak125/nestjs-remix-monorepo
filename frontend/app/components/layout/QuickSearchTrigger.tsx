@@ -1,11 +1,12 @@
 /**
  * 🔍 QUICK SEARCH TRIGGER - Déclencheur de recherche rapide
- * 
+ *
  * Composant simple pour déclencher la recherche rapide
  * Compatible avec votre structure Header
  */
 
 import { Search } from "lucide-react";
+import { memo } from "react";
 
 interface QuickSearchTriggerProps {
   placeholder?: string;
@@ -13,10 +14,10 @@ interface QuickSearchTriggerProps {
   className?: string;
 }
 
-export function QuickSearchTrigger({ 
-  placeholder = "Rechercher...", 
+export const QuickSearchTrigger = memo(function QuickSearchTrigger({
+  placeholder = "Rechercher...",
   onOpen,
-  className = "" 
+  className = "",
 }: QuickSearchTriggerProps) {
   const handleClick = () => {
     onOpen?.();
@@ -37,4 +38,4 @@ export function QuickSearchTrigger({
       <span className="text-sm hidden md:inline">{placeholder}</span>
     </button>
   );
-}
+});

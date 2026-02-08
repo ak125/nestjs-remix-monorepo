@@ -5,8 +5,9 @@
  * Affichage comparatif côte à côte (max 4 pièces)
  */
 
-import { Badge } from "~/components/ui";
+import { memo } from "react";
 import { type PieceData } from "../../types/pieces-route.types";
+import { Badge } from "~/components/ui";
 
 interface PiecesComparisonViewProps {
   pieces: PieceData[];
@@ -17,7 +18,7 @@ interface PiecesComparisonViewProps {
 /**
  * Vue Comparaison détaillée (tableau side-by-side)
  */
-export function PiecesComparisonView({
+export const PiecesComparisonView = memo(function PiecesComparisonView({
   pieces,
   selectedPieces,
   onRemovePiece,
@@ -170,7 +171,7 @@ export function PiecesComparisonView({
       )}
     </div>
   );
-}
+});
 
 /**
  * Helper pour render les cellules de comparaison

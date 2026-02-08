@@ -26,6 +26,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 // Types
 interface ReferenceItem {
@@ -89,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (!res.ok) {
-      console.error("Erreur API référence:", res.status);
+      logger.error("Erreur API référence:", res.status);
       return json<LoaderData>({ references: [], total: 0 });
     }
 
@@ -100,7 +101,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       total: data.total || 0,
     });
   } catch (error) {
-    console.error("Erreur chargement références:", error);
+    logger.error("Erreur chargement références:", error);
     return json<LoaderData>({ references: [], total: 0 });
   }
 }

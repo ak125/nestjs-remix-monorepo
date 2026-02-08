@@ -61,6 +61,21 @@ export interface RealTimeMetrics {
   averageResponseTime: number; // ms
 }
 
+/** Typed shape for upload records from Supabase */
+interface UploadRecord {
+  id?: string;
+  file_name?: string;
+  original_name?: string;
+  mime_type?: string;
+  size?: number;
+  upload_type?: string;
+  upload_time?: number;
+  success?: boolean;
+  timestamp?: string;
+  error_message?: string;
+  user_id?: string;
+}
+
 @Injectable()
 export class UploadAnalyticsService
   extends SupabaseBaseService
@@ -221,8 +236,10 @@ export class UploadAnalyticsService
         });
       }
 
+      const typedUploads = (uploads ?? []) as UploadRecord[];
+
       const report = this.generateReportFromData(
-        uploads || [],
+        typedUploads,
         startDate,
         endDate,
       );
@@ -357,7 +374,7 @@ export class UploadAnalyticsService
         });
       }
 
-      const uploads = data || [];
+      const uploads = (data ?? []) as UploadRecord[];
       const daily = this.aggregateByDay(uploads);
       const growth = this.calculateGrowthRates(daily);
 
@@ -454,7 +471,7 @@ export class UploadAnalyticsService
    * Génère un rapport à partir des données
    */
   private generateReportFromData(
-    uploads: any[],
+    uploads: UploadRecord[],
     startDate: Date,
     endDate: Date,
   ): AnalyticsReport {
@@ -564,7 +581,7 @@ export class UploadAnalyticsService
    * Calcule les heures de pointe
    */
   private calculatePeakHours(
-    uploads: any[],
+    uploads: UploadRecord[],
   ): Array<{ hour: number; count: number }> {
     const hourCounts: Record<number, number> = {};
 
@@ -630,7 +647,7 @@ export class UploadAnalyticsService
    * Agrège les données par jour
    */
   private aggregateByDay(
-    uploads: any[],
+    uploads: UploadRecord[],
   ): Array<{ date: string; uploads: number; size: number }> {
     const daily: Record<string, { uploads: number; size: number }> = {};
 

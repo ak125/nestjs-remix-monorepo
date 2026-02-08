@@ -3,15 +3,30 @@
  * Gestion des réclamations et litiges clients
  */
 
+import { logger } from "~/utils/logger";
+
 export interface ClaimFormData {
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
   order_number?: string;
   product_name?: string;
-  claim_type: 'defective_product' | 'wrong_item' | 'damaged_shipping' | 'not_received' | 'billing_issue' | 'service_complaint' | 'other';
+  claim_type:
+    | "defective_product"
+    | "wrong_item"
+    | "damaged_shipping"
+    | "not_received"
+    | "billing_issue"
+    | "service_complaint"
+    | "other";
   description: string;
-  desired_resolution: 'refund' | 'replacement' | 'repair' | 'compensation' | 'apology' | 'other';
+  desired_resolution:
+    | "refund"
+    | "replacement"
+    | "repair"
+    | "compensation"
+    | "apology"
+    | "other";
   claim_amount?: number;
   incident_date?: string;
   evidence_photos?: string[];
@@ -35,8 +50,15 @@ export interface ClaimRecord {
   evidence_photos: string[];
   receipts: string[];
   additional_documents: string[];
-  status: 'submitted' | 'under_review' | 'investigating' | 'awaiting_info' | 'resolved' | 'rejected' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status:
+    | "submitted"
+    | "under_review"
+    | "investigating"
+    | "awaiting_info"
+    | "resolved"
+    | "rejected"
+    | "closed";
+  priority: "low" | "medium" | "high" | "critical";
   resolution?: string;
   resolution_amount?: number;
   resolution_date?: string;
@@ -57,7 +79,7 @@ export interface ClaimRecord {
   }>;
   communications: Array<{
     id: string;
-    type: 'email' | 'phone' | 'internal_note' | 'customer_update';
+    type: "email" | "phone" | "internal_note" | "customer_update";
     content: string;
     from: string;
     to?: string;
@@ -87,10 +109,10 @@ export interface ClaimStats {
  */
 export async function createClaim(
   claimData: ClaimFormData,
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -117,7 +139,7 @@ export async function createClaim(
     const newClaim = await response.json();
     return newClaim;
   } catch (error) {
-    console.error("Erreur lors de la création de la réclamation:", error);
+    logger.error("Erreur lors de la création de la réclamation:", error);
     throw error;
   }
 }
@@ -127,10 +149,10 @@ export async function createClaim(
  */
 export async function getClaim(
   claimId: string,
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -155,7 +177,7 @@ export async function getClaim(
     const claim = await response.json();
     return claim;
   } catch (error) {
-    console.error("Erreur lors de la récupération de la réclamation:", error);
+    logger.error("Erreur lors de la récupération de la réclamation:", error);
     throw error;
   }
 }
@@ -167,8 +189,16 @@ export async function getAllClaims(
   options: {
     page?: number;
     limit?: number;
-    status?: 'submitted' | 'under_review' | 'investigating' | 'awaiting_info' | 'resolved' | 'rejected' | 'closed' | 'all';
-    priority?: 'low' | 'medium' | 'high' | 'critical' | 'all';
+    status?:
+      | "submitted"
+      | "under_review"
+      | "investigating"
+      | "awaiting_info"
+      | "resolved"
+      | "rejected"
+      | "closed"
+      | "all";
+    priority?: "low" | "medium" | "high" | "critical" | "all";
     claim_type?: string;
     assigned_to?: string;
     escalated?: boolean;
@@ -176,7 +206,7 @@ export async function getAllClaims(
     date_from?: string;
     date_to?: string;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   claims: ClaimRecord[];
   pagination: {
@@ -187,18 +217,23 @@ export async function getAllClaims(
   };
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
       limit: (options.limit || 10).toString(),
     });
 
-    if (options.status && options.status !== "all") searchParams.append("status", options.status);
-    if (options.priority && options.priority !== "all") searchParams.append("priority", options.priority);
-    if (options.claim_type) searchParams.append("claim_type", options.claim_type);
-    if (options.assigned_to) searchParams.append("assigned_to", options.assigned_to);
-    if (options.escalated !== undefined) searchParams.append("escalated", options.escalated.toString());
+    if (options.status && options.status !== "all")
+      searchParams.append("status", options.status);
+    if (options.priority && options.priority !== "all")
+      searchParams.append("priority", options.priority);
+    if (options.claim_type)
+      searchParams.append("claim_type", options.claim_type);
+    if (options.assigned_to)
+      searchParams.append("assigned_to", options.assigned_to);
+    if (options.escalated !== undefined)
+      searchParams.append("escalated", options.escalated.toString());
     if (options.search) searchParams.append("search", options.search);
     if (options.date_from) searchParams.append("date_from", options.date_from);
     if (options.date_to) searchParams.append("date_to", options.date_to);
@@ -214,10 +249,13 @@ export async function getAllClaims(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -226,7 +264,7 @@ export async function getAllClaims(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des réclamations:", error);
+    logger.error("Erreur lors de la récupération des réclamations:", error);
     throw error;
   }
 }
@@ -237,10 +275,10 @@ export async function getAllClaims(
 export async function updateClaim(
   claimId: string,
   updateData: Partial<ClaimRecord>,
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -267,7 +305,7 @@ export async function updateClaim(
     const updatedClaim = await response.json();
     return updatedClaim;
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de la réclamation:", error);
+    logger.error("Erreur lors de la mise à jour de la réclamation:", error);
     throw error;
   }
 }
@@ -275,11 +313,9 @@ export async function updateClaim(
 /**
  * Récupérer les statistiques des réclamations
  */
-export async function getClaimStats(
-  request?: Request
-): Promise<ClaimStats> {
+export async function getClaimStats(request?: Request): Promise<ClaimStats> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -304,7 +340,10 @@ export async function getClaimStats(
     const stats = await response.json();
     return stats;
   } catch (error) {
-    console.error("Erreur lors de la récupération des stats réclamations:", error);
+    logger.error(
+      "Erreur lors de la récupération des stats réclamations:",
+      error,
+    );
     throw error;
   }
 }
@@ -315,10 +354,10 @@ export async function getClaimStats(
 export async function assignClaim(
   claimId: string,
   agentId: string,
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -332,11 +371,14 @@ export async function assignClaim(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims/${claimId}/assign`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ assigned_to: agentId }),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims/${claimId}/assign`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ assigned_to: agentId }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -345,7 +387,7 @@ export async function assignClaim(
     const assignedClaim = await response.json();
     return assignedClaim;
   } catch (error) {
-    console.error("Erreur lors de l'assignation de la réclamation:", error);
+    logger.error("Erreur lors de l'assignation de la réclamation:", error);
     throw error;
   }
 }
@@ -358,12 +400,12 @@ export async function escalateClaim(
   escalationData: {
     reason: string;
     escalated_to: string;
-    priority?: 'high' | 'critical';
+    priority?: "high" | "critical";
   },
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -377,11 +419,14 @@ export async function escalateClaim(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims/${claimId}/escalate`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(escalationData),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims/${claimId}/escalate`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(escalationData),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -390,7 +435,7 @@ export async function escalateClaim(
     const escalatedClaim = await response.json();
     return escalatedClaim;
   } catch (error) {
-    console.error("Erreur lors de l'escalade de la réclamation:", error);
+    logger.error("Erreur lors de l'escalade de la réclamation:", error);
     throw error;
   }
 }
@@ -403,13 +448,18 @@ export async function resolveClaim(
   resolutionData: {
     resolution: string;
     resolution_amount?: number;
-    compensation_type?: 'refund' | 'replacement' | 'store_credit' | 'discount' | 'other';
+    compensation_type?:
+      | "refund"
+      | "replacement"
+      | "store_credit"
+      | "discount"
+      | "other";
     internal_notes?: string;
   },
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -423,11 +473,14 @@ export async function resolveClaim(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims/${claimId}/resolve`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(resolutionData),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims/${claimId}/resolve`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(resolutionData),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -436,7 +489,7 @@ export async function resolveClaim(
     const resolvedClaim = await response.json();
     return resolvedClaim;
   } catch (error) {
-    console.error("Erreur lors de la résolution de la réclamation:", error);
+    logger.error("Erreur lors de la résolution de la réclamation:", error);
     throw error;
   }
 }
@@ -447,15 +500,15 @@ export async function resolveClaim(
 export async function addClaimCommunication(
   claimId: string,
   communicationData: {
-    type: 'email' | 'phone' | 'internal_note' | 'customer_update';
+    type: "email" | "phone" | "internal_note" | "customer_update";
     content: string;
     to?: string;
     attachments?: string[];
   },
-  request?: Request
+  request?: Request,
 ): Promise<ClaimRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -469,11 +522,14 @@ export async function addClaimCommunication(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims/${claimId}/communications`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(communicationData),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims/${claimId}/communications`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(communicationData),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -482,7 +538,7 @@ export async function addClaimCommunication(
     const updatedClaim = await response.json();
     return updatedClaim;
   } catch (error) {
-    console.error("Erreur lors de l'ajout de la communication:", error);
+    logger.error("Erreur lors de l'ajout de la communication:", error);
     throw error;
   }
 }
@@ -493,17 +549,17 @@ export async function addClaimCommunication(
 export async function uploadClaimDocuments(
   claimId: string,
   files: File[],
-  documentType: 'evidence' | 'receipt' | 'additional',
-  request?: Request
+  documentType: "evidence" | "receipt" | "additional",
+  request?: Request,
 ): Promise<string[]> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const formData = new FormData();
     files.forEach((file, index) => {
       formData.append(`files`, file);
     });
-    formData.append('document_type', documentType);
+    formData.append("document_type", documentType);
 
     const headers: HeadersInit = {};
 
@@ -514,11 +570,14 @@ export async function uploadClaimDocuments(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/claims/${claimId}/documents`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/claims/${claimId}/documents`,
+      {
+        method: "POST",
+        headers,
+        body: formData,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -527,7 +586,7 @@ export async function uploadClaimDocuments(
     const result = await response.json();
     return result.uploadedFiles || [];
   } catch (error) {
-    console.error("Erreur lors de l'upload des documents:", error);
+    logger.error("Erreur lors de l'upload des documents:", error);
     throw error;
   }
 }

@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -20,6 +24,19 @@ import {
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const user = data?.targetUser;
+  const userName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : undefined;
+  return createNoIndexMeta(
+    userName ? `${userName} - Utilisateur - Admin` : "Utilisateur - Admin",
+  );
+};
 
 interface User {
   id: string;
@@ -77,7 +94,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     throw new Response("Utilisateur non trouvé", { status: 404 });
   }
 
-  console.log(`🔍 [Frontend] Chargement utilisateur avec ID: ${userId}`);
+  logger.log(`🔍 [Frontend] Chargement utilisateur avec ID: ${userId}`);
 
   try {
     const cookie = request.headers.get("Cookie") || "";
@@ -94,7 +111,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
+      logger.error(
         `❌ [Frontend] API /api/legacy-users/${userId} returned ${response.status}:`,
         errorText,
       );
@@ -106,7 +123,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     }
 
     const data = await response.json();
-    console.log(`✅ [Frontend] Utilisateur chargé:`, {
+    logger.log(`✅ [Frontend] Utilisateur chargé:`, {
       id: userId,
       email: data.data?.email || data.email,
     });
@@ -136,23 +153,21 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         },
       );
 
-      console.log(
-        `� [Frontend] Stats response status: ${statsResponse.status}`,
-      );
+      logger.log(`� [Frontend] Stats response status: ${statsResponse.status}`);
 
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         stats = statsData.data || statsData;
-        console.log(`✅ [Frontend] Stats chargées:`, stats);
+        logger.log(`✅ [Frontend] Stats chargées:`, stats);
       } else {
         const errorText = await statsResponse.text();
-        console.error(
+        logger.error(
           `❌ [Frontend] Erreur stats (${statsResponse.status}):`,
           errorText,
         );
       }
     } catch (error) {
-      console.warn("⚠️ [Frontend] Impossible de récupérer les stats:", error);
+      logger.warn("⚠️ [Frontend] Impossible de récupérer les stats:", error);
     }
 
     // Récupérer les commandes récentes de l'utilisateur
@@ -168,7 +183,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         },
       );
 
-      console.log(
+      logger.log(
         `📦 [Frontend] Orders response status: ${ordersResponse.status}`,
       );
 
@@ -183,18 +198,18 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
           status: order.status || (order.ord_paye === 1 ? "paid" : "pending"),
           info: order.info || order.ord_info || null,
         }));
-        console.log(
+        logger.log(
           `✅ [Frontend] Orders chargées: ${recentOrders.length} commandes récentes`,
         );
       } else {
         const errorText = await ordersResponse.text();
-        console.error(
+        logger.error(
           `❌ [Frontend] Erreur orders (${ordersResponse.status}):`,
           errorText,
         );
       }
     } catch (error) {
-      console.warn(
+      logger.warn(
         "⚠️ [Frontend] Impossible de récupérer les commandes:",
         error,
       );
@@ -210,7 +225,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       recentOrders,
     });
   } catch (error) {
-    console.error("Erreur lors du chargement de l'utilisateur:", error);
+    logger.error("Erreur lors du chargement de l'utilisateur:", error);
     throw new Response("Erreur lors du chargement de l'utilisateur", {
       status: 500,
     });

@@ -1,4 +1,9 @@
-import { type LoaderFunctionArgs, redirect, json } from "@remix-run/node";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+  json,
+} from "@remix-run/node";
 import {
   Outlet,
   useLoaderData,
@@ -8,6 +13,11 @@ import {
 import { getOptionalUser } from "../auth/unified.server";
 import { CommercialSidebar } from "../components/CommercialSidebar";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Interface Commerciale - Commercial");
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
@@ -28,7 +38,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       stats = await statsResponse.json();
     }
   } catch (error) {
-    console.log("Erreur récupération stats sidebar commercial:", error);
+    logger.log("Erreur récupération stats sidebar commercial:", error);
   }
 
   return json({ user, stats });

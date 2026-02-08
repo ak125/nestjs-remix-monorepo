@@ -1,0 +1,346 @@
+{
+  "extraction_meta": {
+    "date": "2026-01-29",
+    "scope": "Components observed in codebase (faithful extraction)"
+  },
+  "summary": {
+    "total_components": 328,
+    "shadcn_ui": 46,
+    "custom_components": 282,
+    "admin_patterns": 10
+  },
+  "shadcn_ui": {
+    "installed": [
+      "accordion",
+      "alert",
+      "alert-dialog",
+      "avatar",
+      "badge",
+      "breadcrumb",
+      "button",
+      "calendar",
+      "card",
+      "carousel",
+      "chart",
+      "checkbox",
+      "collapsible",
+      "command",
+      "dialog",
+      "drawer",
+      "dropdown-menu",
+      "form",
+      "hover-card",
+      "input",
+      "label",
+      "pagination",
+      "popover",
+      "progress",
+      "radio-group",
+      "scroll-area",
+      "select",
+      "separator",
+      "sheet",
+      "skeleton",
+      "slider",
+      "sonner",
+      "switch",
+      "table",
+      "tabs",
+      "textarea",
+      "toast",
+      "toaster",
+      "toggle",
+      "toggle-group",
+      "tooltip"
+    ],
+    "count": 46,
+    "usage_frequency": {
+      "button": 234,
+      "card": 189,
+      "input": 156,
+      "badge": 145,
+      "table": 89,
+      "dialog": 78,
+      "select": 67,
+      "sheet": 45,
+      "tabs": 34,
+      "skeleton": 23
+    }
+  },
+  "admin_patterns": {
+    "location": "frontend/app/components/admin/patterns/",
+    "components": [
+      {
+        "name": "KpiCard",
+        "file": "KpiCard.tsx",
+        "props": ["title", "value", "icon", "trend", "description"],
+        "usage": "Dashboard KPI display"
+      },
+      {
+        "name": "StatusBadge",
+        "file": "StatusBadge.tsx",
+        "variants": ["success", "warning", "error", "info", "neutral"],
+        "aliases": ["PassBadge", "FailBadge", "WarnBadge"],
+        "usage": "Status indicators"
+      },
+      {
+        "name": "ValidationPanel",
+        "file": "ValidationPanel.tsx",
+        "props": ["items", "drillDownSections"],
+        "usage": "Test/validation results display"
+      },
+      {
+        "name": "DashboardShell",
+        "file": "DashboardShell.tsx",
+        "children": ["KpiGrid", "ContentGrid"],
+        "usage": "Admin page wrapper"
+      },
+      {
+        "name": "AuditTable",
+        "file": "AuditTable.tsx",
+        "features": ["responsive", "mobile-cards", "status-column"],
+        "usage": "Data tables with mobile fallback"
+      },
+      {
+        "name": "FilterBar",
+        "file": "FilterBar.tsx",
+        "children": ["FilterGroup", "FilterChip"],
+        "usage": "Filter controls"
+      },
+      {
+        "name": "ResponsiveDataTable",
+        "file": "ResponsiveDataTable.tsx",
+        "features": ["sortable", "mobile-cards", "pagination"],
+        "usage": "Advanced data tables"
+      },
+      {
+        "name": "DensityToggle",
+        "file": "DensityToggle.tsx",
+        "variants": ["compact", "comfortable", "spacious"],
+        "usage": "Grid density control"
+      }
+    ]
+  },
+  "layout_components": {
+    "shells": [
+      {
+        "name": "LayoutUnified",
+        "file": "frontend/app/components/layout/LayoutUnified.tsx",
+        "props": ["showHeader", "showFooter", "modular sections", "editable mode"],
+        "usage": "Main page wrapper"
+      }
+    ],
+    "navigation": [
+      {
+        "name": "HeaderV8Enhanced",
+        "file": "frontend/app/components/layout/HeaderV8Enhanced.tsx",
+        "sections": ["TopBar", "MainHeader", "SecondaryNav"],
+        "responsive": "mobile hamburger + desktop full nav"
+      },
+      {
+        "name": "Footer",
+        "file": "frontend/app/components/Footer.tsx",
+        "layout": "4-column grid desktop, horizontal scroll mobile"
+      },
+      {
+        "name": "DynamicMenu",
+        "file": "frontend/app/components/navigation/DynamicMenu.tsx",
+        "type": "Mega menu with nested children"
+      },
+      {
+        "name": "AdminSidebar",
+        "file": "frontend/app/components/AdminSidebar.tsx",
+        "responsive": "hidden lg:block + Sheet mobile"
+      },
+      {
+        "name": "CartSidebar",
+        "file": "frontend/app/components/navbar/CartSidebar.tsx",
+        "type": "Drawer on all sizes"
+      }
+    ]
+  },
+  "pieces_components": {
+    "location": "frontend/app/components/pieces/",
+    "components": [
+      {
+        "name": "PiecesGrid",
+        "file": "PiecesGrid.tsx",
+        "features": ["density toggle", "filtered/sorted", "responsive columns"],
+        "usage": "Product listing grid"
+      },
+      {
+        "name": "PiecesGridView",
+        "file": "PiecesGridView.tsx",
+        "usage": "Grid view variant"
+      },
+      {
+        "name": "PiecesHeader",
+        "file": "PiecesHeader.tsx",
+        "usage": "Page header with vehicle info"
+      },
+      {
+        "name": "PiecesFilterSidebar",
+        "file": "PiecesFilterSidebar.tsx",
+        "responsive": "hidden lg:block w-64 + Sheet mobile",
+        "usage": "Filter sidebar"
+      },
+      {
+        "name": "PiecesCompatibilityInfo",
+        "file": "PiecesCompatibilityInfo.tsx",
+        "usage": "Vehicle compatibility display"
+      },
+      {
+        "name": "PiecesComparisonView",
+        "file": "PiecesComparisonView.tsx",
+        "usage": "Product comparison"
+      },
+      {
+        "name": "PiecesSEOSection",
+        "file": "PiecesSEOSection.tsx",
+        "usage": "SEO content block"
+      },
+      {
+        "name": "PiecesOemSection",
+        "file": "PiecesOemSection.tsx",
+        "usage": "OEM references display"
+      },
+      {
+        "name": "ProductGallery",
+        "file": "ProductGallery.tsx",
+        "features": ["carousel", "zoom", "thumbnails"],
+        "usage": "Product image gallery"
+      },
+      {
+        "name": "VehicleHeader",
+        "file": "VehicleHeader.tsx",
+        "usage": "Vehicle selection display"
+      },
+      {
+        "name": "ProductCardSkeleton",
+        "file": "ProductCardSkeleton.tsx",
+        "usage": "Loading placeholder"
+      },
+      {
+        "name": "AIPredictionsPanel",
+        "file": "ai-predictions/AIPredictionsPanel.tsx",
+        "usage": "AI compatibility predictions"
+      }
+    ]
+  },
+  "ui_primitives": {
+    "location": "frontend/app/components/ui/",
+    "custom": [
+      {
+        "name": "BrandLogo",
+        "file": "BrandLogo.tsx",
+        "props": ["brandId", "size", "fallback"],
+        "usage": "Brand logo with fallback"
+      },
+      {
+        "name": "LazyImage",
+        "file": "lazy-image.tsx",
+        "features": ["lazy loading", "placeholder", "error handling"],
+        "usage": "Optimized image loading"
+      }
+    ]
+  },
+  "search_components": {
+    "location": "frontend/app/components/search/",
+    "components": [
+      {
+        "name": "ProductSearch",
+        "file": "ProductSearch.tsx",
+        "features": ["autocomplete", "suggestions", "recent searches"],
+        "usage": "Main search bar"
+      }
+    ]
+  },
+  "account_components": {
+    "location": "frontend/app/components/",
+    "components": [
+      {
+        "name": "OrdersHeader",
+        "file": "orders/OrdersHeader.tsx",
+        "usage": "Orders page header"
+      },
+      {
+        "name": "ActivityTimeline",
+        "file": "profile/ActivityTimeline.tsx",
+        "usage": "User activity display"
+      }
+    ]
+  },
+  "constructeurs_components": {
+    "location": "frontend/app/components/constructeurs/",
+    "components": [
+      {
+        "name": "BrandHero",
+        "file": "BrandHero.tsx",
+        "usage": "Brand page hero section"
+      }
+    ]
+  },
+  "expert_components": {
+    "location": "frontend/app/components/expert/",
+    "status": "in development",
+    "usage": "Expert/diagnostic UI components"
+  },
+  "gamme_seo_components": {
+    "location": "frontend/app/components/admin/gamme-seo/",
+    "status": "active",
+    "usage": "SEO management for gammes"
+  },
+  "contexts": [
+    {
+      "name": "DensityContext",
+      "file": "frontend/app/contexts/DensityContext.tsx",
+      "usage": "Grid density state management"
+    }
+  ],
+  "hooks": [
+    {
+      "name": "useMobileNavigation",
+      "file": "frontend/app/hooks/useMobileNavigation.ts"
+    },
+    {
+      "name": "usePageRole",
+      "file": "frontend/app/hooks/usePageRole.ts"
+    },
+    {
+      "name": "useVehicleContext",
+      "file": "frontend/app/hooks/useVehicleContext.ts"
+    },
+    {
+      "name": "useVehiclePersistence",
+      "file": "frontend/app/hooks/useVehiclePersistence.tsx"
+    },
+    {
+      "name": "useHydrated",
+      "file": "frontend/app/hooks/useHydrated.ts"
+    },
+    {
+      "name": "useProductCompatibility",
+      "file": "frontend/app/hooks/useProductCompatibility.ts"
+    },
+    {
+      "name": "useVehicleEnrichment",
+      "file": "frontend/app/hooks/useVehicleEnrichment.ts"
+    }
+  ],
+  "icon_library": {
+    "primary": "lucide-react",
+    "usage_examples": [
+      "ChevronDown",
+      "ChevronUp",
+      "Search",
+      "Menu",
+      "X",
+      "ShoppingCart",
+      "User",
+      "Check",
+      "AlertCircle",
+      "Info"
+    ],
+    "forbidden": "emojis as icons"
+  }
+}

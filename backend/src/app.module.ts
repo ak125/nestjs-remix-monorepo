@@ -50,7 +50,7 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 // Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md pour détails
 // import { AiContentModule } from './modules/ai-content/ai-content.module'; // DEV ONLY - LLM deps
 // import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
-// import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module'; // DEV ONLY - Python dep
+import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 
 /**
@@ -178,10 +178,9 @@ import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Docke
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
 
     // ⛔ DÉSACTIVÉ P0.1-P0.2 (2026-02-02) - Modules DEV ONLY
-    // Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md
     // AiContentModule,        // DEV ONLY - LLM deps (Claude/Groq/OpenAI)
     // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
-    // RagProxyModule,         // DEV ONLY - Python service dependency
+    ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
     RmModule, // ✅ RÉACTIVÉ - Fix Dockerfile shared-types (2026-02-02)
   ],
   controllers: [

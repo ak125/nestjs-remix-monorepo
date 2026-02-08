@@ -488,7 +488,7 @@ export class UploadService {
       validation: boolean;
       analytics: boolean;
     };
-    metrics: any;
+    metrics: Record<string, unknown>;
   }> {
     try {
       // Test du storage
@@ -504,7 +504,7 @@ export class UploadService {
           validation: true, // Service local, toujours disponible
           analytics: true, // Service local, toujours disponible
         },
-        metrics,
+        metrics: metrics as unknown as Record<string, unknown>,
       };
     } catch (error: any) {
       this.logger.error('❌ Health check failed:', error.message);

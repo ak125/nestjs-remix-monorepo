@@ -1,7 +1,8 @@
 import { Link } from "@remix-run/react";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Badge } from '~/components/ui';
-import  { type VehicleData } from "~/types/vehicle.types";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { Badge } from "~/components/ui";
+import { type VehicleData } from "~/types/vehicle.types";
+import { logger } from "~/utils/logger";
 
 // ========================================
 // 🎯 TYPES TYPESCRIPT STRICTS
@@ -52,13 +53,13 @@ interface LazyImageProps {
 // 🖼️ COMPOSANT LAZY IMAGE MODERNE
 // ========================================
 
-function LazyImage({ 
-  src, 
-  alt, 
-  className = "", 
-  onLoad, 
+const LazyImage = memo(function LazyImage({
+  src,
+  alt,
+  className = "",
+  onLoad,
   onError,
-  _placeholder = "/images/loading-placeholder.svg"
+  _placeholder = "/images/loading-placeholder.svg",
 }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -74,10 +75,10 @@ function LazyImage({
           observer.disconnect();
         }
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: '50px' // Précharge 50px avant d'être visible
-      }
+        rootMargin: "50px", // Précharge 50px avant d'être visible
+      },
     );
 
     observer.observe(node);
@@ -89,18 +90,33 @@ function LazyImage({
     onLoad?.();
   }, [onLoad]);
 
-  const handleError = useCallback((_e: React.SyntheticEvent<HTMLImageElement>) => {
-    setHasError(true);
-    const error = new Error(`Failed to load image: ${src}`);
-    onError?.(error);
-  }, [src, onError]);
+  const handleError = useCallback(
+    (_e: React.SyntheticEvent<HTMLImageElement>) => {
+      setHasError(true);
+      const error = new Error(`Failed to load image: ${src}`);
+      onError?.(error);
+    },
+    [src, onError],
+  );
 
   if (hasError) {
     return (
-      <div className={`bg-gray-100 flex items-center justify-center ${className}`}>
+      <div
+        className={`bg-gray-100 flex items-center justify-center ${className}`}
+      >
         <div className="text-center p-4">
-          <svg className="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <svg
+            className="w-8 h-8 mx-auto text-gray-400 mb-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
           <p className="text-xs text-gray-500">Image indisponible</p>
         </div>
@@ -118,7 +134,7 @@ function LazyImage({
           </div>
         </div>
       )}
-      
+
       {/* Image réelle */}
       {isInView && (
         <img
@@ -129,14 +145,14 @@ function LazyImage({
           onError={handleError}
           className={`
             w-full h-full object-cover transition-opacity duration-300
-            ${isLoaded ? 'opacity-100' : 'opacity-0'}
+            ${isLoaded ? "opacity-100" : "opacity-0"}
           `}
           loading="lazy"
         />
       )}
     </div>
   );
-}
+});
 
 // ========================================
 // 🎨 COMPOSANT CATEGORY CARD
@@ -152,35 +168,43 @@ interface CategoryCardProps {
   onImageError?: (error: Error) => void;
 }
 
-function CategoryCard({ 
-  category, 
-  vehicle, 
-  showSubcategories, 
+const CategoryCard = memo(function CategoryCard({
+  category,
+  vehicle,
+  showSubcategories,
   showPartsCount,
   onCategoryClick,
   onImageLoad,
-  onImageError 
+  onImageError,
 }: CategoryCardProps) {
-  
-  const buildPartUrl = useCallback((subcategory: Subcategory): string => {
-    if (!vehicle.brand || !vehicle.model) {
-      console.warn('Vehicle data incomplete for URL building');
-      return '#';
-    }
+  const buildPartUrl = useCallback(
+    (subcategory: Subcategory): string => {
+      if (!vehicle.brand || !vehicle.model) {
+        logger.warn("Vehicle data incomplete for URL building");
+        return "#";
+      }
 
-    const brandSlug = vehicle.brand.toLowerCase().replace(/\s+/g, '-');
-    const modelSlug = vehicle.model.toLowerCase().replace(/\s+/g, '-');
-    const typeSlug = vehicle.type.toLowerCase().replace(/\s+/g, '-');
-    
-    return `/pieces/${subcategory.slug}/${brandSlug}-${vehicle.brandId}/${modelSlug}-${vehicle.modelId}/${typeSlug}-${vehicle.typeId}.html`;
-  }, [vehicle]);
+      const brandSlug = vehicle.brand.toLowerCase().replace(/\s+/g, "-");
+      const modelSlug = vehicle.model.toLowerCase().replace(/\s+/g, "-");
+      const typeSlug = vehicle.type.toLowerCase().replace(/\s+/g, "-");
 
-  const handleSubcategoryClick = useCallback((subcategory: Subcategory) => {
-    onCategoryClick?.(category, subcategory);
-  }, [category, onCategoryClick]);
+      return `/pieces/${subcategory.slug}/${brandSlug}-${vehicle.brandId}/${modelSlug}-${vehicle.modelId}/${typeSlug}-${vehicle.typeId}.html`;
+    },
+    [vehicle],
+  );
+
+  const handleSubcategoryClick = useCallback(
+    (subcategory: Subcategory) => {
+      onCategoryClick?.(category, subcategory);
+    },
+    [category, onCategoryClick],
+  );
 
   const totalPartsCount = useMemo(() => {
-    return category.subcategories.reduce((total, sub) => total + (sub.parts_count || 0), 0);
+    return category.subcategories.reduce(
+      (total, sub) => total + (sub.parts_count || 0),
+      0,
+    );
   }, [category.subcategories]);
 
   return (
@@ -203,9 +227,7 @@ function CategoryCard({
           <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
             {category.name}
           </h3>
-          {category.featured && (
-            <Badge variant="info">Populaire</Badge>
-          )}
+          {category.featured && <Badge variant="info">Populaire</Badge>}
         </div>
 
         {/* Description si disponible */}
@@ -218,10 +240,21 @@ function CategoryCard({
         {/* Statistiques */}
         {showPartsCount && (
           <div className="flex items-center text-sm text-gray-500 mb-3">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              />
             </svg>
-            {totalPartsCount} pièce{totalPartsCount > 1 ? 's' : ''} disponible{totalPartsCount > 1 ? 's' : ''}
+            {totalPartsCount} pièce{totalPartsCount > 1 ? "s" : ""} disponible
+            {totalPartsCount > 1 ? "s" : ""}
           </div>
         )}
 
@@ -249,7 +282,7 @@ function CategoryCard({
                   </div>
                 </Link>
               ))}
-              
+
               {category.subcategories.length > 6 && (
                 <div className="text-xs text-gray-500 mt-1">
                   +{category.subcategories.length - 6} autres sous-catégories
@@ -261,49 +294,63 @@ function CategoryCard({
       </div>
     </div>
   );
-}
+});
 
 // ========================================
 // 🏗️ COMPOSANT PRINCIPAL CATEGORYGRID
 // ========================================
 
-export function CategoryGrid({ 
-  categories, 
-  vehicle, 
+export function CategoryGrid({
+  categories,
+  vehicle,
   loading = false,
   onCategoryClick,
   onImageLoad,
   onImageError,
   maxColumns = 3,
   showSubcategories = true,
-  showPartsCount = true 
+  showPartsCount = true,
 }: CategoryGridProps) {
-  
   // Use arrays instead of Sets to avoid React hydration issues (Set doesn't serialize correctly during SSR)
   const [_loadedImages, setLoadedImages] = useState<string[]>([]);
   const [_imageErrors, setImageErrors] = useState<string[]>([]);
 
   // Gestion des événements d'images
-  const handleImageLoad = useCallback((categoryId: string) => {
-    setLoadedImages(prev => prev.includes(categoryId) ? prev : [...prev, categoryId]);
-    onImageLoad?.(categoryId);
-  }, [onImageLoad]);
+  const handleImageLoad = useCallback(
+    (categoryId: string) => {
+      setLoadedImages((prev) =>
+        prev.includes(categoryId) ? prev : [...prev, categoryId],
+      );
+      onImageLoad?.(categoryId);
+    },
+    [onImageLoad],
+  );
 
-  const handleImageError = useCallback((categoryId: string, error: Error) => {
-    setImageErrors(prev => prev.includes(categoryId) ? prev : [...prev, categoryId]);
-    onImageError?.(categoryId, error);
-    console.warn(`Image failed to load for category ${categoryId}:`, error);
-  }, [onImageError]);
+  const handleImageError = useCallback(
+    (categoryId: string, error: Error) => {
+      setImageErrors((prev) =>
+        prev.includes(categoryId) ? prev : [...prev, categoryId],
+      );
+      onImageError?.(categoryId, error);
+      logger.warn(`Image failed to load for category ${categoryId}:`, error);
+    },
+    [onImageError],
+  );
 
   // Classes CSS responsives selon le nombre de colonnes
   const gridClasses = useMemo(() => {
     const baseClasses = "grid gap-6 auto-rows-fr";
     switch (maxColumns) {
-      case 2: return `${baseClasses} grid-cols-1 md:grid-cols-2`;
-      case 3: return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
-      case 4: return `${baseClasses} grid-cols-2 md:grid-cols-3 lg:grid-cols-4`;
-      case 6: return `${baseClasses} grid-cols-2 md:grid-cols-4 lg:grid-cols-6`;
-      default: return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
+      case 2:
+        return `${baseClasses} grid-cols-1 md:grid-cols-2`;
+      case 3:
+        return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
+      case 4:
+        return `${baseClasses} grid-cols-2 md:grid-cols-3 lg:grid-cols-4`;
+      case 6:
+        return `${baseClasses} grid-cols-2 md:grid-cols-4 lg:grid-cols-6`;
+      default:
+        return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3`;
     }
   }, [maxColumns]);
 
@@ -321,7 +368,10 @@ export function CategoryGrid({
     return (
       <div className={gridClasses}>
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div
+            key={i}
+            className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+          >
             <div className="h-48 bg-gray-200 animate-pulse"></div>
             <div className="p-4 space-y-3">
               <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
@@ -341,10 +391,22 @@ export function CategoryGrid({
   if (!categories.length) {
     return (
       <div className="text-center py-12">
-        <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        <svg
+          className="mx-auto h-16 w-16 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1}
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
         </svg>
-        <p className="mt-4 text-lg text-gray-500">Aucune catégorie disponible</p>
+        <p className="mt-4 text-lg text-gray-500">
+          Aucune catégorie disponible
+        </p>
         <p className="text-sm text-gray-400">
           Les catégories de pièces pour ce véhicule seront bientôt disponibles.
         </p>
@@ -353,14 +415,14 @@ export function CategoryGrid({
   }
 
   return (
-    <div 
+    <div
       className={gridClasses}
       role="grid"
       aria-label={`Catégories de pièces pour ${vehicle.brand} ${vehicle.model} ${vehicle.type}`}
     >
       {sortedCategories.map((category) => (
-        <div 
-          key={category.id} 
+        <div
+          key={category.id}
           role="gridcell"
           tabIndex={0}
           aria-label={`Catégorie ${category.name}`}
@@ -385,9 +447,9 @@ export function CategoryGrid({
 // ========================================
 
 export function useCategoryGrid(
-  categories: Category[], 
+  categories: Category[],
   vehicle: VehicleData,
-  options?: Partial<CategoryGridProps>
+  options?: Partial<CategoryGridProps>,
 ) {
   const [analytics, setAnalytics] = useState({
     totalViews: 0,
@@ -397,39 +459,54 @@ export function useCategoryGrid(
     imageErrors: 0,
   });
 
-  const handleCategoryClick = useCallback((category: Category, subcategory?: Subcategory) => {
-    setAnalytics(prev => ({
-      ...prev,
-      categoryClicks: prev.categoryClicks + 1,
-      subcategoryClicks: subcategory ? prev.subcategoryClicks + 1 : prev.subcategoryClicks
-    }));
+  const handleCategoryClick = useCallback(
+    (category: Category, subcategory?: Subcategory) => {
+      setAnalytics((prev) => ({
+        ...prev,
+        categoryClicks: prev.categoryClicks + 1,
+        subcategoryClicks: subcategory
+          ? prev.subcategoryClicks + 1
+          : prev.subcategoryClicks,
+      }));
 
-    // Analytics tracking
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', subcategory ? 'subcategory_click' : 'category_click', {
-        category_name: category.name,
-        subcategory_name: subcategory?.name,
-        vehicle_brand: vehicle.brand,
-        vehicle_model: vehicle.model,
-        vehicle_type: vehicle.type,
-      });
-    }
+      // Analytics tracking
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag(
+          "event",
+          subcategory ? "subcategory_click" : "category_click",
+          {
+            category_name: category.name,
+            subcategory_name: subcategory?.name,
+            vehicle_brand: vehicle.brand,
+            vehicle_model: vehicle.model,
+            vehicle_type: vehicle.type,
+          },
+        );
+      }
 
-    options?.onCategoryClick?.(category, subcategory);
-  }, [vehicle, options]);
+      options?.onCategoryClick?.(category, subcategory);
+    },
+    [vehicle, options],
+  );
 
-  const handleImageLoad = useCallback((categoryId: string) => {
-    setAnalytics(prev => ({ ...prev, imageLoads: prev.imageLoads + 1 }));
-    options?.onImageLoad?.(categoryId);
-  }, [options]);
+  const handleImageLoad = useCallback(
+    (categoryId: string) => {
+      setAnalytics((prev) => ({ ...prev, imageLoads: prev.imageLoads + 1 }));
+      options?.onImageLoad?.(categoryId);
+    },
+    [options],
+  );
 
-  const handleImageError = useCallback((categoryId: string, error: Error) => {
-    setAnalytics(prev => ({ ...prev, imageErrors: prev.imageErrors + 1 }));
-    options?.onImageError?.(categoryId, error);
-  }, [options]);
+  const handleImageError = useCallback(
+    (categoryId: string, error: Error) => {
+      setAnalytics((prev) => ({ ...prev, imageErrors: prev.imageErrors + 1 }));
+      options?.onImageError?.(categoryId, error);
+    },
+    [options],
+  );
 
   useEffect(() => {
-    setAnalytics(prev => ({ ...prev, totalViews: prev.totalViews + 1 }));
+    setAnalytics((prev) => ({ ...prev, totalViews: prev.totalViews + 1 }));
   }, [categories]);
 
   return {
@@ -438,7 +515,7 @@ export function useCategoryGrid(
       onCategoryClick: handleCategoryClick,
       onImageLoad: handleImageLoad,
       onImageError: handleImageError,
-    }
+    },
   };
 }
 

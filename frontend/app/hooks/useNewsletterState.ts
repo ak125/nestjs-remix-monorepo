@@ -3,7 +3,8 @@
  * Gère la soumission et les états de succès/erreur
  */
 
-import { useState } from 'react';
+import { useState } from "react";
+import { logger } from "~/utils/logger";
 
 export function useNewsletterState() {
   const [email, setEmail] = useState("");
@@ -13,15 +14,15 @@ export function useNewsletterState() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    console.log("Newsletter subscription:", email);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    logger.log("Newsletter subscription:", email);
     setIsSubmitting(false);
     setSuccess(true);
     setEmail("");
-    
+
     // Reset success message after 3 seconds
     setTimeout(() => setSuccess(false), 3000);
   };
@@ -31,6 +32,6 @@ export function useNewsletterState() {
     isSubmitting,
     success,
     setEmail,
-    handleSubmit
+    handleSubmit,
   };
 }

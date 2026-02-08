@@ -6,7 +6,11 @@
  * Architecture moderne alignée avec orders, users, suppliers
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -28,6 +32,10 @@ import { Button } from "../components/ui/button";
 import { getRemixApiService } from "../server/remix-api.server";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Staff");
 
 // Interface pour les données staff modernes
 interface StaffMember {
@@ -104,7 +112,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Erreur loader staff:", error);
+    logger.error("Erreur loader staff:", error);
 
     return json({
       staff: [],

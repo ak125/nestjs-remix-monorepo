@@ -63,6 +63,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Gammes SEO | Admin AutoMecanik" },
@@ -247,7 +248,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[Admin Gammes SEO] Error:", error);
+    logger.error("[Admin Gammes SEO] Error:", error);
     return json({
       gammes: [],
       total: 0,

@@ -20,6 +20,7 @@ import parse, {
   type DOMNode,
 } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
+import { memo } from "react";
 
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
 
@@ -181,7 +182,7 @@ function cleanHtml(html: string): string {
 // Component
 // =====================================================
 
-export function HtmlContent({
+export const HtmlContent = memo(function HtmlContent({
   html,
   className,
   trackLinks = true,
@@ -282,6 +283,6 @@ export function HtmlContent({
   const cleanedHtml = cleanHtml(html);
 
   return <div className={className}>{parse(cleanedHtml, options)}</div>;
-}
+});
 
 export default HtmlContent;

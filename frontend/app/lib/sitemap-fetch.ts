@@ -1,6 +1,8 @@
+import { logger } from "~/utils/logger";
+
 /**
  * 🔧 UTILITAIRES FETCH POUR SITEMAPS
- * 
+ *
  * Fonctionnalités:
  * - Timeout configurable
  * - Retry avec backoff exponentiel
@@ -10,16 +12,16 @@
 
 // Configuration par défaut
 export const SITEMAP_CONFIG = {
-  BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3000',
-  BASE_URL: process.env.BASE_URL || 'https://www.automecanik.com',
+  BACKEND_URL: process.env.BACKEND_URL || "http://localhost:3000",
+  BASE_URL: process.env.BASE_URL || "https://www.automecanik.com",
   TIMEOUT_MS: 5000,
   MAX_RETRIES: 2,
-  CACHE_BROWSER: 3600,      // 1h browser
-  CACHE_CDN: 7200,          // 2h CDN
-  CACHE_STALE: 86400,       // 24h stale-while-revalidate
+  CACHE_BROWSER: 3600, // 1h browser
+  CACHE_CDN: 7200, // 2h CDN
+  CACHE_STALE: 86400, // 24h stale-while-revalidate
   // Cache plus long pour sitemaps stables
-  CACHE_BROWSER_STABLE: 86400,   // 24h browser
-  CACHE_CDN_STABLE: 172800,      // 48h CDN
+  CACHE_BROWSER_STABLE: 86400, // 24h browser
+  CACHE_CDN_STABLE: 172800, // 48h CDN
 };
 
 /**
@@ -27,7 +29,7 @@ export const SITEMAP_CONFIG = {
  */
 export async function fetchWithTimeout(
   url: string,
-  timeoutMs: number = SITEMAP_CONFIG.TIMEOUT_MS
+  timeoutMs: number = SITEMAP_CONFIG.TIMEOUT_MS,
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -49,7 +51,7 @@ export async function fetchWithRetry(
     retries?: number;
     timeoutMs?: number;
     backoffMs?: number;
-  } = {}
+  } = {},
 ): Promise<Response> {
   const {
     retries = SITEMAP_CONFIG.MAX_RETRIES,
@@ -66,12 +68,12 @@ export async function fetchWithRetry(
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     } catch (error) {
       lastError = error as Error;
-      
+
       // Ne pas retry sur abort (timeout)
-      if ((error as Error).name === 'AbortError') {
+      if ((error as Error).name === "AbortError") {
         throw new Error(`Timeout after ${timeoutMs}ms: ${url}`);
       }
-      
+
       if (attempt < retries) {
         // Backoff exponentiel: 100ms, 200ms, 400ms...
         const delay = backoffMs * Math.pow(2, attempt);
@@ -80,38 +82,51 @@ export async function fetchWithRetry(
     }
   }
 
-  throw lastError || new Error(`Fetch failed after ${retries + 1} attempts: ${url}`);
+  throw (
+    lastError || new Error(`Fetch failed after ${retries + 1} attempts: ${url}`)
+  );
 }
 
 /**
  * Validation XML basique
  */
 export function isValidSitemapXml(content: string): boolean {
-  if (!content || typeof content !== 'string') return false;
+  if (!content || typeof content !== "string") return false;
   const trimmed = content.trim();
   return (
-    trimmed.startsWith('<?xml') &&
-    (trimmed.includes('<urlset') || trimmed.includes('<sitemapindex'))
+    trimmed.startsWith("<?xml") &&
+    (trimmed.includes("<urlset") || trimmed.includes("<sitemapindex"))
   );
 }
 
 /**
  * Headers standard pour sitemaps
  */
-export function getSitemapHeaders(options: {
-  responseTime?: number;
-  isStable?: boolean;
-  isError?: boolean;
-  errorMessage?: string;
-} = {}): Record<string, string> {
-  const { responseTime, isStable = false, isError = false, errorMessage } = options;
+export function getSitemapHeaders(
+  options: {
+    responseTime?: number;
+    isStable?: boolean;
+    isError?: boolean;
+    errorMessage?: string;
+  } = {},
+): Record<string, string> {
+  const {
+    responseTime,
+    isStable = false,
+    isError = false,
+    errorMessage,
+  } = options;
 
-  const cacheBrowser = isStable ? SITEMAP_CONFIG.CACHE_BROWSER_STABLE : SITEMAP_CONFIG.CACHE_BROWSER;
-  const cacheCdn = isStable ? SITEMAP_CONFIG.CACHE_CDN_STABLE : SITEMAP_CONFIG.CACHE_CDN;
+  const cacheBrowser = isStable
+    ? SITEMAP_CONFIG.CACHE_BROWSER_STABLE
+    : SITEMAP_CONFIG.CACHE_BROWSER;
+  const cacheCdn = isStable
+    ? SITEMAP_CONFIG.CACHE_CDN_STABLE
+    : SITEMAP_CONFIG.CACHE_CDN;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/xml; charset=utf-8",
-    "Vary": "Accept-Encoding",
+    Vary: "Accept-Encoding",
   };
 
   if (isError) {
@@ -120,7 +135,8 @@ export function getSitemapHeaders(options: {
       headers["X-Error"] = errorMessage;
     }
   } else {
-    headers["Cache-Control"] = `public, max-age=${cacheBrowser}, s-maxage=${cacheCdn}, stale-while-revalidate=${SITEMAP_CONFIG.CACHE_STALE}`;
+    headers["Cache-Control"] =
+      `public, max-age=${cacheBrowser}, s-maxage=${cacheCdn}, stale-while-revalidate=${SITEMAP_CONFIG.CACHE_STALE}`;
   }
 
   if (responseTime !== undefined) {
@@ -142,8 +158,11 @@ export function generateEmptyFallbackSitemap(): string {
 /**
  * Générer un fallback sitemap avec une seule URL
  */
-export function generateSingleUrlFallback(url: string, priority: number = 0.8): string {
-  const today = new Date().toISOString().split('T')[0];
+export function generateSingleUrlFallback(
+  url: string,
+  priority: number = 0.8,
+): string {
+  const today = new Date().toISOString().split("T")[0];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -158,16 +177,18 @@ export function generateSingleUrlFallback(url: string, priority: number = 0.8): 
 /**
  * Générer un fallback sitemap index
  */
-export function generateFallbackSitemapIndex(sitemaps: Array<{ loc: string; lastmod?: string }>): string {
-  const today = new Date().toISOString().split('T')[0];
+export function generateFallbackSitemapIndex(
+  sitemaps: Array<{ loc: string; lastmod?: string }>,
+): string {
+  const today = new Date().toISOString().split("T")[0];
   const entries = sitemaps
     .map(
       (s) => `  <sitemap>
     <loc>${s.loc}</loc>
     <lastmod>${s.lastmod || today}</lastmod>
-  </sitemap>`
+  </sitemap>`,
     )
-    .join('\n');
+    .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -178,11 +199,19 @@ ${entries}
 /**
  * Logger pour sitemaps avec contexte
  */
-export function logSitemapError(name: string, error: unknown, duration?: number): void {
-  const durationStr = duration !== undefined ? ` après ${duration}ms` : '';
-  console.error(`[Sitemap ${name}] Erreur${durationStr}:`, error);
+export function logSitemapError(
+  name: string,
+  error: unknown,
+  duration?: number,
+): void {
+  const durationStr = duration !== undefined ? ` après ${duration}ms` : "";
+  logger.error(`[Sitemap ${name}] Erreur${durationStr}:`, error);
 }
 
-export function logSitemapSuccess(name: string, urlCount: number, duration: number): void {
-  console.log(`[Sitemap ${name}] ✅ ${urlCount} URLs en ${duration}ms`);
+export function logSitemapSuccess(
+  name: string,
+  urlCount: number,
+  duration: number,
+): void {
+  logger.log(`[Sitemap ${name}] ✅ ${urlCount} URLs en ${duration}ms`);
 }

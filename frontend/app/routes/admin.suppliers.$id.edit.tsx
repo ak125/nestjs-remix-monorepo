@@ -4,4 +4,10 @@
  * ✅ Redirige vers le composant de formulaire unifié
  */
 
-export { default, loader } from './admin.suppliers';
+import { type MetaFunction } from "@remix-run/node";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Modifier Fournisseur - Admin");
+
+export { default, loader } from "./admin.suppliers";

@@ -9,7 +9,11 @@
  * - Mode Pro avec analytics
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -41,6 +45,10 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Gammes Avancées");
 
 interface ProductRange {
   id: string;
@@ -127,7 +135,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     if (rangesResponse.ok) {
       const realRanges = await rangesResponse.json();
-      console.log(
+      logger.log(
         `🎯 ${realRanges.length} gammes récupérées pour filtrage avancé`,
       );
 
@@ -247,7 +255,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       enhanced,
     });
   } catch (error) {
-    console.error("❌ Erreur loader products.ranges.advanced:", error);
+    logger.error("❌ Erreur loader products.ranges.advanced:", error);
 
     return json<RangesAdvancedData>({
       user: { id: "error", name: "Erreur", level: 1, role: "commercial" },

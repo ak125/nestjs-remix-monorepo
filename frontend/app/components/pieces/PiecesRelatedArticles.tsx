@@ -1,9 +1,9 @@
 /**
  * 📚 Section Articles Liés pour Route Pièces
- * 
+ *
  * Affiche les articles de blog/conseils liés à la gamme et au véhicule.
  * Ces articles sont générés par generateRelatedArticles() dans pieces-route.utils.ts
- * 
+ *
  * Fonctionnalités SEO:
  * - Liens internes vers le blog pour maillage de contenu
  * - Textes d'ancrage pertinents pour la gamme
@@ -11,11 +11,11 @@
  * - Tracking des clics et impressions
  */
 
-import { Link } from '@remix-run/react';
-import { BookOpen, Clock, ArrowRight, Newspaper } from 'lucide-react';
-import { useEffect } from 'react';
-import { useSeoLinkTracking } from '../../hooks/useSeoLinkTracking';
-import { type BlogArticle } from '../../types/pieces-route.types';
+import { Link } from "@remix-run/react";
+import { BookOpen, Clock, ArrowRight, Newspaper } from "lucide-react";
+import { useEffect, memo } from "react";
+import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
+import { type BlogArticle } from "../../types/pieces-route.types";
 
 interface PiecesRelatedArticlesProps {
   articles: BlogArticle[];
@@ -26,17 +26,17 @@ interface PiecesRelatedArticlesProps {
 /**
  * Section Articles Conseils avec design moderne
  */
-export function PiecesRelatedArticles({ 
-  articles, 
-  gammeName = 'pièces',
-  vehicleName 
+export const PiecesRelatedArticles = memo(function PiecesRelatedArticles({
+  articles,
+  gammeName = "pièces",
+  vehicleName,
 }: PiecesRelatedArticlesProps) {
   const { trackClick, trackImpression } = useSeoLinkTracking();
 
   // Track les impressions au montage (doit être avant le return conditionnel)
   useEffect(() => {
     if (articles && articles.length > 0) {
-      trackImpression('RelatedArticles', articles.length);
+      trackImpression("RelatedArticles", articles.length);
     }
   }, [articles, trackImpression]);
 
@@ -48,12 +48,12 @@ export function PiecesRelatedArticles({
   // Handler pour tracker les clics avec ancres SEO enrichies
   const handleArticleClick = (article: BlogArticle) => {
     // Ancre enrichie avec contexte gamme/véhicule
-    const seoAnchor = vehicleName 
+    const seoAnchor = vehicleName
       ? `${article.title} - Guide ${gammeName} ${vehicleName}`
       : `${article.title} - Conseils ${gammeName}`;
-    trackClick('RelatedArticles', `/blog-pieces-auto/article/${article.slug}`, {
+    trackClick("RelatedArticles", `/blog-pieces-auto/article/${article.slug}`, {
       anchorText: seoAnchor,
-      position: 'content'
+      position: "content",
     });
   };
 
@@ -68,7 +68,8 @@ export function PiecesRelatedArticles({
           Articles & Conseils {gammeName}
         </h2>
         <p className="text-sm text-blue-700 mt-1 ml-12">
-          {articles.length} article{articles.length > 1 ? 's' : ''} pour vous aider
+          {articles.length} article{articles.length > 1 ? "s" : ""} pour vous
+          aider
           {vehicleName && ` avec votre ${vehicleName}`}
         </p>
       </div>
@@ -77,7 +78,7 @@ export function PiecesRelatedArticles({
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {articles.map((article, index) => (
-            <article 
+            <article
               key={article.id}
               className="group relative bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden"
             >
@@ -123,9 +124,9 @@ export function PiecesRelatedArticles({
                     {article.date && (
                       <span className="flex items-center gap-1">
                         <Newspaper className="w-3.5 h-3.5" />
-                        {new Date(article.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short'
+                        {new Date(article.date).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "short",
                         })}
                       </span>
                     )}
@@ -144,7 +145,7 @@ export function PiecesRelatedArticles({
               </div>
 
               {/* Overlay lien sur toute la carte - Ancre SEO enrichie */}
-              <Link 
+              <Link
                 to={`/blog-pieces-auto/article/${article.slug}`}
                 className="absolute inset-0"
                 aria-label={`Guide complet: ${article.title} - Conseils ${gammeName}`}
@@ -170,6 +171,6 @@ export function PiecesRelatedArticles({
       </div>
     </section>
   );
-}
+});
 
 export default PiecesRelatedArticles;

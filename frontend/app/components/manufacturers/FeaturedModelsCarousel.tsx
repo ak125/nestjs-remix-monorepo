@@ -1,13 +1,13 @@
 /**
  * 🚗 CAROUSEL MODÈLES POPULAIRES
- * 
+ *
  * Composant pour afficher les modèles les plus consultés
  * Réplique la section PHP "Modèles populaires"
  */
 
 import { Link } from "@remix-run/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { VehicleImage } from "../ui/ResponsiveImage";
@@ -40,7 +40,7 @@ interface FeaturedModelsCarouselProps {
   intervalMs?: number;
 }
 
-export function FeaturedModelsCarousel({
+export const FeaturedModelsCarousel = memo(function FeaturedModelsCarousel({
   models,
   autoplay = true,
   intervalMs = 5000,
@@ -181,4 +181,4 @@ export function FeaturedModelsCarousel({
       )}
     </div>
   );
-}
+});

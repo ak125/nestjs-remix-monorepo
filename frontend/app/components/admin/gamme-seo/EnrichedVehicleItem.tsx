@@ -1,8 +1,10 @@
 import { Copy, ExternalLink } from "lucide-react";
+import { memo } from "react";
+import { type VLevelItem } from "./types";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { type EnrichedVehicleType } from "~/hooks/useVehicleEnrichment";
-import { type VLevelItem } from "./types";
+import { logger } from "~/utils/logger";
 
 interface EnrichedVehicleItemProps {
   item: VLevelItem;
@@ -16,7 +18,7 @@ interface EnrichedVehicleItemProps {
  * Format enrichi: #520 — RENAULT MEGANE III — 1.5 dCi — 95 ch — 2013–2015 — Diesel
  * Fallback: brand model variant #type_id
  */
-export function EnrichedVehicleItem({
+export const EnrichedVehicleItem = memo(function EnrichedVehicleItem({
   item,
   enrichment,
   showActions = true,
@@ -27,7 +29,7 @@ export function EnrichedVehicleItem({
       try {
         await navigator.clipboard.writeText(String(id));
       } catch (e) {
-        console.error("Failed to copy ID:", e);
+        logger.error("Failed to copy ID:", e);
       }
     }
   };
@@ -160,39 +162,44 @@ export function EnrichedVehicleItem({
       )}
     </div>
   );
-}
+});
 
 /**
  * Composant compact pour afficher juste l'essentiel
  */
-export function EnrichedVehicleItemCompact({
-  item,
-  enrichment,
-}: EnrichedVehicleItemProps) {
-  if (!enrichment) {
+export const EnrichedVehicleItemCompact = memo(
+  function EnrichedVehicleItemCompact({
+    item,
+    enrichment,
+  }: EnrichedVehicleItemProps) {
+    if (!enrichment) {
+      return (
+        <span className="text-sm text-muted-foreground">
+          {[item.brand, item.model_name, item.variant_name]
+            .filter(Boolean)
+            .join(" ")}
+          {item.type_id && ` #${item.type_id}`}
+        </span>
+      );
+    }
+
     return (
-      <span className="text-sm text-muted-foreground">
-        {[item.brand, item.model_name, item.variant_name]
-          .filter(Boolean)
-          .join(" ")}
-        {item.type_id && ` #${item.type_id}`}
+      <span className="text-sm">
+        <span className="font-mono text-xs text-muted-foreground">
+          #{enrichment.type_id}
+        </span>{" "}
+        <span className="font-semibold uppercase">{enrichment.make}</span>{" "}
+        <span>{enrichment.generation || enrichment.model}</span>
+        {enrichment.engine && enrichment.engine !== "N/A" && (
+          <span className="text-muted-foreground"> {enrichment.engine}</span>
+        )}
+        {enrichment.power_hp && (
+          <span className="text-muted-foreground">
+            {" "}
+            {enrichment.power_hp}ch
+          </span>
+        )}
       </span>
     );
-  }
-
-  return (
-    <span className="text-sm">
-      <span className="font-mono text-xs text-muted-foreground">
-        #{enrichment.type_id}
-      </span>{" "}
-      <span className="font-semibold uppercase">{enrichment.make}</span>{" "}
-      <span>{enrichment.generation || enrichment.model}</span>
-      {enrichment.engine && enrichment.engine !== "N/A" && (
-        <span className="text-muted-foreground"> {enrichment.engine}</span>
-      )}
-      {enrichment.power_hp && (
-        <span className="text-muted-foreground"> {enrichment.power_hp}ch</span>
-      )}
-    </span>
-  );
-}
+  },
+);

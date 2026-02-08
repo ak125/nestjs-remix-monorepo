@@ -4,6 +4,7 @@ import {
   json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import {
   Form,
@@ -38,6 +39,11 @@ import {
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Contenu SEO - Admin");
 
 interface R4Draft {
   id: number;
@@ -100,7 +106,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Content] Erreur:", error);
+    logger.error("[SEO Content] Erreur:", error);
     return json({
       r4Drafts: [],
       r5Drafts: [],
@@ -229,7 +235,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         return json({ success: false, message: "Action inconnue" });
     }
   } catch (error) {
-    console.error("[SEO Content Action] Erreur:", error);
+    logger.error("[SEO Content Action] Erreur:", error);
     return json({
       success: false,
       message: error instanceof Error ? error.message : "Erreur",

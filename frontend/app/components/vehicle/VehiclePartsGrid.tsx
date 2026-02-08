@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Button } from "~/components/ui/button";
 import { type VehicleData } from "~/types/vehicle.types";
 
@@ -21,7 +21,7 @@ interface VehiclePartsGridProps {
   loading?: boolean;
 }
 
-export function VehiclePartsGrid({
+export const VehiclePartsGrid = memo(function VehiclePartsGrid({
   vehicle,
   parts = [],
   loading = false,
@@ -224,4 +224,4 @@ export function VehiclePartsGrid({
       )}
     </div>
   );
-}
+});

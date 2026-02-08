@@ -1,6 +1,6 @@
 /**
  * 📦 Product Hover Card - Preview rapide produit au survol
- * 
+ *
  * Affiche un aperçu riche au hover avec:
  * - Image produit
  * - Nom + référence
@@ -10,16 +10,23 @@
  * - Lien vers fiche produit
  */
 
-import { Link } from '@remix-run/react';
-import { ExternalLink, Package, ShoppingCart, Star, TrendingUp } from 'lucide-react';
+import { Link } from "@remix-run/react";
+import {
+  ExternalLink,
+  Package,
+  ShoppingCart,
+  Star,
+  TrendingUp,
+} from "lucide-react";
+import { memo } from "react";
 
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from '../ui/hover-card';
+} from "../ui/hover-card";
 
 interface ProductPreview {
   id: string;
@@ -42,31 +49,36 @@ interface ProductHoverCardProps {
   showViewButton?: boolean;
 }
 
-export function ProductHoverCard({ 
-  product, 
+export const ProductHoverCard = memo(function ProductHoverCard({
+  product,
   children,
-  showViewButton = true
+  showViewButton = true,
 }: ProductHoverCardProps) {
   // Calculer le pourcentage de réduction
-  const discountPercent = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const discountPercent = product.originalPrice
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+      )
     : 0;
 
   // Déterminer le badge de stock
   const getStockBadge = (stock: number) => {
-    if (stock === 0) return { label: 'Rupture', variant: 'destructive' as const };
-    if (stock < 5) return { label: 'Stock faible', variant: 'secondary' as const };
-    if (stock >= 50) return { label: 'En stock', variant: 'success' as const };
-    return { label: `${stock} disponible${stock > 1 ? 's' : ''}`, variant: 'outline' as const };
+    if (stock === 0)
+      return { label: "Rupture", variant: "destructive" as const };
+    if (stock < 5)
+      return { label: "Stock faible", variant: "secondary" as const };
+    if (stock >= 50) return { label: "En stock", variant: "success" as const };
+    return {
+      label: `${stock} disponible${stock > 1 ? "s" : ""}`,
+      variant: "outline" as const,
+    };
   };
 
   const stockBadge = getStockBadge(product.stock);
 
   return (
     <HoverCard openDelay={300} closeDelay={100}>
-      <HoverCardTrigger asChild>
-        {children}
-      </HoverCardTrigger>
+      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent className="w-80" align="start">
         <div className="space-y-3">
           {/* Image produit */}
@@ -91,9 +103,13 @@ export function ProductHoverCard({
 
           {/* Nom et référence */}
           <div>
-            <h4 className="font-semibold text-sm leading-tight">{product.name}</h4>
+            <h4 className="font-semibold text-sm leading-tight">
+              {product.name}
+            </h4>
             {product.reference && (
-              <p className="text-xs text-muted-foreground mt-1">Réf: {product.reference}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Réf: {product.reference}
+              </p>
             )}
             {product.category && (
               <Badge variant="outline" className="mt-2 text-xs">
@@ -104,7 +120,9 @@ export function ProductHoverCard({
 
           {/* Prix */}
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-blue-600">{product.price.toFixed(2)}€</span>
+            <span className="text-2xl font-bold text-blue-600">
+              {product.price.toFixed(2)}€
+            </span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-sm text-muted-foreground line-through">
                 {product.originalPrice.toFixed(2)}€
@@ -139,8 +157,8 @@ export function ProductHoverCard({
                         key={i}
                         className={`w-3 h-3 ${
                           i < Math.floor(product.rating!)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
                         }`}
                       />
                     ))}
@@ -148,7 +166,9 @@ export function ProductHoverCard({
                   <span className="font-medium">
                     {product.rating.toFixed(1)}
                     {product.reviewsCount && (
-                      <span className="text-muted-foreground ml-1">({product.reviewsCount})</span>
+                      <span className="text-muted-foreground ml-1">
+                        ({product.reviewsCount})
+                      </span>
                     )}
                   </span>
                 </div>
@@ -159,7 +179,9 @@ export function ProductHoverCard({
             {discountPercent > 0 && (
               <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 p-2 rounded">
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span className="font-medium">Offre spéciale -{discountPercent}%</span>
+                <span className="font-medium">
+                  Offre spéciale -{discountPercent}%
+                </span>
               </div>
             )}
           </div>
@@ -180,4 +202,4 @@ export function ProductHoverCard({
       </HoverCardContent>
     </HoverCard>
   );
-}
+});

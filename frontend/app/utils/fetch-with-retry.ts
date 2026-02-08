@@ -1,9 +1,11 @@
+import { logger } from "~/utils/logger";
+
 /**
  * 🛡️ FETCH WITH RETRY - Utilitaire pour des requêtes réseau robustes
- * 
+ *
  * Évite les faux 410/404 en cas d'erreur réseau temporaire
  * en implémentant des retries avec backoff exponentiel.
- * 
+ *
  * @version 1.0.0
  * @since 2025-12-05
  */
@@ -20,7 +22,7 @@ export interface FetchWithRetryOptions {
   /** Headers additionnels */
   headers?: Record<string, string>;
   /** Méthode HTTP */
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   /** Corps de la requête (sera JSON.stringify si objet) */
   body?: any;
   /** Callback pour logger les retries */
@@ -37,24 +39,24 @@ export interface FetchWithRetryResult<T> {
 
 /**
  * Effectue un fetch avec retry automatique et backoff exponentiel
- * 
+ *
  * @example
  * ```ts
  * const result = await fetchWithRetry<ApiResponse>(
  *   'http://localhost:3000/api/data',
  *   { maxRetries: 3, timeout: 10000 }
  * );
- * 
+ *
  * if (result.success) {
  *   console.log(result.data);
  * } else {
- *   console.error(result.error);
+ *   logger.error(result.error);
  * }
  * ```
  */
 export async function fetchWithRetry<T = any>(
   url: string,
-  options: FetchWithRetryOptions = {}
+  options: FetchWithRetryOptions = {},
 ): Promise<FetchWithRetryResult<T>> {
   const {
     maxRetries = 3,
@@ -62,9 +64,9 @@ export async function fetchWithRetry<T = any>(
     initialDelay = 500,
     backoffMultiplier = 2,
     headers = {},
-    method = 'GET',
+    method = "GET",
     body,
-    onRetry
+    onRetry,
   } = options;
 
   const startTime = Date.now();
@@ -73,7 +75,7 @@ export async function fetchWithRetry<T = any>(
 
   while (attempts < maxRetries) {
     attempts++;
-    
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -81,14 +83,15 @@ export async function fetchWithRetry<T = any>(
       const fetchOptions: RequestInit = {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          ...headers
+          "Content-Type": "application/json",
+          ...headers,
         },
-        signal: controller.signal
+        signal: controller.signal,
       };
 
-      if (body && method !== 'GET') {
-        fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+      if (body && method !== "GET") {
+        fetchOptions.body =
+          typeof body === "string" ? body : JSON.stringify(body);
       }
 
       const response = await fetch(url, fetchOptions);
@@ -99,23 +102,22 @@ export async function fetchWithRetry<T = any>(
       }
 
       const data = await response.json();
-      
+
       return {
         success: true,
         data,
         attempts,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
-
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       // Log le retry
-      console.warn(
+      logger.warn(
         `⚠️ [FETCH-RETRY] Tentative ${attempts}/${maxRetries} échouée pour ${url}:`,
-        lastError.message
+        lastError.message,
       );
-      
+
       // Callback personnalisé
       if (onRetry) {
         onRetry(attempts, lastError);
@@ -124,25 +126,25 @@ export async function fetchWithRetry<T = any>(
       // Si c'est la dernière tentative, ne pas attendre
       if (attempts < maxRetries) {
         const delay = initialDelay * Math.pow(backoffMultiplier, attempts - 1);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
   return {
     success: false,
-    error: lastError?.message || 'Erreur inconnue après plusieurs tentatives',
+    error: lastError?.message || "Erreur inconnue après plusieurs tentatives",
     attempts,
-    duration: Date.now() - startTime
+    duration: Date.now() - startTime,
   };
 }
 
 /**
  * Version qui throw une Response 503 en cas d'échec
  * Idéale pour les loaders Remix qui doivent retourner une erreur HTTP
- * 
+ *
  * @throws {Response} 503 Service Unavailable si toutes les tentatives échouent
- * 
+ *
  * @example
  * ```ts
  * // Dans un loader Remix
@@ -155,29 +157,29 @@ export async function fetchWithRetry<T = any>(
  */
 export async function fetchWithRetryOrThrow503<T = any>(
   url: string,
-  options: FetchWithRetryOptions = {}
+  options: FetchWithRetryOptions = {},
 ): Promise<T> {
   const result = await fetchWithRetry<T>(url, options);
-  
+
   if (!result.success) {
-    console.error(
+    logger.error(
       `❌ [FETCH-RETRY] Échec définitif après ${result.attempts} tentatives pour ${url}`,
-      `(${result.duration}ms)`
+      `(${result.duration}ms)`,
     );
-    
+
     throw new Response(
-      'Service temporairement indisponible. Veuillez réessayer dans quelques instants.',
+      "Service temporairement indisponible. Veuillez réessayer dans quelques instants.",
       {
         status: 503,
-        statusText: 'Service Unavailable',
+        statusText: "Service Unavailable",
         headers: {
-          'Retry-After': '30',
-          'Cache-Control': 'no-cache, no-store'
-        }
-      }
+          "Retry-After": "30",
+          "Cache-Control": "no-cache, no-store",
+        },
+      },
     );
   }
-  
+
   return result.data!;
 }
 
@@ -187,12 +189,12 @@ export async function fetchWithRetryOrThrow503<T = any>(
 export async function postWithRetry<T = any>(
   url: string,
   body: any,
-  options: Omit<FetchWithRetryOptions, 'method' | 'body'> = {}
+  options: Omit<FetchWithRetryOptions, "method" | "body"> = {},
 ): Promise<FetchWithRetryResult<T>> {
   return fetchWithRetry<T>(url, {
     ...options,
-    method: 'POST',
-    body
+    method: "POST",
+    body,
   });
 }
 
@@ -202,11 +204,11 @@ export async function postWithRetry<T = any>(
 export async function postWithRetryOrThrow503<T = any>(
   url: string,
   body: any,
-  options: Omit<FetchWithRetryOptions, 'method' | 'body'> = {}
+  options: Omit<FetchWithRetryOptions, "method" | "body"> = {},
 ): Promise<T> {
   return fetchWithRetryOrThrow503<T>(url, {
     ...options,
-    method: 'POST',
-    body
+    method: "POST",
+    body,
   });
 }

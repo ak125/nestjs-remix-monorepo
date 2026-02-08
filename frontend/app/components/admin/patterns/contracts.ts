@@ -8,6 +8,7 @@
  */
 
 import { z } from "zod";
+import { logger } from "~/utils/logger";
 
 // ============================================
 // STATUS TYPES
@@ -205,7 +206,7 @@ export function validateProps<T>(
   if (process.env.NODE_ENV === "development") {
     const result = schema.safeParse(props);
     if (!result.success) {
-      console.error(`[${componentName}] Invalid props:`, result.error.format());
+      logger.error(`[${componentName}] Invalid props:`, result.error.format());
       // En dev, on throw pour attraper les erreurs tôt
       throw new Error(
         `[${componentName}] Invalid props: ${result.error.message}`,
@@ -228,7 +229,7 @@ export function validatePropsSafe<T>(
   if (process.env.NODE_ENV === "development") {
     const result = schema.safeParse(props);
     if (!result.success) {
-      console.warn(
+      logger.warn(
         `[${componentName}] Invalid props (continuing anyway):`,
         result.error.format(),
       );

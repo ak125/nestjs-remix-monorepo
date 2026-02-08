@@ -2,27 +2,35 @@
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import { 
-  Shield, 
-  CheckCircle, 
-  Users, 
-  Settings, 
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import {
+  Shield,
+  CheckCircle,
+  Users,
+  Settings,
   Activity,
   Database,
   TrendingUp,
   Server,
   MonitorSpeaker,
-  Award
-} from 'lucide-react';
-import { Alert } from '~/components/ui';
-import { Badge } from '~/components/ui/badge';
+  Award,
+} from "lucide-react";
+import { Alert } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Vue Systeme - Admin");
 
 // Simuler les données système (en production, venir du backend)
 interface SystemOverview {
   auth: {
-    status: 'optimal' | 'warning' | 'error';
+    status: "optimal" | "warning" | "error";
     activeUsers: number;
     activeSessions: number;
     failedLogins: number;
@@ -53,31 +61,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // En production, récupérer les vraies métriques
   const systemData: SystemOverview = {
     auth: {
-      status: 'optimal',
+      status: "optimal",
       activeUsers: 1247,
       activeSessions: 892,
       failedLogins: 3,
-      cacheHitRate: 94.7
+      cacheHitRate: 94.7,
     },
     permissions: {
       modules: 7,
       roles: 9,
       checksPerHour: 15420,
-      averageResponseTime: 12
+      averageResponseTime: 12,
     },
     performance: {
-      uptime: '7d 14h 23m',
+      uptime: "7d 14h 23m",
       memoryUsage: 67.3,
       cpuUsage: 23.8,
       redisConnections: 45,
-      dbQueries: 2847
+      dbQueries: 2847,
     },
     routes: {
       modern: 24,
       legacy: 12,
       optimized: 18,
-      coverage: 87.5
-    }
+      coverage: 87.5,
+    },
   };
 
   return json({ systemData });
@@ -100,7 +108,7 @@ export default function SystemOverview() {
               </p>
             </div>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur px-6 py-3 rounded-lg">
             <div className="flex items-center gap-2 text-green-300">
               <CheckCircle className="h-5 w-5" />
@@ -120,27 +128,39 @@ export default function SystemOverview() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Shield className="h-8 w-8 text-green-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Authentification</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Authentification
+              </h2>
             </div>
-            <Alert intent="success">{systemData.auth.status.toUpperCase()}</Alert>
+            <Alert intent="success">
+              {systemData.auth.status.toUpperCase()}
+            </Alert>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Utilisateurs actifs</span>
-              <span className="font-semibold">{systemData.auth.activeUsers.toLocaleString()}</span>
+              <span className="font-semibold">
+                {systemData.auth.activeUsers.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Sessions actives</span>
-              <span className="font-semibold">{systemData.auth.activeSessions.toLocaleString()}</span>
+              <span className="font-semibold">
+                {systemData.auth.activeSessions.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Tentatives échouées</span>
-              <span className="font-semibold text-red-600">{systemData.auth.failedLogins}</span>
+              <span className="font-semibold text-red-600">
+                {systemData.auth.failedLogins}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Cache hit rate</span>
-              <span className="font-semibold text-green-600">{systemData.auth.cacheHitRate}%</span>
+              <span className="font-semibold text-green-600">
+                {systemData.auth.cacheHitRate}%
+              </span>
             </div>
           </div>
         </div>
@@ -150,27 +170,37 @@ export default function SystemOverview() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Permissions</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Permissions
+              </h2>
             </div>
             <Alert intent="info">OPTIMISÉ</Alert>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Modules actifs</span>
-              <span className="font-semibold">{systemData.permissions.modules}</span>
+              <span className="font-semibold">
+                {systemData.permissions.modules}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Niveaux (1-9)</span>
-              <span className="font-semibold">{systemData.permissions.roles}</span>
+              <span className="font-semibold">
+                {systemData.permissions.roles}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Vérifications/h</span>
-              <span className="font-semibold">{systemData.permissions.checksPerHour.toLocaleString()}</span>
+              <span className="font-semibold">
+                {systemData.permissions.checksPerHour.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Temps de réponse</span>
-              <span className="font-semibold text-green-600">{systemData.permissions.averageResponseTime}ms</span>
+              <span className="font-semibold text-green-600">
+                {systemData.permissions.averageResponseTime}ms
+              </span>
             </div>
           </div>
         </div>
@@ -180,27 +210,42 @@ export default function SystemOverview() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Activity className="h-8 w-8 text-purple-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Performance
+              </h2>
             </div>
-            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="purple">EXCELLENT</Badge>
+            <Badge
+              className="px-2 py-1 rounded text-sm font-medium"
+              variant="purple"
+            >
+              EXCELLENT
+            </Badge>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Mémoire utilisée</span>
-              <span className="font-semibold">{systemData.performance.memoryUsage}%</span>
+              <span className="font-semibold">
+                {systemData.performance.memoryUsage}%
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">CPU</span>
-              <span className="font-semibold">{systemData.performance.cpuUsage}%</span>
+              <span className="font-semibold">
+                {systemData.performance.cpuUsage}%
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Redis connexions</span>
-              <span className="font-semibold">{systemData.performance.redisConnections}</span>
+              <span className="font-semibold">
+                {systemData.performance.redisConnections}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Requêtes DB</span>
-              <span className="font-semibold">{systemData.performance.dbQueries.toLocaleString()}</span>
+              <span className="font-semibold">
+                {systemData.performance.dbQueries.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
@@ -212,25 +257,38 @@ export default function SystemOverview() {
               <Settings className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">Routes</h2>
             </div>
-            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">{systemData.routes.coverage}% COVERAGE</Badge>
+            <Badge
+              className="px-2 py-1 rounded text-sm font-medium"
+              variant="orange"
+            >
+              {systemData.routes.coverage}% COVERAGE
+            </Badge>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Modernes</span>
-              <span className="font-semibold text-green-600">{systemData.routes.modern}</span>
+              <span className="font-semibold text-green-600">
+                {systemData.routes.modern}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Legacy</span>
-              <span className="font-semibold text-orange-600">{systemData.routes.legacy}</span>
+              <span className="font-semibold text-orange-600">
+                {systemData.routes.legacy}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Optimisées</span>
-              <span className="font-semibold text-blue-600">{systemData.routes.optimized}</span>
+              <span className="font-semibold text-blue-600">
+                {systemData.routes.optimized}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Couverture</span>
-              <span className="font-semibold">{systemData.routes.coverage}%</span>
+              <span className="font-semibold">
+                {systemData.routes.coverage}%
+              </span>
             </div>
           </div>
         </div>
@@ -244,28 +302,32 @@ export default function SystemOverview() {
             <Server className="h-5 w-5" />
             Système d'Authentification Optimisé
           </h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
-                <h3 className="font-medium text-gray-900">AuthService Modernisé</h3>
+                <h3 className="font-medium text-gray-900">
+                  AuthService Modernisé
+                </h3>
                 <p className="text-sm text-gray-600">
                   800+ lignes avec cache Redis, JWT, sessions sécurisées
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
-                <h3 className="font-medium text-gray-900">Permissions Granulaires</h3>
+                <h3 className="font-medium text-gray-900">
+                  Permissions Granulaires
+                </h3>
                 <p className="text-sm text-gray-600">
                   7 modules, 9 niveaux, vérifications temps réel
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
@@ -275,7 +337,7 @@ export default function SystemOverview() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
@@ -294,7 +356,7 @@ export default function SystemOverview() {
             <Award className="h-5 w-5" />
             "Vérifier existant et utiliser le meilleur"
           </h2>
-          
+
           <div className="space-y-4">
             <div className="bg-success/5 p-4 rounded-lg">
               <h3 className="font-medium text-green-900 mb-2">✅ Réussites</h3>
@@ -305,9 +367,11 @@ export default function SystemOverview() {
                 <li>• Architecture centralisée maintenue</li>
               </ul>
             </div>
-            
+
             <div className="bg-primary/5 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">🚀 Optimisations</h3>
+              <h3 className="font-medium text-blue-900 mb-2">
+                🚀 Optimisations
+              </h3>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Service Remix adaptatif créé</li>
                 <li>• API endpoints bulk optimisés</li>
@@ -315,9 +379,11 @@ export default function SystemOverview() {
                 <li>• Logging automatique activé</li>
               </ul>
             </div>
-            
+
             <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="font-medium text-purple-900 mb-2">🎯 Routes Modernisées</h3>
+              <h3 className="font-medium text-purple-900 mb-2">
+                🎯 Routes Modernisées
+              </h3>
               <ul className="text-sm text-purple-700 space-y-1">
                 <li>• _index.tsx - Landing e-commerce</li>
                 <li>• admin.checkout-ab-test - Analytics</li>
@@ -335,9 +401,9 @@ export default function SystemOverview() {
           <Database className="h-5 w-5" />
           API Endpoints Optimisés
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-<Alert className="p-4 rounded-lg" variant="success">
+          <Alert className="p-4 rounded-lg" variant="success">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-green-900">Module Access</span>
               <Alert intent="success">OPTIMAL</Alert>
@@ -345,29 +411,39 @@ export default function SystemOverview() {
             <p className="text-sm text-green-700">POST /auth/module-access</p>
             <p className="text-xs text-green-600 mt-1">Réponse: 12ms moyenne</p>
           </Alert>
-          
-<Alert className="p-4 rounded-lg" variant="info">
+
+          <Alert className="p-4 rounded-lg" variant="info">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-blue-900">Bulk Check</span>
               <Alert intent="info">EFFICIENT</Alert>
             </div>
-            <p className="text-sm text-blue-700">POST /auth/bulk-module-access</p>
+            <p className="text-sm text-blue-700">
+              POST /auth/bulk-module-access
+            </p>
             <p className="text-xs text-blue-600 mt-1">90% moins de requêtes</p>
           </Alert>
-          
-<Alert className="p-4 rounded-lg" variant="default">
+
+          <Alert className="p-4 rounded-lg" variant="default">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-purple-900">User Permissions</span>
-              <Badge className="px-2 py-1 rounded text-xs" variant="purple">CACHED</Badge>
+              <span className="font-medium text-purple-900">
+                User Permissions
+              </span>
+              <Badge className="px-2 py-1 rounded text-xs" variant="purple">
+                CACHED
+              </Badge>
             </div>
-            <p className="text-sm text-purple-700">GET /auth/user-permissions/:id</p>
+            <p className="text-sm text-purple-700">
+              GET /auth/user-permissions/:id
+            </p>
             <p className="text-xs text-purple-600 mt-1">Cache hit: 94.7%</p>
           </Alert>
-          
-<Alert className="p-4 rounded-lg" variant="warning">
+
+          <Alert className="p-4 rounded-lg" variant="warning">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-orange-900">Access Log</span>
-              <Badge className="px-2 py-1 rounded text-xs" variant="orange">AUTO</Badge>
+              <Badge className="px-2 py-1 rounded text-xs" variant="orange">
+                AUTO
+              </Badge>
             </div>
             <p className="text-sm text-orange-700">POST /auth/log-access</p>
             <p className="text-xs text-orange-600 mt-1">Logging transparent</p>
@@ -381,7 +457,7 @@ export default function SystemOverview() {
           <TrendingUp className="h-5 w-5" />
           Prochaines Étapes
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <h3 className="font-medium text-gray-800">🔧 Optimisations</h3>
@@ -391,7 +467,7 @@ export default function SystemOverview() {
               <li>• Ajouter métriques avancées</li>
             </ul>
           </div>
-          
+
           <div className="space-y-2">
             <h3 className="font-medium text-gray-800">📊 Monitoring</h3>
             <ul className="text-sm text-gray-600 space-y-1">
@@ -400,7 +476,7 @@ export default function SystemOverview() {
               <li>• Analytics utilisateur avancées</li>
             </ul>
           </div>
-          
+
           <div className="space-y-2">
             <h3 className="font-medium text-gray-800">🚀 Évolution</h3>
             <ul className="text-sm text-gray-600 space-y-1">

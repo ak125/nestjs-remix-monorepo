@@ -3,7 +3,8 @@
  * Gère la modal de recherche par référence et la recherche générale
  */
 
-import { useState } from 'react';
+import { useState } from "react";
+import { logger } from "~/utils/logger";
 
 export function useSearchState() {
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -14,9 +15,9 @@ export function useSearchState() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
+
     setIsSearching(true);
-    console.log("Search query:", searchQuery);
+    logger.log("Search query:", searchQuery);
     window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
   };
 
@@ -37,15 +38,15 @@ export function useSearchState() {
     searchReference,
     searchQuery,
     isSearching,
-    
+
     // Setters
     setShowSearchBar,
     setSearchReference,
     setSearchQuery,
-    
+
     // Handlers
     handleSearch,
     handleReferenceSearch,
-    closeSearchBar
+    closeSearchBar,
   };
 }

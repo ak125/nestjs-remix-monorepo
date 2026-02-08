@@ -48,6 +48,7 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -234,7 +235,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       enhanced,
     });
   } catch (error) {
-    console.error("Product detail loading error:", error);
+    logger.error("Product detail loading error:", error);
 
     if (error instanceof Response) {
       throw error;

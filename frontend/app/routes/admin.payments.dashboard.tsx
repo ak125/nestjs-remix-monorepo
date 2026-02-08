@@ -1,4 +1,8 @@
-import { type LoaderFunctionArgs, json } from "@remix-run/node";
+import {
+  type LoaderFunctionArgs,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import {
   Clock,
@@ -23,6 +27,11 @@ import {
   type PaymentStats,
   PaymentStatus,
 } from "../types/payment";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Tableau de Bord Paiements - Admin");
 
 interface PayboxMonitoring {
   summary: {
@@ -71,12 +80,12 @@ interface LoaderData {
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  console.log("🔧 DEBUG - Payments dashboard loader started");
+  logger.log("🔧 DEBUG - Payments dashboard loader started");
 
   await requireAdmin({ context });
 
   try {
-    console.log("🔧 DEBUG - Admin auth passed, fetching payments...");
+    logger.log("🔧 DEBUG - Admin auth passed, fetching payments...");
 
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -109,13 +118,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         payboxHealth = healthData.data;
       }
 
-      console.log("🔧 DEBUG - Paybox data loaded:", {
+      logger.log("🔧 DEBUG - Paybox data loaded:", {
         monitoringLoaded: !!payboxMonitoring,
         healthLoaded: !!payboxHealth,
         payboxStatus: payboxHealth?.status,
       });
     } catch (error) {
-      console.error("⚠️ Paybox monitoring unavailable:", error);
+      logger.error("⚠️ Paybox monitoring unavailable:", error);
     }
 
     const [paymentsResult, stats] = await Promise.all([
@@ -123,7 +132,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       getPaymentStats(),
     ]);
 
-    console.log("🔧 DEBUG - Payments loaded:", {
+    logger.log("🔧 DEBUG - Payments loaded:", {
       paymentCount: paymentsResult.payments.length,
       totalPayments: paymentsResult.pagination.total,
       statsRevenue: stats.totalRevenue,
@@ -137,7 +146,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       payboxHealth,
     });
   } catch (error) {
-    console.error("❌ Error loading admin payments:", error);
+    logger.error("❌ Error loading admin payments:", error);
     return json<LoaderData>({
       payments: [],
       stats: {
@@ -247,7 +256,7 @@ export default function AdminPaymentsDashboard() {
         minute: "2-digit",
       }).format(date);
     } catch (error) {
-      console.error("Erreur formatage date:", dateString, error);
+      logger.error("Erreur formatage date:", dateString, error);
       return "Date invalide";
     }
   };

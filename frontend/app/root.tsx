@@ -43,6 +43,7 @@ import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
+import { logger } from "~/utils/logger";
 // @ts-ignore
 
 // URL Google Fonts (non-bloquant via preload)
@@ -123,7 +124,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const [user, cart] = await Promise.all([
     getOptionalUser({ context }),
     getCart(request).catch((err) => {
-      console.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
+      logger.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
       return null;
     }),
   ]);
@@ -139,7 +140,7 @@ export const useOptionalUser = () => {
 
   if (!data) {
     // Retourner null au lieu de lancer une erreur
-    console.warn("Root loader was not run - returning null user");
+    logger.warn("Root loader was not run - returning null user");
     return null;
   }
   return data.user;
@@ -296,7 +297,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
     const handleCartUpdated = () => {
       // Ignorer si une revalidation est déjà en cours
       if (isRevalidating) {
-        console.log("🛑 [root] cart:updated ignoré (revalidation en cours)");
+        logger.log("🛑 [root] cart:updated ignoré (revalidation en cours)");
         return;
       }
 
@@ -304,7 +305,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         clearTimeout(debounceTimer);
       }
       debounceTimer = setTimeout(() => {
-        console.log("🔄 [root] cart:updated → revalidate");
+        logger.log("🔄 [root] cart:updated → revalidate");
         isRevalidating = true;
         revalidator.revalidate();
         // Reset le flag après 5 secondes

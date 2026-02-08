@@ -1,18 +1,19 @@
 // 📁 frontend/app/components/home/FamilyGammeBento.tsx
 // 🎨 Design Bento moderne pour le catalogue de familles
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import {
   hierarchyApi,
   type FamilyWithGammes,
   type HierarchyStats,
 } from "../../services/api/hierarchy.api";
+import { logger } from "~/utils/logger";
 
 interface FamilyGammeBentoProps {
   className?: string;
 }
 
-export default function FamilyGammeBento({
+const FamilyGammeBento = memo(function FamilyGammeBento({
   className = "",
 }: FamilyGammeBentoProps) {
   const [families, setFamilies] = useState<FamilyWithGammes[]>([]);
@@ -31,7 +32,7 @@ export default function FamilyGammeBento({
         setFamilies(data.families);
         setStats(data.stats);
       } catch (error) {
-        console.error("Erreur chargement hiérarchie:", error);
+        logger.error("Erreur chargement hiérarchie:", error);
       } finally {
         setLoading(false);
       }
@@ -225,4 +226,6 @@ export default function FamilyGammeBento({
       </div>
     </div>
   );
-}
+});
+
+export default FamilyGammeBento;

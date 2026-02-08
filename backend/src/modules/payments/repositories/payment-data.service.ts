@@ -688,6 +688,7 @@ export class PaymentDataService extends SupabaseBaseService {
     ord_total_ttc: string;
     ord_is_pay: string;
     ord_cst_id: string;
+    ord_date: string;
   } | null> {
     try {
       const resolvedId = await this.resolveOrderId(orderId);
@@ -700,7 +701,7 @@ export class PaymentDataService extends SupabaseBaseService {
 
       const { data: order, error } = await this.supabase
         .from(TABLES.xtr_order)
-        .select('ord_id, ord_total_ttc, ord_is_pay, ord_cst_id')
+        .select('ord_id, ord_total_ttc, ord_is_pay, ord_cst_id, ord_date')
         .eq('ord_id', resolvedId)
         .single();
 

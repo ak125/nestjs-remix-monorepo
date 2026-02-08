@@ -5,12 +5,28 @@
  * Route: /admin/suppliers/:id
  */
 
-import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import { toast } from "sonner";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const supplierName = data?.supplier?.name;
+  return createNoIndexMeta(
+    supplierName
+      ? `${supplierName} - Fournisseur - Admin`
+      : "Fournisseur - Admin",
+  );
+};
 
 // Types pour les données du fournisseur
 interface SupplierDetail {
@@ -63,7 +79,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
   }
 
   try {
-    console.log("[SupplierDetail] Récupération fournisseur ID:", supplierId);
+    logger.log("[SupplierDetail] Récupération fournisseur ID:", supplierId);
 
     // Appel direct à l'API backend - route details
     const apiUrl = `http://127.0.0.1:3000/api/suppliers/details/${supplierId}`;
@@ -82,7 +98,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     }
 
     const supplierData = await response.json();
-    console.log("[SupplierDetail] Données reçues:", supplierData);
+    logger.log("[SupplierDetail] Données reçues:", supplierData);
 
     // Extraire les données du wrapper API
     const supplier_raw = supplierData.data || supplierData;
@@ -112,7 +128,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 
     return json<SupplierDetailData>({ supplier });
   } catch (error: any) {
-    console.error("[SupplierDetail] Erreur:", error);
+    logger.error("[SupplierDetail] Erreur:", error);
     return json<SupplierDetailData>({
       supplier: null,
       error: `Erreur lors de la récupération: ${error?.message || "Erreur inconnue"}`,
@@ -527,7 +543,7 @@ export async function action({
 
     return json({ error: "Action non reconnue" }, { status: 400 });
   } catch (error: any) {
-    console.error("[SupplierDetail Action] Erreur:", error);
+    logger.error("[SupplierDetail Action] Erreur:", error);
     return json(
       { error: error?.message || "Erreur inconnue" },
       { status: 500 },

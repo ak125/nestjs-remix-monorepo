@@ -1,10 +1,10 @@
 /**
  * 📢 CTA SIMPLE TEMPLATE
- * 
+ *
  * Template pour call-to-action simple et efficace
  */
 
-import React from 'react';
+import React, { memo } from "react";
 
 interface CTASimpleProps {
   title: string;
@@ -17,19 +17,17 @@ interface CTASimpleProps {
   sectionName: string;
 }
 
-export const CTASimple: React.FC<CTASimpleProps> = ({
+export const CTASimple: React.FC<CTASimpleProps> = memo(function CTASimple({
   title,
   subtitle,
   action,
-}) => {
+}) {
   return (
     <div className="cta-simple">
       <div className="container mx-auto px-4 py-16">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl text-white text-center py-16 px-8">
           {/* Titre */}
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {title}
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
 
           {/* Sous-titre */}
           {subtitle && (
@@ -51,4 +49,4 @@ export const CTASimple: React.FC<CTASimpleProps> = ({
       </div>
     </div>
   );
-};
+});

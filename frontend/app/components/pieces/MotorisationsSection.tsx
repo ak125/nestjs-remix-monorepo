@@ -6,7 +6,7 @@ import {
   ChevronUp,
   TrendingUp,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 
@@ -35,7 +35,7 @@ interface MotorisationsSectionProps {
 // Limite d'affichage par défaut (SEO: éviter dilution)
 const VISIBLE_LIMIT = 6;
 
-export default function MotorisationsSection({
+const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
   familleColor = "from-blue-950 via-indigo-900 to-purple-900",
   familleName = "pièces",
@@ -228,4 +228,6 @@ export default function MotorisationsSection({
       </div>
     </section>
   );
-}
+});
+
+export default MotorisationsSection;

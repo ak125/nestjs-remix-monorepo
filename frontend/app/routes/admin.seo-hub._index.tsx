@@ -12,6 +12,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
@@ -41,6 +42,8 @@ import {
 } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface DashboardKpis {
   status: "HEALTHY" | "WARNING" | "CRITICAL";
@@ -82,6 +85,8 @@ interface Alert {
   timestamp: string;
 }
 
+export const meta: MetaFunction = () => createNoIndexMeta("SEO Hub - Admin");
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -105,7 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       error: dashboardData?.success === false ? dashboardData.error : null,
     });
   } catch (error) {
-    console.error("[SEO Hub Index] Loader error:", error);
+    logger.error("[SEO Hub Index] Loader error:", error);
     return json({
       dashboard: null,
       alerts: [],

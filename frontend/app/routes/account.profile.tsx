@@ -20,6 +20,7 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mon profil | AutoMecanik" },
@@ -90,7 +91,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         });
       }
     } catch (apiError) {
-      console.warn("API profile fetch failed, using default:", apiError);
+      logger.warn("API profile fetch failed, using default:", apiError);
     }
 
     // Retourner le profil par défaut si l'API échoue
@@ -103,7 +104,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur chargement profil:", error);
+    logger.error("Erreur chargement profil:", error);
     throw new Response("Erreur chargement profil", { status: 500 });
   }
 };

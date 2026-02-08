@@ -1,22 +1,34 @@
-import { useState } from 'react';
-import { useAiContent } from '~/hooks/useAiContent';
+import { memo, useState } from "react";
+import { useAiContent } from "~/hooks/useAiContent";
+import { logger } from "~/utils/logger";
 
 interface AiContentGeneratorProps {
   onContentGenerated?: (content: string) => void;
-  initialType?: 'product_description' | 'seo_meta' | 'marketing_copy' | 'blog_article';
+  initialType?:
+    | "product_description"
+    | "seo_meta"
+    | "marketing_copy"
+    | "blog_article";
   className?: string;
 }
 
-export function AiContentGenerator({
+export const AiContentGenerator = memo(function AiContentGenerator({
   onContentGenerated,
-  initialType = 'product_description',
-  className = '',
+  initialType = "product_description",
+  className = "",
 }: AiContentGeneratorProps) {
   const { generateContent, isLoading, error, clearError } = useAiContent();
-  
+
   const [contentType, setContentType] = useState(initialType);
-  const [prompt, setPrompt] = useState('');
-  const [tone, setTone] = useState<'professional' | 'casual' | 'friendly' | 'technical' | 'persuasive' | 'informative'>('professional');
+  const [prompt, setPrompt] = useState("");
+  const [tone, setTone] = useState<
+    | "professional"
+    | "casual"
+    | "friendly"
+    | "technical"
+    | "persuasive"
+    | "informative"
+  >("professional");
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
@@ -26,7 +38,7 @@ export function AiContentGenerator({
     if (!prompt.trim()) return;
 
     clearError();
-    
+
     try {
       const result = await generateContent({
         type: contentType,
@@ -38,12 +50,12 @@ export function AiContentGenerator({
       });
 
       setGeneratedContent(result.content);
-      
+
       if (onContentGenerated) {
         onContentGenerated(result.content);
       }
     } catch (err) {
-      console.error('Error generating content:', err);
+      logger.error("Error generating content:", err);
     }
   };
 
@@ -55,7 +67,7 @@ export function AiContentGenerator({
 
   const handleClear = () => {
     setGeneratedContent(null);
-    setPrompt('');
+    setPrompt("");
   };
 
   return (
@@ -125,7 +137,7 @@ export function AiContentGenerator({
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="text-sm text-blue-600 hover:text-blue-800 font-medium"
         >
-          {showAdvanced ? '− Masquer' : '+ Afficher'} les options avancées
+          {showAdvanced ? "− Masquer" : "+ Afficher"} les options avancées
         </button>
 
         {showAdvanced && (
@@ -182,9 +194,9 @@ export function AiContentGenerator({
           disabled={isLoading || !prompt.trim()}
           className="flex-1 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? 'Génération en cours...' : 'Générer le contenu'}
+          {isLoading ? "Génération en cours..." : "Générer le contenu"}
         </button>
-        
+
         {generatedContent && (
           <button
             onClick={handleClear}
@@ -209,10 +221,10 @@ export function AiContentGenerator({
               📋 Copier
             </button>
           </div>
-          
+
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="prose prose-sm max-w-none">
-              {generatedContent.split('\n').map((line, i) => (
+              {generatedContent.split("\n").map((line, i) => (
                 <p key={i} className="mb-2 text-gray-800">
                   {line}
                 </p>
@@ -223,4 +235,4 @@ export function AiContentGenerator({
       )}
     </div>
   );
-}
+});

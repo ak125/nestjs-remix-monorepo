@@ -22,7 +22,7 @@ export class ErrorService {
     redirectUrl?: string;
     statusCode?: number;
     suggestions?: string[];
-    context?: any;
+    context?: Record<string, unknown>;
   }> {
     try {
       const path = request.path;
@@ -32,8 +32,9 @@ export class ErrorService {
 
       if (redirectRule) {
         // Couche de compatibilité intelligente pour les interfaces
-        const redirectUrl = this.getRedirectDestination(redirectRule);
-        const statusCode = this.getRedirectStatusCode(redirectRule);
+        const redirect = redirectRule as unknown as Record<string, unknown>;
+        const redirectUrl = this.getRedirectDestination(redirect);
+        const statusCode = this.getRedirectStatusCode(redirect);
 
         this.logger.log(`Redirection trouvée: ${path} -> ${redirectUrl}`);
         return {
@@ -89,8 +90,9 @@ export class ErrorService {
 
       if (redirectRule) {
         // Couche de compatibilité intelligente pour les interfaces
-        const redirectUrl = this.getRedirectDestination(redirectRule);
-        const statusCode = this.getRedirectStatusCode(redirectRule);
+        const redirect = redirectRule as unknown as Record<string, unknown>;
+        const redirectUrl = this.getRedirectDestination(redirect);
+        const statusCode = this.getRedirectStatusCode(redirect);
 
         this.logger.log(`Redirection 410 trouvée: ${path} -> ${redirectUrl}`);
         return {
@@ -226,7 +228,10 @@ export class ErrorService {
   /**
    * Enregistre une erreur 404 dans les logs avec contexte enrichi
    */
-  async log404Error(request: Request, context?: any): Promise<void> {
+  async log404Error(
+    request: Request,
+    context?: Record<string, unknown>,
+  ): Promise<void> {
     try {
       const errorMetadata = {
         error_code: '404',
@@ -347,14 +352,20 @@ export class ErrorService {
     try {
       const severity = this.determineSeverity(error);
 
-      const errorMetadata: any = {
+      const errorMetadata = {
         error_code: error.name || 'UnknownError',
         error_message: error.message,
         stack_trace: error.stack,
-        severity,
+        severity: severity as 'low' | 'medium' | 'high' | 'critical',
         environment: process.env.NODE_ENV || 'development',
         service_name: 'nestjs-remix-monorepo',
         additional_context: context,
+        request_url: undefined as string | undefined,
+        request_method: undefined as string | undefined,
+        request_headers: undefined as Record<string, unknown> | undefined,
+        request_body: undefined as Record<string, unknown> | null | undefined,
+        user_agent: undefined as string | undefined,
+        ip_address: undefined as string | undefined,
       };
 
       if (request) {
@@ -573,7 +584,9 @@ export class ErrorService {
   /**
    * Nettoie les headers sensibles
    */
-  private sanitizeHeaders(headers: any): Record<string, any> {
+  private sanitizeHeaders(
+    headers: Record<string, unknown>,
+  ): Record<string, unknown> {
     const sanitized = { ...headers };
     const sensitiveHeaders = [
       'authorization',
@@ -594,7 +607,7 @@ export class ErrorService {
   /**
    * Nettoie le body des requêtes sensibles
    */
-  private sanitizeBody(body: any): any {
+  private sanitizeBody(body: Record<string, unknown>): Record<string, unknown> {
     if (!body) return null;
 
     const sanitized = { ...body };
@@ -607,17 +620,19 @@ export class ErrorService {
       'ssn',
     ];
 
-    const sanitizeObject = (obj: any): any => {
+    const sanitizeObject = (
+      obj: Record<string, unknown>,
+    ): Record<string, unknown> => {
       if (typeof obj !== 'object' || obj === null) return obj;
 
-      const result: any = Array.isArray(obj) ? [] : {};
+      const result: Record<string, unknown> = {};
 
       for (const [key, value] of Object.entries(obj)) {
         const lowerKey = key.toLowerCase();
         if (sensitiveFields.some((field) => lowerKey.includes(field))) {
           result[key] = '[REDACTED]';
         } else if (typeof value === 'object') {
-          result[key] = sanitizeObject(value);
+          result[key] = sanitizeObject(value as Record<string, unknown>);
         } else {
           result[key] = value;
         }
@@ -668,27 +683,27 @@ export class ErrorService {
    * Couche de compatibilité intelligente pour extraire la destination
    * Fonctionne avec RedirectEntry ET RedirectRule
    */
-  private getRedirectDestination(redirect: any): string {
+  private getRedirectDestination(redirect: Record<string, unknown>): string {
     // RedirectEntry interface (code utilisateur original)
     if (redirect.destination) {
-      return redirect.destination;
+      return redirect.destination as string;
     }
     // RedirectRule interface (nouvelle architecture)
     if (redirect.destination_path) {
-      return redirect.destination_path;
+      return redirect.destination_path as string;
     }
     // Fallback sécurisé
-    return redirect.target || redirect.to || '/';
+    return (redirect.target as string) || (redirect.to as string) || '/';
   }
 
   /**
    * Couche de compatibilité intelligente pour extraire le code de statut
    * Fonctionne avec RedirectEntry ET RedirectRule
    */
-  private getRedirectStatusCode(redirect: any): number {
+  private getRedirectStatusCode(redirect: Record<string, unknown>): number {
     // RedirectRule interface (nouvelle architecture)
     if (redirect.status_code) {
-      return redirect.status_code;
+      return redirect.status_code as number;
     }
     // RedirectEntry interface (code utilisateur original)
     if (redirect.permanent === true) {
@@ -704,7 +719,7 @@ export class ErrorService {
   /**
    * Type guard pour détecter le type de redirection
    */
-  private isRedirectEntry(redirect: any): boolean {
+  private isRedirectEntry(redirect: Record<string, unknown>): boolean {
     return (
       redirect &&
       typeof redirect.source === 'string' &&
@@ -716,7 +731,7 @@ export class ErrorService {
   /**
    * Type guard pour détecter RedirectRule
    */
-  private isRedirectRule(redirect: any): boolean {
-    return redirect && redirect.destination_path && redirect.status_code;
+  private isRedirectRule(redirect: Record<string, unknown>): boolean {
+    return !!(redirect && redirect.destination_path && redirect.status_code);
   }
 }

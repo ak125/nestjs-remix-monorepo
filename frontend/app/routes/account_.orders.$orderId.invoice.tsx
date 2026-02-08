@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -11,6 +15,10 @@ import { requireAuth } from "../auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Facture");
 
 // Types
 interface InvoiceAddress {
@@ -418,7 +426,7 @@ export default function OrderInvoice() {
                     if (error instanceof Response) {
                       throw error;
                     }
-                    console.error("Payment error:", error);
+                    logger.error("Payment error:", error);
                     toast.error("Erreur de paiement", {
                       description:
                         "Une erreur est survenue lors de l'initialisation",

@@ -16,6 +16,7 @@ import {
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "SEO Dashboard - Admin" },
@@ -86,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       filters: { startDate, endDate },
     });
   } catch (error) {
-    console.error("Error fetching SEO metrics:", error);
+    logger.error("Error fetching SEO metrics:", error);
     return json({
       report: getMockReport(startDate, endDate),
       error:

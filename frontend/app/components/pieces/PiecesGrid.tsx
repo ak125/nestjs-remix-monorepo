@@ -1,6 +1,6 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
 // ✅ Images WebP optimisées via imgproxy
-import React, { useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { ImageOptimizer } from "~/utils/image-optimizer";
@@ -35,13 +35,13 @@ interface PiecesGridProps {
   onFilterChange: (key: string, value: string) => void;
 }
 
-export const PiecesGrid: React.FC<PiecesGridProps> = ({
+export const PiecesGrid = memo(function PiecesGrid({
   pieces,
   gamme,
   vehicle,
   filters,
   onFilterChange,
-}) => {
+}: PiecesGridProps) {
   // Filtres et tri
   const filteredAndSortedPieces = useMemo(() => {
     let filtered = pieces;
@@ -143,7 +143,7 @@ export const PiecesGrid: React.FC<PiecesGridProps> = ({
       )}
     </div>
   );
-};
+});
 
 // Composant Filtres
 const PiecesFilters: React.FC<{

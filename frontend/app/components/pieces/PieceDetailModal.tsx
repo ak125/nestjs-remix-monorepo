@@ -6,7 +6,7 @@
  */
 
 import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useCart } from "../../hooks/useCart";
@@ -20,6 +20,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
+import { logger } from "~/utils/logger";
 
 // Helper pour les images rack via imgproxy
 const getRackImageUrl = (path: string, width: number = 400) => {
@@ -69,7 +70,7 @@ interface PieceDetail {
   }>;
 }
 
-export function PieceDetailModal({
+export const PieceDetailModal = memo(function PieceDetailModal({
   pieceId,
   onClose,
   vehicleMarque,
@@ -119,7 +120,7 @@ export function PieceDetailModal({
         });
         setSelectedImage(pieceData.image || "");
       } catch (err) {
-        console.error("❌ Erreur chargement pièce:", err);
+        logger.error("❌ Erreur chargement pièce:", err);
         setError("Impossible de charger les détails de la pièce");
       } finally {
         setLoading(false);
@@ -177,7 +178,7 @@ export function PieceDetailModal({
       await addToCart(piece.id, 1);
       // Modal reste ouvert, le panier side s'ouvre automatiquement via useCart
     } catch (error) {
-      console.error("❌ Erreur ajout panier:", error);
+      logger.error("❌ Erreur ajout panier:", error);
     } finally {
       setAddingToCart(false);
     }
@@ -657,4 +658,4 @@ export function PieceDetailModal({
     </div>,
     document.body,
   );
-}
+});

@@ -70,11 +70,12 @@ export class SitemapUnifiedController {
           })),
         },
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Sitemap generation error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Sitemap generation error: ${message}`);
       return {
         success: false,
-        message: `Error: ${error.message}`,
+        message: `Error: ${message}`,
       };
     }
   }

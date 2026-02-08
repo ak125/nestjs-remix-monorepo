@@ -3,6 +3,8 @@
  * Gestion des avis clients, évaluations et modération
  */
 
+import { logger } from "~/utils/logger";
+
 export interface ReviewFormData {
   customer_id: string;
   product_id?: string;
@@ -26,7 +28,7 @@ export interface ReviewRecord {
   anonymous: boolean;
   verified_purchase: boolean;
   photos?: string[];
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
   helpful_count: number;
@@ -45,11 +47,11 @@ export interface ReviewStats {
   rejected_reviews: number;
   average_rating: number;
   rating_distribution: {
-    '5': number;
-    '4': number;
-    '3': number;
-    '2': number;
-    '1': number;
+    "5": number;
+    "4": number;
+    "3": number;
+    "2": number;
+    "1": number;
   };
 }
 
@@ -58,10 +60,10 @@ export interface ReviewStats {
  */
 export async function createReview(
   reviewData: ReviewFormData,
-  request?: Request
+  request?: Request,
 ): Promise<ReviewRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -89,7 +91,7 @@ export async function createReview(
     const result = await response.json();
     return result.review;
   } catch (error) {
-    console.error("Erreur lors de la création de l'avis:", error);
+    logger.error("Erreur lors de la création de l'avis:", error);
     throw error;
   }
 }
@@ -99,10 +101,10 @@ export async function createReview(
  */
 export async function getReview(
   reviewId: string,
-  request?: Request
+  request?: Request,
 ): Promise<ReviewRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -115,10 +117,13 @@ export async function getReview(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/review/${reviewId}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/review/${reviewId}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -127,7 +132,7 @@ export async function getReview(
     const review = await response.json();
     return review;
   } catch (error) {
-    console.error("Erreur lors de la récupération de l'avis:", error);
+    logger.error("Erreur lors de la récupération de l'avis:", error);
     throw error;
   }
 }
@@ -139,11 +144,11 @@ export async function getAllReviews(
   options: {
     page?: number;
     limit?: number;
-    status?: 'pending' | 'approved' | 'rejected' | 'all';
+    status?: "pending" | "approved" | "rejected" | "all";
     product_id?: string;
     rating?: number;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   reviews: ReviewRecord[];
   total: number;
@@ -151,23 +156,23 @@ export async function getAllReviews(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
       limit: (options.limit || 10).toString(),
     });
 
-    if (options.status && options.status !== 'all') {
-      searchParams.append('status', options.status);
+    if (options.status && options.status !== "all") {
+      searchParams.append("status", options.status);
     }
 
     if (options.product_id) {
-      searchParams.append('product_id', options.product_id);
+      searchParams.append("product_id", options.product_id);
     }
 
     if (options.rating) {
-      searchParams.append('rating', options.rating.toString());
+      searchParams.append("rating", options.rating.toString());
     }
 
     const headers: HeadersInit = {
@@ -181,10 +186,13 @@ export async function getAllReviews(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -193,7 +201,7 @@ export async function getAllReviews(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des avis:", error);
+    logger.error("Erreur lors de la récupération des avis:", error);
     throw error;
   }
 }
@@ -201,11 +209,9 @@ export async function getAllReviews(
 /**
  * Récupérer les statistiques des avis
  */
-export async function getReviewStats(
-  request?: Request
-): Promise<ReviewStats> {
+export async function getReviewStats(request?: Request): Promise<ReviewStats> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -230,7 +236,7 @@ export async function getReviewStats(
     const stats = await response.json();
     return stats;
   } catch (error) {
-    console.error("Erreur lors de la récupération des statistiques:", error);
+    logger.error("Erreur lors de la récupération des statistiques:", error);
     throw error;
   }
 }
@@ -240,12 +246,12 @@ export async function getReviewStats(
  */
 export async function moderateReview(
   reviewId: string,
-  action: 'approve' | 'reject',
+  action: "approve" | "reject",
   adminResponse?: string,
-  request?: Request
+  request?: Request,
 ): Promise<ReviewRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -259,11 +265,14 @@ export async function moderateReview(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/review/${reviewId}/moderate`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ action, admin_response: adminResponse }),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/review/${reviewId}/moderate`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ action, admin_response: adminResponse }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -272,7 +281,7 @@ export async function moderateReview(
     const result = await response.json();
     return result.review;
   } catch (error) {
-    console.error("Erreur lors de la modération:", error);
+    logger.error("Erreur lors de la modération:", error);
     throw error;
   }
 }
@@ -293,7 +302,7 @@ export async function searchReviews(
     page?: number;
     limit?: number;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   reviews: ReviewRecord[];
   total: number;
@@ -301,7 +310,7 @@ export async function searchReviews(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
@@ -326,10 +335,13 @@ export async function searchReviews(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/search?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/search?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -338,7 +350,7 @@ export async function searchReviews(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la recherche d'avis:", error);
+    logger.error("Erreur lors de la recherche d'avis:", error);
     throw error;
   }
 }
@@ -351,9 +363,9 @@ export async function getProductReviews(
   options: {
     page?: number;
     limit?: number;
-    status?: 'pending' | 'approved' | 'rejected' | 'all';
+    status?: "pending" | "approved" | "rejected" | "all";
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   reviews: ReviewRecord[];
   total: number;
@@ -361,15 +373,15 @@ export async function getProductReviews(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
       limit: (options.limit || 10).toString(),
     });
 
-    if (options.status && options.status !== 'all') {
-      searchParams.append('status', options.status);
+    if (options.status && options.status !== "all") {
+      searchParams.append("status", options.status);
     }
 
     const headers: HeadersInit = {
@@ -383,10 +395,13 @@ export async function getProductReviews(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/product/${productId}?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/product/${productId}?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -395,7 +410,7 @@ export async function getProductReviews(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des avis du produit:", error);
+    logger.error("Erreur lors de la récupération des avis du produit:", error);
     throw error;
   }
 }
@@ -409,7 +424,7 @@ export async function getCustomerReviews(
     page?: number;
     limit?: number;
   } = {},
-  request?: Request
+  request?: Request,
 ): Promise<{
   reviews: ReviewRecord[];
   total: number;
@@ -417,7 +432,7 @@ export async function getCustomerReviews(
   limit: number;
 }> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const searchParams = new URLSearchParams({
       page: (options.page || 1).toString(),
@@ -435,10 +450,13 @@ export async function getCustomerReviews(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/customer/${customerId}?${searchParams}`, {
-      method: "GET",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/customer/${customerId}?${searchParams}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -447,7 +465,7 @@ export async function getCustomerReviews(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erreur lors de la récupération des avis du client:", error);
+    logger.error("Erreur lors de la récupération des avis du client:", error);
     throw error;
   }
 }
@@ -457,7 +475,7 @@ export async function getCustomerReviews(
  */
 export async function getReviewById(
   reviewId: number,
-  request?: Request
+  request?: Request,
 ): Promise<any> {
   return getReview(reviewId.toString(), request);
 }
@@ -467,11 +485,11 @@ export async function getReviewById(
  */
 export async function updateReviewStatus(
   reviewId: number,
-  status: 'pending' | 'approved' | 'rejected',
-  request?: Request
+  status: "pending" | "approved" | "rejected",
+  request?: Request,
 ): Promise<ReviewRecord> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -485,11 +503,14 @@ export async function updateReviewStatus(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/review/${reviewId}/status`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ status }),
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/review/${reviewId}/status`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
@@ -498,7 +519,7 @@ export async function updateReviewStatus(
     const updatedReview = await response.json();
     return updatedReview;
   } catch (error) {
-    console.error("Erreur lors de la mise à jour du statut:", error);
+    logger.error("Erreur lors de la mise à jour du statut:", error);
     throw error;
   }
 }
@@ -508,10 +529,10 @@ export async function updateReviewStatus(
  */
 export async function deleteReview(
   reviewId: number,
-  request?: Request
+  request?: Request,
 ): Promise<void> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  
+
   try {
     const headers: HeadersInit = {
       Accept: "application/json",
@@ -524,16 +545,19 @@ export async function deleteReview(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/reviews/review/${reviewId}`, {
-      method: "DELETE",
-      headers,
-    });
+    const response = await fetch(
+      `${baseUrl}/api/support/reviews/review/${reviewId}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
-    console.error("Erreur lors de la suppression:", error);
+    logger.error("Erreur lors de la suppression:", error);
     throw error;
   }
 }

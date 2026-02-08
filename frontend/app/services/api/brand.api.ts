@@ -29,6 +29,7 @@ import {
   getOptimizedFamilyImageUrl,
 } from "../../utils/image-optimizer";
 import { toBooleanFlag } from "../../utils/type-guards";
+import { logger } from "~/utils/logger";
 
 // Configuration de l'API
 // Les deux tournent sur le port 3000 (Remix proxifie vers NestJS)
@@ -237,7 +238,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] Brand data:", brandId);
+      logger.log("[CACHE HIT] Brand data:", brandId);
       return cached.data;
     }
 
@@ -276,10 +277,10 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] Brand data:", brandId);
+      logger.log("[API CALL] Brand data:", brandId);
       return brandData;
     } catch (error) {
-      console.error("[ERROR] Brand data API:", error);
+      logger.error("[ERROR] Brand data API:", error);
       throw error;
     }
   }
@@ -292,7 +293,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] SEO data:", brandId);
+      logger.log("[CACHE HIT] SEO data:", brandId);
       return cached.data;
     }
 
@@ -317,10 +318,10 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] SEO data:", brandId);
+      logger.log("[API CALL] SEO data:", brandId);
       return seoData;
     } catch (error) {
-      console.warn("[WARNING] SEO data not available:", error);
+      logger.warn("[WARNING] SEO data not available:", error);
       return null;
     }
   }
@@ -336,7 +337,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] Popular vehicles:", brandAlias);
+      logger.log("[CACHE HIT] Popular vehicles:", brandAlias);
       return cached.data;
     }
 
@@ -346,14 +347,14 @@ class BrandApiService {
       );
 
       if (!response.ok) {
-        console.warn(`Popular vehicles API error: ${response.status}`);
+        logger.warn(`Popular vehicles API error: ${response.status}`);
         return [];
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data?.vehicles) {
-        console.warn("No vehicles data in response:", result);
+        logger.warn("No vehicles data in response:", result);
         return [];
       }
 
@@ -383,10 +384,10 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] Popular vehicles:", brandAlias, vehicles.length);
+      logger.log("[API CALL] Popular vehicles:", brandAlias, vehicles.length);
       return vehicles;
     } catch (error) {
-      console.warn("[WARNING] Popular vehicles not available:", error);
+      logger.warn("[WARNING] Popular vehicles not available:", error);
       return [];
     }
   }
@@ -402,7 +403,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] Popular parts:", brandAlias);
+      logger.log("[CACHE HIT] Popular parts:", brandAlias);
       return cached.data;
     }
 
@@ -412,14 +413,14 @@ class BrandApiService {
       );
 
       if (!response.ok) {
-        console.warn(`Popular parts API error: ${response.status}`);
+        logger.warn(`Popular parts API error: ${response.status}`);
         return [];
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data?.parts) {
-        console.warn("No parts data in response:", result);
+        logger.warn("No parts data in response:", result);
         return [];
       }
 
@@ -448,10 +449,10 @@ class BrandApiService {
         ttl: this.calculateTTL("parts"),
       });
 
-      console.log("[API CALL] Popular parts:", brandAlias, parts.length);
+      logger.log("[API CALL] Popular parts:", brandAlias, parts.length);
       return parts;
     } catch (error) {
-      console.error(
+      logger.error(
         "Erreur lors de la récupération des pièces populaires:",
         error,
       );
@@ -467,7 +468,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] Blog content:", brandId);
+      logger.log("[CACHE HIT] Blog content:", brandId);
       return cached.data;
     }
 
@@ -494,10 +495,10 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] Blog content:", brandId);
+      logger.log("[API CALL] Blog content:", brandId);
       return blogData;
     } catch (error) {
-      console.warn("[WARNING] Blog content not available:", error);
+      logger.warn("[WARNING] Blog content not available:", error);
       return null;
     }
   }
@@ -572,7 +573,7 @@ class BrandApiService {
    */
   async getBrandPageData(brandId: number): Promise<BrandPageResponse> {
     try {
-      console.log("[RPC] Fetching brand page data for:", brandId);
+      logger.log("[RPC] Fetching brand page data for:", brandId);
       const startTime = performance.now();
 
       const response = await fetch(
@@ -704,7 +705,7 @@ class BrandApiService {
         },
       };
 
-      console.log("[RPC SUCCESS] Brand page data:", {
+      logger.log("[RPC SUCCESS] Brand page data:", {
         brandId,
         loadTime: `${loadTime.toFixed(0)}ms`,
         cacheHit: result._cache?.hit || false,
@@ -716,7 +717,7 @@ class BrandApiService {
 
       return pageResponse;
     } catch (error) {
-      console.error("[RPC ERROR] Brand page data:", error);
+      logger.error("[RPC ERROR] Brand page data:", error);
 
       // Pas de fallback - retourner l'erreur
       return {
@@ -740,7 +741,7 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] Maillage data:", brandId);
+      logger.log("[CACHE HIT] Maillage data:", brandId);
       return cached.data;
     }
 
@@ -750,14 +751,14 @@ class BrandApiService {
       );
 
       if (!response.ok) {
-        console.warn(`Maillage API error: ${response.status}`);
+        logger.warn(`Maillage API error: ${response.status}`);
         return { related_brands: [], popular_gammes: [] };
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        console.warn("No maillage data in response:", result);
+        logger.warn("No maillage data in response:", result);
         return { related_brands: [], popular_gammes: [] };
       }
 
@@ -775,14 +776,14 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] Maillage data:", brandId, {
+      logger.log("[API CALL] Maillage data:", brandId, {
         relatedBrands: maillageData.related_brands.length,
         popularGammes: maillageData.popular_gammes.length,
       });
 
       return maillageData;
     } catch (error) {
-      console.warn("[WARNING] Maillage data not available:", error);
+      logger.warn("[WARNING] Maillage data not available:", error);
       return { related_brands: [], popular_gammes: [] };
     }
   }
@@ -803,13 +804,13 @@ class BrandApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log("[CACHE HIT] All brands with logos");
+      logger.log("[CACHE HIT] All brands with logos");
       return cached.data;
     }
 
     try {
       const apiUrl = `${API_BASE_URL}/api/brands/brands-logos?limit=${limit}`;
-      console.log("[Brand API] Fetching from:", apiUrl);
+      logger.log("[Brand API] Fetching from:", apiUrl);
       const response = await fetch(apiUrl);
 
       if (!response.ok) {
@@ -817,8 +818,8 @@ class BrandApiService {
       }
 
       const result = await response.json();
-      console.log("[Brand API] Raw result:", result);
-      console.log("[Brand API] Sample brand:", result.data?.[0]);
+      logger.log("[Brand API] Raw result:", result);
+      logger.log("[Brand API] Sample brand:", result.data?.[0]);
       let brands = result.data || [];
 
       // Mapping des données brutes (marque_id, marque_name) vers le format attendu par le frontend
@@ -830,7 +831,7 @@ class BrandApiService {
         display: true,
       }));
 
-      console.log("[Brand API] Formatted brands sample:", brands.slice(0, 2));
+      logger.log("[Brand API] Formatted brands sample:", brands.slice(0, 2));
 
       // Mise en cache (longue durée car données stables)
       const ttl = 60 * 60 * 1000; // 1 heure
@@ -840,10 +841,10 @@ class BrandApiService {
         ttl,
       });
 
-      console.log("[API CALL] All brands with logos:", brands.length);
+      logger.log("[API CALL] All brands with logos:", brands.length);
       return brands;
     } catch (error) {
-      console.error("[ERROR] All brands with logos:", error);
+      logger.error("[ERROR] All brands with logos:", error);
       return [];
     }
   }
@@ -877,7 +878,7 @@ class BrandApiService {
         suggestions: result.data?.suggestions || [],
       };
     } catch (error) {
-      console.error("[ERROR] Mine search:", error);
+      logger.error("[ERROR] Mine search:", error);
 
       return {
         success: false,
@@ -894,7 +895,7 @@ class BrandApiService {
    */
   clearCache(): void {
     this.cache.clear();
-    console.log("[CACHE CLEARED] Brand API cache cleared");
+    logger.log("[CACHE CLEARED] Brand API cache cleared");
   }
 
   /**

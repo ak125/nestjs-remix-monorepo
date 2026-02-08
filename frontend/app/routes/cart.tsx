@@ -47,6 +47,7 @@ import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // Phase 9: PageRole pour analytics
@@ -87,7 +88,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       cleared: cleared === "true",
     });
   } catch (error) {
-    console.error("Erreur lors du chargement du panier:", error);
+    logger.error("Erreur lors du chargement du panier:", error);
     return json({
       cart: {
         items: [],
@@ -364,7 +365,7 @@ function CartItem({
       await onUpdate(item.product_id, newQuantity);
     } catch (error) {
       setCurrentQuantity(oldQuantity);
-      console.error("Erreur mise à jour quantité:", error);
+      logger.error("Erreur mise à jour quantité:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -375,7 +376,7 @@ function CartItem({
     try {
       await onRemove(item.product_id);
     } catch (error) {
-      console.error("Erreur suppression:", error);
+      logger.error("Erreur suppression:", error);
     } finally {
       setIsRemoving(false);
       setShowConfirmDelete(false);
@@ -581,7 +582,7 @@ export default function CartPage() {
         throw new Error("Erreur mise à jour");
       }
     } catch (err) {
-      console.error("Erreur mise à jour quantité:", err);
+      logger.error("Erreur mise à jour quantité:", err);
       showNotification("error", "Erreur lors de la mise à jour");
     } finally {
       setIsProcessing(false);
@@ -607,7 +608,7 @@ export default function CartPage() {
         throw new Error("Erreur suppression");
       }
     } catch (err) {
-      console.error("Erreur suppression:", err);
+      logger.error("Erreur suppression:", err);
       showNotification("error", "Erreur lors de la suppression");
     } finally {
       setIsProcessing(false);
@@ -643,7 +644,7 @@ export default function CartPage() {
         throw new Error("Erreur vidage");
       }
     } catch (err) {
-      console.error("Erreur vidage panier:", err);
+      logger.error("Erreur vidage panier:", err);
       showNotification("error", "Erreur lors du vidage");
     } finally {
       setIsProcessing(false);

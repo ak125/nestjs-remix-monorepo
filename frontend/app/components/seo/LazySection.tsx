@@ -1,12 +1,14 @@
 import {
   Suspense,
   lazy,
+  memo,
   useEffect,
   useRef,
   useState,
   type ComponentType,
   type ReactNode,
 } from "react";
+import { logger } from "~/utils/logger";
 
 /**
  * 🚀 LazySection - Lazy loading avec Intersection Observer
@@ -51,7 +53,7 @@ interface LazySectionProps {
   id?: string;
 }
 
-export function LazySection({
+export const LazySection = memo(function LazySection({
   loader,
   fallback = (
     <div className="flex items-center justify-center p-8">
@@ -116,7 +118,7 @@ export function LazySection({
 
   // Si loader est fourni (lazy import)
   if (!loader) {
-    console.error(
+    logger.error(
       'LazySection: Vous devez fournir soit "loader" soit "children"',
     );
     return null;
@@ -137,7 +139,7 @@ export function LazySection({
       )}
     </div>
   );
-}
+});
 
 /**
  * 🎯 LazySectionSkeleton - Squelette de chargement réutilisable

@@ -26,6 +26,7 @@ import {
 import { getReviewStats } from "../services/api/review.api";
 import { Error404 } from "~/components/errors/Error404";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -106,7 +107,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ratingBreakdown,
     });
   } catch (error) {
-    console.error("Erreur lors du chargement des analytics:", error);
+    logger.error("Erreur lors du chargement des analytics:", error);
     return json<LoaderData>({
       stats: {
         total: 0,

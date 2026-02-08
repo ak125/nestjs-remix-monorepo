@@ -50,7 +50,16 @@ export class StaffController {
   @ApiQuery({ name: 'department', required: false, type: String })
   @ApiQuery({ name: 'isActive', required: false, type: Boolean })
   @ApiQuery({ name: 'search', required: false, type: String })
-  async getAllStaff(@Query() query: any) {
+  async getAllStaff(
+    @Query()
+    query: {
+      page?: string;
+      limit?: string;
+      department?: string;
+      isActive?: string;
+      search?: string;
+    },
+  ) {
     try {
       this.logger.log('GET /api/admin/staff - Récupération liste staff');
 

@@ -83,9 +83,9 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Utilisateur créé via AuthService: ${authUser.id}`);
       return userResponse;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Erreur création utilisateur: ${error?.message || error}`,
+        `Erreur création utilisateur: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error; // Propager l'erreur d'AuthService
     }
@@ -123,8 +123,10 @@ export class UsersService extends SupabaseBaseService {
         `Connexion réussie via AuthService: ${loginResult.user.id}`,
       );
       return response;
-    } catch (error: any) {
-      this.logger.error(`Erreur connexion: ${error?.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Erreur connexion: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error; // Propager l'erreur d'AuthService
     }
   }
@@ -140,9 +142,9 @@ export class UsersService extends SupabaseBaseService {
 
     try {
       return await this.profileService.getProfile(String(userId));
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Erreur récupération profil: ${error?.message || error}`,
+        `Erreur récupération profil: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error; // Propager erreur de ProfileService
     }
@@ -161,9 +163,9 @@ export class UsersService extends SupabaseBaseService {
 
     try {
       return await this.profileService.updateProfile(String(userId), updateDto);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Erreur mise à jour profil: ${error?.message || error}`,
+        `Erreur mise à jour profil: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error; // Propager erreur de ProfileService
     }
@@ -201,13 +203,11 @@ export class UsersService extends SupabaseBaseService {
         hasNextPage: page < Math.ceil(result.total / limit),
         hasPreviousPage: page > 1,
       };
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur récupération utilisateurs: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur récupération utilisateurs: ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || 'Erreur lors de la récupération des utilisateurs',
+        message: errMsg || 'Erreur lors de la récupération des utilisateurs',
       });
     }
   }
@@ -241,13 +241,11 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Utilisateur créé (admin): ${newUser.id}`);
       return newUser;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur création utilisateur (admin): ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur création utilisateur (admin): ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || "Erreur lors de la création de l'utilisateur",
+        message: errMsg || "Erreur lors de la création de l'utilisateur",
       });
     }
   }
@@ -284,13 +282,11 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Utilisateur mis à jour: ${updatedUser.email}`);
       return updatedUser;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur mise à jour utilisateur: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur mise à jour utilisateur: ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || "Erreur lors de la mise à jour de l'utilisateur",
+        message: errMsg || "Erreur lors de la mise à jour de l'utilisateur",
       });
     }
   }
@@ -312,13 +308,11 @@ export class UsersService extends SupabaseBaseService {
       // En pratique, on désactive plutôt que de supprimer
       this.logger.log(`Utilisateur désactivé: ${id}`);
       return true;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur suppression utilisateur: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur suppression utilisateur: ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || "Erreur lors de la suppression de l'utilisateur",
+        message: errMsg || "Erreur lors de la suppression de l'utilisateur",
       });
     }
   }
@@ -355,12 +349,11 @@ export class UsersService extends SupabaseBaseService {
       };
 
       return profile;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur récupération profil utilisateur: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur récupération profil utilisateur: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la récupération du profil',
+        message: errMsg || 'Erreur lors de la récupération du profil',
       });
     }
   }
@@ -382,12 +375,11 @@ export class UsersService extends SupabaseBaseService {
       // En pratique, vérifier l'ancien mot de passe et hasher le nouveau
       this.logger.log(`Mot de passe changé pour: ${id}`);
       return true;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur changement mot de passe: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur changement mot de passe: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors du changement de mot de passe',
+        message: errMsg || 'Erreur lors du changement de mot de passe',
       });
     }
   }
@@ -414,12 +406,11 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Niveau utilisateur mis à jour: ${id} level=${level}`);
       return updatedUser;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur mise à jour niveau: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur mise à jour niveau: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la mise à jour du niveau',
+        message: errMsg || 'Erreur lors de la mise à jour du niveau',
       });
     }
   }
@@ -441,12 +432,11 @@ export class UsersService extends SupabaseBaseService {
       // Désactiver l'utilisateur
       this.logger.log(`Utilisateur désactivé: ${id}`);
       return true;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur désactivation utilisateur: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur désactivation utilisateur: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la désactivation',
+        message: errMsg || 'Erreur lors de la désactivation',
       });
     }
   }
@@ -474,12 +464,11 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Utilisateur réactivé: ${id}`);
       return reactivatedUser;
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur réactivation utilisateur: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur réactivation utilisateur: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la réactivation',
+        message: errMsg || 'Erreur lors de la réactivation',
       });
     }
   }
@@ -539,14 +528,12 @@ export class UsersService extends SupabaseBaseService {
         hasNextPage: page < Math.ceil(total / limit),
         hasPreviousPage: page > 1,
       };
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur récupération utilisateurs actifs: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur récupération utilisateurs actifs: ${errMsg}`);
       throw new OperationFailedException({
         message:
-          error?.message ||
-          'Erreur lors de la récupération des utilisateurs actifs',
+          errMsg || 'Erreur lors de la récupération des utilisateurs actifs',
       });
     }
   }
@@ -625,13 +612,11 @@ export class UsersService extends SupabaseBaseService {
         hasNextPage: page < Math.ceil(total / limit),
         hasPreviousPage: page > 1,
       };
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur recherche utilisateurs: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur recherche utilisateurs: ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || 'Erreur lors de la recherche des utilisateurs',
+        message: errMsg || 'Erreur lors de la recherche des utilisateurs',
       });
     }
   }
@@ -669,8 +654,10 @@ export class UsersService extends SupabaseBaseService {
 
       this.logger.log(`Message créé via MessagesService: ${message.id}`);
       return { success: true, messageId: message.id };
-    } catch (error: any) {
-      this.logger.error(`Erreur création message: ${error?.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Erreur création message: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw error; // Propager l'erreur de MessagesService
     }
   }
@@ -678,7 +665,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Récupérer les messages d'un utilisateur
    */
-  async getUserMessages(userId: number): Promise<any[]> {
+  async getUserMessages(userId: number): Promise<Record<string, unknown>[]> {
     this.logger.log(`UsersService.getUserMessages: ${userId}`);
 
     try {
@@ -704,9 +691,9 @@ export class UsersService extends SupabaseBaseService {
         `Messages récupérés via MessagesService: ${messages.length}`,
       );
       return messages;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Erreur récupération messages: ${error?.message || error}`,
+        `Erreur récupération messages: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error; // Propager l'erreur de MessagesService
     }
@@ -734,13 +721,11 @@ export class UsersService extends SupabaseBaseService {
       // En production, générer un token et envoyer un email
       this.logger.log('Demande de réinitialisation traitée');
       return { success: true, message: 'Lien de réinitialisation envoyé' };
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur demande réinitialisation: ${error?.message || error}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur demande réinitialisation: ${errMsg}`);
       throw new OperationFailedException({
-        message:
-          error?.message || 'Erreur lors de la demande de réinitialisation',
+        message: errMsg || 'Erreur lors de la demande de réinitialisation',
       });
     }
   }
@@ -768,9 +753,9 @@ export class UsersService extends SupabaseBaseService {
 
     try {
       return await this.profileService.findByEmail(email);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Erreur recherche par email: ${error?.message || error}`,
+        `Erreur recherche par email: ${error instanceof Error ? error.message : String(error)}`,
       );
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
@@ -784,8 +769,10 @@ export class UsersService extends SupabaseBaseService {
 
     try {
       return await this.profileService.findById(id);
-    } catch (error: any) {
-      this.logger.error(`Erreur recherche par ID: ${error?.message || error}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Erreur recherche par ID: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
@@ -819,7 +806,19 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Trouver tous les utilisateurs avec pagination
    */
-  async findAll(options: any = {}, currentUser?: any): Promise<any> {
+  async findAll(
+    options: { page?: number; limit?: number } = {},
+    currentUser?: { email?: string; level?: number },
+  ): Promise<{
+    users: Record<string, unknown>[];
+    total: number;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     this.logger.log(
       `[UsersService.findAll] Options: ${JSON.stringify(options)}`,
     );
@@ -902,7 +901,14 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Créer un utilisateur avec validation
    */
-  async createUserWithValidation(userData: any): Promise<any> {
+  async createUserWithValidation(userData: {
+    email: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    phone?: string;
+  }): Promise<UserResponseDto> {
     const registerDto: RegisterDto = {
       email: userData.email,
       password: userData.password,
@@ -917,7 +923,16 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Mettre à jour un utilisateur avec validation
    */
-  async updateUserWithValidation(id: string, userData: any): Promise<any> {
+  async updateUserWithValidation(
+    id: string,
+    userData: {
+      firstName?: string;
+      lastName?: string;
+      name?: string;
+      email?: string;
+      phone?: string;
+    },
+  ): Promise<UserResponseDto> {
     const updateDto: UpdateProfileDto = {
       firstName: userData.firstName || userData.name?.split(' ')[0],
       lastName:
@@ -942,7 +957,10 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Réinitialiser le mot de passe avec token
    */
-  async resetPasswordWithToken(): Promise<any> {
+  async resetPasswordWithToken(): Promise<{
+    success: boolean;
+    message: string;
+  }> {
     // Pour l'instant, retourner un succès simulé
     return {
       success: true,
@@ -962,7 +980,18 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Rechercher les utilisateurs par civilité
    */
-  async findByCivility(civility: string, options: any = {}): Promise<any> {
+  async findByCivility(
+    civility: string,
+    options: { page?: number; limit?: number } = {},
+  ): Promise<{
+    users: Record<string, unknown>[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     this.logger.log(`UsersService.findByCivility: ${civility}`);
 
     try {
@@ -988,10 +1017,11 @@ export class UsersService extends SupabaseBaseService {
           totalPages: 0,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Erreur findByCivility: ${error?.message || error}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur findByCivility: ${errMsg}`);
       throw new OperationFailedException({
-        message: error?.message || 'Erreur lors de la recherche par civilité',
+        message: errMsg || 'Erreur lors de la recherche par civilité',
       });
     }
   }
@@ -1007,12 +1037,12 @@ export class UsersService extends SupabaseBaseService {
       // En production, utiliser Supabase pour mettre à jour last_login
       this.logger.log(`Dernière connexion mise à jour: ${userId}`);
       return true;
-    } catch (error: any) {
-      this.logger.error(`Erreur updateLastLogin: ${error?.message || error}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur updateLastLogin: ${errMsg}`);
       throw new OperationFailedException({
         message:
-          error?.message ||
-          'Erreur lors de la mise à jour de la dernière connexion',
+          errMsg || 'Erreur lors de la mise à jour de la dernière connexion',
       });
     }
   }

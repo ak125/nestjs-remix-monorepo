@@ -26,6 +26,7 @@ import React, { useState, useMemo } from "react";
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -191,7 +192,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       .slice(0, 3);
 
     const endTime = Date.now();
-    console.log(`[PERF] Advice loader completed in ${endTime - startTime}ms`);
+    logger.log(`[PERF] Advice loader completed in ${endTime - startTime}ms`);
 
     return json({
       articles,
@@ -207,7 +208,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       success: true,
     });
   } catch (error) {
-    console.error("[ERROR] Advice loader failed:", error);
+    logger.error("[ERROR] Advice loader failed:", error);
     return json({
       articles: [],
       total: 0,

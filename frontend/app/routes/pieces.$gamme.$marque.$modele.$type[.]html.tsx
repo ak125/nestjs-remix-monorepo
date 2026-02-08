@@ -102,6 +102,7 @@ import {
   buildPiecesBreadcrumbs,
   buildVoirAussiLinks,
 } from "../utils/url-builder.utils";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -162,7 +163,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Debug URL complète
   const url = new URL(request.url);
-  console.log("📍 [LOADER] URL complète:", url.pathname);
+  logger.log("📍 [LOADER] URL complète:", url.pathname);
 
   // 1. Parse des paramètres URL
   const {
@@ -201,7 +202,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   } catch (validationError) {
     // 🛡️ IDs invalides → 301 redirect vers page gamme (SEO optimal)
-    console.warn(
+    logger.warn(
       `⚠️ [LOADER] Validation IDs échouée, redirect 301 vers gamme:`,
       validationError,
     );
@@ -212,7 +213,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Raison: 412 est traité comme 4xx par Google → désindexation
   // 301 préserve le PageRank et guide vers une page indexable
   if (vehicleValidationFailed) {
-    console.log(
+    logger.log(
       `🔄 [301] Validation véhicule échouée, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
     return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
@@ -237,7 +238,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     vehicleIds.typeId,
     INITIAL_PRODUCTS_LIMIT,
   ).catch((err) => {
-    console.error(
+    logger.error(
       `❌ [RM V2] Failed:`,
       err instanceof Error ? err.message : err,
     );
@@ -252,13 +253,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 🔄 SEO: Validation RM V2 - Si échec → 301 redirect vers page gamme
   if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
-    console.log(
+    logger.log(
       `🔄 [301] RM V2 invalide ou 0 produits, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
     return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
   }
 
-  console.log(
+  logger.log(
     `🚀 [RM V2] ${rmV2Response.count} products in ${rmV2Response.duration_ms}ms (cache: ${rmV2Response.cacheHit})`,
   );
 
@@ -856,9 +857,9 @@ export function ErrorBoundary() {
 
   // SSR-safe: Log détaillé de l'erreur uniquement côté client
   useEffect(() => {
-    console.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
-    console.error("🚨 [ERROR BOUNDARY] Type:", typeof error);
-    console.error(
+    logger.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
+    logger.error("🚨 [ERROR BOUNDARY] Type:", typeof error);
+    logger.error(
       "🚨 [ERROR BOUNDARY] Stack:",
       error instanceof Error ? error.stack : "N/A",
     );

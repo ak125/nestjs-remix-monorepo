@@ -1,0 +1,90 @@
+{
+  "name": "ui-os",
+  "displayName": "Automekanik UI Operating System",
+  "description": "Lead Frontend Architect for full UI system governance. Extracts architecture, audits maturity, analyzes inconsistencies, defines target architecture, and produces improvement roadmaps. Mobile-first, e-commerce UX, shadcn/ui focused.",
+  "version": "1.0.0",
+  "triggers": [
+    "/ui-os",
+    "audit ui",
+    "ui architecture",
+    "design system audit",
+    "mobile-first audit"
+  ],
+  "files": [
+    "SKILL.md",
+    "context.md"
+  ],
+  "dataFiles": [
+    "../../scripts/ui-audit/extraction/ui-architecture.map.json",
+    "../../scripts/ui-audit/extraction/design-tokens.observed.json",
+    "../../scripts/ui-audit/extraction/components.inventory.json",
+    "../../scripts/ui-audit/extraction/patterns.ecommerce.json",
+    "../../scripts/ui-audit/extraction/layout.system.map.md",
+    "../../scripts/ui-audit/extraction/responsive.strategy.observed.md"
+  ],
+  "rules": [
+    "../../scripts/ui-audit/rules/hard-rules.ts",
+    "../../scripts/ui-audit/rules/soft-rules.ts"
+  ],
+  "contracts": "../../scripts/ui-audit/contracts.ts",
+  "capabilities": [
+    "extraction",
+    "audit",
+    "analysis",
+    "architecture-design",
+    "roadmap-generation",
+    "multi-breakpoint-preview"
+  ],
+  "phases": [
+    {
+      "id": 1,
+      "name": "Extraction",
+      "status": "completed",
+      "outputs": [
+        "ui-architecture.map.json",
+        "design-tokens.observed.json",
+        "components.inventory.json",
+        "patterns.ecommerce.json",
+        "layout.system.map.md",
+        "responsive.strategy.observed.md"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Audit Système",
+      "status": "pending",
+      "outputs": [
+        "design-system.audit.md",
+        "design-system.score.json"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Analyse Transversale",
+      "status": "pending",
+      "outputs": []
+    },
+    {
+      "id": 4,
+      "name": "Architecture Cible",
+      "status": "pending",
+      "outputs": [
+        "design-system.architecture.target.md"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Plan Amélioration",
+      "status": "pending",
+      "outputs": [
+        "design-system.roadmap.md"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Visuels Multi-Breakpoints",
+      "status": "pending",
+      "outputs": []
+    }
+  ]
+}

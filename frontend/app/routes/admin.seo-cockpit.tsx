@@ -41,6 +41,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "SEO Cockpit | Admin AutoMecanik" },
@@ -128,7 +129,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       error: null,
     });
   } catch (error) {
-    console.error("[SEO Cockpit] Error:", error);
+    logger.error("[SEO Cockpit] Error:", error);
     return json({
       dashboard: null,
       summary: null,

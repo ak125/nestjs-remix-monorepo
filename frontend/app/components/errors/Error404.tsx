@@ -1,8 +1,9 @@
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 import { ErrorSearchBar } from "./ErrorSearchBar";
 import { PopularCategories } from "./PopularCategories";
+import { logger } from "~/utils/logger";
 
 interface Error404Props {
   url?: string;
@@ -12,7 +13,7 @@ interface Error404Props {
   method?: string;
 }
 
-export function Error404({
+export const Error404 = memo(function Error404({
   url,
   suggestions: initialSuggestions,
 }: Error404Props) {
@@ -32,11 +33,11 @@ export function Error404({
   useEffect(() => {
     const meta = document.querySelector('meta[name="robots"]');
     if (meta) {
-      meta.setAttribute('content', 'noindex, follow');
+      meta.setAttribute("content", "noindex, follow");
     } else {
-      const newMeta = document.createElement('meta');
-      newMeta.name = 'robots';
-      newMeta.content = 'noindex, follow';
+      const newMeta = document.createElement("meta");
+      newMeta.name = "robots";
+      newMeta.content = "noindex, follow";
       document.head.appendChild(newMeta);
     }
   }, []);
@@ -55,7 +56,7 @@ export function Error404({
           }
         })
         .catch((error) => {
-          console.error(
+          logger.error(
             "Erreur lors de la récupération des suggestions:",
             error,
           );
@@ -427,4 +428,4 @@ export function Error404({
       </div>
     </div>
   );
-}
+});

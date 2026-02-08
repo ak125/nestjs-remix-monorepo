@@ -1,9 +1,18 @@
-import { type LoaderFunctionArgs, redirect, json } from "@remix-run/node";
+import {
+  type LoaderFunctionArgs,
+  redirect,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { getOptionalUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Administration");
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
@@ -20,7 +29,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       stats = await statsResponse.json();
     }
   } catch (error) {
-    console.log("Erreur récupération stats sidebar:", error);
+    logger.log("Erreur récupération stats sidebar:", error);
   }
 
   return json({ user, stats });

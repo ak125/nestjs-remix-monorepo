@@ -113,10 +113,15 @@ export class CartCoreController {
   })
   async getCartMergeInfo(@Req() req: RequestWithUser) {
     try {
-      const mergeInfo = (req as any).session?.cartMergeInfo;
+      const session = req.session as unknown as
+        | Record<string, unknown>
+        | undefined;
+      const mergeInfo = session?.cartMergeInfo as
+        | { guestItems: number; existingItems: number; timestamp: string }
+        | undefined;
 
-      if (mergeInfo) {
-        delete (req as any).session.cartMergeInfo;
+      if (mergeInfo && session) {
+        delete session.cartMergeInfo;
 
         return {
           merged: true,

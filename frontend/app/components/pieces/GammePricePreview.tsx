@@ -1,4 +1,5 @@
 import { Tag, ShoppingCart, ArrowDown } from "lucide-react";
+import { memo } from "react";
 
 interface PricePreviewProduct {
   piece_id: number;
@@ -63,7 +64,7 @@ function ProductPreviewCard({ product }: { product: PricePreviewProduct }) {
   );
 }
 
-export function GammePricePreview({
+export const GammePricePreview = memo(function GammePricePreview({
   pricePreview,
   gammeName,
 }: GammePricePreviewProps) {
@@ -151,4 +152,4 @@ export function GammePricePreview({
       </div>
     </section>
   );
-}
+});

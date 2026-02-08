@@ -1,6 +1,19 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Badge, Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+  createNoIndexMeta(
+    data?.product?.piece_name
+      ? `${data.product.piece_name} - Admin`
+      : "Produit - Admin",
+  );
 
 interface Product {
   piece_id: number;
@@ -56,7 +69,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Erreur lors du chargement du produit:", error);
+    logger.error("Erreur lors du chargement du produit:", error);
     throw new Response("Erreur lors du chargement du produit", { status: 500 });
   }
 };

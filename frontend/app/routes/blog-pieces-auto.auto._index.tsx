@@ -28,6 +28,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 /* ===========================
    Types
@@ -139,7 +140,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   } catch (e) {
-    console.error("Erreur loader auto:", e);
+    logger.error("Erreur loader auto:", e);
     return json<LoaderData>({
       brands: [],
       popularModels: [],

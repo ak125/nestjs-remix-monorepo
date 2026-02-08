@@ -10,7 +10,7 @@
 
 import { Await } from "@remix-run/react";
 import { ChevronDown, Eye, Package } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useState, memo } from "react";
 
 import { hierarchyApi } from "../../services/api/hierarchy.api";
 
@@ -38,7 +38,7 @@ interface PiecesCatalogueFamilleProps {
   getAnchorText: (index: number) => string;
 }
 
-export function PiecesCatalogueFamille({
+export const PiecesCatalogueFamille = memo(function PiecesCatalogueFamille({
   catalogueMameFamillePromise,
   getAnchorText,
 }: PiecesCatalogueFamilleProps) {
@@ -155,4 +155,4 @@ export function PiecesCatalogueFamille({
       </Await>
     </Suspense>
   );
-}
+});

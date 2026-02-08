@@ -12,6 +12,7 @@
 
 import { Link } from "@remix-run/react";
 import { CheckCircle2, ChevronRight, Phone, Shield } from "lucide-react";
+import { memo } from "react";
 import { Button } from "../ui/button";
 
 interface HomeBottomSectionsProps {
@@ -24,7 +25,7 @@ interface HomeBottomSectionsProps {
   };
 }
 
-export default function HomeBottomSections({
+const HomeBottomSections = memo(function HomeBottomSections({
   newsletter,
 }: HomeBottomSectionsProps) {
   return (
@@ -269,4 +270,6 @@ export default function HomeBottomSections({
       </section>
     </>
   );
-}
+});
+
+export default HomeBottomSections;

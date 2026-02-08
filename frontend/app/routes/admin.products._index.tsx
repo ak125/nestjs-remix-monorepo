@@ -42,6 +42,7 @@ import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Produits | Admin AutoMecanik" },
@@ -82,7 +83,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const limit = url.searchParams.get("limit") || "25";
     const search = url.searchParams.get("search") || "";
 
-    console.log(
+    logger.log(
       `🔄 Produits Admin: Chargement page ${page}, limit ${limit}, search: "${search}"`,
     );
 
@@ -102,7 +103,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
     const statsData = statsResponse.ok ? await statsResponse.json() : null;
 
-    console.log(`✅ Produits chargés: ${productsData.data.length} items`);
+    logger.log(`✅ Produits chargés: ${productsData.data.length} items`);
 
     return json({
       products: productsData,
@@ -110,7 +111,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       searchQuery: search,
     });
   } catch (error) {
-    console.error("❌ Erreur chargement produits:", error);
+    logger.error("❌ Erreur chargement produits:", error);
 
     return json({
       products: {

@@ -1,4 +1,5 @@
 import { type PaymentMethod } from "../types/payment";
+import { logger } from "~/utils/logger";
 
 /**
  * Service côté serveur pour les paiements utilisateur
@@ -28,23 +29,23 @@ export interface PaymentInitializationResult {
  * Initialise un paiement côté serveur
  */
 export async function initializePayment(
-  params: InitializePaymentParams
+  params: InitializePaymentParams,
 ): Promise<PaymentInitializationResult> {
   try {
-    console.log('🔄 Initializing payment:', params);
+    logger.log("🔄 Initializing payment:", params);
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const baseUrl = params.baseUrl; // Utiliser le baseUrl passé en paramètre
-    
+
     // ✅ Normaliser la méthode de paiement en minuscules
     const normalizedMethod = params.paymentMethod.toLowerCase();
-    
+
     const requestBody = {
       orderId: params.orderId,
       userId: params.userId,
       amount: params.amount, // ✅ Phase 7: Montant total incluant consignes
       method: normalizedMethod, // ✅ Utiliser la méthode normalisée
-      currency: 'EUR',
+      currency: "EUR",
       // ✅ Phase 7: Informations consignes
       consigne_total: params.consigneTotal || 0,
       // ✅ Informations client
@@ -56,28 +57,33 @@ export async function initializePayment(
       ipAddress: params.ipAddress,
     };
 
-    console.log('📤 Sending payment request to:', `${backendUrl}/api/payments`);
-    console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-    
+    logger.log("📤 Sending payment request to:", `${backendUrl}/api/payments`);
+    logger.log("📤 Request body:", JSON.stringify(requestBody, null, 2));
+
     const response = await fetch(`${backendUrl}/api/payments`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Internal-Call': 'true',
+        "Content-Type": "application/json",
+        "Internal-Call": "true",
       },
       body: JSON.stringify(requestBody),
     });
 
-    console.log('📥 Payment API response status:', response.status);
+    logger.log("📥 Payment API response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Payment API error response:', errorText);
-      throw new Error(`Payment initialization failed: ${response.statusText} - ${errorText}`);
+      logger.error("❌ Payment API error response:", errorText);
+      throw new Error(
+        `Payment initialization failed: ${response.statusText} - ${errorText}`,
+      );
     }
 
     const paymentData = await response.json();
-    console.log('📥 Payment API response data:', JSON.stringify(paymentData, null, 2));
+    logger.log(
+      "📥 Payment API response data:",
+      JSON.stringify(paymentData, null, 2),
+    );
 
     // Le backend retourne déjà redirectData avec le formulaire
     if (paymentData.data.redirectData) {
@@ -93,11 +99,11 @@ export async function initializePayment(
       redirectUrl: `/checkout/payment/process/${paymentData.data.id}`,
     };
   } catch (error) {
-    console.error('❌ Payment initialization failed:', error);
+    logger.error("❌ Payment initialization failed:", error);
     throw new Error(
       `Échec de l'initialisation du paiement: ${
-        error instanceof Error ? error.message : 'Erreur inconnue'
-      }`
+        error instanceof Error ? error.message : "Erreur inconnue"
+      }`,
     );
   }
 }
@@ -107,24 +113,26 @@ export async function initializePayment(
  */
 export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const response = await fetch(
       `${backendUrl}/api/payments/methods/available`,
       {
         headers: {
-          'Internal-Call': 'true',
+          "Internal-Call": "true",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch payment methods: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch payment methods: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    console.error('❌ Failed to fetch payment methods:', error);
+    logger.error("❌ Failed to fetch payment methods:", error);
     // Fallback aux méthodes par défaut
     return getDefaultPaymentMethods();
   }
@@ -136,26 +144,26 @@ export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
 function getDefaultPaymentMethods(): PaymentMethod[] {
   return [
     {
-      id: 'CYBERPLUS',
-      name: 'Carte bancaire',
-      description: 'Paiement sécurisé par carte bancaire',
-      logo: '/images/cards.png',
+      id: "CYBERPLUS",
+      name: "Carte bancaire",
+      description: "Paiement sécurisé par carte bancaire",
+      logo: "/images/cards.png",
       enabled: true,
       isDefault: true,
     },
     {
-      id: 'PAYPAL',
-      name: 'PayPal',
-      description: 'Paiement via votre compte PayPal',
-      logo: '/images/paypal.png',
+      id: "PAYPAL",
+      name: "PayPal",
+      description: "Paiement via votre compte PayPal",
+      logo: "/images/paypal.png",
       enabled: true,
       isDefault: false,
     },
     {
-      id: 'BANK_TRANSFER',
-      name: 'Virement bancaire',
-      description: 'Paiement par virement (délai 2-3 jours)',
-      logo: '/images/bank-transfer.png',
+      id: "BANK_TRANSFER",
+      name: "Virement bancaire",
+      description: "Paiement par virement (délai 2-3 jours)",
+      logo: "/images/bank-transfer.png",
       enabled: false,
       isDefault: false,
     },
@@ -167,15 +175,12 @@ function getDefaultPaymentMethods(): PaymentMethod[] {
  */
 export async function getPaymentStatus(paymentId: string) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(
-      `${backendUrl}/api/payments/${paymentId}`,
-      {
-        headers: {
-          'Internal-Call': 'true',
-        },
-      }
-    );
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const response = await fetch(`${backendUrl}/api/payments/${paymentId}`, {
+      headers: {
+        "Internal-Call": "true",
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to get payment status: ${response.statusText}`);
@@ -184,7 +189,7 @@ export async function getPaymentStatus(paymentId: string) {
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error('❌ Failed to get payment status:', error);
+    logger.error("❌ Failed to get payment status:", error);
     throw error;
   }
 }
@@ -194,23 +199,23 @@ export async function getPaymentStatus(paymentId: string) {
  */
 export async function handlePaymentReturn(
   paymentId: string,
-  returnData: Record<string, string>
+  returnData: Record<string, string>,
 ) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const response = await fetch(
       `${backendUrl}/api/payments/callback/success`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true',
+          "Content-Type": "application/json",
+          "Internal-Call": "true",
         },
         body: JSON.stringify({
           payment_id: paymentId,
           ...returnData,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -219,7 +224,7 @@ export async function handlePaymentReturn(
 
     return await response.json();
   } catch (error) {
-    console.error('❌ Payment return handling failed:', error);
+    logger.error("❌ Payment return handling failed:", error);
     throw error;
   }
 }
@@ -239,33 +244,35 @@ export async function processPaymentReturn({
 }) {
   try {
     // Utiliser le callback Cyberplus standard
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const response = await fetch(
       `${backendUrl}/api/payments/callback/cyberplus`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Internal-Call': 'true',
+          "Content-Type": "application/json",
+          "Internal-Call": "true",
         },
         body: JSON.stringify({
           vads_trans_id: transactionId,
-          vads_trans_status: status || 'PENDING',
+          vads_trans_status: status || "PENDING",
           ...params,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
       if (response.status === 404) {
         return null;
       }
-      throw new Error(`Payment return processing failed: ${response.statusText}`);
+      throw new Error(
+        `Payment return processing failed: ${response.statusText}`,
+      );
     }
 
     return await response.json();
   } catch (error) {
-    console.error('❌ Payment return processing failed:', error);
+    logger.error("❌ Payment return processing failed:", error);
     throw error;
   }
 }

@@ -35,6 +35,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { logger } from "~/utils/logger";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
 // Types
@@ -269,7 +270,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
           relatedArticles = similarData.data || similarData || [];
         }
       } catch (e) {
-        console.warn("Articles similaires non disponibles");
+        logger.warn("Articles similaires non disponibles");
       }
     }
 
@@ -279,13 +280,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     // Gestion spécifique des timeouts - retourne 503 au lieu de 500
     if (error instanceof Error && error.name === "AbortError") {
-      console.error("Timeout fetching article:", slug);
+      logger.error("Timeout fetching article:", slug);
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
     }
 
-    console.error("Erreur chargement article:", error);
+    logger.error("Erreur chargement article:", error);
     return json<LoaderData>(
       {
         article: null,

@@ -30,6 +30,7 @@ import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -231,7 +232,7 @@ export async function action({
       ticket: result.ticket,
     });
   } catch (error) {
-    console.error("Erreur lors de la création du ticket:", error);
+    logger.error("Erreur lors de la création du ticket:", error);
     return json(
       {
         success: false,

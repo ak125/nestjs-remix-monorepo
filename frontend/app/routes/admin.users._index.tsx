@@ -50,6 +50,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Utilisateurs | Admin AutoMecanik" },
@@ -172,7 +173,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   } catch (error) {
-    console.error("❌ Erreur loader admin.users:", error);
+    logger.error("❌ Erreur loader admin.users:", error);
     return json<LoaderData>({
       users: [],
       total: 0,
@@ -210,7 +211,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       case "toggleStatus":
         // Appel API pour changer le statut
         const newStatus = formData.get("newStatus") === "true";
-        console.log(`🔄 Toggle status for user ${userId} to ${newStatus}`);
+        logger.log(`🔄 Toggle status for user ${userId} to ${newStatus}`);
 
         const toggleResponse = await fetch(
           `http://127.0.0.1:3000/api/users/${userId}`,
@@ -228,7 +229,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
         if (!toggleResponse.ok) {
           const errorData = await toggleResponse.json().catch(() => ({}));
-          console.error("Toggle error:", errorData);
+          logger.error("Toggle error:", errorData);
           throw new Error(
             errorData.message || "Erreur lors du changement de statut",
           );
@@ -241,7 +242,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
       case "delete":
         // Appel API pour supprimer
-        console.log(`🗑️ Delete user ${userId}`);
+        logger.log(`🗑️ Delete user ${userId}`);
         const deleteResponse = await fetch(
           `http://127.0.0.1:3000/api/users/${userId}`,
           {
@@ -262,7 +263,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
       case "bulkDelete":
         // Suppression en masse
-        console.log(`🗑️ Bulk delete ${userIds.length} users`);
+        logger.log(`🗑️ Bulk delete ${userIds.length} users`);
         const results = await Promise.allSettled(
           userIds.map((id) =>
             fetch(`http://127.0.0.1:3000/api/users/${id}`, {
@@ -331,7 +332,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         return json({ error: "Action non reconnue" }, { status: 400 });
     }
   } catch (error: any) {
-    console.error("❌ Erreur action admin.users:", error);
+    logger.error("❌ Erreur action admin.users:", error);
     return json(
       { error: error.message || "Une erreur est survenue" },
       { status: 500 },

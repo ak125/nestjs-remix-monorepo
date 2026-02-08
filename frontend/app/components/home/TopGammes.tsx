@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { ChevronRight, Star } from "lucide-react";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 
 import { type TopGamme } from "../../types/catalog.types";
 import { getOptimizedFamilyImageUrl } from "../../utils/image-optimizer";
@@ -20,7 +20,7 @@ interface TopGammesProps {
  * Affiche les gammes avec PG_TOP=1 en carousel
  * Basé sur: SELECT DISTINCT pg_name, pg_alias, pg_id FROM pieces_gamme WHERE pg_top = 1
  */
-export function TopGammes({
+export const TopGammes = memo(function TopGammes({
   topGammesData,
   className = "",
   title: _title = "Nos gammes les plus populaires",
@@ -125,6 +125,6 @@ export function TopGammes({
       </div>
     </section>
   );
-}
+});
 
 export default TopGammes;

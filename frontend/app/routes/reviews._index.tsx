@@ -38,6 +38,7 @@ import {
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -105,7 +106,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             },
     });
   } catch (error) {
-    console.error("Erreur lors du chargement des avis:", error);
+    logger.error("Erreur lors du chargement des avis:", error);
     return json<LoaderData>({
       reviews: [],
       stats: {

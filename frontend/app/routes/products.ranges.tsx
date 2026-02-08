@@ -15,7 +15,11 @@
  * - /products/ranges?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -42,6 +46,10 @@ import {
 } from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Gammes de Produits");
 
 interface ProductRange {
   id: string;
@@ -112,7 +120,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     if (rangesResponse.ok) {
       const realRanges = await rangesResponse.json();
-      console.log(
+      logger.log(
         `🎯 ${realRanges.length} vraies gammes récupérées depuis la base`,
       );
 
@@ -137,7 +145,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
             }),
         }));
     } else {
-      console.error(
+      logger.error(
         "❌ Erreur récupération gammes réelles:",
         rangesResponse.status,
       );
@@ -211,7 +219,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       pagination,
     });
   } catch (error) {
-    console.error("❌ Erreur loader products.ranges:", error);
+    logger.error("❌ Erreur loader products.ranges:", error);
 
     return json<ProductsRangesData>({
       user: {

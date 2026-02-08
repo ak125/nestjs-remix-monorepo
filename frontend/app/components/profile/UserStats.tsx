@@ -4,6 +4,7 @@
  */
 
 import { Package, CreditCard, TrendingUp, Clock } from "lucide-react";
+import { memo } from "react";
 
 import { formatPrice } from "../../utils/orders";
 import { Card, CardContent } from "../ui/card";
@@ -66,7 +67,7 @@ interface UserStatsProps {
   lastOrderDate?: string;
 }
 
-export function UserStats({
+export const UserStats = memo(function UserStats({
   totalOrders,
   pendingOrders,
   completedOrders,
@@ -74,7 +75,8 @@ export function UserStats({
   averageOrderValue,
   lastOrderDate,
 }: UserStatsProps) {
-  const avgValue = averageOrderValue || (totalOrders > 0 ? totalSpent / totalOrders : 0);
+  const avgValue =
+    averageOrderValue || (totalOrders > 0 ? totalSpent / totalOrders : 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -110,10 +112,10 @@ export function UserStats({
       />
     </div>
   );
-}
+});
 
 // Variante compacte pour les dashboards
-export function UserStatsCompact({
+export const UserStatsCompact = memo(function UserStatsCompact({
   totalOrders,
   pendingOrders,
   totalSpent,
@@ -157,4 +159,4 @@ export function UserStatsCompact({
       </Card>
     </div>
   );
-}
+});

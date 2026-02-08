@@ -12,6 +12,7 @@ import {
   json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher, Link } from "@remix-run/react";
 import {
@@ -49,6 +50,8 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 interface Gamme {
   pgId: number;
@@ -118,6 +121,9 @@ type ActionData =
   | { success: false; error: string; intent: "save_r5" }
   | { success: false; error: string };
 
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Générateur Contenu - Admin");
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -160,7 +166,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json<LoaderData>({ gammes, error: null });
   } catch (error) {
-    console.error("[Generator] Loader error:", error);
+    logger.error("[Generator] Loader error:", error);
     return json<LoaderData>({
       gammes: [],
       error: "Erreur connexion backend",

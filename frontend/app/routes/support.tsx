@@ -21,6 +21,7 @@ import {
 } from "../services/api/contact.api";
 import { Error404 } from "~/components/errors/Error404";
 import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -63,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       urgentTickets: urgentTickets.slice(0, 5),
     });
   } catch (error) {
-    console.error("Erreur lors du chargement du dashboard:", error);
+    logger.error("Erreur lors du chargement du dashboard:", error);
     return json<LoaderData>({
       stats: {
         total_tickets: 0,

@@ -1,8 +1,8 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
-import React from 'react';
+import React, { memo } from "react";
 
-import { Badge } from '~/components/ui';
-import { Button } from '~/components/ui/button';
+import { Badge } from "~/components/ui";
+import { Button } from "~/components/ui/button";
 
 interface VehicleData {
   marque: string;
@@ -31,12 +31,12 @@ interface VehicleHeaderProps {
   }[];
 }
 
-export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
+export const VehicleHeader = memo(function VehicleHeader({
   vehicle,
   gamme,
   piecesCount,
-  breadcrumbs = []
-}) => {
+  breadcrumbs = [],
+}: VehicleHeaderProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border mb-8">
       {/* Breadcrumbs */}
@@ -46,9 +46,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
             <ol className="flex items-center space-x-2">
               {breadcrumbs.map((crumb, index) => (
                 <li key={index} className="flex items-center">
-                  {index > 0 && (
-                    <span className="mx-2 text-gray-400">/</span>
-                  )}
+                  {index > 0 && <span className="mx-2 text-gray-400">/</span>}
                   <a
                     href={crumb.href}
                     className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
@@ -118,9 +116,11 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
                   <span className="text-blue-600 text-sm">🔧</span>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">{piecesCount}</div>
+                  <div className="font-semibold text-gray-900">
+                    {piecesCount}
+                  </div>
                   <div className="text-xs text-gray-500">
-                    Pièce{piecesCount > 1 ? 's' : ''}
+                    Pièce{piecesCount > 1 ? "s" : ""}
                   </div>
                 </div>
               </div>
@@ -150,7 +150,10 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
           {/* Actions */}
           <div className="flex-shrink-0 ml-6">
             <div className="flex flex-col gap-3">
-              <Button className="px-6 py-3 rounded-lg   flex items-center gap-2" variant="blue">
+              <Button
+                className="px-6 py-3 rounded-lg   flex items-center gap-2"
+                variant="blue"
+              >
                 <span>📋</span>
                 Devis rapide
               </Button>
@@ -176,6 +179,6 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default VehicleHeader;

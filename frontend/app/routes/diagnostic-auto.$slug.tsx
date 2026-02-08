@@ -50,6 +50,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -223,7 +224,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return json({ diagnostic: data.data as DiagnosticData });
   } catch (error) {
     if (error instanceof Response) throw error;
-    console.error("[diagnostic-auto.$slug] Loader error:", error);
+    logger.error("[diagnostic-auto.$slug] Loader error:", error);
     throw new Response("Erreur de chargement", { status: 500 });
   }
 }

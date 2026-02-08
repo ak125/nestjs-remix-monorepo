@@ -15,7 +15,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
       }
 
       return canBeActivated;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw error;
     }
   }

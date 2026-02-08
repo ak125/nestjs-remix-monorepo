@@ -1,0 +1,223 @@
+{
+  "extraction_meta": {
+    "date": "2026-01-29",
+    "scope": "Complete UI architecture map - faithful extraction without judgment",
+    "version": "1.0.0"
+  },
+  "overview": {
+    "framework": "Remix (React 18) + Vite",
+    "styling": "Tailwind CSS",
+    "component_library": "shadcn/ui (46 components)",
+    "icon_library": "lucide-react",
+    "state_management": {
+      "server": "React Query (TanStack)",
+      "client": "Zustand stores",
+      "form": "Conform.js + Zod"
+    }
+  },
+  "file_structure": {
+    "frontend_root": "frontend/app/",
+    "components": "frontend/app/components/",
+    "routes": "frontend/app/routes/",
+    "hooks": "frontend/app/hooks/",
+    "contexts": "frontend/app/contexts/",
+    "services": "frontend/app/services/",
+    "utils": "frontend/app/utils/",
+    "ui_primitives": "frontend/app/components/ui/"
+  },
+  "design_tokens": {
+    "source": "tailwind.config.cjs",
+    "colors": {
+      "primary": {
+        "main": "#FF3B30",
+        "scale": ["50", "500", "600", "900"]
+      },
+      "secondary": {
+        "main": "#0F4C81",
+        "scale": ["400", "500", "600"]
+      },
+      "semantic": {
+        "action": "#D63027",
+        "info": "#0F4C81",
+        "success": "#1E8449",
+        "warning": "#D68910",
+        "danger": "#C0392B"
+      },
+      "neutral": {
+        "range": "50-900",
+        "most_used": ["100", "200", "500", "800", "900"]
+      }
+    },
+    "spacing": {
+      "scale": ["xs:4px", "sm:8px", "md:16px", "lg:24px", "xl:32px", "2xl:40px", "3xl:48px", "4xl:64px"],
+      "most_used_gap": "gap-3 (156 occurrences)"
+    },
+    "typography": {
+      "heading": "system-ui, Montserrat, sans-serif",
+      "body": "system-ui, Inter, sans-serif",
+      "mono": "SF Mono, Cascadia Code, monospace",
+      "most_used": "text-sm + font-semibold"
+    },
+    "border_radius": {
+      "most_used": "rounded-2xl (156 occurrences)",
+      "scale": ["sm:0.125rem", "md:0.375rem", "lg:0.5rem", "xl:0.75rem", "2xl:1rem", "full:9999px"]
+    },
+    "shadows": {
+      "most_used": "shadow-lg (156 occurrences)",
+      "scale": ["sm", "base", "md", "lg", "xl", "2xl"]
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px",
+      "distribution": {
+        "mobile": "67%",
+        "tablet": "19%",
+        "desktop": "14%"
+      }
+    },
+    "z_index": {
+      "dropdown": 1000,
+      "sticky": 1020,
+      "fixed": 1030,
+      "modal": 1050,
+      "tooltip": 1070
+    }
+  },
+  "layout_system": {
+    "root": {
+      "file": "frontend/app/root.tsx",
+      "structure": "html > body > div.min-h-screen.flex.flex-col > header + main + footer",
+      "providers": ["VehicleProvider", "NotificationProvider", "Sonner Toaster"]
+    },
+    "shells": {
+      "LayoutUnified": {
+        "file": "frontend/app/components/layout/LayoutUnified.tsx",
+        "props": ["showHeader", "showFooter", "modular sections", "editable mode"]
+      }
+    },
+    "header": {
+      "component": "HeaderV8Enhanced",
+      "file": "frontend/app/components/layout/HeaderV8Enhanced.tsx",
+      "desktop_sections": ["TopBar", "MainHeader (logo + search + nav + actions)", "SecondaryNav"],
+      "mobile_sections": ["TopBar (reduced)", "MainHeader (logo + icons)", "Expandable search", "Mobile menu drawer"]
+    },
+    "footer": {
+      "component": "Footer",
+      "file": "frontend/app/components/Footer.tsx",
+      "desktop": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8",
+      "mobile": "Horizontal scroll with FooterLinkItem"
+    },
+    "containers": {
+      "max_widths": {
+        "max-w-7xl": "Main content (most common)",
+        "max-w-6xl": "Blog/sections",
+        "max-w-4xl": "Narrow content",
+        "max-w-md": "Card layouts"
+      },
+      "padding": "px-4 sm:px-6 lg:px-8"
+    },
+    "sidebars": {
+      "admin": {
+        "component": "AdminSidebar",
+        "pattern": "hidden lg:block + Sheet mobile"
+      },
+      "filters": {
+        "component": "PiecesFilterSidebar",
+        "pattern": "hidden lg:block w-64 + Sheet mobile"
+      },
+      "cart": {
+        "component": "CartSidebar",
+        "pattern": "Drawer on all sizes"
+      }
+    }
+  },
+  "responsive_strategy": {
+    "approach": "Mobile-first",
+    "evidence": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 pattern",
+    "breakpoint_usage": {
+      "sm": 234,
+      "md": 189,
+      "lg": 156,
+      "xl": 45,
+      "2xl": 12
+    },
+    "common_patterns": {
+      "grid_progression": "1 → 2 → 4 columns",
+      "visibility_mobile": "lg:hidden, md:hidden",
+      "visibility_desktop": "hidden lg:block, hidden md:flex",
+      "flex_direction": "flex flex-col lg:flex-row"
+    },
+    "tables": {
+      "pattern": "Table on desktop (hidden lg:block), Cards on mobile (lg:hidden)",
+      "implementation": "Partial - some tables without mobile fallback"
+    },
+    "touch_targets": {
+      "recommended": "h-11 (44px)",
+      "observed": "Mixed h-8, h-9, h-10, h-11, h-12"
+    }
+  },
+  "component_inventory": {
+    "totals": {
+      "shadcn_ui": 46,
+      "admin_patterns": 10,
+      "pieces_components": 12,
+      "layout_components": 5,
+      "custom_hooks": 7
+    },
+    "shadcn_top_10": ["button", "card", "input", "badge", "table", "dialog", "select", "sheet", "tabs", "skeleton"],
+    "admin_patterns": ["KpiCard", "StatusBadge", "ValidationPanel", "DashboardShell", "AuditTable", "FilterBar", "ResponsiveDataTable", "DensityToggle"],
+    "pieces_components": ["PiecesGrid", "PiecesGridView", "PiecesHeader", "PiecesFilterSidebar", "PiecesCompatibilityInfo", "PiecesComparisonView", "PiecesSEOSection", "PiecesOemSection", "ProductGallery", "VehicleHeader", "ProductCardSkeleton", "AIPredictionsPanel"]
+  },
+  "ecommerce_patterns": {
+    "PLP": {
+      "routes": ["pieces.$gamme.$marque.$modele.$type[.]html.tsx", "pieces.catalogue.tsx"],
+      "structure": "header + filters sidebar + grid + pagination"
+    },
+    "PDP": {
+      "routes": ["pieces.$slug.tsx", "products.$id.tsx"],
+      "structure": "breadcrumb + gallery + info + tabs + related"
+    },
+    "Cart": {
+      "routes": ["cart.tsx"],
+      "sidebar": "CartSidebar (drawer)"
+    },
+    "Checkout": {
+      "routes": ["checkout.tsx", "checkout-payment.tsx", "checkout-payment-return.tsx"],
+      "steps": ["Information", "Shipping", "Payment"]
+    },
+    "Search": {
+      "routes": ["search.tsx", "search.results.tsx", "search.cnit.tsx"],
+      "component": "ProductSearch"
+    },
+    "Account": {
+      "routes": ["account.tsx", "account.dashboard.tsx", "account.orders.tsx", "account.profile.tsx", "account.addresses.tsx", "account.security.tsx", "account.settings.tsx", "account.messages.*"],
+      "layout": "sidebar navigation + main content"
+    }
+  },
+  "observations": {
+    "strengths": [
+      "Mobile-first approach consistently applied",
+      "shadcn/ui adoption (46 components)",
+      "lucide-react icons (no emojis)",
+      "Admin patterns standardized",
+      "Density toggle for grid views"
+    ],
+    "inconsistencies": [
+      "Touch targets vary (h-8 to h-12)",
+      "Some tables without mobile card fallback",
+      "Some sidebars without mobile drawer",
+      "Grid without mobile base (grid-cols-4 without grid-cols-1)"
+    ],
+    "note": "These are observations, not judgments. An architect should review for prioritization."
+  },
+  "related_files": {
+    "design_tokens_observed": "scripts/ui-audit/extraction/design-tokens.observed.json",
+    "components_inventory": "scripts/ui-audit/extraction/components.inventory.json",
+    "layout_system_map": "scripts/ui-audit/extraction/layout.system.map.md",
+    "responsive_strategy": "scripts/ui-audit/extraction/responsive.strategy.observed.md",
+    "patterns_ecommerce": "scripts/ui-audit/extraction/patterns.ecommerce.json"
+  }
+}

@@ -2,6 +2,7 @@ import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { getOptionalUser } from "~/auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 
 /**
  * 🔄 REDIRECTEUR INTELLIGENT POUR UTILISATEURS CONNECTÉS
@@ -34,7 +35,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
     // Sinon → Dashboard utilisateur standard
   }
 
-  console.log(
+  logger.log(
     `🔄 [App Router] Utilisateur level ${user.level} → ${targetRoute}`,
   );
   return redirect(targetRoute);

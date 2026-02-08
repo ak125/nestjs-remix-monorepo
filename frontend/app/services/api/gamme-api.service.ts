@@ -7,6 +7,8 @@
  * 3. Log les performances pour monitoring
  */
 
+import { logger } from "~/utils/logger";
+
 const API_URL = process.env.API_URL || "http://localhost:3000";
 
 interface GammePageData {
@@ -58,7 +60,7 @@ export async function fetchGammePageData(
   // Tentative RPC V2 (ultra-optimisé)
   if (useRpcV2) {
     try {
-      console.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
+      logger.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
 
       // Timeout spécifique pour RPC V2 (10s max)
       const controller = new AbortController();
@@ -81,22 +83,22 @@ export async function fetchGammePageData(
 
         // Pas d'erreur dans la réponse
         if (!data.error) {
-          console.log(
+          logger.log(
             `✅ RPC V2 SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
               ` (RPC: ${data.performance?.rpc_time_ms?.toFixed(0)}ms)`,
           );
           return data;
         }
 
-        console.warn(`⚠️ RPC V2 returned error:`, data.error);
+        logger.warn(`⚠️ RPC V2 returned error:`, data.error);
       } else {
-        console.warn(`⚠️ RPC V2 HTTP ${rpcResponse.status}`);
+        logger.warn(`⚠️ RPC V2 HTTP ${rpcResponse.status}`);
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        console.warn(`⏱️ RPC V2 Timeout (10s) pour gamme ${gammeId}`);
+        logger.warn(`⏱️ RPC V2 Timeout (10s) pour gamme ${gammeId}`);
       } else {
-        console.warn(
+        logger.warn(
           `⚠️ RPC V2 failed:`,
           error instanceof Error ? error.message : String(error),
         );
@@ -105,7 +107,7 @@ export async function fetchGammePageData(
   }
 
   // Fallback sur méthode classique
-  console.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
+  logger.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
 
   // Timeout pour fallback (60s max)
   const fallbackController = new AbortController();
@@ -130,7 +132,7 @@ export async function fetchGammePageData(
     const data = await classicResponse.json();
     const elapsed = performance.now() - startTime;
 
-    console.log(
+    logger.log(
       `✅ Classic method SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
         ` (Total: ${data.performance?.total_time_ms?.toFixed(0)}ms)`,
     );

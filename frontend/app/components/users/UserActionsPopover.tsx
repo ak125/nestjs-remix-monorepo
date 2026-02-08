@@ -21,7 +21,7 @@
  */
 
 import { Edit, Eye, Mail, Ban, Trash2, MoreVertical } from "lucide-react";
-import { type ReactNode } from "react";
+import { type ReactNode, memo } from "react";
 
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -65,7 +65,7 @@ interface UserActionsPopoverProps {
   align?: "start" | "center" | "end";
 }
 
-export function UserActionsPopover({
+export const UserActionsPopover = memo(function UserActionsPopover({
   user,
   onEdit,
   onViewProfile,
@@ -185,4 +185,4 @@ export function UserActionsPopover({
       </PopoverContent>
     </Popover>
   );
-}
+});

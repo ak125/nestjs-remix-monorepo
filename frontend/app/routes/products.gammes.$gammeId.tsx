@@ -11,7 +11,11 @@
  * Route: /products/gammes/:gammeId
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -50,6 +54,10 @@ import {
 } from "../components/ui/select";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+export const meta: MetaFunction = () => createNoIndexMeta("Gamme Produits");
 
 interface Product {
   piece_id: number;
@@ -170,7 +178,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      console.error(`❌ API error ${response.status} for gamme ${gammeId}`);
+      logger.error(`❌ API error ${response.status} for gamme ${gammeId}`);
 
       // Au lieu de lancer une erreur, retournons des données par défaut
       return json<GammeDetailData>({
@@ -245,7 +253,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       enhanced,
     });
   } catch (error) {
-    console.error("❌ Erreur loader gamme detail:", error);
+    logger.error("❌ Erreur loader gamme detail:", error);
 
     return json<GammeDetailData>({
       user: {
