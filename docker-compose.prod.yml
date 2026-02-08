@@ -18,6 +18,10 @@ services:
       # P2 activé après migration 12 read-only vers allowlist (commit ba00599d)
       - RPC_GATE_MODE=enforce
       - RPC_GATE_ENFORCE_LEVEL=P2
+      # 🛡️ BotGuard - Protection anti-bots (geo-block CN, behavioral scoring)
+      - BOT_GUARD_ENABLED=true
+      - BOT_GUARD_BLOCKED_COUNTRIES=CN
+      - BOT_GUARD_SUSPICION_THRESHOLD=80
 
 
     container_name: nestjs-remix-monorepo-prod

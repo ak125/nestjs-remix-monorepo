@@ -9,6 +9,7 @@ import { loggerConfig } from './config/logger.config';
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
+import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡️ Bot protection (geo-block, IP block, behavioral scoring)
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
@@ -127,6 +128,9 @@ import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Docke
     // ✅ Utilisation directe de BullMQ (sans décorateurs NestJS) dans SeoLogsModule
     // ScheduleModule.forRoot(),
     // BullModule.forRoot({ connection: {...} }),
+
+    // 🛡️ Bot protection - geo-block, IP block, behavioral scoring (must be before other modules)
+    BotGuardModule,
 
     // 🔐 Module crypto centralisé (Global)
     CryptoModule,
