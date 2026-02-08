@@ -181,14 +181,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const { slug } = params;
 
   if (!slug) {
-    return json<LoaderData>(
-      {
-        article: null,
-        relatedArticles: [],
-        error: "Slug manquant",
-      },
-      { status: 400 },
-    );
+    return redirect("/blog-pieces-auto", 301);
   }
 
   // 🎯 Détection des URLs legacy "entretien-..." qui n'existent plus (78k URLs GSC)
@@ -287,14 +280,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
 
     logger.error("Erreur chargement article:", error);
-    return json<LoaderData>(
-      {
-        article: null,
-        relatedArticles: [],
-        error: "Erreur de chargement",
-      },
-      { status: 500 },
-    );
+    return redirect("/blog-pieces-auto", 302);
   }
 
   if (!article) {

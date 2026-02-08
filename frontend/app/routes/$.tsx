@@ -1,6 +1,7 @@
 // app/routes/$.tsx - Catch-all route pour 404 - Version Optimisée
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -21,6 +22,12 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const pathname = url.pathname;
+
+  // 0. Redirections rapides pour patterns connus (évite l'appel API)
+  const quickRedirect = resolveKnownPattern(pathname);
+  if (quickRedirect) {
+    return redirect(quickRedirect, 301);
+  }
 
   try {
     // 1. Logger l'erreur 404 avec métadonnées enrichies
@@ -236,6 +243,56 @@ export async function loader({ request }: LoaderFunctionArgs) {
       { status: 404 },
     );
   }
+}
+
+/**
+ * Résout les patterns d'URLs connus vers leur nouvelle destination.
+ * Exécuté AVANT l'appel API pour une résolution instantanée.
+ */
+function resolveKnownPattern(pathname: string): string | null {
+  // /blog/* → /blog-pieces-auto/* (legacy blog URLs)
+  if (
+    pathname.startsWith("/blog/") &&
+    !pathname.startsWith("/blog-pieces-auto/")
+  ) {
+    return "/blog-pieces-auto" + pathname.slice(5);
+  }
+
+  // /blog → /blog-pieces-auto
+  if (pathname === "/blog") {
+    return "/blog-pieces-auto";
+  }
+
+  // /conseils/* → /blog-pieces-auto/conseils/*
+  if (pathname.startsWith("/conseils/")) {
+    return "/blog-pieces-auto" + pathname;
+  }
+
+  // /guide/* → /blog-pieces-auto/guide/*
+  if (pathname.startsWith("/guide/") || pathname.startsWith("/guides/")) {
+    const rest = pathname.replace(/^\/guides?\//, "/guide/");
+    return "/blog-pieces-auto" + rest;
+  }
+
+  // /constructeur/* → /constructeurs/* (singulier → pluriel)
+  if (
+    pathname.startsWith("/constructeur/") &&
+    !pathname.startsWith("/constructeurs/")
+  ) {
+    return "/constructeurs" + pathname.slice(14);
+  }
+
+  // Trailing .html sur des URLs non-pièces → retirer le .html
+  if (pathname.endsWith(".html") && !pathname.startsWith("/pieces/")) {
+    return pathname.slice(0, -5);
+  }
+
+  // Double slashes → normaliser
+  if (pathname.includes("//")) {
+    return pathname.replace(/\/+/g, "/");
+  }
+
+  return null;
 }
 
 /**

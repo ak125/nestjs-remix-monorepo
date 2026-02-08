@@ -12,6 +12,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -106,6 +107,8 @@ interface _BlogArticle {
   title: string;
   slug: string;
   pg_alias?: string | null;
+  /** Gamme product group ID (from DB) */
+  pg_id?: number | null;
   excerpt: string;
   content: string;
   h1: string;
@@ -116,6 +119,8 @@ interface _BlogArticle {
   updatedAt: string;
   viewsCount: number;
   featuredImage?: string | null;
+  /** Wall/thumbnail image filename */
+  wall?: string | null;
   sections: BlogSection[];
   cta_anchor?: string | null;
   cta_link?: string | null;
@@ -149,7 +154,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw new Response("Not Found", { status: 404 });
+    return redirect("/blog-pieces-auto/conseils", 301);
   }
 
   try {
@@ -175,13 +180,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     if (!response.ok) {
-      throw new Response("Article Not Found", { status: 404 });
+      return redirect("/blog-pieces-auto/conseils", 301);
     }
 
     const { data: article } = await response.json();
 
     if (!article) {
-      throw new Response("Article Not Found", { status: 404 });
+      return redirect("/blog-pieces-auto/conseils", 301);
     }
 
     // Charger les articles adjacents (précédent/suivant)
@@ -206,7 +211,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // Charger les switches SEO pour cette gamme (pg_id)
-    let seoSwitches: any[] = [];
+    let seoSwitches: Array<{
+      sis_id: string;
+      sis_pg_id: string;
+      sis_alias: string;
+      sis_content: string;
+    }> = [];
     if (article.pg_id) {
       try {
         const switchesResponse = await fetch(
@@ -263,12 +273,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    // Pour les vraies erreurs (réseau, parsing), retourner 500
+    // Pour les vraies erreurs (réseau, parsing), rediriger plutôt que 500
     logger.error(
       `[Legacy URL] Error loading article for gamme: ${pg_alias}`,
       error,
     );
-    throw new Response("Internal Server Error", { status: 500 });
+    return redirect("/blog-pieces-auto/conseils", 302);
   }
 }
 
@@ -286,7 +296,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const cleanDescription = stripHtmlForMeta(article.seo_data.meta_description);
   const cleanExcerpt = stripHtmlForMeta(article.excerpt);
 
-  const result: any[] = [
+  const result: Array<Record<string, string>> = [
     { title: article.seo_data.meta_title },
     { name: "description", content: cleanDescription },
     { name: "keywords", content: article.keywords.join(", ") },
@@ -719,10 +729,10 @@ export default function LegacyBlogArticle() {
                                       width="80"
                                       height="64"
                                     />
-                                  ) : (related as any).wall &&
-                                    (related as any).wall !== "no.jpg" ? (
+                                  ) : related.wall &&
+                                    related.wall !== "no.jpg" ? (
                                     <img
-                                      src={`/upload/blog/guide/mini/${(related as any).wall}`}
+                                      src={`/upload/blog/guide/mini/${related.wall}`}
                                       alt={related.title}
                                       className="w-20 h-16 object-cover rounded-md flex-shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
                                       loading="lazy"
@@ -749,13 +759,13 @@ export default function LegacyBlogArticle() {
                                         vues
                                       </span>
                                       {/* 🆕 Date de publication */}
-                                      {(related as any).updatedAt && (
+                                      {related.updatedAt && (
                                         <>
                                           <span>•</span>
                                           <Calendar className="w-3 h-3" />
                                           <span>
                                             {new Date(
-                                              (related as any).updatedAt,
+                                              related.updatedAt,
                                             ).toLocaleDateString("fr-FR", {
                                               day: "2-digit",
                                               month: "2-digit",

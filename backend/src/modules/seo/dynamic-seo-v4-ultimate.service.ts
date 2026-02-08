@@ -40,7 +40,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   protected readonly logger = new Logger(DynamicSeoV4UltimateService.name);
 
   // Cache for complete SEO results
-  private seoCache = new Map<string, { data: any; expires: number }>();
+  private seoCache = new Map<
+    string,
+    { data: CompleteSeoResult; expires: number }
+  >();
   private readonly CACHE_TTL_SHORT = 300000; // 5 min
   private readonly CACHE_TTL_MEDIUM = 900000; // 15 min
   private readonly CACHE_TTL_LONG = 3600000; // 1 heure
@@ -173,8 +176,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processTitle(
     template: string,
     variables: SeoVariables,
-    itemSwitches: any[],
-    gammeSwitches: any[],
+    itemSwitches: Record<string, unknown>[],
+    gammeSwitches: Record<string, unknown>[],
     typeId: number,
     pgId: number,
   ): Promise<string> {
@@ -207,7 +210,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processDescription(
     template: string,
     variables: SeoVariables,
-    itemSwitches: any[],
+    itemSwitches: Record<string, unknown>[],
     gammeSwitches: any[],
     typeId: number,
     pgId: number,
@@ -285,9 +288,9 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processContent(
     template: string,
     variables: SeoVariables,
-    itemSwitches: any[],
-    gammeSwitches: any[],
-    familySwitches: any[],
+    itemSwitches: Record<string, unknown>[],
+    gammeSwitches: Record<string, unknown>[],
+    familySwitches: Record<string, unknown>[],
     typeId: number,
   ): Promise<string> {
     let processed = template;
@@ -400,6 +403,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private cleanContent(content: string, isTitle: boolean = false): string {
     let cleaned = content
+      // Supprimer les variables template non résolues (#Gamme#, #MinPrice#, etc.)
+      .replace(/#[A-Za-z_]+#/g, '')
       .replace(/\s+/g, ' ')
       .replace(/\s+([,.])/g, '$1')
       .replace(/<b>\s*<\/b>/g, '')
@@ -510,7 +515,9 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return data;
   }
 
-  private async getItemSwitches(pgId: number): Promise<any[]> {
+  private async getItemSwitches(
+    pgId: number,
+  ): Promise<Record<string, unknown>[]> {
     const { data } = await this.supabase
       .from(TABLES.seo_item_switch)
       .select('*')
@@ -529,7 +536,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async getFamilySwitches(
     mfId: number | undefined,
     pgId: number,
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
       .from(TABLES.seo_family_gamme_car_switch)
@@ -559,7 +566,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       .join(', ');
   }
 
-  private countVariablesInTemplate(template: any): number {
+  private countVariablesInTemplate(template: Record<string, unknown>): number {
     const content = JSON.stringify(template);
     const matches = content.match(/#[A-Za-z0-9_]+#/g);
     return matches ? matches.length : 0;
@@ -576,7 +583,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return this.CACHE_TTL_SHORT;
   }
 
-  private getCachedData(key: string): any {
+  private getCachedData(key: string): CompleteSeoResult | null {
     const cached = this.seoCache.get(key);
     if (cached && cached.expires > Date.now()) {
       this.cacheHits++;
@@ -586,7 +593,11 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return null;
   }
 
-  private setCachedData(key: string, data: any, ttl: number): void {
+  private setCachedData(
+    key: string,
+    data: CompleteSeoResult,
+    ttl: number,
+  ): void {
     this.seoCache.set(key, {
       data,
       expires: Date.now() + ttl,

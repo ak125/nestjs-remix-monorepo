@@ -12,20 +12,12 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
+import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 
 // ====================================
@@ -46,12 +38,6 @@ interface MigrationResult {
     seo_keywords: string[];
   };
   error?: string;
-}
-
-interface MigrationPageData {
-  migration: MigrationResult;
-  redirect_in_seconds: number;
-  show_manual_redirect: boolean;
 }
 
 // ====================================
@@ -157,60 +143,30 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Sinon, tenter la migration avec l'ancien système
   const migration = await testUrlMigration(legacyUrl, baseUrl);
 
-  // Si migration réussie, redirection 301 immédiate
+  // Si migration réussie, redirection 301 immédiate (tous environnements)
   if (migration.success && migration.new_url) {
-    // En production, effectuer la redirection directement
-    if (process.env.NODE_ENV === "production") {
-      return redirect(migration.new_url, { status: 301 });
-    }
-
-    // En développement, afficher la page de migration pour debug
-    return json<MigrationPageData>({
-      migration,
-      redirect_in_seconds: 5,
-      show_manual_redirect: true,
-    });
+    return redirect(migration.new_url, { status: 301 });
   }
 
-  // Si migration échouée, afficher page d'erreur avec diagnostic
-  return json<MigrationPageData>(
-    {
-      migration,
-      redirect_in_seconds: 0,
-      show_manual_redirect: false,
-    },
-    { status: 404 },
-  );
+  // Si migration échouée, rediriger vers /pieces/ plutôt qu'afficher une page d'erreur
+  // Cela évite que Google indexe des pages "Page déplacée" ou "undefined"
+  return redirect("/pieces/", { status: 301 });
 };
 
 // ====================================
 // 🎯 META FUNCTION
 // ====================================
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  if (!data || !data.migration.success) {
-    return [
-      { title: "Page déplacée - Redirection en cours" },
-      {
-        name: "description",
-        content: "Cette page a été déplacée vers notre nouvelle structure.",
-      },
-      { name: "robots", content: "noindex, nofollow" },
-    ];
-  }
-
-  const { metadata } = data.migration;
-  const title = `${metadata?.vehicle_brand} ${metadata?.vehicle_model} - ${metadata?.modern_category} - Redirection`;
-  const description = `Page déplacée: ${metadata?.legacy_category} pour ${metadata?.vehicle_brand} ${metadata?.vehicle_model} ${metadata?.vehicle_type}`;
-
+export const meta: MetaFunction<typeof loader> = () => {
+  // Cette route fait toujours un 301 redirect, donc le meta ne sera jamais visible.
+  // Mais on garde un fallback propre au cas où.
   return [
-    { title },
-    { name: "description", content: description },
-    { name: "robots", content: "noindex, follow" },
+    { title: "Redirection - Pièces Auto | Automecanik" },
     {
-      "http-equiv": "refresh",
-      content: `${data.redirect_in_seconds};url=${data.migration.new_url}`,
+      name: "description",
+      content: "Cette page a été déplacée. Redirection automatique en cours.",
     },
+    { name: "robots", content: "noindex, nofollow" },
   ];
 };
 
@@ -219,210 +175,24 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 // ====================================
 
 export default function LegacyPartUrlMigrationPage() {
-  const { migration, redirect_in_seconds, show_manual_redirect } =
-    useLoaderData<typeof loader>();
-
-  // Page de succès avec redirection automatique
-  if (migration.success && migration.new_url) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <div className="max-w-2xl mx-auto p-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            {/* Icône et titre */}
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
-                <ArrowRight className="w-8 h-8 text-green-600" />
-              </div>
-            </div>
-
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Page Déplacée
-            </h1>
-
-            <p className="text-gray-600 mb-6">
-              Cette page a été déplacée vers notre nouvelle structure pour une
-              meilleure expérience.
-            </p>
-
-            {/* Informations de migration */}
-            {migration.metadata && (
-              <div className="bg-primary/5 rounded-xl p-6 mb-6 text-left">
-                <h3 className="font-semibold text-blue-900 mb-3">
-                  Informations de redirection
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="font-medium text-blue-800">Véhicule:</span>{" "}
-                    <span className="text-blue-700">
-                      {migration.metadata.vehicle_brand}{" "}
-                      {migration.metadata.vehicle_model}{" "}
-                      {migration.metadata.vehicle_type}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-blue-800">
-                      Catégorie:
-                    </span>{" "}
-                    <span className="text-blue-700">
-                      {migration.metadata.legacy_category} →{" "}
-                      {migration.metadata.modern_category}
-                    </span>
-                  </div>
-                  {migration.metadata.seo_keywords.length > 0 && (
-                    <div>
-                      <span className="font-medium text-blue-800">
-                        Mots-clés:
-                      </span>{" "}
-                      <span className="text-blue-700">
-                        {migration.metadata.seo_keywords.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Redirection automatique */}
-            {redirect_in_seconds > 0 && (
-              <Alert className="rounded-xl p-4 mb-6" variant="warning">
-                <div className="flex items-center justify-center text-yellow-800">
-                  <Clock className="w-5 h-5 mr-2" />
-                  <span className="font-medium">
-                    Redirection automatique dans {redirect_in_seconds}{" "}
-                    secondes...
-                  </span>
-                </div>
-              </Alert>
-            )}
-
-            {/* Redirection manuelle */}
-            {show_manual_redirect && (
-              <div className="space-y-4">
-                <Link
-                  to={migration.new_url}
-                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
-                >
-                  <ArrowRight className="w-5 h-5 mr-2" />
-                  Accéder à la nouvelle page
-                </Link>
-
-                <div className="text-sm text-gray-500">
-                  <ExternalLink className="w-4 h-4 inline mr-1" />
-                  {migration.new_url}
-                </div>
-              </div>
-            )}
-
-            {/* Debug info en développement */}
-            {process.env.NODE_ENV === "development" && (
-              <details className="mt-8 text-left">
-                <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-                  Informations de débogage
-                </summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-3 rounded overflow-auto">
-                  {JSON.stringify(migration, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Page d'erreur si migration impossible
+  // Le loader fait toujours un 301 redirect, ce composant ne devrait jamais s'afficher.
+  // Fallback de sécurité uniquement.
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
-      <div className="max-w-2xl mx-auto p-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-          {/* Icône d'erreur */}
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-            </div>
-          </div>
-
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Page non trouvée
-          </h1>
-
-          <p className="text-gray-600 mb-6">
-            Nous n'avons pas pu trouver cette page ou la rediriger
-            automatiquement.
-          </p>
-
-          {/* Informations d'erreur */}
-          <div className="bg-destructive/5 rounded-xl p-6 mb-6 text-left">
-            <h3 className="font-semibold text-red-900 mb-3">
-              Détails de l'erreur
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-red-800">URL demandée:</span>{" "}
-                <span className="text-red-700 break-all">
-                  {migration.legacy_url}
-                </span>
-              </div>
-              {migration.error && (
-                <div>
-                  <span className="font-medium text-red-800">Erreur:</span>{" "}
-                  <span className="text-red-700">{migration.error}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Actions alternatives */}
-          <div className="space-y-4">
-            <Link
-              to="/"
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
-            >
-              Retour à l'accueil
-            </Link>
-
-            <div className="text-sm text-gray-500">
-              Ou utilisez notre sélecteur de véhicule pour trouver les pièces
-              que vous cherchez
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center p-8">
+        <h1 className="text-xl font-bold text-gray-900 mb-4">
+          Redirection en cours...
+        </h1>
+        <p className="text-gray-600">
+          Si vous n'êtes pas redirigé automatiquement,{" "}
+          <Link to="/pieces/" className="text-blue-600 underline">
+            cliquez ici
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );
-}
-
-// ====================================
-// 🔧 SCRIPT REDIRECTION CÔTÉ CLIENT
-// ====================================
-
-// Script injecté pour redirection automatique en JavaScript (fallback)
-export function redirectScript(newUrl: string, seconds: number) {
-  return `
-    <script>
-      (function() {
-        let countdown = ${seconds};
-        const updateCountdown = () => {
-          const element = document.querySelector('[data-countdown]');
-          if (element) {
-            element.textContent = countdown;
-          }
-          countdown--;
-          if (countdown < 0) {
-            window.location.href = '${newUrl}';
-          }
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-
-        // Nettoyage
-        setTimeout(() => {
-          clearInterval(interval);
-        }, ${seconds * 1000 + 100});
-      })();
-    </script>
-  `;
 }
 
 // ============================================================
