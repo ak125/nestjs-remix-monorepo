@@ -76,7 +76,6 @@ export const meta: MetaFunction = () => [
 const FREE_SHIPPING_THRESHOLD = 150;
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // console.log("🛒 [CART LOADER] Chargement du panier depuis cart.tsx");
   try {
     const url = new URL(request.url);
     const cleared = url.searchParams.get("cleared");

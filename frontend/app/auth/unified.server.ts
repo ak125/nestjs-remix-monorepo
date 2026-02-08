@@ -50,9 +50,6 @@ export const getOptionalUser = async ({
         .nullable()
         .parse(context.user);
       if (user) {
-        // Debug log désactivé pour éviter spam
-        // console.log('✅ [Unified Auth] Utilisateur trouvé dans la session via context');
-
         return {
           id: (context.user as any).id,
           email: (context.user as any).email,
@@ -99,9 +96,6 @@ export const getAuthUser = async (
       const sessionData = await validationResponse.json();
 
       if (sessionData.valid && sessionData.user) {
-        // Debug log désactivé pour éviter spam
-        // console.log('✅ [Unified Auth] Utilisateur trouvé via session validation');
-
         return {
           id: sessionData.user.id,
           email: sessionData.user.email || sessionData.user.cst_mail,
@@ -148,9 +142,6 @@ export const getAuthUser = async (
       logger.log("❌ [Unified Auth] Invalid user data:", userData);
       return null;
     }
-
-    // Debug log désactivé pour éviter spam
-    // console.log('✅ [Unified Auth] Utilisateur trouvé via profile endpoint');
 
     return {
       id: userData.id,

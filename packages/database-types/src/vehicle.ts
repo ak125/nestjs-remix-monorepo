@@ -1,0 +1,85 @@
+/**
+ * 🚗 Vehicle Types - Schemas Zod & Types pour véhicules
+ *
+ * Migré depuis @monorepo/shared-types (deprecated)
+ * Utilisé par le frontend (VehicleSelector, vehicle API services)
+ */
+
+import { z } from 'zod';
+
+// ====================================
+// 🏭 VEHICLE BRAND
+// ====================================
+
+export const VehicleBrandSchema = z.object({
+  marque_id: z.number().int().positive(),
+  marque_name: z.string().min(1),
+  marque_alias: z.string().optional(),
+  marque_name_meta: z.string().optional(),
+  marque_name_meta_title: z.string().optional(),
+  marque_logo: z.string().optional(),
+  marque_wall: z.string().optional(),
+  marque_country: z.string().optional(),
+  marque_display: z.number().int().min(0).max(1).default(1),
+  marque_sort: z.number().int().optional(),
+  marque_top: z.number().int().min(0).max(1).optional(),
+  marque_relfollow: z.number().int().min(0).max(1).default(1),
+  marque_sitemap: z.number().int().min(0).max(1).default(1),
+  products_count: z.number().int().optional(),
+  is_featured: z.boolean().optional(),
+});
+
+export type VehicleBrand = z.infer<typeof VehicleBrandSchema>;
+
+// ====================================
+// 🚙 VEHICLE MODEL
+// ====================================
+
+export const VehicleModelSchema = z.object({
+  modele_id: z.number().int().positive(),
+  modele_name: z.string().min(1),
+  modele_alias: z.string().optional(),
+  modele_name_meta: z.string().optional(),
+  modele_ful_name: z.string().optional(),
+  modele_marque_id: z.number().int().positive(),
+  modele_pic: z.string().optional(),
+  modele_year_from: z.number().int().optional(),
+  modele_year_to: z.number().int().optional(),
+  modele_display: z.number().int().min(0).max(1).default(1),
+  modele_sort: z.number().int().optional(),
+  auto_marque: VehicleBrandSchema.optional(),
+});
+
+export type VehicleModel = z.infer<typeof VehicleModelSchema>;
+
+// ====================================
+// 🔧 VEHICLE TYPE
+// ====================================
+
+export const VehicleTypeSchema = z.object({
+  type_id: z.number().int().positive(),
+  type_name: z.string().min(1),
+  type_alias: z.string().optional(),
+  type_name_meta: z.string().optional(),
+  type_engine_code: z.string().optional(),
+  type_fuel: z.string().optional(),
+  type_power: z.string().optional(),
+  type_power_ps: z.number().int().optional(),
+  type_power_kw: z.number().int().optional(),
+  type_liter: z.string().optional(),
+  type_year_from: z.string().optional(),
+  type_year_to: z.string().nullable().optional(),
+  type_month_from: z.number().int().min(1).max(12).optional(),
+  type_month_to: z.number().int().min(1).max(12).optional(),
+  type_engine: z.string().optional(),
+  type_engine_description: z.string().optional(),
+  type_slug: z.string().optional(),
+  type_display: z.number().int().min(0).max(1).default(1),
+  type_sort: z.number().int().optional(),
+  modele_id: z.number().int().positive(),
+  auto_modele: VehicleModelSchema.optional(),
+  year_from: z.number().int().optional(),
+  year_to: z.number().int().optional(),
+});
+
+export type VehicleType = z.infer<typeof VehicleTypeSchema>;

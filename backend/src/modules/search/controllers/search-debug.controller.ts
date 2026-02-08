@@ -1,6 +1,8 @@
-import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Logger, UseGuards } from '@nestjs/common';
 import { SearchEnhancedExistingService } from '../services/search-enhanced-existing.service';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
+@UseGuards(IsAdminGuard)
 @Controller('api/search-debug')
 export class SearchDebugController {
   private readonly logger = new Logger(SearchDebugController.name);

@@ -13,6 +13,7 @@ import {
   Param,
   Query,
   UseInterceptors,
+  UseGuards,
   UploadedFile,
   UploadedFiles,
   Logger,
@@ -29,7 +30,9 @@ import {
   BulkUploadOptions,
 } from './services/upload.service';
 import { UploadType } from './dto/upload.dto';
+import { IsAdminGuard } from '../../auth/is-admin.guard';
 
+@UseGuards(IsAdminGuard)
 @Controller('upload')
 export class UploadController {
   private readonly logger = new Logger(UploadController.name);

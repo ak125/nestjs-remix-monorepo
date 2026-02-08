@@ -182,10 +182,6 @@ export class PayboxRedirectController {
     </form>
 
     <script>
-        console.log('🔐 Soumission automatique du formulaire Paybox...');
-        console.log('🔗 URL: ${url}');
-        console.log('📦 Paramètres:', ${JSON.stringify(Object.keys(parameters))});
-        
         // Auto-submit après un court délai
         setTimeout(() => {
             document.getElementById('payboxForm').submit();

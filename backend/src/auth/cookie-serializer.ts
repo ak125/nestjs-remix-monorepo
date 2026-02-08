@@ -29,8 +29,7 @@ export class CookieSerializer extends PassportSerializer {
         return done(null, cached.user);
       }
 
-      // ❌ Cache miss ou expiré: requête BDD
-      // console.log('🔍 Deserializing user ID:', userId);
+      // Cache miss ou expiré: requête BDD
       const user = await this.authService.getUserById(userId);
 
       if (!user) {
@@ -47,7 +46,6 @@ export class CookieSerializer extends PassportSerializer {
         this.cleanExpiredCache();
       }
 
-      // console.log('✅ User deserialized:', user.email);
       done(null, user);
     } catch (error) {
       this.logger.error(`Deserialization error: ${error}`);

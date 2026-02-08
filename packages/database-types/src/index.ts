@@ -69,6 +69,12 @@ export * from './enums/index.js';
  */
 export * from './helpers/index.js';
 
+/**
+ * Types véhicules enrichis (schemas Zod + types inférés)
+ * VehicleBrand, VehicleModel, VehicleType
+ */
+export * from './vehicle.js';
+
 // ============================================================================
 // 🔥 RE-EXPORTS PRATIQUES
 // ============================================================================

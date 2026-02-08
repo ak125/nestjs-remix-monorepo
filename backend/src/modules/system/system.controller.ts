@@ -1,11 +1,20 @@
-import { Controller, Get, Logger, Post, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { SystemService } from './services/system.service';
 import { MetricsService } from './services/metrics.service';
 import { DatabaseMonitorService } from './services/database-monitor.service';
 import { HealthCheckService } from './services/health-check.service';
+import { IsAdminGuard } from '../../auth/is-admin.guard';
 import { getErrorMessage } from '../../common/utils/error.utils';
 
 @Controller('system')
+@UseGuards(IsAdminGuard)
 export class SystemController {
   private readonly logger = new Logger(SystemController.name);
 

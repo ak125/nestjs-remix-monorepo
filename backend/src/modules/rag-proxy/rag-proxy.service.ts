@@ -23,8 +23,9 @@ export class RagProxyService {
    * Forward chat request to RAG service.
    */
   async chat(request: ChatRequestDto): Promise<ChatResponseDto> {
+    const startTime = Date.now();
     try {
-      const response = await fetch(`${this.ragUrl}/chat`, {
+      const response = await fetch(`${this.ragUrl}/chat/v2`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,7 +34,7 @@ export class RagProxyService {
         body: JSON.stringify({
           message: request.message,
           session_id: request.sessionId,
-          context: request.context,
+          locale: 'fr',
         }),
       });
 
@@ -50,11 +51,25 @@ export class RagProxyService {
 
       const data = await response.json();
 
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `RAG chat: ${duration}ms | guardrails=${data.passed_guardrails} | type=${data.query_type} | confidence=${data.truth_metadata?.composite_confidence}`,
+      );
+      if (duration > 3000) {
+        this.logger.warn(
+          `RAG response slow: ${duration}ms (threshold: 3000ms)`,
+        );
+      }
+
       return {
-        answer: data.context || data.response || '',
+        answer: data.response || '',
         sources: data.sources || [],
         sessionId: data.session_id,
         confidence: data.truth_metadata?.composite_confidence ?? 0,
+        citations: data.citations || [],
+        queryType: data.query_type || null,
+        passedGuardrails: data.passed_guardrails ?? false,
+        refusalReason: data.refusal_reason || null,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -140,7 +155,26 @@ export class RagProxyService {
         };
       }
 
-      return await response.json();
+      const result = await response.json();
+
+      // Enrich with corpus stats
+      try {
+        const statsResp = await fetch(`${this.ragUrl}/api/knowledge/stats`, {
+          headers: { 'X-API-Key': this.ragApiKey },
+        });
+        if (statsResp.ok) {
+          const stats = await statsResp.json();
+          result.services = result.services || {};
+          result.services.corpus = {
+            total_documents: stats.total_documents,
+            by_truth_level: stats.by_truth_level,
+          };
+        }
+      } catch {
+        /* stats non-critical */
+      }
+
+      return result;
     } catch (error) {
       return {
         status: 'unhealthy',

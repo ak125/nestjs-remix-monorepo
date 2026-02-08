@@ -17,7 +17,7 @@ import {
   useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -44,6 +44,8 @@ import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
 import { logger } from "~/utils/logger";
+
+const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 // @ts-ignore
 
 // URL Google Fonts (non-bloquant via preload)
@@ -132,6 +134,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   return json({
     user,
     cart,
+    cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
   });
 };
 
@@ -331,6 +334,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <NotificationContainer />
+      {!location.pathname.startsWith("/admin") && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
     </div>
   );
 }
@@ -342,6 +350,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
  */
 export function Layout({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+  const data = useRouteLoaderData<typeof loader>("root");
+  const nonce = data?.cspNonce || "";
 
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
@@ -350,6 +360,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -432,8 +443,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </QueryClientProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
         <Toaster position="top-right" expand={true} richColors closeButton />
-        <ScrollRestoration />
-        <Scripts />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   );

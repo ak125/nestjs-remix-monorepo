@@ -1,7 +1,7 @@
 /**
  * Enhanced Vehicle API Service (v2)
  * - Unifié: utilisable côté Remix (client/loader) et côté Nest si besoin
- * - Typage via @monorepo/shared-types
+ * - Typage via @repo/database-types
  * - Backend retourne { data, page, limit, total } (sans "success") → mapping standardisé
  */
 
@@ -9,8 +9,8 @@ import {
   type VehicleBrand,
   type VehicleModel,
   type VehicleType,
-} from "@monorepo/shared-types";
-import { type PaginationOptions } from "@repo/database-types";
+  type PaginationOptions,
+} from "@repo/database-types";
 
 type VehicleResponse<T> = {
   data?: T;
@@ -320,9 +320,9 @@ class EnhancedVehicleApiService {
 }
 
 export const enhancedVehicleApi = new EnhancedVehicleApiService();
-// Re-export vehicle types from shared-types (métier domain types)
+// Re-export vehicle types from database-types
 export type {
   VehicleBrand,
   VehicleModel,
   VehicleType,
-} from "@monorepo/shared-types";
+} from "@repo/database-types";

@@ -20,9 +20,6 @@ export class RemixController {
     @Res() response: Response,
     @Next() next: NextFunction,
   ) {
-    // console.log('--- RemixController handler ---');
-    // console.log('Request URL:', request.url);
-
     // Ne pas capturer les routes qui sont déjà gérées par d'autres contrôleurs backend
     // Les routes /admin/breadcrumbs/* sont gérées par le BreadcrumbAdminController
     if (
@@ -32,17 +29,7 @@ export class RemixController {
       request.url.startsWith('/authenticate') ||
       request.url.startsWith('/auth/')
     ) {
-      // console.log('🔀 Skipping API/Auth route, calling next()');
       return next();
-    }
-
-    // console.log('Request user:', request.user);
-    // console.log('Request session:', request.session);
-
-    // Debug: Vérifier si le body est disponible
-    if (request.method === 'POST') {
-      // console.log('🔍 DEBUG: POST request body:', request.body);
-      // console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
     }
 
     // 🛑 410 Gone - Legacy supplier URLs
@@ -56,16 +43,14 @@ export class RemixController {
 
     try {
       const build = await getServerBuild();
-      // console.log('✅ Server build loaded successfully');
-
       return createRequestHandler({
         build,
         getLoadContext: () => ({
           user: request.user,
           remixService: this.remixService,
           remixIntegration: this.remixApiService,
-          // Passer le body parsé par Express
           parsedBody: request.body,
+          cspNonce: response.locals.cspNonce,
         }),
       })(request, response, next);
     } catch (error) {

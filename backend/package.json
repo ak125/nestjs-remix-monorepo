@@ -9,12 +9,12 @@
   "scripts": {
     "dev": "run-p dev:compile dev:watch",
     "dev:nest": "nest start --watch --preserveWatchOutput",
-    "dev:compile": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --build --watch --preserveWatchOutput",
+    "dev:compile": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build --watch --preserveWatchOutput",
     "dev:watch": "node wait-and-start.js",
     "dev:no-redis": "nodemon --delay 3000ms --watch dist dist/main.js",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build",
     "start": "node dist/main",
     "lint": "eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
@@ -26,10 +26,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
-    "@conform-to/react": "^1.8.2",
-    "@conform-to/zod": "^1.8.2",
+    "@conform-to/react": "^1.13.1",
+    "@conform-to/zod": "^1.13.1",
     "@google-analytics/data": "^5.2.1",
-    "@monorepo/shared-types": "^1.0.0",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bull": "^10.2.3",
     "@nestjs/bullmq": "^11.0.4",
@@ -47,7 +46,7 @@
     "@nestjs/throttler": "^5.0.0",
     "@nestjs/websockets": "^10.4.20",
     "@paralleldrive/cuid2": "^2.2.2",
-    "@remix-run/express": "^2.17.2",
+    "@remix-run/express": "^2.17.4",
     "@repo/database-types": "*",
     "@supabase/supabase-js": "^2.81.0",
     "@types/bull": "^4.10.4",
@@ -89,7 +88,7 @@
     "swagger-ui-express": "^4.6.3",
     "undici": "^7.13.0",
     "unix-crypt-td-js": "^1.1.4",
-    "zod": "^3.24.1"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@fafa/eslint-config": "*",
@@ -126,6 +125,6 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   }
 }

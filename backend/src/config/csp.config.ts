@@ -41,9 +41,9 @@ export const CSP_DIRECTIVES = {
 
   scriptSrc: [
     "'self'",
-    "'unsafe-inline'",
     'https://www.googletagmanager.com',
     'https://www.google-analytics.com',
+    'https://tagmanager.google.com',
   ],
 
   // img-src: Construit dynamiquement depuis IMAGE_DOMAINS
@@ -94,10 +94,18 @@ export function getConnectSrcWithHMR(isDev: boolean): string[] {
 
 /**
  * Construit les directives CSP complètes pour Helmet
+ * @param nonce - Nonce cryptographique par requête (remplace 'unsafe-inline' dans scriptSrc)
  */
-export function buildCSPDirectives(isDev: boolean) {
+export function buildCSPDirectives(isDev: boolean, nonce?: string) {
+  const scriptSrc = [...CSP_DIRECTIVES.scriptSrc];
+  if (nonce) {
+    scriptSrc.push(`'nonce-${nonce}'`);
+  } else {
+    scriptSrc.push("'unsafe-inline'");
+  }
   return {
     ...CSP_DIRECTIVES,
+    scriptSrc,
     connectSrc: getConnectSrcWithHMR(isDev),
   };
 }

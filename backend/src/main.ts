@@ -19,6 +19,7 @@ import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
 import cors from 'cors';
+import crypto from 'crypto';
 
 const redisStoreFactory = RedisStore(session);
 
@@ -89,7 +90,7 @@ async function bootstrap() {
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
           sameSite: 'lax', // ✅ Compatible navigation cross-site
-          secure: false, // ⚠️ DEV: false (HTTP). TODO: passer à isProd quand Caddy (HTTPS) sera en place
+          secure: isProd, // HTTPS via Caddy en production
           httpOnly: true, // ✅ Protection XSS
           path: '/', // ✅ Cookie valide pour tout le site
         },
@@ -118,20 +119,27 @@ async function bootstrap() {
 
     // Sécurité HTTP avec CSP personnalisée pour Supabase
     expressApp.set('trust proxy', 1);
+
+    // Nonce CSP par requête — doit être AVANT Helmet
+    app.use((_req: any, res: any, next: any) => {
+      res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+      next();
+    });
+
     try {
       // Import dynamique pour éviter d alourdir le build si non nécessaire
       const helmet = (await import('helmet')).default;
       const compression = (await import('compression')).default;
 
-      // Configuration Helmet avec CSP centralisée (voir config/csp.config.ts)
+      // Helmet avec nonce dynamique par requête (voir config/csp.config.ts)
       const isDev = process.env.NODE_ENV !== 'production';
-      app.use(
+      app.use((req: any, res: any, next: any) => {
         helmet({
           contentSecurityPolicy: {
-            directives: buildCSPDirectives(isDev),
+            directives: buildCSPDirectives(isDev, res.locals.cspNonce),
           },
-        }),
-      );
+        })(req, res, next);
+      });
 
       app.use(compression());
     } catch (e) {

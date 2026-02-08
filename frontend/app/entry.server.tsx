@@ -22,23 +22,25 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  // This is ignored so we can keep it in the template for visibility.  Feel
-  // free to delete this parameter in your app if you're not using it!
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
+  const nonce =
+    ((loadContext as Record<string, unknown>)?.cspNonce as string) || "";
+
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
         request,
         responseStatusCode,
         responseHeaders,
         remixContext,
+        nonce,
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
         remixContext,
+        nonce,
       );
 }
 
@@ -47,6 +49,7 @@ function handleBotRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
+  nonce: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -55,8 +58,10 @@ function handleBotRequest(
         context={remixContext}
         url={request.url}
         abortDelay={ABORT_DELAY}
+        nonce={nonce}
       />,
       {
+        nonce,
         onAllReady() {
           shellRendered = true;
           const body = new PassThrough();
@@ -97,6 +102,7 @@ function handleBrowserRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
+  nonce: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -105,8 +111,10 @@ function handleBrowserRequest(
         context={remixContext}
         url={request.url}
         abortDelay={ABORT_DELAY}
+        nonce={nonce}
       />,
       {
+        nonce,
         onShellReady() {
           shellRendered = true;
           const body = new PassThrough();

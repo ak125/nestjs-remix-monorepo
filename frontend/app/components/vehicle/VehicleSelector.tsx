@@ -1,12 +1,12 @@
 // 📁 frontend/app/components/vehicle/VehicleSelector.tsx
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
+import { useNavigate } from "@remix-run/react";
 import {
   type VehicleBrand,
   type VehicleModel,
   type VehicleType,
-} from "@monorepo/shared-types";
-import { useNavigate } from "@remix-run/react";
+} from "@repo/database-types";
 import {
   Search,
   Car,

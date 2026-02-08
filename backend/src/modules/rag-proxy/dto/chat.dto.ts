@@ -11,12 +11,20 @@ export const ChatRequestSchema = z.object({
   context: z.record(z.unknown()).optional(),
 });
 
-// Schema pour les réponses de chat
+// Schema pour les réponses de chat (v2 — guardrails + classification)
 export const ChatResponseSchema = z.object({
   answer: z.string(),
   sources: z.array(z.string()),
   sessionId: z.string(),
   confidence: z.number().min(0).max(1),
+  // V2 fields
+  citations: z.array(z.string()).optional(),
+  queryType: z
+    .enum(['on_topic', 'off_topic', 'ambiguous'])
+    .nullable()
+    .optional(),
+  passedGuardrails: z.boolean().optional(),
+  refusalReason: z.string().nullable().optional(),
 });
 
 // Types TypeScript inférés

@@ -43,6 +43,7 @@
     "@changesets/cli": "^2.29.7",
     "@nestjs/common": "^10.4.20",
     "@nestjs/core": "^10.4.20",
+    "@remix-run/dev": "^2.17.4",
     "@types/bcrypt": "^6.0.0",
     "@types/file-type": "^10.9.3",
     "@types/multer": "^2.0.0",
@@ -58,11 +59,11 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@remix-run/dev": "^2.15.0",
-    "@remix-run/express": "^2.15.0",
-    "@remix-run/node": "^2.15.0",
-    "@remix-run/react": "^2.15.0",
-    "@remix-run/serve": "^2.15.0",
+    "@remix-run/express": "^2.17.4",
+    "@remix-run/node": "^2.17.4",
+    "@remix-run/react": "^2.17.4",
+    "@remix-run/serve": "^2.17.4",
+    "@remix-run/server-runtime": "^2.17.4",
     "@supabase/supabase-js": "^2.83.0",
     "abort-controller": "^3.0.0",
     "autoprefixer": "^10.4.14",
@@ -82,10 +83,13 @@
     "tailwindcss": "^3.4.15",
     "uid": "^2.0.2",
     "vite": "^5.4.11",
-    "zod": "^3.24.1"
+    "zod": "^3.25.76"
   },
   "overrides": {
-    "path-to-regexp": "3.3.0"
+    "path-to-regexp": "3.3.0",
+    "zod": "^3.25.76",
+    "@conform-to/react": "^1.13.1",
+    "@conform-to/zod": "^1.13.1"
   },
   "lint-staged": {
     "frontend/app/**/*.{ts,tsx}": [
