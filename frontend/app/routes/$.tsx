@@ -279,7 +279,7 @@ function resolveKnownPattern(pathname: string): string | null {
     pathname.startsWith("/constructeur/") &&
     !pathname.startsWith("/constructeurs/")
   ) {
-    return "/constructeurs" + pathname.slice(14);
+    return "/constructeurs/" + pathname.slice(14);
   }
 
   // Trailing .html sur des URLs non-pièces → retirer le .html
