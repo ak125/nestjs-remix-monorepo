@@ -268,16 +268,17 @@ export async function action({ request }: ActionFunctionArgs) {
         response.status,
       );
 
-      // Guest checkout: email déjà enregistré → rediriger vers login
+      // Guest checkout: email déjà enregistré → message inline (pas de redirect)
       if (response.status === 409 && isGuest) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set(
-          "message",
-          "Un compte existe déjà avec cet email. Connectez-vous pour continuer.",
+        return json(
+          {
+            success: false,
+            error: `Un compte existe déjà avec l'email ${guestEmail}. Connectez-vous ou utilisez une autre adresse email.`,
+            emailConflict: true,
+            conflictEmail: guestEmail,
+          },
+          { status: 409 },
         );
-        loginUrl.searchParams.set("redirectTo", "/checkout");
-        loginUrl.searchParams.set("email", guestEmail);
-        return redirect(loginUrl.toString());
       }
 
       // Détecter si l'erreur est due à un manque d'authentification
@@ -460,11 +461,19 @@ export default function CheckoutPage() {
 
         {/* Affichage erreur si action a échoué */}
         {error && (
-          <div className="mb-6 rounded-xl border border-destructive bg-destructive/10 p-4 shadow-sm">
+          <div
+            className={`mb-6 rounded-xl border p-4 shadow-sm ${
+              actionData &&
+              "emailConflict" in actionData &&
+              actionData.emailConflict
+                ? "border-orange-300 bg-orange-50"
+                : "border-destructive bg-destructive/10"
+            }`}
+          >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-red-600"
+                  className={`h-5 w-5 ${actionData && "emailConflict" in actionData && actionData.emailConflict ? "text-orange-600" : "text-red-600"}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -478,10 +487,46 @@ export default function CheckoutPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-red-900">
-                  Erreur lors de la création de la commande
-                </h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                {actionData &&
+                "emailConflict" in actionData &&
+                actionData.emailConflict ? (
+                  <>
+                    <h3 className="font-semibold text-orange-900">
+                      Email déjà utilisé
+                    </h3>
+                    <p className="text-sm text-orange-700 mt-1">{error}</p>
+                    <Link
+                      to={`/login?redirectTo=/checkout&email=${encodeURIComponent(
+                        ("conflictEmail" in actionData
+                          ? String(actionData.conflictEmail)
+                          : "") || "",
+                      )}`}
+                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Se connecter
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-red-900">
+                      Erreur lors de la création de la commande
+                    </h3>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                  </>
+                )}
               </div>
             </div>
           </div>
