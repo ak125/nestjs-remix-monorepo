@@ -103,7 +103,9 @@ jobs:
       - name: ✅ Validate PROD
         run: |
           sleep 30
-          BASE_URL="https://www.automecanik.com"
+          # Use internal URL (self-hosted runner is on the same server)
+          # External URL blocked by Cloudflare WAF (bot protection rules)
+          BASE_URL="http://localhost:3000"
           FAILED=0
 
           URLS=("/" "/health")
