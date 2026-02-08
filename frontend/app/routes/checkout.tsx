@@ -33,6 +33,7 @@ import {
 } from "~/components/layout/MobileBottomBar";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackBeginCheckout } from "~/utils/analytics";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -150,11 +151,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 1. Récupérer le panier
     logger.log("🛒 [Checkout Action] Récupération du panier...");
-    const cartResponse = await fetch("http://127.0.0.1:3000/api/cart", {
-      headers: {
-        Cookie: request.headers.get("Cookie") || "",
+    const cartResponse = await fetch(
+      getInternalApiUrlFromRequest("/api/cart", request),
+      {
+        headers: {
+          Cookie: request.headers.get("Cookie") || "",
+        },
       },
-    });
+    );
 
     logger.log("🛒 [Checkout Action] Statut panier:", cartResponse.status);
 
@@ -235,8 +239,8 @@ export async function action({ request }: ActionFunctionArgs) {
     // Choisir l'endpoint selon le mode (guest ou authentifié)
     const isGuest = !!guestEmail;
     const orderUrl = isGuest
-      ? "http://127.0.0.1:3000/api/orders/guest"
-      : "http://127.0.0.1:3000/api/orders";
+      ? getInternalApiUrlFromRequest("/api/orders/guest", request)
+      : getInternalApiUrlFromRequest("/api/orders", request);
 
     const payload = isGuest ? { ...orderPayload, guestEmail } : orderPayload;
 
@@ -351,8 +355,8 @@ export default function CheckoutPage() {
   const [guestEmail, setGuestEmail] = useState("");
   const [shippingAddress, setShippingAddress] = useState({
     civility: "M.",
-    firstName: "",
-    lastName: "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
     address: "",
     zipCode: "",
     city: "",
@@ -486,6 +490,38 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Informations client */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Utilisateur connecté - Identité */}
+            {user && (
+              <div className="bg-white rounded-2xl shadow-sm border border-emerald-200 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-emerald-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-emerald-900">
+                      Connecté en tant que{" "}
+                      <strong>
+                        {user.firstName} {user.lastName}
+                      </strong>
+                    </p>
+                    <p className="text-xs text-emerald-700">{user.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ✅ Email invité - Seulement si non connecté */}
             {!user && (
               <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
