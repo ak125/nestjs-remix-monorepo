@@ -4,13 +4,11 @@ import { memo } from "react";
 interface MobileStickyBarProps {
   gammeName?: string;
   hasCompatibilities?: boolean;
-  minPrice?: number | null;
 }
 
 const MobileStickyBar = memo(function MobileStickyBar({
   gammeName: _gammeName = "pièces",
   hasCompatibilities = true,
-  minPrice,
 }: MobileStickyBarProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -37,9 +35,7 @@ const MobileStickyBar = memo(function MobileStickyBar({
         className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95"
       >
         <Car className="w-5 h-5" />
-        <span>
-          {minPrice ? `dès ${minPrice.toFixed(2)}€` : "Sélectionner véhicule"}
-        </span>
+        <span>Sélectionner véhicule</span>
       </a>
       {hasCompatibilities && (
         <a

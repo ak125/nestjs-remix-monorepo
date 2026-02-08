@@ -50,7 +50,6 @@ import {
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
-import { GammePricePreview } from "~/components/pieces/GammePricePreview";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
@@ -132,28 +131,9 @@ const UXMessageBox = lazy(() =>
   })),
 );
 
-interface PricePreviewData {
-  min_price: number | null;
-  max_price: number | null;
-  avg_price: number | null;
-  product_count: number;
-  brand_count: number;
-  products: Array<{
-    piece_id: number;
-    name: string;
-    ref: string;
-    price: number;
-    brand_id: number;
-    brand_name: string;
-    brand_logo: string;
-    has_img: boolean;
-  }>;
-}
-
 interface LoaderData {
   status: number;
   selectedVehicle?: VehicleCookie | null;
-  pricePreview?: PricePreviewData | null;
   meta?: {
     title: string;
     description: string;
@@ -371,37 +351,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const currentUrl = new URL(request.url);
     const pathname = currentUrl.pathname;
 
-    const [
-      selectedVehicle,
-      apiData,
-      switchesResponse,
-      substitutionResponse,
-      pricePreviewResponse,
-    ] = await Promise.all([
-      // 🚗 Récupérer véhicule depuis cookie (parallélisé)
-      getVehicleFromCookie(request.headers.get("Cookie")),
-      fetchGammePageData(gammeId, { signal: controller.signal }),
-      fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
-        signal: controller.signal,
-      })
-        .then((res) => (res.ok ? res.json() : { data: [] }))
-        .catch(() => ({ data: [] })),
-      // 🔄 Substitution API pour données enrichies (412/410 handling)
-      fetch(
-        `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
-        {
+    const [selectedVehicle, apiData, switchesResponse, substitutionResponse] =
+      await Promise.all([
+        // 🚗 Récupérer véhicule depuis cookie (parallélisé)
+        getVehicleFromCookie(request.headers.get("Cookie")),
+        fetchGammePageData(gammeId, { signal: controller.signal }),
+        fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
           signal: controller.signal,
-        },
-      )
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null),
-      // 💰 Prix indicatifs sans véhicule (conversion P0)
-      fetch(`${API_URL}/api/catalog/gammes/${gammeId}/price-preview`, {
-        signal: controller.signal,
-      })
-        .then((res) => (res.ok ? res.json() : { data: null }))
-        .catch(() => ({ data: null })),
-    ]).finally(() => clearTimeout(timeoutId));
+        })
+          .then((res) => (res.ok ? res.json() : { data: [] }))
+          .catch(() => ({ data: [] })),
+        // 🔄 Substitution API pour données enrichies (412/410 handling)
+        fetch(
+          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+          {
+            signal: controller.signal,
+          },
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      ]).finally(() => clearTimeout(timeoutId));
 
     logger.log(
       "🚗 Véhicule depuis cookie:",
@@ -527,7 +496,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         selectedVehicle,
         seoSwitches,
         substitution: substitutionResponse,
-        pricePreview: pricePreviewResponse?.data || null,
       },
       {
         headers: {
@@ -623,20 +591,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                   : canonicalUrl,
               })),
           },
-          // 3️⃣ AggregateOffer - Fourchette de prix pour rich results Google
-          ...(data.pricePreview?.min_price
-            ? [
-                {
-                  "@type": "AggregateOffer",
-                  "@id": `${canonicalUrl}#offer`,
-                  priceCurrency: "EUR",
-                  lowPrice: data.pricePreview.min_price,
-                  highPrice: data.pricePreview.max_price,
-                  offerCount: data.pricePreview.product_count,
-                  availability: "https://schema.org/InStock",
-                },
-              ]
-            : []),
         ],
       }
     : null;
@@ -1063,14 +1017,6 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
-      {/* 💰 Prix indicatifs - Ancrage prix sans véhicule (Conversion P0) */}
-      {data.pricePreview?.min_price && (
-        <GammePricePreview
-          pricePreview={data.pricePreview}
-          gammeName={data.content?.pg_name}
-        />
-      )}
-
       {/* 📑 Sommaire ancré - Navigation rapide vers toutes les sections */}
       <div className="container mx-auto px-4 py-4">
         <TableOfContents
@@ -1281,7 +1227,6 @@ export default function PiecesDetailPage() {
       <MobileStickyBar
         gammeName={data.content?.pg_name}
         hasCompatibilities={!!data.motorisations?.items?.length}
-        minPrice={data.pricePreview?.min_price}
       />
 
       {/* Spacer pour éviter que le contenu soit masqué par la sticky bar */}
