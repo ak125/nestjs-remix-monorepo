@@ -162,3 +162,6 @@ ux-capture/
 ux-debt/
 ux-prompts/
 ux-roadmap/
+
+# Agent submissions (separate repo, never commit)
+agent-submissions/

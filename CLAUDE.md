@@ -454,6 +454,30 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => [
 ];
 ```
 
+## Context7 MCP — Règles d'usage frugal
+
+> Context7 fournit la doc à jour des librairies via MCP. Ces règles évitent de gaspiller des tokens.
+
+1. **N'utilise Context7 QUE si** la question porte sur une API/syntaxe spécifique d'une bibliothèque (NestJS, Remix, Supabase, Zod, etc.). Pour les questions de logique, architecture ou débogage → pas de Context7.
+
+2. **Si la question est générale** ("comment structurer un module NestJS"), réponds avec tes connaissances. Context7 = uniquement pour vérifier une API précise ou une syntaxe récente.
+
+3. **Si une bibliothèque précise est mentionnée**, cible UNIQUEMENT cette bibliothèque avec son ID direct (ex: `/supabase/supabase`, `/vercel/next.js`). Ne résous jamais plusieurs bibliothèques à la fois.
+
+4. **Toujours utiliser le paramètre `topic`** pour cibler un sous-sujet (ex: topic="routing", topic="auth", topic="hooks") plutôt que charger toute la doc.
+
+5. **Limiter les tokens à 5000 max** (au lieu du défaut 10000). Utiliser `tokens: 3000` pour des vérifications rapides de signature/syntaxe.
+
+6. **Maximum 1 appel Context7 par question.** Si le premier résultat ne suffit pas, reformuler la query plutôt que relancer.
+
+7. **Ne jamais appeler Context7 pour** : les dépendances internes du projet (@fafa/ui, @repo/database-types, @monorepo/shared-types), la config Docker, les fichiers .env, ou le code métier AutoMecanik.
+
+8. **Résumer et ne garder que 5-10 points** de la doc retournée. Ne jamais injecter la doc brute complète dans la réponse.
+
+9. **Cache mental** : si une info de doc a déjà été récupérée dans la conversation en cours, la réutiliser sans rappeler Context7.
+
+10. **Skip auto-invoke** : ne PAS invoquer Context7 automatiquement. Ne l'appeler que sur demande explicite ("use context7") ou quand l'IA détecte un risque d'hallucination sur une API récente.
+
 ## Common Pitfalls
 
 1. **Redis Required:** Backend won't start without Redis for sessions. Run Redis before `npm run dev`.

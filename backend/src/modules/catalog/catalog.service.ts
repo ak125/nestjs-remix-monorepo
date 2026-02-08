@@ -273,28 +273,8 @@ export class CatalogService
   /**
    * 🔥 Récupère les éléments d'accès rapide (populaires)
    */
-  private async getQuickAccessItems(): Promise<any[]> {
-    try {
-      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
-      const { data, error } = await this.callRpc<any[]>(
-        'get_popular_catalog_items',
-        { limit_count: 10 },
-        { source: 'api', role: 'service_role' },
-      );
-
-      if (error || !data) {
-        // Fallback sur requête simple
-        this.logger.warn(
-          '⚠️ RPC popular items non disponible, fallback sur gammes featured',
-        );
-        return await this.getFallbackQuickAccess();
-      }
-
-      return data;
-    } catch (error) {
-      this.logger.warn('⚠️ Erreur accès rapide, fallback utilisé:', error);
-      return await this.getFallbackQuickAccess();
-    }
+  private async getQuickAccessItems(): Promise<CatalogItem[]> {
+    return this.getFallbackQuickAccess();
   }
 
   /**
@@ -324,38 +304,7 @@ export class CatalogService
   private async enrichWithProductCounts(
     categories: CatalogItem[],
   ): Promise<CatalogItem[]> {
-    if (categories.length === 0) return [];
-
-    try {
-      const categoryIds = categories.map((cat) => cat.id);
-
-      // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
-      const { data, error } = await this.callRpc<any[]>(
-        'get_products_count_by_gamme',
-        { gamme_ids: categoryIds },
-        { source: 'api', role: 'service_role' },
-      );
-
-      if (error || !data) {
-        this.logger.warn('⚠️ Enrichissement compteurs produits échoué');
-        return categories;
-      }
-
-      // Créer un map pour lookup rapide
-      const countMap = new Map();
-      data.forEach((item: any) => {
-        countMap.set(item.gamme_id, item.products_count);
-      });
-
-      // Enrichir les catégories
-      return categories.map((cat) => ({
-        ...cat,
-        piece_count: countMap.get(cat.id) || 0,
-      }));
-    } catch (error) {
-      this.logger.warn('⚠️ Erreur enrichissement compteurs:', error);
-      return categories;
-    }
+    return categories;
   }
 
   /**
