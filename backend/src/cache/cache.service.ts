@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { once } from 'events';
 import { getAppConfig } from '../config/app.config';
+import { CACHE_STRATEGIES, CacheStrategy } from '../config/cache-ttl.config';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
@@ -240,7 +241,14 @@ export class CacheService implements OnModuleInit {
   }
 
   /**
-   * 🧹 Clear cache by pattern (for sitemap invalidation)
+   * Alias for del() — backward compatibility
+   */
+  async delete(key: string): Promise<void> {
+    return this.del(key);
+  }
+
+  /**
+   * Clear cache by pattern (for sitemap invalidation)
    */
   async clearByPattern(pattern: string): Promise<number> {
     try {
@@ -261,5 +269,115 @@ export class CacheService implements OnModuleInit {
       this.logger.error(`Cache clearByPattern ${pattern} error: ${error}`);
       return 0;
     }
+  }
+
+  /**
+   * Invalidate all keys in a namespace
+   */
+  async invalidateNamespace(namespace: string): Promise<number> {
+    return this.clearByPattern(`${namespace}:*`);
+  }
+
+  /**
+   * Cache-aside pattern: get from cache or fetch and store
+   */
+  async getOrSet<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    ttl?: number,
+  ): Promise<T> {
+    const cached = await this.get<T>(key);
+    if (cached !== null) {
+      return cached;
+    }
+
+    const fresh = await fetcher();
+    await this.set(key, fresh, ttl);
+    return fresh;
+  }
+
+  /**
+   * Cache-aside pattern with namespace prefix
+   */
+  async cached<T>(
+    cacheKey: string,
+    fetchFn: () => Promise<T>,
+    ttl: number = this.defaultTTL,
+    namespace: string = 'app',
+  ): Promise<T> {
+    const fullKey = `${namespace}:${cacheKey}`;
+    return this.getOrSet(fullKey, fetchFn, ttl);
+  }
+
+  /**
+   * Cache statistics (memory, key count, hit rate)
+   */
+  async getStats(): Promise<{
+    memory: string;
+    keyCount: number;
+    hits: number;
+    misses: number;
+    hitRate: number;
+  }> {
+    try {
+      if (!this.redisClient || !this.redisReady) {
+        return { memory: '0B', keyCount: 0, hits: 0, misses: 0, hitRate: 0 };
+      }
+
+      const info = await this.redisClient.info('memory');
+      const statsInfo = await this.redisClient.info('stats');
+      const keyCount = await this.redisClient.dbsize();
+
+      const memoryMatch = info.match(/used_memory_human:(\S+)/);
+      const hitsMatch = statsInfo.match(/keyspace_hits:(\d+)/);
+      const missesMatch = statsInfo.match(/keyspace_misses:(\d+)/);
+
+      const hits = hitsMatch ? parseInt(hitsMatch[1]) : 0;
+      const misses = missesMatch ? parseInt(missesMatch[1]) : 0;
+      const hitRate =
+        hits + misses > 0
+          ? Math.round((hits / (hits + misses)) * 10000) / 100
+          : 0;
+
+      return {
+        memory: memoryMatch ? memoryMatch[1].trim() : '0B',
+        keyCount,
+        hits,
+        misses,
+        hitRate,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting cache stats: ${error}`);
+      return { memory: '0B', keyCount: 0, hits: 0, misses: 0, hitRate: 0 };
+    }
+  }
+
+  /**
+   * Smart TTL based on key prefix — delegates to CACHE_STRATEGIES
+   */
+  private static ttlEntries: [string, number][] | null = null;
+
+  private getSmartTTL(key: string): number {
+    if (!CacheService.ttlEntries) {
+      CacheService.ttlEntries = [];
+      for (const domain of Object.values(CACHE_STRATEGIES)) {
+        for (const strategy of Object.values(domain)) {
+          const s = strategy as CacheStrategy;
+          if (s.prefix && s.ttl) {
+            CacheService.ttlEntries.push([s.prefix, s.ttl]);
+          }
+        }
+      }
+      // Sort by prefix length descending for most specific match first
+      CacheService.ttlEntries.sort((a, b) => b[0].length - a[0].length);
+    }
+
+    for (const [prefix, ttl] of CacheService.ttlEntries) {
+      if (key.startsWith(prefix)) {
+        return ttl;
+      }
+    }
+
+    return 300; // 5 min default
   }
 }

@@ -4,7 +4,7 @@ import { TABLES } from '@repo/database-types';
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface Equipementier {
   pm_id: string;

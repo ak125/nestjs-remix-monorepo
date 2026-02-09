@@ -8,7 +8,6 @@ import { CartModule } from '../modules/cart/cart.module';
 import { DatabaseModule } from '../database/database.module';
 import { MessagesModule } from '../modules/messages/messages.module';
 import { AuthModule } from '../auth/auth.module';
-import { CacheModule } from '../cache/cache.module';
 
 // Services spécialisés - TOUS SUPPRIMÉS car obsolètes
 // import { OrdersIntegrationService } from './integration/orders/orders-integration.service'; // Obsolète
@@ -23,7 +22,6 @@ import { CacheModule } from '../cache/cache.module';
     forwardRef(() => DatabaseModule),
     forwardRef(() => MessagesModule),
     forwardRef(() => AuthModule),
-    CacheModule,
   ],
   controllers: [RemixController],
   providers: [

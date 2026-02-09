@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConfigService } from './database-config.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface BreadcrumbItem {
   label: string;

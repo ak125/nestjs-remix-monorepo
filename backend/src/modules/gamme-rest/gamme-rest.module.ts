@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GammeRestOptimizedController } from './gamme-rest-optimized.controller';
 import { GammeRestRpcV2Controller } from './gamme-rest-rpc-v2.controller';
-import { CacheModule } from '../../cache/cache.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DatabaseModule } from '../../database/database.module';
 import {
@@ -20,7 +19,7 @@ import {
  * - Services réutilisables pour transformation de données
  */
 @Module({
-  imports: [CacheModule, CatalogModule, DatabaseModule],
+  imports: [CatalogModule, DatabaseModule],
   controllers: [
     GammeRestOptimizedController, // Fallback automatique
     GammeRestRpcV2Controller, // RPC V2 ultra-optimisé

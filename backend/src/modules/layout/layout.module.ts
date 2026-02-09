@@ -24,14 +24,9 @@ import { QuickSearchService } from './services/quick-search.service';
 import { SocialShareService } from './services/social-share.service';
 import { MetaTagsService } from './services/meta-tags.service';
 
-// Imports des modules existants
-import { CacheModule } from '../../cache/cache.module';
-
 @Global()
 @Module({
-  imports: [
-    CacheModule, // Cache personnalisé du projet
-  ],
+  imports: [],
   controllers: [LayoutController, SectionController],
   providers: [
     LayoutService,

@@ -33,7 +33,6 @@ import { SeoContentModule } from '../seo-content/seo-content.module';
 // ═══════════════════════════════════════════════════════════════════════════
 import { WorkerModule } from '../../workers/worker.module';
 import { CatalogModule } from '../catalog/catalog.module';
-import { CacheModule } from '../../cache/cache.module';
 import { AiContentModule } from '../ai-content/ai-content.module';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -80,7 +79,6 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     // 🔧 Modules externes
     WorkerModule,
     forwardRef(() => CatalogModule),
-    CacheModule,
     forwardRef(() => AiContentModule),
 
     // 🎯 Cache in-memory pour SEO V4 Ultimate

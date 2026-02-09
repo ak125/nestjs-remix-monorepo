@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -68,7 +67,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
 @Module({
   imports: [
     DatabaseModule,
-    CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
   ],
   controllers: [

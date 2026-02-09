@@ -17,12 +17,10 @@ import { CommercialMenuService } from './services/commercial-menu.service';
 import { ExpeditionMenuService } from './services/expedition-menu.service';
 import { SeoMenuService } from './services/seo-menu.service';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 
 @Module({
   imports: [
     DatabaseModule, // Utilise le module database existant du projet
-    CacheModule, // Utilise le module cache personnalisé (cohérent avec admin.module)
     NestCacheModule.register({ ttl: 300, max: 100 }), // Cache pour CacheInterceptor
   ],
   controllers: [NavigationController],

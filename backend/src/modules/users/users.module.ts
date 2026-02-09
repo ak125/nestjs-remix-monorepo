@@ -15,7 +15,6 @@ import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 import { MailService } from '../../services/mail.service';
 import { AuthModule } from '../../auth/auth.module';
 import { MessagesModule } from '../messages/messages.module';
@@ -50,7 +49,6 @@ import { UserShipmentService } from './services/user-shipment.service';
     // Modules externes - Configuration et infrastructure
     ConfigModule, // ✅ Configuration pour SupabaseBaseService
     DatabaseModule, // ✅ UserDataService et autres services de données
-    CacheModule, // ✅ Redis cache pour sessions et performances
     forwardRef(() => AuthModule), // ✅ AuthModule avec forwardRef (évite circular dependency)
     MessagesModule, // ✅ MessagesModule pour délégation messaging
     JwtModule.register({

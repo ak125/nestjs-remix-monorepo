@@ -8,9 +8,6 @@ import {
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 
-// Phase 6: Cache Layer
-import { CacheModule } from '../../cache/cache.module';
-
 // Phase 1: Shadow Mode
 import { McpValidationService } from './mcp-validation.service';
 import { McpShadowInterceptor } from './interceptors/mcp-shadow.interceptor';
@@ -65,7 +62,7 @@ import { ExternalCompatibilityPartsLink24Service } from './services/external-com
  */
 @Global()
 @Module({
-  imports: [ConfigModule, CacheModule],
+  imports: [ConfigModule],
   providers: [
     // Core validation service
     McpValidationService,

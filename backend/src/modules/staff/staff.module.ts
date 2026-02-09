@@ -17,7 +17,6 @@
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 import { StaffService } from './staff.service';
 import { StaffController } from './staff.controller';
 
@@ -27,7 +26,7 @@ import { StaffController } from './staff.controller';
  * ✅ Suit l'architecture modulaire recommandée
  */
 @Module({
-  imports: [DatabaseModule, CacheModule],
+  imports: [DatabaseModule],
   providers: [StaffService],
   controllers: [StaffController],
   exports: [StaffService],

@@ -20,7 +20,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 
 // Controllers
 import { MessagesController } from './messages.controller';
@@ -44,7 +43,6 @@ import { MessagingGateway } from './messaging.gateway';
 @Module({
   imports: [
     DatabaseModule,
-    CacheModule, // Pour mise en cache des statistiques si nécessaire
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'fallback-secret',
       signOptions: { expiresIn: '24h' },

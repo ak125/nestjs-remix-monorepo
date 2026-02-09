@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
-import { CacheService } from '../../modules/cache/cache.service';
+import { CacheService } from '../../cache/cache.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**

@@ -34,7 +34,6 @@ import { SimpleDatabaseConfigService } from './services/simple-database-config.s
 
 // Modules externes
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../cache/cache.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 
 // Interfaces et types
@@ -54,7 +53,6 @@ interface ConfigModuleOptions {
       expandVariables: true,
     }),
     DatabaseModule,
-    CacheModule,
     AnalyticsModule,
   ],
   controllers: [

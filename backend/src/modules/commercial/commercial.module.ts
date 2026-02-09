@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 import { CommercialArchivesService } from './archives/archives.service';
 import { CommercialArchivesController } from './archives/archives.controller';
 
@@ -15,7 +14,6 @@ import { CommercialArchivesController } from './archives/archives.controller';
 @Module({
   imports: [
     DatabaseModule, // Pour accès Supabase/PostgREST
-    CacheModule, // Pour Redis cache et sessions
     // ScheduleModule est géré au niveau app.module.ts
   ],
   controllers: [

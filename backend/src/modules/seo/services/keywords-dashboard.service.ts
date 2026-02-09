@@ -11,7 +11,7 @@
 import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { RedisCacheService } from '../../../database/services/redis-cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface GammeStats {
   gamme: string;
@@ -78,8 +78,8 @@ export class KeywordsDashboardService extends SupabaseBaseService {
   constructor(
     rpcGate: RpcGateService,
     @Optional()
-    @Inject(RedisCacheService)
-    private readonly redisCache?: RedisCacheService,
+    @Inject(CacheService)
+    private readonly redisCache?: CacheService,
   ) {
     super();
     this.rpcGate = rpcGate;

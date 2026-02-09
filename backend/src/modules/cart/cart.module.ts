@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { ProductsModule } from '../products/products.module';
 import { PromoModule } from '../promo/promo.module';
@@ -22,13 +21,7 @@ import { PromoDataService } from '../../database/services/promo-data.service';
 import { ShippingDataService } from '../../database/services/shipping-data.service';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    CacheModule,
-    ShippingModule,
-    ProductsModule,
-    PromoModule,
-  ],
+  imports: [DatabaseModule, ShippingModule, ProductsModule, PromoModule],
   controllers: [
     CartCoreController,
     CartItemsController,

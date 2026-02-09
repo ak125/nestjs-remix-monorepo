@@ -19,7 +19,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { UserService } from '../database/services/user.service';
-import { RedisCacheService } from '../database/services/redis-cache.service';
+import { CacheService } from '../cache/cache.service';
 import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
 
 export interface AuthUser {
@@ -47,7 +47,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
-    private readonly cacheService: RedisCacheService,
+    private readonly cacheService: CacheService,
     private readonly passwordCrypto: PasswordCryptoService,
   ) {
     this.logger.log(
@@ -411,8 +411,8 @@ export class AuthService {
   private async checkLoginAttempts(email: string, ip: string): Promise<number> {
     try {
       const key = `login_attempts:${email}:${ip}`;
-      const attempts = await this.cacheService.get(key);
-      return attempts ? parseInt(attempts) : 0;
+      const attempts = await this.cacheService.get<number>(key);
+      return attempts ?? 0;
     } catch (error) {
       this.logger.error('Error checking login attempts:', error);
       return 0;
@@ -623,32 +623,14 @@ export class AuthService {
     try {
       this.logger.debug('Validating JWT token');
 
-      // TODO: Implémenter la validation JWT si utilisé
-      // Pour le moment, on utilise les sessions
-
-      // Extraire l'ID utilisateur du token (simulation)
-      const userId = this.extractUserIdFromToken(token);
-      if (!userId) {
+      const decoded = this.jwtService.verify(token);
+      if (!decoded?.sub) {
         return null;
       }
 
-      // Récupérer l'utilisateur
-      return await this.getUserById(userId);
+      return await this.getUserById(decoded.sub);
     } catch (error) {
-      this.logger.error('Error validating token:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Extrait l'ID utilisateur d'un token (méthode helper)
-   */
-  private extractUserIdFromToken(token: string): string | null {
-    try {
-      // TODO: Implémenter l'extraction JWT réelle
-      // Pour le moment, simulation basique
-      return token.split(':')[1] || null;
-    } catch {
+      this.logger.debug(`Invalid JWT token: ${(error as Error).message}`);
       return null;
     }
   }

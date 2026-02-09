@@ -12,7 +12,6 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '../../cache/cache.module';
 
 import { UploadController } from './upload.controller';
 import { UploadService } from './services/upload.service';
@@ -25,7 +24,6 @@ import { UploadOptimizationService } from './services/upload-optimization.servic
 @Module({
   imports: [
     ConfigModule,
-    CacheModule,
     MulterModule.register({
       limits: {
         fileSize:

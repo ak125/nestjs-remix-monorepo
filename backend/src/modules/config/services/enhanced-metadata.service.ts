@@ -2,7 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface PageMetadata {
   title: string;

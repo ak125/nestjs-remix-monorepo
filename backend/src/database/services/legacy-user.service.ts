@@ -2,7 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../../modules/cache/cache.service';
+import { CacheService } from '../../cache/cache.service';
 import { getErrorMessage } from '../../common/utils/error.utils';
 
 export interface LegacyUser {

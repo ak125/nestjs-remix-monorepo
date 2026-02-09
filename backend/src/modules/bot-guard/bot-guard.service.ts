@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../cache/cache.service';
+import { CacheService } from '../../cache/cache.service';
 
 interface RequestFingerprint {
   ip: string;

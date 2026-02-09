@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RedisCacheService } from '../../../database/services/redis-cache.service';
+import { CacheService } from '../../../cache/cache.service';
 import {
   CatalogFamily,
   CatalogFamilyWithGammes,
@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class CatalogFamilyService extends SupabaseBaseService {
-  constructor(private readonly cacheService: RedisCacheService) {
+  constructor(private readonly cacheService: CacheService) {
     super();
   }
 

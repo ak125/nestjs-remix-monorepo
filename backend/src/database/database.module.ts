@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '../modules/cache/cache.module';
 
 // Services métier spécialisés (architecture modulaire)
 import { CartDataService } from './services/cart-data.service';
@@ -13,7 +12,6 @@ import { DatabaseCompositionService } from './services/database-composition.serv
 
 // Services métier pour rétrocompatibilité (à migrer progressivement)
 import { UserService } from './services/user.service';
-import { RedisCacheService } from './services/redis-cache.service';
 
 /**
  * DatabaseModule - Architecture Modulaire Pure
@@ -24,7 +22,7 @@ import { RedisCacheService } from './services/redis-cache.service';
  * ✅ OrdersService unifié (anciennement LegacyOrderService)
  */
 @Module({
-  imports: [ConfigModule, CacheModule],
+  imports: [ConfigModule],
   providers: [
     // Services de données spécialisés (architecture modulaire)
     CartDataService,
@@ -37,7 +35,6 @@ import { RedisCacheService } from './services/redis-cache.service';
 
     // Services métier legacy (à migrer progressivement)
     UserService,
-    RedisCacheService,
   ],
   exports: [
     // Export principal - service de composition modulaire
@@ -53,7 +50,6 @@ import { RedisCacheService } from './services/redis-cache.service';
 
     // Services legacy (rétrocompatibilité)
     UserService,
-    RedisCacheService,
   ],
 })
 export class DatabaseModule {}

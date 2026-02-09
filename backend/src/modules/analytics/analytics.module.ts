@@ -8,7 +8,6 @@ import { SimpleAnalyticsController } from './controllers/simple-analytics.contro
 import { SimpleAnalyticsService } from './services/simple-analytics.service';
 
 // Modules externes
-import { CacheModule } from '../cache/cache.module';
 import { DatabaseModule } from '../../database/database.module';
 
 /**
@@ -27,7 +26,7 @@ import { DatabaseModule } from '../../database/database.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule, CacheModule, DatabaseModule],
+  imports: [ConfigModule, DatabaseModule],
   controllers: [SimpleAnalyticsController],
   providers: [SimpleAnalyticsService],
   exports: [SimpleAnalyticsService],

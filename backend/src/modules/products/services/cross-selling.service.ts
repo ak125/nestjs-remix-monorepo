@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RedisCacheService } from '../../../database/services/redis-cache.service';
+import { CacheService } from '../../../cache/cache.service';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 import { CrossSellingSeoService } from './cross-selling-seo.service';
 import { CrossSellingSourceService } from './cross-selling-source.service';
@@ -106,8 +106,8 @@ export class CrossSellingService extends SupabaseBaseService {
 
   constructor(
     @Optional()
-    @Inject(RedisCacheService)
-    private readonly redisCache: RedisCacheService | undefined,
+    @Inject(CacheService)
+    private readonly redisCache: CacheService | undefined,
     @Optional()
     @Inject(CrossSellingSeoService)
     private readonly seoService: CrossSellingSeoService | undefined,

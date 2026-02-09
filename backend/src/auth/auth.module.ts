@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '../database/database.module';
-import { CacheModule } from '../cache/cache.module';
 import { UsersModule } from '../modules/users/users.module';
 import { AuthService } from './auth.service';
 import { AuthLoginController } from './controllers/auth-login.controller';
@@ -27,7 +26,6 @@ import { LocalStrategy } from './local.strategy';
       signOptions: { expiresIn: '24h' },
     }),
     DatabaseModule,
-    CacheModule,
     UsersModule,
   ],
   controllers: [

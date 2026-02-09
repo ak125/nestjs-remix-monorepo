@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface PricePreviewProduct {
   piece_id: number;

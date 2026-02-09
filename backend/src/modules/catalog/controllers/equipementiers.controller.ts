@@ -3,7 +3,7 @@
 
 import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
 import { EquipementiersService } from '../services/equipementiers.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '../../../cache/cache.service';
 
 @Controller('api/catalog/equipementiers')
 export class EquipementiersController {

@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PromoDataService } from '../../database/services/promo-data.service';
-import { RedisCacheService } from '../../database/services/redis-cache.service';
+import { CacheService } from '../../cache/cache.service';
 import { z } from 'zod';
 
 // 🎯 SCHEMAS ZOD pour validation stricte des types
@@ -55,7 +55,7 @@ export class PromoService {
 
   constructor(
     private readonly promoDataService: PromoDataService,
-    private readonly cacheService: RedisCacheService,
+    private readonly cacheService: CacheService,
   ) {
     this.logger.log('PromoService initialisé avec architecture modulaire');
   }
@@ -87,10 +87,11 @@ export class PromoService {
 
       // 🚀 Cache
       const cacheKey = `promo:${code.toUpperCase()}:${validatedCart.userId}`;
-      const cached = await this.cacheService.get(cacheKey);
+      const cached =
+        await this.cacheService.get<PromoValidationResult>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit pour code promo ${code}`);
-        return JSON.parse(cached);
+        return cached;
       }
 
       // Récupérer le code promo valide

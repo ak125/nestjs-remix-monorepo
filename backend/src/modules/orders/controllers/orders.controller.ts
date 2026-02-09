@@ -51,7 +51,7 @@ import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { AuthService } from '../../../auth/auth.service';
 import { EmailService } from '../../../services/email.service';
-import { RedisCacheService } from '../../../database/services/redis-cache.service';
+import { CacheService } from '../../../cache/cache.service';
 import {
   OrdersService,
   CreateOrderData,
@@ -103,7 +103,7 @@ export class OrdersController {
     private readonly ordersService: OrdersService,
     private readonly authService: AuthService,
     private readonly emailService: EmailService,
-    private readonly redisCacheService: RedisCacheService,
+    private readonly cacheService: CacheService,
   ) {}
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -337,7 +337,7 @@ export class OrdersController {
           .digest('hex');
 
         // Stocker le token dans Redis (7 jours TTL)
-        await this.redisCacheService.set(
+        await this.cacheService.set(
           `guest_activation:${hashedToken}`,
           JSON.stringify({ userId: newUser.id, email: guestEmail }),
           7 * 24 * 60 * 60, // 7 jours

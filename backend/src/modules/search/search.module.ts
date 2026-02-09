@@ -24,7 +24,6 @@ import { SearchEnhancedExistingService } from './services/search-enhanced-existi
 import { SearchSimpleService } from './services/search-simple.service';
 
 // External modules
-import { CacheModule } from '../../cache/cache.module';
 import { DatabaseModule } from '../../database/database.module';
 
 /**
@@ -34,7 +33,7 @@ import { DatabaseModule } from '../../database/database.module';
  * les services et contrôleurs qui existent réellement.
  */
 @Module({
-  imports: [ConfigModule, CacheModule, DatabaseModule],
+  imports: [ConfigModule, DatabaseModule],
   controllers: [
     SearchController, // ✅ Réactivé - utilise SearchSimpleService
     SearchEnhancedExistingController, // ✅ Fonctionnel - recherche avancée

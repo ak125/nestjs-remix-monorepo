@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 import { AuthService } from '../auth.service';
 import { UserService } from '../../database/services/user.service';
-import { RedisCacheService } from '../../database/services/redis-cache.service';
+import { CacheService } from '../../cache/cache.service';
 import { PasswordCryptoService } from '../../shared/crypto/password-crypto.service';
 import { TokenValidationDto } from '../dto/module-access.dto';
 
@@ -15,7 +15,7 @@ export class AuthTokenController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly redisCacheService: RedisCacheService,
+    private readonly cacheService: CacheService,
     private readonly passwordCrypto: PasswordCryptoService,
   ) {}
 
@@ -97,21 +97,22 @@ export class AuthTokenController {
         .update(token)
         .digest('hex');
 
-      const storedData = await this.redisCacheService.get(
-        `guest_activation:${hashedToken}`,
-      );
+      const storedData = await this.cacheService.get<{
+        userId: string;
+        email: string;
+      }>(`guest_activation:${hashedToken}`);
 
       if (!storedData) {
         return { success: false, message: 'Token invalide ou expiré' };
       }
 
-      const { userId, email } = JSON.parse(storedData);
+      const { userId, email } = storedData;
 
       const hashedPassword = await this.passwordCrypto.hashPassword(password);
 
       await this.userService.updateUserPassword(email, hashedPassword);
 
-      await this.redisCacheService.delete(`guest_activation:${hashedToken}`);
+      await this.cacheService.delete(`guest_activation:${hashedToken}`);
 
       this.logger.log(
         `Password set successfully for guest user ${userId} (${email})`,

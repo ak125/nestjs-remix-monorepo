@@ -16,7 +16,6 @@
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
 
 // Controllers - Stock consolidé ✅
 import { ConfigurationController } from './controllers/configuration.controller';
@@ -63,7 +62,6 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
 @Module({
   imports: [
     DatabaseModule,
-    CacheModule,
     OrdersModule,
     StaffModule,
     ProductsModule,

@@ -76,6 +76,21 @@ export const CACHE_STRATEGIES = {
       prefix: 'gamme:rpc:v2:stale:',
       description: 'Stale fallback for resilience',
     },
+    GAMME_PRICE_PREVIEW: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'gamme:price-preview:',
+      description: 'Gamme price preview',
+    },
+    GAMME_PAGE: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'gamme:page:',
+      description: 'Gamme page data',
+    },
+    GAMME_SEO: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'gamme:seo:',
+      description: 'Gamme SEO metadata',
+    },
     FAMILIES: {
       ttl: CacheTTL.TWO_HOURS,
       prefix: 'catalog:families',
@@ -90,6 +105,21 @@ export const CACHE_STRATEGIES = {
       ttl: CacheTTL.THIRTY_MINUTES,
       prefix: 'catalog:pieces',
       description: 'Piece/part listings - dynamic',
+    },
+    HOMEPAGE: {
+      ttl: CacheTTL.FIVE_MINUTES,
+      prefix: 'homepage:',
+      description: 'Homepage data',
+    },
+    SUPPLIERS: {
+      ttl: CacheTTL.THIRTY_MINUTES,
+      prefix: 'suppliers:',
+      description: 'Suppliers list',
+    },
+    MANUFACTURERS: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'manufacturers:',
+      description: 'Manufacturers list',
     },
   },
 
@@ -121,6 +151,16 @@ export const CACHE_STRATEGIES = {
       ttl: CacheTTL.TWO_HOURS,
       prefix: 'vehicles:engine:',
       description: 'Engine specifications',
+    },
+    PIECES: {
+      ttl: CacheTTL.THIRTY_MINUTES,
+      prefix: 'vehicle:pieces:',
+      description: 'Vehicle parts compatibility',
+    },
+    COMPAT: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'vehicle:compat:',
+      description: 'Vehicle compatibility data',
     },
   },
 
@@ -203,6 +243,114 @@ export const CACHE_STRATEGIES = {
       ttl: CacheTTL.THIRTY_MINUTES,
       prefix: 'sitemap:dynamic',
       description: 'Dynamic content',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // ORDERS
+  // ═══════════════════════════════════════════════════════════════
+  ORDERS: {
+    ENRICHED: {
+      ttl: CacheTTL.FIVE_MINUTES,
+      prefix: 'orders:enriched:',
+      description: 'Enriched orders with relations',
+    },
+    RECENT: {
+      ttl: 180,
+      prefix: 'orders:recent:',
+      description: 'Recent orders (3 min)',
+    },
+    COUNT: {
+      ttl: 120,
+      prefix: 'orders:count:',
+      description: 'Order count (2 min)',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // LAYOUT & NAVIGATION
+  // ═══════════════════════════════════════════════════════════════
+  LAYOUT: {
+    FOOTER: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'layout:footer:',
+      description: 'Footer data',
+    },
+    MENU: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'layout:menu:',
+      description: 'Navigation menus',
+    },
+    SOCIAL: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'layout:social:',
+      description: 'Social share data',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // CONFIG
+  // ═══════════════════════════════════════════════════════════════
+  CONFIG: {
+    DATABASE: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'config:db:',
+      description: 'Database config values',
+    },
+    METADATA: {
+      ttl: CacheTTL.THIRTY_MINUTES,
+      prefix: 'config:meta:',
+      description: 'Enhanced metadata',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // EXTERNAL SOURCES
+  // ═══════════════════════════════════════════════════════════════
+  EXTERNAL: {
+    TECDOC: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'ext:tecdoc:',
+      description: 'TecDoc linkages',
+    },
+    PL24: {
+      ttl: CacheTTL.SIX_HOURS,
+      prefix: 'ext:pl24:',
+      description: 'Partslink24 results',
+    },
+    SCRAPE: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'ext:scrape:',
+      description: 'Web scraping results',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // USERS
+  // ═══════════════════════════════════════════════════════════════
+  USERS: {
+    COUNT: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'users:count:',
+      description: 'User count stats',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // INVOICES & PROMO
+  // ═══════════════════════════════════════════════════════════════
+  INVOICES: {
+    LIST: {
+      ttl: CacheTTL.FIVE_MINUTES,
+      prefix: 'invoices:',
+      description: 'Invoice lists',
+    },
+  },
+  PROMO: {
+    DEFAULT: {
+      ttl: CacheTTL.THIRTY_MINUTES,
+      prefix: 'promo:',
+      description: 'Promotional data',
     },
   },
 } as const;

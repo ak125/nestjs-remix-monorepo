@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RedisCacheService } from '../../../database/services/redis-cache.service';
+import { CacheService } from '../../../cache/cache.service';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
 import { buildRackImageUrl } from '../../catalog/utils/image-urls.utils';
 
@@ -39,7 +39,7 @@ interface SearchResultData {
   matchedGammes?: Array<{ id: number; name: string; alias: string }>;
 }
 
-interface SearchResult {
+export interface SearchResult {
   success: boolean;
   data: SearchResultData;
   executionTime?: number;
@@ -137,7 +137,7 @@ export class SearchSimpleService extends SupabaseBaseService {
   private readonly OEM_CACHE_TTL = 3600; // 1h
   private readonly GENERAL_CACHE_TTL = 1800; // 30min
 
-  constructor(private readonly redisCache: RedisCacheService) {
+  constructor(private readonly redisCache: CacheService) {
     super();
   }
 
@@ -248,7 +248,8 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // ⚡ Try cache
     try {
-      const cached = await this.redisCache.get(cacheKey);
+      const cached =
+        await this.redisCache.get<Record<string, unknown>>(cacheKey);
       if (cached) {
         this.logger.log(
           `⚡ Cache HIT pour "${cleanQuery}" (${Date.now() - startTime}ms)`,

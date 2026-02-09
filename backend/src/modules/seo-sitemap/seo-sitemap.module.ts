@@ -18,9 +18,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-// Module Cache Redis pour sitemap delta
-import { CacheModule } from '../../cache/cache.module';
-
 // Module Catalog pour validation véhicule-pièces
 import { CatalogModule } from '../catalog/catalog.module';
 
@@ -49,7 +46,6 @@ import { SitemapDeltaController } from '../seo/controllers/sitemap-delta.control
 @Module({
   imports: [
     ConfigModule,
-    CacheModule, // Redis cache pour delta
     forwardRef(() => CatalogModule), // Pour CatalogDataIntegrityService
   ],
 
