@@ -3,6 +3,11 @@
 # After editing backend/frontend files, warns if lint issues are likely
 # Exit 0 = ok, Exit 2 = send feedback (file was still written)
 
+if ! command -v jq &>/dev/null; then
+  echo "WARN: jq not installed — hook bypassed. Install: apt install jq" >&2
+  exit 0
+fi
+
 set -euo pipefail
 
 INPUT=$(cat)

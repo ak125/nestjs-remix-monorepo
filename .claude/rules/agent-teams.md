@@ -50,3 +50,27 @@
 - Les agents respectent l'Airlock : pas de modification de fichiers systeme (`scripts/`, `.github/`, `docker-compose`, etc.)
 - Mode **delegate** recommande pour le lead (coordination seulement)
 - Chaque agent travaille sur des **fichiers distincts** — verifier l'absence de conflits avant lancement
+
+## Choix du modele par role
+
+| Role agent | Modele recommande | Justification |
+|-----------|-------------------|---------------|
+| **Lead / Coordinateur** | Opus | Raisonnement profond, orchestration complexe |
+| **Explore / Recherche** | Sonnet | Bon equilibre autonomie/cout, s'auto-corrige |
+| **Implementation** (general-purpose) | Sonnet | Rapide, capable d'editer et tester |
+| **Review securite** (paiements, auth) | Opus | Analyse fine des vulnerabilites |
+| **Taches simples** (grep, listing) | Haiku | Rapide et economique pour taches dirigees |
+
+> **Ne PAS utiliser Haiku** pour des agents qui doivent s'adapter ou se corriger seuls.
+> **Reserver Opus** aux taches a forte valeur (coordination, securite, debug multi-hypotheses).
+
+## Skills UI — quand utiliser laquelle
+
+| Skill | Niveau | Quand l'utiliser |
+|-------|--------|-----------------|
+| `/ui-ux-pro-max` | Reference | Verifier standards (contraste, accessibilite, palettes, typographie) |
+| `/frontend-design` | Implementation | Construire un composant/page avec du code de qualite |
+| `/ui-os` | Architecture | Auditer le systeme UI complet, coherence design system |
+
+> Flow naturel : **ui-os** identifie les lacunes → **frontend-design** construit → **ui-ux-pro-max** valide.
+> Ne PAS fusionner ces skills — elles sont complementaires a des niveaux differents.

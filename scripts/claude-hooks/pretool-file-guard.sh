@@ -4,6 +4,11 @@
 # Warns on payment module changes
 # Exit 0 = allow, Exit 2 = block (stderr shown to user)
 
+if ! command -v jq &>/dev/null; then
+  echo "WARN: jq not installed — hook bypassed. Install: apt install jq" >&2
+  exit 0
+fi
+
 set -euo pipefail
 
 # Read tool input from stdin (JSON)
