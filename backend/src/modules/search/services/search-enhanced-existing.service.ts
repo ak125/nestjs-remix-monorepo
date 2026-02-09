@@ -142,7 +142,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         // Simplifiée: sans jointures pour éviter les erreurs de schéma
         const fallbackQuery = this.client
           .from(TABLES.pieces)
-          .select('piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_code')
+          .select('piece_id, piece_ref, piece_pg_id, piece_pm_id')
           .or(queryVariants.map((v) => `piece_ref.ilike.%${v}%`).join(','))
           .limit(100);
 
@@ -223,7 +223,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         const formattedItems = fallbackPieces.map((piece) => {
           return {
             id: piece.piece_id?.toString() || '',
-            reference: piece.piece_ref || piece.piece_code || '',
+            reference: piece.piece_ref || '',
             brand: marqueMap.get(piece.piece_pm_id) || '',
             brandId: piece.piece_pm_id,
             category: gammeMap.get(piece.piece_pg_id) || '',
