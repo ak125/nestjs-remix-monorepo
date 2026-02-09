@@ -17,13 +17,18 @@ export class MetricsProcessor extends WorkerHost {
   private readonly logger = new Logger(MetricsProcessor.name);
 
   constructor(
-    private metricsService: MetricsService,
-    private databaseMonitorService: DatabaseMonitorService,
+    private readonly metricsService: MetricsService,
+    private readonly databaseMonitorService: DatabaseMonitorService,
   ) {
     super();
   }
 
-  async process(job: Job<MetricsJobData, any, string>): Promise<any> {
+  async process(job: Job<MetricsJobData, any, string>): Promise<{
+    type: string;
+    result: unknown;
+    processingTime: number;
+    timestamp: string;
+  }> {
     try {
       this.logger.log(
         `🔄 Processing ${job.data.type} metrics job (ID: ${job.id})`,
@@ -83,7 +88,12 @@ export class MetricsProcessor extends WorkerHost {
   /**
    * 🔧 Maintenance programmée via queue
    */
-  private async performScheduledMaintenance(): Promise<any> {
+  private async performScheduledMaintenance(): Promise<{
+    metricsCleanup: boolean;
+    alertsResolved: number;
+    cacheOptimized: boolean;
+    error?: string;
+  }> {
     this.logger.log('🔧 Performing scheduled maintenance tasks');
 
     const results = {

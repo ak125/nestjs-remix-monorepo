@@ -21,7 +21,6 @@ import {
   OperationFailedException,
   DomainValidationException,
 } from '../../../common/exceptions';
-import { Request } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { AdminGammesSeoService } from '../services/admin-gammes-seo.service';
@@ -65,7 +64,7 @@ export class AdminGammesSeoThresholdsController {
    */
   @Put('thresholds')
   async updateThresholds(
-    @Req() req: Request,
+    @Req() req: any,
     @Body()
     body: {
       trends_high?: number;
@@ -83,7 +82,7 @@ export class AdminGammesSeoThresholdsController {
       const result = await thresholdsService.updateThresholds(body);
 
       // Log to audit
-      const user = (req as any).user;
+      const user = req.user;
       await auditService.logAction({
         adminId: user?.cst_id || user?.id || 0,
         adminEmail: user?.cst_email || user?.email || 'unknown',
@@ -120,7 +119,7 @@ export class AdminGammesSeoThresholdsController {
    * Réinitialise les seuils aux valeurs par défaut (avec audit)
    */
   @Post('thresholds/reset')
-  async resetThresholds(@Req() req: Request) {
+  async resetThresholds(@Req() req: any) {
     try {
       this.logger.log('🔄 POST /api/admin/gammes-seo/thresholds/reset');
 
@@ -130,7 +129,7 @@ export class AdminGammesSeoThresholdsController {
       const result = await thresholdsService.resetToDefaults();
 
       // Log to audit
-      const user = (req as any).user;
+      const user = req.user;
       await auditService.logAction({
         adminId: user?.cst_id || user?.id || 0,
         adminEmail: user?.cst_email || user?.email || 'unknown',

@@ -34,7 +34,7 @@ export interface ModelStats {
 export class VehicleModelsService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleModelsService.name);
 
-  constructor(private cacheService: VehicleCacheService) {
+  constructor(private readonly cacheService: VehicleCacheService) {
     super();
     this.logger.log('🚗 VehicleModelsService initialisé');
   }

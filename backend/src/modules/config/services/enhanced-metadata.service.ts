@@ -378,7 +378,25 @@ export class EnhancedMetadataService extends SupabaseBaseService {
     return `${baseUrl}${path}`;
   }
 
-  private async generateSchemaMarkup(path: string, data: any): Promise<any> {
+  private async generateSchemaMarkup(
+    path: string,
+    data: any,
+  ): Promise<{
+    '@context': string;
+    '@type': string;
+    name: string;
+    description: string;
+    url: string;
+    breadcrumb: {
+      '@type': string;
+      itemListElement: {
+        '@type': string;
+        position: number;
+        name: string;
+        item?: string;
+      }[];
+    };
+  }> {
     // Générer un schema.org basique
     const baseUrl = process.env.SITE_BASE_URL || 'https://www.automecanik.com';
 

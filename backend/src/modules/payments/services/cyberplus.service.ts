@@ -21,12 +21,38 @@ export interface CyberplusFormData {
   parameters: Record<string, string>;
 }
 
+export interface PaymentResponse {
+  transactionId?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface PaymentStatusResponse {
+  status: string;
+  transactionId?: string;
+  [key: string]: unknown;
+}
+
+export interface CallbackData {
+  vads_order_id?: string;
+  vads_trans_status?: string;
+  vads_amount?: string;
+  signature?: string;
+  [key: string]: string | undefined;
+}
+
+export interface RefundResponse {
+  status?: string;
+  transactionId?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class CyberplusService {
   private readonly logger = new Logger(CyberplusService.name);
   private readonly paymentConfig: PaymentConfig;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     // ✅ Utilisation de la configuration type-safe
     this.paymentConfig = this.configService.get<PaymentConfig>('payment')!;
 
@@ -41,7 +67,7 @@ export class CyberplusService {
     amount: number,
     orderId: string,
     customerEmail: string,
-  ): Promise<any> {
+  ): Promise<PaymentResponse> {
     try {
       const paymentData = {
         merchantId: this.paymentConfig.systempay.siteId,
@@ -72,7 +98,7 @@ export class CyberplusService {
         );
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as PaymentResponse;
       this.logger.log(`Payment created for order ${orderId}`);
 
       return result;
@@ -84,7 +110,7 @@ export class CyberplusService {
     }
   }
 
-  async verifyCallback(callbackData: any): Promise<boolean> {
+  async verifyCallback(callbackData: CallbackData): Promise<boolean> {
     try {
       const expectedSignature = this.generateSignature(callbackData);
       const receivedSignature = callbackData.signature;
@@ -98,7 +124,9 @@ export class CyberplusService {
     }
   }
 
-  async getPaymentStatus(transactionId: string): Promise<any> {
+  async getPaymentStatus(
+    transactionId: string,
+  ): Promise<PaymentStatusResponse> {
     try {
       const response = await fetch(
         `${this.paymentConfig.systempay.apiUrl}/payments/${transactionId}/status`,
@@ -116,7 +144,7 @@ export class CyberplusService {
         );
       }
 
-      return await response.json();
+      return (await response.json()) as PaymentStatusResponse;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -125,7 +153,7 @@ export class CyberplusService {
     }
   }
 
-  private generateSignature(data: any): string {
+  private generateSignature(data: Record<string, unknown>): string {
     // Implémentation HMAC-SHA256 pour API SystemPay
     const payload =
       JSON.stringify(data) + this.paymentConfig.systempay.certificate;
@@ -231,7 +259,7 @@ ${formFields}
     // 🔐 MÉTHODE 1 : HMAC-SHA-256 (recommandée depuis DSP2)
     // Utiliser la clé HMAC si fournie, sinon retomber sur le certificat
     const hmacKey =
-      (this.paymentConfig.systempay as any).hmacKey ||
+      this.paymentConfig.systempay.hmacKey ||
       this.paymentConfig.systempay.certificate;
     const signatureHmac = createHmac('sha256', hmacKey)
       .update(dataString)
@@ -251,8 +279,7 @@ ${formFields}
     this.logger.log(`   SHA1 (legacy): ${signatureSha1}`);
 
     // Choisir la méthode configurée (SHA1 legacy ou HMAC)
-    const method =
-      (this.paymentConfig.systempay as any).signatureMethod || 'SHA1';
+    const method = this.paymentConfig.systempay.signatureMethod || 'SHA1';
     if (method === 'HMAC') {
       this.logger.log('Using HMAC-SHA256 signature method');
       return signatureHmac;
@@ -269,7 +296,7 @@ ${formFields}
     transactionId: string,
     amount?: number,
     reason?: string,
-  ): Promise<any> {
+  ): Promise<RefundResponse> {
     try {
       const body: Record<string, string> = {
         transaction_id: transactionId,
@@ -299,7 +326,7 @@ ${formFields}
         );
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as RefundResponse;
       this.logger.log(`Refund processed for transaction ${transactionId}`);
 
       return result;
@@ -315,7 +342,7 @@ ${formFields}
    * Validation des callbacks SystemPay/Cyberplus
    * Verifie les champs vads_* obligatoires et la signature HMAC
    */
-  validateCallback(callbackData: any): boolean {
+  validateCallback(callbackData: CallbackData): boolean {
     try {
       // SystemPay envoie des champs vads_* — verifier leur presence
       const vadsOrderId = callbackData.vads_order_id;

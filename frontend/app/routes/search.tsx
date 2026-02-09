@@ -43,6 +43,9 @@ import {
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 // 🎯 Layout components
+import { Error404 } from "~/components/errors/Error404";
+import { Badge } from "~/components/ui";
+import { logger } from "~/utils/logger";
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
@@ -73,13 +76,16 @@ import {
   type SearchFacet,
   type GroupedSearchResults,
 } from "../utils/search-mappers";
-import { Error404 } from "~/components/errors/Error404";
-import { Badge } from "~/components/ui";
-import { logger } from "~/utils/logger";
 
 // ===============================
 // TYPES
 // ===============================
+
+interface MatchedGamme {
+  id: number;
+  name: string;
+  alias: string;
+}
 
 interface SearchPageData {
   results: {
@@ -92,11 +98,15 @@ interface SearchPageData {
     suggestions?: string[];
     executionTime?: number;
     cached?: boolean;
+    /** Fallback search type when no exact reference match */
+    fallbackType?: string;
+    /** Matched gammes for gamme-name fallback */
+    matchedGammes?: MatchedGamme[];
   } | null;
   pieces: PieceData[]; // Pièces mappées côté serveur
   groupedPieces: GroupedSearchResults[]; // Groupées par gamme
   query: string;
-  filters: Record<string, any>;
+  filters: Record<string, string>;
   hasError: boolean;
   errorMessage?: string;
   performance: {
@@ -639,17 +649,17 @@ export default function SearchPage() {
         {/* Banner fallback gamme-name */}
         {results &&
           !hasError &&
-          (results as any).fallbackType === "gamme-name" &&
-          (results as any).matchedGammes?.length > 0 && (
+          results.fallbackType === "gamme-name" &&
+          results.matchedGammes && results.matchedGammes.length > 0 && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
               <p className="text-sm text-blue-800">
                 Aucune référence exacte trouvée pour &quot;
                 <strong>{query}</strong>&quot;. Voici les pièces de la gamme{" "}
                 <a
-                  href={`/pieces/${(results as any).matchedGammes[0].alias}-${(results as any).matchedGammes[0].id}.html`}
+                  href={`/pieces/${results.matchedGammes[0].alias}-${results.matchedGammes[0].id}.html`}
                   className="font-semibold underline hover:text-blue-900"
                 >
-                  {(results as any).matchedGammes[0].name}
+                  {results.matchedGammes[0].name}
                 </a>
                 .
               </p>

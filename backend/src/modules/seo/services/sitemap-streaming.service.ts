@@ -48,7 +48,7 @@ export class SitemapStreamingService {
   private readonly supabase: SupabaseClient;
   private readonly BASE_URL = 'https://www.automecanik.com';
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.config = {
       enableGzip: true,
       compressionLevel: 9, // Maximum compression

@@ -22,6 +22,9 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
@@ -34,9 +37,6 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getOrderDetails } from "../services/orders.server";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) =>
   createNoIndexMeta(

@@ -53,7 +53,7 @@ export class LogIngestionService {
   private readonly lokiUrl: string;
   private readonly caddyLogPath: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     // Meilisearch client
     this.meilisearch = new MeiliSearch({
       host: this.configService.get<string>(

@@ -27,11 +27,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
-import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => [
   { title: "Messages | Admin AutoMecanik" },
@@ -208,7 +208,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         fallbackMode: true,
       } as MessageData);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement des messages:", error);
 
     return json({

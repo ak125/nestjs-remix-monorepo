@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
 
       // Cas spécial : Missing credentials = utilisateur non connecté
       if (info?.message === 'Missing credentials') {
-        response.status(401).json({
+        response.status(HttpStatus.UNAUTHORIZED).json({
           statusCode: 401,
           error: 'Unauthorized',
           message: 'Authentification requise',
@@ -76,7 +76,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
       // Si c'est une requête API (Accept: application/json)
       const acceptHeader = request.headers.accept || '';
       if (acceptHeader.includes('application/json')) {
-        return response.status(401).json({
+        return response.status(HttpStatus.UNAUTHORIZED).json({
           success: false,
           error: {
             type: errorType,

@@ -63,12 +63,13 @@ export class VehicleHierarchyController extends SupabaseBaseService {
         count: types?.length || 0,
         modele_id: modeleId,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Exception: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Exception: ${message}`);
       return {
         success: false,
         data: [],
-        error: error.message,
+        error: message,
       };
     }
   }
@@ -119,12 +120,13 @@ export class VehicleHierarchyController extends SupabaseBaseService {
         count: modeles?.length || 0,
         marque_id: marqueId,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Exception: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Exception: ${message}`);
       return {
         success: false,
         data: [],
-        error: error.message,
+        error: message,
       };
     }
   }

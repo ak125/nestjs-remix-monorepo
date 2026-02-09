@@ -26,6 +26,8 @@ import { useActionData, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { OrderDetailsModal } from "../components/orders/OrderDetailsModal";
@@ -45,8 +47,6 @@ import {
   type Order,
 } from "../types/orders.types";
 import { getUserPermissions, getUserRole } from "../utils/permissions";
-import { Alert } from "~/components/ui";
-import { logger } from "~/utils/logger";
 
 // ========================================
 // 📄 META
@@ -425,7 +425,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     let orders = ordersData?.data || [];
 
     // Enrichir avec noms clients
-    orders = orders.map((order: any) => ({
+    orders = orders.map((order: Order) => ({
       ...order,
       customerName: order.customer
         ? `${order.customer.cst_fname || ""} ${order.customer.cst_name || ""}`.trim() ||
@@ -441,9 +441,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     if (search) {
       const s = search.toLowerCase();
       filteredOrders = filteredOrders.filter(
-        (o: any) =>
-          o.customerName.toLowerCase().includes(s) ||
-          o.customerEmail.toLowerCase().includes(s) ||
+        (o: Order) =>
+          o.customerName?.toLowerCase().includes(s) ||
+          o.customerEmail?.toLowerCase().includes(s) ||
           o.ord_id.toString().includes(search),
       );
     }
@@ -451,13 +451,13 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     // Statut commande
     if (orderStatus) {
       filteredOrders = filteredOrders.filter(
-        (o: any) => o.ord_ords_id === orderStatus,
+        (o: Order) => o.ord_ords_id === orderStatus,
       );
     }
 
     // Statut paiement
     if (paymentStatus) {
-      filteredOrders = filteredOrders.filter((o: any) => {
+      filteredOrders = filteredOrders.filter((o: Order) => {
         if (paymentStatus === "1") {
           return o.ord_is_pay === "1" && o.ord_ords_id !== "1";
         }
@@ -491,7 +491,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       }
 
       filteredOrders = filteredOrders.filter(
-        (o: any) => new Date(o.ord_date) >= startDate,
+        (o: Order) => new Date(o.ord_date) >= startDate,
       );
     }
 
@@ -500,26 +500,26 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const totalRevenue = filteredOrders.reduce(
-      (sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || "0"),
+      (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
       0,
     );
 
     const monthRevenue = filteredOrders
-      .filter((o: any) => new Date(o.ord_date) >= startOfMonth)
+      .filter((o: Order) => new Date(o.ord_date) >= startOfMonth)
       .reduce(
-        (sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || "0"),
+        (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
         0,
       );
 
     const unpaidAmount = filteredOrders
-      .filter((o: any) => o.ord_is_pay === "0")
+      .filter((o: Order) => o.ord_is_pay === "0")
       .reduce(
-        (sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || "0"),
+        (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
         0,
       );
 
     const pendingOrders = filteredOrders.filter(
-      (o: any) => o.ord_ords_id === "1",
+      (o: Order) => o.ord_ords_id === "1",
     ).length;
     const averageBasket =
       filteredOrders.length > 0 ? totalRevenue / filteredOrders.length : 0;
@@ -535,7 +535,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     // Tri par date décroissante
     const sortedOrders = filteredOrders.sort(
-      (a: any, b: any) =>
+      (a: Order, b: Order) =>
         new Date(b.ord_date || 0).getTime() -
         new Date(a.ord_date || 0).getTime(),
     );

@@ -32,6 +32,33 @@ import { createNoIndexMeta } from "~/utils/meta-helpers";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Nouvelle Expedition - Commercial");
 
+/** Shape of the raw order coming from the dashboard API */
+interface RawOrderData {
+  id: string;
+  orderNumber?: string;
+  customerName?: string;
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  totalPrice?: number;
+  createdAt?: string;
+  shippingAddress?: {
+    firstName?: string;
+    lastName?: string;
+    company?: string;
+    address1?: string;
+    address2?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+    phone?: string;
+  };
+}
+
 // Types pour la création d'expédition
 interface Order {
   id: string;
@@ -77,9 +104,9 @@ interface Carrier {
 
 interface LoaderData {
   order?: Order;
-  orders: any[];
+  orders: RawOrderData[];
   carriers: Carrier[];
-  shippingRates: any[];
+  shippingRates: Record<string, unknown>[];
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -92,12 +119,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       `http://127.0.0.1:3000/api/dashboard/orders/recent?limit=100`,
     );
     const ordersData = await orderResponse.json();
-    const allOrders = ordersData.orders || [];
+    const allOrders: RawOrderData[] = ordersData.orders || [];
 
     // Si un orderId est fourni, chercher cette commande spécifique
-    let selectedOrder = null;
+    let selectedOrder: RawOrderData | null = null;
     if (orderId && allOrders.length > 0) {
-      selectedOrder = allOrders.find((o: any) => o.id === orderId);
+      selectedOrder = allOrders.find((o) => o.id === orderId) ?? null;
       if (!selectedOrder) {
         // Prendre la première commande disponible si l'ID n'est pas trouvé
         selectedOrder = allOrders[0];
@@ -182,11 +209,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     let transformedOrder: Order | undefined;
     if (order) {
       transformedOrder = {
-        id: (order as any).id,
-        orderNumber: (order as any).orderNumber || `CMD-${(order as any).id}`,
+        id: order.id,
+        orderNumber: order.orderNumber || `CMD-${order.id}`,
         customerName:
-          (order as any).customerName ||
-          `${(order as any).firstName || ""} ${(order as any).lastName || ""}`.trim() ||
+          order.customerName ||
+          `${order.firstName || ""} ${order.lastName || ""}`.trim() ||
           "Client inconnu",
         totalWeight: 2.5, // Poids par défaut
         dimensions: {
@@ -196,31 +223,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
         shippingAddress: {
           firstName:
-            (order as any).shippingAddress?.firstName ||
-            (order as any).firstName ||
+            order.shippingAddress?.firstName ||
+            order.firstName ||
             "",
           lastName:
-            (order as any).shippingAddress?.lastName ||
-            (order as any).lastName ||
+            order.shippingAddress?.lastName ||
+            order.lastName ||
             "",
-          company: (order as any).shippingAddress?.company || "",
+          company: order.shippingAddress?.company || "",
           address1:
-            (order as any).shippingAddress?.address1 ||
-            (order as any).address ||
+            order.shippingAddress?.address1 ||
+            order.address ||
             "",
-          address2: (order as any).shippingAddress?.address2 || "",
+          address2: order.shippingAddress?.address2 || "",
           postalCode:
-            (order as any).shippingAddress?.postalCode ||
-            (order as any).postalCode ||
+            order.shippingAddress?.postalCode ||
+            order.postalCode ||
             "",
           city:
-            (order as any).shippingAddress?.city || (order as any).city || "",
+            order.shippingAddress?.city || order.city || "",
           country:
-            (order as any).shippingAddress?.country ||
-            (order as any).country ||
+            order.shippingAddress?.country ||
+            order.country ||
             "France",
           phone:
-            (order as any).shippingAddress?.phone || (order as any).phone || "",
+            order.shippingAddress?.phone || order.phone || "",
         },
         items: [{ name: "Articles de la commande", quantity: 1, weight: 2.5 }],
       };
@@ -280,7 +307,7 @@ export default function CreateShipment() {
 
   // États pour le formulaire
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedService, setSelectedService] = useState<Carrier["services"][number] | null>(null);
   const [weight, setWeight] = useState<number>(order?.totalWeight || 2.5);
   const [dimensions, setDimensions] = useState({
     length: order?.dimensions.length || 30,
@@ -341,7 +368,7 @@ export default function CreateShipment() {
               </p>
             ) : (
               <div className="space-y-3">
-                {orders.slice(0, 10).map((orderItem: any) => (
+                {orders.slice(0, 10).map((orderItem) => (
                   <Link
                     key={orderItem.id}
                     to={`/commercial/shipping/create?orderId=${orderItem.id}`}
@@ -362,7 +389,7 @@ export default function CreateShipment() {
                           {orderItem.totalPrice || 0}€
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(orderItem.createdAt).toLocaleDateString(
+                          {new Date(orderItem.createdAt ?? "").toLocaleDateString(
                             "fr-FR",
                           )}
                         </div>

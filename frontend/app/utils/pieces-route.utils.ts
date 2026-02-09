@@ -3,6 +3,7 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  */
 
+import { logger } from "~/utils/logger";
 import {
   type VehicleData,
   type GammeData,
@@ -12,7 +13,6 @@ import {
   type GuideContent,
   type PieceData,
 } from "../types/pieces-route.types";
-import { logger } from "~/utils/logger";
 
 /**
  * Convertit un slug en titre formaté

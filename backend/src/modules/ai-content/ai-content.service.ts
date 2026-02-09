@@ -45,7 +45,7 @@ export class AiContentService {
   // Max retries across all providers
   private readonly MAX_FAILOVER_ATTEMPTS = 3;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.initializeAllProviders();
     this.selectInitialProvider();
   }

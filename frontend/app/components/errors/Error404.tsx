@@ -1,9 +1,9 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState, memo } from "react";
+import { logger } from "~/utils/logger";
 import { useErrorAutoReport } from "../../hooks/useErrorAutoReport";
 import { ErrorSearchBar } from "./ErrorSearchBar";
 import { PopularCategories } from "./PopularCategories";
-import { logger } from "~/utils/logger";
 
 interface Error404Props {
   url?: string;

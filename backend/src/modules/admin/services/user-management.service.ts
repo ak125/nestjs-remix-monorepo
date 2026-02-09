@@ -48,6 +48,22 @@ export interface AdminUser {
   totalSpent: number;
 }
 
+/** Raw row shape from ___xtr_customer table */
+interface CustomerRow {
+  cst_id: string;
+  cst_email: string;
+  cst_firstname?: string;
+  cst_lastname?: string;
+  cst_phone?: string;
+  cst_level?: string;
+  cst_is_active: string;
+  cst_is_pro: string;
+  cst_email_verified: string;
+  cst_create_date: string;
+  cst_last_login?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Service de gestion administrative des utilisateurs
  */
@@ -90,24 +106,20 @@ export class UserManagementService extends SupabaseBaseService {
         });
       }
 
-      const users = await response.json();
+      const users = (await response.json()) as CustomerRow[];
 
       // Calculs statistiques
       const total = users.length;
-      const active = users.filter((u: any) => u.cst_is_active === 'Y').length;
+      const active = users.filter((u) => u.cst_is_active === 'Y').length;
       const inactive = total - active;
-      const professional = users.filter(
-        (u: any) => u.cst_is_pro === 'Y',
-      ).length;
-      const verified = users.filter(
-        (u: any) => u.cst_email_verified === 'Y',
-      ).length;
+      const professional = users.filter((u) => u.cst_is_pro === 'Y').length;
+      const verified = users.filter((u) => u.cst_email_verified === 'Y').length;
 
       // Nouveaux utilisateurs ce mois
       const thisMonth = new Date();
       thisMonth.setDate(1);
       const newThisMonth = users.filter(
-        (u: any) => new Date(u.cst_create_date) >= thisMonth,
+        (u) => new Date(u.cst_create_date) >= thisMonth,
       ).length;
 
       // Répartition par niveau
@@ -124,7 +136,7 @@ export class UserManagementService extends SupabaseBaseService {
         '10': 0,
       };
 
-      users.forEach((u: any) => {
+      users.forEach((u) => {
         const level = u.cst_level?.toString() || '1';
         if (byLevel[level] !== undefined) {
           byLevel[level]++;
@@ -225,10 +237,10 @@ export class UserManagementService extends SupabaseBaseService {
         });
       }
 
-      const users = await response.json();
+      const users = (await response.json()) as CustomerRow[];
 
       // Transformation des données pour l'admin
-      const adminUsers: AdminUser[] = users.map((u: any) => ({
+      const adminUsers: AdminUser[] = users.map((u) => ({
         id: u.cst_id,
         email: u.cst_email,
         firstName: u.cst_firstname,
@@ -347,7 +359,7 @@ export class UserManagementService extends SupabaseBaseService {
       this.logger.log(`✏️ Mise à jour utilisateur ${userId}:`, updates);
 
       // Transformation des données pour Supabase
-      const supabaseUpdates: any = {};
+      const supabaseUpdates: Record<string, string | number | boolean> = {};
 
       if (updates.level !== undefined) {
         supabaseUpdates.cst_level = updates.level;

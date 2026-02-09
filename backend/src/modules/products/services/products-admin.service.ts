@@ -48,13 +48,13 @@ export class ProductsAdminService extends SupabaseBaseService {
         .eq('pg_id', gammeId)
         .single()) as {
         data: {
-          pg_id: any;
-          pg_name: any;
-          pg_alias: any;
-          pg_pic: any;
-          pg_display: any;
+          pg_id: string;
+          pg_name: string;
+          pg_alias: string;
+          pg_pic: string;
+          pg_display: string;
         } | null;
-        error: any;
+        error: { message: string; code?: string } | null;
       };
 
       if (gammeError || !gammeInfo) {
@@ -94,14 +94,14 @@ export class ProductsAdminService extends SupabaseBaseService {
       }
 
       // Enrichir les produits avec les informations des marques
-      let enrichedProducts: any[] = [];
+      let enrichedProducts: Record<string, unknown>[] = [];
       if (products && products.length > 0) {
         const brandIds = [
           ...new Set(products.map((p) => p.piece_pm_id).filter((id) => id)),
         ];
 
         // Utiliser Map() pour lookup O(1) au lieu de find() O(n)
-        const brandsMap = new Map<number, any>();
+        const brandsMap = new Map<number, Record<string, unknown>>();
         if (brandIds.length > 0) {
           const { data: brands, error: brandsError } = await this.client
             .from(TABLES.auto_marque)
@@ -446,7 +446,7 @@ export class ProductsAdminService extends SupabaseBaseService {
 
       // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
       const { data: gammesData, error: gammesError } = await this.callRpc<
-        any[]
+        { pg_id: string; pg_name: string }[]
       >('get_gammes_with_pieces', {}, { source: 'api', role: 'service_role' });
 
       if (gammesError) {
@@ -455,7 +455,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       }
 
       const gammes =
-        gammesData?.map((g: any) => ({
+        gammesData?.map((g) => ({
           id: g.pg_id.toString(),
           name: g.pg_name,
         })) || [];
@@ -479,7 +479,7 @@ export class ProductsAdminService extends SupabaseBaseService {
 
       // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
       const { data: brandsData, error: brandsError } = await this.callRpc<
-        any[]
+        { pm_id: string; pm_name: string }[]
       >('get_brands_with_pieces', {}, { source: 'api', role: 'service_role' });
 
       if (brandsError) {
@@ -491,7 +491,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       }
 
       const brands =
-        brandsData?.map((b: any) => ({
+        brandsData?.map((b) => ({
           id: b.pm_id.toString(),
           name: b.pm_name,
         })) || [];

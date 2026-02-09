@@ -242,7 +242,19 @@ export class VehicleNamingService extends SupabaseBaseService {
   /**
    * 🧪 Test avec quelques exemples
    */
-  async testVehicleNaming(): Promise<any> {
+  async testVehicleNaming(): Promise<{
+    success: boolean;
+    total?: number;
+    examples?: {
+      typeId: unknown;
+      shortName: unknown;
+      fullName: unknown;
+      marque: unknown;
+      modele: unknown;
+    }[];
+    message?: string;
+    error?: string;
+  }> {
     try {
       const vehicles = await this.getVehiclesWithFullNames(10);
 

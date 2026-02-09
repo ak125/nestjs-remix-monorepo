@@ -36,8 +36,8 @@ export class VehicleMineService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleMineService.name);
 
   constructor(
-    private cacheService: VehicleCacheService,
-    private enrichmentService: VehicleEnrichmentService,
+    private readonly cacheService: VehicleCacheService,
+    private readonly enrichmentService: VehicleEnrichmentService,
   ) {
     super();
     this.logger.log('⛏️ VehicleMineService initialisé');
@@ -308,13 +308,16 @@ export class VehicleMineService extends SupabaseBaseService {
             return null;
           }
 
+          const autoModele = data.auto_modele as {
+            modele_name?: string;
+            auto_marque?: { marque_name?: string };
+          } | null;
           return {
             mine_code: data.type_mine_code,
             type_id: data.type_id,
             type_name: data.type_name,
-            modele_name: (data.auto_modele as any)?.modele_name || 'Unknown',
-            marque_name:
-              (data.auto_modele as any)?.auto_marque?.marque_name || 'Unknown',
+            modele_name: autoModele?.modele_name || 'Unknown',
+            marque_name: autoModele?.auto_marque?.marque_name || 'Unknown',
           };
         } catch (error) {
           this.logger.error(`Erreur getMineInfo ${mineCode}:`, error);
@@ -428,8 +431,10 @@ export class VehicleMineService extends SupabaseBaseService {
 
           const byMarque: Record<string, number> = {};
           byMarqueData?.forEach((item) => {
-            const marque =
-              (item.auto_modele as any)?.auto_marque?.marque_name || 'Unknown';
+            const autoModele = item.auto_modele as {
+              auto_marque?: { marque_name?: string };
+            } | null;
+            const marque = autoModele?.auto_marque?.marque_name || 'Unknown';
             byMarque[marque] = (byMarque[marque] || 0) + 1;
           });
 

@@ -103,7 +103,7 @@ export async function getRemixApiService(
 
   const api = {
     makeApiCall,
-    getOrdersForRemix: (params: any) => {
+    getOrdersForRemix: (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
       const { page = 1, limit = 20, status, search } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -113,7 +113,7 @@ export async function getRemixApiService(
       });
       return makeApiCall(`/api/admin/orders?${q}`);
     },
-    getUsersForRemix: (params: any) => {
+    getUsersForRemix: (params?: { page?: number; limit?: number; search?: string; level?: number }) => {
       const { page = 1, limit = 10, search, level } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -123,7 +123,7 @@ export async function getRemixApiService(
       });
       return makeApiCall(`/api/legacy-users?${q}`);
     },
-    getSuppliersForRemix: (params: any) => {
+    getSuppliersForRemix: (params?: { page?: number; limit?: number; search?: string }) => {
       const { page = 1, limit = 20, search } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -156,7 +156,7 @@ export async function getRemixApiService(
           };
         });
     },
-    getPayments: async (params: any) => {
+    getPayments: async (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
       // Proxy simple via orders
       const orders: any = await api.getOrdersForRemix(params);
       const payments = (orders?.orders || []).map((o: any) => ({
@@ -492,7 +492,7 @@ export async function getRemixApiService(
     },
 
     // 👥 Méthodes Staff ajoutées pour corriger l'intégration Remix
-    getStaff: async (params: any) => {
+    getStaff: async (params?: { page?: number; limit?: number; status?: string; department?: string; search?: string }) => {
       try {
         const {
           page = 1,

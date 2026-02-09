@@ -16,6 +16,7 @@ import {
   BulkUploadResult,
   UploadType,
 } from '../dto/upload.dto';
+import { AnalyticsReport } from './upload-analytics.service';
 
 export interface UploadOptions {
   uploadType: UploadType;
@@ -24,7 +25,7 @@ export interface UploadOptions {
   generateThumbnails?: boolean;
   compressionLevel?: number;
   customFileName?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface BulkUploadOptions extends UploadOptions {
@@ -39,10 +40,10 @@ export class UploadService {
   private readonly defaultFolder = 'uploads';
 
   constructor(
-    private configService: ConfigService,
-    private supabaseStorageService: SupabaseStorageService,
-    private fileValidationService: FileValidationService,
-    private uploadAnalyticsService: UploadAnalyticsService,
+    private readonly configService: ConfigService,
+    private readonly supabaseStorageService: SupabaseStorageService,
+    private readonly fileValidationService: FileValidationService,
+    private readonly uploadAnalyticsService: UploadAnalyticsService,
   ) {
     this.logger.log('📁 UploadService initialized');
   }
@@ -117,8 +118,9 @@ export class UploadService {
       );
 
       return uploadResult;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erreur inconnue';
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       // Enregistrement de l'échec
       await this.uploadAnalyticsService.recordUploadFailure(
@@ -132,7 +134,7 @@ export class UploadService {
 
       this.logger.error(
         `❌ Upload failed for ${file.originalname}:`,
-        error.message,
+        errorMessage,
       );
 
       // Re-throw avec le bon type d'exception
@@ -195,10 +197,10 @@ export class UploadService {
             result.summary.totalSize += uploadResult.size;
 
             return { success: true, file, result: uploadResult };
-          } catch (error: any) {
+          } catch (error: unknown) {
             const failureInfo = {
               file: file.originalname,
-              error: error.message || String(error),
+              error: error instanceof Error ? error.message : String(error),
             };
 
             result.failed.push(failureInfo);
@@ -249,8 +251,9 @@ export class UploadService {
       }
 
       return success;
-    } catch (error: any) {
-      this.logger.error(`❌ Delete error for ${filePath}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Delete error for ${filePath}:`, message);
       return false;
     }
   }
@@ -267,10 +270,11 @@ export class UploadService {
         filePath,
         expiresInSeconds,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Failed to generate signed URL for ${filePath}:`,
-        error.message,
+        message,
       );
       throw error;
     }
@@ -279,11 +283,15 @@ export class UploadService {
   /**
    * Liste les fichiers d'un dossier
    */
-  async listFiles(folder: string, limit: number = 100): Promise<any[]> {
+  async listFiles(
+    folder: string,
+    limit: number = 100,
+  ): Promise<Record<string, unknown>[]> {
     try {
       return await this.supabaseStorageService.listFiles(folder, limit);
-    } catch (error: any) {
-      this.logger.error(`❌ Failed to list files in ${folder}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Failed to list files in ${folder}:`, message);
       return [];
     }
   }
@@ -291,7 +299,7 @@ export class UploadService {
   /**
    * Obtient les informations d'un fichier
    */
-  async getFileInfo(filePath: string): Promise<any> {
+  async getFileInfo(filePath: string): Promise<Record<string, unknown> | null> {
     try {
       // Pour l'instant, on utilise les capacités de base de Supabase
       // On pourrait étendre avec des métadonnées stockées en base
@@ -304,11 +312,9 @@ export class UploadService {
       const fileInfo = files.find((f) => f.name === fileName);
 
       return fileInfo || null;
-    } catch (error: any) {
-      this.logger.error(
-        `❌ Failed to get file info for ${filePath}:`,
-        error.message,
-      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Failed to get file info for ${filePath}:`, message);
       return null;
     }
   }
@@ -337,15 +343,16 @@ export class UploadService {
         warnings: result.warnings,
         securityScore: result.securityScore,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Validation failed for ${file.originalname}:`,
-        error.message,
+        message,
       );
 
       return {
         isValid: false,
-        errors: [`Erreur de validation: ${error.message}`],
+        errors: [`Erreur de validation: ${message}`],
         warnings: [],
         securityScore: 0,
       };
@@ -363,8 +370,9 @@ export class UploadService {
   }> {
     try {
       return await this.uploadAnalyticsService.getQuickStats();
-    } catch (error: any) {
-      this.logger.error('❌ Failed to get upload stats:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Failed to get upload stats:', message);
       return {
         todayUploads: 0,
         totalSize: 0,
@@ -390,8 +398,9 @@ export class UploadService {
 
       this.logger.log(`✅ Cleanup completed: ${cleanedCount} records cleaned`);
       return cleanedCount;
-    } catch (error: any) {
-      this.logger.error('❌ Cleanup failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Cleanup failed:', message);
       return 0;
     }
   }
@@ -399,14 +408,18 @@ export class UploadService {
   /**
    * Génère un rapport d'utilisation
    */
-  async generateUsageReport(startDate: Date, endDate: Date): Promise<any> {
+  async generateUsageReport(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<AnalyticsReport> {
     try {
       return await this.uploadAnalyticsService.generateReport(
         startDate,
         endDate,
       );
-    } catch (error: any) {
-      this.logger.error('❌ Failed to generate usage report:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Failed to generate usage report:', message);
       throw new OperationFailedException({
         message: 'Impossible de générer le rapport',
       });
@@ -506,8 +519,9 @@ export class UploadService {
         },
         metrics: metrics as unknown as Record<string, unknown>,
       };
-    } catch (error: any) {
-      this.logger.error('❌ Health check failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Health check failed:', message);
       return {
         status: 'unhealthy',
         services: {

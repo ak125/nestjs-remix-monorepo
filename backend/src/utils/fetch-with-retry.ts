@@ -56,30 +56,35 @@ export async function fetchWithRetry(
       } finally {
         clearTimeout(timeoutId);
       }
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      // Cast pour accéder aux propriétés spécifiques aux erreurs réseau
+      const errObj = error as Record<string, unknown>;
+      const errMessage = error instanceof Error ? error.message : String(error);
+      const errName = error instanceof Error ? error.name : '';
 
       // Vérifier si c'est une erreur retryable
       const isTimeout =
-        error.name === 'AbortError' ||
-        error.code === 'ETIMEDOUT' ||
-        error.message?.includes('timeout');
+        errName === 'AbortError' ||
+        errObj.code === 'ETIMEDOUT' ||
+        errMessage.includes('timeout');
 
       const isNetworkError =
-        error.code === 'ECONNRESET' ||
-        error.code === 'ECONNREFUSED' ||
-        error.code === 'ENOTFOUND' ||
-        error.code === 'EAI_AGAIN' ||
-        error.type === 'system';
+        errObj.code === 'ECONNRESET' ||
+        errObj.code === 'ECONNREFUSED' ||
+        errObj.code === 'ENOTFOUND' ||
+        errObj.code === 'EAI_AGAIN' ||
+        errObj.type === 'system';
 
-      const is5xxError = error.message?.includes('HTTP 5');
+      const is5xxError = errMessage.includes('HTTP 5');
 
       const shouldRetry = isTimeout || isNetworkError || is5xxError;
 
       // Si dernière tentative ou erreur non-retryable, on throw
       if (attempt >= maxRetries - 1 || !shouldRetry) {
         logger?.error(
-          `❌ Fetch failed after ${attempt + 1} attempts: ${error.message}`,
+          `❌ Fetch failed after ${attempt + 1} attempts: ${errMessage}`,
         );
         throw error;
       }
@@ -88,12 +93,12 @@ export async function fetchWithRetry(
       const delay = Math.min(baseDelay * Math.pow(2, attempt), 10000);
 
       logger?.warn(
-        `⚠️ Fetch attempt ${attempt + 1}/${maxRetries} failed: ${error.message}. Retrying in ${delay}ms...`,
+        `⚠️ Fetch attempt ${attempt + 1}/${maxRetries} failed: ${errMessage}. Retrying in ${delay}ms...`,
       );
 
       // Callback optionnel
       if (onRetry) {
-        onRetry(attempt + 1, error);
+        onRetry(attempt + 1, lastError);
       }
 
       // Attendre avant le retry

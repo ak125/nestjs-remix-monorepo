@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Res, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Res,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { CyberplusService } from '../services/cyberplus.service';
@@ -22,7 +29,7 @@ export class SystemPayRedirectController {
     this.logger.log(`🔵 SystemPay redirect request for order: ${orderId}`);
 
     if (!orderId || !amount || !email) {
-      return res.status(400).send('Missing parameters');
+      return res.status(HttpStatus.BAD_REQUEST).send('Missing parameters');
     }
 
     const amountNum = parseFloat(amount);

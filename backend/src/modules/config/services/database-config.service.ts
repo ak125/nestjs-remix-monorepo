@@ -10,6 +10,15 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { CacheService } from '../../cache/cache.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
+/** Raw row shape from ___config table */
+interface ConfigRow {
+  config_key: string;
+  config_value: string;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 @Injectable()
 export class DatabaseConfigService extends SupabaseBaseService {
   protected readonly logger = new Logger(DatabaseConfigService.name);
@@ -19,7 +28,11 @@ export class DatabaseConfigService extends SupabaseBaseService {
 
   constructor(
     private readonly cacheService: CacheService,
-    @Inject('CONFIG_OPTIONS') private readonly options: any = {},
+    @Inject('CONFIG_OPTIONS')
+    private readonly options: {
+      cacheEnabled?: boolean;
+      cacheTTL?: number;
+    } = {},
   ) {
     super();
   }
@@ -199,7 +212,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     updateConfigDto: UpdateConfigDto,
   ): Promise<ConfigItemDto | null> {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
 
@@ -294,7 +307,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     }
   }
 
-  private formatConfig(data: any): ConfigItemDto {
+  private formatConfig(data: ConfigRow): ConfigItemDto {
     // Adapter au format de la table ___config
     const value = this.deserializeValue(
       data.config_value || '{}',
@@ -314,7 +327,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     };
   }
 
-  private formatConfigs(data: any[]): ConfigItemDto[] {
+  private formatConfigs(data: ConfigRow[]): ConfigItemDto[] {
     return data.map((item) => this.formatConfig(item));
   }
 
@@ -334,7 +347,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     }
   }
 
-  private deserializeValue(value: string, type: ConfigType): any {
+  private deserializeValue(value: string, type: ConfigType): unknown {
     try {
       switch (type) {
         case ConfigType.STRING:
@@ -371,7 +384,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     }
   }
 
-  private detectConfigType(value: any): ConfigType {
+  private detectConfigType(value: unknown): ConfigType {
     if (typeof value === 'string') return ConfigType.STRING;
     if (typeof value === 'number') return ConfigType.NUMBER;
     if (typeof value === 'boolean') return ConfigType.BOOLEAN;

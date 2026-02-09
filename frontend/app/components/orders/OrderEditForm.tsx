@@ -2,9 +2,9 @@ import { Form, useFetcher } from "@remix-run/react";
 import { Save, X } from "lucide-react";
 import { useEffect, memo } from "react";
 
-import { type ActionData, type Order } from "../../types/orders.types";
 import { Alert } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { type ActionData, type Order } from "../../types/orders.types";
 
 interface OrderEditFormProps {
   order: Order;

@@ -224,7 +224,16 @@ export class RedisCacheService extends SupabaseBaseService {
   /**
    * 📊 Statistiques du cache enrichies
    */
-  async getCacheStats(): Promise<any> {
+  async getCacheStats(): Promise<{
+    connected?: boolean;
+    keyCount?: number;
+    memory?: string;
+    hits?: number;
+    misses?: number;
+    hitRate?: number;
+    timestamp?: string;
+    error?: string;
+  }> {
     try {
       const info = await this.redis.info('memory');
       const statsInfo = await this.redis.info('stats');
@@ -249,9 +258,10 @@ export class RedisCacheService extends SupabaseBaseService {
         hitRate: Math.round(hitRate * 100) / 100,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur stats cache:`, error);
-      return { error: error?.message || 'Erreur inconnue' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur stats cache:`, message);
+      return { error: message };
     }
   }
 

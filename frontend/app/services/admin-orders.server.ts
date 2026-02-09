@@ -3,8 +3,8 @@
  * Service dédié aux administrateurs pour la gestion des commandes
  */
 
-import { type Order } from "../utils/orders";
 import { logger } from "~/utils/logger";
+import { type Order } from "../utils/orders";
 
 export interface GetAdminOrdersParams {
   page?: number;

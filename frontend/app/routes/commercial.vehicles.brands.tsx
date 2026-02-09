@@ -25,6 +25,10 @@ import {
 import { useLoaderData, Link } from "@remix-run/react";
 import { ArrowLeft, Car, Search } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import {
@@ -35,10 +39,6 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { useImagePreloader } from "../hooks/useImagePreloader";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Marques Vehicules - Commercial");

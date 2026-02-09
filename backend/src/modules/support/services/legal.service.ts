@@ -4,9 +4,13 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { LegalVersionService } from './legal-version.service';
+import { LegalPageService } from './legal-page.service';
 
 export interface LegalDocument {
   msg_id: string;
@@ -67,25 +71,15 @@ export interface CreateLegalDocumentRequest {
 export class LegalService extends SupabaseBaseService {
   protected readonly logger = new Logger(LegalService.name);
 
-  constructor() {
+  constructor(
+    @Inject(forwardRef(() => LegalVersionService))
+    private readonly legalVersionService: LegalVersionService,
+    @Inject(forwardRef(() => LegalPageService))
+    private readonly legalPageService: LegalPageService,
+  ) {
     super();
     this.initializeDefaultDocuments();
   }
-
-  /**
-   * Mapping des clés de pages légales (compatibilité legacy)
-   */
-  private readonly pageMapping: Record<string, LegalDocument['type']> = {
-    cgv: 'terms',
-    cpuc: 'privacy',
-    cu: 'terms',
-    gcrg: 'warranty',
-    liv: 'shipping',
-    ml: 'privacy',
-    ps: 'terms',
-    rec: 'returns',
-    us: 'custom',
-  };
 
   /**
    * Créer un nouveau document légal
@@ -286,9 +280,14 @@ export class LegalService extends SupabaseBaseService {
         throw new NotFoundException(`Document ${documentId} introuvable`);
       }
 
-      // Sauvegarder la version actuelle
+      // Sauvegarder la version actuelle (délégué à LegalVersionService)
       if (changes) {
-        await this.saveVersion(documentId, document, changes, updatedBy);
+        await this.legalVersionService.saveVersion(
+          documentId,
+          document,
+          changes,
+          updatedBy,
+        );
       }
 
       // Préparer le contenu mis à jour
@@ -532,47 +531,15 @@ export class LegalService extends SupabaseBaseService {
     }
   }
 
+  // ==================== DELEGATED VERSION METHODS ====================
+
   /**
    * Récupérer les versions d'un document
    */
   async getDocumentVersions(
     documentId: string,
   ): Promise<LegalDocumentVersion[]> {
-    try {
-      const { data: messages } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .select('*')
-        .like('msg_content', `%"documentId":"${documentId}"%`)
-        .like('msg_content', '%"type":"legal_version"%')
-        .order('msg_date', { ascending: false });
-
-      if (!messages) return [];
-
-      return messages
-        .map((msg) => {
-          try {
-            const content = JSON.parse(msg.msg_content || '{}');
-            return {
-              id: msg.msg_id,
-              documentId: content.documentId,
-              version: content.version,
-              content: content.content,
-              changes: content.changes,
-              effectiveDate: new Date(content.effectiveDate),
-              createdAt: new Date(msg.msg_date),
-              createdBy: msg.msg_cst_id,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean) as LegalDocumentVersion[];
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la récupération des versions: ${(error as Error).message}`,
-      );
-      return [];
-    }
+    return this.legalVersionService.getDocumentVersions(documentId);
   }
 
   /**
@@ -582,33 +549,7 @@ export class LegalService extends SupabaseBaseService {
     documentId: string,
     versionId: string,
   ): Promise<LegalDocumentVersion | null> {
-    try {
-      const { data: message } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .select('*')
-        .eq('msg_id', versionId)
-        .like('msg_content', `%"documentId":"${documentId}"%`)
-        .single();
-
-      if (!message) return null;
-
-      const content = JSON.parse(message.msg_content || '{}');
-      return {
-        id: message.msg_id,
-        documentId: content.documentId,
-        version: content.version,
-        content: content.content,
-        changes: content.changes,
-        effectiveDate: new Date(content.effectiveDate),
-        createdAt: new Date(message.msg_date),
-        createdBy: message.msg_cst_id,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la récupération de la version: ${(error as Error).message}`,
-      );
-      return null;
-    }
+    return this.legalVersionService.getDocumentVersion(documentId, versionId);
   }
 
   /**
@@ -619,29 +560,87 @@ export class LegalService extends SupabaseBaseService {
     versionId: string,
     restoredBy: string,
   ): Promise<LegalDocument> {
-    try {
-      const version = await this.getDocumentVersion(documentId, versionId);
-      if (!version) {
-        throw new NotFoundException(
-          `Version ${versionId} introuvable pour le document ${documentId}`,
-        );
-      }
+    const version = await this.legalVersionService.getVersionForRestore(
+      documentId,
+      versionId,
+    );
 
-      return await this.updateDocument(
-        documentId,
-        { content: version.content },
-        restoredBy,
-        `Restauration de la version ${version.version}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la restauration: ${(error as Error).message}`,
-      );
-      throw error;
-    }
+    return await this.updateDocument(
+      documentId,
+      { content: version.content },
+      restoredBy,
+      `Restauration de la version ${version.version}`,
+    );
   }
 
-  // ==================== MÉTHODES UTILITAIRES ====================
+  // ==================== DELEGATED LEGAL PAGE METHODS ====================
+
+  /**
+   * Récupère une page légale depuis ___legal_pages
+   */
+  async getLegalPageFromAriane(alias: string) {
+    return this.legalPageService.getLegalPageFromAriane(alias);
+  }
+
+  /**
+   * Liste toutes les pages légales disponibles dans ___legal_pages
+   */
+  async getAllLegalPagesFromAriane() {
+    return this.legalPageService.getAllLegalPagesFromAriane();
+  }
+
+  /**
+   * Méthode legacy pour récupérer une page légale (compatibilité)
+   */
+  async getLegalPage(pageKey: string) {
+    return this.legalPageService.getLegalPage(pageKey, (type) =>
+      this.getDocumentByType(type),
+    );
+  }
+
+  /**
+   * Méthode legacy pour accepter une page légale (compatibilité)
+   */
+  async acceptLegalPage(
+    userId: string,
+    pageKey: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    return this.legalPageService.acceptLegalPage(
+      userId,
+      pageKey,
+      (documentType, uid, ip, ua) =>
+        this.acceptDocument(documentType, uid, ip, ua),
+      ipAddress,
+      userAgent,
+    );
+  }
+
+  /**
+   * Méthode legacy pour vérifier l'acceptation (compatibilité)
+   */
+  async hasAcceptedLegalPage(
+    userId: string,
+    pageKey: string,
+  ): Promise<boolean> {
+    return this.legalPageService.hasAcceptedLegalPage(
+      userId,
+      pageKey,
+      (uid, documentType) => this.hasUserAcceptedDocument(uid, documentType),
+    );
+  }
+
+  /**
+   * Méthode legacy pour récupérer toutes les pages (compatibilité)
+   */
+  async getAllLegalPages() {
+    return this.legalPageService.getAllLegalPages((filters) =>
+      this.getAllDocuments(filters),
+    );
+  }
+
+  // ==================== PRIVATE UTILITY METHODS ====================
 
   /**
    * Initialiser les documents par défaut
@@ -736,40 +735,6 @@ export class LegalService extends SupabaseBaseService {
         `Erreur dans enrichDocumentData: ${(error as Error).message}`,
       );
       throw error;
-    }
-  }
-
-  /**
-   * Sauvegarder une version du document
-   */
-  private async saveVersion(
-    documentId: string,
-    document: LegalDocument,
-    changes: string,
-    createdBy: string,
-  ): Promise<void> {
-    try {
-      const versionData = {
-        type: 'legal_version',
-        documentId,
-        version: document.version,
-        content: document.content,
-        changes,
-        effectiveDate: document.effectiveDate.toISOString(),
-      };
-
-      await this.supabase.from(TABLES.xtr_msg).insert({
-        msg_cst_id: createdBy,
-        msg_date: new Date().toISOString(),
-        msg_subject: `Version ${document.version} - ${document.title}`,
-        msg_content: JSON.stringify(versionData),
-        msg_open: '0',
-        msg_close: '0',
-      });
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la sauvegarde de version: ${(error as Error).message}`,
-      );
     }
   }
 
@@ -943,171 +908,5 @@ Contactez notre service client pour organiser le retour.
 Le remboursement sera effectué sous 14 jours après réception du retour.
 
 *Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
-  }
-
-  // ==================== MÉTHODES PAGES LÉGALES (___legal_pages) ====================
-
-  /**
-   * 📄 Récupère une page légale depuis ___legal_pages
-   * Table dédiée aux contenus légaux (CGV, mentions légales, etc.)
-   */
-  async getLegalPageFromAriane(alias: string): Promise<{
-    alias: string;
-    title: string;
-    description: string;
-    keywords: string;
-    h1: string;
-    content: string;
-    breadcrumb: string;
-    indexable: boolean;
-  } | null> {
-    try {
-      this.logger.log(`📄 Fetching legal page: ${alias}`);
-
-      const { data, error } = await this.supabase
-        .from('___legal_pages')
-        .select(
-          'alias, title, description, keywords, h1, content, breadcrumb, indexable',
-        )
-        .eq('alias', alias)
-        .single();
-
-      if (error) {
-        this.logger.error(`Error fetching legal page ${alias}:`, error.message);
-        return null;
-      }
-
-      if (!data) {
-        this.logger.warn(`Legal page not found: ${alias}`);
-        return null;
-      }
-
-      return {
-        alias: data.alias,
-        title: data.title || '',
-        description: data.description || '',
-        keywords: data.keywords || '',
-        h1: data.h1 || '',
-        content: data.content || '',
-        breadcrumb: data.breadcrumb || '',
-        indexable: data.indexable ?? true,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Exception fetching legal page ${alias}:`,
-        (error as Error).message,
-      );
-      return null;
-    }
-  }
-
-  /**
-   * 📄 Liste toutes les pages légales disponibles dans ___legal_pages
-   */
-  async getAllLegalPagesFromAriane(): Promise<
-    Array<{
-      alias: string;
-      title: string;
-      breadcrumb: string;
-    }>
-  > {
-    try {
-      const { data, error } = await this.supabase
-        .from('___legal_pages')
-        .select('alias, title, breadcrumb')
-        .order('id', { ascending: true });
-
-      if (error) {
-        this.logger.error('Error fetching all legal pages:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row) => ({
-        alias: row.alias,
-        title: row.title || '',
-        breadcrumb: row.breadcrumb || '',
-      }));
-    } catch (error) {
-      this.logger.error(
-        'Exception fetching all legal pages:',
-        (error as Error).message,
-      );
-      return [];
-    }
-  }
-
-  /**
-   * Méthode legacy pour récupérer une page légale (compatibilité)
-   */
-  async getLegalPage(pageKey: string) {
-    const mappedType = this.pageMapping[pageKey];
-    if (!mappedType) {
-      throw new NotFoundException(`Type de page non reconnu: ${pageKey}`);
-    }
-
-    const document = await this.getDocumentByType(mappedType);
-    if (!document) {
-      throw new NotFoundException(`Page légale non trouvée: ${pageKey}`);
-    }
-
-    return {
-      id: document.id,
-      key: pageKey,
-      title: document.title,
-      content: document.content,
-      summary: document.metadata?.summary || '',
-      version: document.version,
-      effectiveDate: document.effectiveDate,
-      metadata: document.metadata,
-    };
-  }
-
-  /**
-   * Méthode legacy pour accepter une page légale (compatibilité)
-   */
-  async acceptLegalPage(
-    userId: string,
-    pageKey: string,
-    ipAddress?: string,
-    userAgent?: string,
-  ) {
-    const mappedType = this.pageMapping[pageKey];
-    if (!mappedType) {
-      throw new NotFoundException(`Type de page non reconnu: ${pageKey}`);
-    }
-
-    await this.acceptDocument(mappedType, userId, ipAddress, userAgent);
-    return { success: true };
-  }
-
-  /**
-   * Méthode legacy pour vérifier l'acceptation (compatibilité)
-   */
-  async hasAcceptedLegalPage(
-    userId: string,
-    pageKey: string,
-  ): Promise<boolean> {
-    const mappedType = this.pageMapping[pageKey];
-    if (!mappedType) {
-      return false;
-    }
-
-    return await this.hasUserAcceptedDocument(userId, mappedType);
-  }
-
-  /**
-   * Méthode legacy pour récupérer toutes les pages (compatibilité)
-   */
-  async getAllLegalPages() {
-    const documents = await this.getAllDocuments({ published: true });
-    return documents.map((doc) => ({
-      page_key:
-        Object.keys(this.pageMapping).find(
-          (key) => this.pageMapping[key] === doc.type,
-        ) || doc.type,
-      title: doc.title,
-      summary: doc.metadata?.summary || '',
-      effective_date: doc.effectiveDate,
-    }));
   }
 }

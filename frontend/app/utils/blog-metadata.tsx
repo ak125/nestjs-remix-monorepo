@@ -99,7 +99,11 @@ export function generateBlogMeta(
   const keywords = metadata?.keywords || opts.defaultKeywords;
   const robots = metadata?.relfollow || "index, follow";
 
-  const metaTags = [
+  const metaTags: Array<
+    | { title: string }
+    | { name: string; content: string }
+    | { property: string; content: string }
+  > = [
     { title },
     { name: "description", content: description },
     { name: "keywords", content: keywords },
@@ -109,10 +113,10 @@ export function generateBlogMeta(
   // OpenGraph tags
   if (opts.ogImage) {
     metaTags.push(
-      { property: "og:title", content: title } as any,
-      { property: "og:description", content: description } as any,
-      { property: "og:image", content: opts.ogImage } as any,
-      { property: "og:type", content: "website" } as any,
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:image", content: opts.ogImage },
+      { property: "og:type", content: "website" },
     );
   }
 

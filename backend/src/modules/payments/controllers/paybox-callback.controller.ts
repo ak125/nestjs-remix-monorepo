@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  HttpStatus,
   Post,
   Query,
   Body,
@@ -70,13 +71,13 @@ export class PayboxCallbackController {
         this.logger.log(
           `Callback idempotent - Commande deja payee: ${params.orderReference}`,
         );
-        return res.status(200).send('OK');
+        return res.status(HttpStatus.OK).send('OK');
       }
 
       // SAFE CHANGE: En mode strict, rejeter si invalide
       if (gateDecision.reject) {
         this.logger.error(`GATE REJECT: ${gateDecision.result.correlationId}`);
-        return res.status(403).send('Validation failed');
+        return res.status(HttpStatus.FORBIDDEN).send('Validation failed');
       }
 
       this.logger.log(`Montant: ${params.amount}`);
@@ -89,7 +90,7 @@ export class PayboxCallbackController {
         params.signature || params.K || query.Signature || query.K;
       if (!signature) {
         this.logger.error('Signature manquante dans le callback Paybox');
-        return res.status(400).send('Signature manquante');
+        return res.status(HttpStatus.BAD_REQUEST).send('Signature manquante');
       }
 
       const isValid = this.payboxService.verifySignature(query, signature);
@@ -102,7 +103,7 @@ export class PayboxCallbackController {
           this.logger.error(
             `REJECT: Signature Paybox invalide pour ${params.orderReference} (strict mode)`,
           );
-          return res.status(403).send('Signature invalide');
+          return res.status(HttpStatus.FORBIDDEN).send('Signature invalide');
         }
         this.logger.warn(
           `Signature Paybox non verifiee pour ${params.orderReference} ` +
@@ -153,7 +154,9 @@ export class PayboxCallbackController {
             `CRITICAL: Echec enregistrement paiement reussi pour ${params.orderReference}: ${message}`,
           );
           // Retourner 500 pour que Paybox re-essaie le callback
-          return res.status(500).send('Payment recording failed');
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .send('Payment recording failed');
         }
 
         this.logger.log(
@@ -191,7 +194,7 @@ export class PayboxCallbackController {
           );
         }
 
-        return res.status(200).send('OK');
+        return res.status(HttpStatus.OK).send('OK');
       } else {
         this.logger.warn(`Paiement echoue - Code erreur: ${params.errorCode}`);
 
@@ -230,11 +233,13 @@ export class PayboxCallbackController {
         }
 
         // OK pour les échecs — Paybox n'a pas besoin de re-essayer
-        return res.status(200).send('OK');
+        return res.status(HttpStatus.OK).send('OK');
       }
     } catch (error) {
       this.logger.error('❌ Erreur traitement callback Paybox:', error);
-      return res.status(500).send('Erreur serveur');
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send('Erreur serveur');
     }
   }
 

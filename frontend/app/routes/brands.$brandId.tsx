@@ -17,14 +17,14 @@ import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { BrandLogoClient } from "../components/BrandLogoClient";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { BrandLogoClient } from "../components/BrandLogoClient";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

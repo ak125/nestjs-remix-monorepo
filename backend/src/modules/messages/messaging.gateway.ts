@@ -33,7 +33,7 @@ export class MessagingGateway
   private readonly logger = new Logger(MessagingGateway.name);
   private userSockets = new Map<string, string[]>();
 
-  constructor(private jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
@@ -75,8 +75,9 @@ export class MessagingGateway
         userId: client.userId,
         socketId: client.id,
       });
-    } catch (error: any) {
-      this.logger.error(`Connection failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Connection failed: ${message}`);
       client.disconnect();
     }
   }

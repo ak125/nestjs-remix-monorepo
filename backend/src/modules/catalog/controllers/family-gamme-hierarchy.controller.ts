@@ -34,14 +34,15 @@ export class FamilyGammeHierarchyController {
         `✅ Logique PHP: ${result.totalFamilies} familles avec gammes récupérées`,
       );
       return result;
-    } catch (error: any) {
-      this.logger.error('❌ Erreur logique PHP:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur logique PHP:', message);
       return {
         success: false,
         families: [],
         totalFamilies: 0,
         message:
-          error?.message ||
+          message ||
           'Erreur lors de la récupération des familles (logique PHP)',
       };
     }
@@ -65,8 +66,9 @@ export class FamilyGammeHierarchyController {
         ...result,
         message: `Hiérarchie avec ${result.stats.total_families} familles et ${result.stats.total_gammes} gammes récupérée`,
       };
-    } catch (error: any) {
-      this.logger.error('❌ Erreur hiérarchie complète:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur hiérarchie complète:', message);
       return {
         success: false,
         hierarchy: {},
@@ -76,7 +78,7 @@ export class FamilyGammeHierarchyController {
           total_manufacturers: 0,
           families_with_gammes: 0,
         },
-        error: error?.message || 'Erreur inconnue',
+        error: message || 'Erreur inconnue',
       };
     }
   }
@@ -103,13 +105,14 @@ export class FamilyGammeHierarchyController {
         count: families.length,
         message: `${families.length} familles avec sous-catégories récupérées avec succès`,
       };
-    } catch (error: any) {
-      this.logger.error('❌ Erreur familles avec sous-catégories:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur familles avec sous-catégories:', message);
       return {
         success: false,
         data: [],
         count: 0,
-        error: error?.message || 'Erreur inconnue',
+        error: message || 'Erreur inconnue',
       };
     }
   }
@@ -132,8 +135,9 @@ export class FamilyGammeHierarchyController {
         data: stats,
         message: 'Statistiques de la hiérarchie récupérées avec succès',
       };
-    } catch (error: any) {
-      this.logger.error('❌ Erreur statistiques hiérarchie:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur statistiques hiérarchie:', message);
       return {
         success: false,
         data: {
@@ -142,7 +146,7 @@ export class FamilyGammeHierarchyController {
           total_manufacturers: 0,
           families_with_gammes: 0,
         },
-        error: error?.message || 'Erreur inconnue',
+        error: message || 'Erreur inconnue',
       };
     }
   }
@@ -175,12 +179,13 @@ export class FamilyGammeHierarchyController {
         data: family,
         message: `Famille ${familyId} avec ${family.gammes_count} gammes récupérée avec succès`,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur famille ${familyId} avec gammes:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur famille ${familyId} avec gammes:`, message);
       return {
         success: false,
         data: null,
-        error: error?.message || 'Erreur inconnue',
+        error: message || 'Erreur inconnue',
       };
     }
   }
@@ -222,8 +227,9 @@ export class FamilyGammeHierarchyController {
         total_available: Object.keys(hierarchy).length,
         message: `Données homepage avec ${homepageFamilies.length} familles affichées`,
       };
-    } catch (error: any) {
-      this.logger.error('❌ Erreur données homepage:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur données homepage:', message);
       return {
         success: false,
         families: [],
@@ -235,7 +241,7 @@ export class FamilyGammeHierarchyController {
         },
         display_count: 0,
         total_available: 0,
-        error: error?.message || 'Erreur inconnue',
+        error: message || 'Erreur inconnue',
       };
     }
   }

@@ -6,8 +6,8 @@
  */
 
 import { parse, serialize } from "cookie";
-import { normalizeTypeAlias } from "./url-builder.utils";
 import { logger } from "~/utils/logger";
+import { normalizeTypeAlias } from "./url-builder.utils";
 
 // ========================================
 // 📋 TYPES

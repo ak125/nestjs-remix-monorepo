@@ -9,7 +9,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import {
+import  { type ShouldRevalidateFunctionArgs ,
   useLoaderData,
   isRouteErrorResponse,
   useRouteError,
@@ -35,6 +35,9 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Error404, Error410 } from "../components/errors";
 import {
   ModelContentV1Display,
@@ -46,9 +49,6 @@ import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -60,7 +60,7 @@ export const handle = {
 };
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
-const loaderCache = new Map<string, { data: any; timestamp: number }>();
+const loaderCache = new Map<string, { data: LoaderData; timestamp: number }>();
 const CACHE_TTL = 60000; // 1 minute
 
 // 📝 Types de données (structure PHP + API /full)
@@ -174,7 +174,7 @@ export function shouldRevalidate({
   nextUrl,
   formMethod,
   defaultShouldRevalidate: _defaultShouldRevalidate,
-}: any) {
+}: ShouldRevalidateFunctionArgs) {
   // Ne recharger que si l'URL change vraiment ou si c'est une soumission de formulaire
   if (formMethod && formMethod !== "GET") {
     return true;
@@ -556,7 +556,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 // 🚗 Générer le breadcrumb structuré Schema.org
 // 🚗 Génère le schema @graph complet: Car + BreadcrumbList
-function generateVehicleSchema(vehicle: any, breadcrumb: any) {
+function generateVehicleSchema(vehicle: VehicleData, breadcrumb: LoaderData["breadcrumb"]) {
   const baseUrl = "https://www.automecanik.com";
   const canonicalUrl = `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
 
@@ -672,7 +672,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ];
   }
 
-  const result: any[] = [
+  const result: Record<string, unknown>[] = [
     { title: data.seo.title },
     { name: "description", content: data.seo.description },
     { name: "keywords", content: data.seo.keywords },
@@ -702,7 +702,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
-  const data = useLoaderData<any>(); // any pour supporter LoaderData et 412 response
+  const data = useLoaderData<LoaderData>();
 
   // ⚠️ Tous les hooks doivent être appelés avant tout return conditionnel
   const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
@@ -728,7 +728,7 @@ export default function VehicleDetailPage() {
     seo,
     breadcrumb,
     modelContentV1,
-  } = data as LoaderData;
+  } = data;
 
   // Récupérer le gradient de marque dynamique
   const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);

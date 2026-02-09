@@ -14,6 +14,11 @@ import {
 } from "@remix-run/react";
 import { CheckCircle, Eye, Trash2, FolderOpen } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Alert, Badge } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import {
   Accordion,
@@ -36,11 +41,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
-import { Alert, Badge } from "~/components/ui";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Contenu SEO - Admin");

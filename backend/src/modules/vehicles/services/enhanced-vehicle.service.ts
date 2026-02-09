@@ -13,6 +13,10 @@ import {
   PaginationOptions,
   VehicleResponse,
 } from '../types/vehicle.types';
+import { CacheType } from './core/vehicle-cache.service';
+import { BrandStats } from './data/vehicle-brands.service';
+import { ModelStats } from './data/vehicle-models.service';
+import { TypeStats } from './data/vehicle-types.service';
 
 /**
  * 🚗 ENHANCED VEHICLE SERVICE - Service Véhicule Orchestrateur Refactorisé
@@ -49,13 +53,13 @@ export class EnhancedVehicleService {
   protected readonly logger = new Logger(EnhancedVehicleService.name);
 
   constructor(
-    private cacheService: VehicleCacheService,
-    private enrichmentService: VehicleEnrichmentService,
-    private searchService: VehicleSearchService,
-    private mineService: VehicleMineService,
-    private brandsService: VehicleBrandsService,
-    private modelsService: VehicleModelsService,
-    private typesService: VehicleTypesService,
+    private readonly cacheService: VehicleCacheService,
+    private readonly enrichmentService: VehicleEnrichmentService,
+    private readonly searchService: VehicleSearchService,
+    private readonly mineService: VehicleMineService,
+    private readonly brandsService: VehicleBrandsService,
+    private readonly modelsService: VehicleModelsService,
+    private readonly typesService: VehicleTypesService,
   ) {
     this.logger.log('🚗 EnhancedVehicleService REFACTORISÉ initialisé');
     this.logger.log('📊 Architecture modulaire : 7 services spécialisés');
@@ -72,7 +76,7 @@ export class EnhancedVehicleService {
   async searchByCode(
     code: string,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<any>> {
+  ): Promise<VehicleResponse<VehicleType>> {
     return await this.searchService.searchByCode(code, options);
   }
 
@@ -83,7 +87,7 @@ export class EnhancedVehicleService {
   async getMinesByModel(
     modeleId: number,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<any>> {
+  ): Promise<VehicleResponse<Record<string, unknown>>> {
     return await this.mineService.getMinesByModel(modeleId, options);
   }
 
@@ -105,7 +109,7 @@ export class EnhancedVehicleService {
   async searchByCnit(
     cnitCode: string,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<any>> {
+  ): Promise<VehicleResponse<VehicleType>> {
     return await this.searchService.searchByCnit(cnitCode, options);
   }
 
@@ -116,7 +120,7 @@ export class EnhancedVehicleService {
   async searchByMineCode(
     mineCode: string,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<any>> {
+  ): Promise<VehicleResponse<Record<string, unknown>>> {
     return await this.mineService.searchByMineCode(mineCode, options);
   }
 
@@ -131,7 +135,7 @@ export class EnhancedVehicleService {
       exactMatch?: boolean;
       includeEngine?: boolean;
     } & PaginationOptions = {},
-  ): Promise<VehicleResponse<any>> {
+  ): Promise<VehicleResponse<VehicleType>> {
     return await this.searchService.searchAdvanced(
       { query },
       {
@@ -201,7 +205,9 @@ export class EnhancedVehicleService {
   /**
    * 🔧 Enrichir un véhicule avec les données moteur
    */
-  async enrichVehicle(vehicleData: any): Promise<any> {
+  async enrichVehicle(
+    vehicleData: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     return await this.enrichmentService.enrichVehicle(vehicleData);
   }
 
@@ -220,11 +226,11 @@ export class EnhancedVehicleService {
    * 📊 Obtenir les statistiques globales
    */
   async getGlobalStats(): Promise<{
-    brands: any;
-    models: any;
-    types: any;
-    enrichment: any;
-    cache: any;
+    brands: BrandStats;
+    models: ModelStats;
+    types: TypeStats;
+    enrichment: Record<string, unknown>;
+    cache: Record<string, unknown>;
   }> {
     try {
       const [brands, models, types] = await Promise.all([
@@ -252,7 +258,7 @@ export class EnhancedVehicleService {
               'ENGINE',
             ]).map((type) => [
               type,
-              this.cacheService.getCacheConfig(type as any),
+              this.cacheService.getCacheConfig(type as CacheType),
             ]),
           ),
         },
@@ -302,7 +308,7 @@ export class EnhancedVehicleService {
     brands: VehicleBrand[];
     models: VehicleModel[];
     types: VehicleType[];
-    mines: any[];
+    mines: Record<string, unknown>[];
     total: number;
   }> {
     const { searchTypes = ['brands', 'models', 'types'], limit = 5 } = options;

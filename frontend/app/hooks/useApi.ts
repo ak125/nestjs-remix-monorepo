@@ -17,7 +17,7 @@ interface ApiResponse<T> {
 
 export const useApi = <T extends z.ZodSchema>(responseSchema?: T) => {
   const [response, setResponse] = useState<
-    ApiResponse<T extends z.ZodSchema ? z.infer<T> : any>
+    ApiResponse<T extends z.ZodSchema ? z.infer<T> : unknown>
   >({
     data: null,
     error: null,
@@ -111,7 +111,7 @@ export const useApi = <T extends z.ZodSchema>(responseSchema?: T) => {
   );
 
   const post = useCallback(
-    (url: string, data: any, options: ApiOptions = {}) => {
+    (url: string, data: unknown, options: ApiOptions = {}) => {
       return makeRequest(url, {
         ...options,
         method: "POST",
@@ -122,7 +122,7 @@ export const useApi = <T extends z.ZodSchema>(responseSchema?: T) => {
   );
 
   const put = useCallback(
-    (url: string, data: any, options: ApiOptions = {}) => {
+    (url: string, data: unknown, options: ApiOptions = {}) => {
       return makeRequest(url, {
         ...options,
         method: "PUT",
@@ -155,15 +155,21 @@ export const useCrud = <T extends z.ZodSchema>(baseUrl: string, schema?: T) => {
 
   return {
     ...api,
-    list: (params?: Record<string, any>) => {
+    list: (params?: Record<string, string | number | boolean | undefined>) => {
       const queryString = params
-        ? "?" + new URLSearchParams(params).toString()
+        ? "?" + new URLSearchParams(
+            Object.fromEntries(
+              Object.entries(params)
+                .filter(([, v]) => v !== undefined)
+                .map(([k, v]) => [k, String(v)])
+            )
+          ).toString()
         : "";
       return api.get(`${baseUrl}${queryString}`);
     },
     getById: (id: string | number) => api.get(`${baseUrl}/${id}`),
-    create: (data: any) => api.post(baseUrl, data),
-    update: (id: string | number, data: any) =>
+    create: (data: unknown) => api.post(baseUrl, data),
+    update: (id: string | number, data: unknown) =>
       api.put(`${baseUrl}/${id}`, data),
     delete: (id: string | number) => api.delete(`${baseUrl}/${id}`),
   };

@@ -24,7 +24,7 @@ import {
 export class ClaimController {
   private readonly logger = new Logger(ClaimController.name);
 
-  constructor(private claimService: ClaimService) {}
+  constructor(private readonly claimService: ClaimService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -94,7 +94,7 @@ export class ClaimController {
   ): Promise<Claim> {
     return this.claimService.updateClaimStatus(
       claimId,
-      body.status as any,
+      body.status as Claim['status'],
       body.staffId,
       body.note,
     );

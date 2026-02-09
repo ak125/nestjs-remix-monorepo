@@ -29,6 +29,15 @@ import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
 import { useEffect, lazy, Suspense } from "react";
 // 🆕 V2 UX Components
 
+import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import { Error404 } from "~/components/errors/Error404";
+import MobileStickyBar from "~/components/pieces/MobileStickyBar";
+import TableOfContents from "~/components/pieces/TableOfContents";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
@@ -48,15 +57,6 @@ import {
   storeVehicleClient,
   type VehicleCookie,
 } from "../utils/vehicle-cookie";
-import { ScrollToTop } from "~/components/blog/ScrollToTop";
-import { Error404 } from "~/components/errors/Error404";
-import MobileStickyBar from "~/components/pieces/MobileStickyBar";
-import TableOfContents from "~/components/pieces/TableOfContents";
-import { pluralizePieceName } from "~/lib/seo-utils";
-import { fetchGammePageData } from "~/services/api/gamme-api.service";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -380,19 +380,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     );
 
     // 🔗 Mapper les switches SEO pour ancres variées
-    const rawSwitches = switchesResponse?.data || [];
+    interface SeoSwitch {
+      sis_id: string;
+      sis_alias?: string;
+      sis_content: string;
+    }
+    const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
     const verbSwitches = rawSwitches
       .filter(
-        (s: any) =>
+        (s) =>
           s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
       )
-      .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
+      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
     const nounSwitches = rawSwitches
       .filter(
-        (s: any) =>
+        (s) =>
           s.sis_alias?.startsWith("noun_") || !s.sis_alias?.startsWith("verb_"),
       )
-      .map((s: any) => ({ id: s.sis_id, content: s.sis_content }));
+      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
 
     const seoSwitches =
       rawSwitches.length > 0
@@ -400,7 +405,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             verbs:
               verbSwitches.length > 0
                 ? verbSwitches
-                : rawSwitches.map((s: any) => ({
+                : rawSwitches.map((s) => ({
                     id: s.sis_id,
                     content: s.sis_content,
                   })),
@@ -421,7 +426,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           content: string;
           image: string;
           wall: string;
-          famille_info?: any;
+          famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
           pg_name?: string;
           pg_alias?: string;
         }
@@ -601,10 +606,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     name?: string;
     content?: string;
     property?: string;
-    "script:ld+json"?: any;
+    "script:ld+json"?: Record<string, unknown>;
     tagName?: string;
     rel?: string;
     href?: string;
+    as?: string;
   }> = [];
 
   // Title
@@ -646,14 +652,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       rel: "preload",
       as: "image",
       href: data.content.pg_wall,
-    } as any);
+    });
   } else if (data.content?.pg_pic) {
     result.push({
       tagName: "link",
       rel: "preload",
       as: "image",
       href: data.content.pg_pic,
-    } as any);
+    });
   }
 
   return result;
@@ -716,7 +722,7 @@ export default function PiecesDetailPage() {
         mf_id: data.famille.mf_id,
         mf_name: data.famille.mf_name,
         mf_pic: data.famille.mf_pic,
-      } as any)
+      } as Parameters<typeof hierarchyApi.getFamilyColor>[0])
     : "from-primary-950 via-primary-900 to-secondary-900"; // Fallback avec design tokens
 
   // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)

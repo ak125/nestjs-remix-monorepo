@@ -73,10 +73,11 @@ export class CatalogIntegrityController {
         data: report,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -104,10 +105,11 @@ export class CatalogIntegrityController {
         data: orphans,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -259,10 +261,11 @@ ROLLBACK;
         sample_relations: orphans.sample_relations.slice(0, 10),
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }

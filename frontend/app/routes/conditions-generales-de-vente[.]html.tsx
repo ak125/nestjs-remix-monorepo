@@ -4,12 +4,12 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import _LegalPageComponent from "./legal.$pageKey";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import _LegalPageComponent from "./legal.$pageKey";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

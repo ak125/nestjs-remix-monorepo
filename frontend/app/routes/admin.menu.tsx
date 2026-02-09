@@ -8,10 +8,10 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Button } from "~/components/ui/button";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Menu Navigation - Admin");

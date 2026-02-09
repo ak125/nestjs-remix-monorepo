@@ -11,6 +11,7 @@
  * - 2025-12-11: Amélioration fetchBlogArticle() avec priorité by-gamme
  */
 
+import { logger } from "~/utils/logger";
 import {
   type CrossSellingGamme,
   type BlogArticle,
@@ -18,7 +19,6 @@ import {
   type VehicleData,
 } from "../../types/pieces-route.types";
 import { slugify } from "../../utils/pieces-route.utils";
-import { logger } from "~/utils/logger";
 
 // 🔧 FIX: URL backend configurable (était hardcodé localhost:3000)
 // En SSR (server-side), utilise BACKEND_URL ou fallback localhost:3000

@@ -9,7 +9,9 @@ import {
 export class SupportAnalyticsController {
   private readonly logger = new Logger(SupportAnalyticsController.name);
 
-  constructor(private supportAnalyticsService: SupportAnalyticsService) {}
+  constructor(
+    private readonly supportAnalyticsService: SupportAnalyticsService,
+  ) {}
 
   @Get()
   async getAnalytics(

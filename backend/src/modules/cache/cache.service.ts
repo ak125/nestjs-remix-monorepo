@@ -7,7 +7,7 @@ export class CacheService {
   private readonly logger = new Logger(CacheService.name);
   private redis: Redis;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.redis = new Redis({
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: parseInt(this.configService.get<string>('REDIS_PORT', '6379'), 10),

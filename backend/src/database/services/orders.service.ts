@@ -40,8 +40,8 @@ export interface CreateLegacyOrderData {
     vatRate?: number;
     discount?: number;
   }>;
-  billingAddress?: any;
-  shippingAddress?: any;
+  billingAddress?: Record<string, unknown>;
+  shippingAddress?: Record<string, unknown>;
   customerNote?: string;
   shippingMethod?: string;
   paymentMethod?: string;
@@ -60,6 +60,16 @@ export interface LegacyOrderLine {
   totalHt: number;
   totalTtc: number;
   status?: string;
+}
+
+export interface OrderCustomer {
+  id: string;
+  email: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  city: string;
+  phone: string;
 }
 
 @Injectable()
@@ -330,7 +340,7 @@ export class OrdersService extends SupabaseBaseService {
       const order = await this.getOrderById(orderId);
 
       // 2. Mettre à jour le statut de la commande
-      let updateData: any = {};
+      let updateData: Record<string, string> = {};
 
       switch (status) {
         case 'paid':
@@ -410,7 +420,16 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Récupère l'historique des statuts d'une commande
    */
-  async getOrderStatusHistory(orderId: string): Promise<any[]> {
+  async getOrderStatusHistory(orderId: string): Promise<
+    Array<{
+      id: string;
+      orderId: string;
+      status: string;
+      comment: string;
+      date: string;
+      userId: string | null;
+    }>
+  > {
     try {
       const { data, error } = await this.supabase
         .from(TABLES.xtr_order_status)
@@ -440,7 +459,20 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Récupère une commande avec ses lignes et son historique
    */
-  async getOrderWithDetails(orderId: string): Promise<any> {
+  async getOrderWithDetails(orderId: string): Promise<
+    LegacyOrder & {
+      lines: LegacyOrderLine[];
+      statusHistory: Array<{
+        id: string;
+        orderId: string;
+        status: string;
+        comment: string;
+        date: string;
+        userId: string | null;
+      }>;
+      customer: OrderCustomer | null;
+    }
+  > {
     try {
       const [order, lines, statusHistory, customer] = await Promise.all([
         this.getOrderById(orderId),
@@ -464,7 +496,9 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Récupère les informations du client d'une commande
    */
-  private async getOrderCustomer(orderId: string): Promise<any> {
+  private async getOrderCustomer(
+    orderId: string,
+  ): Promise<OrderCustomer | null> {
     try {
       const order = await this.getOrderById(orderId);
 
@@ -505,7 +539,7 @@ export class OrdersService extends SupabaseBaseService {
       includeUnpaid?: boolean; // Nouveau paramètre
       excludePending?: boolean; // ✨ Nouveau: exclure statut "En attente" (ord_ords_id = 1)
     } = {},
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     try {
       const {
         limit = 20,
@@ -652,7 +686,13 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Calcule les statistiques des commandes
    */
-  async getOrdersStats(userId?: string): Promise<any> {
+  async getOrdersStats(userId?: string): Promise<{
+    totalOrders: number;
+    paidOrders: number;
+    pendingOrders: number;
+    totalRevenue: number;
+    averageOrderValue: number;
+  }> {
     try {
       let query = this.supabase
         .from(TABLES.xtr_order)
@@ -696,7 +736,9 @@ export class OrdersService extends SupabaseBaseService {
    * 🎯 Récupère une commande COMPLÈTE au format BDD BRUT (pour le frontend)
    * Inclut : commande + client + adresses + lignes de commande
    */
-  async getOrderWithCustomer(orderId: string): Promise<any> {
+  async getOrderWithCustomer(
+    orderId: string,
+  ): Promise<Record<string, unknown>> {
     try {
       this.logger.debug(
         `📦 Récupération commande complète format BDD: ${orderId}`,
@@ -762,7 +804,7 @@ export class OrdersService extends SupabaseBaseService {
           .filter(Boolean);
 
         // Une seule requête pour tous les statuts
-        let statusMap = new Map<string, any>();
+        let statusMap = new Map<string, Record<string, unknown>>();
         if (lineStatusIds.length > 0) {
           const { data: allStatuses } = await this.supabase
             .from(TABLES.xtr_order_line_status)
@@ -929,7 +971,7 @@ export class OrdersService extends SupabaseBaseService {
     limit?: number;
     search?: string;
   }): Promise<{
-    data: any[];
+    data: Record<string, unknown>[];
     pagination: {
       page: number;
       limit: number;

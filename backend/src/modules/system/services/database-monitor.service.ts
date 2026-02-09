@@ -44,7 +44,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private metricsService: MetricsService,
+    private readonly metricsService: MetricsService,
   ) {
     super(configService);
   }
@@ -220,7 +220,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
         value: queryTime,
         unit: 'ms',
         timestamp: new Date(),
-        category: 'system' as any,
+        category: 'system',
         metadata: { recordCount, indexHealth, recommendations },
       });
 

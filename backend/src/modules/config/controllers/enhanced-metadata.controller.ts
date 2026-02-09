@@ -135,7 +135,7 @@ export class EnhancedMetadataController {
 
       const results = {
         updated: 0,
-        errors: [] as any[],
+        errors: [] as Array<{ path: string; error: string }>,
       };
 
       for (const item of batch) {

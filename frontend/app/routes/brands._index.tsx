@@ -20,6 +20,10 @@ import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
@@ -27,10 +31,6 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

@@ -47,7 +47,7 @@ export class SitemapStreamingController {
   }> {
     try {
       const options: Partial<GenerationOptions> = {
-        sitemapType: (type as any) || 'all',
+        sitemapType: (type as GenerationOptions['sitemapType']) || 'all',
         forceRegeneration: forceRegeneration === 'true',
         includeHreflang: includeHreflang !== 'false',
         includeImages: includeImages !== 'false',

@@ -1,8 +1,8 @@
 // 📁 frontend/app/services/api/hierarchy.api.ts
 // 🏗️ Service API pour la hiérarchie Familles → Gammes (sous-catégories)
 
-import { type CatalogGamme } from "../../types/catalog.types";
 import { logger } from "~/utils/logger";
+import { type CatalogGamme } from "../../types/catalog.types";
 
 export interface FamilyWithGammes {
   mf_id: string | number; // Peut être string ou number selon la source
@@ -31,7 +31,7 @@ export interface HomepageHierarchyData {
   total_available: number;
 }
 
-export interface HierarchyApiResponse<T = any> {
+export interface HierarchyApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   families?: FamilyWithGammes[];
@@ -214,7 +214,7 @@ class HierarchyApiService {
       logger.log(`🏗️ Récupération famille ${familyId} avec gammes...`);
 
       const baseUrl = this.getBaseUrl();
-      const response: HierarchyApiResponse = await fetcher(
+      const response: HierarchyApiResponse<FamilyWithGammes> = await fetcher(
         `${baseUrl}/api/catalog/hierarchy/family/${familyId}`,
       );
 

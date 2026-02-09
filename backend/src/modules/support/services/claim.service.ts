@@ -107,7 +107,7 @@ export class ClaimService {
    */
   private claims: Map<string, Claim> = new Map();
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   async submitClaim(
     claimData: Omit<

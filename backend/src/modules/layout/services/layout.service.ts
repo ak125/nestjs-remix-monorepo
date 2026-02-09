@@ -1,10 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
-import { HeaderService } from './header.service';
-import { FooterService } from './footer.service';
-import { QuickSearchService } from './quick-search.service';
+import { HeaderService, HeaderData } from './header.service';
+import { FooterService, FooterData } from './footer.service';
+import { QuickSearchService, QuickSearchData } from './quick-search.service';
 import { SocialShareService } from './social-share.service';
 import { MetaTagsService } from './meta-tags.service';
+
+interface SocialShareConfig {
+  platforms: string[];
+  defaultUrl: string;
+  defaultTitle: string;
+}
+
+interface MetaTagsConfig {
+  title: string;
+  description: string;
+  robots: string;
+  keywords?: string[];
+  ogImage?: string;
+  canonical?: string;
+}
 
 export interface LayoutConfig {
   type:
@@ -24,18 +39,24 @@ export interface LayoutConfig {
   showSidebar: boolean;
   showQuickSearch: boolean;
   customCss?: string;
-  metadata?: Record<string, any>;
-  user?: any;
+  metadata?: Record<string, unknown>;
+  user?: Record<string, unknown>;
 }
 
 export interface LayoutData {
-  header: any;
-  footer: any;
-  navigation: any;
-  quickSearch: any;
-  socialShare: any;
-  metaTags: any;
+  header: HeaderData | Record<string, unknown>;
+  footer: FooterData | Record<string, unknown>;
+  navigation: NavigationItem[] | { items: never[] };
+  quickSearch: QuickSearchData | { enabled: boolean };
+  socialShare: SocialShareConfig | { platforms: never[] };
+  metaTags: MetaTagsConfig | Record<string, unknown>;
   config: LayoutConfig;
+}
+
+interface NavigationItem {
+  title: string;
+  url: string;
+  icon: string;
 }
 
 @Injectable()
@@ -160,7 +181,9 @@ export class LayoutService {
   /**
    * Configuration par défaut pour le partage social
    */
-  private async getSocialShareConfig(context: string): Promise<any> {
+  private async getSocialShareConfig(
+    context: string,
+  ): Promise<SocialShareConfig> {
     return {
       platforms: ['facebook', 'twitter', 'linkedin', 'email'],
       defaultUrl: context === 'admin' ? '/admin' : '/',
@@ -171,7 +194,7 @@ export class LayoutService {
   /**
    * Configuration par défaut des meta tags
    */
-  private async getMetaTags(context: string): Promise<any> {
+  private async getMetaTags(context: string): Promise<MetaTagsConfig> {
     return {
       title: `${context.charAt(0).toUpperCase() + context.slice(1)} - MonEntreprise`,
       description: `Interface ${context} de MonEntreprise`,
@@ -182,7 +205,7 @@ export class LayoutService {
   /**
    * Configuration par défaut pour les meta tags
    */
-  private async getMetaTagsConfig(context: string): Promise<any> {
+  private async getMetaTagsConfig(context: string): Promise<MetaTagsConfig> {
     return {
       title: `${context.charAt(0).toUpperCase() + context.slice(1)} - MonEntreprise`,
       description: `Interface ${context} de MonEntreprise`,
@@ -256,7 +279,7 @@ export class LayoutService {
   /**
    * Récupérer les widgets pour une page spécifique
    */
-  private async getWidgets(): Promise<any[]> {
+  private async getWidgets(): Promise<Record<string, unknown>[]> {
     // Pour l'instant retournons un tableau vide,
     // cette méthode peut être étendue avec des vraies données
     return [];
@@ -304,8 +327,8 @@ export class LayoutService {
   /**
    * Récupérer la navigation interne
    */
-  private getInternalNavigation(type: string): any[] {
-    const navigationTemplates: Record<string, any[]> = {
+  private getInternalNavigation(type: string): NavigationItem[] {
+    const navigationTemplates: Record<string, NavigationItem[]> = {
       admin: [
         { title: 'Dashboard', url: '/admin', icon: 'dashboard' },
         { title: 'Produits', url: '/admin/products', icon: 'products' },

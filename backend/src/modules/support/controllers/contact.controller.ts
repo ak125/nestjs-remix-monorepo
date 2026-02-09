@@ -20,7 +20,7 @@ import {
 export class ContactController {
   private readonly logger = new Logger(ContactController.name);
 
-  constructor(private contactService: ContactService) {}
+  constructor(private readonly contactService: ContactService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -118,6 +118,6 @@ export class ContactController {
     @Param('ticketId') ticketId: string,
     @Body() body: { status: string },
   ): Promise<ContactTicket> {
-    return this.contactService.updateTicketStatus(ticketId, body.status as any);
+    return this.contactService.updateTicketStatus(ticketId, body.status);
   }
 }

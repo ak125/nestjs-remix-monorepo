@@ -288,7 +288,18 @@ export class TicketsService extends SupabaseBaseService {
   /**
    * Utiliser un ticket (crédit/avoir)
    */
-  async useTicket(ticketReference: string, amountToUse: number): Promise<any> {
+  async useTicket(
+    ticketReference: string,
+    amountToUse: number,
+  ): Promise<{
+    id: string;
+    ticketReference: string;
+    originalValue: number;
+    usedAmount: number;
+    remainingValue: number;
+    orderLineId: string;
+    orderId: string;
+  }> {
     try {
       this.logger.log(
         `Utilisation ticket: ${ticketReference}, montant: ${amountToUse}`,

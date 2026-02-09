@@ -1,6 +1,6 @@
 import { useSearchParams } from "@remix-run/react";
-import { Error410 } from "../components/errors/Error410";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { Error410 } from "../components/errors/Error410";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 

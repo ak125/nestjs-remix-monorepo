@@ -43,7 +43,7 @@ export class OrderStatusService extends SupabaseBaseService {
     newStatus: number,
     comment?: string,
     userId?: number,
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     try {
       // Récupérer la ligne actuelle avec Supabase
       const { data: currentLine, error: fetchError } = await this.supabase

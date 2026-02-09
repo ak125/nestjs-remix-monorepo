@@ -18,10 +18,10 @@ import {
   MessageSquare,
   Mail,
 } from "lucide-react";
-import { requireUser } from "../auth/unified.server";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireUser } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Staff - Admin");
 
@@ -165,7 +165,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         apiSource: "error-fallback",
       } as StaffData);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement du staff:", error);
 
     // Mode fallback d'urgence

@@ -5,9 +5,9 @@
  */
 
 import { memo, useState } from "react";
+import { logger } from "~/utils/logger";
 import { AdvancedFilters, type FilterValues } from "./AdvancedFilters";
 import { ProductCard } from "./ProductCard";
-import { logger } from "~/utils/logger";
 
 // Mock data
 const MOCK_BRANDS = ["Peugeot", "Renault", "Citroën", "Ford", "Volkswagen"];

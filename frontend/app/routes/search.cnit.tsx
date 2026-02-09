@@ -19,6 +19,9 @@ import {
 } from "@remix-run/react";
 import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
 import { useState } from "react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -28,9 +31,6 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { VehicleCard } from "../components/vehicles/VehicleCard";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour recherche CNIT

@@ -84,16 +84,35 @@ export interface SupportReport {
   generatedAt: Date;
 }
 
+/** Shape of stats returned by ContactService.getStats() */
+interface ContactStats {
+  total: number;
+  open: number;
+  inProgress: number;
+  resolved: number;
+  avgResponseTime: number;
+  satisfactionRating: number;
+  [key: string]: unknown;
+}
+
+/** Shape of stats returned by ClaimService.getClaimStats() */
+interface ClaimStats {
+  total: number;
+  open: number;
+  resolved: number;
+  satisfactionRating: number;
+}
+
 @Injectable()
 export class SupportAnalyticsService {
   private readonly logger = new Logger(SupportAnalyticsService.name);
 
   constructor(
-    private contactService: ContactService,
-    private reviewService: ReviewService,
-    private quoteService: QuoteService,
-    private claimService: ClaimService,
-    private faqService: FaqService,
+    private readonly contactService: ContactService,
+    private readonly reviewService: ReviewService,
+    private readonly quoteService: QuoteService,
+    private readonly claimService: ClaimService,
+    private readonly faqService: FaqService,
   ) {}
 
   async getAnalytics(period?: {
@@ -321,7 +340,7 @@ export class SupportAnalyticsService {
     };
   }
 
-  private getTopIssues(_contactStats: any, _claimStats: any) {
+  private getTopIssues(_contactStats: ContactStats, _claimStats: ClaimStats) {
     // Mock data - would use contactStats and claimStats for real aggregation
     const issues = [
       { category: 'Livraison', count: 25, percentage: 35 },
@@ -334,7 +353,10 @@ export class SupportAnalyticsService {
     return issues;
   }
 
-  private calculatePerformanceMetrics(contactStats: any, _claimStats: any) {
+  private calculatePerformanceMetrics(
+    contactStats: ContactStats,
+    _claimStats: ClaimStats,
+  ) {
     // claimStats would be used for more detailed performance analysis
     return {
       firstResponseTime: contactStats.avgResponseTime || 45, // minutes

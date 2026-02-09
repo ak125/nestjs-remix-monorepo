@@ -84,7 +84,7 @@ export class UploadOptimizationService {
     },
   };
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.logger.log('⚡ UploadOptimizationService initialized');
   }
 
@@ -133,10 +133,11 @@ export class UploadOptimizationService {
       );
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Optimization failed for ${file.originalname}:`,
-        error.message,
+        message,
       );
       return null;
     }
@@ -309,11 +310,9 @@ export class UploadOptimizationService {
           width: metadata.width || size,
           height: metadata.height || size,
         });
-      } catch (error: any) {
-        this.logger.warn(
-          `⚠️ Failed to generate thumbnail ${size}px:`,
-          error.message,
-        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`⚠️ Failed to generate thumbnail ${size}px:`, message);
       }
     }
 
@@ -417,10 +416,11 @@ export class UploadOptimizationService {
         estimatedSavings: Math.min(estimatedSavings, 70), // Cap à 70%
         recommendations,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Analysis failed for ${file.originalname}:`,
-        error.message,
+        message,
       );
 
       return {

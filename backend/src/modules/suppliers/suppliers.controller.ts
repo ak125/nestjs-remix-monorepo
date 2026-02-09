@@ -448,7 +448,7 @@ export class SuppliersController {
   async linkSupplierToBrand(
     @Param('supplierId') supplierId: string,
     @Param('brandId') brandId: string,
-    @Body() options: any = {},
+    @Body() options: Record<string, unknown> = {},
   ) {
     try {
       const link = await this.suppliersService.linkSupplierToBrand(
@@ -478,7 +478,7 @@ export class SuppliersController {
   @Post('best-for-product/:productId')
   async findBestSupplierForProduct(
     @Param('productId') productId: string,
-    @Body() criteria: any = {},
+    @Body() criteria: Record<string, unknown> = {},
   ) {
     try {
       const result = await this.suppliersService.findBestSupplierForProduct(
@@ -508,7 +508,11 @@ export class SuppliersController {
    */
   @Post('auto-assign')
   async autoAssignSuppliers(
-    @Body() requestData: { productIds: number[]; criteria?: any },
+    @Body()
+    requestData: {
+      productIds: number[];
+      criteria?: Record<string, unknown>;
+    },
   ) {
     try {
       const { productIds, criteria = {} } = requestData;

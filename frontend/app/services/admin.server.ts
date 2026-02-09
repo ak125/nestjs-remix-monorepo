@@ -60,8 +60,16 @@ export interface DashboardData {
     info: number;
   };
   stockAlerts: StockAlert[];
-  recentOrders: any[];
-  recentActivities: any[];
+  recentOrders: Record<string, unknown>[];
+  recentActivities: Record<string, unknown>[];
+}
+
+interface StockItem {
+  pieces?: { price?: number };
+  price?: number;
+  available?: number;
+  quantity?: number;
+  min_stock?: number;
 }
 
 /**
@@ -140,7 +148,7 @@ async function fetchStockData(
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    const result: ApiResponse<{ items: any[]; stats: StockStats }> =
+    const result: ApiResponse<{ items: StockItem[]; stats: StockStats }> =
       await response.json();
 
     if (!result.success) {
@@ -247,7 +255,7 @@ async function fetchAlertsData(
 /**
  * Calcule la valeur totale du stock
  */
-function calculateStockValue(items: any[]): number {
+function calculateStockValue(items: StockItem[]): number {
   if (!Array.isArray(items)) return 0;
 
   return items.reduce((total, item) => {
@@ -260,7 +268,7 @@ function calculateStockValue(items: any[]): number {
 /**
  * Calcule le taux de rotation du stock
  */
-function calculateTurnoverRate(items: any[]): number {
+function calculateTurnoverRate(items: StockItem[]): number {
   if (!Array.isArray(items) || items.length === 0) return 0;
 
   // Calcul simplifié basé sur le ratio stock minimum/stock actuel

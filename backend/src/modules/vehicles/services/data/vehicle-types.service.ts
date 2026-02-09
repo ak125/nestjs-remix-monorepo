@@ -44,8 +44,8 @@ export class VehicleTypesService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleTypesService.name);
 
   constructor(
-    private cacheService: VehicleCacheService,
-    private enrichmentService: VehicleEnrichmentService,
+    private readonly cacheService: VehicleCacheService,
+    private readonly enrichmentService: VehicleEnrichmentService,
   ) {
     super();
     this.logger.log('🔧 VehicleTypesService initialisé');

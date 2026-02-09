@@ -11,12 +11,12 @@ import {
 } from "@remix-run/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { requireAuth } from "../auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAuth } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Facture");
 

@@ -27,7 +27,7 @@ import { Response } from 'express';
  */
 @Injectable()
 export class RateLimitHeadersInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const rateLimitConfig = this.reflector.getAllAndOverride<RateLimitConfig>(

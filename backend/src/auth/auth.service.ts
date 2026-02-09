@@ -684,7 +684,7 @@ export class AuthService {
       // Logique de permissions basée sur le niveau utilisateur existant
       const userLevel = parseInt(String(user.cst_level)) || 0;
 
-      const modulePermissions = {
+      const modulePermissions: Record<string, Record<string, number>> = {
         commercial: { read: 1, write: 3 },
         admin: { read: 7, write: 9 },
         seo: { read: 3, write: 5 },
@@ -694,7 +694,7 @@ export class AuthService {
         reports: { read: 1, write: 5 },
       };
 
-      const requiredLevel = (modulePermissions as any)[module]?.[action] || 9;
+      const requiredLevel = modulePermissions[module]?.[action] || 9;
       const hasAccess = userLevel >= requiredLevel;
 
       this.logger.debug(

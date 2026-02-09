@@ -14,7 +14,6 @@ import { CacheService } from '../../../cache/cache.service';
 import {
   BusinessRuleException,
   DomainValidationException,
-  DomainNotFoundException,
   ErrorCodes,
 } from '../../../common/exceptions';
 import {
@@ -25,6 +24,8 @@ import {
 import { GammeSeoAuditService } from './gamme-seo-audit.service';
 import { GammeSeoBadgesService } from './gamme-seo-badges.service';
 import { GammeSeoSectionKService } from './gamme-seo-section-k.service';
+import { GammeDetailEnricherService } from './gamme-detail-enricher.service';
+import { GammeVLevelService } from './gamme-vlevel.service';
 
 // ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
 // Ordre du catalogue Automecanik par familles techniques
@@ -153,6 +154,21 @@ export interface GammeSeoUpdateData {
   user_action?: string;
 }
 
+// Type pour véhicule enrichi (cross gamme car)
+export interface EnrichedVehicle {
+  cgc_id: string;
+  type_id: string;
+  type_name: string;
+  marque_name: string;
+  modele_name: string;
+  engine?: string;
+  fuel?: string;
+  level?: string;
+  year_from?: string;
+  year_to?: string;
+  power_ps?: string;
+}
+
 // ============== SERVICE ==============
 
 @Injectable()
@@ -170,6 +186,8 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     private readonly auditService: GammeSeoAuditService,
     private readonly badgesService: GammeSeoBadgesService,
     private readonly sectionKService: GammeSeoSectionKService,
+    private readonly detailEnricherService: GammeDetailEnricherService,
+    private readonly vLevelService: GammeVLevelService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -280,7 +298,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         throw liaisonsError;
       }
 
-      const pgIds = [...new Set(liaisons.map((l: any) => Number(l.mc_pg_id)))];
+      const pgIds = [...new Set(liaisons.map((l) => Number(l.mc_pg_id)))];
       this.logger.log(`Found ${pgIds.length} unique gamme IDs`);
 
       // 2. Get gammes from pieces_gamme
@@ -310,7 +328,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       }
 
       // 4. Get families from catalog_family
-      const familyIds = [...new Set(liaisons.map((l: any) => l.mc_mf_id))];
+      const familyIds = [...new Set(liaisons.map((l) => l.mc_mf_id))];
       const { data: families, error: familiesError } = await this.supabase
         .from('catalog_family')
         .select('mf_id, mf_name')
@@ -338,22 +356,20 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       }
 
       // Build lookup maps
-      const seoMetricsMap = new Map(
-        seoMetrics?.map((m: any) => [m.pg_id, m]) || [],
-      );
+      const seoMetricsMap = new Map(seoMetrics?.map((m) => [m.pg_id, m]) || []);
       const familiesMap = new Map(
-        families?.map((f: any) => [f.mf_id, f.mf_name]) || [],
+        families?.map((f) => [f.mf_id, f.mf_name]) || [],
       );
       const pgToFamilyMap = new Map(
-        liaisons.map((l: any) => [Number(l.mc_pg_id), l.mc_mf_id]),
+        liaisons.map((l) => [Number(l.mc_pg_id), l.mc_mf_id]),
       );
       const aggregatesMap = new Map(
-        aggregates?.map((a: any) => [a.ga_pg_id, a]) || [],
+        aggregates?.map((a) => [a.ga_pg_id, a]) || [],
       );
 
       // 6. Merge data (incluant Agent 2 et badges v2)
-      let result: GammeSeoItem[] = (gammes || []).map((g: any) => {
-        const seo = seoMetricsMap.get(g.pg_id) || {};
+      let result: GammeSeoItem[] = (gammes || []).map((g) => {
+        const seo: any = seoMetricsMap.get(g.pg_id) || {};
         const familyId = pgToFamilyMap.get(g.pg_id);
         const familyName = familyId ? familiesMap.get(familyId) : null;
 
@@ -534,22 +550,24 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       } else {
         // Standard sorting for other columns
         result.sort((a, b) => {
-          let aVal: any = a[sortBy as keyof GammeSeoItem];
-          let bVal: any = b[sortBy as keyof GammeSeoItem];
+          let aVal: unknown = a[sortBy as keyof GammeSeoItem];
+          let bVal: unknown = b[sortBy as keyof GammeSeoItem];
 
           // Handle null/undefined
           if (aVal === null || aVal === undefined) aVal = '';
           if (bVal === null || bVal === undefined) bVal = '';
 
           // String comparison for strings
-          if (typeof aVal === 'string') {
+          if (typeof aVal === 'string' && typeof bVal === 'string') {
             return sortOrder === 'asc'
               ? aVal.localeCompare(bVal)
               : bVal.localeCompare(aVal);
           }
 
           // Numeric comparison
-          return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+          const numA = Number(aVal);
+          const numB = Number(bVal);
+          return sortOrder === 'asc' ? numA - numB : numB - numA;
         });
       }
 
@@ -710,7 +728,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       ];
 
       // Update pieces_gamme if needed
-      const piecesUpdate: Record<string, any> = {};
+      const piecesUpdate: Record<string, string | undefined> = {};
       piecesGammeFields.forEach((field) => {
         if (updateData[field] !== undefined) {
           piecesUpdate[field] = updateData[field];
@@ -730,7 +748,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       }
 
       // Update gamme_seo_metrics if needed
-      const seoUpdate: Record<string, any> = {
+      const seoUpdate: Record<string, string | null | undefined> = {
         updated_at: new Date().toISOString(),
       };
       seoMetricsFields.forEach((field) => {
@@ -904,9 +922,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
         .from('catalog_gamme')
         .select('mc_mf_id');
 
-      const familyIds = [
-        ...new Set(liaisons?.map((l: any) => l.mc_mf_id) || []),
-      ];
+      const familyIds = [...new Set(liaisons?.map((l) => l.mc_mf_id) || [])];
 
       const { data: families, error } = await this.supabase
         .from('catalog_family')
@@ -916,7 +932,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
       if (error) throw error;
 
-      return (families || []).map((f: any) => ({
+      return (families || []).map((f) => ({
         id: f.mf_id,
         name: f.mf_name,
       }));
@@ -1043,11 +1059,12 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
   /**
    * 📋 GET Gamme Detail - Détail complet d'une gamme pour l'admin
+   * Delegated to GammeDetailEnricherService
    */
   async getGammeDetail(pgId: number): Promise<{
-    gamme: any;
-    seo: any;
-    conseils: any[];
+    gamme: Record<string, unknown>;
+    seo: Record<string, unknown>;
+    conseils: Record<string, unknown>[];
     switchGroups: Array<{
       alias: string;
       count: number;
@@ -1060,457 +1077,39 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       sample: string;
       variations: Array<{ id: number; content: string }>;
     }>;
-    articles: any[];
-    vehicles: { level1: any[]; level2: any[]; level5: any[] };
-    vLevel: { v1: any[]; v2: any[]; v3: any[]; v4: any[]; v5: any[] };
-    stats: any;
+    articles: Record<string, unknown>[];
+    vehicles: {
+      level1: EnrichedVehicle[];
+      level2: EnrichedVehicle[];
+      level5: EnrichedVehicle[];
+    };
+    vLevel: {
+      v1: Record<string, unknown>[];
+      v2: Record<string, unknown>[];
+      v3: Record<string, unknown>[];
+      v4: Record<string, unknown>[];
+      v5: Record<string, unknown>[];
+    };
+    stats: Record<string, unknown>;
   }> {
-    try {
-      this.logger.log(`📋 getGammeDetail(${pgId}) - OPTIMIZED`);
-      const pgIdStr = pgId.toString();
-
-      // 🚀 OPTIMISATION: Paralléliser toutes les requêtes indépendantes
-      const [
-        gammeResult,
-        seoResult,
-        conseilsResult,
-        rawSwitchesResult,
-        rawFamilySwitchesResult,
-        articlesResult,
-        rawVehiclesResult,
-        vLevelResult,
-        productsCountResult,
-        aggregates,
-      ] = await Promise.all([
-        // 1. Gamme de base
-        this.supabase
-          .from('pieces_gamme')
-          .select(
-            'pg_id, pg_name, pg_alias, pg_level, pg_top, pg_relfollow, pg_sitemap, pg_display, pg_img',
-          )
-          .eq('pg_id', pgIdStr)
-          .single(),
-        // 2. SEO
-        this.supabase
-          .from('seo_gamme')
-          .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
-          .eq('sg_pg_id', pgIdStr)
-          .single(),
-        // 3. Conseils
-        this.supabase
-          .from('seo_gamme_conseil')
-          .select('sgc_id, sgc_title, sgc_content')
-          .eq('sgc_pg_id', pgIdStr)
-          .order('sgc_id', { ascending: true }),
-        // 4. Item Switches
-        this.supabase
-          .from('__seo_item_switch')
-          .select('sis_id, sis_alias, sis_content')
-          .eq('sis_pg_id', pgIdStr)
-          .order('sis_alias', { ascending: true }),
-        // 5. Family Switches
-        this.supabase
-          .from('__seo_family_gamme_car_switch')
-          .select('sfgcs_id, sfgcs_alias, sfgcs_content')
-          .eq('sfgcs_pg_id', pgIdStr)
-          .order('sfgcs_alias', { ascending: true }),
-        // 6. Articles
-        this.supabase
-          .from('__blog_advice')
-          .select(
-            'ba_id, ba_title, ba_alias, ba_preview, ba_visit, ba_create, ba_update',
-          )
-          .eq('ba_pg_id', pgIdStr)
-          .order('ba_create', { ascending: false })
-          .limit(20),
-        // 7. Véhicules
-        this.supabase
-          .from('__cross_gamme_car')
-          .select(
-            'cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level',
-          )
-          .eq('cgc_pg_id', pgIdStr)
-          .limit(500),
-        // 8. V-Level
-        this.supabase
-          .from('gamme_seo_metrics')
-          .select(
-            'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
-          )
-          .eq('gamme_id', pgIdStr)
-          .order('v_level', { ascending: true })
-          .order('rank', { ascending: true }),
-        // 9. Products count
-        this.supabase
-          .from('pieces')
-          .select('*', { count: 'exact', head: true })
-          .eq('pg_id', pgIdStr),
-        // 10. Agrégats (delegated to GammeSeoBadgesService)
-        this.badgesService.getGammeAggregates(pgId),
-      ]);
-
-      // Extraire les données
-      const { data: gamme, error: gammeError } = gammeResult;
-      const { data: seo } = seoResult;
-      const { data: conseils } = conseilsResult;
-      const { data: rawSwitches } = rawSwitchesResult;
-      const { data: rawFamilySwitches } = rawFamilySwitchesResult;
-      const { data: articles } = articlesResult;
-      const { data: rawVehicles } = rawVehiclesResult;
-      const { data: vLevelData } = vLevelResult;
-      const { count: productsCount } = productsCountResult;
-
-      if (gammeError || !gamme) {
-        throw new DomainNotFoundException({
-          code: ErrorCodes.CATALOG.GAMME_NOT_FOUND,
-          message: `Gamme ${pgId} non trouvée`,
-        });
-      }
-
-      // Grouper Item Switches par alias - TOUTES les variations
-      const switchGroups = Object.entries(
-        (rawSwitches || []).reduce(
-          (acc, sw: any) => {
-            const alias = String(sw.sis_alias);
-            if (!acc[alias]) {
-              acc[alias] = [];
-            }
-            acc[alias].push({
-              sis_id: sw.sis_id,
-              content: sw.sis_content || '',
-            });
-            return acc;
-          },
-          {} as Record<string, Array<{ sis_id: number; content: string }>>,
-        ),
-      ).map(([alias, variations]) => ({
-        alias,
-        count: variations.length,
-        variations,
-        sample:
-          variations[0]?.content.substring(0, 50) +
-          (variations[0]?.content.length > 50 ? '...' : ''),
-      }));
-
-      // Grouper Family Switches par alias - TOUTES les variations
-      const familySwitchGroups = Object.entries(
-        (rawFamilySwitches || []).reduce(
-          (acc, sw: any) => {
-            const alias = String(sw.sfgcs_alias);
-            if (!acc[alias]) {
-              acc[alias] = [];
-            }
-            acc[alias].push({
-              id: sw.sfgcs_id,
-              content: sw.sfgcs_content || '',
-            });
-            return acc;
-          },
-          {} as Record<string, Array<{ id: number; content: string }>>,
-        ),
-      ).map(([alias, variations]) => ({
-        alias,
-        count: variations.length,
-        variations,
-        sample:
-          variations[0]?.content.substring(0, 50) +
-          (variations[0]?.content.length > 50 ? '...' : ''),
-      }));
-
-      // Grouper par V-Level
-      const vLevelGrouped = {
-        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
-        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
-        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
-        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
-        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
-      };
-
-      // Type pour véhicule enrichi
-      type EnrichedVehicle = {
-        cgc_id: string;
-        type_id: string;
-        type_name: string;
-        marque_name: string;
-        modele_name: string;
-        engine?: string;
-        fuel?: string;
-        level?: string;
-      };
-
-      // Enrichir avec les noms des marques/modèles/types
-      // Structure attendue par le frontend: cgc_id, type_id, type_name, marque_name, modele_name
-      let allVehicles: EnrichedVehicle[] = [];
-
-      if (rawVehicles && rawVehicles.length > 0) {
-        // Collecter les IDs type uniques
-        const typeIds = [
-          ...new Set(rawVehicles.map((v) => v.cgc_type_id).filter(Boolean)),
-        ];
-
-        // Requête simple sans jointures (les FK ne sont pas définies dans Supabase)
-        const { data: typesData } =
-          typeIds.length > 0
-            ? await this.supabase
-                .from('auto_type')
-                .select(
-                  'type_id, type_name, type_engine, type_fuel, type_marque_id, type_modele_id, type_year_from, type_year_to, type_power_ps',
-                )
-                .in('type_id', typeIds)
-            : { data: [] };
-
-        // Map avec STRING KEYS - IMPORTANT: type_marque_id est STRING ("140"), marque_id est NUMBER (140)
-        const typeMap = new Map(
-          (typesData || []).map((t: any) => [
-            String(t.type_id),
-            {
-              name: t.type_name || '',
-              engine: t.type_engine || '',
-              fuel: t.type_fuel || '',
-              marque_id: String(t.type_marque_id || ''),
-              modele_id: String(t.type_modele_id || ''),
-              year_from: t.type_year_from || '',
-              year_to: t.type_year_to || '',
-              power_ps: t.type_power_ps || '',
-            },
-          ]),
-        );
-
-        // Collecter les IDs marque/modele (strings dans auto_type)
-        const allMarqueIds = new Set<string>();
-        const allModeleIds = new Set<string>();
-        for (const t of typesData || []) {
-          if (t.type_marque_id) allMarqueIds.add(String(t.type_marque_id));
-          if (t.type_modele_id) allModeleIds.add(String(t.type_modele_id));
-        }
-
-        // Lookups séparés pour marque et modele
-        const [marques, modeles] = await Promise.all([
-          allMarqueIds.size > 0
-            ? this.supabase
-                .from('auto_marque')
-                .select('marque_id, marque_name')
-                .in('marque_id', [...allMarqueIds])
-            : { data: [] },
-          allModeleIds.size > 0
-            ? this.supabase
-                .from('auto_modele')
-                .select('modele_id, modele_name')
-                .in('modele_id', [...allModeleIds])
-            : { data: [] },
-        ]);
-
-        // Maps avec STRING KEYS - conversion car marque_id/modele_id sont NUMBER dans la réponse
-        const marqueMap = new Map(
-          (marques.data || []).map((m: any) => [
-            String(m.marque_id),
-            m.marque_name,
-          ]),
-        );
-        const modeleMap = new Map(
-          (modeles.data || []).map((m: any) => [
-            String(m.modele_id),
-            m.modele_name,
-          ]),
-        );
-
-        // Enrichir les véhicules
-        allVehicles = rawVehicles.map((v: any) => {
-          const typeInfo = typeMap.get(String(v.cgc_type_id));
-          return {
-            cgc_id: v.cgc_id,
-            type_id: v.cgc_type_id || '',
-            type_name: typeInfo?.name || '',
-            marque_name: marqueMap.get(typeInfo?.marque_id || '') || '',
-            modele_name: modeleMap.get(typeInfo?.modele_id || '') || '',
-            engine: typeInfo?.engine || '',
-            fuel: typeInfo?.fuel || '',
-            level: v.cgc_level || '1',
-            year_from: typeInfo?.year_from || '',
-            year_to: typeInfo?.year_to || '',
-            power_ps: typeInfo?.power_ps || '',
-          };
-        });
-      }
-
-      // Séparer par niveau
-      const vehiclesLevel1 = allVehicles.filter((v) => v.level === '1');
-      const vehiclesLevel2 = allVehicles.filter((v) => v.level === '2');
-      const vehiclesLevel5 = allVehicles.filter((v) => v.level === '5');
-
-      return {
-        gamme,
-        seo: seo || {
-          sg_id: null,
-          sg_title: '',
-          sg_descrip: '',
-          sg_keywords: '',
-          sg_h1: '',
-          sg_content: '',
-        },
-        conseils: conseils || [],
-        switchGroups,
-        familySwitchGroups,
-        // Articles enrichis avec sections_count (par défaut 0 car pas de table sections)
-        articles: (articles || []).map((a: any) => ({
-          ...a,
-          sections_count: 0, // TODO: Compter les sections si une table existe
-        })),
-        vehicles: {
-          level1: vehiclesLevel1,
-          level2: vehiclesLevel2,
-          level5: vehiclesLevel5,
-        },
-        vLevel: vLevelGrouped,
-        stats: {
-          // 🎯 VALEURS "VÉRITÉ" (agrégats - ce que le front voit)
-          products_count: aggregates?.products_total ?? productsCount ?? 0,
-          vehicles_count: aggregates?.vehicles_total ?? allVehicles.length,
-          content_words: aggregates?.content_words_total ?? 0,
-          vlevel_counts: aggregates?.vlevel_counts ?? {
-            V1: vLevelGrouped.v1.length,
-            V2: vLevelGrouped.v2.length,
-            V3: vLevelGrouped.v3.length,
-            V4: vLevelGrouped.v4.length,
-            V5: vLevelGrouped.v5.length,
-          },
-
-          // 🏷️ PHASE 2 BADGES
-          priority_score: aggregates?.priority_score ?? 0,
-          catalog_issues: aggregates?.catalog_issues ?? [],
-          smart_actions: aggregates?.smart_actions ?? [],
-
-          // ===== Badges v2 (11 badges) =====
-          // Pilotage
-          index_policy: aggregates?.index_policy ?? 'NOINDEX',
-          final_priority: aggregates?.final_priority ?? 'P3',
-          // Potentiel
-          potential_level: aggregates?.potential_level ?? 'LOW',
-          demand_level: aggregates?.demand_level ?? 'LOW',
-          difficulty_level: aggregates?.difficulty_level ?? 'MED',
-          intent_type: aggregates?.intent_type ?? 'COMPARE',
-          // Réalité Intra-Gamme
-          catalog_status: aggregates?.catalog_status ?? 'EMPTY',
-          vehicle_coverage: aggregates?.vehicle_coverage ?? 'EMPTY',
-          content_depth: aggregates?.content_depth ?? 'THIN',
-          freshness_status: aggregates?.freshness_status ?? 'EXPIRED',
-          cluster_health: aggregates?.cluster_health ?? 'ISOLATED',
-          topic_purity: aggregates?.topic_purity ?? 'PURE',
-          // Exécutabilité
-          execution_status: aggregates?.execution_status ?? 'FAIL',
-
-          // Champs existants (backward compatibility)
-          articles_count: (articles || []).length,
-          vehicles_level1_count: vehiclesLevel1.length,
-          vehicles_level2_count: vehiclesLevel2.length,
-          vehicles_level5_count: vehiclesLevel5.length,
-          vehicles_total_count: allVehicles.length,
-          // Stats V-Level (existants)
-          vLevel_v1_count: vLevelGrouped.v1.length,
-          vLevel_v2_count: vLevelGrouped.v2.length,
-          vLevel_v3_count: vLevelGrouped.v3.length,
-          vLevel_v4_count: vLevelGrouped.v4.length,
-          vLevel_v5_count: vLevelGrouped.v5.length,
-          vLevel_total_count: (vLevelData || []).length,
-          // Date de dernière mise à jour V-Level (plus récente)
-          vLevel_last_updated:
-            vLevelData && vLevelData.length > 0
-              ? (vLevelData as Array<{ updated_at?: string | null }>).reduce(
-                  (latest: string | null, v) => {
-                    if (!v.updated_at) return latest;
-                    if (!latest) return v.updated_at;
-                    return new Date(v.updated_at) > new Date(latest)
-                      ? v.updated_at
-                      : latest;
-                  },
-                  null,
-                )
-              : null,
-          // Date du dernier article (plus récent en premier)
-          last_article_date:
-            articles && articles.length > 0
-              ? articles[0].ba_update || articles[0].ba_create
-              : null,
-
-          // 🔍 DEBUG: Valeurs brutes pour diagnostic
-          _debug: aggregates
-            ? {
-                products_direct: aggregates.products_direct,
-                products_via_vehicles: aggregates.products_via_vehicles,
-                products_via_family: aggregates.products_via_family,
-                seo_content_raw_words: aggregates.seo_content_raw_words,
-                content_breakdown: aggregates.content_breakdown,
-                aggregates_computed_at: aggregates.computed_at,
-                source_updated_at: aggregates.source_updated_at,
-              }
-            : {
-                products_direct: productsCount || 0,
-                products_via_vehicles: 0,
-                products_via_family: 0,
-                seo_content_raw_words: 0,
-                content_breakdown: null,
-                aggregates_computed_at: null,
-                source_updated_at: null,
-                _note:
-                  'Agrégats non encore calculés - exécuter refresh_gamme_aggregates',
-              },
-        },
-      };
-    } catch (error) {
-      this.logger.error(`❌ Error in getGammeDetail(${pgId}):`, error);
-      throw error;
-    }
+    return this.detailEnricherService.getGammeDetail(pgId);
   }
 
   /**
    * 🔄 Recalcule les V-Level pour une gamme
-   * Pour l'instant: met à jour updated_at pour marquer comme recalculé
-   * TODO: Intégrer le vrai pipeline de calcul V-Level
+   * Delegated to GammeVLevelService
    */
   async recalculateVLevel(pgId: number): Promise<{
     success: boolean;
     message: string;
     updatedCount: number;
   }> {
-    try {
-      this.logger.log(`🔄 Recalculating V-Level for gamme ${pgId}`);
-
-      // Mettre à jour updated_at pour tous les enregistrements de cette gamme
-      const { data, error } = await this.supabase
-        .from('gamme_seo_metrics')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('gamme_id', pgId.toString())
-        .select('id');
-
-      if (error) {
-        this.logger.error(
-          `❌ Error updating V-Level for gamme ${pgId}:`,
-          error,
-        );
-        throw error;
-      }
-
-      const updatedCount = data?.length || 0;
-
-      this.logger.log(
-        `✅ V-Level recalculated for gamme ${pgId}: ${updatedCount} records updated`,
-      );
-
-      return {
-        success: true,
-        message: `V-Level recalculé: ${updatedCount} enregistrements mis à jour`,
-        updatedCount,
-      };
-    } catch (error) {
-      this.logger.error(`❌ Error in recalculateVLevel(${pgId}):`, error);
-      throw error;
-    }
+    return this.vLevelService.recalculateVLevel(pgId);
   }
 
   /**
    * 🔍 Valide les règles V-Level:
-   * - V1 doit être V2 dans >= 30% des gammes G1
-   * - Détecte les violations de cette règle
+   * Delegated to GammeVLevelService
    */
   async validateV1Rules(): Promise<{
     valid: boolean;
@@ -1529,113 +1128,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       invalid_v1: number;
     };
   }> {
-    try {
-      this.logger.log('🔍 Validating V1 rules (>= 30% G1 gammes)');
-
-      // 1. Compter les gammes G1 (pg_top = '1')
-      const { count: g1Count, error: g1Error } = await this.supabase
-        .from('pieces_gamme')
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_top', '1');
-
-      if (g1Error) {
-        this.logger.error('❌ Error counting G1 gammes:', g1Error);
-        throw g1Error;
-      }
-
-      const totalG1 = g1Count || 0;
-      this.logger.log(`📊 Total G1 gammes: ${totalG1}`);
-
-      // 2. Récupérer tous les V1
-      const { data: v1Data, error: v1Error } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select('model_name, variant_name, energy')
-        .eq('v_level', 'V1');
-
-      if (v1Error) {
-        this.logger.error('❌ Error fetching V1 data:', v1Error);
-        throw v1Error;
-      }
-
-      const v1Items = v1Data || [];
-      this.logger.log(`📊 Total V1 items: ${v1Items.length}`);
-
-      // 3. Pour chaque V1 unique (model_name + energy), compter combien de gammes G1 l'ont en V2
-      const violations: Array<{
-        model_name: string;
-        variant_name: string;
-        energy: string;
-        v2_count: number;
-        g1_total: number;
-        percentage: number;
-      }> = [];
-
-      // Grouper les V1 par model_name + energy (pour éviter les doublons)
-      const uniqueV1 = new Map<
-        string,
-        { model_name: string; variant_name: string; energy: string }
-      >();
-      for (const v1 of v1Items) {
-        const key = `${v1.model_name}|${v1.energy}`;
-        if (!uniqueV1.has(key)) {
-          uniqueV1.set(key, v1);
-        }
-      }
-
-      // Vérifier chaque V1 unique
-      for (const [, v1] of uniqueV1) {
-        // Compter combien de fois cette variante est V2 dans des gammes G1
-        const { count: v2Count, error: v2Error } = await this.supabase
-          .from('gamme_seo_metrics')
-          .select('gamme_id', { count: 'exact', head: true })
-          .eq('model_name', v1.model_name)
-          .ilike('energy', v1.energy)
-          .eq('v_level', 'V2');
-
-        if (v2Error) {
-          this.logger.warn(
-            `⚠️ Error counting V2 for ${v1.model_name}:`,
-            v2Error,
-          );
-          continue;
-        }
-
-        const v2CountNum = v2Count || 0;
-        const percentage = totalG1 > 0 ? (v2CountNum / totalG1) * 100 : 0;
-
-        // Si < 30%, c'est une violation
-        if (percentage < 30) {
-          violations.push({
-            model_name: v1.model_name,
-            variant_name: v1.variant_name || '',
-            energy: v1.energy,
-            v2_count: v2CountNum,
-            g1_total: totalG1,
-            percentage: Math.round(percentage * 10) / 10,
-          });
-        }
-      }
-
-      const result = {
-        valid: violations.length === 0,
-        violations,
-        g1_count: totalG1,
-        summary: {
-          total_v1: uniqueV1.size,
-          valid_v1: uniqueV1.size - violations.length,
-          invalid_v1: violations.length,
-        },
-      };
-
-      this.logger.log(
-        `✅ V1 validation complete: ${result.summary.valid_v1}/${result.summary.total_v1} valid`,
-      );
-
-      return result;
-    } catch (error) {
-      this.logger.error('❌ Error in validateV1Rules():', error);
-      throw error;
-    }
+    return this.vLevelService.validateV1Rules();
   }
 
   // ============== FACADE GETTERS ==============
@@ -1652,3 +1145,7 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 // Extracted to gamme-seo-badges.service.ts and gamme-seo-section-k.service.ts
 // Methods moved: getVLevelGlobalStats, refreshAggregates, getGammeAggregates,
 //   getSectionKMetrics, getSectionKMissingDetails, getSectionKExtrasDetails
+// Extracted to gamme-detail-enricher.service.ts
+// Methods delegated: getGammeDetail (fetch + enrich gamme data)
+// Extracted to gamme-vlevel.service.ts
+// Methods delegated: recalculateVLevel, validateV1Rules

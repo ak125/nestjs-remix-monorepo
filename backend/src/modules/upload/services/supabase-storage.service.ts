@@ -57,8 +57,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
         size: file.size,
         uploadedAt: new Date(),
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Upload error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Upload error: ${message}`);
       throw error;
     }
   }
@@ -75,8 +76,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       }
 
       return true;
-    } catch (error: any) {
-      this.logger.error(`❌ Delete error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Delete error: ${message}`);
       return false;
     }
   }
@@ -100,8 +102,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       }
 
       return data.signedUrl;
-    } catch (error: any) {
-      this.logger.error(`❌ Signed URL error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Signed URL error: ${message}`);
       throw error;
     }
   }
@@ -125,8 +128,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       }
 
       return data || [];
-    } catch (error: any) {
-      this.logger.error(`❌ List files error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ List files error: ${message}`);
       return [];
     }
   }
@@ -147,8 +151,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       }
 
       return data;
-    } catch (error: any) {
-      this.logger.error(`❌ Bucket info error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Bucket info error: ${message}`);
       throw error;
     }
   }

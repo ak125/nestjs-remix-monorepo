@@ -5,12 +5,12 @@
 import { useNavigate } from "@remix-run/react";
 import { Search, Package, TrendingUp, X } from "lucide-react";
 import { useState, useEffect, useRef, memo } from "react";
+import { Badge } from "~/components/ui";
+import { PartImage } from "~/components/ui/ResponsiveImage";
 import {
   useProductSearch,
   type ProductSearchResult,
 } from "../../hooks/useProductSearch";
-import { Badge } from "~/components/ui";
-import { PartImage } from "~/components/ui/ResponsiveImage";
 
 interface ProductSearchProps {
   variant?: "hero" | "compact"; // hero = grande pour homepage, compact = petite pour navbar

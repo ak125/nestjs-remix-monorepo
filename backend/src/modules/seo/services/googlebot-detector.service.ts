@@ -75,7 +75,7 @@ export class GooglebotDetectorService {
     'mj12bot',
   ];
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>(
       'SUPABASE_SERVICE_ROLE_KEY',

@@ -69,10 +69,11 @@ export class UploadController {
         message: 'Fichier uploadé avec succès',
         data: result,
       };
-    } catch (error: any) {
-      this.logger.error('Upload failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Upload failed:', message);
       throw new OperationFailedException({
-        message: error.message || "Erreur lors de l'upload",
+        message: message || "Erreur lors de l'upload",
       });
     }
   }
@@ -110,10 +111,11 @@ export class UploadController {
         message: `${result.successful.length}/${files.length} fichiers uploadés`,
         data: result,
       };
-    } catch (error: any) {
-      this.logger.error('Bulk upload failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Bulk upload failed:', message);
       throw new OperationFailedException({
-        message: error.message || "Erreur lors de l'upload en lot",
+        message: message || "Erreur lors de l'upload en lot",
       });
     }
   }
@@ -140,7 +142,7 @@ export class UploadController {
         message: result.isValid ? 'Fichier valide' : 'Fichier invalide',
         data: result,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Validation failed:', error);
       throw new OperationFailedException({
         message: 'Erreur lors de la validation',
@@ -166,13 +168,14 @@ export class UploadController {
           message: 'Impossible de supprimer le fichier',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Delete failed:', error);
       if (error instanceof DomainNotFoundException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : String(error);
       throw new OperationFailedException({
-        message: error.message || 'Erreur lors de la suppression',
+        message: message || 'Erreur lors de la suppression',
       });
     }
   }
@@ -188,7 +191,7 @@ export class UploadController {
         success: true,
         data: stats,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Stats failed:', error);
       throw new OperationFailedException({
         message: 'Erreur lors de la récupération des statistiques',
@@ -225,12 +228,13 @@ export class UploadController {
         success: health.status === 'healthy',
         data: health,
       };
-    } catch (error: any) {
-      this.logger.error('Health check failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Health check failed:', message);
       return {
         success: false,
         status: 'unhealthy',
-        error: error.message,
+        error: message,
       };
     }
   }
@@ -257,7 +261,7 @@ export class UploadController {
           files,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('List files failed:', error);
       throw new OperationFailedException({
         message: 'Erreur lors de la récupération des fichiers',

@@ -6,8 +6,8 @@
  */
 
 import { memo } from "react";
-import { type PieceData } from "../../types/pieces-route.types";
 import { Badge } from "~/components/ui";
+import { type PieceData } from "../../types/pieces-route.types";
 
 interface PiecesComparisonViewProps {
   pieces: PieceData[];

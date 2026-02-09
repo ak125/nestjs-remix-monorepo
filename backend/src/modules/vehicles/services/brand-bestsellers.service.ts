@@ -219,7 +219,7 @@ export class BrandBestsellersService extends SupabaseBaseService {
     if (rawVehicles.length === 0) return [];
 
     // Transformer les données de base (avec fallback marques-concepts)
-    let vehicles = rawVehicles.map((vehicle: any) => ({
+    let vehicles = rawVehicles.map((vehicle) => ({
       ...vehicle,
       vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
       image_url: buildModelImageUrl(
@@ -247,7 +247,7 @@ export class BrandBestsellersService extends SupabaseBaseService {
         ];
       }
 
-      vehicles = vehicles.map((vehicle: any, index: number) => {
+      vehicles = vehicles.map((vehicle, index: number) => {
         const marque = vehicle.marque_name || '';
         const modele = vehicle.modele_name || '';
         const type = vehicle.type_name || '';
@@ -297,7 +297,7 @@ export class BrandBestsellersService extends SupabaseBaseService {
     if (rawParts.length === 0) return [];
 
     // Transformer les données de base
-    let parts = rawParts.map((part: any) => ({
+    let parts = rawParts.map((part) => ({
       ...part,
       part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.cgc_type_alias || 'type'}-${part.cgc_type_id || 0}.html`,
       image_url: part.pg_alias

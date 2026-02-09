@@ -13,11 +13,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { SearchBar } from "../components/search/SearchBar";
-import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { SearchBar } from "../components/search/SearchBar";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 /**
  * 🔍 SEO Meta Tags - noindex pour pages de recherche

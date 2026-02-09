@@ -22,6 +22,10 @@ import { BlogArticleDataService } from './services/blog-article-data.service';
 import { BlogStatisticsService } from './services/blog-statistics.service';
 import { BlogSeoService } from './services/blog-seo.service';
 import { BlogArticleRelationService } from './services/blog-article-relation.service';
+import { ConstructeurSearchService } from './services/constructeur-search.service';
+import { ConstructeurTransformService } from './services/constructeur-transform.service';
+import { AdviceTransformService } from './services/advice-transform.service';
+import { AdviceEnrichmentService } from './services/advice-enrichment.service';
 
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
@@ -86,6 +90,10 @@ import { SeoModule } from '../seo/seo.module';
     GuideService,
     ConstructeurService,
     GlossaryService,
+    ConstructeurSearchService,
+    ConstructeurTransformService,
+    AdviceTransformService,
+    AdviceEnrichmentService,
   ],
   exports: [
     BlogService, // Exporté pour utilisation dans autres modules (ex: produits)
@@ -94,6 +102,10 @@ import { SeoModule } from '../seo/seo.module';
     GuideService, // Exporté pour intégration véhicules ↔ guides
     ConstructeurService, // Exporté pour intégration marques ↔ contenu
     GlossaryService, // Exporté pour aide contextuelle technique
+    ConstructeurSearchService,
+    ConstructeurTransformService,
+    AdviceTransformService,
+    AdviceEnrichmentService,
   ],
 })
 export class BlogModule {}

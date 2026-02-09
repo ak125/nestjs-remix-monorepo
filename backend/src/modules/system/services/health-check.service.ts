@@ -29,8 +29,8 @@ export class HealthCheckService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private metricsService: MetricsService,
-    private databaseMonitorService: DatabaseMonitorService,
+    private readonly metricsService: MetricsService,
+    private readonly databaseMonitorService: DatabaseMonitorService,
   ) {
     super(configService);
   }

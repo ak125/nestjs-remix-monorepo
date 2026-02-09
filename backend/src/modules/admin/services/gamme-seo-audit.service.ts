@@ -28,8 +28,8 @@ export interface GammeSeoAuditEntry {
   action_type: GammeSeoActionType;
   entity_type: 'threshold' | 'gamme' | 'batch';
   entity_ids: number[] | null; // pg_ids affectés
-  old_values: any | null;
-  new_values: any | null;
+  old_values: Record<string, unknown> | null;
+  new_values: Record<string, unknown> | null;
   impact_summary: string;
   created_at?: string;
 }
@@ -146,7 +146,7 @@ export class GammeSeoAuditService extends SupabaseBaseService {
       }
 
       // Map directement les colonnes (plus de parsing JSON)
-      const entries: GammeSeoAuditEntry[] = (data || []).map((row: any) => ({
+      const entries: GammeSeoAuditEntry[] = (data || []).map((row) => ({
         id: row.id,
         admin_id: row.admin_id,
         admin_email: row.admin_email || 'unknown',
@@ -197,12 +197,12 @@ export class GammeSeoAuditService extends SupabaseBaseService {
 
       // Calculate stats
       const actionsLast24h = entries.filter(
-        (e: any) => new Date(e.created_at) >= yesterday,
+        (e) => new Date(e.created_at) >= yesterday,
       ).length;
       const actionsByType: Record<string, number> = {};
       const adminCounts: Record<string, number> = {};
 
-      entries.forEach((row: any) => {
+      entries.forEach((row) => {
         // Count by action type (colonne directe, pas de parsing)
         const actionType = row.action_type || 'UNKNOWN';
         actionsByType[actionType] = (actionsByType[actionType] || 0) + 1;

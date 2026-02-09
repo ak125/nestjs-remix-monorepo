@@ -36,7 +36,7 @@ export class NotificationService {
 
   private templates: Map<string, NotificationTemplate> = new Map();
 
-  constructor(private supportConfig: SupportConfigService) {
+  constructor(private readonly supportConfig: SupportConfigService) {
     this.initializeTemplates();
   }
 

@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import { requireUser } from "../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -27,6 +26,25 @@ import {
 import { getRemixApiService } from "~/server/remix-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireUser } from "../auth/unified.server";
+
+interface OrdersResult {
+  success: boolean;
+  orders?: { length: number }[];
+  total?: number;
+}
+
+interface Report {
+  id: number;
+  name: string;
+  type: string;
+  period: string;
+  status: string;
+  generated: string;
+  size: string;
+  format: string;
+  dataCount: number;
+}
 
 export const meta: MetaFunction = () => createNoIndexMeta("Rapports - Admin");
 
@@ -45,7 +63,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
     const remixService = await getRemixApiService(context);
 
     // Récupérer les statistiques pour générer les rapports
-    const ordersResult: any = await remixService.getOrdersForRemix({
+    const ordersResult: OrdersResult = await remixService.getOrdersForRemix({
       page: 1,
       limit: 10,
     });
@@ -336,7 +354,7 @@ export default function AdminReports() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {reports.map((report: any) => (
+            {reports.map((report: Report) => (
               <div
                 key={report.id}
                 className="flex items-center justify-between p-4 border rounded-lg"

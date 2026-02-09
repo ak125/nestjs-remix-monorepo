@@ -11,6 +11,9 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { ArrowLeft } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { Badge } from "../components/ui/badge";
@@ -21,9 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 /**
  * Route: /account/messages/:messageId

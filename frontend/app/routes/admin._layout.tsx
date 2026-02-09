@@ -5,12 +5,12 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { getOptionalUser } from "../auth/unified.server";
-import { AdminSidebar } from "../components/AdminSidebar";
 import { Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { getOptionalUser } from "../auth/unified.server";
+import { AdminSidebar } from "../components/AdminSidebar";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Administration");
 

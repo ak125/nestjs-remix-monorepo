@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
 import { UserDataService } from './user-data.service';
-import { OrdersService } from './orders.service';
+import { OrdersService, CreateLegacyOrderData } from './orders.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
 /**
@@ -44,7 +44,8 @@ export class DatabaseCompositionService {
     // Méthode obsolète - récupérer le panier complet
     const cart = await this.cartDataService.getCartWithMetadata(String(userId));
     return cart.items.find(
-      (item: any) => parseInt(item.product_id) === productId,
+      (item: { product_id?: string }) =>
+        parseInt(item.product_id || '0') === productId,
     );
   }
 
@@ -74,7 +75,8 @@ export class DatabaseCompositionService {
     // Méthode obsolète - récupérer depuis le panier complet
     const cart = await this.cartDataService.getCartWithMetadata(sessionId);
     return cart.items.find(
-      (item: any) => parseInt(item.product_id) === productId,
+      (item: { product_id?: string }) =>
+        parseInt(item.product_id || '0') === productId,
     );
   }
 
@@ -94,11 +96,11 @@ export class DatabaseCompositionService {
     return this.userDataService.getUserById(id);
   }
 
-  async createUser(userData: any) {
+  async createUser(userData: Record<string, unknown>) {
     return this.userDataService.createUser(userData);
   }
 
-  async updateUser(id: string, updates: any) {
+  async updateUser(id: string, updates: Record<string, unknown>) {
     return this.userDataService.updateUser(id, updates);
   }
 
@@ -114,7 +116,7 @@ export class DatabaseCompositionService {
     return this.ordersService.getOrderById(String(orderId));
   }
 
-  async createOrder(orderData: any) {
+  async createOrder(orderData: CreateLegacyOrderData) {
     return this.ordersService.createLegacyOrder(orderData);
   }
 
@@ -131,7 +133,10 @@ export class DatabaseCompositionService {
   /**
    * Convertit un panier en commande (opération cross-service)
    */
-  async convertCartToOrder(userId: string, orderData: any) {
+  async convertCartToOrder(
+    userId: string,
+    orderData: Partial<CreateLegacyOrderData>,
+  ) {
     try {
       // 1. Récupérer le panier
       const cartTotals = await this.cartDataService.calculateCartTotals(userId);

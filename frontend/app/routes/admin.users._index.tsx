@@ -331,10 +331,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       default:
         return json({ error: "Action non reconnue" }, { status: 400 });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("❌ Erreur action admin.users:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return json(
-      { error: error.message || "Une erreur est survenue" },
+      { error: message || "Une erreur est survenue" },
       { status: 500 },
     );
   }

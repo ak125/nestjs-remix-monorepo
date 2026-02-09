@@ -8,8 +8,8 @@ export const RequireModule = (module: string, action: string = 'read') =>
 @Injectable()
 export class ModulePermissionGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
-    private authService: AuthService,
+    private readonly reflector: Reflector,
+    private readonly authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

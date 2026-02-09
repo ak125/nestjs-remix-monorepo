@@ -39,6 +39,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // ========================================
 
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
@@ -102,8 +104,6 @@ import {
   buildPiecesBreadcrumbs,
   buildVoirAussiLinks,
 } from "../utils/url-builder.utils";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

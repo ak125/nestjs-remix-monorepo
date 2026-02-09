@@ -12,19 +12,35 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { requireAdmin } from "../auth/unified.server";
-import { getRemixApiService } from "../server/remix-api.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAdmin } from "../auth/unified.server";
+import { getRemixApiService } from "../server/remix-api.server";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Gestion Staff - Admin");
 
 // Types supprimés car inutilisés
+
+interface RemixUser {
+  id?: number;
+  cst_id?: number;
+  email: string;
+  level?: number;
+  job?: string;
+  name?: string;
+  cst_lastname?: string;
+  firstName?: string;
+  cst_firstname?: string;
+  phone?: string;
+  cst_phone?: string;
+  isActive?: boolean;
+  department?: string;
+}
 
 // Type pour compatibility avec les données legacy
 interface LegacyAdminStaff {
@@ -49,7 +65,18 @@ interface StaffStats {
   byLevel: Record<string, number>;
 }
 
-// Interface supprimée car inutilisée
+interface StaffLoaderData {
+  staff: LegacyAdminStaff[];
+  stats: StaffStats;
+  pagination: {
+    page: number;
+    totalPages: number;
+    totalItems: number;
+  };
+  fallbackMode: boolean;
+  error?: string;
+  timestamp?: string;
+}
 
 // Fonction loader pour récupérer les données du staff
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -85,7 +112,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     }
 
     // Transformer les données utilisateurs en format staff legacy
-    const staff: LegacyAdminStaff[] = usersResult.users.map((user: any) => ({
+    const staff: LegacyAdminStaff[] = usersResult.users.map((user: RemixUser) => ({
       cnfa_id: user.id || user.cst_id,
       cnfa_login: user.email,
       cnfa_mail: user.email,
@@ -162,7 +189,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 // Composant principal de gestion du staff
 export default function AdminStaff() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<StaffLoaderData>();
   const navigation = useNavigation();
   const [_selectedStaff, _setSelectedStaff] = useState<LegacyAdminStaff | null>(
     null,
@@ -577,8 +604,8 @@ export default function AdminStaff() {
       {/* Informations de mise à jour */}
       <div className="mt-6 text-sm text-gray-500 text-center">
         Dernière mise à jour:{" "}
-        {data && (data as any).timestamp
-          ? formatDate((data as any).timestamp)
+        {data?.timestamp
+          ? formatDate(data.timestamp)
           : "-"}
       </div>
     </div>

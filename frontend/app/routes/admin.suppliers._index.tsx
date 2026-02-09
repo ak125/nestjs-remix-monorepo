@@ -19,11 +19,11 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import { useState } from "react";
-import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -63,13 +63,13 @@ interface Supplier {
     totalLinks: number;
   };
   links?: Array<{
-    id: any;
+    id: number | string;
     type: string;
     isActive: boolean;
-    brand?: { id: any; name: string };
-    piece?: { id: any; reference: string };
+    brand?: { id: number | string; name: string };
+    piece?: { id: number | string; reference: string };
     productInfo?: {
-      id: any;
+      id: number | string;
       designation: string;
       reference: string;
       brand: string;
@@ -110,7 +110,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     // Enrichir chaque fournisseur avec ses statistiques (pour les premiers 20)
     const enrichedSuppliers = await Promise.all(
-      suppliers.slice(0, 20).map(async (supplier: any) => {
+      suppliers.slice(0, 20).map(async (supplier: Supplier) => {
         try {
           const detailsResponse = await fetch(
             `http://127.0.0.1:3000/api/suppliers/details/${supplier.id}`,
@@ -161,7 +161,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (params.search) {
       const search = params.search.toLowerCase();
       filteredSuppliers = suppliersToProcess.filter(
-        (supplier: any) =>
+        (supplier: Supplier) =>
           supplier.name?.toLowerCase().includes(search) ||
           supplier.companyName?.toLowerCase().includes(search) ||
           supplier.code?.toLowerCase().includes(search),
@@ -171,7 +171,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (params.status) {
       const isActive = params.status === "active";
       filteredSuppliers = filteredSuppliers.filter(
-        (supplier: any) => supplier.isActive === isActive,
+        (supplier: Supplier) => supplier.isActive === isActive,
       );
     }
 
@@ -185,12 +185,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     // Calculer les statistiques
     const statistics = {
       total: suppliers.length,
-      active: suppliers.filter((s: any) => s.isActive).length,
-      inactive: suppliers.filter((s: any) => !s.isActive).length,
-      withEmail: suppliers.filter((s: any) => s.email).length,
+      active: suppliers.filter((s: Supplier) => s.isActive).length,
+      inactive: suppliers.filter((s: Supplier) => !s.isActive).length,
+      withEmail: suppliers.filter((s: Supplier) => s.email).length,
       withWebsite: 0, // Pas de champ website dans l'API actuelle
       countries: [
-        ...new Set(suppliers.map((s: any) => s.country).filter(Boolean)),
+        ...new Set(suppliers.map((s: Supplier) => s.country).filter(Boolean)),
       ],
     };
 

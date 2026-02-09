@@ -31,6 +31,7 @@ import {
   GammeSeoFilters,
   GammeSeoPagination,
 } from '../services/admin-gammes-seo.service';
+import { GammeSeoActionType } from '../services/gamme-seo-audit.service';
 
 @Controller('api/admin/gammes-seo')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -238,7 +239,7 @@ export class AdminGammesSeoListController {
 
       const auditService = this.gammesSeoService.getAuditService();
       const result = await auditService.getAuditHistory({
-        actionType: actionType as any,
+        actionType: actionType as GammeSeoActionType | undefined,
         dateFrom,
         dateTo,
         limit: limit ? parseInt(limit, 10) : 50,

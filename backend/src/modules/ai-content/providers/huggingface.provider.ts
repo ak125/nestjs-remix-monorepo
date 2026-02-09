@@ -25,7 +25,7 @@ export class HuggingFaceProvider implements AIProvider {
   private readonly apiKey: string;
   private readonly defaultModel: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('HUGGINGFACE_API_KEY', '');
     this.defaultModel = this.configService.get<string>(
       'HUGGINGFACE_MODEL',

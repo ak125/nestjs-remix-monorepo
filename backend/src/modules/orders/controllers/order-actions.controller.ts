@@ -153,8 +153,9 @@ export class OrderActionsController {
         message: 'Commande validée et client notifié',
         order: { ...order, ord_ords_id: '3' },
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Échec validation ${orderId}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Échec validation ${orderId}:`, message);
       throw error;
     }
   }
@@ -200,8 +201,9 @@ export class OrderActionsController {
         message: 'Commande expédiée et client notifié',
         trackingNumber: body.trackingNumber,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Échec expédition ${orderId}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Échec expédition ${orderId}:`, message);
       throw error;
     }
   }
@@ -223,8 +225,9 @@ export class OrderActionsController {
         success: true,
         message: 'Commande marquée comme livrée',
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Échec livraison ${orderId}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Échec livraison ${orderId}:`, message);
       throw error;
     }
   }
@@ -269,8 +272,9 @@ export class OrderActionsController {
         success: true,
         message: 'Commande annulée et client notifié',
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Échec annulation ${orderId}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Échec annulation ${orderId}:`, message);
       throw error;
     }
   }
@@ -306,8 +310,9 @@ export class OrderActionsController {
         success: true,
         message: `Email de rappel envoyé à ${customer.cst_mail}`,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Échec envoi rappel ${orderId}:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Échec envoi rappel ${orderId}:`, message);
       throw error;
     }
   }

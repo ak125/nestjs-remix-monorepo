@@ -338,7 +338,10 @@ export class SeoCockpitService extends SupabaseBaseService {
   /**
    * Récupère l'historique d'audit unifié
    */
-  async getAuditHistory(limit: number = 50, type?: string): Promise<any[]> {
+  async getAuditHistory(
+    limit: number = 50,
+    type?: string,
+  ): Promise<Record<string, unknown>[]> {
     let query = this.supabase
       .from('gamme_seo_audit')
       .select('*')
@@ -413,11 +416,11 @@ export class SeoCockpitService extends SupabaseBaseService {
       today: todayRes.count || 0,
       thisWeek: weekRes.count || 0,
       thisMonth: monthRes.count || 0,
-      byAdmin: (byAdminRes.data || []).map((r: any) => ({
+      byAdmin: (byAdminRes.data || []).map((r) => ({
         email: r.admin_email,
         count: r.count,
       })),
-      byType: (byTypeRes.data || []).map((r: any) => ({
+      byType: (byTypeRes.data || []).map((r) => ({
         type: r.action_type,
         count: r.count,
       })),

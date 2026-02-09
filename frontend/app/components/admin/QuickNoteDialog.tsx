@@ -21,6 +21,7 @@
 import { MessageSquarePlus } from "lucide-react";
 import { memo, useState } from "react";
 
+import { logger } from "~/utils/logger";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -32,7 +33,6 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-import { logger } from "~/utils/logger";
 
 interface QuickNoteDialogProps {
   open: boolean;

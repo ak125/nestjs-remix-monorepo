@@ -20,7 +20,7 @@ import {
 export class QuoteController {
   private readonly logger = new Logger(QuoteController.name);
 
-  constructor(private quoteService: QuoteService) {}
+  constructor(private readonly quoteService: QuoteService) {}
 
   @Post('requests')
   @HttpCode(HttpStatus.CREATED)
@@ -75,7 +75,7 @@ export class QuoteController {
   ): Promise<QuoteRequest> {
     return this.quoteService.updateQuoteRequestStatus(
       requestId,
-      body.status as any,
+      body.status as QuoteRequest['status'],
       body.staffId,
     );
   }

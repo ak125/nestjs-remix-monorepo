@@ -15,9 +15,9 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { logger } from "~/utils/logger";
 import { cartApi } from "../services/cart.api";
 import { type CartItem, type CartSummary, type CartData } from "../types/cart";
-import { logger } from "~/utils/logger";
 
 // ============================================================================
 // TYPES

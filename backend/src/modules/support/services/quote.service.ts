@@ -87,7 +87,7 @@ export class QuoteService {
   private quoteRequests: Map<string, QuoteRequest> = new Map();
   private quotes: Map<string, Quote> = new Map();
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   async submitQuoteRequest(
     requestData: Omit<

@@ -13,6 +13,10 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Settings, Search } from "lucide-react";
+import { Alert } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import {
@@ -22,10 +26,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Alert } from "~/components/ui";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Modeles par Marque - Commercial");

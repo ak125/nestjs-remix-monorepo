@@ -20,6 +20,8 @@ import {
   ShoppingBag,
 } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { OrderSummaryWidget } from "../components/orders/OrderSummaryWidget";
@@ -34,8 +36,6 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes commandes | AutoMecanik" },
@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const user = await requireAuth(request);
 
     // ✅ Vérification et adaptation de la structure utilisateur
-    const userId = user?.id || (user as any)?.cst_id;
+    const userId = user?.id || user?.cst_id;
     if (!user || !userId) {
       logger.error("User or user.id is undefined:", user);
       throw new Response("Utilisateur non trouvé", { status: 401 });
@@ -331,7 +331,7 @@ export default function OrdersListPage() {
                     <div className="flex gap-2">
                       <Button variant="outline" asChild>
                         <Link
-                          to={`/account/orders/${(order as any).ord_id || order.id || order.orderNumber}`}
+                          to={`/account/orders/${order.ord_id || order.id || order.orderNumber}`}
                         >
                           Voir le détail
                         </Link>
@@ -340,7 +340,7 @@ export default function OrdersListPage() {
                       {order.status === 6 && (
                         <Button variant="secondary" asChild>
                           <Link
-                            to={`/account/orders/${(order as any).ord_id || order.id}/invoice`}
+                            to={`/account/orders/${order.ord_id || order.id}/invoice`}
                           >
                             Facture
                           </Link>
@@ -350,7 +350,7 @@ export default function OrdersListPage() {
                       {[1, 2, 3, 4, 5].includes(order.status) && (
                         <Button asChild>
                           <Link
-                            to={`/account/orders/${(order as any).ord_id || order.id}/track`}
+                            to={`/account/orders/${order.ord_id || order.id}/track`}
                           >
                             Suivre
                           </Link>

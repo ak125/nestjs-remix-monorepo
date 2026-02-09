@@ -7,8 +7,8 @@
  * avec différents scénarios e-commerce réels.
  */
 
-import { ProductCard } from "./ProductCard";
 import { logger } from "~/utils/logger";
+import { ProductCard } from "./ProductCard";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════

@@ -47,7 +47,7 @@ export class SeoMonitoringService {
   private readonly slackWebhook: string;
   private readonly sitemapUrls: string[];
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.baseUrl = this.configService.get<string>(
       'BASE_URL',
       'https://www.automecanik.com',

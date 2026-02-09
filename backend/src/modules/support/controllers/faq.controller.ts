@@ -21,7 +21,7 @@ import {
 export class FaqController {
   private readonly logger = new Logger(FaqController.name);
 
-  constructor(private faqService: FaqService) {}
+  constructor(private readonly faqService: FaqService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

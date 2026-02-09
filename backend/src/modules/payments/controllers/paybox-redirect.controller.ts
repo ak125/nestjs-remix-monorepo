@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Res, Logger, Session } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Res,
+  Logger,
+  Session,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { ConfigService } from '@nestjs/config';
@@ -34,7 +42,7 @@ export class PayboxRedirectController {
       // Validation des paramètres
       if (!orderId || !amount || !email) {
         this.logger.error('❌ Paramètres manquants');
-        return res.status(400).send(`
+        return res.status(HttpStatus.BAD_REQUEST).send(`
           <!DOCTYPE html>
           <html>
             <head>
@@ -76,7 +84,7 @@ export class PayboxRedirectController {
       res.send(html);
     } catch (error) {
       this.logger.error('❌ Erreur lors de la redirection Paybox:', error);
-      res.status(500).send(`
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(`
         <!DOCTYPE html>
         <html>
           <head>

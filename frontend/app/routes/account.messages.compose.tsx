@@ -13,6 +13,10 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Send, Paperclip, ArrowLeft } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -24,10 +28,6 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui/alert";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Nouveau Message");
 

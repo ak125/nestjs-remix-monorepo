@@ -4,9 +4,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { hierarchyApi } from "../services/api/hierarchy.api";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { hierarchyApi } from "../services/api/hierarchy.api";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Couleurs Familles - Admin");

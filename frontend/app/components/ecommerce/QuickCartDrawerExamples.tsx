@@ -5,8 +5,8 @@
  */
 
 import { useState } from "react";
-import { QuickCartDrawer, type CartItem } from "./QuickCartDrawer";
 import { logger } from "~/utils/logger";
+import { QuickCartDrawer, type CartItem } from "./QuickCartDrawer";
 
 // Mock data
 const MOCK_CART_ITEMS: CartItem[] = [

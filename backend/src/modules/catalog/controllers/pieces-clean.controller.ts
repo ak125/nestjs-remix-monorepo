@@ -114,13 +114,15 @@ export class PiecesCleanController {
       }
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
-      this.logger.error(`❌ [PHP-LOGIC] Erreur: ${error.message}`, error.stack);
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`❌ [PHP-LOGIC] Erreur: ${message}`, stack);
 
       return {
         success: false,
-        error: error.message,
+        error: message,
         statistics: {
           response_time: `${responseTime}ms`,
           cache_hit: false,

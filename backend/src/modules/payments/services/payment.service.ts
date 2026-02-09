@@ -37,10 +37,10 @@ export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
 
   constructor(
-    private configService: ConfigService,
-    private paymentDataService: PaymentDataService,
-    private cyberplusService: CyberplusService,
-    private validationService: PaymentValidationService,
+    private readonly configService: ConfigService,
+    private readonly paymentDataService: PaymentDataService,
+    private readonly cyberplusService: CyberplusService,
+    private readonly validationService: PaymentValidationService,
   ) {}
 
   /**

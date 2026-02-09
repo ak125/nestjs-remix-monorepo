@@ -28,7 +28,7 @@ export class BlogArticleTransformService {
    * Utilisé pour les listes d'articles où les sections ne sont pas nécessaires
    */
   transformAdviceToArticle(advice: any): BlogArticle {
-    const article: any = {
+    const article: BlogArticle = {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
       title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
@@ -74,7 +74,7 @@ export class BlogArticleTransformService {
     const sections: BlogSection[] = [];
 
     // Traiter chaque H2
-    h2Sections?.forEach((h2: any) => {
+    h2Sections?.forEach((h2) => {
       sections.push({
         level: 2,
         title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2 || ''),
@@ -86,7 +86,7 @@ export class BlogArticleTransformService {
       });
 
       // Ajouter les H3 qui appartiennent à ce H2
-      h3Sections?.forEach((h3: any) => {
+      h3Sections?.forEach((h3) => {
         if (h3.ba3_ba2_id === h2.ba2_id) {
           sections.push({
             level: 3,
@@ -234,7 +234,7 @@ export class BlogArticleTransformService {
    * @param content - Contenu HTML ou texte
    * @returns Temps de lecture en minutes (minimum 1)
    */
-  calculateReadingTime(content: any): number {
+  calculateReadingTime(content: unknown): number {
     if (!content) return 1;
 
     const text =
@@ -253,7 +253,7 @@ export class BlogArticleTransformService {
   /**
    * 🧹 Nettoyer et décoder le contenu HTML
    */
-  cleanAndDecodeContent(content: any): string {
+  cleanAndDecodeContent(content: unknown): string {
     if (!content) return '';
 
     const text =

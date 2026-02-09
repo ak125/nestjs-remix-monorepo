@@ -4,9 +4,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { getOptionalUser } from "../auth/unified.server";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Debug - Admin");
 

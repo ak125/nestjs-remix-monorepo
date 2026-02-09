@@ -30,8 +30,8 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { type Vehicle } from "../components/ecommerce/SmartHeader";
 import { logger } from "~/utils/logger";
+import { type Vehicle } from "../components/ecommerce/SmartHeader";
 
 // ============================================================================
 // Types

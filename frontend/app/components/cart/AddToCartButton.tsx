@@ -5,9 +5,9 @@
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
-import { useNotifications } from "../notifications/NotificationContainer";
 import { Alert } from "~/components/ui";
 import { logger } from "~/utils/logger";
+import { useNotifications } from "../notifications/NotificationContainer";
 
 interface PieceData {
   id: number;

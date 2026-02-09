@@ -6,6 +6,7 @@
  */
 
 import { Controller, Post, Body, Logger, Request } from '@nestjs/common';
+import { z } from 'zod';
 import {
   AuthenticationException,
   DomainValidationException,
@@ -33,7 +34,8 @@ export class PasswordController {
   @Post('change')
   // @UseGuards(JwtAuthGuard) // TODO: Réactiver après correction du guard
   async changePassword(
-    @Body(new ZodValidationPipe(ChangePasswordSchema)) changeData: any,
+    @Body(new ZodValidationPipe(ChangePasswordSchema))
+    changeData: z.infer<typeof ChangePasswordSchema>,
     @Request() req: any,
   ) {
     this.logger.log('POST /api/password/change');
@@ -76,7 +78,8 @@ export class PasswordController {
    */
   @Post('request-reset')
   async requestPasswordReset(
-    @Body(new ZodValidationPipe(RequestPasswordResetSchema)) requestData: any,
+    @Body(new ZodValidationPipe(RequestPasswordResetSchema))
+    requestData: z.infer<typeof RequestPasswordResetSchema>,
   ) {
     this.logger.log('POST /api/password/request-reset');
 
@@ -107,7 +110,8 @@ export class PasswordController {
    */
   @Post('reset')
   async resetPassword(
-    @Body(new ZodValidationPipe(UsePasswordResetTokenSchema)) resetData: any,
+    @Body(new ZodValidationPipe(UsePasswordResetTokenSchema))
+    resetData: z.infer<typeof UsePasswordResetTokenSchema>,
   ) {
     this.logger.log('POST /api/password/reset');
 

@@ -6,8 +6,8 @@
  */
 
 import { type AppLoadContext } from "@remix-run/node";
-import { type CartItem, type CartSummary, type CartData } from "../types/cart";
 import { logger } from "~/utils/logger";
+import { type CartItem, type CartSummary, type CartData } from "../types/cart";
 
 // Re-export des types pour compatibilité
 export type { CartItem, CartSummary, CartData } from "../types/cart";
@@ -20,8 +20,8 @@ export interface Cart {
   totals: CartSummary;
   metadata: {
     promo_code?: string;
-    shipping_address?: any;
-    [key: string]: any;
+    shipping_address?: Record<string, unknown>;
+    [key: string]: unknown;
   };
 }
 
@@ -359,11 +359,14 @@ class CartServerService {
   /**
    * 🔄 Normaliser les données de panier depuis le backend
    */
-  private normalizeBackendData(backendData: any): CartData {
+  private normalizeBackendData(backendData: Record<string, any>): CartData {
     // Le backend renvoie un format comme {"cart_id":"R7QW...","user_id":"usr_...","items":[],"totals":{...},"metadata":{...}}
+    const items = backendData.items as Record<string, any>[] | undefined;
+    const totals = backendData.totals as Record<string, any> | undefined;
+    const metadata = backendData.metadata as Record<string, any> | undefined;
 
     return {
-      items: (backendData.items || []).map((item: any) => ({
+      items: (items || []).map((item) => ({
         id: item.id || item.cart_item_id || `item-${Date.now()}`,
         user_id: backendData.user_id || item.user_id || "unknown",
         product_id: item.product_id || `prod-${item.id}`,
@@ -393,28 +396,28 @@ class CartServerService {
         consigne_total: item.consigne_total || 0,
       })),
       summary: {
-        total_items: backendData.totals?.total_items || 0,
+        total_items: (totals?.total_items as number) || 0,
         total_price:
-          backendData.totals?.total || backendData.totals?.total_price || 0, // ✅ Backend envoie "total" pas "total_price"
-        subtotal: backendData.totals?.subtotal || 0,
+          (totals?.total as number) || (totals?.total_price as number) || 0, // ✅ Backend envoie "total" pas "total_price"
+        subtotal: (totals?.subtotal as number) || 0,
         tax_amount:
-          backendData.totals?.tax || backendData.totals?.tax_amount || 0,
+          (totals?.tax as number) || (totals?.tax_amount as number) || 0,
         shipping_cost:
-          backendData.totals?.shipping ||
-          backendData.totals?.shipping_cost ||
+          (totals?.shipping as number) ||
+          (totals?.shipping_cost as number) ||
           0,
         discount_amount:
-          backendData.totals?.discount ||
-          backendData.totals?.discount_amount ||
+          (totals?.discount as number) ||
+          (totals?.discount_amount as number) ||
           0,
-        consigne_total: backendData.totals?.consigne_total || 0,
+        consigne_total: (totals?.consigne_total as number) || 0,
         currency: "EUR",
       },
       metadata: {
-        user_id: backendData.user_id,
-        session_id: backendData.cart_id,
+        user_id: backendData.user_id as string | undefined,
+        session_id: backendData.cart_id as string | undefined,
         last_updated: new Date().toISOString(),
-        ...backendData.metadata,
+        ...metadata,
       },
     };
   }

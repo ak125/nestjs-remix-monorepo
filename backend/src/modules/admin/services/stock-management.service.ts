@@ -1,18 +1,26 @@
 import { TABLES } from '@repo/database-types';
 /**
- * 📦 StockManagementService - Service de gestion des stocks
+ * StockManagementService - Facade for stock management
  *
- * Service aligné sur l'approche des modules users/orders/cart :
- * ✅ Hérite de SupabaseBaseService pour accès Supabase
- * ✅ Méthodes async avec gestion d'erreurs
- * ✅ Architecture modulaire et testable
- * ✅ Intégration avec cache pour performance
+ * This service delegates to specialized sub-services:
+ * - StockMovementService: movement recording, history, inventory adjustments
+ * - StockReportService: reports, alerts, statistics
+ *
+ * All public method signatures are preserved for backward compatibility.
  */
 
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { StockMovementService } from './stock-movement.service';
+import { StockReportService } from './stock-report.service';
 
 export interface StockItem {
   id: string;
@@ -48,6 +56,21 @@ export interface StockDashboardFilters {
   isActive?: boolean;
 }
 
+export interface StockStatistics {
+  totalProducts: number;
+  outOfStock: number;
+  lowStock: number;
+  overstock: number;
+  avgStockLevel: number;
+}
+
+export interface StockReportDetail {
+  productName?: string;
+  productReference?: string;
+  value: number;
+  [key: string]: unknown;
+}
+
 export interface StockUpdateData {
   quantity?: number;
   minStock?: number;
@@ -60,27 +83,33 @@ export interface StockUpdateData {
 export class StockManagementService extends SupabaseBaseService {
   protected readonly logger = new Logger(StockManagementService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    @Inject(forwardRef(() => StockMovementService))
+    private readonly stockMovementService: StockMovementService,
+    @Inject(forwardRef(() => StockReportService))
+    private readonly stockReportService: StockReportService,
+  ) {
     super();
     this.logger.log('StockManagementService initialized');
   }
 
   /**
-   * Récupérer le dashboard stock
+   * Recuperer le dashboard stock
    */
   async getStockDashboard(filters?: StockDashboardFilters) {
     try {
-      this.logger.debug('Récupération du dashboard stock', { filters });
+      this.logger.debug('Recuperation du dashboard stock', { filters });
 
-      // Vérifier le cache
+      // Verifier le cache
       const cacheKey = `stock:dashboard:${JSON.stringify(filters || {})}`;
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
-        this.logger.debug('Dashboard stock récupéré depuis le cache');
+        this.logger.debug('Dashboard stock recupere depuis le cache');
         return cached;
       }
 
-      // Construire la requête de base
+      // Construire la requete de base
       let query = this.client.from('stock').select(`
           *,
           pieces!inner(
@@ -113,7 +142,7 @@ export class StockManagementService extends SupabaseBaseService {
       if (error) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération stock: ${error.message}`,
+          message: `Erreur recuperation stock: ${error.message}`,
           details: error.message,
         });
       }
@@ -134,7 +163,7 @@ export class StockManagementService extends SupabaseBaseService {
           stats,
           totalItems: items?.length || 0,
         },
-        message: 'Dashboard stock récupéré avec succès',
+        message: 'Dashboard stock recupere avec succes',
       };
 
       // Mettre en cache pour 1 minute
@@ -152,7 +181,7 @@ export class StockManagementService extends SupabaseBaseService {
   }
 
   /**
-   * Mettre à jour le stock d'un produit
+   * Mettre a jour le stock d'un produit
    */
   async updateStock(
     productId: string,
@@ -161,13 +190,13 @@ export class StockManagementService extends SupabaseBaseService {
     reason: string,
   ) {
     try {
-      this.logger.debug('Mise à jour stock', {
+      this.logger.debug('Mise a jour stock', {
         productId,
         updateData,
         adminUserId,
       });
 
-      // Récupérer l'état actuel
+      // Recuperer l'etat actuel
       const { data: currentStock, error: fetchError } = await this.client
         .from('stock')
         .select('*')
@@ -178,18 +207,18 @@ export class StockManagementService extends SupabaseBaseService {
         throw new BadRequestException('Produit introuvable dans le stock');
       }
 
-      // Préparer les données de mise à jour
-      const updatePayload: any = {
+      // Preparer les donnees de mise a jour
+      const updatePayload: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
 
-      // Gérer la mise à jour de quantité
+      // Gerer la mise a jour de quantite
       if (updateData.quantity !== undefined) {
         const difference = updateData.quantity - currentStock.quantity;
 
-        // Créer un mouvement de stock
+        // Creer un mouvement de stock
         if (difference !== 0) {
-          await this.createStockMovement({
+          await this.stockMovementService.createStockMovement({
             product_id: productId,
             type: difference > 0 ? 'IN' : 'ADJUSTMENT',
             quantity: Math.abs(difference),
@@ -202,7 +231,7 @@ export class StockManagementService extends SupabaseBaseService {
         updatePayload.available = updateData.quantity - currentStock.reserved;
       }
 
-      // Autres mises à jour
+      // Autres mises a jour
       if (updateData.minStock !== undefined) {
         updatePayload.min_stock = updateData.minStock;
       }
@@ -220,7 +249,7 @@ export class StockManagementService extends SupabaseBaseService {
           updateData.nextRestockDate.toISOString();
       }
 
-      // Exécuter la mise à jour
+      // Executer la mise a jour
       const { data: updatedStock, error: updateError } = await this.client
         .from('stock')
         .update(updatePayload)
@@ -231,13 +260,13 @@ export class StockManagementService extends SupabaseBaseService {
       if (updateError) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur mise à jour: ${updateError.message}`,
+          message: `Erreur mise a jour: ${updateError.message}`,
           details: updateError.message,
         });
       }
 
       // Logger l'action
-      this.logger.log('Stock mis à jour', {
+      this.logger.log('Stock mis a jour', {
         productId,
         adminUserId,
         changes: updatePayload,
@@ -247,18 +276,18 @@ export class StockManagementService extends SupabaseBaseService {
       // Invalider le cache
       await this.invalidateStockCache(productId);
 
-      // Vérifier les alertes
+      // Verifier les alertes
       if (updatedStock) {
-        await this.checkStockAlerts(updatedStock);
+        await this.stockReportService.checkStockAlerts(updatedStock);
       }
 
       return {
         success: true,
         data: updatedStock,
-        message: 'Stock mis à jour avec succès',
+        message: 'Stock mis a jour avec succes',
       };
     } catch (error) {
-      this.logger.error('Erreur mise à jour stock', error);
+      this.logger.error('Erreur mise a jour stock', error);
       return {
         success: false,
         data: null,
@@ -268,17 +297,17 @@ export class StockManagementService extends SupabaseBaseService {
   }
 
   /**
-   * Désactiver un produit
+   * Desactiver un produit
    */
   async disableProduct(productId: string, adminUserId: string, reason: string) {
     try {
-      this.logger.debug('Désactivation produit', {
+      this.logger.debug('Desactivation produit', {
         productId,
         adminUserId,
         reason,
       });
 
-      // Vérifier s'il y a des commandes en cours (simplifié)
+      // Verifier s'il y a des commandes en cours (simplifie)
       const { data: activeOrders, error: ordersError } = await this.client
         .from(TABLES.xtr_order_line)
         .select('id, order_id')
@@ -286,16 +315,16 @@ export class StockManagementService extends SupabaseBaseService {
         .in('status', [1, 2, 3]); // statuts actifs
 
       if (ordersError) {
-        this.logger.warn('Erreur vérification commandes', ordersError);
+        this.logger.warn('Erreur verification commandes', ordersError);
       }
 
       if (activeOrders && activeOrders.length > 0) {
         throw new BadRequestException(
-          `Impossible de désactiver: ${activeOrders.length} commandes en cours`,
+          `Impossible de desactiver: ${activeOrders.length} commandes en cours`,
         );
       }
 
-      // Désactiver le produit
+      // Desactiver le produit
       const { data: product, error: disableError } = await this.client
         .from(TABLES.pieces)
         .update({
@@ -309,12 +338,12 @@ export class StockManagementService extends SupabaseBaseService {
       if (disableError) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur désactivation: ${disableError.message}`,
+          message: `Erreur desactivation: ${disableError.message}`,
           details: disableError.message,
         });
       }
 
-      // Récupérer le stock actuel et libérer les réserves
+      // Recuperer le stock actuel et liberer les reserves
       const { data: currentStock } = await this.client
         .from('stock')
         .select('quantity, reserved')
@@ -333,7 +362,7 @@ export class StockManagementService extends SupabaseBaseService {
       }
 
       // Logger l'action
-      this.logger.warn('Produit désactivé', {
+      this.logger.warn('Produit desactive', {
         productId,
         adminUserId,
         reason,
@@ -342,10 +371,10 @@ export class StockManagementService extends SupabaseBaseService {
       return {
         success: true,
         data: product,
-        message: 'Produit désactivé avec succès',
+        message: 'Produit desactive avec succes',
       };
     } catch (error) {
-      this.logger.error('Erreur désactivation produit', error);
+      this.logger.error('Erreur desactivation produit', error);
       return {
         success: false,
         data: null,
@@ -355,13 +384,13 @@ export class StockManagementService extends SupabaseBaseService {
   }
 
   /**
-   * Réserver du stock pour une commande
+   * Reserver du stock pour une commande
    */
   async reserveStock(productId: string, quantity: number, orderId: string) {
     try {
-      this.logger.debug('Réservation stock', { productId, quantity, orderId });
+      this.logger.debug('Reservation stock', { productId, quantity, orderId });
 
-      // Récupérer le stock actuel
+      // Recuperer le stock actuel
       const { data: stock, error: fetchError } = await this.client
         .from('stock')
         .select('*')
@@ -372,14 +401,14 @@ export class StockManagementService extends SupabaseBaseService {
         throw new BadRequestException('Produit introuvable dans le stock');
       }
 
-      // Vérifier la disponibilité
+      // Verifier la disponibilite
       if (stock.available < quantity) {
         throw new BadRequestException(
-          `Stock insuffisant. Disponible: ${stock.available}, Demandé: ${quantity}`,
+          `Stock insuffisant. Disponible: ${stock.available}, Demande: ${quantity}`,
         );
       }
 
-      // Mettre à jour le stock
+      // Mettre a jour le stock
       const { data: updatedStock, error: updateError } = await this.client
         .from('stock')
         .update({
@@ -394,22 +423,22 @@ export class StockManagementService extends SupabaseBaseService {
       if (updateError) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur réservation: ${updateError.message}`,
+          message: `Erreur reservation: ${updateError.message}`,
           details: updateError.message,
         });
       }
 
-      // Créer un mouvement de stock
-      await this.createStockMovement({
+      // Creer un mouvement de stock
+      await this.stockMovementService.createStockMovement({
         product_id: productId,
         type: 'OUT',
         quantity,
-        reason: `Réservation pour commande ${orderId}`,
+        reason: `Reservation pour commande ${orderId}`,
         order_id: orderId,
         user_id: 'system',
       });
 
-      this.logger.log('Stock réservé', {
+      this.logger.log('Stock reserve', {
         productId,
         quantity,
         orderId,
@@ -418,10 +447,10 @@ export class StockManagementService extends SupabaseBaseService {
       return {
         success: true,
         data: updatedStock,
-        message: 'Stock réservé avec succès',
+        message: 'Stock reserve avec succes',
       };
     } catch (error) {
-      this.logger.error('Erreur réservation stock', error);
+      this.logger.error('Erreur reservation stock', error);
       return {
         success: false,
         data: null,
@@ -431,13 +460,13 @@ export class StockManagementService extends SupabaseBaseService {
   }
 
   /**
-   * Libérer du stock réservé
+   * Liberer du stock reserve
    */
   async releaseStock(productId: string, quantity: number, orderId: string) {
     try {
-      this.logger.debug('Libération stock', { productId, quantity, orderId });
+      this.logger.debug('Liberation stock', { productId, quantity, orderId });
 
-      // Récupérer le stock actuel
+      // Recuperer le stock actuel
       const { data: stock, error: fetchError } = await this.client
         .from('stock')
         .select('*')
@@ -448,7 +477,7 @@ export class StockManagementService extends SupabaseBaseService {
         throw new BadRequestException('Produit introuvable dans le stock');
       }
 
-      // Mettre à jour le stock
+      // Mettre a jour le stock
       const { data: updatedStock, error: updateError } = await this.client
         .from('stock')
         .update({
@@ -463,22 +492,22 @@ export class StockManagementService extends SupabaseBaseService {
       if (updateError) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur libération: ${updateError.message}`,
+          message: `Erreur liberation: ${updateError.message}`,
           details: updateError.message,
         });
       }
 
-      // Créer un mouvement de stock
-      await this.createStockMovement({
+      // Creer un mouvement de stock
+      await this.stockMovementService.createStockMovement({
         product_id: productId,
         type: 'RETURN',
         quantity,
-        reason: `Libération pour commande ${orderId}`,
+        reason: `Liberation pour commande ${orderId}`,
         order_id: orderId,
         user_id: 'system',
       });
 
-      this.logger.log('Stock libéré', {
+      this.logger.log('Stock libere', {
         productId,
         quantity,
         orderId,
@@ -487,10 +516,10 @@ export class StockManagementService extends SupabaseBaseService {
       return {
         success: true,
         data: updatedStock,
-        message: 'Stock libéré avec succès',
+        message: 'Stock libere avec succes',
       };
     } catch (error) {
-      this.logger.error('Erreur libération stock', error);
+      this.logger.error('Erreur liberation stock', error);
       return {
         success: false,
         data: null,
@@ -499,243 +528,86 @@ export class StockManagementService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Obtenir les mouvements de stock d'un produit
-   */
+  // =========================================================================
+  // Delegated methods - StockMovementService
+  // =========================================================================
+
   async getStockMovements(productId: string, limit = 50) {
-    try {
-      this.logger.debug('Récupération mouvements stock', { productId, limit });
-
-      const { data: movements, error } = await this.client
-        .from('stock_movements')
-        .select('*')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error) {
-        throw new DatabaseException({
-          code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération mouvements: ${error.message}`,
-          details: error.message,
-        });
-      }
-
-      return {
-        success: true,
-        data: movements || [],
-        message: 'Mouvements récupérés avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur récupération mouvements', error);
-      return {
-        success: false,
-        data: [],
-        message: `Erreur: ${(error as Error).message}`,
-      };
-    }
+    return this.stockMovementService.getStockMovements(productId, limit);
   }
 
-  /**
-   * Obtenir les alertes de stock
-   */
+  async getMovementHistory(
+    productId?: string,
+    filters?: {
+      movementType?: string;
+      dateFrom?: Date;
+      dateTo?: Date;
+      limit?: number;
+      userId?: string;
+    },
+  ): Promise<Record<string, unknown>[]> {
+    return this.stockMovementService.getMovementHistory(productId, filters);
+  }
+
+  async recordStockMovement(movement: {
+    productId: string;
+    movementType: 'IN' | 'OUT' | 'ADJUSTMENT' | 'RETURN';
+    quantity: number;
+    referenceType?: string;
+    referenceId?: string;
+    unitCost?: number;
+    reason?: string;
+    notes?: string;
+    userId: string;
+  }): Promise<void> {
+    await this.stockMovementService.recordStockMovement(movement);
+    // Check alerts after movement (cross-service coordination)
+    const { data: currentStock } = await this.client
+      .from('stock')
+      .select('*')
+      .eq('product_id', movement.productId)
+      .single();
+    if (currentStock) {
+      await this.stockReportService.checkStockAlerts(currentStock);
+    }
+    // Invalidate cache
+    await this.invalidateStockCache(movement.productId);
+  }
+
+  async performInventoryAdjustment(
+    productId: string,
+    actualQuantity: number,
+    reason: string,
+    userId: string,
+    notes?: string,
+  ): Promise<{ success: boolean; difference: number; message: string }> {
+    return this.stockMovementService.performInventoryAdjustment(
+      productId,
+      actualQuantity,
+      reason,
+      userId,
+      notes,
+    );
+  }
+
+  // =========================================================================
+  // Delegated methods - StockReportService
+  // =========================================================================
+
+  async generateComprehensiveStockReport() {
+    return this.stockReportService.generateComprehensiveStockReport();
+  }
+
   async getStockAlerts() {
-    try {
-      this.logger.debug('Récupération alertes stock');
-
-      const { data: alerts, error } = await this.client
-        .from('stock_alerts')
-        .select(
-          `
-          *,
-          stock!inner(
-            *,
-            pieces!inner(
-              id,
-              reference,
-              name
-            )
-          )
-        `,
-        )
-        .eq('resolved', false)
-        .order('alert_level', { ascending: false });
-
-      if (error) {
-        throw new DatabaseException({
-          code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération alertes: ${error.message}`,
-          details: error.message,
-        });
-      }
-
-      return {
-        success: true,
-        data: alerts || [],
-        message: 'Alertes récupérées avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur récupération alertes', error);
-      return {
-        success: false,
-        data: [],
-        message: `Erreur: ${(error as Error).message}`,
-      };
-    }
+    return this.stockReportService.getStockAlerts();
   }
+
+  // =========================================================================
+  // Methods that remain in this service
+  // =========================================================================
 
   /**
-   * Méthodes privées
-   */
-
-  private async getStockStatistics() {
-    try {
-      const { data: stocks, error } = await this.client
-        .from('stock')
-        .select('quantity, available, min_stock, max_stock');
-
-      if (error || !stocks || stocks.length === 0) {
-        return {
-          totalProducts: 0,
-          outOfStock: 0,
-          lowStock: 0,
-          overstock: 0,
-          avgStockLevel: 0,
-        };
-      }
-
-      return {
-        totalProducts: stocks.length,
-        outOfStock: stocks.filter((s) => s.available <= 0).length,
-        lowStock: stocks.filter((s) => s.available <= s.min_stock).length,
-        overstock: stocks.filter((s) => s.available > s.max_stock).length,
-        avgStockLevel: Math.round(
-          stocks.reduce((sum, s) => sum + s.available, 0) / stocks.length,
-        ),
-      };
-    } catch (error) {
-      this.logger.error('Erreur calcul statistiques', error);
-      return {
-        totalProducts: 0,
-        outOfStock: 0,
-        lowStock: 0,
-        overstock: 0,
-        avgStockLevel: 0,
-      };
-    }
-  }
-
-  private async createStockMovement(movement: StockMovement) {
-    try {
-      const { error } = await this.client.from('stock_movements').insert({
-        ...movement,
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        this.logger.error('Erreur création mouvement', error);
-      }
-    } catch (error) {
-      this.logger.error('Erreur création mouvement stock', error);
-    }
-  }
-
-  private async checkStockAlerts(stock: StockItem) {
-    try {
-      let alertType: string | null = null;
-      let alertLevel = 'WARNING';
-
-      if (stock.available <= 0) {
-        alertType = 'OUT_OF_STOCK';
-        alertLevel = 'CRITICAL';
-      } else if (stock.available <= stock.min_stock) {
-        alertType = 'LOW_STOCK';
-        alertLevel = 'WARNING';
-      } else if (stock.available > stock.max_stock) {
-        alertType = 'OVERSTOCK';
-        alertLevel = 'INFO';
-      }
-
-      if (alertType) {
-        const { error } = await this.client.from('stock_alerts').insert({
-          product_id: stock.product_id,
-          alert_type: alertType,
-          alert_level: alertLevel,
-          message: `Stock alert: ${alertType} for product ${stock.product_id}`,
-          resolved: false,
-          created_at: new Date().toISOString(),
-        });
-
-        if (error) {
-          this.logger.error('Erreur création alerte', error);
-        } else {
-          this.logger.warn('Alerte stock créée', {
-            productId: stock.product_id,
-            type: alertType,
-            level: alertLevel,
-          });
-        }
-      }
-    } catch (error) {
-      this.logger.error('Erreur vérification alertes', error);
-    }
-  }
-
-  private async invalidateStockCache(productId?: string) {
-    try {
-      // Invalider le cache spécifique du produit
-      if (productId) {
-        await this.cacheService.del(`stock:${productId}`);
-      }
-
-      // Invalider le cache du dashboard
-      await this.cacheService.del('stock:dashboard');
-    } catch (error) {
-      this.logger.error('Erreur invalidation cache', error);
-    }
-  }
-
-  /**
-   * Health check du service de gestion de stock
-   */
-  async healthCheck() {
-    try {
-      // Test simple de connectivité à la base
-      const { error } = await this.supabase
-        .from(TABLES.pieces)
-        .select('id')
-        .limit(1);
-
-      if (error) {
-        return {
-          status: 'unhealthy',
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
-      }
-
-      return {
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        connectionTest: 'ok',
-      };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * =====================================================
-   * NOUVELLES MÉTHODES ENRICHIES - INSPIRÉES DU SERVICE FOURNI
-   * =====================================================
-   */
-
-  /**
-   * Obtenir l'état du stock avec filtres avancés
+   * Obtenir l'etat du stock avec filtres avances
    */
   async getStockWithAdvancedFilters(filters?: {
     search?: string;
@@ -746,11 +618,11 @@ export class StockManagementService extends SupabaseBaseService {
     limit?: number;
     warehouseId?: string;
     isActive?: boolean;
-  }): Promise<{ items: StockItem[]; total: number; stats: any }> {
+  }): Promise<{ items: StockItem[]; total: number; stats: StockStatistics }> {
     try {
-      this.logger.debug('Récupération stock avec filtres avancés', { filters });
+      this.logger.debug('Recuperation stock avec filtres avances', { filters });
 
-      // Construire la requête
+      // Construire la requete
       let query = this.client.from('stock').select(
         `
           *,
@@ -801,13 +673,13 @@ export class StockManagementService extends SupabaseBaseService {
       if (error) {
         throw new DatabaseException({
           code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération stock: ${error.message}`,
+          message: `Erreur recuperation stock: ${error.message}`,
           details: error.message,
         });
       }
 
-      // Calculer les statistiques
-      const stats = await this.getStockStatistics();
+      // Calculer les statistiques via sub-service
+      const stats = await this.stockReportService.getStockStatistics();
 
       return {
         items: data || [],
@@ -815,399 +687,59 @@ export class StockManagementService extends SupabaseBaseService {
         stats,
       };
     } catch (error) {
-      this.logger.error('Erreur récupération stock avancée', error);
+      this.logger.error('Erreur recuperation stock avancee', error);
       throw error;
     }
   }
 
   /**
-   * Enregistrer un mouvement de stock avec validation
+   * Health check du service de gestion de stock
    */
-  async recordStockMovement(movement: {
-    productId: string;
-    movementType: 'IN' | 'OUT' | 'ADJUSTMENT' | 'RETURN';
-    quantity: number;
-    referenceType?: string;
-    referenceId?: string;
-    unitCost?: number;
-    reason?: string;
-    notes?: string;
-    userId: string;
-  }): Promise<void> {
+  async healthCheck() {
     try {
-      this.logger.debug('Enregistrement mouvement de stock', movement);
-
-      // Vérifier que le produit existe
-      const { data: product, error: productError } = await this.client
+      // Test simple de connectivite a la base
+      const { error } = await this.supabase
         .from(TABLES.pieces)
-        .select('id, reference, name')
-        .eq('id', movement.productId)
-        .single();
+        .select('id')
+        .limit(1);
 
-      if (productError || !product) {
-        throw new BadRequestException('Produit non trouvé');
-      }
-
-      // Créer le mouvement
-      const { error: movementError } = await this.client
-        .from('stock_movements')
-        .insert({
-          product_id: movement.productId,
-          type: movement.movementType,
-          quantity: movement.quantity,
-          reference_type: movement.referenceType,
-          reference_id: movement.referenceId,
-          unit_cost: movement.unitCost,
-          reason: movement.reason || 'Mouvement de stock',
-          notes: movement.notes,
-          user_id: movement.userId,
-          created_at: new Date().toISOString(),
-        });
-
-      if (movementError) {
-        throw new DatabaseException({
-          code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur enregistrement mouvement: ${movementError.message}`,
-          details: movementError.message,
-        });
-      }
-
-      // Mettre à jour le stock si nécessaire
-      await this.updateStockAfterMovement(
-        movement.productId,
-        movement.movementType,
-        movement.quantity,
-      );
-
-      // Vérifier les alertes
-      const { data: currentStock } = await this.client
-        .from('stock')
-        .select('*')
-        .eq('product_id', movement.productId)
-        .single();
-
-      if (currentStock) {
-        await this.checkStockAlerts(currentStock);
-      }
-
-      // Invalider le cache
-      await this.invalidateStockCache(movement.productId);
-
-      this.logger.log('Mouvement de stock enregistré', {
-        productId: movement.productId,
-        type: movement.movementType,
-        quantity: movement.quantity,
-      });
-    } catch (error) {
-      this.logger.error('Erreur enregistrement mouvement', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Ajustement d'inventaire complet
-   */
-  async performInventoryAdjustment(
-    productId: string,
-    actualQuantity: number,
-    reason: string,
-    userId: string,
-    notes?: string,
-  ): Promise<{ success: boolean; difference: number; message: string }> {
-    try {
-      this.logger.debug("Ajustement d'inventaire", {
-        productId,
-        actualQuantity,
-        reason,
-      });
-
-      // Récupérer le stock actuel
-      const { data: currentStock, error: stockError } = await this.client
-        .from('stock')
-        .select('quantity, available, reserved')
-        .eq('product_id', productId)
-        .single();
-
-      if (stockError || !currentStock) {
-        throw new BadRequestException('Stock non trouvé pour ce produit');
-      }
-
-      const difference = actualQuantity - currentStock.quantity;
-
-      if (difference !== 0) {
-        // Enregistrer le mouvement d'ajustement
-        await this.recordStockMovement({
-          productId,
-          movementType: 'ADJUSTMENT',
-          quantity: Math.abs(difference),
-          reason,
-          notes: `Ajustement d'inventaire: ${difference > 0 ? '+' : ''}${difference}. ${notes || ''}`,
-          userId,
-        });
-
-        this.logger.log("Ajustement d'inventaire effectué", {
-          productId,
-          oldQuantity: currentStock.quantity,
-          newQuantity: actualQuantity,
-          difference,
-        });
-
+      if (error) {
         return {
-          success: true,
-          difference,
-          message: `Ajustement effectué: ${difference > 0 ? '+' : ''}${difference} unités`,
-        };
-      } else {
-        return {
-          success: true,
-          difference: 0,
-          message: 'Aucun ajustement nécessaire',
+          status: 'unhealthy',
+          error: error.message,
+          timestamp: new Date().toISOString(),
         };
       }
-    } catch (error) {
-      this.logger.error('Erreur ajustement inventaire', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Générer un rapport de stock complet
-   */
-  async generateComprehensiveStockReport(): Promise<{
-    summary: {
-      totalProducts: number;
-      totalValue: number;
-      lowStockItems: number;
-      outOfStockItems: number;
-      overstockItems: number;
-    };
-    lowStockDetails: any[];
-    outOfStockDetails: any[];
-    overstockDetails: any[];
-    movements: any[];
-  }> {
-    try {
-      this.logger.debug('Génération rapport de stock complet');
-
-      // Récupérer tous les stocks avec détails produits
-      const { data: stocks, error: stocksError } = await this.client
-        .from('stock')
-        .select(
-          `
-          *,
-          pieces!inner(
-            id,
-            reference,
-            name,
-            description,
-            average_cost
-          )
-        `,
-        )
-        .order('pieces.reference');
-
-      if (stocksError) {
-        throw new DatabaseException({
-          code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération stocks: ${stocksError.message}`,
-          details: stocksError.message,
-        });
-      }
-
-      // Récupérer les mouvements récents (7 derniers jours)
-      const { data: recentMovements } = await this.client
-        .from('stock_movements')
-        .select(
-          `
-          *,
-          pieces!inner(reference, name)
-        `,
-        )
-        .gte(
-          'created_at',
-          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        )
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      // Calculer les statistiques
-      const summary = {
-        totalProducts: stocks?.length || 0,
-        totalValue: 0,
-        lowStockItems: 0,
-        outOfStockItems: 0,
-        overstockItems: 0,
-      };
-
-      const lowStockDetails: any[] = [];
-      const outOfStockDetails: any[] = [];
-      const overstockDetails: any[] = [];
-
-      stocks?.forEach((stock) => {
-        const avgCost = parseFloat(stock.pieces?.average_cost || '0');
-        const value = stock.available * avgCost;
-        summary.totalValue += value;
-
-        if (stock.available === 0) {
-          summary.outOfStockItems++;
-          outOfStockDetails.push({
-            ...stock,
-            productName: stock.pieces?.name,
-            productReference: stock.pieces?.reference,
-            value,
-          });
-        } else if (stock.available <= stock.min_stock) {
-          summary.lowStockItems++;
-          lowStockDetails.push({
-            ...stock,
-            productName: stock.pieces?.name,
-            productReference: stock.pieces?.reference,
-            value,
-          });
-        } else if (stock.available >= stock.max_stock) {
-          summary.overstockItems++;
-          overstockDetails.push({
-            ...stock,
-            productName: stock.pieces?.name,
-            productReference: stock.pieces?.reference,
-            value,
-          });
-        }
-      });
 
       return {
-        summary,
-        lowStockDetails,
-        outOfStockDetails,
-        overstockDetails,
-        movements: recentMovements || [],
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        connectionTest: 'ok',
       };
     } catch (error) {
-      this.logger.error('Erreur génération rapport', error);
-      throw error;
+      return {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 
-  /**
-   * Obtenir l'historique des mouvements avec filtres
-   */
-  async getMovementHistory(
-    productId?: string,
-    filters?: {
-      movementType?: string;
-      dateFrom?: Date;
-      dateTo?: Date;
-      limit?: number;
-      userId?: string;
-    },
-  ): Promise<any[]> {
+  // =========================================================================
+  // Private helpers
+  // =========================================================================
+
+  private async invalidateStockCache(productId?: string) {
     try {
-      this.logger.debug('Récupération historique mouvements', {
-        productId,
-        filters,
-      });
-
-      let query = this.client.from('stock_movements').select(`
-          *,
-          pieces!inner(reference, name)
-        `);
-
+      // Invalider le cache specifique du produit
       if (productId) {
-        query = query.eq('product_id', productId);
+        await this.cacheService.del(`stock:${productId}`);
       }
 
-      if (filters?.movementType) {
-        query = query.eq('type', filters.movementType);
-      }
-
-      if (filters?.userId) {
-        query = query.eq('user_id', filters.userId);
-      }
-
-      if (filters?.dateFrom) {
-        query = query.gte('created_at', filters.dateFrom.toISOString());
-      }
-
-      if (filters?.dateTo) {
-        query = query.lte('created_at', filters.dateTo.toISOString());
-      }
-
-      query = query
-        .order('created_at', { ascending: false })
-        .limit(filters?.limit || 100);
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new DatabaseException({
-          code: ErrorCodes.ADMIN.STOCK_ERROR,
-          message: `Erreur récupération historique: ${error.message}`,
-          details: error.message,
-        });
-      }
-
-      return data || [];
+      // Invalider le cache du dashboard
+      await this.cacheService.del('stock:dashboard');
     } catch (error) {
-      this.logger.error('Erreur récupération historique', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Méthodes privées supplémentaires
-   */
-
-  private async updateStockAfterMovement(
-    productId: string,
-    movementType: string,
-    quantity: number,
-  ): Promise<void> {
-    try {
-      // Cette logique peut être gérée par des triggers en base
-      // ou ici selon l'architecture choisie
-
-      // Récupérer le stock actuel
-      const { data: currentStock } = await this.client
-        .from('stock')
-        .select('quantity, reserved')
-        .eq('product_id', productId)
-        .single();
-
-      if (!currentStock) return;
-
-      let newQuantity = currentStock.quantity;
-
-      switch (movementType) {
-        case 'IN':
-          newQuantity += quantity;
-          break;
-        case 'OUT':
-          newQuantity -= quantity;
-          break;
-        case 'ADJUSTMENT':
-          // Pour les ajustements, la quantité est déjà la nouvelle valeur
-          // Cette logique dépend de l'implémentation choisie
-          break;
-        case 'RETURN':
-          newQuantity += quantity;
-          break;
-      }
-
-      // Mettre à jour le stock
-      const { error } = await this.client
-        .from('stock')
-        .update({
-          quantity: newQuantity,
-          available: newQuantity - currentStock.reserved,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('product_id', productId);
-
-      if (error) {
-        this.logger.error('Erreur mise à jour stock après mouvement', error);
-      }
-    } catch (error) {
-      this.logger.error('Erreur updateStockAfterMovement', error);
+      this.logger.error('Erreur invalidation cache', error);
     }
   }
 }

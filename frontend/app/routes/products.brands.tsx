@@ -27,6 +27,10 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { ArrowLeft, Tag, Car, TrendingUp, Search, Filter } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
@@ -37,10 +41,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Marques Produits");
 

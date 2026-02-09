@@ -23,10 +23,10 @@ import {
   Filter,
   Download,
 } from "lucide-react";
-import { getReviewStats } from "../services/api/review.api";
 import { Error404 } from "~/components/errors/Error404";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
+import { getReviewStats } from "../services/api/review.api";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,28 +38,66 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+/** Local shape used after normalising the API response */
+interface ReviewStatsData {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  averageRating: number;
+  ratingDistribution: Record<string, number>;
+  totalPublished?: number;
+  lastWeekTotal?: number;
+  lastMonthTotal?: number;
+}
+
+interface TrendsData {
+  thisWeek: number;
+  lastWeek: number;
+  thisMonth: number;
+  lastMonth: number;
+  growthRate: number;
+}
+
+interface RatingBreakdownItem {
+  rating: number;
+  count: number;
+  percentage: number;
+}
+
 interface LoaderData {
-  stats: any;
-  trends: any;
-  ratingBreakdown: any;
+  stats: ReviewStatsData;
+  trends: TrendsData;
+  ratingBreakdown: RatingBreakdownItem[];
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    const stats = await getReviewStats(request).catch(() => ({
-      total: 0,
-      pending: 0,
-      approved: 0,
-      rejected: 0,
-      averageRating: 0,
-      ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
-      totalPublished: 0,
-      lastWeekTotal: 0,
-      lastMonthTotal: 0,
-    }));
+    const rawStats = await getReviewStats(request).catch(() => null);
+
+    const stats: ReviewStatsData = rawStats
+      ? {
+          total: rawStats.total_reviews,
+          pending: rawStats.pending_reviews,
+          approved: rawStats.approved_reviews,
+          rejected: rawStats.rejected_reviews,
+          averageRating: rawStats.average_rating,
+          ratingDistribution: rawStats.rating_distribution,
+        }
+      : {
+          total: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0,
+          averageRating: 0,
+          ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
+          totalPublished: 0,
+          lastWeekTotal: 0,
+          lastMonthTotal: 0,
+        };
 
     // Simulation de données de tendance
-    const trends = {
+    const trends: TrendsData = {
       thisWeek: 15,
       lastWeek: 12,
       thisMonth: 45,
@@ -70,34 +108,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const ratingBreakdown = [
       {
         rating: 5,
-        count: (stats as any).ratingDistribution?.["5"] || 0,
+        count: stats.ratingDistribution?.["5"] || 0,
         percentage: 0,
       },
       {
         rating: 4,
-        count: (stats as any).ratingDistribution?.["4"] || 0,
+        count: stats.ratingDistribution?.["4"] || 0,
         percentage: 0,
       },
       {
         rating: 3,
-        count: (stats as any).ratingDistribution?.["3"] || 0,
+        count: stats.ratingDistribution?.["3"] || 0,
         percentage: 0,
       },
       {
         rating: 2,
-        count: (stats as any).ratingDistribution?.["2"] || 0,
+        count: stats.ratingDistribution?.["2"] || 0,
         percentage: 0,
       },
       {
         rating: 1,
-        count: (stats as any).ratingDistribution?.["1"] || 0,
+        count: stats.ratingDistribution?.["1"] || 0,
         percentage: 0,
       },
     ].map((item) => ({
       ...item,
       percentage:
-        (stats as any).total > 0
-          ? Math.round((item.count / (stats as any).total) * 100)
+        stats.total > 0
+          ? Math.round((item.count / stats.total) * 100)
           : 0,
     }));
 
@@ -202,7 +240,7 @@ export default function ReviewAnalyticsPage() {
                 Total des Avis
               </p>
               <p className="text-2xl font-bold text-gray-900">
-                {(stats as any).total || 0}
+                {stats.total || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
@@ -225,9 +263,9 @@ export default function ReviewAnalyticsPage() {
               <p className="text-sm font-medium text-gray-500">Note Moyenne</p>
               <div className="flex items-center mt-1">
                 <p className="text-2xl font-bold text-gray-900 mr-2">
-                  {(stats as any).averageRating?.toFixed(1) || "0.0"}
+                  {stats.averageRating?.toFixed(1) || "0.0"}
                 </p>
-                {renderStars(Math.round((stats as any).averageRating || 0))}
+                {renderStars(Math.round(stats.averageRating || 0))}
               </div>
             </div>
             <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
@@ -237,7 +275,7 @@ export default function ReviewAnalyticsPage() {
           <div className="mt-4">
             <p className="text-sm text-gray-600">
               <p className="text-sm text-gray-600">
-                {(stats as any).totalPublished || (stats as any).approved || 0}{" "}
+                {stats.totalPublished || stats.approved || 0}{" "}
                 avis publiés
               </p>
             </p>
@@ -249,7 +287,7 @@ export default function ReviewAnalyticsPage() {
             <div>
               <p className="text-sm font-medium text-gray-500">En Attente</p>
               <p className="text-2xl font-bold text-gray-900">
-                {(stats as any).pending || 0}
+                {stats.pending || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
@@ -270,9 +308,9 @@ export default function ReviewAnalyticsPage() {
                 Taux d'Approbation
               </p>
               <p className="text-2xl font-bold text-gray-900">
-                {(stats as any).total > 0
+                {stats.total > 0
                   ? Math.round(
-                      ((stats as any).approved / (stats as any).total) * 100,
+                      (stats.approved / stats.total) * 100,
                     )
                   : 0}
                 %
@@ -284,7 +322,7 @@ export default function ReviewAnalyticsPage() {
           </div>
           <div className="mt-4">
             <span className="text-sm text-green-600">
-              {(stats as any).approved || 0} approuvés
+              {stats.approved || 0} approuvés
             </span>
           </div>
         </div>
@@ -331,7 +369,7 @@ export default function ReviewAnalyticsPage() {
             ))}
           </div>
 
-          {(stats as any).total === 0 && (
+          {stats.total === 0 && (
             <div className="text-center py-8">
               <PieChart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <p className="text-gray-500">Aucune donnée disponible</p>
@@ -454,9 +492,9 @@ export default function ReviewAnalyticsPage() {
               Performance Globale
             </h3>
             <p className="text-sm text-blue-800">
-              {(stats as any).averageRating >= 4
+              {stats.averageRating >= 4
                 ? "Excellente satisfaction client avec une note moyenne élevée."
-                : (stats as any).averageRating >= 3
+                : stats.averageRating >= 3
                   ? "Satisfaction correcte, mais des améliorations sont possibles."
                   : "Attention requise - la satisfaction client peut être améliorée."}
             </p>
@@ -465,10 +503,10 @@ export default function ReviewAnalyticsPage() {
           <div className="p-4 bg-warning/5 rounded-lg">
             <h3 className="font-medium text-yellow-900 mb-2">Modération</h3>
             <p className="text-sm text-yellow-800">
-              {(stats as any).pending > 5
-                ? `${(stats as any).pending} avis en attente de modération nécessitent votre attention.`
-                : (stats as any).pending > 0
-                  ? `${(stats as any).pending} avis en attente - traitement rapide recommandé.`
+              {stats.pending > 5
+                ? `${stats.pending} avis en attente de modération nécessitent votre attention.`
+                : stats.pending > 0
+                  ? `${stats.pending} avis en attente - traitement rapide recommandé.`
                   : "Tous les avis sont modérés. Excellent suivi!"}
             </p>
           </div>

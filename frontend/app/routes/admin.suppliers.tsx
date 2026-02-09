@@ -18,10 +18,10 @@ import {
   FileText,
   Settings,
 } from "lucide-react";
-import { requireAuth } from "../auth/unified.server";
 import { Alert } from "~/components/ui";
 import { Badge } from "~/components/ui/badge";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAuth } from "../auth/unified.server";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Fournisseurs - Admin");

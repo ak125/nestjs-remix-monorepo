@@ -34,6 +34,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Alert, Badge } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import {
@@ -42,9 +45,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Alert, Badge } from "~/components/ui";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [

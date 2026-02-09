@@ -14,6 +14,10 @@ import {
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { Car, Filter, RotateCcw, Search } from "lucide-react";
 import { useState } from "react";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import {
@@ -30,10 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Recherche Vehicules - Commercial");

@@ -129,7 +129,7 @@ export class SimpleAnalyticsService {
       }
 
       const config: AnalyticsConfig = {
-        provider: provider as any,
+        provider: provider as AnalyticsConfig['provider'],
         trackingId,
         domain: this.configService.get<string>('ANALYTICS_DOMAIN'),
         scriptUrl: this.configService.get<string>('ANALYTICS_SCRIPT_URL'),

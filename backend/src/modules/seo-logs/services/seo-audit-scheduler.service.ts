@@ -107,7 +107,9 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
   /**
    * � Process un job (audit ou cleanup)
    */
-  private async processJob(job: any): Promise<any> {
+  private async processJob(
+    job: any,
+  ): Promise<{ success: boolean; type: string } | Record<string, unknown>> {
     // Job de nettoyage
     if (job.data.task === 'cleanup-old-jobs') {
       this.logger.log(`🗑️ Processing cleanup job #${job.id}`);
@@ -226,8 +228,9 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
       }
 
       this.logger.log('✅ Report sent to Meilisearch');
-    } catch (error: any) {
-      this.logger.error('❌ Failed to send to Meilisearch:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Failed to send to Meilisearch:', message);
     }
   }
 
@@ -276,8 +279,9 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
       }
 
       this.logger.log('✅ Report sent to Loki');
-    } catch (error: any) {
-      this.logger.error('❌ Failed to send to Loki:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Failed to send to Loki:', message);
     }
   }
 

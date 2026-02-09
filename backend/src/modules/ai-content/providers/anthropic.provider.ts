@@ -26,7 +26,7 @@ export class AnthropicProvider implements AIProvider {
   private readonly client: Anthropic | null = null;
   private readonly defaultModel: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY', '');
     this.defaultModel = this.configService.get<string>(
       'ANTHROPIC_MODEL',

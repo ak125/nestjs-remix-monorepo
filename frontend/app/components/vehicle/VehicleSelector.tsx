@@ -16,10 +16,10 @@ import {
   FileText,
 } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
+import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { logger } from "~/utils/logger";
 
 interface VehicleSelectorProps {
   // 🎨 Mode d'affichage

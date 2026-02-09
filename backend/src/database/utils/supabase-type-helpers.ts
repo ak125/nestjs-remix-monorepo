@@ -54,7 +54,10 @@ export function createSupabaseMap<T>(
   keyField: keyof T,
 ): Map<number, T> {
   return new Map(
-    data.map((item) => [parseSupabaseId(item[keyField] as any), item]),
+    data.map((item) => [
+      parseSupabaseId(item[keyField] as string | number | null | undefined),
+      item,
+    ]),
   );
 }
 
@@ -69,7 +72,9 @@ export function groupSupabaseBy<T>(
   const grouped = new Map<number, T[]>();
 
   for (const item of data) {
-    const key = parseSupabaseId(item[keyField] as any);
+    const key = parseSupabaseId(
+      item[keyField] as string | number | null | undefined,
+    );
 
     if (!grouped.has(key)) {
       grouped.set(key, []);

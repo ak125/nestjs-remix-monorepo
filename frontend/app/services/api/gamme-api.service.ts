@@ -24,16 +24,16 @@ interface GammePageData {
     content: string;
     image: string;
     wall: string;
-    famille_info?: any;
+    famille_info?: Record<string, unknown>;
   };
-  motorisations: any[];
-  catalogueFiltres?: any;
-  equipementiers?: any;
-  conseils?: any;
-  informations?: any;
-  guideAchat?: any;
-  catalogueMameFamille?: any;
-  famille?: any;
+  motorisations: Record<string, unknown>[];
+  catalogueFiltres?: Record<string, unknown>;
+  equipementiers?: Record<string, unknown>;
+  conseils?: Record<string, unknown>;
+  informations?: Record<string, unknown>;
+  guideAchat?: Record<string, unknown>;
+  catalogueMameFamille?: Record<string, unknown>;
+  famille?: Record<string, unknown>;
   performance?: {
     total_time_ms: number;
     rpc_time_ms?: number;

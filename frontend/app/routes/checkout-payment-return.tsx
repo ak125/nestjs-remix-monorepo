@@ -13,13 +13,13 @@ import {
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
 
-import { processPaymentReturn } from "../services/payment.server";
-import { formatPrice } from "../utils/orders";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui";
 import { trackPurchase } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { processPaymentReturn } from "../services/payment.server";
+import { formatPrice } from "../utils/orders";
 
 // Phase 9: PageRole pour analytics
 export const handle = {

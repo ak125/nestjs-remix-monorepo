@@ -2,12 +2,12 @@
 // 🎨 Design Bento moderne pour le catalogue de familles
 
 import { useState, useEffect, memo } from "react";
+import { logger } from "~/utils/logger";
 import {
   hierarchyApi,
   type FamilyWithGammes,
   type HierarchyStats,
 } from "../../services/api/hierarchy.api";
-import { logger } from "~/utils/logger";
 
 interface FamilyGammeBentoProps {
   className?: string;

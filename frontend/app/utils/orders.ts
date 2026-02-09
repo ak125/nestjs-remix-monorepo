@@ -44,6 +44,8 @@ export interface OrderLine {
 
 export interface Order {
   id: string;
+  /** Legacy order ID from the database */
+  ord_id?: string | number;
   orderNumber: string;
   status: number;
   totalTTC: number;
@@ -64,8 +66,8 @@ export interface Order {
   deliveryPrice?: number;
   discountAmount?: number;
   totalPrice?: number;
-  shippingAddress?: any;
-  deliveryAddress?: any;
+  shippingAddress?: Record<string, string | undefined>;
+  deliveryAddress?: Record<string, string | undefined>;
 }
 
 export interface OrdersResponse {

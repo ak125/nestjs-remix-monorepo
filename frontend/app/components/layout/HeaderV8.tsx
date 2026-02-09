@@ -11,8 +11,21 @@
 import { memo } from "react";
 import { HeaderV8Enhanced } from "./HeaderV8Enhanced";
 
+interface HeaderV8Props {
+  context?: "admin" | "commercial" | "public";
+  theme?: string;
+  variant?: "basic" | "ecommerce" | "admin" | "custom" | "auto";
+  features?: string[];
+  showTopBar?: boolean;
+  showSecondaryNav?: boolean;
+  showSearch?: boolean;
+  showCart?: boolean;
+  onMobileMenuToggle?: () => void;
+  className?: string;
+}
+
 // 🏢 Header V8 Basic - Sites vitrines, landing pages
-export const HeaderV8Basic = memo(function HeaderV8Basic(props: any) {
+export const HeaderV8Basic = memo(function HeaderV8Basic(props: HeaderV8Props) {
   return (
     <HeaderV8Enhanced
       {...props}
@@ -28,7 +41,7 @@ export const HeaderV8Basic = memo(function HeaderV8Basic(props: any) {
 });
 
 // 🛒 Header V8 Ecommerce - E-commerce complet
-export const HeaderV8Ecommerce = memo(function HeaderV8Ecommerce(props: any) {
+export const HeaderV8Ecommerce = memo(function HeaderV8Ecommerce(props: HeaderV8Props) {
   return (
     <HeaderV8Enhanced
       {...props}
@@ -44,7 +57,7 @@ export const HeaderV8Ecommerce = memo(function HeaderV8Ecommerce(props: any) {
 });
 
 // ⚙️ Header V8 Admin - Interface administration
-export const HeaderV8Admin = memo(function HeaderV8Admin(props: any) {
+export const HeaderV8Admin = memo(function HeaderV8Admin(props: HeaderV8Props) {
   return (
     <HeaderV8Enhanced
       {...props}
@@ -61,7 +74,7 @@ export const HeaderV8Admin = memo(function HeaderV8Admin(props: any) {
 });
 
 // 🎨 Header V8 Custom - Configurable
-export const HeaderV8Custom = memo(function HeaderV8Custom(props: any) {
+export const HeaderV8Custom = memo(function HeaderV8Custom(props: HeaderV8Props) {
   return (
     <HeaderV8Enhanced
       {...props}
@@ -72,7 +85,7 @@ export const HeaderV8Custom = memo(function HeaderV8Custom(props: any) {
 });
 
 // 🚀 Export principal - Auto-détection du variant
-export const HeaderV8 = memo(function HeaderV8(props: any) {
+export const HeaderV8 = memo(function HeaderV8(props: HeaderV8Props) {
   const { variant = "auto", context = "public", ...otherProps } = props;
 
   // Auto-détection basée sur le contexte

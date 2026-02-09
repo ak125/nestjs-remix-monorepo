@@ -7,6 +7,8 @@ import {
 } from "@remix-run/react";
 import { MapPin, Plus, Edit2, Trash2, Home, Building } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
@@ -18,8 +20,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes adresses | AutoMecanik" },

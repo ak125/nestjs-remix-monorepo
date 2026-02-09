@@ -11,8 +11,8 @@
 
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { requireUser } from "../auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
+import { requireUser } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // Vérifier l'authentification

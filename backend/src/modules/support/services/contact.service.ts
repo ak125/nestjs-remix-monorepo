@@ -343,7 +343,9 @@ export class ContactService extends SupabaseBaseService {
   /**
    * Ajoute une réponse à un ticket
    */
-  async addResponse(responseData: ContactResponse): Promise<any> {
+  async addResponse(
+    responseData: ContactResponse,
+  ): Promise<Record<string, unknown>> {
     // Récupérer le ticket parent
     const parentTicket = await this.getContactById(responseData.message_id);
 

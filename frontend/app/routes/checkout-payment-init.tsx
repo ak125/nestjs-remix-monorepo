@@ -1,8 +1,8 @@
 import { type ActionFunctionArgs, json } from "@remix-run/node";
-import { requireAuth } from "../auth/unified.server";
-import { initializePayment } from "../services/payment.server";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { requireAuth } from "../auth/unified.server";
+import { initializePayment } from "../services/payment.server";
 
 /**
  * Resource route pour initialiser un paiement et renvoyer du JSON
@@ -157,12 +157,14 @@ export async function action({ request }: ActionFunctionArgs) {
       success: true,
       transactionId: paymentData.transactionId,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("❌ Erreur initialisation paiement:", error);
-    logger.error("❌ Stack trace:", error.stack);
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error("❌ Stack trace:", stack);
     return json(
       {
-        error: error.message || "Erreur lors de l'initialisation du paiement",
+        error: message || "Erreur lors de l'initialisation du paiement",
       },
       { status: 500 },
     );

@@ -9,13 +9,13 @@
  */
 
 import React, { useState } from "react";
+import { logger } from "~/utils/logger";
 import {
   TrustPage,
   type PartnerBrand,
   type SecurityBadge,
   type CustomerReview,
 } from "./TrustPage";
-import { logger } from "~/utils/logger";
 
 // ============================================================================
 // Exemple 1: Page Complète

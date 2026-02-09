@@ -87,8 +87,9 @@ export class CatalogController {
         `✅ ${result.totalFamilies} familles récupérées pour le frontend`,
       );
       return result;
-    } catch (error: any) {
-      this.logger.error('❌ Erreur récupération familles:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur récupération familles:', message);
       return {
         success: false,
         families: [],
@@ -265,8 +266,9 @@ export class CatalogController {
         `✅ RPC homepage en ${(performance.now() - startTime).toFixed(1)}ms`,
       );
       return result;
-    } catch (error: any) {
-      this.logger.error('❌ RPC homepage error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ RPC homepage error:', message);
       throw error; // NO fallback - retourne 500
     }
   }
@@ -534,11 +536,12 @@ export class CatalogController {
         sample_columns: piecesResult.columns,
         sample_data: piecesResult.sample,
       });
-    } catch (error: any) {
-      this.logger.error('❌ Erreur pieces_gamme:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur pieces_gamme:', message);
       results.errors.push({
         table: 'pieces_gamme',
-        error: error.message,
+        error: message,
       });
     }
 
@@ -554,11 +557,12 @@ export class CatalogController {
         sample_columns: catalogResult.columns,
         sample_data: catalogResult.sample,
       });
-    } catch (error: any) {
-      this.logger.error('❌ Erreur catalog_gamme:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Erreur catalog_gamme:', message);
       results.errors.push({
         table: 'catalog_gamme',
-        error: error.message,
+        error: message,
       });
     }
 

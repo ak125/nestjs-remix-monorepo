@@ -9,8 +9,8 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { getSeoMetadata, createSeoMeta } from "../utils/seo.server";
 import { Error404 } from "~/components/errors/Error404";
+import { getSeoMetadata, createSeoMeta } from "../utils/seo.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);

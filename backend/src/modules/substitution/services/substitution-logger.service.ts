@@ -113,27 +113,37 @@ export class SubstitutionLoggerService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Failed to get funnel stats: ${error.message}`);
-        return { funnel: {} as any };
+        return {
+          funnel: {} as Record<
+            LockType,
+            { total: number; completed: number; rate: number }
+          >,
+        };
       }
 
-      const funnel: Record<
-        string,
+      const funnel = {} as Record<
+        LockType,
         { total: number; completed: number; rate: number }
-      > = {};
+      >;
       for (const row of data || []) {
-        funnel[row.lock_type] = {
+        funnel[row.lock_type as LockType] = {
           total: row.total_entries,
           completed: row.completions,
           rate: row.rate,
         };
       }
 
-      return { funnel: funnel as any };
+      return { funnel };
     } catch (error) {
       this.logger.error(
         `Exception getting funnel stats: ${getErrorMessage(error)}`,
       );
-      return { funnel: {} as any };
+      return {
+        funnel: {} as Record<
+          LockType,
+          { total: number; completed: number; rate: number }
+        >,
+      };
     }
   }
 

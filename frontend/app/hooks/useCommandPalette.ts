@@ -7,8 +7,8 @@
 
 import { useLocation } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
-import { scheduleIdleCallback } from "../utils/performance.utils";
 import { logger } from "~/utils/logger";
+import { scheduleIdleCallback } from "../utils/performance.utils";
 
 interface RecentAction {
   id: string;

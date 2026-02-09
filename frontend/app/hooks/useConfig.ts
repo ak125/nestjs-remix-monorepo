@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   configApi,
+  type ConfigCategory,
   type ConfigItem,
   type ConfigStats,
 } from "~/services/api/config.api";
@@ -14,7 +15,7 @@ export interface UseConfigResult {
   // État des données
   configs: ConfigItem[];
   stats: ConfigStats | null;
-  categories: any[];
+  categories: ConfigCategory[];
 
   // État de l'interface
   selectedCategory: string;
@@ -29,7 +30,7 @@ export interface UseConfigResult {
 
   // Données filtrées
   filteredConfigs: ConfigItem[];
-  selectedCategoryData: any;
+  selectedCategoryData: ConfigCategory | undefined;
   configsInCategory: number;
 
   // Actions
@@ -37,12 +38,12 @@ export interface UseConfigResult {
   setEditingKey: (key: string | null) => void;
   setSearchTerm: (term: string) => void;
   toggleSensitiveVisibility: (key: string) => void;
-  updateConfig: (key: string, value: any, type: string) => Promise<boolean>;
+  updateConfig: (key: string, value: string | number | boolean, type: string) => Promise<boolean>;
   createBackup: (name?: string) => Promise<string | null>;
   reloadConfigs: () => Promise<void>;
 }
 
-export function useConfig(categories: any[]): UseConfigResult {
+export function useConfig(categories: ConfigCategory[]): UseConfigResult {
   // États des données
   const [configs, setConfigs] = useState<ConfigItem[]>([]);
   const [stats, setStats] = useState<ConfigStats | null>(null);
@@ -130,20 +131,20 @@ export function useConfig(categories: any[]): UseConfigResult {
 
   // Mettre à jour une configuration
   const updateConfig = useCallback(
-    async (key: string, value: any, type: string): Promise<boolean> => {
+    async (key: string, value: string | number | boolean, type: string): Promise<boolean> => {
       try {
         setSaving(true);
         setError(null);
 
         // Conversion du type si nécessaire
-        let processedValue = value;
+        let processedValue: unknown = value;
         if (type === "boolean") {
           processedValue = value === "true" || value === true;
         } else if (type === "number") {
           processedValue = Number(value);
         } else if (type === "json") {
           try {
-            processedValue = JSON.parse(value);
+            processedValue = JSON.parse(value as string);
           } catch {
             throw new Error("Format JSON invalide");
           }

@@ -222,11 +222,13 @@ export class PiecesDiagnosticController {
         },
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur diagnostic: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`❌ Erreur diagnostic: ${message}`, stack);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -309,10 +311,11 @@ export class PiecesDiagnosticController {
         },
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -427,10 +430,11 @@ export class PiecesDiagnosticController {
         },
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: error.message,
+        error: message,
         timestamp: new Date().toISOString(),
       };
     }

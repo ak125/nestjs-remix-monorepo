@@ -10,11 +10,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { getOptionalUser } from "../auth/unified.server";
-import { CommercialSidebar } from "../components/CommercialSidebar";
 import { Error404 } from "~/components/errors/Error404";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { getOptionalUser } from "../auth/unified.server";
+import { CommercialSidebar } from "../components/CommercialSidebar";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Interface Commerciale - Commercial");

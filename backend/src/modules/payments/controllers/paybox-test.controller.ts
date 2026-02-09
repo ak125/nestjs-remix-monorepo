@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Logger } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
@@ -85,7 +85,7 @@ export class PayboxTestController {
     } catch (e) {
       this.logger.error('Erreur génération HMAC:', getErrorMessage(e));
       return res
-        .status(500)
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .send(`Erreur serveur génération HMAC: ${getErrorMessage(e)}`);
     }
 

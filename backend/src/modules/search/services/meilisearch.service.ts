@@ -1,6 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MeiliSearch, Index } from 'meilisearch';
+import { MeiliSearch, Index, EnqueuedTask } from 'meilisearch';
+
+interface SearchOptions {
+  limit?: number;
+  offset?: number;
+  filter?: string | string[];
+  sort?: string[];
+  facets?: string[];
+  attributesToRetrieve?: string[];
+}
 
 @Injectable()
 export class MeilisearchService implements OnModuleInit {
@@ -124,7 +133,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * Recherche dans l'index des véhicules
    */
-  async searchVehicles(query: string, options: any = {}) {
+  async searchVehicles(query: string, options: SearchOptions = {}) {
     try {
       this.logger.debug(
         `🚗 Recherche véhicules: "${query}" avec options:`,
@@ -154,7 +163,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * Recherche dans l'index des produits
    */
-  async searchProducts(query: string, options: any = {}) {
+  async searchProducts(query: string, options: SearchOptions = {}) {
     try {
       this.logger.debug(
         `🔧 Recherche produits: "${query}" avec options:`,
@@ -188,7 +197,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * Indexe des véhicules en lot
    */
-  async indexVehicles(vehicles: any[]) {
+  async indexVehicles(vehicles: Record<string, any>[]) {
     try {
       return await this.vehicleIndex.addDocuments(vehicles, {
         primaryKey: 'id',
@@ -202,7 +211,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * Indexe des produits en lot
    */
-  async indexProducts(products: any[]) {
+  async indexProducts(products: Record<string, any>[]) {
     try {
       return await this.productIndex.addDocuments(products, {
         primaryKey: 'id',
@@ -216,7 +225,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * Met à jour un véhicule dans l'index
    */
-  async updateVehicle(vehicleId: string, vehicle: any) {
+  async updateVehicle(vehicleId: string, vehicle: Record<string, any>) {
     try {
       return await this.vehicleIndex.addDocuments([
         { id: vehicleId, ...vehicle },
@@ -242,7 +251,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * 📊 Ajouter des véhicules en lot
    */
-  async addVehicles(vehicles: any[]): Promise<any> {
+  async addVehicles(vehicles: Record<string, any>[]): Promise<EnqueuedTask> {
     try {
       return await this.vehicleIndex.addDocuments(vehicles, {
         primaryKey: 'id',
@@ -256,7 +265,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * 📊 Ajouter des produits en lot
    */
-  async addProducts(products: any[]): Promise<any> {
+  async addProducts(products: Record<string, any>[]): Promise<EnqueuedTask> {
     try {
       return await this.productIndex.addDocuments(products, {
         primaryKey: 'id',
@@ -270,7 +279,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * 🗑️ Supprimer un index
    */
-  async deleteIndex(indexName: string): Promise<any> {
+  async deleteIndex(indexName: string): Promise<EnqueuedTask> {
     try {
       return await this.client.deleteIndex(indexName);
     } catch (error) {
@@ -282,7 +291,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * 🧹 Clear/vider un index (supprimer tous les documents)
    */
-  async clearIndex(indexName: string): Promise<any> {
+  async clearIndex(indexName: string): Promise<EnqueuedTask> {
     try {
       const index = this.client.index(indexName);
       return await index.deleteAllDocuments();
@@ -295,7 +304,7 @@ export class MeilisearchService implements OnModuleInit {
   /**
    * 🔧 Créer un index
    */
-  async createIndex(indexName: string): Promise<any> {
+  async createIndex(indexName: string): Promise<EnqueuedTask> {
     try {
       return await this.client.createIndex(indexName, { primaryKey: 'id' });
     } catch (error) {

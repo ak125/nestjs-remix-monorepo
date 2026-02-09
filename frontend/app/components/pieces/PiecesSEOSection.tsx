@@ -7,6 +7,7 @@
  */
 
 import { memo } from "react";
+import { Alert } from "~/components/ui/alert";
 import { type SEOEnrichedContent } from "../../types/pieces-route.types";
 import {
   cleanOrphanParagraphs,
@@ -14,7 +15,6 @@ import {
 } from "../../utils/seo-clean.utils";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../seo/HtmlContent";
-import { Alert } from "~/components/ui/alert";
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;

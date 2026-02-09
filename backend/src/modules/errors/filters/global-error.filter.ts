@@ -90,7 +90,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
       message =
         typeof exceptionResponse === 'string'
           ? exceptionResponse
-          : (exceptionResponse as any)?.message || exception.message;
+          : ((exceptionResponse as Record<string, unknown>)
+              ?.message as string) || exception.message;
       code = exception.constructor.name;
     } else if (exception instanceof Error) {
       message = exception.message;
@@ -154,8 +155,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
       // Page 404 personnalisée pour le frontend
       if (this.isApiRequest(request)) {
-        response.status(404).json({
-          statusCode: 404,
+        response.status(HttpStatus.NOT_FOUND).json({
+          statusCode: HttpStatus.NOT_FOUND,
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -170,8 +171,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
       if (response.headersSent) return;
 
       this.logger.error('Erreur dans handle404:', error);
-      response.status(404).json({
-        statusCode: 404,
+      response.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
         message: 'Page non trouvée',
         error: 'NotFound',
       });
@@ -202,8 +203,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
       // Page 410 personnalisée pour le frontend
       if (this.isApiRequest(request)) {
-        response.status(410).json({
-          statusCode: 410,
+        response.status(HttpStatus.GONE).json({
+          statusCode: HttpStatus.GONE,
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -219,8 +220,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
       if (response.headersSent) return;
 
       this.logger.error('Erreur dans handle410:', error);
-      response.status(410).json({
-        statusCode: 410,
+      response.status(HttpStatus.GONE).json({
+        statusCode: HttpStatus.GONE,
         message: 'Ressource définitivement supprimée',
         error: 'Gone',
       });
@@ -245,10 +246,11 @@ export class GlobalErrorFilter implements ExceptionFilter {
           typeof exceptionResponse === 'object' &&
           exceptionResponse !== null
         ) {
-          const errorDetails = exceptionResponse as any;
-          condition = errorDetails.condition || errorDetails.failedCondition;
-          requirement =
-            errorDetails.requirement || errorDetails.expectedCondition;
+          const errorDetails = exceptionResponse as Record<string, unknown>;
+          condition = (errorDetails.condition ||
+            errorDetails.failedCondition) as string | undefined;
+          requirement = (errorDetails.requirement ||
+            errorDetails.expectedCondition) as string | undefined;
         }
       }
 
@@ -256,8 +258,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
       // Page 412 personnalisée pour le frontend
       if (this.isApiRequest(request)) {
-        response.status(412).json({
-          statusCode: 412,
+        response.status(HttpStatus.PRECONDITION_FAILED).json({
+          statusCode: HttpStatus.PRECONDITION_FAILED,
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -281,8 +283,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
       if (response.headersSent) return;
 
       this.logger.error('Erreur dans handle412:', error);
-      response.status(412).json({
-        statusCode: 412,
+      response.status(HttpStatus.PRECONDITION_FAILED).json({
+        statusCode: HttpStatus.PRECONDITION_FAILED,
         message: 'Condition préalable échouée',
         error: 'PreconditionFailed',
       });
@@ -419,8 +421,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
       // Réponse 410 pour ancien lien
       if (this.isApiRequest(request)) {
-        response.status(410).json({
-          statusCode: 410,
+        response.status(HttpStatus.GONE).json({
+          statusCode: HttpStatus.GONE,
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -443,8 +445,8 @@ export class GlobalErrorFilter implements ExceptionFilter {
       if (response.headersSent) return;
 
       this.logger.error('Erreur dans handle410OldLink:', error);
-      response.status(410).json({
-        statusCode: 410,
+      response.status(HttpStatus.GONE).json({
+        statusCode: HttpStatus.GONE,
         message: "Format d'URL obsolète",
         error: 'Gone',
         isOldLink: true,

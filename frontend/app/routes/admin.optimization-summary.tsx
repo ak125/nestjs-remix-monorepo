@@ -5,11 +5,11 @@ import {
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from "../hooks/useAdvancedAnalyticsComplete";
-import { getMonitoringService } from "../services/monitoring";
 import { Badge } from "~/components/ui";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from "../hooks/useAdvancedAnalyticsComplete";
+import { getMonitoringService } from "../services/monitoring";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Optimisation - Admin");

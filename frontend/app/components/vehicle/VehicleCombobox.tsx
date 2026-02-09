@@ -3,16 +3,31 @@
 
 import { Car, ChevronDown, Search, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { logger } from "~/utils/logger";
+import {
+  enhancedVehicleApi,
+  type VehicleBrand,
+} from "../../services/api/enhanced-vehicle.api";
+
+interface VehicleSelectionModel {
+  modele_id: number;
+  modele_name: string;
+  modele_alias: string;
+}
+
+interface VehicleSelectionType {
+  type_id: number;
+  type_name: string;
+  type_alias: string;
+}
 
 interface VehicleComboboxProps {
   placeholder?: string;
   onSelect?: (vehicle: {
-    brand: any;
+    brand: VehicleBrand;
     year: number;
-    model: any;
-    type: any;
+    model: VehicleSelectionModel;
+    type: VehicleSelectionType;
   }) => void;
   currentVehicle?: {
     brand?: { id: number; name: string };
@@ -25,10 +40,10 @@ interface VehicleComboboxProps {
 interface VehicleOption {
   id: string;
   label: string;
-  brand: any;
+  brand: VehicleBrand;
   year: number;
-  model: any;
-  type: any;
+  model: VehicleSelectionModel;
+  type: VehicleSelectionType;
 }
 
 const VehicleCombobox = memo(function VehicleCombobox({

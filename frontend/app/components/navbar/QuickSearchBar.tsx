@@ -17,9 +17,9 @@
 import { Link } from "@remix-run/react";
 import { Search, ShoppingCart, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import { useProductSearch } from "../../hooks/useProductSearch";
 import { PartImage } from "~/components/ui/ResponsiveImage";
 import { logger } from "~/utils/logger";
+import { useProductSearch } from "../../hooks/useProductSearch";
 
 interface QuickSearchBarProps {
   className?: string;

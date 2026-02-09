@@ -12,7 +12,7 @@ export class RobotsTxtService {
   private readonly isProduction: boolean;
   private readonly baseUrl: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.isProduction = this.configService.get('NODE_ENV') === 'production';
     this.baseUrl = this.configService.get(
       'BASE_URL',

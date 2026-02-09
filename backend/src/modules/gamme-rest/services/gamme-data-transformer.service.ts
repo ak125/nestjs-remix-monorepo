@@ -12,6 +12,34 @@ import {
  * Service de transformation des données pour les pages gamme
  * Extrait la logique de traitement et nettoyage des données
  */
+interface ConseilRow {
+  sgc_id: number;
+  sgc_title?: string;
+  sgc_content?: string;
+}
+
+interface InformationRow {
+  sgi_content: string;
+}
+
+interface EquipementierRow {
+  seg_pm_id?: string;
+  pm_id?: string;
+  pm_name?: string;
+  pm_logo?: string;
+  seg_content?: string;
+  content?: string;
+}
+
+interface CatalogueFamilleRow {
+  pg_id: number;
+  pg_alias: string;
+  pg_pic?: string;
+  pg_name: string;
+  description?: string;
+  meta_description?: string;
+}
+
 @Injectable()
 export class GammeDataTransformerService {
   /**
@@ -74,8 +102,10 @@ export class GammeDataTransformerService {
   /**
    * Traite les données de conseils
    */
-  processConseils(conseilsRaw: any[]): any[] {
-    return conseilsRaw.map((conseil: any) => ({
+  processConseils(
+    conseilsRaw: ConseilRow[],
+  ): { id: number; title: string; content: string }[] {
+    return conseilsRaw.map((conseil) => ({
       id: conseil.sgc_id,
       title: this.contentCleaner(conseil.sgc_title || ''),
       content: this.contentCleaner(conseil.sgc_content || ''),
@@ -85,8 +115,8 @@ export class GammeDataTransformerService {
   /**
    * Traite les données d'informations
    */
-  processInformations(informationsRaw: any[]): string[] {
-    return informationsRaw.map((info: any) => info.sgi_content);
+  processInformations(informationsRaw: InformationRow[]): string[] {
+    return informationsRaw.map((info) => info.sgi_content);
   }
 
   /**
@@ -94,8 +124,10 @@ export class GammeDataTransformerService {
    * ✅ Utilise pm_name et pm_logo depuis la RPC (jointure pieces_marque)
    * ✅ Utilise buildEquipementierLogoUrl centralisé
    */
-  processEquipementiers(equipementiersRaw: any[]): any[] {
-    return equipementiersRaw.map((equip: any) => {
+  processEquipementiers(
+    equipementiersRaw: EquipementierRow[],
+  ): Record<string, unknown>[] {
+    return equipementiersRaw.map((equip) => {
       const pmId = String(equip.seg_pm_id || equip.pm_id);
       const pmName = equip.pm_name || 'Équipementier';
       const pmLogo = equip.pm_logo || 'default.webp';
@@ -121,8 +153,10 @@ export class GammeDataTransformerService {
    * ✅ Génère les liens et URLs d'images corrects pour le maillage interne
    * ✅ Utilise buildGammeImageUrl centralisé
    */
-  processCatalogueFamille(catalogueFamilleRaw: any[]): any[] {
-    return catalogueFamilleRaw.map((piece: any) => {
+  processCatalogueFamille(
+    catalogueFamilleRaw: CatalogueFamilleRow[],
+  ): Record<string, unknown>[] {
+    return catalogueFamilleRaw.map((piece) => {
       const pgId = piece.pg_id;
       const pgAlias = piece.pg_alias;
       const pgPic = piece.pg_pic;

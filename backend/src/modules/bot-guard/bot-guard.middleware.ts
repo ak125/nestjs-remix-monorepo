@@ -1,4 +1,4 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { BotGuardService } from './bot-guard.service';
 
@@ -44,7 +44,9 @@ export class BotGuardMiddleware implements NestMiddleware {
         this.logger.warn(
           `Blocked: ip=${ip} country=${country} path=${req.path} reason=geo_block`,
         );
-        res.status(403).json({ error: 'Access denied', code: 'GEO_BLOCKED' });
+        res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ error: 'Access denied', code: 'GEO_BLOCKED' });
         return;
       }
 
@@ -59,7 +61,9 @@ export class BotGuardMiddleware implements NestMiddleware {
         this.logger.warn(
           `Blocked: ip=${ip} country=${country} path=${req.path} reason=ip_block`,
         );
-        res.status(403).json({ error: 'Access denied', code: 'IP_BLOCKED' });
+        res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ error: 'Access denied', code: 'IP_BLOCKED' });
         return;
       }
 
@@ -84,7 +88,9 @@ export class BotGuardMiddleware implements NestMiddleware {
         this.logger.warn(
           `Blocked: ip=${ip} country=${country} score=${suspicionScore} path=${req.path} ua="${userAgent.substring(0, 80)}" reason=behavioral`,
         );
-        res.status(403).json({ error: 'Access denied', code: 'SUSPICIOUS' });
+        res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ error: 'Access denied', code: 'SUSPICIOUS' });
         return;
       }
 

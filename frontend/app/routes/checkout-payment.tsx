@@ -15,18 +15,18 @@ import {
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { getOptionalUser } from "../auth/unified.server";
-import {
-  initializePayment,
-  getAvailablePaymentMethods,
-} from "../services/payment.server";
-import { type PaymentMethod, type OrderSummary } from "../types/payment";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 import { trackAddPaymentInfo } from "~/utils/analytics";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getOptionalUser } from "../auth/unified.server";
+import {
+  initializePayment,
+  getAvailablePaymentMethods,
+} from "../services/payment.server";
+import { type PaymentMethod, type OrderSummary } from "../types/payment";
 
 // Phase 9: PageRole pour analytics
 export const handle = {

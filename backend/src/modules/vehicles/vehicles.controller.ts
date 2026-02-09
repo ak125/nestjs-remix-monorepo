@@ -37,7 +37,9 @@ export class VehiclesController {
   /**
    * Transformer les query params string en VehiclePaginationDto
    */
-  private parseQueryParams(query: any): VehiclePaginationDto {
+  private parseQueryParams(
+    query: Record<string, string>,
+  ): VehiclePaginationDto {
     return {
       search: query.search || undefined,
       brandId: query.brandId || undefined,
@@ -50,7 +52,7 @@ export class VehiclesController {
   }
 
   @Get('brands')
-  async getAllBrands(@Query() query: any) {
+  async getAllBrands(@Query() query: Record<string, string>) {
     const params = this.parseQueryParams(query);
     return this.vehiclesService.findAll(params);
   }
@@ -63,7 +65,7 @@ export class VehiclesController {
   @Get('brands/:brandId/models')
   async getModelsByBrand(
     @Param('brandId') brandId: string,
-    @Query() query: any,
+    @Query() query: Record<string, string>,
     @Res({ passthrough: true }) res: Response,
   ) {
     const params = this.parseQueryParams(query);
@@ -79,7 +81,7 @@ export class VehiclesController {
   @Get('brands/:brandId/years')
   async getYearsByBrand(
     @Param('brandId') brandId: string,
-    @Query() query: any,
+    @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
     params.brandId = brandId;
@@ -89,7 +91,7 @@ export class VehiclesController {
   @Get('models/:modelId/types')
   async getTypesByModel(
     @Param('modelId') modelId: string,
-    @Query() query: any,
+    @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
     params.modelId = modelId;

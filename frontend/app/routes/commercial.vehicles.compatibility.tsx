@@ -14,6 +14,10 @@ import {
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { ArrowRight, Car, Cog, Search } from "lucide-react";
 import { useState } from "react";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -24,10 +28,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Compatibilite Vehicules - Commercial");

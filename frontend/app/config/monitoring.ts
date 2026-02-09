@@ -3,6 +3,20 @@
  * Intégration avec les hooks d'analytics avancées
  */
 
+// Network Information API (experimental, not in all browsers)
+interface NetworkInformation {
+  effectiveType: string;
+  downlink: number;
+  rtt?: number;
+  saveData?: boolean;
+}
+
+declare global {
+  interface Navigator {
+    connection?: NetworkInformation;
+  }
+}
+
 export interface MonitoringConfig {
   // Configuration des métriques
   metrics: {
@@ -144,7 +158,7 @@ export interface AnalyticsEvent {
   timestamp: string
   userId?: string
   sessionId?: string
-  data: Record<string, any>
+  data: Record<string, unknown>
   context: {
     page: string
     userAgent: string
@@ -192,12 +206,12 @@ export interface AIInsight {
   suggestedActions: string[]
   priority: 'high' | 'medium' | 'low'
   timestamp: string
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 // Fonctions utilitaires pour le monitoring
 export class MonitoringUtils {
-  static createEvent(type: string, data: Record<string, any>): AnalyticsEvent {
+  static createEvent(type: string, data: Record<string, unknown>): AnalyticsEvent {
     return {
       type,
       timestamp: new Date().toISOString(),
@@ -209,9 +223,9 @@ export class MonitoringUtils {
           width: window.innerWidth,
           height: window.innerHeight
         },
-        connection: (navigator as any).connection ? {
-          effectiveType: (navigator as any).connection.effectiveType,
-          downlink: (navigator as any).connection.downlink
+        connection: navigator.connection ? {
+          effectiveType: navigator.connection.effectiveType,
+          downlink: navigator.connection.downlink
         } : undefined
       }
     }
@@ -224,8 +238,8 @@ export class MonitoringUtils {
       timestamp: new Date().toISOString(),
       context: {
         page: window.location.pathname,
-        device: this.getDeviceType(),
-        connection: this.getConnectionType()
+        device: MonitoringUtils.getDeviceType(),
+        connection: MonitoringUtils.getConnectionType()
       }
     }
   }
@@ -238,7 +252,7 @@ export class MonitoringUtils {
   }
 
   static getConnectionType(): string {
-    const connection = (navigator as any).connection
+    const connection = navigator.connection
     return connection ? connection.effectiveType : 'unknown'
   }
 

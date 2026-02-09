@@ -4,7 +4,7 @@
  */
 
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
+import { HttpStatus, Logger } from '@nestjs/common';
 import { WorkerModule } from './worker.module';
 
 async function bootstrap() {
@@ -19,7 +19,7 @@ async function bootstrap() {
     // Health check endpoint
     const express = app.getHttpAdapter().getInstance();
     express.get('/health', (_req: any, res: any) => {
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),

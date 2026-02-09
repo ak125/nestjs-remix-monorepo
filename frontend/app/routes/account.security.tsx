@@ -15,14 +15,14 @@ import {
   Lock,
 } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Sécurité du compte | AutoMecanik" },

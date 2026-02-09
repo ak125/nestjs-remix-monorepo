@@ -11,11 +11,11 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Factures - Admin");
 

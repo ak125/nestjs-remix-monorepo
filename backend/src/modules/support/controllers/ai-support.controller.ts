@@ -58,12 +58,12 @@ export class AISupportController {
   private readonly logger = new Logger(AISupportController.name);
 
   constructor(
-    private aiSentimentService: AISentimentService,
-    private aiCategorizationService: AICategorizationService,
-    private aiSmartResponseService: AISmartResponseService,
-    private aiPredictiveService: AIPredictiveService,
-    private contactService: ContactService,
-    private reviewService: ReviewService,
+    private readonly aiSentimentService: AISentimentService,
+    private readonly aiCategorizationService: AICategorizationService,
+    private readonly aiSmartResponseService: AISmartResponseService,
+    private readonly aiPredictiveService: AIPredictiveService,
+    private readonly contactService: ContactService,
+    private readonly reviewService: ReviewService,
   ) {}
 
   // ==================== ANALYSE DE SENTIMENT ====================

@@ -9,12 +9,12 @@
 import { Truck } from "lucide-react";
 import React, { useState } from "react";
 
+import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
-import { logger } from "~/utils/logger";
 
 interface PiecesListViewProps {
   pieces: PieceData[];

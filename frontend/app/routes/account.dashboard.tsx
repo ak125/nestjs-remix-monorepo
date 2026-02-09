@@ -6,6 +6,10 @@ import {
 } from "@remix-run/react";
 import { User, ShoppingBag, Mail, Key } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { ActivityTimeline } from "../components/dashboard/ActivityTimeline";
@@ -13,10 +17,6 @@ import { AuthErrorState } from "../components/dashboard/AuthErrorState";
 import { QuickActions } from "../components/dashboard/QuickActions";
 import { StatCard } from "../components/dashboard/StatCard";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 
 /**
  * 🔒 SEO Meta Tags - noindex pour espace compte utilisateur

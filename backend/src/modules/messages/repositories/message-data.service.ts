@@ -93,9 +93,7 @@ export class MessageDataService extends SupabaseBaseService {
         });
       }
 
-      const messages = (data || []).map((row: any) =>
-        this.mapLegacyToModern(row),
-      );
+      const messages = (data || []).map((row) => this.mapLegacyToModern(row));
 
       return {
         messages,
@@ -199,7 +197,7 @@ export class MessageDataService extends SupabaseBaseService {
     updates: { closed?: boolean; read?: boolean },
   ): Promise<ModernMessage> {
     try {
-      const updateData: any = {};
+      const updateData: Record<string, number> = {};
 
       if (updates.closed !== undefined) {
         updateData.msg_close = updates.closed ? 1 : 0;
@@ -262,10 +260,9 @@ export class MessageDataService extends SupabaseBaseService {
       }
 
       const total = data?.length || 0;
-      const open = data?.filter((row: any) => row.msg_close === 0).length || 0;
-      const closed =
-        data?.filter((row: any) => row.msg_close === 1).length || 0;
-      const unread = data?.filter((row: any) => row.msg_open === 0).length || 0;
+      const open = data?.filter((row) => row.msg_close === 0).length || 0;
+      const closed = data?.filter((row) => row.msg_close === 1).length || 0;
+      const unread = data?.filter((row) => row.msg_open === 0).length || 0;
 
       return { total, open, closed, unread };
     } catch (error) {

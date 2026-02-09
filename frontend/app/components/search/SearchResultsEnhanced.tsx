@@ -13,10 +13,10 @@
 import { Package, Zap, Award, AlertCircle } from "lucide-react";
 import { memo } from "react";
 
+import { logger } from "~/utils/logger";
 import { AddToCartButton } from "../cart/AddToCartButton";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
-import { logger } from "~/utils/logger";
 
 interface SearchResultItem {
   id: string;

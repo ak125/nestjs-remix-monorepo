@@ -48,7 +48,15 @@ export class EnhancedConfigController {
    * Test de la connexion Supabase et de la table ___config
    */
   @Get('test-db')
-  async testDatabase(): Promise<any> {
+  async testDatabase(): Promise<{
+    status: string;
+    message: string;
+    tables?: unknown;
+    data?: unknown;
+    error?: string;
+    errorCode?: string;
+    timestamp: string;
+  }> {
     try {
       this.logger.debug('Testing Supabase connection...');
 

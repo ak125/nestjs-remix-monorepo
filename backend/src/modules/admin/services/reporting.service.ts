@@ -13,6 +13,23 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 
+/** Row shape from ___xtr_customer table */
+interface CustomerRow {
+  cst_is_active: string;
+  cst_is_pro: string;
+  cst_email_verified: string;
+  cst_create_date: string;
+  [key: string]: unknown;
+}
+
+/** Row shape from ___xtr_order table */
+interface OrderRow {
+  ord_is_pay: string;
+  ord_ords_id: string;
+  ord_total_ttc: string;
+  [key: string]: unknown;
+}
+
 export interface ReportFilters {
   startDate?: string;
   endDate?: string;
@@ -131,23 +148,19 @@ export class ReportingService extends SupabaseBaseService {
         });
       }
 
-      const users = await response.json();
+      const users = (await response.json()) as CustomerRow[];
 
       // Calculs analytiques
       const total = users.length;
-      const active = users.filter((u: any) => u.cst_is_active === 'Y').length;
-      const professional = users.filter(
-        (u: any) => u.cst_is_pro === 'Y',
-      ).length;
-      const verified = users.filter(
-        (u: any) => u.cst_email_verified === 'Y',
-      ).length;
+      const active = users.filter((u) => u.cst_is_active === 'Y').length;
+      const professional = users.filter((u) => u.cst_is_pro === 'Y').length;
+      const verified = users.filter((u) => u.cst_email_verified === 'Y').length;
 
       // Utilisateurs de ce mois
       const thisMonth = new Date();
       thisMonth.setDate(1);
       const newThisMonth = users.filter(
-        (u: any) => new Date(u.cst_create_date) >= thisMonth,
+        (u) => new Date(u.cst_create_date) >= thisMonth,
       ).length;
 
       return {
@@ -190,19 +203,19 @@ export class ReportingService extends SupabaseBaseService {
         });
       }
 
-      const orders = await response.json();
+      const orders = (await response.json()) as OrderRow[];
 
       // Calculs analytiques
       const total = orders.length;
-      const completed = orders.filter((o: any) => o.ord_is_pay === '1').length;
-      const pending = orders.filter((o: any) => o.ord_is_pay === '0').length;
-      const cancelled = orders.filter((o: any) => o.ord_ords_id === '4').length;
+      const completed = orders.filter((o) => o.ord_is_pay === '1').length;
+      const pending = orders.filter((o) => o.ord_is_pay === '0').length;
+      const cancelled = orders.filter((o) => o.ord_ords_id === '4').length;
 
       // Calcul du chiffre d'affaires
       const revenue = orders
-        .filter((o: any) => o.ord_is_pay === '1')
+        .filter((o) => o.ord_is_pay === '1')
         .reduce(
-          (sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || '0'),
+          (sum: number, o) => sum + parseFloat(o.ord_total_ttc || '0'),
           0,
         );
 

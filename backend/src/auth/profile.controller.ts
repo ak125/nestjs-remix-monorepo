@@ -25,7 +25,7 @@ const AuthenticatedGuard = (req: ExpressRequest, res: Response, next: any) => {
 export class ProfileController {
   private readonly logger = new Logger(ProfileController.name);
 
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Get()
   async getProfile(@Req() req: ExpressRequest, @Res() res: Response) {

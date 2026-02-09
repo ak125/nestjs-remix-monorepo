@@ -41,9 +41,12 @@ export class GuideService {
     const cacheKey = `guides_all:${limit}:${offset}:${JSON.stringify(filters)}`;
 
     try {
-      const cached = await this.cacheManager.get(cacheKey);
+      const cached = await this.cacheManager.get<{
+        articles: BlogArticle[];
+        total: number;
+      }>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();
@@ -274,9 +277,16 @@ export class GuideService {
     const cacheKey = 'guides_stats';
 
     try {
-      const cached = await this.cacheManager.get(cacheKey);
+      type GuideStats = {
+        total: number;
+        totalViews: number;
+        avgViews: number;
+        byType: Array<{ type: string; count: number }>;
+        mostPopular: BlogArticle[];
+      };
+      const cached = await this.cacheManager.get<GuideStats>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();

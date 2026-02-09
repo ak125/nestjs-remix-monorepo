@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { useMemo, memo } from "react";
 
-import { HtmlContent } from "../seo/HtmlContent";
 import { pluralizePieceName } from "~/lib/seo-utils";
+import { HtmlContent } from "../seo/HtmlContent";
 
 interface CatalogueItem {
   id?: number;

@@ -77,7 +77,7 @@ export class AuthTokenController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async setPassword(
     @Body() body: { token: string; password: string },
-  ): Promise<any> {
+  ): Promise<{ success: boolean; message: string; email?: string }> {
     try {
       const { token, password } = body;
 

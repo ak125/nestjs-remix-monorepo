@@ -10,9 +10,9 @@ import {
   XCircle,
 } from "lucide-react";
 import { memo } from "react";
+import { Alert } from "~/components/ui/alert";
 import { type Order } from "../../types/orders.types";
 import { type UserPermissions } from "../../utils/permissions";
-import { Alert } from "~/components/ui/alert";
 
 interface OrderWorkflowButtonsProps {
   order: Order;

@@ -150,14 +150,14 @@ export function FilterAccordion({
     const updatedBrands = localFilters.brands?.map((brand) =>
       brand.id === brandId ? { ...brand, selected: !brand.selected } : brand,
     );
-    updateFilters({ ...localFilters, brands: updatedBrands as any });
+    updateFilters({ ...localFilters, brands: updatedBrands });
   };
 
   const toggleCategory = (categoryId: string) => {
     const updatedCategories = localFilters.categories?.map((cat) =>
       cat.id === categoryId ? { ...cat, selected: !cat.selected } : cat,
     );
-    updateFilters({ ...localFilters, categories: updatedCategories as any });
+    updateFilters({ ...localFilters, categories: updatedCategories });
   };
 
   const resetPriceRange = () => {
@@ -280,10 +280,10 @@ export function FilterAccordion({
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-purple-600" />
                 <span className="font-medium text-gray-900">Marques</span>
-                {localFilters.brands.filter((b: any) => b.selected).length >
+                {localFilters.brands.filter((b) => b.selected).length >
                   0 && (
                   <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-xs font-semibold text-purple-600">
-                    {localFilters.brands.filter((b: any) => b.selected).length}
+                    {localFilters.brands.filter((b) => b.selected).length}
                   </span>
                 )}
               </div>
@@ -297,18 +297,18 @@ export function FilterAccordion({
                   >
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-                        (brand as any).selected
+                        brand.selected
                           ? "border-purple-600 bg-purple-600"
                           : "border-gray-300"
                       }`}
                     >
-                      {(brand as any).selected && (
+                      {brand.selected && (
                         <Check className="h-3 w-3 text-white" />
                       )}
                     </div>
                     <input
                       type="checkbox"
-                      checked={(brand as any).selected || false}
+                      checked={brand.selected || false}
                       onChange={() => toggleBrand(brand.id)}
                       className="sr-only"
                     />
@@ -348,18 +348,18 @@ export function FilterAccordion({
                   >
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-                        (category as any).selected
+                        category.selected
                           ? "border-green-600 bg-green-600"
                           : "border-gray-300"
                       }`}
                     >
-                      {(category as any).selected && (
+                      {category.selected && (
                         <Check className="h-3 w-3 text-white" />
                       )}
                     </div>
                     <input
                       type="checkbox"
-                      checked={(category as any).selected || false}
+                      checked={category.selected || false}
                       onChange={() => toggleCategory(category.id)}
                       className="sr-only"
                     />

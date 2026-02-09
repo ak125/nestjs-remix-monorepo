@@ -34,9 +34,9 @@ export class SystemService {
   private systemStartTime = Date.now();
 
   constructor(
-    private configService: ConfigService,
-    private metricsService: MetricsService,
-    private databaseMonitorService: DatabaseMonitorService,
+    private readonly configService: ConfigService,
+    private readonly metricsService: MetricsService,
+    private readonly databaseMonitorService: DatabaseMonitorService,
   ) {}
 
   /**

@@ -21,7 +21,7 @@ import {
 export class LegalController {
   private readonly logger = new Logger(LegalController.name);
 
-  constructor(private legalService: LegalService) {}
+  constructor(private readonly legalService: LegalService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

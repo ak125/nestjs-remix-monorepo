@@ -81,7 +81,7 @@ export interface ProcessingResult {
 export class ImageProcessingService {
   private readonly logger = new Logger(ImageProcessingService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.logger.log('🖼️ ImageProcessingService initialized');
   }
 
@@ -208,12 +208,13 @@ export class ImageProcessingService {
       );
 
       return result;
-    } catch (error: any) {
-      this.logger.error('❌ Image processing failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Image processing failed:', message);
       throw new OperationFailedException({
         code: ErrorCodes.UPLOAD.PROCESSING_FAILED,
-        message: `Échec du traitement d'image: ${error.message}`,
-        details: error.message,
+        message: `Échec du traitement d'image: ${message}`,
+        details: message,
         cause: error instanceof Error ? error : new Error(String(error)),
       });
     }
@@ -303,11 +304,9 @@ export class ImageProcessingService {
           width: result.dimensions.width,
           height: result.dimensions.height,
         });
-      } catch (error: any) {
-        this.logger.warn(
-          `⚠️ Failed to create thumbnail ${size}px:`,
-          error.message,
-        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`⚠️ Failed to create thumbnail ${size}px:`, message);
       }
     }
 
@@ -335,7 +334,7 @@ export class ImageProcessingService {
     if (options?.format === 'auto') {
       format = this.getBestWebFormat();
     } else {
-      format = (options?.format as any) || 'webp';
+      format = (options?.format as 'jpeg' | 'webp' | 'avif') || 'webp';
     }
 
     const processingOptions: ImageProcessingOptions = {
@@ -424,12 +423,13 @@ export class ImageProcessingService {
         estimatedSavings: Math.min(estimatedSavings, 70),
         fileSize: imageBuffer.length,
       };
-    } catch (error: any) {
-      this.logger.error('❌ Image analysis failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Image analysis failed:', message);
       throw new OperationFailedException({
         code: ErrorCodes.UPLOAD.PROCESSING_FAILED,
-        message: `Échec de l'analyse d'image: ${error.message}`,
-        details: error.message,
+        message: `Échec de l'analyse d'image: ${message}`,
+        details: message,
         cause: error instanceof Error ? error : new Error(String(error)),
       });
     }

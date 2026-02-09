@@ -3,8 +3,8 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { requireAdmin } from "../auth/unified.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Paiements - Admin");
 

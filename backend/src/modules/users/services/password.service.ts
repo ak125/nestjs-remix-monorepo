@@ -285,7 +285,11 @@ export class PasswordService extends SupabaseBaseService {
       await this.invalidateAllUserSessions(resetData.user_id);
 
       // Envoyer email de confirmation
-      const userData = resetData.___xtr_customer as any;
+      const userData = resetData.___xtr_customer as {
+        cst_id?: string;
+        cst_mail?: string;
+        cst_fname?: string;
+      };
       await this.mailService.sendMail({
         to: userData.cst_mail,
         subject: 'Mot de passe réinitialisé',

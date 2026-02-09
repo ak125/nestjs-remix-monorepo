@@ -152,8 +152,7 @@ export class PiecesController {
 
       // Filtrer les produits BOSCH
       const boschFilters =
-        result.data?.filter((p: any) => p.brand === 'BOSCH' && p.isFilter) ||
-        [];
+        result.data?.filter((p) => p.brand === 'BOSCH' && p.isFilter) || [];
 
       return {
         success: true,
@@ -163,7 +162,7 @@ export class PiecesController {
           brandDetection:
             boschFilters.length > 0 ? 'SUCCESS' : 'NO_BOSCH_FOUND',
           sampleBrands: [
-            ...new Set(result.data?.map((p: any) => p.brand) || []),
+            ...new Set(result.data?.map((p) => p.brand) || []),
           ].slice(0, 10),
         },
         timestamp: new Date().toISOString(),
@@ -214,7 +213,7 @@ export class PiecesController {
 
       // Transformer avec extraction de marques
       const filtersWithBrands =
-        result.filtres?.map((filter: any) => {
+        result.filtres?.map((filter) => {
           const brand = this.extractBrandFromRef(filter.piece_ref || '');
           return {
             ...filter,
@@ -287,9 +286,8 @@ export class PiecesController {
         );
 
       const filterItems =
-        result.data?.filter((p: any) =>
-          p.name?.toLowerCase().includes('filtre'),
-        ) || [];
+        result.data?.filter((p) => p.name?.toLowerCase().includes('filtre')) ||
+        [];
 
       return {
         success: result.success,
@@ -340,10 +338,10 @@ export class PiecesController {
         message: `${result.data.length} pièces indexées (avec filtres)`,
         data: {
           count: result.data.length,
-          hasFilters: result.data.some((p: any) =>
+          hasFilters: result.data.some((p) =>
             p.name?.toLowerCase().includes('filtre'),
           ),
-          filterCount: result.data.filter((p: any) =>
+          filterCount: result.data.filter((p) =>
             p.name?.toLowerCase().includes('filtre'),
           ).length,
         },
@@ -375,7 +373,7 @@ export class PiecesController {
       }
 
       // Transformer les filtres BOSCH pour Meilisearch avec les marques
-      const transformedFilters = boschFilters.filtres.map((filter: any) => {
+      const transformedFilters = boschFilters.filtres.map((filter) => {
         const brand = this.extractBrandFromRef(filter.piece_ref || '');
 
         return {

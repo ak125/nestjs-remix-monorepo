@@ -35,7 +35,7 @@ export class VehicleEnrichmentService extends SupabaseBaseService {
   //
   // TODO: Implémenter quand la table de liaison sera créée
 
-  constructor(private cacheService: VehicleCacheService) {
+  constructor(private readonly cacheService: VehicleCacheService) {
     super();
     this.logger.log(
       '🔧 VehicleEnrichmentService initialisé (codes moteurs désactivés)',
@@ -45,7 +45,9 @@ export class VehicleEnrichmentService extends SupabaseBaseService {
   /**
    * 🔧 Enrichir un véhicule avec les données moteur
    */
-  async enrichVehicle(vehicleData: any): Promise<any> {
+  async enrichVehicle(
+    vehicleData: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     if (!vehicleData) return vehicleData;
 
     try {

@@ -26,14 +26,41 @@ interface SentimentAnalysis {
   urgency: "low" | "medium" | "high" | "critical";
 }
 
+interface AICategorization {
+  category: string;
+  subcategory: string;
+  confidence: number;
+  suggestedAgent?: string;
+}
+
+interface AISmartResponse {
+  response: string;
+  confidence: number;
+  tone: string;
+  requiresHuman: boolean;
+}
+
+interface AIEscalationPrediction {
+  riskLevel: number;
+  escalationProbability: number;
+  priority: string;
+  timeToEscalation: number;
+  reasoning: string;
+}
+
+interface AIWorkflowOptimization {
+  recommendedAgent: string;
+  estimatedTime: number;
+}
+
 interface CompleteAIAnalysis {
   ticketId: string;
   analysis: {
     sentiment: SentimentAnalysis;
-    categorization: any;
-    smartResponse: any;
-    escalationPrediction: any;
-    workflowOptimization: any;
+    categorization: AICategorization;
+    smartResponse: AISmartResponse;
+    escalationPrediction: AIEscalationPrediction;
+    workflowOptimization: AIWorkflowOptimization;
   };
   recommendations: {
     priority: string;

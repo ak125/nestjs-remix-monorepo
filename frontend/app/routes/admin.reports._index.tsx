@@ -37,6 +37,20 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+interface ReportUser {
+  isActive?: boolean;
+  isPro?: boolean;
+  emailVerified?: boolean;
+}
+
+interface ReportOrder {
+  isPaid?: boolean;
+  ord_is_pay?: string;
+  totalTtc?: string;
+  ord_total_ttc?: string;
+  total?: string;
+}
+
 export const loader: LoaderFunction = async () => {
   try {
     logger.log("📊 Chargement des données pour les rapports...");
@@ -83,10 +97,10 @@ export const loader: LoaderFunction = async () => {
       const usersData = await usersResponse.json();
       const users = usersData.data || usersData.users || [];
       reportData.users.total = users.length;
-      reportData.users.active = users.filter((u: any) => u.isActive).length;
-      reportData.users.professional = users.filter((u: any) => u.isPro).length;
+      reportData.users.active = users.filter((u: ReportUser) => u.isActive).length;
+      reportData.users.professional = users.filter((u: ReportUser) => u.isPro).length;
       reportData.users.verified = users.filter(
-        (u: any) => u.emailVerified,
+        (u: ReportUser) => u.emailVerified,
       ).length;
     }
 
@@ -110,18 +124,18 @@ export const loader: LoaderFunction = async () => {
       const orders = ordersData.data || ordersData.orders || [];
       reportData.orders.total = orders.length;
       reportData.orders.completed = orders.filter(
-        (o: any) => o.isPaid === true || o.ord_is_pay === "1",
+        (o: ReportOrder) => o.isPaid === true || o.ord_is_pay === "1",
       ).length;
       reportData.orders.pending = orders.filter(
-        (o: any) => o.isPaid === false || o.ord_is_pay !== "1",
+        (o: ReportOrder) => o.isPaid === false || o.ord_is_pay !== "1",
       ).length;
 
       const paidOrders = orders.filter(
-        (o: any) => o.isPaid === true || o.ord_is_pay === "1",
+        (o: ReportOrder) => o.isPaid === true || o.ord_is_pay === "1",
       );
       reportData.orders.revenue = paidOrders.reduce(
-        (sum: number, o: any) =>
-          sum + parseFloat(o.totalTtc || o.ord_total_ttc || o.total || 0),
+        (sum: number, o: ReportOrder) =>
+          sum + parseFloat(o.totalTtc || o.ord_total_ttc || o.total || "0"),
         0,
       );
       reportData.orders.avgOrderValue =

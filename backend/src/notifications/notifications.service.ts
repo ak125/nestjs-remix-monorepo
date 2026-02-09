@@ -16,7 +16,7 @@ export interface NotificationData {
 export class NotificationsService {
   private logger = new Logger('NotificationsService');
 
-  constructor(private notificationsGateway: NotificationsGateway) {}
+  constructor(private readonly notificationsGateway: NotificationsGateway) {}
 
   // Send order status updates
   sendOrderUpdate(orderId: string, status: string, userId?: string) {

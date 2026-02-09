@@ -11,7 +11,7 @@ export class CacheService implements OnModuleInit {
   private redisReady = false;
   private readonly defaultTTL = 3600; // 1 heure
 
-  constructor(@Optional() private configService?: ConfigService) {
+  constructor(@Optional() private readonly configService?: ConfigService) {
     // L'initialisation se fera dans onModuleInit
   }
 

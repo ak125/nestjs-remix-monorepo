@@ -33,7 +33,7 @@ export class VehiclesFormsController {
    * Tous les modèles avec marques
    */
   @Get('models')
-  async getAllModels(@Query() query: any) {
+  async getAllModels(@Query() query: Record<string, string>) {
     const startTime = Date.now();
     this.logger.log(
       `🔍 GET /models - search: ${query.search || 'none'}, limit: ${query.limit || 'default'}`,
@@ -67,7 +67,7 @@ export class VehiclesFormsController {
    * Tous les types avec modèles et marques
    */
   @Get('types')
-  async getAllTypes(@Query() query: any) {
+  async getAllTypes(@Query() query: Record<string, string>) {
     const startTime = Date.now();
     this.logger.log(
       `🔍 GET /types - modelId: ${query.modelId || 'none'}, search: ${query.search || 'none'}`,
@@ -133,7 +133,7 @@ export class VehiclesFormsController {
    * Recherche complète
    */
   @Get('search')
-  async searchVehicles(@Query() query: any) {
+  async searchVehicles(@Query() query: Record<string, string>) {
     return this.vehiclesService.searchAdvanced(
       query.q || query.search || '',
       100,
@@ -145,7 +145,7 @@ export class VehiclesFormsController {
    * Années disponibles pour un type
    */
   @Get('years')
-  async getAllYears(@Query() query: any) {
+  async getAllYears(@Query() query: Record<string, string>) {
     // Si typeId est fourni, on peut calculer les années à partir des données du type
     if (query.typeId) {
       // Récupérer le type spécifique pour obtenir ses années
@@ -256,7 +256,7 @@ export class VehiclesFormsController {
    * Recherche de produits compatibles
    */
   @Get('compatible-products')
-  async getCompatibleProducts(@Query() query: any) {
+  async getCompatibleProducts(@Query() query: Record<string, string>) {
     try {
       const { modelId, typeId, year } = query;
 

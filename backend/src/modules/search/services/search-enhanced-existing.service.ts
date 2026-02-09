@@ -188,16 +188,12 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         // Charger les marques et gammes pour enrichir les résultats
         const marqueIds = [
           ...new Set(
-            fallbackPieces
-              .map((p: any) => p.piece_pm_id)
-              .filter((id: any) => id),
+            fallbackPieces.map((p) => p.piece_pm_id).filter((id) => id),
           ),
         ];
         const gammeIds = [
           ...new Set(
-            fallbackPieces
-              .map((p: any) => p.piece_pg_id)
-              .filter((id: any) => id),
+            fallbackPieces.map((p) => p.piece_pg_id).filter((id) => id),
           ),
         ];
 
@@ -217,14 +213,14 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         ]);
 
         const marqueMap = new Map(
-          (marquesResult.data || []).map((m: any) => [m.pm_id, m.pm_name]),
+          (marquesResult.data || []).map((m) => [m.pm_id, m.pm_name]),
         );
         const gammeMap = new Map(
-          (gammesResult.data || []).map((g: any) => [g.pg_id, g.pg_name]),
+          (gammesResult.data || []).map((g) => [g.pg_id, g.pg_name]),
         );
 
         // Formater les résultats du fallback
-        const formattedItems = fallbackPieces.map((piece: any) => {
+        const formattedItems = fallbackPieces.map((piece) => {
           return {
             id: piece.piece_id?.toString() || '',
             reference: piece.piece_ref || piece.piece_code || '',
@@ -545,8 +541,8 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
    */
   private async fallbackDirectSearch(
     cleanQuery: string,
-    filters?: any,
-    pagination?: any,
+    filters?: Record<string, unknown>,
+    pagination?: { page?: number; limit?: number },
   ) {
     this.logger.warn(`⚠️ Utilisation du fallback pour "${cleanQuery}"`);
     return {
@@ -799,7 +795,11 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
    * 🏷️ GÉNÉRATION DYNAMIQUE des facets à partir des résultats
    * Regroupe les résultats par marque, gamme et prix pour créer les filtres
    */
-  private generateFacetsFromResults(items: any[]): any[] {
+  private generateFacetsFromResults(items: any[]): {
+    field: string;
+    label: string;
+    values: { value: string; label: string; count: number }[];
+  }[] {
     const facets = [];
 
     // 1️⃣ Facet MARQUE (Equipementier) - Utiliser IDs pour le filtrage

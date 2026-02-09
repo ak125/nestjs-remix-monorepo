@@ -21,13 +21,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 
+import { logger } from "~/utils/logger";
 import {
   useEnhancedSearchWithDebounce,
   useEnhancedAutocomplete,
 } from "../../hooks/useEnhancedSearch";
 import { cn } from "../../lib/utils";
 import { searchApi } from "../../services/api/search.api";
-import { logger } from "~/utils/logger";
 
 interface SearchBarProps {
   initialQuery?: string;

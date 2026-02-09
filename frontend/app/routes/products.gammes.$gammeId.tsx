@@ -39,6 +39,10 @@ import {
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -52,10 +56,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Gamme Produits");
 

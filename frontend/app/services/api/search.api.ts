@@ -42,15 +42,30 @@ export interface SearchParams {
   };
 }
 
+export interface SearchResultItem {
+  id?: string;
+  reference?: string;
+  designation?: string;
+  description?: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  price?: number;
+  image?: string;
+  source?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
 export interface SearchResult {
   version?: string;
-  items: any[];
+  items: SearchResultItem[];
   total: number;
   page: number;
   limit: number;
   suggestions?: string[];
-  facets?: Record<string, any>;
-  vehicle?: any;
+  facets?: Record<string, unknown>;
+  vehicle?: Record<string, unknown>;
   message?: string;
   executionTime?: number;
   fromCache?: boolean;
@@ -141,7 +156,7 @@ class SearchApiService {
       return {
         suggestions: result.suggestions || [],
         products:
-          result.items?.map((item: any) => ({
+          result.items?.map((item: SearchResultItem) => ({
             id: item.id,
             reference: item.reference || `${item.brand} ${item.model}`,
             designation:
@@ -163,8 +178,8 @@ class SearchApiService {
    * 🚗 Recherche par code MINE
    */
   async searchByMine(mineCode: string): Promise<{
-    vehicle: any;
-    parts: any[];
+    vehicle: Record<string, unknown>;
+    parts: Record<string, unknown>[];
     count: number;
   }> {
     const url = new URL(
@@ -204,7 +219,7 @@ class SearchApiService {
   /**
    * 📄 Récupérer fiche produit complète
    */
-  async getProductSheet(reference: string): Promise<any> {
+  async getProductSheet(reference: string): Promise<Record<string, unknown>> {
     const url = new URL(
       `${this.baseUrl}/api/search/product/${encodeURIComponent(reference)}`,
     );
@@ -252,7 +267,7 @@ class SearchApiService {
   /**
    * �📊 Statistiques de recherche (admin)
    */
-  async getSearchStats(): Promise<any> {
+  async getSearchStats(): Promise<Record<string, unknown>> {
     const url = new URL(`${this.baseUrl}/api/search/stats`);
 
     const response = await fetch(url.toString(), {
@@ -277,7 +292,7 @@ class SearchApiService {
     category?: "all" | "vehicles" | "products" | "pages";
     page?: number;
     limit?: number;
-    filters?: Record<string, any>;
+    filters?: SearchParams['filters'];
   }): Promise<SearchResult> {
     return this.search({
       query: params.query,
@@ -377,7 +392,7 @@ class SearchApiService {
     return enriched;
   }
 
-  private generateClientHighlights(item: any, query: string): string[] {
+  private generateClientHighlights(item: SearchResultItem, query: string): string[] {
     const highlights: string[] = [];
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
 
@@ -423,7 +438,7 @@ class SearchApiService {
    */
 
   // Pour compatibilité avec ancien code
-  async legacySearch(query: string, options: any = {}): Promise<any[]> {
+  async legacySearch(query: string, options: Partial<SearchParams> = {}): Promise<SearchResultItem[]> {
     const result = await this.search({
       query,
       type: "v8",

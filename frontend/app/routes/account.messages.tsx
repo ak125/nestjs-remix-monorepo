@@ -19,6 +19,8 @@ import {
   Search,
   Send,
 } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -31,8 +33,6 @@ import {
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { formatRelativeTime } from "../utils/date";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Ma messagerie | AutoMecanik" },

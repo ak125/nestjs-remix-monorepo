@@ -14,13 +14,13 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { Alert } from "~/components/ui";
+import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Modifier mon profil | AutoMecanik" },

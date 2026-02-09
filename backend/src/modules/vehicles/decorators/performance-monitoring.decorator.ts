@@ -33,9 +33,9 @@ import { throwError } from 'rxjs';
 @Injectable()
 export class PerformanceInterceptor implements NestInterceptor {
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
     @Inject(VehiclesPerformanceService)
-    private performanceService: VehiclesPerformanceService,
+    private readonly performanceService: VehiclesPerformanceService,
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

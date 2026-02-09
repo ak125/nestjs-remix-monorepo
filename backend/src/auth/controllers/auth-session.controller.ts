@@ -7,6 +7,19 @@ import {
 } from '@nestjs/swagger';
 import { UserResponseDto } from '../dto/user-response.dto';
 
+/** Session user shape returned by Passport after authentication */
+interface SessionUser {
+  id?: string | number;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  level?: number;
+  isAdmin?: boolean;
+  isPro?: boolean;
+  isActive?: boolean;
+}
+
 @ApiTags('auth')
 @Controller()
 export class AuthSessionController {
@@ -67,7 +80,7 @@ export class AuthSessionController {
         request.isAuthenticated() &&
         request.user
       ) {
-        const user = request.user as any;
+        const user = request.user as SessionUser;
 
         return {
           valid: true,

@@ -81,9 +81,10 @@ export class CompatibilityService extends SupabaseBaseService {
         vehicle: vehicleInfo,
         duration: `${duration}ms`,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [COMPAT] Exception: ${error.message}`);
-      return this.createErrorResult(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [COMPAT] Exception: ${message}`);
+      return this.createErrorResult(message);
     }
   }
 
@@ -285,9 +286,10 @@ export class CompatibilityService extends SupabaseBaseService {
           typeMine: data.type_mine,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [MINE] Exception: ${error.message}`);
-      return { found: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [MINE] Exception: ${message}`);
+      return { found: false, error: message };
     }
   }
 
@@ -311,8 +313,9 @@ export class CompatibilityService extends SupabaseBaseService {
       return {
         compatibleVehiclesCount: count || 0,
       };
-    } catch (error: any) {
-      return { compatibleVehiclesCount: 0, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { compatibleVehiclesCount: 0, error: message };
     }
   }
 

@@ -9,7 +9,7 @@ export class AiContentCacheService {
   private redisClient: Redis | null = null;
   private readonly PREFIX = 'ai-content:';
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.initializeRedis();
   }
 

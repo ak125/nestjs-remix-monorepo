@@ -75,7 +75,7 @@ export class CartItemsController {
         `TEMPORAIRE: Validation du stock DÉSACTIVÉE pour produit ${productIdNum}`,
       );
 
-      const isReplace = (body as any)?.replace === true;
+      const isReplace = (body as Record<string, unknown>)?.replace === true;
 
       const result = await this.cartDataService.addCartItem(
         userIdForCart,

@@ -51,7 +51,7 @@ export class OrderArchiveController {
   @Get('customer/:customerId/list')
   async listArchivedOrders(
     @Param('customerId') customerId: string,
-    @Query() filters: any,
+    @Query() filters: { page?: string; limit?: string },
   ) {
     try {
       const customerIdNum = parseInt(customerId);
@@ -197,7 +197,7 @@ export class OrderArchiveController {
       const results = {
         testOrderId,
         testCustomerId,
-        tests: [] as any[],
+        tests: [] as Array<Record<string, unknown>>,
       };
 
       // Test 1: Récupérer une commande archivée

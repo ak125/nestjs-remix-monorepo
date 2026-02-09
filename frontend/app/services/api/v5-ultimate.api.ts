@@ -210,7 +210,7 @@ export interface V5UltimateSearchResult {
     stock_status: string;
     raw_price_ht: string;
     raw_price_ttc: string;
-    enhanced_pricing: any;
+    enhanced_pricing: Record<string, unknown>;
   }>;
   _metadata: {
     response_time: number;
@@ -246,15 +246,15 @@ export interface V5UltimatePricing {
 export interface V5UltimateHealth {
   status: "healthy" | "degraded" | "error";
   services: {
-    technical_data_v5: any;
-    enhancement_v5: any;
-    pricing_v5: any;
+    technical_data_v5: Record<string, unknown> | null;
+    enhancement_v5: Record<string, unknown> | null;
+    pricing_v5: Record<string, unknown> | null;
   };
   methodology: string;
   summary: {
     total_services: number;
     all_healthy: boolean;
-    improvements: any;
+    improvements: Record<string, unknown>;
   };
 }
 

@@ -10,7 +10,7 @@ export interface ModularSection {
   type: 'hero' | 'features' | 'testimonials' | 'cta' | 'content' | 'gallery';
   category: 'core' | 'massdoc' | 'shared';
   template: string;
-  props: any;
+  props: HeroProps | FeaturesProps | CTAProps | ContentProps | GalleryProps | TestimonialsProps | Record<string, unknown>;
   styles: {
     background?: string;
     textColor?: string;
@@ -37,19 +37,19 @@ export interface LayoutConfig {
   showFooter?: boolean;
   showSidebar?: boolean;
   showQuickSearch?: boolean;
-  context?: any;
+  context?: Record<string, unknown>;
 }
 
 export interface LayoutData {
-  header?: any;
-  footer?: any;
-  navigation?: any;
-  quickSearch?: any;
-  socialShare?: any;
-  metaTags?: any;
+  header?: HeaderConfig | null;
+  footer?: FooterConfig | null;
+  navigation?: NavigationItem[] | { main: NavigationItem[]; secondary?: NavigationItem[] };
+  quickSearch?: Record<string, unknown>;
+  socialShare?: Record<string, unknown>;
+  metaTags?: Record<string, unknown>;
   sections?: ModularSection[];
-  config?: any;
-  widgets?: any[];
+  config?: LayoutConfig;
+  widgets?: Record<string, unknown>[];
   performance?: {
     cacheKey: string;
     lastUpdated: string;
@@ -63,26 +63,26 @@ export interface SectionTemplate {
   description: string;
   type: string;
   component: string;
-  defaultProps: any;
+  defaultProps: Record<string, unknown>;
   requiredProps: string[];
   preview: string;
 }
 
 export interface HeaderConfig {
   show: boolean;
-  variant: 'default' | 'minimal' | 'extended';
-  logo: {
+  variant?: 'default' | 'minimal' | 'extended';
+  logo?: {
     src: string;
     alt: string;
     link: string;
     height?: number;
   };
-  navigation: {
+  navigation?: {
     show: boolean;
-    style: 'horizontal' | 'dropdown' | 'mega';
+    style?: 'horizontal' | 'dropdown' | 'mega';
     items: NavigationItem[];
   };
-  search: {
+  search?: {
     enabled: boolean;
     placeholder: string;
   };
@@ -90,8 +90,8 @@ export interface HeaderConfig {
 
 export interface FooterConfig {
   show: boolean;
-  variant: 'complete' | 'simple' | 'minimal';
-  copyright: string;
+  variant?: 'complete' | 'simple' | 'minimal';
+  copyright?: string;
 }
 
 export interface NavigationItem {

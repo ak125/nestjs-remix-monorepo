@@ -1,5 +1,5 @@
-import { type PaymentMethod } from "../types/payment";
 import { logger } from "~/utils/logger";
+import { type PaymentMethod } from "../types/payment";
 
 /**
  * Service côté serveur pour les paiements utilisateur

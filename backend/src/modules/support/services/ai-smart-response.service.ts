@@ -661,20 +661,22 @@ export class AIPredictiveService {
     };
   }
 
-  private calculateRiskLevel(factors: any): number {
+  private calculateRiskLevel(factors: Record<string, number>): number {
     const totalScore = Object.values(factors).reduce(
-      (sum: number, score: any) => sum + Number(score),
+      (sum: number, score: number) => sum + Number(score),
       0,
     ) as number;
     return Math.max(0, Math.min(100, 50 + totalScore));
   }
 
-  private calculateEscalationProbability(factors: any): number {
+  private calculateEscalationProbability(
+    factors: Record<string, number>,
+  ): number {
     const riskLevel = this.calculateRiskLevel(factors);
     return Math.min(0.9, riskLevel / 100);
   }
 
-  private estimateTimeToEscalation(factors: any): number {
+  private estimateTimeToEscalation(factors: Record<string, number>): number {
     const riskLevel = this.calculateRiskLevel(factors);
 
     if (riskLevel >= 80) return 30; // 30 minutes
@@ -693,7 +695,10 @@ export class AIPredictiveService {
     return 'low';
   }
 
-  private getEscalationActions(riskLevel: number, factors: any): string[] {
+  private getEscalationActions(
+    riskLevel: number,
+    factors: Record<string, number>,
+  ): string[] {
     const actions = [];
 
     if (riskLevel >= 80) {
@@ -717,7 +722,7 @@ export class AIPredictiveService {
     return actions;
   }
 
-  private generateReasoning(factors: any): string {
+  private generateReasoning(factors: Record<string, number>): string {
     const reasons = [];
 
     if (factors.sentimentScore > 20) {

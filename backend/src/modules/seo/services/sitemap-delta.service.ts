@@ -30,7 +30,7 @@ export class SitemapDeltaService {
   private readonly config: DeltaConfig;
 
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly cacheService: CacheService,
   ) {
     this.config = {

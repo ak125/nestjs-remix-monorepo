@@ -1,9 +1,9 @@
+import { logger } from "~/utils/logger";
 import {
   type Payment,
   type PaymentStats,
   PaymentStatus,
 } from "../types/payment";
-import { logger } from "~/utils/logger";
 
 /**
  * Obtenir l'URL du backend à partir des variables d'environnement

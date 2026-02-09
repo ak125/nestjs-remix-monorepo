@@ -29,6 +29,8 @@ import {
   AISmartResponseService,
   AIPredictiveService,
 } from './services/ai-smart-response.service';
+import { LegalVersionService } from './services/legal-version.service';
+import { LegalPageService } from './services/legal-page.service';
 
 // External Modules
 import { DatabaseModule } from '../../database/database.module';
@@ -85,6 +87,8 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     AICategorizationService,
     AISmartResponseService,
     AIPredictiveService,
+    LegalVersionService,
+    LegalPageService,
   ],
   exports: [
     ContactService,
@@ -96,6 +100,8 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     AICategorizationService,
     AISmartResponseService,
     AIPredictiveService,
+    LegalVersionService,
+    LegalPageService,
   ],
 })
 export class SupportModule {}

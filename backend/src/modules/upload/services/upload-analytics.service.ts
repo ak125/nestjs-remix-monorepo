@@ -141,10 +141,11 @@ export class UploadAnalyticsService
       await this.invalidateAnalyticsCache();
 
       this.logger.debug(`📈 Analytics recorded for ${uploadResult.fileName}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Failed to record analytics for ${uploadResult.fileName}:`,
-        error.message,
+        message,
       );
     }
   }
@@ -186,10 +187,11 @@ export class UploadAnalyticsService
       this.realTimeMetrics.errorRate = await this.calculateErrorRate();
 
       this.logger.debug(`📉 Upload failure recorded: ${fileName}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `❌ Failed to record upload failure for ${fileName}:`,
-        error.message,
+        message,
       );
     }
   }
@@ -252,7 +254,7 @@ export class UploadAnalyticsService
       );
 
       return report;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`❌ Failed to generate analytics report:`, error);
       throw error;
     }
@@ -331,7 +333,7 @@ export class UploadAnalyticsService
       await this.cacheManager.set(cacheKey, stats, 300000);
 
       return stats;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Failed to get quick stats:', error);
       return {
         todayUploads: 0,
@@ -379,7 +381,7 @@ export class UploadAnalyticsService
       const growth = this.calculateGrowthRates(daily);
 
       return { daily, growth };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Failed to get usage trends:', error);
       return {
         daily: [],
@@ -418,7 +420,7 @@ export class UploadAnalyticsService
       );
 
       return deletedCount;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('❌ Failed to cleanup old analytics data:', error);
       return 0;
     }
@@ -441,8 +443,9 @@ export class UploadAnalyticsService
     this.metricsInterval = setInterval(async () => {
       try {
         await this.updateAllMetrics();
-      } catch (error: any) {
-        this.logger.warn('Failed to update metrics:', error.message);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn('Failed to update metrics:', message);
       }
     }, 30000);
   }
@@ -706,8 +709,9 @@ export class UploadAnalyticsService
     try {
       await this.cacheManager.del('quick_stats');
       // Invalider d'autres clés de cache si nécessaire
-    } catch (error: any) {
-      this.logger.warn('Failed to invalidate analytics cache:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn('Failed to invalidate analytics cache:', message);
     }
   }
 }

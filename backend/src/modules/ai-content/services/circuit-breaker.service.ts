@@ -54,7 +54,7 @@ export class CircuitBreakerService {
     'openai',
   ];
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.config = {
       failureThreshold: this.configService.get<number>(
         'AI_CIRCUIT_FAILURE_THRESHOLD',

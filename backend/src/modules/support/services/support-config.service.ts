@@ -49,7 +49,7 @@ export class SupportConfigService {
   private readonly logger = new Logger(SupportConfigService.name);
   private config: SupportConfig;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.loadConfiguration();
   }
 

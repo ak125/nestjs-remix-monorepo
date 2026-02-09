@@ -32,7 +32,7 @@ export class OrderActionsService extends SupabaseBaseService {
         qty: number;
       };
     },
-  ): Promise<any> {
+  ): Promise<{ success: boolean; lineId: number; newStatus: number }> {
     const { comment, userId, resetEquiv, supplierData } = options || {};
 
     try {
@@ -102,8 +102,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Ligne ${lineId} mise à jour`);
       return { success: true, lineId, newStatus };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur updateLineStatus:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur updateLineStatus:`, message);
       throw error;
     }
   }
@@ -117,7 +118,7 @@ export class OrderActionsService extends SupabaseBaseService {
     equivalentProductId: number,
     quantity: number,
     userId: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean; equivalentLineId: number }> {
     try {
       this.logger.log(
         `🔄 Proposer équiv ligne ${originalLineId} → produit ${equivalentProductId}`,
@@ -221,8 +222,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Équivalence proposée: ligne ${createdLine.orl_id}`);
       return { success: true, equivalentLineId: createdLine.orl_id };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur proposeEquivalent:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur proposeEquivalent:`, message);
       throw error;
     }
   }
@@ -233,7 +235,7 @@ export class OrderActionsService extends SupabaseBaseService {
   async acceptEquivalent(
     orderId: number,
     equivalentLineId: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean }> {
     try {
       // Passer ligne équivalente en statut 92
       await this.supabase
@@ -244,8 +246,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Équivalence ${equivalentLineId} acceptée`);
       return { success: true };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur acceptEquivalent:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur acceptEquivalent:`, message);
       throw error;
     }
   }
@@ -256,7 +259,7 @@ export class OrderActionsService extends SupabaseBaseService {
   async rejectEquivalent(
     orderId: number,
     equivalentLineId: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean }> {
     try {
       // Récupérer ligne équivalente pour trouver l'originale
       const { data: equivLine } = await this.supabase
@@ -287,8 +290,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Équivalence ${equivalentLineId} refusée`);
       return { success: true };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur rejectEquivalent:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur rejectEquivalent:`, message);
       throw error;
     }
   }
@@ -299,7 +303,7 @@ export class OrderActionsService extends SupabaseBaseService {
   async validateEquivalent(
     orderId: number,
     equivalentLineId: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean; amountDiff: number }> {
     try {
       // 🚀 P7.2 PERF: Paralléliser les lectures
       const [equivResult, origResult] = await Promise.all([
@@ -353,8 +357,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Équivalence validée, ticket généré: ${amountDiff}€`);
       return { success: true, amountDiff };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur validateEquivalent:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur validateEquivalent:`, message);
       throw error;
     }
   }
@@ -430,7 +435,10 @@ export class OrderActionsService extends SupabaseBaseService {
   /**
    * ✅ Valider commande (statut 2 → 3)
    */
-  async validateOrder(orderId: string, userId?: number): Promise<any> {
+  async validateOrder(
+    orderId: string,
+    userId?: number,
+  ): Promise<{ success: boolean; newStatus: string }> {
     try {
       this.logger.log(`✅ Validation commande ${orderId}`);
 
@@ -471,8 +479,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Commande ${orderId} validée (statut 3)`);
       return { success: true, newStatus: '3' };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur validation commande:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur validation commande:`, message);
       throw error;
     }
   }
@@ -484,7 +493,7 @@ export class OrderActionsService extends SupabaseBaseService {
     orderId: string,
     trackingNumber: string,
     userId?: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean; newStatus: string; trackingNumber: string }> {
     try {
       this.logger.log(
         `📦 Expédition commande ${orderId} - Suivi: ${trackingNumber}`,
@@ -522,8 +531,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Commande ${orderId} expédiée`);
       return { success: true, newStatus: '4', trackingNumber };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur expédition commande:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur expédition commande:`, message);
       throw error;
     }
   }
@@ -531,7 +541,10 @@ export class OrderActionsService extends SupabaseBaseService {
   /**
    * 🚚 Marquer comme livrée (statut 4 → 5)
    */
-  async markAsDelivered(orderId: string, userId?: number): Promise<any> {
+  async markAsDelivered(
+    orderId: string,
+    userId?: number,
+  ): Promise<{ success: boolean; newStatus: string }> {
     try {
       this.logger.log(`🚚 Livraison commande ${orderId}`);
 
@@ -566,8 +579,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Commande ${orderId} livrée`);
       return { success: true, newStatus: '5' };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur livraison commande:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur livraison commande:`, message);
       throw error;
     }
   }
@@ -579,7 +593,7 @@ export class OrderActionsService extends SupabaseBaseService {
     orderId: string,
     reason: string,
     userId?: number,
-  ): Promise<any> {
+  ): Promise<{ success: boolean; newStatus: string; reason: string }> {
     try {
       this.logger.log(`❌ Annulation commande ${orderId} - Raison: ${reason}`);
 
@@ -618,8 +632,9 @@ export class OrderActionsService extends SupabaseBaseService {
 
       this.logger.log(`✅ Commande ${orderId} annulée`);
       return { success: true, newStatus: '6', reason };
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur annulation commande:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur annulation commande:`, message);
       throw error;
     }
   }

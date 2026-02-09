@@ -38,8 +38,8 @@ export class StockService extends SupabaseBaseService {
 
     // Lire le mode depuis les variables d'environnement
     // Par défaut: UNLIMITED pour flux tendu
-    this.STOCK_MODE =
-      (configService.get<string>('STOCK_MODE') as any) || 'UNLIMITED';
+    const stockModeValue = configService.get<string>('STOCK_MODE');
+    this.STOCK_MODE = stockModeValue === 'TRACKED' ? 'TRACKED' : 'UNLIMITED';
 
     this.logger.log(`🔧 StockService initialized - Mode: ${this.STOCK_MODE}`);
 

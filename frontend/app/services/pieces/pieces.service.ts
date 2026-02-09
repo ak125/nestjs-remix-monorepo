@@ -1,8 +1,8 @@
 // 🎯 SERVICE PIÈCES V5 MODULAIRE
 // Extraction sécurisée depuis la route monolithique
 
-import { type PieceData } from "../../types/pieces.types";
 import { logger } from "~/utils/logger";
+import { type PieceData } from "../../types/pieces.types";
 
 // 🔒 CACHE SIMPLE POUR ÉVITER SURCHARGE API (MÊME LOGIQUE QUE ROUTE)
 const piecesCache = new Map<string, any>();

@@ -49,6 +49,10 @@ import {
   AlertTriangle,
   BarChart3,
 } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 import { Pagination } from "../components/products/Pagination";
 import { ProductFilters } from "../components/products/ProductFilters";
@@ -57,10 +61,6 @@ import { ProductsStatsCard } from "../components/products/ProductsStatsCard";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Produits - Interface Commerciale");

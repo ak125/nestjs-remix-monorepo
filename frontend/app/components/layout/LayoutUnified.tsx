@@ -9,14 +9,14 @@
  */
 
 import React, { memo, useEffect, useState, useCallback } from "react";
+import { Button } from "~/components/ui/button";
+import { logger } from "~/utils/logger";
 import {
   type LayoutData,
   type LayoutConfig,
   type ModularSection,
 } from "../../types/layout";
 import { FooterEnhanced } from "./FooterEnhanced";
-import { Button } from "~/components/ui/button";
-import { logger } from "~/utils/logger";
 // TODO: Créer les fichiers Header.tsx et ModularSections.tsx
 // import { Header } from './Header';
 // import { SectionsContainer } from './ModularSections';

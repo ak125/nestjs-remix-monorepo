@@ -79,7 +79,7 @@ export class KeywordsDashboardService extends SupabaseBaseService {
     rpcGate: RpcGateService,
     @Optional()
     @Inject(RedisCacheService)
-    private redisCache?: RedisCacheService,
+    private readonly redisCache?: RedisCacheService,
   ) {
     super();
     this.rpcGate = rpcGate;

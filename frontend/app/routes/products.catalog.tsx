@@ -38,6 +38,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
@@ -45,9 +48,6 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 
 /**
  * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)

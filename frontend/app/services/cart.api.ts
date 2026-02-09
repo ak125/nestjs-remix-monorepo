@@ -16,8 +16,8 @@
  * ```
  */
 
-import { type CartData, type CartItem, type CartSummary } from "../types/cart";
 import { logger } from "~/utils/logger";
+import { type CartData, type CartItem, type CartSummary } from "../types/cart";
 
 // ============================================================================
 // TYPES

@@ -16,6 +16,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import {
@@ -27,8 +29,6 @@ import {
   type PaymentStats,
   PaymentStatus,
 } from "../types/payment";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Tableau de Bord Paiements - Admin");

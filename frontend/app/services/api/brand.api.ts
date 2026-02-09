@@ -8,6 +8,7 @@
  * @since 2025-09-22
  */
 
+import { logger } from "~/utils/logger";
 import {
   type BrandData,
   type SeoMarqueData,
@@ -29,7 +30,6 @@ import {
   getOptimizedFamilyImageUrl,
 } from "../../utils/image-optimizer";
 import { toBooleanFlag } from "../../utils/type-guards";
-import { logger } from "~/utils/logger";
 
 // Configuration de l'API
 // Les deux tournent sur le port 3000 (Remix proxifie vers NestJS)
@@ -722,7 +722,7 @@ class BrandApiService {
       // Pas de fallback - retourner l'erreur
       return {
         success: false,
-        data: {} as any,
+        data: {} as BrandPageResponse['data'],
         error: error instanceof Error ? error.message : "Erreur inconnue",
       };
     }

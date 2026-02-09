@@ -94,7 +94,7 @@ export interface ReviewStats {
 export class ReviewService extends SupabaseBaseService {
   protected readonly logger = new Logger(ReviewService.name);
 
-  constructor(private notificationService: NotificationService) {
+  constructor(private readonly notificationService: NotificationService) {
     super();
   }
 

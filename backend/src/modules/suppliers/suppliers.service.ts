@@ -530,7 +530,10 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Générer un bon de commande fournisseur
    */
-  async generatePurchaseOrder(supplierId: number, items: any[]): Promise<any> {
+  async generatePurchaseOrder(
+    supplierId: number,
+    items: any[],
+  ): Promise<Record<string, unknown>> {
     this.logger.log(
       `Génération bon de commande pour fournisseur ${supplierId}`,
     );
@@ -576,7 +579,9 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Obtenir les fournisseurs d'un produit avec scoring
    */
-  async getProductSuppliers(productId: string): Promise<any[]> {
+  async getProductSuppliers(
+    productId: string,
+  ): Promise<Record<string, unknown>[]> {
     this.logger.log(`Recherche fournisseurs pour produit ${productId}`);
 
     try {

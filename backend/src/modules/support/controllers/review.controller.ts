@@ -14,6 +14,7 @@ import {
 import {
   ReviewService,
   ReviewData,
+  ReviewCreateRequest,
   ReviewFilters,
 } from '../services/review.service';
 import {
@@ -25,25 +26,16 @@ import {
 export class ReviewController {
   private readonly logger = new Logger(ReviewController.name);
 
-  constructor(private reviewService: ReviewService) {}
+  constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async submitReview(
     @Body()
-    reviewData: Omit<
-      ReviewData,
-      | 'id'
-      | 'createdAt'
-      | 'updatedAt'
-      | 'helpful'
-      | 'notHelpful'
-      | 'moderated'
-      | 'published'
-    >,
+    reviewData: ReviewCreateRequest,
   ): Promise<ReviewData> {
     this.logger.log('Submitting review');
-    return this.reviewService.submitReview(reviewData as any);
+    return this.reviewService.submitReview(reviewData);
   }
 
   @Get()

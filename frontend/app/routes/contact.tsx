@@ -23,7 +23,6 @@ import {
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { getSession } from "../server/session.server";
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -32,6 +31,7 @@ import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getSession } from "../server/session.server";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

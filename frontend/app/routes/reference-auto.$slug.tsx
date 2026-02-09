@@ -35,13 +35,6 @@ import {
 } from "lucide-react";
 
 // UI Components
-import { Badge } from "../components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
 import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -49,6 +42,13 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { Badge } from "../components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

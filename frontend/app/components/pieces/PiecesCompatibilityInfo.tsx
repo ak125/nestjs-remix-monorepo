@@ -6,8 +6,8 @@
  */
 
 import { memo } from "react";
-import { type CompatibilityInfo } from "../../types/pieces-route.types";
 import { Alert } from "~/components/ui/alert";
+import { type CompatibilityInfo } from "../../types/pieces-route.types";
 
 interface PiecesCompatibilityInfoProps {
   compatibility: CompatibilityInfo;

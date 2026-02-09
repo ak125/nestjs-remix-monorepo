@@ -51,7 +51,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
         );
       }
 
-      const families: CatalogFamily[] = (familiesData || []).map((f: any) => ({
+      const families: CatalogFamily[] = (familiesData || []).map((f) => ({
         mf_id: parseInt(f.mf_id, 10),
         mf_name: f.mf_name_system || f.mf_name,
         mf_name_system: f.mf_name_system,
@@ -105,9 +105,9 @@ export class CatalogFamilyService extends SupabaseBaseService {
         return [];
       }
 
-      const pgIds = linkData.map((l: any) => l.mc_pg_id);
+      const pgIds = linkData.map((l) => l.mc_pg_id);
       const sortMap = new Map(
-        linkData.map((l: any) => [l.mc_pg_id, parseInt(l.mc_sort, 10)]),
+        linkData.map((l) => [l.mc_pg_id, parseInt(l.mc_sort, 10)]),
       );
 
       // Récupérer les gammes correspondantes
@@ -129,7 +129,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
       }
 
       const gammes: CatalogGamme[] = (gammesData || [])
-        .map((item: any) => ({
+        .map((item) => ({
           pg_id: item.pg_id,
           pg_alias: item.pg_alias,
           pg_name: item.pg_name,

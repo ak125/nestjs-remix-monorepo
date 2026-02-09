@@ -14,6 +14,8 @@ import { logger } from "~/utils/logger";
 // Interface utilisateur unifiée
 export interface AuthUser {
   id: string;
+  /** Legacy customer ID from the database */
+  cst_id?: string;
   email: string;
   firstName?: string;
   lastName?: string;
@@ -22,6 +24,20 @@ export interface AuthUser {
   isAdmin?: boolean;
   isPro?: boolean;
   isActive?: boolean;
+}
+
+/** Shape of the raw user object stored in context by Passport/NestJS session */
+interface RawContextUser {
+  id?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  level?: number;
+  isAdmin?: boolean;
+  isPro?: boolean;
+  isActive?: boolean;
+  error?: string;
 }
 
 const authenticatedUserSchema = z.object({
@@ -42,25 +58,27 @@ export const getOptionalUser = async ({
   try {
     if (
       context.user &&
-      typeof context.user === "object" &&
-      !(context.user as any).error
+      typeof context.user === "object"
     ) {
+      const rawUser = context.user as RawContextUser;
+      if (rawUser.error) {
+        return null;
+      }
       const user = authenticatedUserSchema
         .optional()
         .nullable()
         .parse(context.user);
       if (user) {
         return {
-          id: (context.user as any).id,
-          email: (context.user as any).email,
-          firstName: (context.user as any).firstName,
-          lastName:
-            (context.user as any).lastName || (context.user as any).name,
-          name: (context.user as any).name,
-          level: (context.user as any).level || 1,
-          isAdmin: (context.user as any).isAdmin || false,
-          isPro: (context.user as any).isPro || false,
-          isActive: (context.user as any).isActive !== false,
+          id: rawUser.id ?? "",
+          email: rawUser.email ?? "",
+          firstName: rawUser.firstName,
+          lastName: rawUser.lastName || rawUser.name,
+          name: rawUser.name,
+          level: rawUser.level || 1,
+          isAdmin: rawUser.isAdmin || false,
+          isPro: rawUser.isPro || false,
+          isActive: rawUser.isActive !== false,
         };
       }
     }

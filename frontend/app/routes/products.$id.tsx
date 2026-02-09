@@ -35,6 +35,10 @@ import {
   TrendingUp,
   ShoppingCart,
 } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { requireUser } from "../auth/unified.server";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
@@ -46,10 +50,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * 📌 SEO Page Role - R2 Product (Transaction)

@@ -15,6 +15,7 @@ import {
 } from "@remix-run/react";
 import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
 
+import { Error404 } from "~/components/errors/Error404";
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
@@ -29,7 +30,6 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
   { title: "Paramètres du compte | AutoMecanik" },

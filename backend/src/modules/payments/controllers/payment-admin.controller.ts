@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { PaymentValidationService } from '../services/payment-validation.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
+import { PaymentStatus } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
 
 /**
@@ -46,7 +47,7 @@ export class PaymentAdminController {
     try {
       this.logger.log('Admin: Getting payment statistics');
 
-      const filters: any = {};
+      const filters: { status?: string; startDate?: Date; endDate?: Date } = {};
       if (status) filters.status = status;
       if (startDate) filters.startDate = new Date(startDate);
       if (endDate) filters.endDate = new Date(endDate);
@@ -120,7 +121,7 @@ export class PaymentAdminController {
 
       const payment = await this.paymentService.updatePaymentStatus(
         id,
-        updateDto.status as any,
+        updateDto.status as PaymentStatus,
       );
 
       this.logger.log(`Payment status updated: ${id}`);

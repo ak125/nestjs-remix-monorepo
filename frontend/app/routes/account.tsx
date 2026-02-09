@@ -1,8 +1,8 @@
 import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { requireUser } from "../auth/unified.server";
 import { Error404 } from "~/components/errors/Error404";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireUser } from "../auth/unified.server";
 
 /**
  * Layout parent minimal pour toutes les pages compte utilisateur

@@ -3,8 +3,8 @@
  * Compatible avec l'écosystème admin existant
  */
 
-import { ApiError } from "../common/errors";
 import { logger } from "~/utils/logger";
+import { ApiError } from "../common/errors";
 
 export interface ConfigCategory {
   key: string;
@@ -15,15 +15,15 @@ export interface ConfigCategory {
 
 export interface ConfigItem {
   key: string;
-  value: any;
+  value: unknown;
   category: string;
   type: "string" | "number" | "boolean" | "json" | "array";
   description?: string;
   isSensitive?: boolean;
   requiresRestart?: boolean;
   isRequired?: boolean;
-  defaultValue?: any;
-  validationRules?: Record<string, any>;
+  defaultValue?: unknown;
+  validationRules?: Record<string, unknown>;
   lastUpdated?: string;
   updatedBy?: string;
 }
@@ -124,7 +124,7 @@ class ConfigApiService {
   /**
    * Met à jour une configuration
    */
-  async updateConfig(key: string, value: any): Promise<ConfigItem> {
+  async updateConfig(key: string, value: unknown): Promise<ConfigItem> {
     try {
       const response = await fetch(`${this.baseUrl}/${key}`, {
         method: "PUT",
@@ -239,7 +239,7 @@ class ConfigApiService {
    */
   async validateConfig(
     key: string,
-    value: any,
+    value: unknown,
   ): Promise<{ isValid: boolean; errors?: string[] }> {
     try {
       const response = await fetch(`${this.baseUrl}/validate`, {

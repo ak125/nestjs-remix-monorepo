@@ -8,9 +8,9 @@
 import { type MetaFunction } from "@remix-run/node";
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { AlertTriangle, Home, Mail, Phone } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
 
 export const meta: MetaFunction = () => [
   { title: "Accès non autorisé | Automecanik" },

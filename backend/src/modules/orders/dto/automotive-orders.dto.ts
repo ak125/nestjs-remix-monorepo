@@ -208,6 +208,13 @@ export const validateAutomotiveOrder = (data: unknown): AutomotiveOrder => {
   return automotiveOrderSchema.parse(data);
 };
 
+// Types inférés des sous-schémas Zod pour les DTOs
+export type BillingAddress = AutomotiveOrder['billingAddress'];
+export type DeliveryAddress = AutomotiveOrder['deliveryAddress'];
+export type ShippingCalculation = AutomotiveOrder['shippingCalculation'];
+export type CustomerData = NonNullable<AutomotiveOrder['customerData']>;
+export type OrderInfo = NonNullable<AutomotiveOrder['orderInfo']>;
+
 // DTOs pour Swagger/API
 export class AutomotiveOrderDto {
   @ApiProperty({ example: 'cust_123456' })
@@ -217,22 +224,22 @@ export class AutomotiveOrderDto {
   paymentMethod!: PaymentMethod;
 
   @ApiProperty()
-  billingAddress!: any;
+  billingAddress!: BillingAddress;
 
   @ApiProperty()
-  deliveryAddress!: any;
+  deliveryAddress!: DeliveryAddress;
 
   @ApiProperty({ type: [Object] })
   orderLines!: AutomotiveOrderLine[];
 
   @ApiProperty()
-  shippingCalculation!: any;
+  shippingCalculation!: ShippingCalculation;
 
   @ApiPropertyOptional()
-  customerData?: any;
+  customerData?: CustomerData;
 
   @ApiPropertyOptional()
-  orderInfo?: any;
+  orderInfo?: OrderInfo;
 
   @ApiPropertyOptional()
   customerNotes?: string;
@@ -255,25 +262,25 @@ export class AutomotiveOrderResponseDto {
   paymentStatus!: PaymentStatus;
 
   @ApiProperty()
-  standardOrder!: any;
+  standardOrder!: Record<string, unknown>;
 
   @ApiProperty()
   automotiveData!: {
     hasVehicleData: boolean;
     validatedVehicles: Array<{
       itemId: string;
-      vehicleInfo: any;
-      equivalents: any[];
+      vehicleInfo: VehicleData;
+      equivalents: OEMReference[];
     }>;
     shippingCalculation: {
       cost: number;
       method: string;
-      details: any;
+      details: Record<string, unknown>;
     };
     taxCalculation: {
       totalHT: number;
       totalTTC: number;
-      breakdown: any;
+      breakdown: Record<string, unknown>;
     };
   };
 }

@@ -29,7 +29,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { requireUser } from "../auth/unified.server";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -42,6 +41,7 @@ import {
 } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { requireUser } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => [
   { title: "SEO Cockpit | Admin AutoMecanik" },

@@ -13,11 +13,11 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import { toast } from "sonner";
-import { requireUser } from "../auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { requireUser } from "../auth/unified.server";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const supplierName = data?.supplier?.name;
@@ -127,11 +127,12 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     };
 
     return json<SupplierDetailData>({ supplier });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("[SupplierDetail] Erreur:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return json<SupplierDetailData>({
       supplier: null,
-      error: `Erreur lors de la récupération: ${error?.message || "Erreur inconnue"}`,
+      error: `Erreur lors de la récupération: ${message || "Erreur inconnue"}`,
     });
   }
 }
@@ -542,10 +543,11 @@ export async function action({
     }
 
     return json({ error: "Action non reconnue" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("[SupplierDetail Action] Erreur:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return json(
-      { error: error?.message || "Erreur inconnue" },
+      { error: message || "Erreur inconnue" },
       { status: 500 },
     );
   }

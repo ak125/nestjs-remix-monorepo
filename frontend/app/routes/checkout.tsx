@@ -22,8 +22,6 @@ import {
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getOptionalUser } from "../auth/unified.server";
-import { getCart } from "../services/cart.server";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
@@ -36,6 +34,8 @@ import { trackBeginCheckout } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getOptionalUser } from "../auth/unified.server";
+import { getCart } from "../services/cart.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {
@@ -109,7 +109,25 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalItems,
       "articles total",
     );
-    return json({ cart, user });
+
+    // Si client connecté, récupérer le profil complet (adresse)
+    let userProfile: Record<string, any> | null = null;
+    if (user) {
+      try {
+        const profileRes = await fetch(
+          getInternalApiUrlFromRequest("/api/users/profile", request),
+          { headers: { Cookie: request.headers.get("Cookie") || "" } },
+        );
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          userProfile = profileData.data || profileData;
+        }
+      } catch (err) {
+        logger.warn("⚠️ Checkout loader - Impossible de charger le profil:", err);
+      }
+    }
+
+    return json({ cart, user, userProfile });
   } catch (error) {
     logger.error("❌ Erreur chargement panier checkout:", error);
     logger.error(
@@ -137,13 +155,39 @@ export async function action({ request }: ActionFunctionArgs) {
     // Lire les données depuis l'URL (query params) car formData() bloque avec NestJS middleware
     const url = new URL(request.url);
     const guestEmail = url.searchParams.get("guestEmail") || null;
-    const addressFirstName = url.searchParams.get("firstName") || "";
-    const addressLastName = url.searchParams.get("lastName") || "";
-    const addressLine = url.searchParams.get("address") || "";
-    const addressZipCode = url.searchParams.get("zipCode") || "";
-    const addressCity = url.searchParams.get("city") || "";
+    let addressFirstName = url.searchParams.get("firstName") || "";
+    let addressLastName = url.searchParams.get("lastName") || "";
+    let addressLine = url.searchParams.get("address") || "";
+    let addressZipCode = url.searchParams.get("zipCode") || "";
+    let addressCity = url.searchParams.get("city") || "";
     const addressCivility = url.searchParams.get("civility") || "M.";
     const addressCountry = url.searchParams.get("country") || "France";
+
+    // Client connecté sans adresse dans les params → récupérer depuis le profil
+    const isGuest = !!guestEmail;
+    if (!isGuest && !addressLine) {
+      try {
+        const profileRes = await fetch(
+          getInternalApiUrlFromRequest("/api/users/profile", request),
+          { headers: { Cookie: request.headers.get("Cookie") || "" } },
+        );
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          const profile = profileData.data || profileData;
+          addressFirstName = addressFirstName || profile.firstName || "";
+          addressLastName = addressLastName || profile.lastName || "";
+          addressLine = profile.address || "";
+          addressZipCode = addressZipCode || profile.zipCode || "";
+          addressCity = addressCity || profile.city || "";
+          logger.log("📋 [Checkout Action] Adresse récupérée du profil:", {
+            firstName: addressFirstName,
+            city: addressCity,
+          });
+        }
+      } catch (err) {
+        logger.warn("⚠️ [Checkout Action] Impossible de charger le profil:", err);
+      }
+    }
     logger.log(
       "🔵 [Checkout Action] guestEmail:",
       guestEmail || "none (authenticated user)",
@@ -237,7 +281,6 @@ export async function action({ request }: ActionFunctionArgs) {
     );
 
     // Choisir l'endpoint selon le mode (guest ou authentifié)
-    const isGuest = !!guestEmail;
     const orderUrl = isGuest
       ? getInternalApiUrlFromRequest("/api/orders/guest", request)
       : getInternalApiUrlFromRequest("/api/orders", request);
@@ -347,22 +390,84 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, user } = data as any;
+  const { cart, user, userProfile } = data as any;
   const loaderError = "error" in data ? data.error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const submit = useSubmit();
   const [guestEmail, setGuestEmail] = useState("");
+  const [emailChecked, setEmailChecked] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  // Détection adresse complète du profil
+  const hasCompleteAddress = !!(
+    userProfile &&
+    userProfile.address?.trim() &&
+    userProfile.zipCode?.trim() &&
+    userProfile.city?.trim()
+  );
+
+  // Mode édition : false si le client a déjà une adresse complète
+  const [isEditingAddress, setIsEditingAddress] = useState(!hasCompleteAddress);
+
+  // Vérifier si l'email existe (style Amazon)
+  const handleEmailCheck = async () => {
+    if (!guestEmail || !guestEmail.includes("@")) return;
+    setIsCheckingEmail(true);
+    try {
+      const res = await fetch("/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: guestEmail }),
+      });
+      const data = await res.json();
+      setEmailExists(data.exists);
+      setEmailChecked(true);
+    } catch {
+      setEmailChecked(true);
+      setEmailExists(false);
+    }
+    setIsCheckingEmail(false);
+  };
+
+  // Login inline depuis le checkout
+  const handleInlineLogin = async (e?: React.SyntheticEvent) => {
+    e?.preventDefault();
+    setLoginError("");
+    try {
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: guestEmail, password: loginPassword }),
+      });
+      if (res.ok) {
+        // Reload la page pour récupérer la session
+        window.location.href = "/checkout";
+      } else {
+        setLoginError("Email ou mot de passe incorrect");
+      }
+    } catch {
+      setLoginError("Erreur de connexion");
+    }
+  };
+
   const [shippingAddress, setShippingAddress] = useState({
     civility: "M.",
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    address: "",
-    zipCode: "",
-    city: "",
-    country: "France",
+    firstName: userProfile?.firstName || user?.firstName || "",
+    lastName: userProfile?.lastName || user?.lastName || "",
+    address: userProfile?.address || "",
+    zipCode: userProfile?.zipCode || "",
+    city: userProfile?.city || "",
+    country: userProfile?.country || "France",
   });
+
+  // Le guest ne peut soumettre que si email vérifié et nouveau
+  const guestReady = !user ? (emailChecked && !emailExists) : true;
+  const canSubmit = !isSubmitting && guestReady;
 
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -567,7 +672,7 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* ✅ Email invité - Seulement si non connecté */}
+            {/* Email invité - Flow Amazon : email d'abord, puis login ou formulaire */}
             {!user && (
               <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
                 <div className="flex items-center gap-3 mb-4">
@@ -597,6 +702,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-4">
+                  {/* Champ email + bouton Continuer */}
                   <div>
                     <label
                       htmlFor="guestEmail"
@@ -604,195 +710,329 @@ export default function CheckoutPage() {
                     >
                       Adresse email *
                     </label>
-                    <input
-                      type="email"
-                      id="guestEmail"
-                      name="guestEmail"
-                      required
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="votre.email@exemple.com"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        id="guestEmail"
+                        name="guestEmail"
+                        required
+                        value={guestEmail}
+                        onChange={(e) => {
+                          setGuestEmail(e.target.value);
+                          // Reset si l'email change
+                          if (emailChecked) {
+                            setEmailChecked(false);
+                            setEmailExists(false);
+                            setLoginError("");
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !emailChecked) {
+                            e.preventDefault();
+                            handleEmailCheck();
+                          }
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="votre.email@exemple.com"
+                      />
+                      {!emailChecked && (
+                        <button
+                          type="button"
+                          onClick={handleEmailCheck}
+                          disabled={isCheckingEmail || !guestEmail.includes("@")}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          {isCheckingEmail ? "..." : "Continuer"}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="createAccount"
-                        defaultChecked
-                        className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-blue-900">
-                          ✨ Créer un compte pour suivre mes commandes
-                        </p>
-                        <p className="text-xs text-blue-700 mt-1">
-                          Recommandé : Un mot de passe vous sera envoyé par
-                          email. Vous pourrez consulter l'historique de vos
-                          commandes et gérer vos informations.
-                        </p>
+                  {/* Email existe : formulaire de connexion inline */}
+                  {emailChecked && emailExists && (
+                    <div className="bg-orange-50 rounded-xl p-5 border border-orange-200">
+                      <h3 className="font-semibold text-orange-900 mb-1">
+                        Un compte existe avec cet email
+                      </h3>
+                      <p className="text-sm text-orange-700 mb-4">
+                        Connectez-vous pour retrouver vos informations et passer commande directement.
+                      </p>
+                      <div className="space-y-3">
+                        <input
+                          type="password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleInlineLogin();
+                            }
+                          }}
+                          className="w-full px-4 py-3 rounded-xl border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="Mot de passe"
+                        />
+                        {loginError && (
+                          <p className="text-sm text-red-600">{loginError}</p>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={handleInlineLogin}
+                            className="px-6 py-3 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors"
+                          >
+                            Se connecter
+                          </button>
+                          <Link
+                            to={`/login?redirectTo=/checkout&email=${encodeURIComponent(guestEmail)}`}
+                            className="text-sm text-orange-700 hover:underline"
+                          >
+                            Mot de passe oublié ?
+                          </Link>
+                        </div>
                       </div>
-                    </label>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmailChecked(false);
+                          setEmailExists(false);
+                          setGuestEmail("");
+                        }}
+                        className="mt-3 text-sm text-slate-500 hover:underline"
+                      >
+                        Utiliser un autre email
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Email nouveau : confirmer et continuer vers le formulaire */}
+                  {emailChecked && !emailExists && (
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <p className="text-sm font-medium text-emerald-900">
+                          {guestEmail}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => { setEmailChecked(false); setGuestEmail(""); }}
+                          className="ml-auto text-sm text-emerald-700 hover:underline"
+                        >
+                          Modifier
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* Adresse de livraison : visible seulement pour les connectés OU guest avec email vérifié et nouveau */}
+            {(user || (emailChecked && !emailExists)) && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </div>
-                <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  </div>
                   <h2 className="text-xl font-semibold text-slate-900">
                     Adresse de livraison
                   </h2>
-                  <p className="text-sm text-slate-500">
-                    {user
-                      ? "Modifiable si nécessaire"
-                      : "Requise pour l'expédition"}
+                </div>
+                {/* Bouton Modifier visible seulement en mode récapitulatif */}
+                {user && hasCompleteAddress && !isEditingAddress && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAddress(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                  >
+                    Modifier
+                  </button>
+                )}
+              </div>
+
+              {/* Mode récapitulatif : client connecté avec adresse complète */}
+              {user && hasCompleteAddress && !isEditingAddress ? (
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                  <p className="font-medium text-slate-900">
+                    {shippingAddress.firstName} {shippingAddress.lastName}
+                  </p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {shippingAddress.address}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    {shippingAddress.zipCode} {shippingAddress.city}, {shippingAddress.country}
                   </p>
                 </div>
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="firstName"
-                      className="block text-sm font-medium text-slate-700 mb-1"
-                    >
-                      Prénom *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      required
-                      value={shippingAddress.firstName}
-                      onChange={(e) =>
-                        setShippingAddress((prev) => ({
-                          ...prev,
-                          firstName: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Prénom"
-                    />
+              ) : (
+                /* Mode formulaire : invité ou client sans adresse ou modification */
+                <div className="space-y-4">
+                  {!user && (
+                    <p className="text-sm text-slate-500 mb-2">
+                      Requise pour l'expédition
+                    </p>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="firstName"
+                        className="block text-sm font-medium text-slate-700 mb-1"
+                      >
+                        Prénom *
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        required
+                        value={shippingAddress.firstName}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            firstName: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Prénom"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="lastName"
+                        className="block text-sm font-medium text-slate-700 mb-1"
+                      >
+                        Nom *
+                      </label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        required
+                        value={shippingAddress.lastName}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            lastName: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Nom"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label
-                      htmlFor="lastName"
+                      htmlFor="address"
                       className="block text-sm font-medium text-slate-700 mb-1"
                     >
-                      Nom *
+                      Adresse *
                     </label>
                     <input
                       type="text"
-                      id="lastName"
+                      id="address"
                       required
-                      value={shippingAddress.lastName}
+                      value={shippingAddress.address}
                       onChange={(e) =>
                         setShippingAddress((prev) => ({
                           ...prev,
-                          lastName: e.target.value,
+                          address: e.target.value,
                         }))
                       }
                       className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Nom"
+                      placeholder="Numéro et nom de rue"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="zipCode"
+                        className="block text-sm font-medium text-slate-700 mb-1"
+                      >
+                        Code postal *
+                      </label>
+                      <input
+                        type="text"
+                        id="zipCode"
+                        required
+                        pattern="[0-9]{5}"
+                        maxLength={5}
+                        value={shippingAddress.zipCode}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            zipCode: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="75000"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="city"
+                        className="block text-sm font-medium text-slate-700 mb-1"
+                      >
+                        Ville *
+                      </label>
+                      <input
+                        type="text"
+                        id="city"
+                        required
+                        value={shippingAddress.city}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            city: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Ville"
+                      />
+                    </div>
+                  </div>
+                  {/* Bouton annuler si on est en mode modification d'une adresse existante */}
+                  {user && hasCompleteAddress && isEditingAddress && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Restaurer l'adresse du profil
+                        setShippingAddress({
+                          civility: "M.",
+                          firstName: userProfile?.firstName || user?.firstName || "",
+                          lastName: userProfile?.lastName || user?.lastName || "",
+                          address: userProfile?.address || "",
+                          zipCode: userProfile?.zipCode || "",
+                          city: userProfile?.city || "",
+                          country: userProfile?.country || "France",
+                        });
+                        setIsEditingAddress(false);
+                      }}
+                      className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+                    >
+                      Annuler et utiliser l'adresse enregistrée
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <label
-                    htmlFor="address"
-                    className="block text-sm font-medium text-slate-700 mb-1"
-                  >
-                    Adresse *
-                  </label>
-                  <input
-                    type="text"
-                    id="address"
-                    required
-                    value={shippingAddress.address}
-                    onChange={(e) =>
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        address: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Numéro et nom de rue"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="zipCode"
-                      className="block text-sm font-medium text-slate-700 mb-1"
-                    >
-                      Code postal *
-                    </label>
-                    <input
-                      type="text"
-                      id="zipCode"
-                      required
-                      pattern="[0-9]{5}"
-                      maxLength={5}
-                      value={shippingAddress.zipCode}
-                      onChange={(e) =>
-                        setShippingAddress((prev) => ({
-                          ...prev,
-                          zipCode: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="75000"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="city"
-                      className="block text-sm font-medium text-slate-700 mb-1"
-                    >
-                      Ville *
-                    </label>
-                    <input
-                      type="text"
-                      id="city"
-                      required
-                      value={shippingAddress.city}
-                      onChange={(e) =>
-                        setShippingAddress((prev) => ({
-                          ...prev,
-                          city: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Ville"
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
+            )}
 
             {/* Résumé panier */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -975,7 +1215,7 @@ export default function CheckoutPage() {
               <div className="mt-6 space-y-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={!canSubmit}
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? (
@@ -1120,7 +1360,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             form="checkout-form"
-            disabled={isSubmitting}
+            disabled={!canSubmit}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (

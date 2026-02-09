@@ -35,10 +35,10 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import SystemBreadcrumb from "../components/admin/SystemBreadcrumb";
 import { Button } from "~/components/ui/button";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import SystemBreadcrumb from "../components/admin/SystemBreadcrumb";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Configuration Systeme - Admin");

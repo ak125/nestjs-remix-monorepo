@@ -3,8 +3,8 @@
  * Connexion avec OrdersSimpleService existant
  */
 
-import { type Order } from "../utils/orders";
 import { logger } from "~/utils/logger";
+import { type Order } from "../utils/orders";
 
 export interface GetUserOrdersParams {
   userId: string;

@@ -16,7 +16,7 @@
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build",
     "start": "node dist/main",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "NODE_OPTIONS='--max-old-space-size=4096' eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",

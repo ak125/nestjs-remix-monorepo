@@ -7,6 +7,8 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Mail, MailOpen, Package } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
@@ -17,8 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
   { title: "Mes messages | AutoMecanik" },

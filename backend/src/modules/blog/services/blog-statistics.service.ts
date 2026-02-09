@@ -272,9 +272,7 @@ export class BlogStatisticsService {
 
     try {
       const pgIds = [
-        ...new Set(
-          articles.map((a) => (a as any).ba_pg_id).filter((id) => id != null),
-        ),
+        ...new Set(articles.map((a) => a.ba_pg_id).filter((id) => id != null)),
       ];
 
       if (pgIds.length === 0) return articles;
@@ -288,7 +286,7 @@ export class BlogStatisticsService {
       gammes?.forEach((g) => pgAliasMap.set(g.pg_id, g.pg_alias));
 
       return articles.map((article) => {
-        const ba_pg_id = (article as any).ba_pg_id;
+        const ba_pg_id = article.ba_pg_id;
         const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
 
         return {

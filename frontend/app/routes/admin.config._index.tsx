@@ -266,8 +266,10 @@ export default function AdminConfigIndexPage() {
     () => ("configs" in data ? data.configs : []),
     [data],
   );
-  const stats =
-    "stats" in data ? data.stats : { totalConfigs: 0, configsByCategory: {} };
+  const stats: { totalConfigs: number; configsByCategory: Record<string, number> } =
+    "stats" in data
+      ? (data.stats as { totalConfigs: number; configsByCategory: Record<string, number> })
+      : { totalConfigs: 0, configsByCategory: {} };
   const error = "error" in data ? data.error : undefined;
 
   const [selectedCategory, setSelectedCategory] = useState("general");
@@ -743,8 +745,8 @@ export default function AdminConfigIndexPage() {
               Gérer les connexions et paramètres de base de données
             </p>
             <div className="text-sm text-blue-600 mt-2">
-              {(stats?.configsByCategory as any)?.database || 0} configuration
-              {((stats?.configsByCategory as any)?.database || 0) !== 1
+              {stats?.configsByCategory?.database || 0} configuration
+              {(stats?.configsByCategory?.database || 0) !== 1
                 ? "s"
                 : ""}
             </div>
@@ -762,8 +764,8 @@ export default function AdminConfigIndexPage() {
               Configurer les services d'envoi d'emails
             </p>
             <div className="text-sm text-green-600 mt-2">
-              {(stats?.configsByCategory as any)?.email || 0} configuration
-              {((stats?.configsByCategory as any)?.email || 0) !== 1 ? "s" : ""}
+              {stats?.configsByCategory?.email || 0} configuration
+              {(stats?.configsByCategory?.email || 0) !== 1 ? "s" : ""}
             </div>
           </Link>
 
@@ -779,8 +781,8 @@ export default function AdminConfigIndexPage() {
               Paramétrer le tracking et les analytics
             </p>
             <div className="text-sm text-purple-600 mt-2">
-              {(stats?.configsByCategory as any)?.analytics || 0} configuration
-              {((stats?.configsByCategory as any)?.analytics || 0) !== 1
+              {stats?.configsByCategory?.analytics || 0} configuration
+              {(stats?.configsByCategory?.analytics || 0) !== 1
                 ? "s"
                 : ""}
             </div>

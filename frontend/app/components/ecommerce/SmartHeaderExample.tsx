@@ -11,8 +11,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { SmartHeader } from "./SmartHeader";
 import { logger } from "~/utils/logger";
+import { SmartHeader } from "./SmartHeader";
 
 // Types
 interface Vehicle {

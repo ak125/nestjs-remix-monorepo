@@ -3,6 +3,7 @@
  * Collecte et envoie les métriques vers les endpoints configurés
  */
 
+import { logger } from "~/utils/logger";
 import {
   getMonitoringConfig,
   MonitoringUtils,
@@ -11,7 +12,31 @@ import {
   type ABTestResult,
   type AIInsight,
 } from "../config/monitoring";
-import { logger } from "~/utils/logger";
+
+// Extended PerformanceEntry types for Web Vitals metrics
+interface PerformanceEventTimingEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean;
+  value: number;
+}
+
+interface MonitoringBatch {
+  events: AnalyticsEvent[];
+  metrics: PerformanceMetric[];
+  timestamp: string;
+  sessionId: string;
+}
+
+interface ApiMetricData {
+  url: string;
+  method: string;
+  status: number;
+  duration: number;
+  success: boolean;
+}
 
 class MonitoringService {
   private config = getMonitoringConfig();
@@ -60,9 +85,10 @@ class MonitoringService {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
           if (entry.entryType === "first-input") {
+            const fidEntry = entry as PerformanceEventTimingEntry;
             this.recordPerformanceMetric(
               "fid",
-              (entry as any).processingStart - entry.startTime,
+              fidEntry.processingStart - entry.startTime,
             );
           }
         }
@@ -72,9 +98,9 @@ class MonitoringService {
       let clsScore = 0;
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          // Type guard for hadRecentInput property
-          if ("hadRecentInput" in entry && !(entry as any).hadRecentInput) {
-            clsScore += (entry as any).value;
+          const layoutShift = entry as LayoutShiftEntry;
+          if (!layoutShift.hadRecentInput) {
+            clsScore += layoutShift.value;
           }
         }
         this.recordPerformanceMetric("cls", clsScore);
@@ -87,7 +113,7 @@ class MonitoringService {
         const navigation = performance.getEntriesByType(
           "navigation",
         )[0] as PerformanceNavigationTiming;
-        if (navigation && "navigationStart" in navigation) {
+        if (navigation && "responseStart" in navigation) {
           this.recordPerformanceMetric(
             "ttfb",
             navigation.responseStart - navigation.requestStart,
@@ -98,7 +124,7 @@ class MonitoringService {
           );
           this.recordPerformanceMetric(
             "load_time",
-            navigation.loadEventEnd - (navigation as any).navigationStart,
+            navigation.loadEventEnd - navigation.startTime,
           );
         }
       }, 0);
@@ -178,7 +204,7 @@ class MonitoringService {
   }
 
   // Méthodes publiques pour l'intégration avec les hooks
-  public trackEvent(type: string, data: Record<string, any>) {
+  public trackEvent(type: string, data: Record<string, unknown> | ABTestResult | AIInsight) {
     if (!this.config.metrics.business.enabled) return;
 
     const event = MonitoringUtils.createEvent(type, {
@@ -204,7 +230,7 @@ class MonitoringService {
     this.checkPerformanceThresholds(name, value);
   }
 
-  private recordError(error: Record<string, any>) {
+  private recordError(error: Record<string, unknown>) {
     if (!this.config.metrics.errors.enabled) return;
 
     this.trackEvent("error", {
@@ -215,7 +241,7 @@ class MonitoringService {
     });
   }
 
-  private recordApiMetric(metric: Record<string, any>) {
+  private recordApiMetric(metric: ApiMetricData) {
     this.recordPerformanceMetric(
       `api_${metric.method.toLowerCase()}_duration`,
       metric.duration,
@@ -296,7 +322,7 @@ class MonitoringService {
     }
   }
 
-  private async sendToAPI(batch: any) {
+  private async sendToAPI(batch: MonitoringBatch) {
     const { reporting } = this.config;
 
     // Envoyer les événements analytics
@@ -376,7 +402,7 @@ export function getMonitoringService(): MonitoringService {
 }
 
 // Export des méthodes pour utilisation directe
-export function trackEvent(type: string, data: Record<string, any>) {
+export function trackEvent(type: string, data: Record<string, unknown>) {
   getMonitoringService()?.trackEvent(type, data);
 }
 

@@ -10,9 +10,9 @@ import { Link } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, memo } from "react";
 
+import { logger } from "~/utils/logger";
 import { useRootCart } from "../../root";
 import { Badge } from "../ui/badge";
-import { logger } from "~/utils/logger";
 
 interface CartIconProps {
   className?: string;

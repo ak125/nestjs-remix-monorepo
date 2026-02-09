@@ -21,12 +21,12 @@ import { BookOpen, Search, FileText, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
 // UI Components
-import { Badge } from "../components/ui/badge";
-import { Card, CardContent } from "../components/ui/card";
-import { Input } from "../components/ui/input";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { Badge } from "../components/ui/badge";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 // Types
 interface ReferenceItem {

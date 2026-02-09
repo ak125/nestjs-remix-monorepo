@@ -36,7 +36,6 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import React, { useEffect } from "react";
-import { getCart } from "../services/cart.server";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
@@ -50,6 +49,7 @@ import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getCart } from "../services/cart.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {

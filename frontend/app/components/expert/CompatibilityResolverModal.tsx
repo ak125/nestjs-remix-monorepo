@@ -26,7 +26,6 @@ import {
   Info,
 } from "lucide-react";
 import { forwardRef, useState, useCallback, useEffect, memo } from "react";
-import { type VehicleInfoV2 } from "./CompatibilityBadgeV2";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -38,6 +37,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import { type VehicleInfoV2 } from "./CompatibilityBadgeV2";
 
 // ============================================================================
 // Types

@@ -72,7 +72,7 @@ export interface CreateLegacyPaymentRequest {
   return_url?: string; // URL retour succès
   cancel_url?: string; // URL retour annulation
   callback_url?: string; // URL callback
-  payment_metadata?: Record<string, any>; // Métadonnées
+  payment_metadata?: Record<string, unknown>; // Métadonnées
 }
 
 export interface PaymentStats {
@@ -207,7 +207,7 @@ export async function getPaymentStatus(
  * Parse JSON de manière sécurisée
  * Retourne l'objet parsé ou un objet avec le texte brut en cas d'erreur
  */
-export function safeJsonParse(jsonString: string | null | undefined): any {
+export function safeJsonParse(jsonString: string | null | undefined): unknown {
   if (!jsonString) return null;
 
   try {

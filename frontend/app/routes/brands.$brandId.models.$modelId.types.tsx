@@ -20,6 +20,10 @@ import {
   Settings,
   Info,
 } from "lucide-react";
+import { Alert } from "~/components/ui/alert";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -30,10 +34,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 

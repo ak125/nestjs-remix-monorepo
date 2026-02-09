@@ -32,7 +32,9 @@ export class OrderArchiveService extends SupabaseBaseService {
   /**
    * Archiver une commande
    */
-  async archiveOrder(orderId: number): Promise<any> {
+  async archiveOrder(
+    orderId: number,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`Archivage commande #${orderId}`);
 
@@ -68,8 +70,9 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       this.logger.log(`Commande #${orderId} archivée`);
       return { success: true, message: 'Commande archivée' };
-    } catch (error: any) {
-      this.logger.error(`Erreur archiveOrder(${orderId}):`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur archiveOrder(${orderId}):`, message);
       throw error;
     }
   }
@@ -77,7 +80,9 @@ export class OrderArchiveService extends SupabaseBaseService {
   /**
    * Restaurer une commande archivée
    */
-  async restoreOrder(orderId: number): Promise<any> {
+  async restoreOrder(
+    orderId: number,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`Restauration commande #${orderId}`);
 
@@ -101,8 +106,9 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       this.logger.log(`Commande #${orderId} restaurée`);
       return { success: true, message: 'Commande restaurée' };
-    } catch (error: any) {
-      this.logger.error(`Erreur restoreOrder(${orderId}):`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur restoreOrder(${orderId}):`, message);
       throw error;
     }
   }
@@ -145,8 +151,9 @@ export class OrderArchiveService extends SupabaseBaseService {
         lines: lines || [],
         statusHistory: statusHistory || [],
       };
-    } catch (error: any) {
-      this.logger.error(`Erreur getArchivedOrder(${orderId}):`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur getArchivedOrder(${orderId}):`, message);
       throw error;
     }
   }
@@ -154,7 +161,15 @@ export class OrderArchiveService extends SupabaseBaseService {
   /**
    * Lister les commandes archivées
    */
-  async listArchivedOrders(filters: ArchiveFilters = {}): Promise<any> {
+  async listArchivedOrders(filters: ArchiveFilters = {}): Promise<{
+    data: Record<string, unknown>[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     try {
       const page = filters.page || 1;
       const limit = filters.limit || 20;
@@ -206,8 +221,9 @@ export class OrderArchiveService extends SupabaseBaseService {
           totalPages: Math.ceil((count || 0) / limit),
         },
       };
-    } catch (error: any) {
-      this.logger.error('Erreur listArchivedOrders:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Erreur listArchivedOrders:', message);
       throw error;
     }
   }
@@ -215,7 +231,19 @@ export class OrderArchiveService extends SupabaseBaseService {
   /**
    * Exporter une commande pour PDF
    */
-  async exportOrderForPdf(orderId: number): Promise<any> {
+  async exportOrderForPdf(orderId: number): Promise<{
+    exportReady: boolean;
+    order: Record<string, unknown> & {
+      lines: Record<string, unknown>[];
+      statusHistory: Record<string, unknown>[];
+    };
+    metadata: {
+      exportDate: string;
+      exportType: string;
+      fileName: string;
+      format: string;
+    };
+  }> {
     try {
       this.logger.log(`Export PDF commande #${orderId}`);
 
@@ -231,8 +259,9 @@ export class OrderArchiveService extends SupabaseBaseService {
           format: 'A4',
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Erreur exportOrderForPdf(${orderId}):`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur exportOrderForPdf(${orderId}):`, message);
       throw error;
     }
   }
@@ -243,7 +272,24 @@ export class OrderArchiveService extends SupabaseBaseService {
   async exportOrder(
     orderId: number,
     format: 'json' | 'pdf' = 'json',
-  ): Promise<any> {
+  ): Promise<
+    | {
+        order: Record<string, unknown>;
+        lines: Record<string, unknown>[];
+        statusHistory: Record<string, unknown>[];
+        exportedAt: string;
+      }
+    | {
+        format: string;
+        data: {
+          order: Record<string, unknown>;
+          lines: Record<string, unknown>[];
+          statusHistory: Record<string, unknown>[];
+          exportedAt: string;
+        };
+        message: string;
+      }
+  > {
     try {
       // Récupérer commande complète
       const { data: order } = await this.supabase
@@ -287,8 +333,9 @@ export class OrderArchiveService extends SupabaseBaseService {
         data: exportData,
         message: 'PDF generation not implemented yet',
       };
-    } catch (error: any) {
-      this.logger.error(`Erreur exportOrder(${orderId}):`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur exportOrder(${orderId}):`, message);
       throw error;
     }
   }
@@ -296,7 +343,12 @@ export class OrderArchiveService extends SupabaseBaseService {
   /**
    * Statistiques d'archivage pour un client
    */
-  async getArchiveStats(customerId?: number): Promise<any> {
+  async getArchiveStats(customerId?: number): Promise<{
+    totalArchived: number;
+    totalRevenue: number;
+    oldestArchiveDate: string | null;
+    averageOrderValue: number;
+  }> {
     try {
       let query = this.supabase
         .from(TABLES.xtr_order)
@@ -329,8 +381,9 @@ export class OrderArchiveService extends SupabaseBaseService {
         oldestArchiveDate: oldestArchive?.archived_at || null,
         averageOrderValue: count && count > 0 ? totalRevenue / count : 0,
       };
-    } catch (error: any) {
-      this.logger.error('Erreur getArchiveStats:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Erreur getArchiveStats:', message);
       throw error;
     }
   }
@@ -386,8 +439,9 @@ export class OrderArchiveService extends SupabaseBaseService {
         deleted: tempOrders.length,
         message: `${tempOrders.length} commandes temporaires nettoyées`,
       };
-    } catch (error: any) {
-      this.logger.error('Error cleaning temp order data:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Error cleaning temp order data:', message);
       throw error;
     }
   }
@@ -443,8 +497,9 @@ export class OrderArchiveService extends SupabaseBaseService {
         archived: oldOrders.length,
         message: `${oldOrders.length} commandes archivées`,
       };
-    } catch (error: any) {
-      this.logger.error('Error auto-archiving old orders:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Error auto-archiving old orders:', message);
       throw error;
     }
   }

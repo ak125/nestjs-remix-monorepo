@@ -41,9 +41,12 @@ export class GlossaryService {
     const cacheKey = `glossary_all:${limit}:${offset}:${JSON.stringify(filters)}`;
 
     try {
-      const cached = await this.cacheManager.get(cacheKey);
+      const cached = await this.cacheManager.get<{
+        articles: BlogArticle[];
+        total: number;
+      }>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();
@@ -206,9 +209,10 @@ export class GlossaryService {
     const cacheKey = 'glossary_alphabetical';
 
     try {
-      const cached = await this.cacheManager.get(cacheKey);
+      const cached =
+        await this.cacheManager.get<Record<string, BlogArticle[]>>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();
@@ -299,9 +303,17 @@ export class GlossaryService {
     const cacheKey = 'glossary_stats';
 
     try {
-      const cached = await this.cacheManager.get(cacheKey);
+      type GlossaryStats = {
+        total: number;
+        totalViews: number;
+        avgViews: number;
+        byLetter: Array<{ letter: string; count: number }>;
+        mostPopular: BlogArticle[];
+        averageDefinitionLength: number;
+      };
+      const cached = await this.cacheManager.get<GlossaryStats>(cacheKey);
       if (cached) {
-        return cached as any;
+        return cached;
       }
 
       const client = this.supabaseService.getClient();

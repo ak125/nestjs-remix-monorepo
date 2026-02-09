@@ -55,7 +55,7 @@ export class UsersFinalService {
    */
   async getUserById(userId: string): Promise<User> {
     const cacheKey = `user:${userId}`;
-    const cached = this.cacheService.get<User>(cacheKey);
+    const cached = await this.cacheService.get<User>(cacheKey);
 
     if (cached) {
       this.logger.debug(`Cache hit for user ${userId}`);
@@ -77,7 +77,7 @@ export class UsersFinalService {
    */
   async getUserByEmail(email: string): Promise<User | null> {
     const cacheKey = `user:email:${email}`;
-    const cached = this.cacheService.get<User | null>(cacheKey);
+    const cached = await this.cacheService.get<User | null>(cacheKey);
 
     if (cached !== null) {
       this.logger.debug(`Cache hit for email ${email}`);
@@ -96,7 +96,7 @@ export class UsersFinalService {
    */
   async getAllUsers(filters: UserFilters): Promise<PaginatedUsers> {
     const cacheKey = `users:list:${JSON.stringify(filters)}`;
-    const cached = this.cacheService.get<PaginatedUsers>(cacheKey);
+    const cached = await this.cacheService.get<PaginatedUsers>(cacheKey);
 
     if (cached) {
       this.logger.debug('Cache hit for users list');
@@ -212,7 +212,7 @@ export class UsersFinalService {
    */
   async searchUsers(searchTerm: string, limit = 20): Promise<User[]> {
     const cacheKey = `users:search:${searchTerm}:${limit}`;
-    const cached = this.cacheService.get<User[]>(cacheKey);
+    const cached = await this.cacheService.get<User[]>(cacheKey);
 
     if (cached) {
       this.logger.debug(`Cache hit for search: ${searchTerm}`);
@@ -235,7 +235,7 @@ export class UsersFinalService {
    */
   async getUserStats(userId: string): Promise<UserStats> {
     const cacheKey = `user:stats:${userId}`;
-    const cached = this.cacheService.get<UserStats>(cacheKey);
+    const cached = await this.cacheService.get<UserStats>(cacheKey);
 
     if (cached) {
       this.logger.debug(`Cache hit for user stats ${userId}`);
@@ -262,7 +262,7 @@ export class UsersFinalService {
    */
   async getGlobalStats(): Promise<GlobalStats> {
     const cacheKey = 'users:stats:global';
-    const cached = this.cacheService.get<GlobalStats>(cacheKey);
+    const cached = await this.cacheService.get<GlobalStats>(cacheKey);
 
     if (cached) {
       this.logger.debug('Cache hit for global stats');
@@ -337,7 +337,7 @@ export class UsersFinalService {
    */
   async getDashboardData(userId: string): Promise<DashboardData> {
     const cacheKey = `user:dashboard:${userId}`;
-    const cached = this.cacheService.get<DashboardData>(cacheKey);
+    const cached = await this.cacheService.get<DashboardData>(cacheKey);
 
     if (cached) {
       this.logger.debug(`Cache hit for dashboard ${userId}`);

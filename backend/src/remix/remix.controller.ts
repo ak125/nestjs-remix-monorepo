@@ -1,5 +1,13 @@
 import { getServerBuild } from '@fafa/frontend';
-import { All, Controller, Logger, Next, Req, Res } from '@nestjs/common';
+import {
+  All,
+  Controller,
+  HttpStatus,
+  Logger,
+  Next,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { createRequestHandler } from '@remix-run/express';
 import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
@@ -10,8 +18,8 @@ export class RemixController {
   private readonly logger = new Logger(RemixController.name);
 
   constructor(
-    private remixService: RemixService,
-    private remixApiService: RemixApiService,
+    private readonly remixService: RemixService,
+    private readonly remixApiService: RemixApiService,
   ) {}
 
   @All(':path*')
@@ -37,7 +45,7 @@ export class RemixController {
     const supplierUrlRegex = /^\/pieces-[a-z0-9-]+\.html$/i;
     if (supplierUrlRegex.test(request.url)) {
       this.logger.log(`[410] Legacy supplier URL: ${request.url}`);
-      response.status(410).send('Gone');
+      response.status(HttpStatus.GONE).send('Gone');
       return;
     }
 
@@ -55,7 +63,7 @@ export class RemixController {
       })(request, response, next);
     } catch (error) {
       this.logger.error(`Error loading server build: ${error}`);
-      response.status(500).json({
+      response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         statusCode: 500,
         error: 'Internal Server Error',
         message: 'Frontend build not available',

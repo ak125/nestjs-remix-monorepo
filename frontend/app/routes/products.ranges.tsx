@@ -34,6 +34,10 @@ import {
   BarChart3,
   Star,
 } from "lucide-react";
+import { Error404 } from "~/components/errors/Error404";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { getOptionalUser } from "../auth/unified.server";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
@@ -44,10 +48,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Error404 } from "~/components/errors/Error404";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Gammes de Produits");
 

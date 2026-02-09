@@ -66,9 +66,10 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         method: 'RPC_V2',
         success: true,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [RPC] Exception: ${error.message}`);
-      return this.createEmptyResult(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [RPC] Exception: ${message}`);
+      return this.createEmptyResult(message);
     }
   }
 
@@ -142,13 +143,14 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         count: data?.count || 0,
         piecesWithOem: data?.piecesWithOem,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [RPC OEM] Exception: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [RPC OEM] Exception: ${message}`);
       return {
         vehicleMarque: marqueName.toUpperCase(),
         oemRefs: [],
         count: 0,
-        error: error.message,
+        error: message,
       };
     }
   }
@@ -236,13 +238,14 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         oemRefs: uniqueRefs,
         count: uniqueRefs.length,
       };
-    } catch (error: any) {
-      this.logger.error(`❌ [OEM-LIGHT] Exception: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ [OEM-LIGHT] Exception: ${message}`);
       return {
         vehicleMarque: marqueName.toUpperCase(),
         oemRefs: [],
         count: 0,
-        error: error.message,
+        error: message,
       };
     }
   }

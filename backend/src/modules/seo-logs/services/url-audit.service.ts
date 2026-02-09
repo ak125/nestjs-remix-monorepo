@@ -21,7 +21,7 @@ export class UrlAuditService {
   private gscAuth: any;
   private ga4Client: BetaAnalyticsDataClient | null = null;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.initializeGoogleClients();
   }
 

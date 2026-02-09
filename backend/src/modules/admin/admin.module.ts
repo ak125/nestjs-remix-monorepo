@@ -39,6 +39,10 @@ import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // �
 import { GammeSeoBadgesService } from './services/gamme-seo-badges.service'; // 🏷️ Badges & Aggregates
 import { GammeSeoSectionKService } from './services/gamme-seo-section-k.service'; // 📊 Section K V-Level
 import { SeoCockpitService } from './services/seo-cockpit.service'; // 🚀 Service SEO Cockpit
+import { GammeDetailEnricherService } from './services/gamme-detail-enricher.service';
+import { GammeVLevelService } from './services/gamme-vlevel.service';
+import { StockMovementService } from './services/stock-movement.service';
+import { StockReportService } from './services/stock-report.service';
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -103,6 +107,10 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     GammeSeoBadgesService, // 🏷️ Badges & Aggregates
     GammeSeoSectionKService, // 📊 Section K V-Level
     SeoCockpitService, // 🚀 Service SEO Cockpit Unifié
+    GammeDetailEnricherService,
+    GammeVLevelService,
+    StockMovementService,
+    StockReportService,
   ],
   exports: [
     ConfigurationService,
@@ -110,6 +118,10 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     ReportingService,
     UserManagementService,
     // AdminProductsService,
+    GammeDetailEnricherService,
+    GammeVLevelService,
+    StockMovementService,
+    StockReportService,
   ],
 })
 export class AdminModule {}

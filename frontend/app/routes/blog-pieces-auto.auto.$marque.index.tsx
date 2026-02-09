@@ -13,13 +13,13 @@ import {
 import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
 
-import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
-import { HtmlContent } from "../components/seo/HtmlContent";
-import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
+import { HtmlContent } from "../components/seo/HtmlContent";
+import { Card, CardContent } from "../components/ui/card";
 
 /* ===========================
    Types

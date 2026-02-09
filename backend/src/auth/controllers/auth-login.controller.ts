@@ -118,6 +118,25 @@ export class AuthLoginController {
   }
 
   /**
+   * POST /auth/check-email
+   * Vérifie si un email existe (pour le checkout style Amazon)
+   */
+  @Post('auth/check-email')
+  @ApiOperation({ summary: 'Check if email exists for checkout flow' })
+  async checkEmail(@Body() body: { email: string }) {
+    const email = body.email?.toLowerCase()?.trim();
+    if (!email) {
+      return { exists: false };
+    }
+    try {
+      const user = await this.usersService.findByEmail(email);
+      return { exists: !!user };
+    } catch {
+      return { exists: false };
+    }
+  }
+
+  /**
    * POST /auth/login
    * Authentification utilisateur avec email/password
    */

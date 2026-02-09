@@ -68,6 +68,49 @@ interface PiecesMediaImgRow {
   pmi_name: string;
 }
 
+/** Row from pieces_price */
+interface PriceRow {
+  pri_piece_id: string;
+  pri_pm_id: string;
+  pri_vente_ttc: string;
+  pri_consigne_ttc: string;
+  pri_dispo: string;
+}
+
+/** Formatted search result item */
+interface SearchItem {
+  id: string;
+  piece_id: number;
+  reference: string;
+  brand: string;
+  brandId: number;
+  brandAlias: string | null;
+  category: string;
+  categoryId: number;
+  categoryAlias: string | null;
+  price: number;
+  prices: {
+    vente_ttc: number;
+    consigne_ttc: number;
+    total_ttc: number;
+  };
+  image: string;
+  hasImage: boolean;
+  inStock: boolean;
+  qualite: string;
+  stars: number;
+  oemRef?: string;
+  _isOEM: boolean;
+  _oemRef: string | null;
+  _qualityLevel: number;
+  _isExactMatch: boolean;
+  _isVariantMatch: boolean;
+  _prsKind: number | null;
+  _priceVenteTTC: number | null;
+  _priceConsigneTTC: number | null;
+  [key: string]: unknown;
+}
+
 /** Enriched piece row flowing through processResults */
 interface SearchPieceRecord {
   piece_id: number;
@@ -368,7 +411,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       this.logger.log(`💰 ${prices.length} prix (pri_dispo='1')`);
 
       // Map des prix
-      const priceMap = new Map<string, any>();
+      const priceMap = new Map<string, PriceRow>();
       for (const pr of prices) {
         priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
       }
@@ -422,7 +465,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 2) Récupérer pièces visibles (piece_display=1) + champs utiles
     pieceIds = [
-      ...new Set(searchRefs.map((r: any) => parseInt(r.prs_piece_id))),
+      ...new Set(searchRefs.map((r) => parseInt(r.prs_piece_id))),
     ].filter((v) => Number.isFinite(v));
 
     if (pieceIds.length === 0) {
@@ -481,7 +524,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     this.logger.log(`💰 ${prices.length} prix (pri_dispo='1')`);
 
     // Maps
-    const priceMap = new Map<string, any>();
+    const priceMap = new Map<string, PriceRow>();
     for (const pr of prices) {
       priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
     }
@@ -496,7 +539,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 4) Enrichir & filtrer uniquement pièces ayant un prix dispo
     const enrichedPieces = pieces
-      .map((piece: any) => {
+      .map((piece) => {
         const priceKey = `${piece.piece_id}-${piece.piece_pm_id}`;
         const price = priceMap.get(priceKey);
         if (!price) return null;
@@ -517,7 +560,7 @@ export class SearchSimpleService extends SupabaseBaseService {
           _oemRef: null as string | null, // renseigné plus bas
         };
       })
-      .filter(Boolean) as Array<any>;
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
     // attacher une ref OEM pour affichage si dispo
     const oemRefMap = new Map<string, string>();
@@ -655,20 +698,20 @@ export class SearchSimpleService extends SupabaseBaseService {
       number,
       { name: string; oes: string | null; alias: string | null }
     >(
-      (marquesResult.data || []).map((m: any) => [
+      (marquesResult.data || []).map((m) => [
         parseInt(m.pm_id, 10),
         { name: m.pm_name, oes: m.pm_oes, alias: m.pm_alias },
       ]),
     );
     const gammeMap = new Map<number, { name: string; alias: string | null }>(
-      (gammesResult.data || []).map((g: any) => [
+      (gammesResult.data || []).map((g) => [
         parseInt(g.pg_id, 10),
         { name: g.pg_name, alias: g.pg_alias },
       ]),
     );
     // 🖼️ Map des images: pmi_piece_id -> URL complète via fonction centralisée
     const imageMap = new Map<number, string>(
-      (imagesResult.data || []).map((img: any) => [
+      (imagesResult.data || []).map((img) => [
         parseInt(img.pmi_piece_id, 10),
         buildRackImageUrl({
           pmi_folder: img.pmi_folder,
@@ -685,7 +728,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       const qualityLevel = this.getQualityLevel(m?.oes ?? null);
       const image = imageMap.get(p.piece_id) || '/images/pieces/default.png';
 
-      const item: any = {
+      const item: SearchItem = {
         id: String(p.piece_id),
         piece_id: p.piece_id, // 🔧 ID numérique aussi
         reference: p.piece_ref ?? '',
@@ -804,7 +847,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     query: string,
     limit: number = 200,
   ): Promise<{
-    pieces: any[];
+    pieces: SearchPieceRecord[];
     matchedGammes: { id: number; name: string; alias: string }[];
   }> {
     this.logger.log(`🔍 Fallback gamme-name: "${query}"`);
@@ -836,10 +879,10 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     this.logger.log(
-      `📋 ${gammes.length} gamme(s): ${gammes.map((g: any) => g.pg_name).join(', ')}`,
+      `📋 ${gammes.length} gamme(s): ${gammes.map((g) => g.pg_name).join(', ')}`,
     );
 
-    const gammeIds = gammes.map((g: any) => g.pg_id);
+    const gammeIds = gammes.map((g) => g.pg_id);
 
     // 2) Charger pièces visibles de ces gammes
     const { data: pieces } = await this.client
@@ -866,18 +909,18 @@ export class SearchSimpleService extends SupabaseBaseService {
       )
       .in(
         'pri_piece_id',
-        pieces.map((p: any) => String(p.piece_id)),
+        pieces.map((p) => String(p.piece_id)),
       )
       .eq('pri_dispo', '1');
 
-    const priceMap = new Map<string, any>();
+    const priceMap = new Map<string, PriceRow>();
     for (const pr of prices || []) {
       priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
     }
 
     // 4) Enrichir et filtrer (garder uniquement celles avec prix)
     const enrichedPieces = pieces
-      .map((p: any) => {
+      .map((p) => {
         const key = `${p.piece_id}-${p.piece_pm_id}`;
         const price = priceMap.get(key);
         if (!price) return null;
@@ -891,10 +934,10 @@ export class SearchSimpleService extends SupabaseBaseService {
           _oemRef: null,
         };
       })
-      .filter(Boolean);
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
     // 5) Tri par prix décroissant
-    enrichedPieces.sort((a: any, b: any) => {
+    enrichedPieces.sort((a, b) => {
       const priceA = (a._priceVenteTTC || 0) * (a.piece_qty_sale || 1);
       const priceB = (b._priceVenteTTC || 0) * (b.piece_qty_sale || 1);
       return priceB - priceA;
@@ -906,7 +949,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     return {
       pieces: enrichedPieces,
-      matchedGammes: gammes.map((g: any) => ({
+      matchedGammes: gammes.map((g) => ({
         id: g.pg_id,
         name: g.pg_name,
         alias: g.pg_alias,

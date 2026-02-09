@@ -94,7 +94,7 @@ export class FileValidationService {
     { name: 'ZIP with executable', signature: [0x50, 0x4b, 0x03, 0x04] },
   ];
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.logger.log('🛡️ FileValidationService initialized');
   }
 
@@ -160,10 +160,11 @@ export class FileValidationService {
       );
 
       return result;
-    } catch (error: any) {
-      this.logger.error(`❌ Validation failed:`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Validation failed:`, message);
       result.isValid = false;
-      result.errors.push(`Erreur de validation: ${error.message}`);
+      result.errors.push(`Erreur de validation: ${message}`);
       return result;
     }
   }
@@ -339,8 +340,9 @@ export class FileValidationService {
         result.warnings.push('Type de fichier non détectable par signature');
         result.securityScore -= 5;
       }
-    } catch (error: any) {
-      result.warnings.push(`Erreur d'analyse de signature: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      result.warnings.push(`Erreur d'analyse de signature: ${message}`);
     }
   }
 
@@ -390,10 +392,9 @@ export class FileValidationService {
           result.errors.push('Échec de validation personnalisée');
           result.securityScore -= 10;
         }
-      } catch (error: any) {
-        result.warnings.push(
-          `Erreur dans validateur personnalisé: ${error.message}`,
-        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        result.warnings.push(`Erreur dans validateur personnalisé: ${message}`);
       }
     }
   }

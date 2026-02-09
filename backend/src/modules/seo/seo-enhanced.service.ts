@@ -326,7 +326,11 @@ export class SeoEnhancedService extends SupabaseBaseService {
   /**
    * Obtention des statistiques des templates SEO
    */
-  async getSeoAnalytics(): Promise<any> {
+  async getSeoAnalytics(): Promise<{
+    templates?: { total: number; switches: number };
+    enhancement?: { version: string; features: string[] };
+    error?: string;
+  }> {
     try {
       const supabase = this.supabase;
 

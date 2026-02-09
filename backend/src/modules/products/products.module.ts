@@ -37,6 +37,8 @@ import { ProductFilteringService } from './services/product-filtering.service';
 import { PricingService } from './services/pricing.service';
 import { CrossSellingService } from './services/cross-selling.service';
 import { StockService } from './services/stock.service';
+import { CrossSellingSeoService } from './services/cross-selling-seo.service';
+import { CrossSellingSourceService } from './services/cross-selling-source.service';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { StockService } from './services/stock.service';
     PricingService, // ✅ Calcul prix
     CrossSellingService, // ✅ Ventes croisées
     StockService, // ✅ Gestion stock
+    CrossSellingSeoService,
+    CrossSellingSourceService,
   ],
   exports: [
     ProductsService,
@@ -81,6 +85,8 @@ import { StockService } from './services/stock.service';
     PricingService,
     CrossSellingService,
     StockService,
+    CrossSellingSeoService,
+    CrossSellingSourceService,
   ],
 })
 export class ProductsModule {

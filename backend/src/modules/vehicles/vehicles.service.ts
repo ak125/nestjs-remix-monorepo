@@ -81,7 +81,7 @@ export class VehiclesService extends SupabaseBaseService {
   }
 
   // Cache en mémoire simple pour éviter les requêtes répétitives
-  private cache = new Map<string, { data: any; expires: number }>();
+  private cache = new Map<string, { data: unknown; expires: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   /**
@@ -90,7 +90,7 @@ export class VehiclesService extends SupabaseBaseService {
   private getCached<T>(key: string): T | null {
     const cached = this.cache.get(key);
     if (cached && cached.expires > Date.now()) {
-      return cached.data;
+      return cached.data as T;
     }
     this.cache.delete(key);
     return null;
@@ -492,7 +492,7 @@ export class VehiclesService extends SupabaseBaseService {
         );
 
         // 🖼️ Enrichir avec image_url via fonction centralisée (avec fallback marques-concepts)
-        const enrichedData = (data || []).map((model: any) => ({
+        const enrichedData = (data || []).map((model) => ({
           ...model,
           image_url: buildModelImageUrl(
             marqueAlias,
@@ -531,7 +531,7 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // 🖼️ Enrichir avec image_url via fonction centralisée (avec fallback marques-concepts)
-      const enrichedData = (data || []).map((model: any) => ({
+      const enrichedData = (data || []).map((model) => ({
         ...model,
         image_url: buildModelImageUrl(
           marqueAlias,
@@ -541,7 +541,7 @@ export class VehiclesService extends SupabaseBaseService {
       }));
 
       // 🎯 Trier : modèles avec images en premier, puis par nom
-      const sortedData = enrichedData.sort((a: any, b: any) => {
+      const sortedData = enrichedData.sort((a, b) => {
         // Priorité aux modèles avec images
         if (a.image_url && !b.image_url) return -1;
         if (!a.image_url && b.image_url) return 1;
@@ -1260,7 +1260,7 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // ✅ Enrichir avec URLs images via fonction centralisée
-      const enrichedData = (data || []).map((brand: any) => ({
+      const enrichedData = (data || []).map((brand) => ({
         ...brand,
         logo_url: buildBrandLogoUrl(brand.marque_logo),
       }));

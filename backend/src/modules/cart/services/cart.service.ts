@@ -151,7 +151,7 @@ export class CartService {
     itemId: string,
     quantity: number,
     userId?: string,
-  ): Promise<any> {
+  ): Promise<{ items: Record<string, unknown>[]; [key: string]: unknown }> {
     this.logger.log(
       `📝 Mise à jour quantité article ${itemId}: ${quantity} pour ${userId || sessionId}`,
     );

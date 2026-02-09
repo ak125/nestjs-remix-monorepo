@@ -37,6 +37,15 @@ import {
 } from "react";
 import { logger } from "~/utils/logger";
 
+// Window globals for analytics providers
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    mixpanel?: { track: (event: string, data?: Record<string, unknown>) => void };
+    plausible?: (event: string, options?: { props?: Record<string, unknown> }) => void;
+  }
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -479,8 +488,8 @@ function sendToProvider(
   try {
     switch (provider) {
       case "gtag":
-        if ((window as any).gtag) {
-          (window as any).gtag("event", event.type, {
+        if (window.gtag) {
+          window.gtag("event", event.type, {
             event_label: event.label,
             variant: event.variant,
             ...event.metadata,
@@ -489,8 +498,8 @@ function sendToProvider(
         break;
 
       case "mixpanel":
-        if ((window as any).mixpanel) {
-          (window as any).mixpanel.track(event.type, {
+        if (window.mixpanel) {
+          window.mixpanel.track(event.type, {
             label: event.label,
             variant: event.variant,
             timestamp: event.timestamp,
@@ -500,8 +509,8 @@ function sendToProvider(
         break;
 
       case "plausible":
-        if ((window as any).plausible) {
-          (window as any).plausible(event.label, {
+        if (window.plausible) {
+          window.plausible(event.label, {
             props: {
               type: event.type,
               variant: event.variant,
