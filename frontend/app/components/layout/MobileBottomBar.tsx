@@ -46,7 +46,7 @@ export const MobileBottomBar = memo(function MobileBottomBar({
     <div
       className={cn(
         // Base: fixed bottom, full width, only on mobile
-        "fixed bottom-0 left-0 right-0 z-40",
+        "fixed bottom-0 left-0 right-0 z-[45]",
         "md:hidden",
         // Padding with safe area
         "px-4 py-3 pb-safe",

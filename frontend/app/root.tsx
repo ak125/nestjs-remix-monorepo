@@ -335,7 +335,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {...pageRoleAttrs}
     >
       <Navbar logo={logo} />
-      <main className="flex-grow flex flex-col pb-16 md:pb-0">
+      <main className="flex-grow flex flex-col">
         <div className="flex-grow">{children}</div>
       </main>
       <Footer />
