@@ -17,7 +17,7 @@ export class InvoicesService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(configService);
   }

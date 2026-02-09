@@ -11,7 +11,7 @@ import { decodeHtmlEntities } from '../../../utils/html-entities';
 export class BlogCacheService {
   private readonly logger = new Logger(BlogCacheService.name);
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   /**
    * Détermine la stratégie de cache basée sur le nombre de vues

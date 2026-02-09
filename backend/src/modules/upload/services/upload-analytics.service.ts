@@ -96,7 +96,7 @@ export class UploadAnalyticsService
 
   constructor(
     protected configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super();
     this.logger.log('📊 UploadAnalyticsService initialized');

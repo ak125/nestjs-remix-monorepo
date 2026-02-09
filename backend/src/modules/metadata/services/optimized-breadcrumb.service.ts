@@ -46,7 +46,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   private readonly cachePrefix = 'breadcrumb:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
     super();
     this.logger.log('🧭 OptimizedBreadcrumbService initialisé');
   }

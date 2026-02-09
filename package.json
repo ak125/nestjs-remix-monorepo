@@ -97,7 +97,7 @@
       "prettier --write"
     ],
     "backend/src/**/*.ts": [
-      "NODE_OPTIONS='--max-old-space-size=4096' eslint --fix",
+      "node --max-old-space-size=4096 node_modules/.bin/eslint --fix",
       "prettier --write"
     ]
   }

@@ -90,7 +90,7 @@ export class CrawlBudgetExperimentService {
   /**
    * 🔍 Détails d'une expérience
    */
-  async getExperiment(id: string): Promise<any> {
+  async getExperiment(id: string): Promise<Record<string, unknown>> {
     // TODO: Fetch depuis DB
     throw new NotFoundException(`Experiment ${id} not found`);
   }

@@ -76,7 +76,7 @@ export interface VehicleDetailsEnhanced {
  */
 @Injectable()
 export class VehiclesService extends SupabaseBaseService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
     super();
   }
 

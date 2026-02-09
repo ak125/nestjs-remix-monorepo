@@ -48,7 +48,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   private readonly cachePrefix = 'metadata:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
     super();
     this.logger.log('📄 OptimizedMetadataService initialisé');
   }

@@ -46,7 +46,7 @@ export class VehicleCacheService {
     [CacheType.ENGINE]: { ttl: 7200, prefix: 'vehicles:eng:' }, // 2h
   };
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   /**
    * 📝 Générer une clé de cache

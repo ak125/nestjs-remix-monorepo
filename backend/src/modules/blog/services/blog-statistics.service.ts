@@ -24,7 +24,7 @@ export class BlogStatisticsService {
 
   constructor(
     private readonly supabaseService: SupabaseIndexationService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly blogCacheService: BlogCacheService,
     private readonly transformService: BlogArticleTransformService,
   ) {}

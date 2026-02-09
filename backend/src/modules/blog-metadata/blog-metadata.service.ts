@@ -29,7 +29,7 @@ export class BlogMetadataService {
   private client: SupabaseClient;
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @Inject('SUPABASE_CLIENT') supabaseClient: SupabaseClient,
   ) {
     this.client = supabaseClient;

@@ -8,7 +8,7 @@ import { ZodSchema, ZodError } from 'zod';
 
 @Injectable()
 export class ZodQueryValidationPipe implements PipeTransform {
-  constructor(private schema: ZodSchema) {}
+  constructor(private readonly schema: ZodSchema) {}
 
   transform(value: unknown, metadata: ArgumentMetadata) {
     if (metadata.type !== 'query') {

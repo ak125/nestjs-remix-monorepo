@@ -19,7 +19,7 @@ export class PiecesCleanController {
 
   constructor(
     private readonly vehiclePiecesService: VehiclePiecesCompatibilityService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   /**

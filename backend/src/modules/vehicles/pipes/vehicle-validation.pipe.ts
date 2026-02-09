@@ -6,7 +6,7 @@ import { ZodSchema, ZodError } from 'zod';
  */
 @Injectable()
 export class VehicleZodValidationPipe implements PipeTransform {
-  constructor(private schema: ZodSchema) {}
+  constructor(private readonly schema: ZodSchema) {}
 
   transform(value: any) {
     try {
