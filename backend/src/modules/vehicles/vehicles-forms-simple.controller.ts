@@ -150,24 +150,15 @@ export class VehiclesFormsController {
    */
   @Get('years')
   async getAllYears(@Query() query: Record<string, string>) {
-    // Si typeId est fourni, on peut calculer les années à partir des données du type
+    // Si typeId est fourni, récupérer directement le type pour ses années
     if (query.typeId) {
-      // Récupérer le type spécifique pour obtenir ses années
-      const typesResult = await this.vehiclesService.findTypesByModel('', {
-        search: '',
-        limit: 50000, // Grande limite pour chercher le type
-        page: 0,
-      });
-
-      const specificType = typesResult.data.find(
-        (type) => type.type_id === query.typeId.toString(),
+      const specificType = await this.vehicleTypesService.getTypeById(
+        parseInt(query.typeId, 10),
       );
 
-      if (specificType && specificType.type_year_from) {
-        const startYear = parseInt(specificType.type_year_from);
-        const endYear = specificType.type_year_to
-          ? parseInt(specificType.type_year_to)
-          : new Date().getFullYear();
+      if (specificType) {
+        const startYear = specificType.yearFrom ?? 1990;
+        const endYear = specificType.yearTo ?? new Date().getFullYear();
 
         const years = [];
         for (let year = startYear; year <= endYear; year++) {
