@@ -76,8 +76,9 @@ export class PayboxRedirectController {
       this.logger.log('✅ Formulaire Paybox généré');
       this.logger.log(`🔗 URL: ${formData.url}`);
 
-      // Générer le HTML avec auto-submit
-      const html = this.buildHtmlForm(formData.url, formData.parameters);
+      // Générer le HTML avec auto-submit (nonce CSP pour que le script inline soit autorisé)
+      const nonce = (res as any).locals?.cspNonce || '';
+      const html = this.buildHtmlForm(formData.url, formData.parameters, nonce);
 
       // Envoyer le HTML
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -108,6 +109,7 @@ export class PayboxRedirectController {
   private buildHtmlForm(
     url: string,
     parameters: Record<string, string>,
+    nonce: string,
   ): string {
     const inputs = Object.entries(parameters)
       .map(
@@ -182,18 +184,20 @@ export class PayboxRedirectController {
 
     <form id="payboxForm" method="POST" action="${url}">
         ${inputs}
-        <noscript>
-            <button type="submit" style="margin-top: 2rem; padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
-                Continuer vers le paiement
-            </button>
-        </noscript>
+        <button type="submit" id="fallbackBtn" style="display:none; margin-top: 2rem; padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+            Continuer vers le paiement
+        </button>
     </form>
 
-    <script>
+    <script nonce="${nonce}">
         // Auto-submit après un court délai
-        setTimeout(() => {
+        setTimeout(function() {
             document.getElementById('payboxForm').submit();
         }, 500);
+        // Afficher le bouton fallback après 3s si l'auto-submit échoue
+        setTimeout(function() {
+            document.getElementById('fallbackBtn').style.display = 'block';
+        }, 3000);
     </script>
 </body>
 </html>`;
