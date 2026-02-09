@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { fetch } from 'undici';
-import { createHmac, createHash } from 'crypto';
+import { createHmac, createHash, timingSafeEqual } from 'crypto';
 import { PaymentConfig } from '../../../config/payment.config';
 
 export interface PaymentData {
@@ -115,7 +115,9 @@ export class CyberplusService {
       const expectedSignature = this.generateSignature(callbackData);
       const receivedSignature = callbackData.signature;
 
-      return expectedSignature === receivedSignature;
+      const a = Buffer.from(expectedSignature);
+      const b = Buffer.from(receivedSignature);
+      return a.length === b.length && timingSafeEqual(a, b);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -361,7 +363,9 @@ ${formFields}
 
       // Verifier la signature avec le protocole SystemPay (vads_* tries + certificat)
       const expectedSignature = this.generateSystemPaySignature(callbackData);
-      const isValid = expectedSignature === signature;
+      const a = Buffer.from(expectedSignature);
+      const b = Buffer.from(signature);
+      const isValid = a.length === b.length && timingSafeEqual(a, b);
 
       if (!isValid) {
         this.logger.warn(

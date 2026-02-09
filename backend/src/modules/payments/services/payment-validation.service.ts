@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
 import {
   DomainValidationException,
@@ -138,7 +138,9 @@ export class PaymentValidationService {
         data,
         secretKey,
       );
-      const isValid = receivedSignature === expectedSignature;
+      const a = Buffer.from(expectedSignature);
+      const b = Buffer.from(receivedSignature);
+      const isValid = a.length === b.length && timingSafeEqual(a, b);
 
       if (!isValid) {
         this.logger.warn('Invalid Cyberplus signature', {

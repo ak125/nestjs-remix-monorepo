@@ -208,8 +208,9 @@ export class PayboxService {
       // Recalculer la signature HMAC sur les parametres restants
       const calculatedSignature = this.generateSignature(paramsToVerify);
 
-      const isValid =
-        calculatedSignature.toLowerCase() === receivedSignature.toLowerCase();
+      const a = Buffer.from(calculatedSignature.toLowerCase());
+      const b = Buffer.from(receivedSignature.toLowerCase());
+      const isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
 
       if (isValid) {
         this.logger.log('Signature Paybox valide (HMAC)');
