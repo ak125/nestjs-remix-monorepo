@@ -117,8 +117,7 @@ export const ProductGallery = memo(function ProductGallery({
         className="w-full h-full object-contain"
         loading="lazy"
         onError={(e) => {
-          e.currentTarget.style.display = "none";
-          e.currentTarget.parentElement?.classList.add("image-error");
+          e.currentTarget.src = "/images/default-piece.svg";
         }}
       />
     );
