@@ -8,7 +8,12 @@ import {
   ParseIntPipe,
   Logger,
   BadRequestException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OrderActionsService } from '../services/order-actions.service';
 import { EmailService } from '../../../services/email.service';
 
@@ -18,8 +23,7 @@ import { EmailService } from '../../../services/email.service';
  * Endpoints pour toutes les actions backoffice
  */
 @Controller('api/admin/orders')
-// @UseGuards(JwtAuthGuard, AdminLevelGuard) // TODO: Activer après tests
-// @RequireAdminLevel(7)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class OrderActionsController {
   private readonly logger = new Logger(OrderActionsController.name);
 
@@ -38,6 +42,7 @@ export class OrderActionsController {
     @Param('lineId', ParseIntPipe) lineId: number,
     @Param('newStatus', ParseIntPipe) newStatus: number,
     @Body() body: { comment?: string; resetEquiv?: boolean },
+    @Req() req: Request,
   ) {
     return this.orderActionsService.updateLineStatus(
       orderId,
@@ -45,7 +50,7 @@ export class OrderActionsController {
       newStatus,
       {
         comment: body.comment,
-        userId: 1, // TODO: Get from JWT
+        userId: (req.user as any)?.id,
         resetEquiv: body.resetEquiv,
       },
     );
@@ -66,9 +71,10 @@ export class OrderActionsController {
       priceHT: number;
       quantity: number;
     },
+    @Req() req: Request,
   ) {
     return this.orderActionsService.updateLineStatus(orderId, lineId, 6, {
-      userId: 1, // TODO: Get from JWT
+      userId: (req.user as any)?.id,
       supplierData: {
         splId: body.supplierId,
         splName: body.supplierName,
@@ -87,13 +93,14 @@ export class OrderActionsController {
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
     @Body() body: { productId: number; quantity: number },
+    @Req() req: Request,
   ) {
     return this.orderActionsService.proposeEquivalent(
       orderId,
       lineId,
       body.productId,
       body.quantity,
-      1, // TODO: Get from JWT
+      (req.user as any)?.id,
     );
   }
 
@@ -315,21 +322,5 @@ export class OrderActionsController {
       this.logger.error(`❌ Échec envoi rappel ${orderId}:`, message);
       throw error;
     }
-  }
-
-  // ============================================================
-  // ACTIONS SUR LIGNES (Existantes)
-  // ============================================================
-
-  /**
-   * PATCH /api/admin/orders/:orderId/lines/:lineId/status/:newStatus
-   * Changer statut ligne (1-6, 91-94)
-   */
-  @Patch(':orderId/lines/:lineId/status/:newStatus')
-  async validateEquivalent(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Param('lineId', ParseIntPipe) lineId: number,
-  ) {
-    return this.orderActionsService.validateEquivalent(orderId, lineId);
   }
 }
