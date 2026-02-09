@@ -193,7 +193,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           <Link
             to="/"
             prefetch="intent"
-            className="flex items-center gap-3 group relative flex-shrink-0 cursor-pointer"
+            className="flex items-center gap-3 group relative min-w-0 cursor-pointer"
             aria-label="Retour à l'accueil"
           >
             <div className="relative pointer-events-none">
@@ -210,7 +210,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 height={48}
                 className={`relative transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-2xl ${
                   isCompact ? "h-8" : "h-10 lg:h-12"
-                } w-auto`}
+                } w-auto max-w-[120px] sm:max-w-none`}
                 loading="eager"
                 // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
                 fetchpriority="high"
@@ -465,7 +465,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         </div>
 
         {/* Quick Categories - scroll horizontal */}
-        <div className="relative px-3 pb-2">
+        <div className="relative px-3 pb-2 overflow-hidden">
           <div
             className="overflow-x-auto scrollbar-hide"
             role="list"
