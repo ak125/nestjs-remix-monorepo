@@ -100,7 +100,7 @@ describe('SeoTemplateService - Interpolation', () => {
   describe('Switches statiques', () => {
     it.each([
       ['#VousPropose#', 'vous propose'],
-      ['#PrixPasCher#', 'au meilleur prix'],
+      ['#PrixPasCher#', 'à tarif avantageux'], // (9045+4)%7=5 → index 5
       ['#Commander#', 'commander'],
       ['#Controler#', 'contrôler'],
     ])('interpole switch %s → "%s"', (switchVar, expected) => {
@@ -135,7 +135,7 @@ describe('SeoTemplateService - Interpolation', () => {
     it('interpole le Title Alternateur correctement', () => {
       const template = '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
       const result = (service as any).processTemplate(template, testContext);
-      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d à partir de 118.45€ au meilleur prix.');
+      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d à partir de 118.45€ à tarif avantageux.');
     });
 
     it('interpole le H1 Plaquette de frein correctement', () => {
