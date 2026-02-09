@@ -44,4 +44,10 @@ if echo "$COMMAND" | grep -qE 'git\s+reset\s+--hard'; then
   exit 2
 fi
 
+# Guard 5: Block npm install/uninstall without confirmation
+if echo "$COMMAND" | grep -qE 'npm\s+(install|uninstall|update|remove|add)\s'; then
+  echo "BLOCKED: Gestion de paquets (npm install/uninstall) necessite confirmation explicite. Risque: breaking changes, lock file corruption." >&2
+  exit 2
+fi
+
 exit 0

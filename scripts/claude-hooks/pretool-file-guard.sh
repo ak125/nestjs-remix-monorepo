@@ -37,4 +37,16 @@ if echo "$FILE_PATH" | grep -qE 'modules/payments/'; then
   exit 0
 fi
 
+# Guard 4: Block editing build config files
+if echo "$FILE_PATH" | grep -qE '(^|/)turbo\.json$|(^|/)tsconfig[^/]*\.json$|(^|/)package\.json$'; then
+  echo "BLOCKED: Fichier de config build ($FILE_PATH). Modification manuelle requise pour securite du build." >&2
+  exit 2
+fi
+
+# Guard 5: Block editing module rm/ (production-banned, incident 2026-01-11)
+if echo "$FILE_PATH" | grep -qE 'backend/src/modules/rm/'; then
+  echo "BLOCKED: Module rm/ est BANNI de production (incident 2026-01-11). Docker build echoue sur import @monorepo/shared-types." >&2
+  exit 2
+fi
+
 exit 0

@@ -19,6 +19,15 @@
             "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-file-guard.sh"
           }
         ]
+      },
+      {
+        "matcher": "mcp__supabase__apply_migration|mcp__supabase__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-supabase-guard.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
