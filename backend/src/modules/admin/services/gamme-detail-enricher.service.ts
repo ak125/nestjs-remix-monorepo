@@ -91,13 +91,13 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           .single(),
         // 2. SEO
         this.supabase
-          .from('seo_gamme')
+          .from('__seo_gamme')
           .select('sg_id, sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
           .eq('sg_pg_id', pgIdStr)
           .single(),
         // 3. Conseils
         this.supabase
-          .from('seo_gamme_conseil')
+          .from('__seo_gamme_conseil')
           .select('sgc_id, sgc_title, sgc_content')
           .eq('sgc_pg_id', pgIdStr)
           .order('sgc_id', { ascending: true }),
