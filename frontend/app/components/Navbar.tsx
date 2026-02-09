@@ -183,7 +183,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         aria-label="Navigation principale"
       >
         {/* GAUCHE : Logo + Navigation Desktop */}
-        <div className="flex items-center gap-4 lg:gap-8">
+        <div className="flex items-center gap-2 lg:gap-8">
           {/* Burger Menu Mobile avec animation */}
           <div className="lg:hidden">
             <NavbarMobile user={user} />
@@ -209,7 +209,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 width={144}
                 height={48}
                 className={`relative transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-2xl ${
-                  isCompact ? "h-8" : "h-12"
+                  isCompact ? "h-8" : "h-10 lg:h-12"
                 } w-auto`}
                 loading="eager"
                 // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
@@ -346,7 +346,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         </div>
 
         {/* DROITE : Actions utilisateur */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* 🚚 Livraison gratuite - Desktop avec animation */}
           <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-semantic-success/10 via-semantic-success/5 to-semantic-success/10 rounded-xl border border-semantic-success/20 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
             <div className="relative">
@@ -405,7 +405,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {user && (
             <Link
               to="/notifications"
-              className="relative min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-warning/10 hover:to-semantic-danger/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-warning/20"
+              className="relative min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-warning/10 hover:to-semantic-danger/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-warning/20"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-neutral-700 group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
