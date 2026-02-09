@@ -5,7 +5,14 @@
  * ✅ Logging et gestion d'erreurs complète
  */
 
-import { Controller, Post, Body, Logger, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { z } from 'zod';
 import {
   AuthenticationException,
@@ -19,7 +26,8 @@ import {
   RequestPasswordResetSchema,
   UsePasswordResetTokenSchema,
 } from '../dto/password-reset.dto';
-// import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
 @Controller('api/password')
 export class PasswordController {
@@ -32,7 +40,7 @@ export class PasswordController {
    * Changer le mot de passe (utilisateur connecté)
    */
   @Post('change')
-  // @UseGuards(JwtAuthGuard) // TODO: Réactiver après correction du guard
+  @UseGuards(AuthenticatedGuard)
   async changePassword(
     @Body(new ZodValidationPipe(ChangePasswordSchema))
     changeData: z.infer<typeof ChangePasswordSchema>,
@@ -41,7 +49,7 @@ export class PasswordController {
     this.logger.log('POST /api/password/change');
 
     try {
-      const userId = req.user?.id || 'test-user-id'; // TODO: Récupérer l'ID utilisateur réel
+      const userId = req.user?.id;
       if (!userId) {
         throw new AuthenticationException({
           message: 'Utilisateur non authentifié',
@@ -143,16 +151,11 @@ export class PasswordController {
    * Nettoyer les tokens expirés
    */
   @Post('cleanup-tokens')
-  // @UseGuards(JwtAuthGuard) // TODO: Réactiver après correction du guard
-  async cleanupExpiredTokens(@Request() req: any) {
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  async cleanupExpiredTokens(@Request() _req: any) {
     this.logger.log('POST /api/password/cleanup-tokens');
 
     try {
-      // Vérifier que l'utilisateur est admin
-      if (!req.user?.isAdmin) {
-        throw new AuthenticationException({ message: 'Accès refusé' });
-      }
-
       const deletedCount = await this.passwordService.cleanupExpiredTokens();
 
       return {
