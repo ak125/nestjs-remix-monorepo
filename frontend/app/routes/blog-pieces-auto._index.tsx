@@ -213,8 +213,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (response.ok) {
       const apiResponse = await response.json();
       if (apiResponse.success && apiResponse.data) {
+        const raw = apiResponse.data;
+        // Normaliser stats: l'API retourne stats.overview.{totalArticles,...}
+        // mais le frontend attend stats.{totalArticles,...} (objet plat)
+        const rawStats = raw.stats;
+        const normalizedStats = rawStats?.overview
+          ? {
+              totalArticles: rawStats.overview.totalArticles ?? 0,
+              totalViews: rawStats.overview.totalViews ?? 0,
+              totalAdvice: rawStats.overview.totalAdvice ?? 0,
+              totalGuides: rawStats.overview.totalGuides ?? 0,
+            }
+          : (rawStats ?? blogData.stats);
+
         blogData = {
-          ...apiResponse.data,
+          ...raw,
+          stats: normalizedStats,
           success: true,
           lastUpdated: new Date().toISOString(),
         };
@@ -320,13 +334,14 @@ export default function BlogIndex() {
   }, [blogData.stats]);
 
   // Fonctions utilitaires optimisées
-  const formatReadingTime = (minutes: number) => {
-    if (minutes < 1) return "< 1 min";
+  const formatReadingTime = (minutes: number | undefined) => {
+    if (!minutes || minutes < 1) return "< 1 min";
     if (minutes > 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
     return `${minutes} min de lecture`;
   };
 
-  const formatViews = (views: number) => {
+  const formatViews = (views: number | undefined) => {
+    if (!views) return "0 vues";
     if (views > 1000000) return `${(views / 1000000).toFixed(1)}M vues`;
     if (views > 1000) return `${(views / 1000).toFixed(1)}k vues`;
     return `${views} vues`;

@@ -169,7 +169,7 @@ export class BlogStatisticsService {
       const { data } = await this.supabaseService.client
         .from(TABLES.blog_advice)
         .select('*')
-        .order('ba_views', { ascending: false })
+        .order('ba_visit', { ascending: false })
         .limit(limit);
 
       const articles =
