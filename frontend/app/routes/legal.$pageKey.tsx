@@ -13,6 +13,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -353,7 +354,8 @@ export default function LegalPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Content - HTML from database */}
         <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mb-8">
-          <div
+          <HtmlContent
+            html={page.content}
             className="prose prose-lg max-w-none
               prose-headings:text-gray-900 prose-headings:font-bold
               prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200
@@ -363,7 +365,7 @@ export default function LegalPage() {
               prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
               prose-strong:text-gray-900
               prose-ul:my-4 prose-ol:my-4"
-            dangerouslySetInnerHTML={{ __html: page.content }}
+            trackLinks={false}
           />
         </div>
 
