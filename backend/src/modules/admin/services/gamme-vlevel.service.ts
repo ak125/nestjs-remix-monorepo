@@ -51,8 +51,8 @@ export class GammeVLevelService extends SupabaseBaseService {
       // 1. Get keywords for this gamme from __seo_keywords
       const { data: keywords, error: kwError } = await this.supabase
         .from('__seo_keywords')
-        .select('id, keyword, search_volume, gamme_id, energy_type')
-        .eq('gamme_id', pgId);
+        .select('id, keyword, volume, pg_id, energy')
+        .eq('pg_id', pgId);
 
       if (kwError) {
         this.logger.error(
@@ -80,7 +80,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       // 2. Group keywords by energy_type, sort by search_volume DESC
       const byEnergy = new Map<string, typeof keywords>();
       for (const kw of keywords) {
-        const energy = kw.energy_type || 'all';
+        const energy = kw.energy || 'all';
         if (!byEnergy.has(energy)) byEnergy.set(energy, []);
         byEnergy.get(energy)!.push(kw);
       }
@@ -89,15 +89,13 @@ export class GammeVLevelService extends SupabaseBaseService {
 
       for (const [_energy, energyKeywords] of byEnergy) {
         // Sort by search volume descending
-        energyKeywords.sort(
-          (a, b) => (b.search_volume || 0) - (a.search_volume || 0),
-        );
+        energyKeywords.sort((a, b) => (b.volume || 0) - (a.volume || 0));
 
         for (let i = 0; i < energyKeywords.length; i++) {
           const kw = energyKeywords[i];
           let vLevel: string;
 
-          if ((kw.search_volume || 0) === 0) {
+          if ((kw.volume || 0) === 0) {
             vLevel = 'V4'; // No search volume
           } else if (i === 0) {
             vLevel = 'V2'; // Top keyword for this gamme+energy
@@ -118,7 +116,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       }
 
       // 3. Update gamme_seo_metrics with the best V-Level
-      const bestVLevel = keywords.some((k) => (k.search_volume || 0) > 0)
+      const bestVLevel = keywords.some((k) => (k.volume || 0) > 0)
         ? 'V2'
         : 'V4';
       await this.supabase
@@ -152,8 +150,8 @@ export class GammeVLevelService extends SupabaseBaseService {
       // Get all gammes that have keywords
       const { data: gammeIds, error } = await this.supabase
         .from('__seo_keywords')
-        .select('gamme_id')
-        .not('gamme_id', 'is', null);
+        .select('pg_id')
+        .not('pg_id', 'is', null);
 
       if (error) {
         this.logger.error('❌ Error fetching gamme IDs:', error);
@@ -162,7 +160,7 @@ export class GammeVLevelService extends SupabaseBaseService {
 
       // Deduplicate gamme IDs
       const uniqueGammeIds = [
-        ...new Set((gammeIds || []).map((r) => r.gamme_id)),
+        ...new Set((gammeIds || []).map((r) => r.pg_id)),
       ].filter(Boolean);
       this.logger.log(`📊 Found ${uniqueGammeIds.length} gammes with keywords`);
 

@@ -48,6 +48,13 @@ export interface DashboardKpis {
     r5Diagnostics: number;
     blogArticles: number;
   };
+  contentCompleteness: {
+    totalPages: number;
+    withTitle: number;
+    withDescription: number;
+    completionPct: number;
+  };
+  gscConnected: boolean;
 }
 
 export interface ExecutiveSummary {
@@ -114,21 +121,27 @@ export class SeoCockpitService extends SupabaseBaseService {
    */
   async getUnifiedDashboard(): Promise<DashboardKpis> {
     // Récupérer les stats en parallèle
-    const [queueStats, riskStats, crawlStats, contentStats] = await Promise.all(
-      [
-        this.getQueueStats(),
-        this.getRiskStats(),
-        this.getCrawlStats(),
-        this.getContentStats(),
-      ],
-    );
+    const [
+      queueStats,
+      riskStats,
+      crawlStats,
+      contentStats,
+      contentCompleteness,
+    ] = await Promise.all([
+      this.getQueueStats(),
+      this.getRiskStats(),
+      this.getCrawlStats(),
+      this.getContentStats(),
+      this.getContentCompleteness(),
+    ]);
 
-    // Calculer le health score
+    // Calculer le health score (inclut la complétude du contenu)
     const healthScore = this.calculateHealthScore(
       riskStats.urlsAtRisk,
       riskStats.totalUrls,
       crawlStats.googlebotAbsent14d,
       queueStats.failed,
+      contentCompleteness.completionPct,
     );
 
     // Déterminer le status
@@ -143,6 +156,8 @@ export class SeoCockpitService extends SupabaseBaseService {
       riskBreakdown: riskStats.breakdown,
       crawlHealth: crawlStats,
       contentStats,
+      contentCompleteness,
+      gscConnected: false,
     };
   }
 
@@ -334,6 +349,40 @@ export class SeoCockpitService extends SupabaseBaseService {
     };
   }
 
+  /**
+   * Mesure la complétude réelle du contenu SEO (titres, descriptions)
+   */
+  private async getContentCompleteness(): Promise<{
+    totalPages: number;
+    withTitle: number;
+    withDescription: number;
+    completionPct: number;
+  }> {
+    const [totalRes, titleRes, descRes] = await Promise.all([
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true }),
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .not('title', 'is', null),
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .not('meta_description', 'is', null),
+    ]);
+
+    const total = totalRes.count || 0;
+    const withTitle = titleRes.count || 0;
+    const withDescription = descRes.count || 0;
+    const completionPct =
+      total > 0
+        ? Math.round(((withTitle + withDescription) / (total * 2)) * 100)
+        : 0;
+
+    return { totalPages: total, withTitle, withDescription, completionPct };
+  }
+
   // ============================================================
   // AUDIT
   // ============================================================
@@ -514,16 +563,26 @@ export class SeoCockpitService extends SupabaseBaseService {
       }
     }
 
-    // Check for orphan pages (pages without internal links, estimate from __seo_page)
-    const { count: orphanCount } = await this.supabase
+    // Orphan pages: only count if we have real link data
+    // Check if internal_links_count column has ANY non-null values
+    const { count: hasLinkData } = await this.supabase
       .from('__seo_page')
       .select('id', { count: 'exact', head: true })
-      .is('internal_links_count', null);
+      .not('internal_links_count', 'is', null);
 
-    if (orphanCount) {
-      breakdown.ORPHAN = Math.min(orphanCount, 500); // Cap to avoid huge numbers
-      urlsAtRisk += breakdown.ORPHAN;
+    if (hasLinkData && hasLinkData > 0) {
+      // We have real link data, count orphans (pages with 0 links)
+      const { count: orphanCount } = await this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .eq('internal_links_count', 0);
+
+      if (orphanCount) {
+        breakdown.ORPHAN = orphanCount;
+        urlsAtRisk += orphanCount;
+      }
     }
+    // If no link data exists, ORPHAN stays at 0 (honest: "not measured" rather than fake estimate)
 
     return {
       totalUrls: totalUrls || 0,
@@ -575,21 +634,25 @@ export class SeoCockpitService extends SupabaseBaseService {
     totalUrls: number,
     googlebotAbsent: boolean,
     queueFailed: number,
+    contentCompletionPct: number,
   ): number {
     let score = 100;
 
-    // Pénalité pour URLs à risque
+    // Content completeness (40% weight) - most important factor
+    score -= Math.round((1 - contentCompletionPct / 100) * 40);
+
+    // URLs at risk penalty (20% weight)
     if (totalUrls > 0) {
       const riskRatio = urlsAtRisk / totalUrls;
-      score -= Math.min(40, riskRatio * 100);
+      score -= Math.min(20, riskRatio * 100);
     }
 
-    // Pénalité si Googlebot absent
+    // Googlebot absent penalty (20% weight)
     if (googlebotAbsent) {
       score -= 20;
     }
 
-    // Pénalité pour échecs de queue
+    // Queue failures penalty (20% weight)
     score -= Math.min(20, queueFailed * 2);
 
     return Math.max(0, Math.round(score));

@@ -237,7 +237,7 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
       const { data: pages, error: pagesError } = await this.supabase
         .from('__seo_page')
         .select(
-          'id, url, entity_id, page_type, meta_robots, canonical_url, status_target, last_published_at',
+          'id, url, entity_id, page_type, meta_robots, canonical_url, status_target, last_published_at, title, meta_description',
         )
         .eq('is_indexable_hint', true);
       // Note: On ne filtre plus status_target ici pour détecter les erreurs
@@ -376,8 +376,13 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
               ? 70
               : 50;
 
-        // 2. Demand (heuristique - TODO: brancher sur logs/GSC)
-        const demand = 60;
+        // 2. Demand: differentiate by page type since GSC data not available
+        const demand =
+          page.page_type === 'canonical'
+            ? 75
+            : page.page_type === 'product'
+              ? 50
+              : 30;
 
         // 3. GraphStrength (liens entrants pondérés)
         const graphStrength = Math.min(
@@ -395,8 +400,20 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
 
         // Risques
         const orphanRisk = links.total === 0 ? 100 : links.total < 2 ? 40 : 0;
-        const duplicationRisk = 10; // TODO: détecter vraies duplications
-        const thinContentRisk = 0; // TODO: détecter contenu < 300 mots
+        // Duplication risk: pages without unique title/description are at higher risk
+        const duplicationRisk =
+          !page.title && !page.meta_description
+            ? 60
+            : !page.title || !page.meta_description
+              ? 30
+              : 5;
+        // Thin content risk: pages without title or description are thin
+        const thinContentRisk =
+          !page.title && !page.meta_description
+            ? 80
+            : !page.meta_description
+              ? 40
+              : 0;
 
         // Calculer le score avec l'algorithme ultra robuste
         const score = this.scoreEntity({

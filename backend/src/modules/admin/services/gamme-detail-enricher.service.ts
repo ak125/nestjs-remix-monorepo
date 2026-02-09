@@ -130,15 +130,14 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           )
           .eq('cgc_pg_id', pgIdStr)
           .limit(500),
-        // 8. V-Level
+        // 8. V-Level (from __seo_keywords - the source of truth for V-Levels)
         this.supabase
-          .from('gamme_seo_metrics')
-          .select(
-            'id, gamme_name, model_name, brand, variant_name, energy, v_level, rank, score, search_volume, updated_at',
-          )
-          .eq('gamme_id', pgIdStr)
+          .from('__seo_keywords')
+          .select('id, keyword, model, energy, v_level, volume, updated_at')
+          .eq('pg_id', pgId)
+          .in('v_level', ['V1', 'V2', 'V3', 'V4', 'V5'])
           .order('v_level', { ascending: true })
-          .order('rank', { ascending: true }),
+          .order('volume', { ascending: false, nullsFirst: false }),
         // 9. Products count
         this.supabase
           .from('pieces')
@@ -156,7 +155,7 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
       const { data: rawFamilySwitches } = rawFamilySwitchesResult;
       const { data: articles } = articlesResult;
       const { data: rawVehicles } = rawVehiclesResult;
-      const { data: vLevelData } = vLevelResult;
+      const { data: rawVLevelData } = vLevelResult;
       const { count: productsCount } = productsCountResult;
 
       if (gammeError || !gamme) {
@@ -165,6 +164,20 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           message: `Gamme ${pgId} non trouvee`,
         });
       }
+
+      // Map __seo_keywords rows to VLevelItem format expected by frontend
+      const vLevelData = (rawVLevelData || []).map((kw: any) => ({
+        id: kw.id,
+        gamme_name: gamme.pg_name || '',
+        model_name: kw.model || '',
+        brand: '',
+        variant_name: kw.keyword || '',
+        energy: kw.energy || 'unknown',
+        v_level: kw.v_level || 'V4',
+        rank: 0,
+        search_volume: kw.volume || 0,
+        updated_at: kw.updated_at,
+      }));
 
       // Group Item Switches by alias - ALL variations
       const switchGroups = this.groupItemSwitches(rawSwitches || []);
@@ -176,11 +189,11 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
 
       // Group by V-Level
       const vLevelGrouped = {
-        v1: (vLevelData || []).filter((v) => v.v_level === 'V1'),
-        v2: (vLevelData || []).filter((v) => v.v_level === 'V2'),
-        v3: (vLevelData || []).filter((v) => v.v_level === 'V3'),
-        v4: (vLevelData || []).filter((v) => v.v_level === 'V4'),
-        v5: (vLevelData || []).filter((v) => v.v_level === 'V5'),
+        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
+        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
+        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
+        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
+        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
       };
 
       // Enrich vehicles with marque/modele/type names

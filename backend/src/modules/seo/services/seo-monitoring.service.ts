@@ -40,6 +40,11 @@ export interface MonitoringReport {
   alerts: string[];
 }
 
+export interface GscStatus {
+  connected: false;
+  message: string;
+}
+
 @Injectable()
 export class SeoMonitoringService {
   private readonly logger = new Logger(SeoMonitoringService.name);
@@ -178,36 +183,16 @@ export class SeoMonitoringService {
    * Obtenir les stats d'un sitemap depuis Google Search Console
    * TODO: Implémenter l'intégration réelle avec Search Console API
    */
-  private async getSitemapStatsFromSearchConsole(url: string): Promise<{
+  private async getSitemapStatsFromSearchConsole(_url: string): Promise<{
     discovered: boolean;
     indexed: number;
     errors: number;
     warnings: number;
   }> {
-    // TODO: Utiliser googleapis pour appeler Search Console API
-    // https://developers.google.com/webmaster-tools/v1/sitemaps
-
-    /*
-    const { google } = require('googleapis');
-    const searchconsole = google.searchconsole('v1');
-    
-    const res = await searchconsole.sitemaps.get({
-      siteUrl: this.baseUrl,
-      feedpath: url,
-    });
-    
+    // GSC API not configured - return honest zeros
+    // When GSC is integrated, this will return real data
     return {
-      discovered: res.data.isPending === false,
-      indexed: res.data.contents?.[0]?.submitted || 0,
-      errors: res.data.errors || 0,
-      warnings: res.data.warnings || 0,
-    };
-    */
-
-    // Placeholder jusqu'à intégration API
-    this.logger.debug(`📡 [TODO] Appel Search Console API pour ${url}`);
-    return {
-      discovered: true,
+      discovered: false,
       indexed: 0,
       errors: 0,
       warnings: 0,
@@ -218,20 +203,14 @@ export class SeoMonitoringService {
    * Vérifier la couverture d'indexation globale
    */
   private async checkIndexCoverage(): Promise<IndexCoverage> {
-    // TODO: Appeler Search Console API pour obtenir index coverage
-    // https://developers.google.com/webmaster-tools/v1/urlInspection.index/inspect
-
-    const totalUrls = 150000; // Estimation (à obtenir depuis les sitemaps)
-    const indexedUrls = 120000; // TODO: Obtenir depuis Search Console
-    const excludedUrls = 25000;
-    const errorUrls = 5000;
-
+    // GSC API not configured - no real index coverage data available
+    // These values will be populated when Google Search Console API is integrated
     return {
-      totalUrls,
-      indexedUrls,
-      excludedUrls,
-      errorUrls,
-      coverage: (indexedUrls / totalUrls) * 100,
+      totalUrls: 0,
+      indexedUrls: 0,
+      excludedUrls: 0,
+      errorUrls: 0,
+      coverage: 0,
     };
   }
 
@@ -239,15 +218,8 @@ export class SeoMonitoringService {
    * Détecter les erreurs d'URL
    */
   private async detectUrlErrors(): Promise<UrlError[]> {
-    // TODO: Appeler Search Console API pour obtenir les erreurs
-    // https://developers.google.com/webmaster-tools/v1/urlInspection.index/inspect
-
-    const errors: UrlError[] = [];
-
-    // Placeholder
-    this.logger.debug('📡 [TODO] Détection erreurs URL via Search Console API');
-
-    return errors;
+    // GSC API not configured - no URL error data available
+    return [];
   }
 
   /**
@@ -389,27 +361,10 @@ export class SeoMonitoringService {
    * Soumettre un sitemap à Google Search Console
    * Manuel (à appeler via endpoint API)
    */
-  async submitSitemapToSearchConsole(sitemapUrl: string): Promise<boolean> {
-    try {
-      // TODO: Utiliser Search Console API pour soumettre
-      // https://developers.google.com/webmaster-tools/v1/sitemaps/submit
-
-      /*
-      const { google } = require('googleapis');
-      const searchconsole = google.searchconsole('v1');
-      
-      await searchconsole.sitemaps.submit({
-        siteUrl: this.baseUrl,
-        feedpath: sitemapUrl,
-      });
-      */
-
-      this.logger.log(`✅ Sitemap soumis à Search Console: ${sitemapUrl}`);
-      return true;
-    } catch (error) {
-      this.logger.error(`❌ Erreur soumission sitemap ${sitemapUrl}:`, error);
-      return false;
-    }
+  async submitSitemapToSearchConsole(_sitemapUrl: string): Promise<boolean> {
+    // GSC API not configured - cannot submit sitemaps
+    this.logger.warn('GSC API not configured - sitemap submission skipped');
+    return false;
   }
 
   /**
