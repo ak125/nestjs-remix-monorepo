@@ -6,6 +6,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
+import { VehicleSearchService } from './services/search/vehicle-search.service';
+import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
@@ -26,7 +28,11 @@ import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 export class VehiclesFormsController {
   private readonly logger = new Logger(VehiclesFormsController.name);
 
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly vehicleSearchService: VehicleSearchService,
+    private readonly vehicleTypesService: VehicleTypesService,
+  ) {}
 
   /**
    * GET /api/vehicles/forms/models
@@ -40,7 +46,7 @@ export class VehiclesFormsController {
     );
 
     try {
-      // Pour récupérer tous les modèles, on fait appel à la recherche avancée
+      // Use VehiclesService.searchAdvanced for now (different signature than VehicleSearchService)
       const result = await this.vehiclesService.searchAdvanced(
         query.search || '',
         1000,
@@ -76,28 +82,25 @@ export class VehiclesFormsController {
     try {
       // Si modelId est fourni, utiliser l'endpoint spécifique
       if (query.modelId) {
-        const result = await this.vehiclesService.findTypesByModel(
-          query.modelId.toString(),
+        const result = await this.vehicleTypesService.getTypesByModel(
+          parseInt(query.modelId, 10),
           {
             search: query.search,
             limit: parseInt(query.limit) || 200,
             page: parseInt(query.page) || 0,
+            includeEngine: true,
           },
         );
 
         // Adapter le format pour correspondre à celui attendu par le TypeSelector
         const formattedTypes = result.data.map((type) => ({
-          type_id: type.type_id,
-          type_name: type.type_name,
-          type_year_from: type.type_year_from,
-          type_year_to: type.type_year_to,
-          type_engine_description: type.type_engine_description,
-          type_power_ps: type.type_power_ps
-            ? parseInt(type.type_power_ps)
-            : undefined,
-          type_power_kw: type.type_power_kw
-            ? parseInt(type.type_power_kw)
-            : undefined,
+          type_id: type.id,
+          type_name: type.name,
+          type_year_from: type.yearFrom,
+          type_year_to: type.yearTo,
+          type_engine_description: type.engine,
+          type_power_ps: type.power ? parseInt(type.power) : undefined,
+          type_power_kw: type.powerKw ? parseInt(type.powerKw) : undefined,
         }));
 
         const responseTime = Date.now() - startTime;
@@ -107,7 +110,7 @@ export class VehiclesFormsController {
         return formattedTypes;
       }
 
-      // Sinon, récupérer tous les types
+      // Sinon, récupérer tous les types via VehiclesService (same signature)
       const result = await this.vehiclesService.searchAdvanced(
         query.search || '',
         2000,
@@ -134,6 +137,7 @@ export class VehiclesFormsController {
    */
   @Get('search')
   async searchVehicles(@Query() query: Record<string, string>) {
+    // Use VehiclesService.searchAdvanced for now (different signature than VehicleSearchService)
     return this.vehiclesService.searchAdvanced(
       query.q || query.search || '',
       100,

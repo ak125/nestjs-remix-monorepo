@@ -12,6 +12,11 @@ import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
+import { VehicleModelsService } from './services/data/vehicle-models.service';
+import { VehicleTypesService } from './services/data/vehicle-types.service';
+import { VehicleSearchService } from './services/search/vehicle-search.service';
+import { VehicleMineService } from './services/search/vehicle-mine.service';
+import { VehicleMetaService } from './services/vehicle-meta.service';
 import { PopularGammesService } from '../catalog/services/popular-gammes.service';
 import { VehicleRpcService } from './services/vehicle-rpc.service';
 import { BrandBestsellersService } from './services/brand-bestsellers.service';
@@ -27,6 +32,11 @@ export class VehiclesController {
   constructor(
     private readonly vehiclesService: VehiclesService,
     private readonly vehicleBrandsService: VehicleBrandsService,
+    private readonly vehicleModelsService: VehicleModelsService,
+    private readonly vehicleTypesService: VehicleTypesService,
+    private readonly vehicleSearchService: VehicleSearchService,
+    private readonly vehicleMineService: VehicleMineService,
+    private readonly vehicleMetaService: VehicleMetaService,
     private readonly popularGammesService: PopularGammesService,
     private readonly vehicleRpcService: VehicleRpcService,
     private readonly brandBestsellersService: BrandBestsellersService,
@@ -54,12 +64,12 @@ export class VehiclesController {
   @Get('brands')
   async getAllBrands(@Query() query: Record<string, string>) {
     const params = this.parseQueryParams(query);
-    return this.vehiclesService.findAll(params);
+    return this.vehicleBrandsService.getBrands(params);
   }
 
   @Get('brands/:brandId')
   async getBrandById(@Param('brandId') brandId: string) {
-    return this.vehiclesService.getBrandById(brandId);
+    return this.vehicleBrandsService.getBrandById(parseInt(brandId, 10));
   }
 
   @Get('brands/:brandId/models')
@@ -72,10 +82,13 @@ export class VehiclesController {
     params.brandId = brandId;
 
     // 🔍 Header pour traçabilité du cache (debugging)
-    res.setHeader('X-Cache-Source', 'vehicles.service.findModelsByBrand');
+    res.setHeader('X-Cache-Source', 'vehicleModelsService.getModelsByBrand');
     res.setHeader('X-Filter-Year', query.year || 'none');
 
-    return this.vehiclesService.findModelsByBrand(brandId, params);
+    return this.vehicleModelsService.getModelsByBrand(
+      parseInt(brandId, 10),
+      params,
+    );
   }
 
   @Get('brands/:brandId/years')
@@ -85,7 +98,10 @@ export class VehiclesController {
   ) {
     const params = this.parseQueryParams(query);
     params.brandId = brandId;
-    return this.vehiclesService.findYearsByBrand(brandId, params);
+    return this.vehicleBrandsService.getYearsByBrand(
+      parseInt(brandId, 10),
+      params,
+    );
   }
 
   @Get('models/:modelId/types')
@@ -101,7 +117,10 @@ export class VehiclesController {
       params.year = parseInt(query.year);
     }
 
-    return this.vehiclesService.findTypesByModel(modelId, params);
+    return this.vehicleTypesService.getTypesByModel(parseInt(modelId, 10), {
+      ...params,
+      includeEngine: true,
+    });
   }
 
   @Get('stats')
@@ -117,27 +136,28 @@ export class VehiclesController {
     if (!searchTerm) {
       return { brands: [], models: [], types: [], total: 0, searchTerm: '' };
     }
+    // Use VehiclesService for now - searchAdvanced has different signature in VehicleSearchService
     return this.vehiclesService.searchAdvanced(searchTerm, limit || 20);
   }
 
   @Get('search/mine/:code')
   async searchByMineCode(@Param('code') mineCode: string) {
-    return this.vehiclesService.searchByMineCode(mineCode);
+    return this.vehicleMineService.searchByMineCode(mineCode);
   }
 
   @Get('search/cnit/:code')
   async searchByCnit(@Param('code') cnitCode: string) {
-    return this.vehiclesService.searchByCnit(cnitCode);
+    return this.vehicleSearchService.searchByCnit(cnitCode);
   }
 
   @Get('types/:typeId')
   async getVehicleType(@Param('typeId') typeId: string) {
-    return this.vehiclesService.getTypeById(parseInt(typeId));
+    return this.vehicleTypesService.getTypeById(parseInt(typeId, 10), true);
   }
 
   @Get('mines/model/:id')
   async getMinesByModel(@Param('id') modelId: string) {
-    return this.vehiclesService.getMinesByModel(modelId);
+    return this.vehicleMineService.getMinesByModel(parseInt(modelId, 10));
   }
 
   @Get('test-mines')
@@ -166,7 +186,7 @@ export class VehiclesController {
 
   @Get('meta-tags/:typeId')
   async getMetaTagsByTypeId(@Param('typeId') typeId: string) {
-    return this.vehiclesService.getMetaTagsByTypeId(parseInt(typeId));
+    return this.vehicleMetaService.getMetaTagsByTypeId(parseInt(typeId, 10));
   }
 
   /**
