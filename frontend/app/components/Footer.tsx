@@ -36,7 +36,8 @@ export const Footer = () => {
                   href="https://facebook.com/automecanik"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2 rounded-full"
+                  aria-label="Suivez-nous sur Facebook"
+                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
                 >
                   <Facebook size={20} />
                 </a>
@@ -44,7 +45,8 @@ export const Footer = () => {
                   href="https://twitter.com/automecanik"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2 rounded-full"
+                  aria-label="Suivez-nous sur Twitter"
+                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
                 >
                   <Twitter size={20} />
                 </a>
@@ -52,7 +54,8 @@ export const Footer = () => {
                   href="https://linkedin.com/company/automecanik"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2 rounded-full"
+                  aria-label="Suivez-nous sur LinkedIn"
+                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
                 >
                   <Linkedin size={20} />
                 </a>
@@ -60,7 +63,8 @@ export const Footer = () => {
                   href="https://instagram.com/automecanik"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2 rounded-full"
+                  aria-label="Suivez-nous sur Instagram"
+                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
                 >
                   <Instagram size={20} />
                 </a>
@@ -68,7 +72,8 @@ export const Footer = () => {
                   href="https://youtube.com/automecanik"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2 rounded-full"
+                  aria-label="Suivez-nous sur YouTube"
+                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
                 >
                   <Youtube size={20} />
                 </a>
@@ -244,7 +249,7 @@ export const Footer = () => {
       </footer>
 
       {/* Navigation mobile en bas (conservée pour mobile) */}
-      <footer className="md:hidden overflow-hidden px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 mt-auto bg-lightTurquoise">
+      <footer className="md:hidden sticky bottom-0 z-40 overflow-hidden px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 bg-lightTurquoise border-t border-lightTurquoise/50">
         <FooterLinkItem href="/" icon={<Home />} label="Accueil" />
         <FooterLinkItem
           href="/#catalogue"

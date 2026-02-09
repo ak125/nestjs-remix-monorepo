@@ -117,7 +117,7 @@ const ChatWidget = memo(function ChatWidget({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50 group"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50 group"
         aria-label="Ouvrir le chat"
       >
         <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -129,8 +129,10 @@ const ChatWidget = memo(function ChatWidget({
 
   return (
     <div
-      className={`fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl z-50 flex flex-col transition-all duration-300 ${
-        isMinimized ? "w-80 h-14" : "w-96 h-[32rem]"
+      className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 bg-white rounded-2xl shadow-2xl z-50 flex flex-col transition-all duration-300 ${
+        isMinimized
+          ? "w-[calc(100vw-2rem)] sm:w-80 h-14"
+          : "w-[calc(100vw-2rem)] sm:w-96 h-[32rem]"
       }`}
     >
       {/* Header */}

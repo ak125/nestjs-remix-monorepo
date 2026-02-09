@@ -8,10 +8,6 @@ import { CheckCircle2, ChevronRight, Shield, Truck, Users } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
-import { formatCatalogCount } from "~/utils/format-catalog-count";
-import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import HomeBlogSection from "../components/home/HomeBlogSection";
 import HomeBottomSections from "../components/home/HomeBottomSections";
@@ -28,6 +24,10 @@ import { useScrollBehavior } from "../hooks/useScrollBehavior";
 import { useSearchState } from "../hooks/useSearchState";
 // hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { formatCatalogCount } from "~/utils/format-catalog-count";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -607,7 +607,7 @@ export default function TestHomepageModern() {
           ) : (
             <>
               {/* Grid simple sans groupement alphabétique - Plus lisible */}
-              <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 xl:grid-cols-8 gap-4 max-w-7xl mx-auto mb-16">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-7xl mx-auto mb-16">
                 {homeData.brands
                   .sort((a, b) => a.name.localeCompare(b.name, "fr"))
                   .map((brand, index) => (

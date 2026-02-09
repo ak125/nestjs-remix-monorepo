@@ -16,10 +16,10 @@ import {
   FileText,
 } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
-import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { logger } from "~/utils/logger";
 
 interface VehicleSelectorProps {
   // 🎨 Mode d'affichage
@@ -484,7 +484,7 @@ const VehicleSelector = memo(function VehicleSelector({
           <div className="flex gap-2 mt-4 p-1 bg-gray-100 rounded-lg">
             <button
               onClick={() => setSearchMode("vehicle")}
-              className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${
                 searchMode === "vehicle"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -495,7 +495,7 @@ const VehicleSelector = memo(function VehicleSelector({
             </button>
             <button
               onClick={() => setSearchMode("mine")}
-              className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${
                 searchMode === "mine"
                   ? "bg-white text-purple-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"

@@ -348,7 +348,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         {/* DROITE : Actions utilisateur */}
         <div className="flex items-center gap-2">
           {/* 🚚 Livraison gratuite - Desktop avec animation */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-semantic-success/10 via-semantic-success/5 to-semantic-success/10 rounded-xl border border-semantic-success/20 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
+          <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-semantic-success/10 via-semantic-success/5 to-semantic-success/10 rounded-xl border border-semantic-success/20 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
             <div className="relative">
               <Truck className="w-4 h-4 text-semantic-success group-hover:translate-x-0.5 transition-transform" />
               <div className="absolute -inset-1 bg-semantic-success/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
