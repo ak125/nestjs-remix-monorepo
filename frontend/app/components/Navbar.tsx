@@ -361,7 +361,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {/* 📞 Téléphone cliquable - Desktop minimaliste avec icône uniquement */}
           <a
             href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-            className="hidden lg:flex items-center justify-center w-10 h-10 bg-gradient-to-br from-semantic-info/10 via-secondary-500/10 to-semantic-info/10 rounded-xl border border-semantic-info/20 hover:border-semantic-info/80 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
+            className="hidden lg:flex items-center justify-center w-11 h-11 bg-gradient-to-br from-semantic-info/10 via-secondary-500/10 to-semantic-info/10 rounded-xl border border-semantic-info/20 hover:border-semantic-info/80 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
             aria-label={`Appeler ${SITE_CONFIG.contact.phone.display}`}
             title={`Appeler ${SITE_CONFIG.contact.phone.display}`}
           >
@@ -506,7 +506,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       {showSearch && (
         <div className="md:hidden fixed inset-0 z-50 bg-white animate-in fade-in slide-in-from-top duration-300">
           {/* Header avec gradient */}
-          <div className="p-4 border-b border-neutral-200 bg-gradient-to-r from-semantic-info/10 to-secondary-500/10">
+          <div className="p-4 pt-[max(1rem,env(safe-area-inset-top))] border-b border-neutral-200 bg-gradient-to-r from-semantic-info/10 to-secondary-500/10">
             <form onSubmit={handleSearch} className="flex items-center gap-3">
               <button
                 type="button"
@@ -514,7 +514,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                   setShowSearch(false);
                   setSearchQuery("");
                 }}
-                className="p-2 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
                 aria-label="Fermer"
               >
                 <X className="w-6 h-6 text-neutral-700" />

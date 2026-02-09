@@ -244,7 +244,7 @@ export const Footer = () => {
       </footer>
 
       {/* Navigation mobile en bas (conservée pour mobile) */}
-      <footer className="md:hidden overflow-x-auto px-3 py-2 flex items-center justify-between gap-4 mt-auto bg-lightTurquoise">
+      <footer className="md:hidden overflow-hidden px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 mt-auto bg-lightTurquoise">
         <FooterLinkItem href="/" icon={<Home />} label="Accueil" />
         <FooterLinkItem
           href="/#catalogue"
@@ -271,7 +271,7 @@ const FooterLinkItem = ({
   return (
     <NavLink
       className={({ isActive }) =>
-        `flex flex-col items-center text-sm ${isActive ? "text-vert" : "text-bleu"}`
+        `flex flex-col items-center justify-center text-xs min-h-[44px] min-w-[44px] ${isActive ? "text-vert" : "text-bleu"}`
       }
       to={href}
     >

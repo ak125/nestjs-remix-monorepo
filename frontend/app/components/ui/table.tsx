@@ -35,9 +35,14 @@ interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
 
 export function Table({ className = "", children, ...props }: TableProps) {
   return (
-    <table className={`w-full caption-bottom text-sm ${className}`} {...props}>
-      {children}
-    </table>
+    <div className="w-full overflow-x-auto">
+      <table
+        className={`w-full caption-bottom text-sm ${className}`}
+        {...props}
+      >
+        {children}
+      </table>
+    </div>
   );
 }
 

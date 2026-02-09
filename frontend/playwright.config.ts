@@ -101,6 +101,15 @@ export default defineConfig({
             ...devices['iPhone 12'],
           },
         },
+        // Audit mobile complet (toutes pages, 3 viewports, Chromium)
+        {
+          name: 'mobile-audit',
+          use: {
+            ...devices['Pixel 5'],
+            baseURL: 'http://localhost:3000',
+          },
+          testMatch: 'mobile-audit-complete.spec.ts',
+        },
       ],
 
   // Serveur web pour les tests (optionnel, si besoin de démarrer le serveur auto)

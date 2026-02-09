@@ -20,7 +20,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "sonner";
 
-import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import {
   Error401,
@@ -44,6 +43,7 @@ import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
+import { logger } from "~/utils/logger";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 // @ts-ignore
@@ -109,7 +109,10 @@ export const meta: MetaFunction = () => [
     content:
       "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
   },
-  { viewport: "width=device-width, initial-scale=1" },
+  {
+    name: "viewport",
+    content: "width=device-width, initial-scale=1, viewport-fit=cover",
+  },
   { name: "theme-color", content: "#2563eb" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
   { property: "og:image:width", content: "1200" },
@@ -327,7 +330,10 @@ function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col" {...pageRoleAttrs}>
+    <div
+      className="min-h-screen flex flex-col max-w-[100vw]"
+      {...pageRoleAttrs}
+    >
       <Navbar logo={logo} />
       <main className="flex-grow flex flex-col">
         <div className="flex-grow">{children}</div>
@@ -356,6 +362,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
       <head suppressHydrationWarning>
+        <meta charSet="utf-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
         <Meta />
         <Links />
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
@@ -526,7 +537,10 @@ export function ErrorBoundary() {
     <html lang="fr">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
         <meta name="robots" content="noindex, nofollow" />
         <title>Erreur | Automecanik</title>
         <Links />
