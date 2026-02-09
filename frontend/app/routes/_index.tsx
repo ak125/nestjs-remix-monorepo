@@ -15,6 +15,7 @@ import HomeCertifications from "../components/home/HomeCertifications";
 import HomeFAQSection from "../components/home/HomeFAQSection";
 import HomeSearchCards from "../components/home/HomeSearchCards";
 import ReferenceSearchModal from "../components/home/ReferenceSearchModal";
+
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
@@ -687,7 +688,7 @@ export default function TestHomepageModern() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
           aria-label="Retour en haut de page"
         >
           <ChevronRight className="w-6 h-6 -rotate-90" />

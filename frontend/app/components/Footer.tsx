@@ -249,7 +249,7 @@ export const Footer = () => {
       </footer>
 
       {/* Navigation mobile en bas (conservée pour mobile) */}
-      <footer className="md:hidden sticky bottom-0 z-40 overflow-hidden px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 bg-lightTurquoise border-t border-lightTurquoise/50">
+      <footer className="md:hidden fixed bottom-0 left-0 right-0 z-40 overflow-hidden px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 bg-lightTurquoise border-t border-lightTurquoise/50">
         <FooterLinkItem href="/" icon={<Home />} label="Accueil" />
         <FooterLinkItem
           href="/#catalogue"

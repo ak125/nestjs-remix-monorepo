@@ -31,7 +31,14 @@ import {
   useLocation,
   useRouteError,
 } from "@remix-run/react";
-import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 // 🚀 LCP OPTIMIZATION: fetchGammePageData supprimé (redondant avec RM V2 RPC)
 
 // ========================================
@@ -39,12 +46,14 @@ import { lazy, Suspense, useCallback, useEffect, useMemo } from "react";
 // ========================================
 
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
+import {
+  MobileBottomBar,
+  MobileBottomBarSpacer,
+} from "../components/layout/MobileBottomBar";
 import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import {
@@ -59,6 +68,7 @@ import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesRecommendedSection } from "../components/pieces/PiecesRecommendedSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
+import { FrictionReducerGroup } from "../components/trust/FrictionReducer";
 // VehicleSelector supprimé - remplacé par badge véhicule avec lien "Changer"
 
 // Hook custom
@@ -104,6 +114,8 @@ import {
   buildPiecesBreadcrumbs,
   buildVoirAussiLinks,
 } from "../utils/url-builder.utils";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -442,6 +454,7 @@ export default function PiecesVehicleRoute() {
   const data = useLoaderData<typeof loader>();
   const location = useLocation(); // 🆕 Pour Schema.org breadcrumb
   const { trackClick, trackImpression } = useSeoLinkTracking();
+  const [showFilters, setShowFilters] = useState(false);
 
   // Hook custom pour la logique de filtrage (gère son propre état)
   const {
@@ -546,7 +559,7 @@ export default function PiecesVehicleRoute() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative overflow-x-clip">
       {/* Pattern d'arrière-plan subtil */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
 
@@ -585,13 +598,14 @@ export default function PiecesVehicleRoute() {
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         {/* 🚗 Badge véhicule actuel avec lien pour changer */}
-        <div className="mb-6 sticky top-4 z-20 animate-in fade-in slide-in-from-top duration-500">
-          <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm p-4">
-            <div className="flex items-center justify-between gap-4">
+        {/* Vehicle badge - full-width mobile, compact desktop */}
+        <div className="mb-6 sticky top-0 md:top-4 z-20 animate-in fade-in slide-in-from-top duration-500 -mx-4 md:mx-0">
+          <div className="bg-slate-900 md:bg-white/95 md:backdrop-blur-sm md:border md:border-gray-200 md:rounded-xl md:shadow-sm px-4 py-3 md:p-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500/20 md:bg-blue-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-5 h-5 text-blue-600"
+                    className="w-4 h-4 md:w-5 md:h-5 text-blue-400 md:text-blue-600"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -600,10 +614,10 @@ export default function PiecesVehicleRoute() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-400 md:text-gray-500 hidden md:block">
                     Véhicule sélectionné
                   </div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="text-sm md:text-base font-semibold text-white md:text-gray-900">
                     {data.vehicle.marque} {data.vehicle.modele}{" "}
                     {data.vehicle.type}
                   </div>
@@ -611,7 +625,7 @@ export default function PiecesVehicleRoute() {
               </div>
               <a
                 href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-blue-400 md:text-blue-600 hover:text-blue-300 md:hover:text-blue-800 md:hover:bg-blue-50 rounded-lg transition-colors"
               >
                 Changer
               </a>
@@ -620,8 +634,10 @@ export default function PiecesVehicleRoute() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar filtres et catalogue */}
-          <aside className="lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700">
+          {/* Sidebar filtres et catalogue — hidden on mobile, toggle via MobileBottomBar */}
+          <aside
+            className={`lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
+          >
             {/* Filtres */}
             <div className="sticky top-24">
               <PiecesFilterSidebar
@@ -667,6 +683,14 @@ export default function PiecesVehicleRoute() {
                 filteredCount={filteredProducts.length}
                 minPrice={data.minPrice}
                 selectedPiecesCount={selectedPieces.length}
+              />
+
+              {/* Trust bar - reassurance mobile */}
+              <FrictionReducerGroup
+                assurances={["return", "secure-payment", "support"]}
+                variant="compact"
+                layout="grid"
+                className="py-3 border-y border-gray-100"
               />
 
               {/* Affichage des pièces selon le mode */}
@@ -833,6 +857,39 @@ export default function PiecesVehicleRoute() {
 
       {/* Bouton retour en haut */}
       <ScrollToTop />
+
+      {/* Mobile bottom bar : bouton Filtrer */}
+      <MobileBottomBarSpacer />
+      <MobileBottomBar>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+            />
+          </svg>
+          {showFilters ? "Masquer filtres" : "Filtrer"}
+          {(activeFilters.brands.length > 0 ||
+            activeFilters.quality !== "all" ||
+            activeFilters.priceRange !== "all") && (
+            <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">
+              {activeFilters.brands.length +
+                (activeFilters.quality !== "all" ? 1 : 0) +
+                (activeFilters.priceRange !== "all" ? 1 : 0)}
+            </span>
+          )}
+        </button>
+      </MobileBottomBar>
 
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === "development" && (

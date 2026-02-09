@@ -22,6 +22,8 @@ import {
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getOptionalUser } from "../auth/unified.server";
+import { getCart } from "../services/cart.server";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
@@ -34,8 +36,6 @@ import { trackBeginCheckout } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { getOptionalUser } from "../auth/unified.server";
-import { getCart } from "../services/cart.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {
@@ -123,7 +123,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
           userProfile = profileData.data || profileData;
         }
       } catch (err) {
-        logger.warn("⚠️ Checkout loader - Impossible de charger le profil:", err);
+        logger.warn(
+          "⚠️ Checkout loader - Impossible de charger le profil:",
+          err,
+        );
       }
     }
 
@@ -185,7 +188,10 @@ export async function action({ request }: ActionFunctionArgs) {
           });
         }
       } catch (err) {
-        logger.warn("⚠️ [Checkout Action] Impossible de charger le profil:", err);
+        logger.warn(
+          "⚠️ [Checkout Action] Impossible de charger le profil:",
+          err,
+        );
       }
     }
     logger.log(
@@ -466,7 +472,7 @@ export default function CheckoutPage() {
   });
 
   // Le guest ne peut soumettre que si email vérifié et nouveau
-  const guestReady = !user ? (emailChecked && !emailExists) : true;
+  const guestReady = !user ? emailChecked && !emailExists : true;
   const canSubmit = !isSubmitting && guestReady;
 
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -739,7 +745,9 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={handleEmailCheck}
-                          disabled={isCheckingEmail || !guestEmail.includes("@")}
+                          disabled={
+                            isCheckingEmail || !guestEmail.includes("@")
+                          }
                           className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {isCheckingEmail ? "..." : "Continuer"}
@@ -755,7 +763,8 @@ export default function CheckoutPage() {
                         Un compte existe avec cet email
                       </h3>
                       <p className="text-sm text-orange-700 mb-4">
-                        Connectez-vous pour retrouver vos informations et passer commande directement.
+                        Connectez-vous pour retrouver vos informations et passer
+                        commande directement.
                       </p>
                       <div className="space-y-3">
                         <input
@@ -808,15 +817,28 @@ export default function CheckoutPage() {
                   {emailChecked && !emailExists && (
                     <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
                       <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-5 h-5 text-emerald-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <p className="text-sm font-medium text-emerald-900">
                           {guestEmail}
                         </p>
                         <button
                           type="button"
-                          onClick={() => { setEmailChecked(false); setGuestEmail(""); }}
+                          onClick={() => {
+                            setEmailChecked(false);
+                            setGuestEmail("");
+                          }}
                           className="ml-auto text-sm text-emerald-700 hover:underline"
                         >
                           Modifier
@@ -830,208 +852,211 @@ export default function CheckoutPage() {
 
             {/* Adresse de livraison : visible seulement pour les connectés OU guest avec email vérifié et nouveau */}
             {(user || (emailChecked && !emailExists)) && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="text-xl font-semibold text-slate-900">
-                    Adresse de livraison
-                  </h2>
-                </div>
-                {/* Bouton Modifier visible seulement en mode récapitulatif */}
-                {user && hasCompleteAddress && !isEditingAddress && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingAddress(true)}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                  >
-                    Modifier
-                  </button>
-                )}
-              </div>
-
-              {/* Mode récapitulatif : client connecté avec adresse complète */}
-              {user && hasCompleteAddress && !isEditingAddress ? (
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                  <p className="font-medium text-slate-900">
-                    {shippingAddress.firstName} {shippingAddress.lastName}
-                  </p>
-                  <p className="text-sm text-slate-600 mt-1">
-                    {shippingAddress.address}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    {shippingAddress.zipCode} {shippingAddress.city}, {shippingAddress.country}
-                  </p>
-                </div>
-              ) : (
-                /* Mode formulaire : invité ou client sans adresse ou modification */
-                <div className="space-y-4">
-                  {!user && (
-                    <p className="text-sm text-slate-500 mb-2">
-                      Requise pour l'expédition
-                    </p>
-                  )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="firstName"
-                        className="block text-sm font-medium text-slate-700 mb-1"
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        Prénom *
-                      </label>
-                      <input
-                        type="text"
-                        id="firstName"
-                        required
-                        value={shippingAddress.firstName}
-                        onChange={(e) =>
-                          setShippingAddress((prev) => ({
-                            ...prev,
-                            firstName: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Prénom"
-                      />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
                     </div>
-                    <div>
-                      <label
-                        htmlFor="lastName"
-                        className="block text-sm font-medium text-slate-700 mb-1"
-                      >
-                        Nom *
-                      </label>
-                      <input
-                        type="text"
-                        id="lastName"
-                        required
-                        value={shippingAddress.lastName}
-                        onChange={(e) =>
-                          setShippingAddress((prev) => ({
-                            ...prev,
-                            lastName: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Nom"
-                      />
-                    </div>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      Adresse de livraison
+                    </h2>
                   </div>
-                  <div>
-                    <label
-                      htmlFor="address"
-                      className="block text-sm font-medium text-slate-700 mb-1"
-                    >
-                      Adresse *
-                    </label>
-                    <input
-                      type="text"
-                      id="address"
-                      required
-                      value={shippingAddress.address}
-                      onChange={(e) =>
-                        setShippingAddress((prev) => ({
-                          ...prev,
-                          address: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Numéro et nom de rue"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="zipCode"
-                        className="block text-sm font-medium text-slate-700 mb-1"
-                      >
-                        Code postal *
-                      </label>
-                      <input
-                        type="text"
-                        id="zipCode"
-                        required
-                        pattern="[0-9]{5}"
-                        maxLength={5}
-                        value={shippingAddress.zipCode}
-                        onChange={(e) =>
-                          setShippingAddress((prev) => ({
-                            ...prev,
-                            zipCode: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="75000"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="city"
-                        className="block text-sm font-medium text-slate-700 mb-1"
-                      >
-                        Ville *
-                      </label>
-                      <input
-                        type="text"
-                        id="city"
-                        required
-                        value={shippingAddress.city}
-                        onChange={(e) =>
-                          setShippingAddress((prev) => ({
-                            ...prev,
-                            city: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Ville"
-                      />
-                    </div>
-                  </div>
-                  {/* Bouton annuler si on est en mode modification d'une adresse existante */}
-                  {user && hasCompleteAddress && isEditingAddress && (
+                  {/* Bouton Modifier visible seulement en mode récapitulatif */}
+                  {user && hasCompleteAddress && !isEditingAddress && (
                     <button
                       type="button"
-                      onClick={() => {
-                        // Restaurer l'adresse du profil
-                        setShippingAddress({
-                          civility: "M.",
-                          firstName: userProfile?.firstName || user?.firstName || "",
-                          lastName: userProfile?.lastName || user?.lastName || "",
-                          address: userProfile?.address || "",
-                          zipCode: userProfile?.zipCode || "",
-                          city: userProfile?.city || "",
-                          country: userProfile?.country || "France",
-                        });
-                        setIsEditingAddress(false);
-                      }}
-                      className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+                      onClick={() => setIsEditingAddress(true)}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
                     >
-                      Annuler et utiliser l'adresse enregistrée
+                      Modifier
                     </button>
                   )}
                 </div>
-              )}
-            </div>
+
+                {/* Mode récapitulatif : client connecté avec adresse complète */}
+                {user && hasCompleteAddress && !isEditingAddress ? (
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <p className="font-medium text-slate-900">
+                      {shippingAddress.firstName} {shippingAddress.lastName}
+                    </p>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {shippingAddress.address}
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      {shippingAddress.zipCode} {shippingAddress.city},{" "}
+                      {shippingAddress.country}
+                    </p>
+                  </div>
+                ) : (
+                  /* Mode formulaire : invité ou client sans adresse ou modification */
+                  <div className="space-y-4">
+                    {!user && (
+                      <p className="text-sm text-slate-500 mb-2">
+                        Requise pour l'expédition
+                      </p>
+                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="firstName"
+                          className="block text-sm font-medium text-slate-700 mb-1"
+                        >
+                          Prénom *
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          required
+                          value={shippingAddress.firstName}
+                          onChange={(e) =>
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              firstName: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          placeholder="Prénom"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lastName"
+                          className="block text-sm font-medium text-slate-700 mb-1"
+                        >
+                          Nom *
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          required
+                          value={shippingAddress.lastName}
+                          onChange={(e) =>
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              lastName: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          placeholder="Nom"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-slate-700 mb-1"
+                      >
+                        Adresse *
+                      </label>
+                      <input
+                        type="text"
+                        id="address"
+                        required
+                        value={shippingAddress.address}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            address: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Numéro et nom de rue"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="zipCode"
+                          className="block text-sm font-medium text-slate-700 mb-1"
+                        >
+                          Code postal *
+                        </label>
+                        <input
+                          type="text"
+                          id="zipCode"
+                          required
+                          pattern="[0-9]{5}"
+                          maxLength={5}
+                          value={shippingAddress.zipCode}
+                          onChange={(e) =>
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              zipCode: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          placeholder="75000"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="city"
+                          className="block text-sm font-medium text-slate-700 mb-1"
+                        >
+                          Ville *
+                        </label>
+                        <input
+                          type="text"
+                          id="city"
+                          required
+                          value={shippingAddress.city}
+                          onChange={(e) =>
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          placeholder="Ville"
+                        />
+                      </div>
+                    </div>
+                    {/* Bouton annuler si on est en mode modification d'une adresse existante */}
+                    {user && hasCompleteAddress && isEditingAddress && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Restaurer l'adresse du profil
+                          setShippingAddress({
+                            civility: "M.",
+                            firstName:
+                              userProfile?.firstName || user?.firstName || "",
+                            lastName:
+                              userProfile?.lastName || user?.lastName || "",
+                            address: userProfile?.address || "",
+                            zipCode: userProfile?.zipCode || "",
+                            city: userProfile?.city || "",
+                            country: userProfile?.country || "France",
+                          });
+                          setIsEditingAddress(false);
+                        }}
+                        className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+                      >
+                        Annuler et utiliser l'adresse enregistrée
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Résumé panier */}
