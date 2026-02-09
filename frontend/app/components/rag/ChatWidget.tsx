@@ -9,17 +9,17 @@
  */
 
 import { MessageCircle, X, Minimize2 } from "lucide-react";
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";
 
 interface ChatWidgetProps {
-  apiUrl?: string;
+  streamUrl?: string;
 }
 
 const ChatWidget = memo(function ChatWidget({
-  apiUrl = "/api/rag/chat",
+  streamUrl = "/api/rag/chat/stream",
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -44,64 +44,112 @@ const ChatWidget = memo(function ChatWidget({
     }
   }, [isOpen, sessionId]);
 
-  const handleSend = async (content: string) => {
-    // Add user message
-    const userMessage: ChatMessageData = {
-      id: `msg-${Date.now()}`,
-      role: "user",
-      content,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
+  const handleSend = useCallback(
+    async (content: string) => {
+      // Add user message
+      const userMessage: ChatMessageData = {
+        id: `msg-${Date.now()}`,
+        role: "user",
+        content,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
 
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // Create placeholder assistant message for progressive fill
+      const assistantId = `msg-${Date.now() + 1}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantId,
+          role: "assistant",
+          content: "",
+          timestamp: new Date(),
         },
-        body: JSON.stringify({
-          message: content,
-          sessionId,
-        }),
-      });
+      ]);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      try {
+        const response = await fetch(streamUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: content, sessionId }),
+        });
+
+        if (!response.ok || !response.body) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let currentEvent = "";
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("event: ")) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith("data: ")) {
+              const data = JSON.parse(line.slice(6));
+              switch (currentEvent) {
+                case "chunk":
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, content: m.content + data.text }
+                        : m,
+                    ),
+                  );
+                  break;
+                case "sources":
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, sources: data.sources }
+                        : m,
+                    ),
+                  );
+                  break;
+                case "metadata":
+                  if (data.sessionId) setSessionId(data.sessionId);
+                  break;
+                case "done":
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, confidence: data.confidence }
+                        : m,
+                    ),
+                  );
+                  break;
+              }
+            }
+          }
+        }
+      } catch {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? {
+                  ...m,
+                  content:
+                    "Désolé, je ne suis pas disponible pour le moment. Veuillez réessayer plus tard ou contacter notre support.",
+                }
+              : m,
+          ),
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-
-      // Add assistant message
-      const assistantMessage: ChatMessageData = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content: data.answer,
-        sources: data.sources,
-        confidence: data.confidence,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      // Update session ID if returned
-      if (data.sessionId) {
-        setSessionId(data.sessionId);
-      }
-    } catch (error) {
-      // Add error message
-      const errorMessage: ChatMessageData = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content:
-          "Désolé, je ne suis pas disponible pour le moment. Veuillez réessayer plus tard ou contacter notre support.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [streamUrl, sessionId],
+  );
 
   const handleClose = () => {
     setIsOpen(false);

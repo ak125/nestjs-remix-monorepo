@@ -1,4 +1,5 @@
 import { Injectable, HttpException, Logger } from '@nestjs/common';
+import type { Response } from 'express';
 import { ExternalServiceException } from '../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto';
@@ -84,6 +85,53 @@ export class RagProxyService {
         serviceName: 'rag',
       });
     }
+  }
+
+  /**
+   * Stream chat response via SSE.
+   * Calls /chat/v2 (blocking), then emits the response progressively.
+   */
+  async chatStream(request: ChatRequestDto, res: Response): Promise<void> {
+    try {
+      const chatResponse = await this.chat(request);
+
+      // Metadata first (immediate)
+      this.sseWrite(res, 'metadata', {
+        sessionId: chatResponse.sessionId,
+        queryType: chatResponse.queryType,
+        confidence: chatResponse.confidence,
+      });
+
+      // Stream answer word-by-word
+      const words = chatResponse.answer.split(/(\s+)/);
+      for (const word of words) {
+        if (word) {
+          this.sseWrite(res, 'chunk', { text: word });
+          await this.delay(30);
+        }
+      }
+
+      // Sources after text
+      if (chatResponse.sources?.length) {
+        this.sseWrite(res, 'sources', { sources: chatResponse.sources });
+      }
+
+      // Done
+      this.sseWrite(res, 'done', { confidence: chatResponse.confidence });
+      res.end();
+    } catch (error) {
+      this.logger.error(`SSE stream error: ${getErrorMessage(error)}`);
+      this.sseWrite(res, 'error', { message: 'Service indisponible' });
+      res.end();
+    }
+  }
+
+  private sseWrite(res: Response, event: string, data: unknown): void {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
