@@ -74,6 +74,35 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
+  test:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build packages
+        run: npm run build
+
+      - name: 🧪 Run backend tests
+        run: cd backend && npx jest --ci --verbose
+        env:
+          SUPABASE_URL: "https://mock.supabase.co"
+          SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
+
   security:
     name: 🔒 Security Audit
     runs-on: ubuntu-latest
@@ -271,7 +300,7 @@ jobs:
   deploy:
     name: 🧪 Deploy PREPROD
     runs-on: [self-hosted, Linux, X64]
-    needs: [build, lint, typecheck, core-build, import-firewall, rpc-gate-check, governance-check]
+    needs: [build, lint, typecheck, test, core-build, import-firewall, rpc-gate-check, governance-check]
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
 
     steps:
