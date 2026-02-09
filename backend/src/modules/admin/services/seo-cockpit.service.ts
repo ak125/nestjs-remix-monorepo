@@ -245,23 +245,24 @@ export class SeoCockpitService extends SupabaseBaseService {
       }
     }
 
-    // Alertes de risk flags (URLs critiques)
-    const { data: riskAlerts } = await this.supabase
-      .from('__seo_entity_health')
-      .select('url, risk_flag, urgency_score, updated_at')
-      .gte('urgency_score', 80)
-      .order('urgency_score', { ascending: false })
+    // Alertes de risk flags - from confusion pairs (actual data)
+    const { data: confusionAlerts } = await this.supabase
+      .from('__seo_confusion_pairs')
+      .select(
+        'id, gamme_a_name, gamme_b_name, pair_type, confusion_score, created_at',
+      )
+      .order('confusion_score', { ascending: false })
       .limit(20);
 
-    if (riskAlerts) {
-      for (const alert of riskAlerts) {
+    if (confusionAlerts) {
+      for (const pair of confusionAlerts) {
         alerts.push({
-          id: `risk-${alert.url}`,
+          id: `confusion-${pair.id}`,
           type: 'RISK',
-          severity: alert.urgency_score >= 90 ? 'HIGH' : 'MEDIUM',
-          message: `${alert.risk_flag}: urgency score ${alert.urgency_score}%`,
-          url: alert.url,
-          timestamp: alert.updated_at,
+          severity: (pair.confusion_score || 0) >= 80 ? 'HIGH' : 'MEDIUM',
+          message: `Confusion ${pair.pair_type}: ${pair.gamme_a_name} ↔ ${pair.gamme_b_name} (score: ${pair.confusion_score}%)`,
+          url: undefined,
+          timestamp: pair.created_at,
         });
       }
     }
@@ -282,21 +283,23 @@ export class SeoCockpitService extends SupabaseBaseService {
     limit: number = 100,
     offset: number = 0,
   ): Promise<UrlAtRisk[]> {
+    // Use confusion pairs as risk indicators (actual data exists)
     const { data } = await this.supabase
-      .from('__seo_entity_health')
-      .select('url, risk_flag, urgency_score, last_crawled, page_type')
-      .not('risk_flag', 'is', null)
-      .order('urgency_score', { ascending: false })
+      .from('__seo_confusion_pairs')
+      .select(
+        'id, gamme_a_name, gamme_b_name, pair_type, confusion_score, created_at',
+      )
+      .order('confusion_score', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (!data) return [];
 
     return data.map((row: any) => ({
-      url: row.url,
-      riskType: row.risk_flag,
-      urgencyScore: row.urgency_score || 0,
-      lastCrawled: row.last_crawled,
-      pageType: row.page_type || 'unknown',
+      url: `/pieces/${row.gamme_a_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`,
+      riskType: `CONFUSION_${row.pair_type?.toUpperCase() || 'UNKNOWN'}`,
+      urgencyScore: row.confusion_score || 50,
+      lastCrawled: row.created_at,
+      pageType: 'gamme',
     }));
   }
 
@@ -485,9 +488,15 @@ export class SeoCockpitService extends SupabaseBaseService {
     urlsAtRisk: number;
     breakdown: DashboardKpis['riskBreakdown'];
   }> {
-    const { data, count } = await this.supabase
-      .from('__seo_entity_health')
-      .select('risk_flag', { count: 'exact' });
+    // Count total URLs from __seo_page (321K+ rows)
+    const { count: totalUrls } = await this.supabase
+      .from('__seo_page')
+      .select('id', { count: 'exact', head: true });
+
+    // Count confusion pairs as risk indicators
+    const { data: confusions } = await this.supabase
+      .from('__seo_confusion_pairs')
+      .select('pair_type');
 
     const breakdown = {
       CONFUSION: 0,
@@ -498,17 +507,26 @@ export class SeoCockpitService extends SupabaseBaseService {
     };
 
     let urlsAtRisk = 0;
-    if (data) {
-      for (const row of data) {
-        if (row.risk_flag && breakdown.hasOwnProperty(row.risk_flag)) {
-          breakdown[row.risk_flag as keyof typeof breakdown]++;
-          urlsAtRisk++;
-        }
+    if (confusions) {
+      for (const _row of confusions) {
+        breakdown.CONFUSION++;
+        urlsAtRisk++;
       }
     }
 
+    // Check for orphan pages (pages without internal links, estimate from __seo_page)
+    const { count: orphanCount } = await this.supabase
+      .from('__seo_page')
+      .select('id', { count: 'exact', head: true })
+      .is('internal_links_count', null);
+
+    if (orphanCount) {
+      breakdown.ORPHAN = Math.min(orphanCount, 500); // Cap to avoid huge numbers
+      urlsAtRisk += breakdown.ORPHAN;
+    }
+
     return {
-      totalUrls: count || 0,
+      totalUrls: totalUrls || 0,
       urlsAtRisk,
       breakdown,
     };
@@ -520,29 +538,26 @@ export class SeoCockpitService extends SupabaseBaseService {
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    // 🛡️ RPC Safety Gate
-    const [last24hRes, last7dRes, avgRes, lastCrawlRes] = await Promise.all([
+    // Try __seo_crawl_hub first (has data), fallback to crawl_log
+    const [hubRes, last24hRes, last7dRes] = await Promise.all([
       this.supabase
-        .from('__seo_crawl_log')
-        .select('id', { count: 'exact', head: true })
-        .gte('crawled_at', yesterday.toISOString()),
-      this.supabase
-        .from('__seo_crawl_log')
-        .select('id', { count: 'exact', head: true })
-        .gte('crawled_at', lastWeek.toISOString()),
-      this.callRpc<number>(
-        'get_avg_crawl_response_time',
-        {},
-        { source: 'admin' },
-      ),
-      this.supabase
-        .from('__seo_crawl_log')
-        .select('crawled_at')
-        .order('crawled_at', { ascending: false })
+        .from('__seo_crawl_hub')
+        .select('last_crawl_at, total_pages_crawled, avg_response_ms')
+        .order('last_crawl_at', { ascending: false })
         .limit(1),
+      // Estimate recent crawl activity from __seo_page updates
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .gte('updated_at', yesterday.toISOString()),
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .gte('updated_at', lastWeek.toISOString()),
     ]);
 
-    const lastCrawl = lastCrawlRes.data?.[0]?.crawled_at;
+    const hub = hubRes.data?.[0];
+    const lastCrawl = hub?.last_crawl_at;
     const googlebotAbsent14d = lastCrawl
       ? new Date(lastCrawl) < twoWeeksAgo
       : true;
@@ -550,7 +565,7 @@ export class SeoCockpitService extends SupabaseBaseService {
     return {
       last24h: last24hRes.count || 0,
       last7d: last7dRes.count || 0,
-      avgResponseMs: avgRes.data || 0,
+      avgResponseMs: hub?.avg_response_ms || 0,
       googlebotAbsent14d,
     };
   }

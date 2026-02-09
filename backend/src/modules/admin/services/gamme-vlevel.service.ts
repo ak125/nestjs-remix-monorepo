@@ -44,45 +44,183 @@ export class GammeVLevelService extends SupabaseBaseService {
     super();
   }
 
-  /**
-   * 🔄 Recalcule les V-Level pour une gamme
-   * Pour l'instant: met a jour updated_at pour marquer comme recalcule
-   * TODO: Integrer le vrai pipeline de calcul V-Level
-   */
   async recalculateVLevel(pgId: number): Promise<RecalculateVLevelResult> {
     try {
       this.logger.log(`🔄 Recalculating V-Level for gamme ${pgId}`);
 
-      // Update updated_at for all records of this gamme
-      const { data, error } = await this.supabase
-        .from('gamme_seo_metrics')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('gamme_id', pgId.toString())
-        .select('id');
+      // 1. Get keywords for this gamme from __seo_keywords
+      const { data: keywords, error: kwError } = await this.supabase
+        .from('__seo_keywords')
+        .select('id, keyword, search_volume, gamme_id, energy_type')
+        .eq('gamme_id', pgId);
 
-      if (error) {
+      if (kwError) {
         this.logger.error(
-          `❌ Error updating V-Level for gamme ${pgId}:`,
-          error,
+          `❌ Error fetching keywords for gamme ${pgId}:`,
+          kwError,
         );
-        throw error;
+        throw kwError;
       }
 
-      const updatedCount = data?.length || 0;
+      if (!keywords || keywords.length === 0) {
+        // No keywords found - mark all as V4
+        const { data: metricsData } = await this.supabase
+          .from('gamme_seo_metrics')
+          .update({ v_level: 'V4', updated_at: new Date().toISOString() })
+          .eq('gamme_id', pgId.toString())
+          .select('id');
+
+        return {
+          success: true,
+          message: `V-Level V4 (no keywords) for gamme ${pgId}`,
+          updatedCount: metricsData?.length || 0,
+        };
+      }
+
+      // 2. Group keywords by energy_type, sort by search_volume DESC
+      const byEnergy = new Map<string, typeof keywords>();
+      for (const kw of keywords) {
+        const energy = kw.energy_type || 'all';
+        if (!byEnergy.has(energy)) byEnergy.set(energy, []);
+        byEnergy.get(energy)!.push(kw);
+      }
+
+      let totalUpdated = 0;
+
+      for (const [_energy, energyKeywords] of byEnergy) {
+        // Sort by search volume descending
+        energyKeywords.sort(
+          (a, b) => (b.search_volume || 0) - (a.search_volume || 0),
+        );
+
+        for (let i = 0; i < energyKeywords.length; i++) {
+          const kw = energyKeywords[i];
+          let vLevel: string;
+
+          if ((kw.search_volume || 0) === 0) {
+            vLevel = 'V4'; // No search volume
+          } else if (i === 0) {
+            vLevel = 'V2'; // Top keyword for this gamme+energy
+          } else if (i <= 3) {
+            vLevel = 'V3'; // Keywords #2-4
+          } else {
+            vLevel = 'V4'; // Remaining keywords
+          }
+
+          // Update keyword v_level
+          const { error: updateError } = await this.supabase
+            .from('__seo_keywords')
+            .update({ v_level: vLevel, updated_at: new Date().toISOString() })
+            .eq('id', kw.id);
+
+          if (!updateError) totalUpdated++;
+        }
+      }
+
+      // 3. Update gamme_seo_metrics with the best V-Level
+      const bestVLevel = keywords.some((k) => (k.search_volume || 0) > 0)
+        ? 'V2'
+        : 'V4';
+      await this.supabase
+        .from('gamme_seo_metrics')
+        .update({ v_level: bestVLevel, updated_at: new Date().toISOString() })
+        .eq('gamme_id', pgId.toString());
 
       this.logger.log(
-        `✅ V-Level recalculated for gamme ${pgId}: ${updatedCount} records updated`,
+        `✅ V-Level recalculated for gamme ${pgId}: ${totalUpdated} keywords updated`,
       );
 
       return {
         success: true,
-        message: `V-Level recalcule: ${updatedCount} enregistrements mis a jour`,
-        updatedCount,
+        message: `V-Level recalcule: ${totalUpdated} keywords mis a jour pour gamme ${pgId}`,
+        updatedCount: totalUpdated,
       };
     } catch (error) {
       this.logger.error(`❌ Error in recalculateVLevel(${pgId}):`, error);
       throw error;
     }
+  }
+
+  /**
+   * 🔄 Recalcule les V-Level pour TOUTES les gammes
+   * Batch processing pour classification globale
+   */
+  async recalculateAllVLevels(): Promise<RecalculateVLevelResult> {
+    try {
+      this.logger.log('🔄 Recalculating V-Levels for ALL gammes...');
+
+      // Get all gammes that have keywords
+      const { data: gammeIds, error } = await this.supabase
+        .from('__seo_keywords')
+        .select('gamme_id')
+        .not('gamme_id', 'is', null);
+
+      if (error) {
+        this.logger.error('❌ Error fetching gamme IDs:', error);
+        throw error;
+      }
+
+      // Deduplicate gamme IDs
+      const uniqueGammeIds = [
+        ...new Set((gammeIds || []).map((r) => r.gamme_id)),
+      ].filter(Boolean);
+      this.logger.log(`📊 Found ${uniqueGammeIds.length} gammes with keywords`);
+
+      let totalUpdated = 0;
+      for (const pgId of uniqueGammeIds) {
+        try {
+          const result = await this.recalculateVLevel(pgId);
+          totalUpdated += result.updatedCount;
+        } catch (_err) {
+          this.logger.warn(
+            `⚠️ Failed to recalculate V-Level for gamme ${pgId}, skipping`,
+          );
+        }
+      }
+
+      this.logger.log(
+        `✅ All V-Levels recalculated: ${totalUpdated} total keywords updated`,
+      );
+
+      return {
+        success: true,
+        message: `V-Level global: ${uniqueGammeIds.length} gammes, ${totalUpdated} keywords mis a jour`,
+        updatedCount: totalUpdated,
+      };
+    } catch (error) {
+      this.logger.error('❌ Error in recalculateAllVLevels():', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Get V-Level distribution stats
+   */
+  async getVLevelStats(): Promise<{
+    v1: number;
+    v2: number;
+    v3: number;
+    v4: number;
+    total: number;
+  }> {
+    const { data, error } = await this.supabase
+      .from('__seo_keywords')
+      .select('v_level');
+
+    if (error || !data) {
+      return { v1: 0, v2: 0, v3: 0, v4: 0, total: 0 };
+    }
+
+    const stats = { v1: 0, v2: 0, v3: 0, v4: 0, total: data.length };
+    for (const row of data) {
+      const vl = (row.v_level || 'V4').toUpperCase();
+      if (vl === 'V1') stats.v1++;
+      else if (vl === 'V2') stats.v2++;
+      else if (vl === 'V3') stats.v3++;
+      else stats.v4++;
+    }
+
+    return stats;
   }
 
   /**

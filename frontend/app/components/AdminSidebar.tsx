@@ -23,6 +23,9 @@ import {
   Edit,
   Eye,
   Tag,
+  Megaphone,
+  Link2,
+  Map,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -164,6 +167,34 @@ export const AdminSidebar = memo(function AdminSidebar({
       ],
     },
     {
+      name: "Marketing",
+      href: "/admin/marketing",
+      icon: Megaphone,
+      description: "Backlinks & SEO Marketing",
+      badge: { count: "NEW", color: "bg-purple-600" },
+      notification: false,
+      subItems: [
+        {
+          name: "Dashboard",
+          href: "/admin/marketing",
+          icon: BarChart3,
+          description: "KPIs marketing",
+        },
+        {
+          name: "Backlinks",
+          href: "/admin/marketing/backlinks",
+          icon: Link2,
+          description: "Tracker backlinks",
+        },
+        {
+          name: "Content Roadmap",
+          href: "/admin/marketing/content-roadmap",
+          icon: Map,
+          description: "Planification contenu",
+        },
+      ],
+    },
+    {
       name: "Dashboard Commercial",
       href: "/dashboard",
       icon: Store,
@@ -289,6 +320,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       location.pathname.startsWith("/admin/blog") ||
       location.pathname.startsWith("/admin/articles") ||
       location.pathname.startsWith("/admin/performances"),
+    Marketing: location.pathname.startsWith("/admin/marketing"),
   });
 
   // Fermer le menu mobile lors du changement de route
@@ -369,11 +401,8 @@ export const AdminSidebar = memo(function AdminSidebar({
                         : "text-slate-300 hover:text-white",
                     )}
                     onClick={() => {
-                      if (
-                        item.name === "SEO Enterprise" &&
-                        (item as any).subItems
-                      ) {
-                        // Permettre la navigation vers /admin/seo ET l'expansion du menu
+                      if ((item as any).subItems) {
+                        // Permettre la navigation vers la page principale ET l'expansion du menu
                         setExpandedMenus((prev) => ({
                           ...prev,
                           [item.name]: !prev[item.name],
@@ -407,8 +436,8 @@ export const AdminSidebar = memo(function AdminSidebar({
                     {item.notification && (
                       <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-gradient-to-r from-red-400 to-pink-500 rounded-full animate-pulse shadow-sm" />
                     )}
-                    {/* Indicateur d'expansion pour SEO */}
-                    {item.name === "SEO Enterprise" && (
+                    {/* Indicateur d'expansion pour menus avec sous-items */}
+                    {(item as any).subItems && (
                       <div className="ml-2 flex-shrink-0">
                         <div
                           className={cn(
@@ -422,41 +451,36 @@ export const AdminSidebar = memo(function AdminSidebar({
                     )}
                   </Link>
 
-                  {/* Sous-menu SEO */}
-                  {item.name === "SEO Enterprise" &&
-                    (item as any).subItems &&
-                    isExpanded && (
-                      <div className="ml-6 space-y-1 mt-1 border-l-2 border-slate-600 pl-3">
-                        {(item as any).subItems.map((subItem: any) => {
-                          const SubIcon = subItem.icon;
-                          const isSubActive =
-                            location.pathname === subItem.href;
-                          return (
-                            <Link
-                              key={subItem.name}
-                              to={subItem.href}
-                              className={cn(
-                                "flex items-center space-x-2 rounded-lg px-3 py-2 text-xs transition-all duration-200",
-                                "hover:bg-slate-700/30 hover:text-green-300",
-                                isSubActive
-                                  ? "bg-success/20 text-green-300 border-l-2 border-green-400"
-                                  : "text-slate-400 hover:text-slate-200",
-                              )}
-                            >
-                              <SubIcon className="h-3 w-3 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium">
-                                  {subItem.name}
-                                </div>
-                                <div className="text-xs opacity-75 truncate">
-                                  {subItem.description}
-                                </div>
+                  {/* Sous-menu */}
+                  {(item as any).subItems && isExpanded && (
+                    <div className="ml-6 space-y-1 mt-1 border-l-2 border-slate-600 pl-3">
+                      {(item as any).subItems.map((subItem: any) => {
+                        const SubIcon = subItem.icon;
+                        const isSubActive = location.pathname === subItem.href;
+                        return (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className={cn(
+                              "flex items-center space-x-2 rounded-lg px-3 py-2 text-xs transition-all duration-200",
+                              "hover:bg-slate-700/30 hover:text-green-300",
+                              isSubActive
+                                ? "bg-success/20 text-green-300 border-l-2 border-green-400"
+                                : "text-slate-400 hover:text-slate-200",
+                            )}
+                          >
+                            <SubIcon className="h-3 w-3 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium">{subItem.name}</div>
+                              <div className="text-xs opacity-75 truncate">
+                                {subItem.description}
                               </div>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

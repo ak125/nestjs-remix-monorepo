@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Interface pour une référence SEO (R4)
@@ -51,6 +53,7 @@ export interface SeoReferenceListItem {
 @Injectable()
 export class ReferenceService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ReferenceService.name);
+  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
 
   constructor(rpcGate: RpcGateService) {
     super();
@@ -262,17 +265,74 @@ export class ReferenceService extends SupabaseBaseService {
         continue;
       }
 
-      // 3. Créer entrée R4 en DRAFT
+      // 3. Parse RAG gamme file for enriched content
+      const ragData = this.parseRagGammeFile(gamme.pg_alias);
+
+      // 4. Look up related R5 diagnostics
+      const { data: relatedDiags } = await this.supabase
+        .from('__seo_observable')
+        .select('id')
+        .eq('cluster_id', gamme.pg_alias)
+        .limit(5);
+
+      const relatedRefIds = (relatedDiags || []).map((d: any) => d.id);
+
+      // 5. Build content HTML from RAG data
+      let contentHtml = '';
+      if (ragData) {
+        contentHtml = '<div class="reference-content">';
+
+        if (ragData.roleSummary) {
+          contentHtml += `<section><h2>Rôle mécanique</h2><p>${ragData.roleSummary}</p></section>`;
+        }
+
+        if (ragData.mustBeTrue && ragData.mustBeTrue.length > 0) {
+          contentHtml += '<section><h2>Règles métier</h2><ul>';
+          ragData.mustBeTrue.forEach((rule) => {
+            contentHtml += `<li>${rule}</li>`;
+          });
+          contentHtml += '</ul></section>';
+        }
+
+        if (ragData.symptoms && ragData.symptoms.length > 0) {
+          contentHtml += '<section><h2>Symptômes associés</h2><ul>';
+          ragData.symptoms.forEach((symptom) => {
+            contentHtml += `<li>${symptom}</li>`;
+          });
+          contentHtml += '</ul></section>';
+        }
+
+        contentHtml += '</div>';
+      }
+
+      // 6. Créer entrée R4 en DRAFT avec enrichissement RAG
       const { error: insertError } = await this.supabase
         .from('__seo_reference')
         .insert({
           slug: gamme.pg_alias,
-          title: `Qu'est-ce qu'un ${gamme.label} ?`,
-          meta_description: `Définition technique du ${gamme.label}: rôle, composition, fonctionnement.`,
-          definition:
-            gamme.description ||
-            `Le ${gamme.label} est une pièce automobile essentielle.`,
-          role_mecanique: `Rôle mécanique du ${gamme.label} dans le véhicule.`,
+          title: `${gamme.label} : Définition, rôle et composition`,
+          meta_description: ragData?.roleSummary
+            ? `${gamme.label}: ${ragData.roleSummary.substring(0, 130)}. Guide complet.`
+            : `Définition technique du ${gamme.label}: rôle, composition, fonctionnement.`,
+          definition: ragData?.roleSummary
+            ? `Le ${gamme.label} ${ragData.roleSummary.charAt(0).toLowerCase()}${ragData.roleSummary.slice(1)}. C'est une pièce essentielle du système automobile.`
+            : gamme.description ||
+              `Le ${gamme.label} est une pièce automobile essentielle.`,
+          role_mecanique:
+            ragData?.roleSummary ||
+            `Rôle mécanique du ${gamme.label} dans le véhicule.`,
+          composition: null,
+          confusions_courantes: ragData?.mustNotContain?.length
+            ? ragData.mustNotContain
+            : null,
+          symptomes_associes: ragData?.symptoms?.length
+            ? ragData.symptoms
+            : null,
+          regles_metier: ragData?.mustBeTrue?.length
+            ? ragData.mustBeTrue
+            : null,
+          content_html: contentHtml || null,
+          related_references: relatedRefIds.length > 0 ? relatedRefIds : null,
           pg_id: gamme.id,
           is_published: false, // ← DRAFT - validation manuelle requise
         });
@@ -422,6 +482,96 @@ export class ReferenceService extends SupabaseBaseService {
     }
 
     return { success: true };
+  }
+
+  /**
+   * Parse RAG gamme file for enriched content
+   */
+  private parseRagGammeFile(pgAlias: string): {
+    roleSummary: string | null;
+    mustBeTrue: string[];
+    mustNotContain: string[];
+    symptoms: string[];
+    diagnosticTree: string[];
+  } | null {
+    // Try multiple filename patterns
+    const candidates = [`${pgAlias}.md`, `${pgAlias.replace(/-/g, ' ')}.md`];
+
+    for (const filename of candidates) {
+      const filePath = path.join(this.RAG_GAMMES_DIR, filename);
+      try {
+        if (!fs.existsSync(filePath)) continue;
+        const content = fs.readFileSync(filePath, 'utf-8');
+
+        // Parse YAML frontmatter
+        const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+        if (!fmMatch) return null;
+
+        const fm = fmMatch[1];
+
+        // Extract role_summary
+        const roleMatch = fm.match(
+          /role_summary:\s*>-?\s*\n([\s\S]*?)(?=\n\s*\w|$)/,
+        );
+        const roleSummary = roleMatch
+          ? roleMatch[1].replace(/\s+/g, ' ').trim()
+          : null;
+
+        // Extract must_be_true list
+        const mustBeTrue: string[] = [];
+        const mbtMatch = fm.match(/must_be_true:\s*\n((?:\s*-\s*.+\n)*)/);
+        if (mbtMatch) {
+          const lines = mbtMatch[1].match(/^\s*-\s*(.+)$/gm);
+          if (lines) {
+            for (const line of lines) {
+              const val = line.replace(/^\s*-\s*/, '').trim();
+              if (val) mustBeTrue.push(val);
+            }
+          }
+        }
+
+        // Extract must_not_contain_concepts list
+        const mustNotContain: string[] = [];
+        const mncMatch = fm.match(
+          /must_not_contain_concepts:\s*\n((?:\s*-\s*.+\n)*)/,
+        );
+        if (mncMatch) {
+          const lines = mncMatch[1].match(/^\s*-\s*(.+)$/gm);
+          if (lines) {
+            for (const line of lines) {
+              const val = line.replace(/^\s*-\s*/, '').trim();
+              if (val) mustNotContain.push(val);
+            }
+          }
+        }
+
+        // Extract symptoms labels
+        const symptoms: string[] = [];
+        const sympMatches = fm.matchAll(/label:\s*(.+)/g);
+        for (const m of sympMatches) {
+          if (m[1]) symptoms.push(m[1].trim());
+        }
+
+        // Extract diagnostic tree
+        const diagnosticTree: string[] = [];
+        const dtMatches = fm.matchAll(/then:\s*(.+)/g);
+        for (const m of dtMatches) {
+          if (m[1]) diagnosticTree.push(m[1].trim().replace(/_/g, ' '));
+        }
+
+        return {
+          roleSummary,
+          mustBeTrue,
+          mustNotContain,
+          symptoms,
+          diagnosticTree,
+        };
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
   }
 
   /**

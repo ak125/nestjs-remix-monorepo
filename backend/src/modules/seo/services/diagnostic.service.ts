@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Interface pour un diagnostic SEO (R5) - format complet
@@ -62,6 +64,8 @@ export interface SeoDiagnosticListItem {
 @Injectable()
 export class DiagnosticService extends SupabaseBaseService {
   protected override readonly logger = new Logger(DiagnosticService.name);
+  private readonly RAG_DIAGNOSTIC_DIR =
+    '/opt/automecanik/rag/knowledge/diagnostic';
 
   constructor(rpcGate: RpcGateService) {
     super();
@@ -465,33 +469,21 @@ export class DiagnosticService extends SupabaseBaseService {
   async generateFromTemplates(): Promise<{ created: number; skipped: number }> {
     this.logger.log('🏭 Generating R5 Diagnostics from templates...');
 
-    // 1. Récupérer les gammes prioritaires
+    // Fetch ALL gammes (not just 10 hardcoded ones)
     const { data: gammes, error: gammeError } = await this.supabase
       .from('__pg_gammes')
       .select('id, pg_alias, label')
-      .in('pg_alias', this.PRIORITY_GAMMES);
+      .not('pg_alias', 'is', null)
+      .order('position', { ascending: true });
 
     if (gammeError || !gammes || gammes.length === 0) {
-      this.logger.warn(
-        '⚠️ No priority gammes found, fetching top gammes by position...',
-      );
-
-      // Fallback: récupérer les 10 premières gammes
-      const { data: fallbackGammes } = await this.supabase
-        .from('__pg_gammes')
-        .select('id, pg_alias, label')
-        .not('pg_alias', 'is', null)
-        .order('position', { ascending: true })
-        .limit(10);
-
-      if (!fallbackGammes || fallbackGammes.length === 0) {
-        this.logger.error('❌ No gammes found for generation');
-        return { created: 0, skipped: 0 };
-      }
-
-      return this.generateDiagnosticsForGammes(fallbackGammes);
+      this.logger.error('❌ No gammes found for generation');
+      return { created: 0, skipped: 0 };
     }
 
+    this.logger.log(
+      `📊 Processing ${gammes.length} gammes for diagnostic generation`,
+    );
     return this.generateDiagnosticsForGammes(gammes);
   }
 
@@ -519,27 +511,81 @@ export class DiagnosticService extends SupabaseBaseService {
           continue;
         }
 
-        // Créer entrée R5 en DRAFT
+        // Parse RAG diagnostic file for enriched content
+        const ragData = this.parseRagDiagnosticFile(gamme.pg_alias);
+
+        // Look up related R4 references
+        const { data: relatedRefs } = await this.supabase
+          .from('__seo_reference')
+          .select('slug')
+          .eq('pg_id', gamme.id)
+          .limit(3);
+
+        const relatedRefSlugs = (relatedRefs || []).map((r: any) => r.slug);
+
+        // Build recommended actions from RAG data
+        const recommendedActions =
+          ragData?.causes?.slice(0, 4).map((cause) => ({
+            action: cause.solution,
+            urgency: cause.urgency.toLowerCase().includes('haute')
+              ? 'high'
+              : 'medium',
+            skill_level: 'professional',
+            duration: '1-2h',
+          })) || null;
+
+        // Estimate repair costs based on gamme category
+        const costEstimates = this.estimateRepairCosts(gamme.pg_alias);
+
+        // Build enriched symptom and sign descriptions
+        let symptomDescription = template.symptom_template.replace(
+          /{gamme}/g,
+          gamme.label,
+        );
+        let signDescription = template.sign_template.replace(
+          /{gamme}/g,
+          gamme.label,
+        );
+
+        if (ragData?.symptoms?.length) {
+          symptomDescription = ragData.symptoms
+            .map(
+              (s) =>
+                `<p><strong>${s.label}</strong> — ${s.when}. ${s.characteristic}.</p>`,
+            )
+            .join('\n');
+        }
+
+        if (ragData?.causes?.length) {
+          signDescription = ragData.causes
+            .map(
+              (c) =>
+                `<p><strong>${c.name}</strong> (probabilité: ${c.probability}) — ${c.solution}.</p>`,
+            )
+            .join('\n');
+        }
+
+        // Créer entrée R5 en DRAFT avec enrichissement RAG
         const { error: insertError } = await this.supabase
           .from('__seo_observable')
           .insert({
             slug,
             title: template.title_template.replace('{gamme}', gamme.label),
-            meta_description: `Diagnostic ${template.keyword} ${gamme.label}: symptômes, causes, solutions.`,
+            meta_description: `Diagnostic ${template.keyword} ${gamme.label}: symptômes, causes, solutions. Guide complet par AutoMecanik.`,
             observable_type: template.observable_type,
             perception_channel: template.perception_channel,
             risk_level: template.risk_level,
             safety_gate: template.safety_gate,
-            symptom_description: template.symptom_template.replace(
-              /{gamme}/g,
-              gamme.label,
-            ),
-            sign_description: template.sign_template.replace(
-              /{gamme}/g,
-              gamme.label,
-            ),
+            symptom_description: symptomDescription,
+            sign_description: signDescription,
             cluster_id: gamme.pg_alias,
             related_gammes: [gamme.id],
+            related_references:
+              relatedRefSlugs.length > 0 ? relatedRefSlugs : null,
+            recommended_actions: recommendedActions,
+            estimated_repair_cost_min: costEstimates.min,
+            estimated_repair_cost_max: costEstimates.max,
+            estimated_repair_duration: costEstimates.duration,
             is_published: false, // ← DRAFT - validation manuelle requise
           });
 
@@ -688,6 +734,115 @@ export class DiagnosticService extends SupabaseBaseService {
     }
 
     return { success: true };
+  }
+
+  /**
+   * Parse RAG diagnostic file for enriched content
+   */
+  private parseRagDiagnosticFile(pgAlias: string): {
+    symptoms: Array<{ label: string; when: string; characteristic: string }>;
+    causes: Array<{
+      name: string;
+      probability: string;
+      solution: string;
+      urgency: string;
+    }>;
+  } | null {
+    // Try multiple filename patterns
+    const candidates = [
+      `${pgAlias}.md`,
+      `bruits-${pgAlias}.md`,
+      `${pgAlias}-bruits.md`,
+    ];
+
+    for (const filename of candidates) {
+      const filePath = path.join(this.RAG_DIAGNOSTIC_DIR, filename);
+      try {
+        if (!fs.existsSync(filePath)) continue;
+        const content = fs.readFileSync(filePath, 'utf-8');
+
+        // Extract symptoms (sections with "Quand" and "Caractéristique")
+        const symptoms: Array<{
+          label: string;
+          when: string;
+          characteristic: string;
+        }> = [];
+        const symptomMatches = content.matchAll(
+          /###\s+(.+?)\n(?:[\s\S]*?)-\s*\*\*Quand\*\*\s*:\s*(.+?)\n(?:[\s\S]*?)-\s*\*\*Caractéristique\*\*\s*:\s*(.+?)(?:\n|$)/g,
+        );
+        for (const m of symptomMatches) {
+          symptoms.push({
+            label: m[1].trim(),
+            when: m[2].trim(),
+            characteristic: m[3].trim(),
+          });
+        }
+
+        // Extract causes (sections with "Probabilité", "Solution", "Urgence")
+        const causes: Array<{
+          name: string;
+          probability: string;
+          solution: string;
+          urgency: string;
+        }> = [];
+        const causeMatches = content.matchAll(
+          /###\s+\d+\.\s+(.+?)\n(?:[\s\S]*?)-\s*\*\*Probabilité\*\*\s*:\s*(.+?)\n(?:[\s\S]*?)-\s*\*\*Solution\*\*\s*:\s*(.+?)\n(?:[\s\S]*?)-\s*\*\*Urgence\*\*\s*:\s*(.+?)(?:\n|$)/g,
+        );
+        for (const m of causeMatches) {
+          causes.push({
+            name: m[1].trim(),
+            probability: m[2].trim(),
+            solution: m[3].trim(),
+            urgency: m[4].trim(),
+          });
+        }
+
+        if (symptoms.length > 0 || causes.length > 0) {
+          return { symptoms, causes };
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Estimate repair costs based on gamme type
+   */
+  private estimateRepairCosts(pgAlias: string): {
+    min: number;
+    max: number;
+    duration: string;
+  } {
+    const costMap: Record<
+      string,
+      { min: number; max: number; duration: string }
+    > = {
+      embrayage: { min: 400, max: 900, duration: '3-5h' },
+      'kit-d-embrayage': { min: 400, max: 900, duration: '3-5h' },
+      freinage: { min: 80, max: 300, duration: '1-2h' },
+      distribution: { min: 400, max: 800, duration: '4-6h' },
+      suspension: { min: 150, max: 500, duration: '2-3h' },
+      amortisseur: { min: 150, max: 400, duration: '1-2h' },
+      direction: { min: 200, max: 600, duration: '2-4h' },
+      demarreur: { min: 150, max: 400, duration: '1-2h' },
+      alternateur: { min: 200, max: 500, duration: '1-3h' },
+      turbo: { min: 800, max: 2500, duration: '4-8h' },
+      injecteur: { min: 100, max: 400, duration: '1-3h' },
+      'pompe-a-eau': { min: 150, max: 400, duration: '2-4h' },
+    };
+
+    // Check for partial matches
+    for (const [key, costs] of Object.entries(costMap)) {
+      if (pgAlias.includes(key) || key.includes(pgAlias)) {
+        return costs;
+      }
+    }
+
+    // Default estimates
+    return { min: 80, max: 400, duration: '1-3h' };
   }
 
   /**
