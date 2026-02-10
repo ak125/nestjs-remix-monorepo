@@ -36,6 +36,7 @@ export class RagProxyService {
           message: request.message,
           session_id: request.sessionId,
           locale: 'fr',
+          vehicle_context: request.context || null,
         }),
       });
 

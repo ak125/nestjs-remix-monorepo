@@ -13,6 +13,7 @@ import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";
+import { useVehicle } from "~/hooks/useVehiclePersistence";
 
 interface ChatWidgetProps {
   streamUrl?: string;
@@ -21,6 +22,7 @@ interface ChatWidgetProps {
 const ChatWidget = memo(function ChatWidget({
   streamUrl = "/api/rag/chat/stream",
 }: ChatWidgetProps) {
+  const { vehicle } = useVehicle();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
@@ -72,7 +74,18 @@ const ChatWidget = memo(function ChatWidget({
         const response = await fetch(streamUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: content, sessionId }),
+          body: JSON.stringify({
+            message: content,
+            sessionId,
+            context: vehicle
+              ? {
+                  brand: vehicle.brand,
+                  model: vehicle.model,
+                  engine: vehicle.engine,
+                  year: vehicle.year,
+                }
+              : undefined,
+          }),
         });
 
         if (!response.ok || !response.body) {
@@ -148,7 +161,7 @@ const ChatWidget = memo(function ChatWidget({
         setIsLoading(false);
       }
     },
-    [streamUrl, sessionId],
+    [streamUrl, sessionId, vehicle],
   );
 
   const handleClose = () => {
