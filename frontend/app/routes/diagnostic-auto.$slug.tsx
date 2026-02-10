@@ -33,7 +33,7 @@ import {
   Info,
   Shield,
   ShoppingCart,
-  Stethoscope,
+  ScanLine,
   Wrench,
   XCircle,
   Eye,
@@ -152,7 +152,7 @@ const SKILL_CONFIG: Record<
 > = {
   diy: { label: "Bricoleur", icon: Wrench },
   amateur: { label: "Amateur", icon: Wrench },
-  professional: { label: "Professionnel", icon: Stethoscope },
+  professional: { label: "Professionnel", icon: ScanLine },
 };
 
 // Context labels
@@ -294,15 +294,15 @@ export default function DiagnosticAutoDetail() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <Link
             to="/diagnostic-auto"
-            className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-4"
+            className="inline-flex items-center text-orange-600 hover:text-orange-700 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux diagnostics
           </Link>
 
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Stethoscope className="h-8 w-8 text-purple-600" />
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <ScanLine className="h-8 w-8 text-orange-600" />
             </div>
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -317,7 +317,7 @@ export default function DiagnosticAutoDetail() {
                 </Badge>
                 <Badge
                   variant="secondary"
-                  className="bg-purple-50 text-purple-700"
+                  className="bg-orange-50 text-orange-700"
                 >
                   {diagnostic.cluster_id}
                 </Badge>
@@ -379,10 +379,10 @@ export default function DiagnosticAutoDetail() {
 
             {/* Section 3: DTC (95%) - Codes OBD associés */}
             {diagnostic.dtc_codes && diagnostic.dtc_codes.length > 0 && (
-              <Card className="border-l-4 border-l-purple-500">
+              <Card className="border-l-4 border-l-orange-500">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <Cpu className="h-6 w-6 text-purple-600" />
+                    <Cpu className="h-6 w-6 text-orange-600" />
                     <div>
                       <CardTitle className="text-lg">
                         💻 Codes OBD associés
@@ -402,7 +402,7 @@ export default function DiagnosticAutoDetail() {
                       >
                         <Badge
                           variant="outline"
-                          className="font-mono bg-purple-100 text-purple-800"
+                          className="font-mono bg-orange-100 text-orange-800"
                         >
                           {code}
                         </Badge>
@@ -648,7 +648,7 @@ export function ErrorBoundary() {
           </p>
           <Link
             to="/diagnostic-auto"
-            className="inline-flex items-center text-purple-600 hover:text-purple-700"
+            className="inline-flex items-center text-orange-600 hover:text-orange-700"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux diagnostics

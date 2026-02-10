@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Search,
   ShoppingCart,
+  ScanLine,
   X,
   Phone,
   Truck,
@@ -40,7 +41,7 @@ function QuickCategoryChip({ href, label }: { href: string; label: string }) {
   return (
     <Link
       to={href}
-      className="inline-flex items-center px-3 py-2 bg-neutral-100 hover:bg-semantic-info/10 hover:text-semantic-info text-neutral-700 text-sm font-medium rounded-full transition-all whitespace-nowrap active:scale-95"
+      className="inline-flex items-center px-3 py-2 bg-white/10 hover:bg-white/20 hover:text-white text-white/70 text-sm font-medium rounded-full transition-all whitespace-nowrap active:scale-95"
     >
       {label}
     </Link>
@@ -173,12 +174,12 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
     <>
       <nav
         ref={navRef}
-        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/95 via-white/95 to-white/95 md:from-white/80 md:via-white/85 md:to-white/80 backdrop-blur-none md:backdrop-blur-xl text-neutral-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
+        className={`sticky top-0 z-50 px-4 lg:px-8 bg-[#0d1b3e] text-white flex justify-between items-center transition-all duration-500 ease-out border-b ${
           isCompact ? "py-2.5" : "py-4"
         } ${
           isScrolled
-            ? "shadow-2xl shadow-semantic-info/15 border-semantic-info/40"
-            : "shadow-lg shadow-neutral-200/30 border-semantic-info/20"
+            ? "shadow-2xl shadow-black/20 border-white/10"
+            : "shadow-lg shadow-black/15 border-white/5"
         }`}
         aria-label="Navigation principale"
       >
@@ -198,7 +199,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           >
             <div className="relative pointer-events-none">
               {/* Glow background animé */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-semantic-info/20 via-secondary-400/20 to-semantic-info/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 via-primary-400/20 to-primary-500/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
 
               {/* Logo WebP avec srcset pour haute résolution */}
               {/* eslint-disable-next-line react/no-unknown-property */}
@@ -219,7 +220,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           </Link>
 
           {/* Navigation Desktop avec effets premium */}
-          <div className="hidden lg:flex items-center gap-1 border-l border-gradient-to-b from-neutral-300/50 to-transparent ml-4 pl-8">
+          <div className="hidden lg:flex items-center gap-1 border-l border-white/20 ml-4 pl-8">
             {/* Catalogue pièces auto - Link avec scroll intelligent pour SEO */}
             <Link
               to="/#catalogue"
@@ -236,12 +237,12 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 }
                 // Sinon : laisse le lien naviguer vers /#catalogue naturellement
               }}
-              className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
+              className="relative group px-4 py-2 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 rounded-xl hover:bg-white/10 flex items-center gap-2"
             >
               <span className="relative z-10">Catalogue pièces auto</span>
-              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-semantic-info" />
+              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary-400" />
               {/* Animated underline */}
-              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-semantic-info to-secondary-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-primary-500 to-primary-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
             </Link>
 
             {/* Marques & Constructeurs - Link avec scroll intelligent pour SEO */}
@@ -261,22 +262,30 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 }
                 // Sinon : laisse le lien naviguer vers /#toutes-les-marques naturellement
               }}
-              className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
+              className="relative group px-4 py-2 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 rounded-xl hover:bg-white/10 flex items-center gap-2"
             >
               <span className="relative z-10">Marques & Constructeurs</span>
-              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-semantic-info" />
+              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary-400" />
               {/* Animated underline */}
-              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-semantic-info to-secondary-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-primary-500 to-primary-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
             </Link>
 
             <Link
               to="/blog-pieces-auto"
-              className="relative group px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-semantic-info transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 flex items-center gap-2"
+              className="relative group px-4 py-2 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 rounded-xl hover:bg-white/10 flex items-center gap-2"
             >
-              <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-semantic-info" />
+              <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary-400" />
               <span>Blog</span>
               {/* Animated underline */}
-              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-semantic-info to-secondary-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-primary-500 to-primary-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+            </Link>
+
+            <Link
+              to="/diagnostic-auto"
+              className="relative group px-4 py-2 text-sm font-bold text-white rounded-xl bg-white/15 hover:bg-white/25 border border-orange-400/50 hover:border-orange-400 transition-all duration-300 flex items-center gap-2"
+            >
+              <ScanLine className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+              <span>Diagnostic auto</span>
             </Link>
           </div>
         </div>
@@ -287,11 +296,11 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {!showSearch ? (
             <button
               onClick={() => setShowSearch(true)}
-              className="w-full max-w-md flex items-center gap-3 px-6 py-2.5 text-sm text-neutral-500 bg-white/80 backdrop-blur-sm hover:bg-white rounded-2xl transition-all duration-300 group border border-neutral-200/80 hover:border-semantic-info/80 shadow-sm hover:shadow-lg hover:shadow-semantic-info/10"
+              className="w-full max-w-md flex items-center gap-3 px-6 py-2.5 text-sm text-white/60 bg-white/10 hover:bg-white/15 rounded-2xl transition-all duration-300 group border border-white/20 hover:border-white/40 shadow-sm hover:shadow-lg hover:shadow-black/10"
               aria-label="Rechercher"
             >
-              <Search className="w-4 h-4 text-neutral-400 group-hover:text-semantic-info transition-all duration-300 group-hover:scale-110" />
-              <span className="text-neutral-500 group-hover:text-semantic-info font-medium flex-1 text-left">
+              <Search className="w-4 h-4 text-white/50 group-hover:text-white transition-all duration-300 group-hover:scale-110" />
+              <span className="text-white/50 group-hover:text-white/80 font-medium flex-1 text-left">
                 Rechercher une pièce...
               </span>
             </button>
@@ -301,8 +310,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               className="w-full max-w-md hidden lg:flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300"
             >
               <div className="relative group flex-1">
-                <div className="absolute inset-0 bg-gradient-to-r from-semantic-info/20 to-secondary-400/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500 pointer-events-none" />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-semantic-info transition-all duration-300 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-400/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500 pointer-events-none" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-primary-500 transition-all duration-300 z-10" />
                 <input
                   type="text"
                   name="search"
@@ -315,7 +324,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                     }
                   }}
                   placeholder="Filtre à huile, alternateur, plaquettes..."
-                  className="relative z-20 w-full pl-12 pr-24 py-3 text-base md:text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info/50 focus:border-semantic-info bg-white shadow-lg transition-all duration-300 hover:border-semantic-info/80 placeholder:text-neutral-400"
+                  className="relative z-20 w-full pl-12 pr-24 py-3 text-base md:text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 bg-white text-secondary-900 shadow-lg transition-all duration-300 hover:border-primary-500/80 placeholder:text-neutral-400"
                 />
                 {searchQuery && (
                   <button
@@ -324,7 +333,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                       e.preventDefault();
                       handleSearch(e);
                     }}
-                    className="absolute right-12 top-1/2 -translate-y-1/2 px-3 py-1 bg-semantic-info hover:bg-semantic-info/90 text-semantic-info-contrast text-xs font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 z-30"
+                    className="absolute right-12 top-1/2 -translate-y-1/2 px-3 py-1 bg-primary-500 hover:bg-primary-600 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 z-30"
                   >
                     OK
                   </button>
@@ -348,7 +357,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         {/* DROITE : Actions utilisateur */}
         <div className="flex items-center gap-1 sm:gap-2">
           {/* 🚚 Livraison gratuite - Desktop avec animation */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-semantic-success/10 via-semantic-success/5 to-semantic-success/10 rounded-xl border border-semantic-success/20 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
+          <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-xl border border-white/15 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
             <div className="relative">
               <Truck className="w-4 h-4 text-semantic-success group-hover:translate-x-0.5 transition-transform" />
               <div className="absolute -inset-1 bg-semantic-success/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -361,43 +370,43 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {/* 📞 Téléphone cliquable - Desktop minimaliste avec icône uniquement */}
           <a
             href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-            className="hidden lg:flex items-center justify-center w-11 h-11 bg-gradient-to-br from-semantic-info/10 via-secondary-500/10 to-semantic-info/10 rounded-xl border border-semantic-info/20 hover:border-semantic-info/80 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
+            className="hidden lg:flex items-center justify-center w-11 h-11 bg-white/10 rounded-xl border border-white/15 hover:border-white/40 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
             aria-label={`Appeler ${SITE_CONFIG.contact.phone.display}`}
             title={`Appeler ${SITE_CONFIG.contact.phone.display}`}
           >
             <div className="relative">
-              <Phone className="w-4 h-4 text-semantic-info group-hover:rotate-12 transition-all duration-300" />
-              <div className="absolute -inset-1 bg-semantic-info/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Phone className="w-4 h-4 text-white group-hover:rotate-12 transition-all duration-300" />
+              <div className="absolute -inset-1 bg-white/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </a>
 
           {/* Recherche - Mobile avec design amélioré */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-r hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-semantic-info/20"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-white/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-white/20"
             aria-label="Rechercher"
           >
-            <Search className="w-5 h-5 text-neutral-700 group-hover:text-semantic-info transition-colors group-hover:scale-110" />
+            <Search className="w-5 h-5 text-white group-hover:text-primary-400 transition-colors group-hover:scale-110" />
           </button>
 
           {/* Panier avec animation premium */}
           <button
             onClick={toggleCart}
-            className="relative min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-info/10 hover:to-secondary-500/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-info/20"
+            className="relative min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-white/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-white/20"
             aria-label="Panier"
           >
-            <ShoppingCart className="w-5 h-5 text-neutral-700 group-hover:text-semantic-info transition-all duration-300 group-hover:scale-110" />
+            <ShoppingCart className="w-5 h-5 text-white group-hover:text-primary-400 transition-all duration-300 group-hover:scale-110" />
             {summary.total_items > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-semantic-info to-secondary-600 text-semantic-info-contrast shadow-lg shadow-semantic-info/40 animate-in zoom-in-50 duration-300 ring-2 ring-white"
+                className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/40 animate-in zoom-in-50 duration-300 ring-2 ring-[#0d1b3e]"
               >
                 {summary.total_items}
               </Badge>
             )}
             {/* Pulse effect sur le badge - optimisé pour LCP (pas d'animate-ping) */}
             {summary.total_items > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-semantic-info rounded-full opacity-20" />
+              <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-primary-500 rounded-full opacity-20" />
             )}
           </button>
 
@@ -408,10 +417,10 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               className="relative min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center hover:bg-gradient-to-br hover:from-semantic-warning/10 hover:to-semantic-danger/10 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-semantic-warning/20"
               aria-label="Notifications"
             >
-              <Bell className="w-5 h-5 text-neutral-700 group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
+              <Bell className="w-5 h-5 text-white group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
               {/* Dot indicator pour nouvelles notifs - optimisé pour LCP (pas d'animate-ping) */}
               <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-white"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-[#0d1b3e]"></span>
               </span>
             </Link>
           )}
@@ -424,7 +433,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               <Link
                 to="/login"
                 rel="nofollow"
-                className="px-4 py-2 text-sm font-semibold text-neutral-700 hover:text-semantic-info hover:bg-semantic-info/10 rounded-lg transition-all duration-normal"
+                className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-normal"
               >
                 Connexion
               </Link>
@@ -447,18 +456,18 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
 
       {/* 🔍 Barre de recherche mobile STICKY + Quick Categories */}
       <div
-        className="header__mobile-search-sticky md:hidden sticky z-40 bg-white border-b shadow-sm"
+        className="header__mobile-search-sticky md:hidden sticky z-40 bg-[#0f2347] border-b border-white/10 shadow-sm"
         style={{ top: "var(--navbar-height, 57px)" }}
       >
         {/* Search Bar - toujours visible */}
         <div className="px-3 py-2">
           <button
             onClick={() => setShowSearch(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-neutral-500 bg-neutral-50 hover:bg-white rounded-xl transition-all duration-300 group border border-neutral-200/80 hover:border-semantic-info/80"
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/60 bg-white/10 hover:bg-white/15 rounded-xl transition-all duration-300 group border border-white/20 hover:border-white/40"
             aria-label="Rechercher"
           >
-            <Search className="w-4 h-4 text-neutral-400 group-hover:text-semantic-info" />
-            <span className="text-neutral-500 font-medium flex-1 text-left">
+            <Search className="w-4 h-4 text-white/50 group-hover:text-white" />
+            <span className="text-white/50 font-medium flex-1 text-left">
               Rechercher une pièce...
             </span>
           </button>
@@ -496,7 +505,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
             </div>
           </div>
           <div
-            className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"
+            className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-[#0f2347] to-transparent pointer-events-none"
             aria-hidden="true"
           />
         </div>
@@ -506,7 +515,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       {showSearch && (
         <div className="md:hidden fixed inset-0 z-50 bg-white animate-in fade-in slide-in-from-top duration-300">
           {/* Header avec gradient */}
-          <div className="p-4 pt-[max(1rem,env(safe-area-inset-top))] border-b border-neutral-200 bg-gradient-to-r from-semantic-info/10 to-secondary-500/10">
+          <div className="p-4 pt-[max(1rem,env(safe-area-inset-top))] border-b border-neutral-200 bg-gradient-to-r from-primary-50 to-primary-100/50">
             <form onSubmit={handleSearch} className="flex items-center gap-3">
               <button
                 type="button"
@@ -520,8 +529,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                 <X className="w-6 h-6 text-neutral-700" />
               </button>
               <div className="relative flex-1">
-                <div className="absolute inset-0 bg-gradient-to-r from-semantic-info/20 to-secondary-400/20 rounded-2xl opacity-0 blur group-hover:opacity-50 transition-opacity" />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-semantic-info z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-400/20 rounded-2xl opacity-0 blur group-hover:opacity-50 transition-opacity" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-500 z-10" />
                 <input
                   type="text"
                   name="search"
@@ -534,7 +543,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                     }
                   }}
                   placeholder="Filtre à huile, référence OEM..."
-                  className="w-full pl-12 pr-20 py-4 text-base border-2 border-semantic-info/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info focus:border-semantic-info bg-white shadow-lg font-medium placeholder:text-neutral-400 placeholder:font-normal"
+                  className="w-full pl-12 pr-20 py-4 text-base border-2 border-primary-500/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-secondary-900 shadow-lg font-medium placeholder:text-neutral-400 placeholder:font-normal"
                   autoFocus
                 />
                 {searchQuery && (
@@ -544,7 +553,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                       e.preventDefault();
                       handleSearch(e);
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 bg-semantic-info hover:bg-semantic-info/90 text-semantic-info-contrast text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     OK
                   </button>
@@ -556,8 +565,8 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {/* Suggestions et astuces */}
           <div className="p-6 space-y-4">
             {/* Astuce premium */}
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-semantic-info/10 to-secondary-500/10 rounded-2xl border border-semantic-info/20">
-              <div className="flex-shrink-0 w-10 h-10 bg-semantic-info rounded-xl flex items-center justify-center">
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-2xl border border-primary-200/40">
+              <div className="flex-shrink-0 w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                 <span className="text-xl">💡</span>
               </div>
               <div>
@@ -589,10 +598,10 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
                       setSearchQuery(item.text);
                       handleSearch(new Event("submit") as any);
                     }}
-                    className="flex items-center gap-2 p-3 bg-white border border-neutral-200 rounded-xl hover:border-semantic-info hover:bg-semantic-info/5 transition-all duration-200 group"
+                    className="flex items-center gap-2 p-3 bg-white border border-neutral-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-200 group"
                   >
                     <span className="text-lg">{item.icon}</span>
-                    <span className="text-sm font-medium text-neutral-700 group-hover:text-semantic-info">
+                    <span className="text-sm font-medium text-neutral-700 group-hover:text-primary-600">
                       {item.text}
                     </span>
                   </button>
@@ -608,7 +617,7 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       {isScrolled && (
         <div
           ref={progressBarRef}
-          className="sticky z-40 h-1 bg-semantic-info shadow-lg shadow-semantic-info/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out"
+          className="sticky z-40 h-1 bg-primary shadow-lg shadow-primary/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out"
           style={{ top: "var(--navbar-height, 73px)", width: "0%" }}
         />
       )}

@@ -4,7 +4,14 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { CheckCircle2, ChevronRight, Shield, Truck, Users } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronRight,
+  ScanLine,
+  Shield,
+  Truck,
+  Users,
+} from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -291,28 +298,28 @@ export default function TestHomepageModern() {
       {/* 🎯 HERO SECTION - Version radicale focalisée conversion */}
       <section
         id="main-content"
-        className="relative overflow-hidden bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 text-white py-16 md:py-24"
+        className="relative overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a] text-white py-16 md:py-24"
         aria-label="Section principale"
         role="banner"
       >
         {/* Effet mesh gradient animé en arrière-plan - simplifié */}
         <div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-purple-600/20"
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-500/15 via-transparent to-secondary-400/10"
           aria-hidden="true"
         ></div>
         <div
-          className="absolute inset-0 bg-[linear-gradient(to_right,#4f46e510_1px,transparent_1px),linear-gradient(to_bottom,#4f46e510_1px,transparent_1px)] bg-[size:4rem_4rem]"
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem]"
           aria-hidden="true"
         ></div>
 
         {/* Formes décoratives - réduites */}
         {/* 🚀 LCP OPTIMIZATION: Removed animate-pulse for better LCP score */}
         <div
-          className="absolute top-10 right-10 w-64 h-64 bg-semantic-info/10 rounded-full blur-3xl"
+          className="absolute top-10 right-10 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
           aria-hidden="true"
         ></div>
         <div
-          className="absolute bottom-10 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-10 left-10 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
           aria-hidden="true"
         ></div>
 
@@ -320,10 +327,10 @@ export default function TestHomepageModern() {
           {/* Titre ultra-simple et direct */}
           <div className="text-center mb-10 animate-in fade-in duration-700">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
                 Pièces auto{" "}
               </span>
-              <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 bg-clip-text text-transparent">
                 pas cher
               </span>
             </h1>
@@ -332,6 +339,18 @@ export default function TestHomepageModern() {
           {/* 🚗 SÉLECTEUR DE VÉHICULE GÉANT - FOCUS ABSOLU */}
           <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
             <VehicleSelector enableTypeMineSearch={true} />
+          </div>
+
+          {/* 🩺 CTA Diagnostic - Pièce stratégique */}
+          <div className="text-center mt-6 mb-2 animate-in fade-in duration-1000 delay-300">
+            <Link
+              to="/diagnostic-auto"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold rounded-2xl border border-white/20 hover:border-orange-400/50 transition-all duration-300 hover:scale-105 group"
+            >
+              <ScanLine className="w-5 h-5 text-orange-400 group-hover:scale-110 transition-transform" />
+              <span>Un problème avec votre voiture ?</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
           {/* ✨ Trust badges - Micro-format inline */}
@@ -343,7 +362,7 @@ export default function TestHomepageModern() {
               </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Truck className="w-4 h-4 text-semantic-info" />
+              <Truck className="w-4 h-4 text-primary-400" />
               <span>Livraison 24-48h</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
@@ -361,12 +380,12 @@ export default function TestHomepageModern() {
       {/* 🔍 RECHERCHE ALTERNATIVE - Version compacte */}
       <section className="relative py-12 md:py-14 overflow-hidden">
         {/* Fond dégradé sophistiqué */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/80 to-indigo-100/60"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-100/20"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-100/20 via-transparent to-transparent"></div>
 
         {/* Motif décoratif */}
         <div className="absolute top-0 left-0 w-full h-full opacity-[0.02]">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-semantic-info rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-primary-500 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-72 h-72 bg-secondary-600 rounded-full blur-3xl"></div>
         </div>
 
@@ -375,7 +394,7 @@ export default function TestHomepageModern() {
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Trouvez la pièce{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
                 qu'il vous faut
               </span>
             </h2>
@@ -404,7 +423,7 @@ export default function TestHomepageModern() {
       {/* 📂 CATALOGUE COMPLET - Version optimisée */}
       <section
         id="catalogue"
-        className="py-12 bg-gradient-to-br from-slate-50 to-blue-50 scroll-mt-24"
+        className="py-12 bg-gradient-to-br from-slate-50 to-primary-50/30 scroll-mt-24"
       >
         <div className="container mx-auto px-4">
           {/* En-tête simplifié */}
@@ -412,7 +431,7 @@ export default function TestHomepageModern() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Catalogue pièces auto
             </h2>
-            <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-3"></div>
+            <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-primary-600 mx-auto rounded mb-3"></div>
             <p className="text-base text-gray-700">
               Pièces neuves pour toutes marques
             </p>
@@ -431,7 +450,7 @@ export default function TestHomepageModern() {
           {/* Loading state */}
           {homeData.loadingCatalog && (
             <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-gray-600">Chargement du catalogue...</p>
             </div>
           )}
@@ -517,9 +536,9 @@ export default function TestHomepageModern() {
                               <Link
                                 key={idx}
                                 to={categoryUrl}
-                                className="text-sm text-neutral-600 hover:text-semantic-info hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
+                                className="text-sm text-neutral-600 hover:text-primary-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
                               >
-                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-semantic-info group-hover/item:scale-125 transition-all" />
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-primary-500 group-hover/item:scale-125 transition-all" />
                                 <span className="line-clamp-1 font-medium">
                                   {gamme.pg_name}
                                 </span>
@@ -535,7 +554,7 @@ export default function TestHomepageModern() {
                             onClick={() =>
                               homeData.toggleFamilyExpansion(family.mf_id)
                             }
-                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2"
+                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-primary hover:text-white hover:border-primary transition-colors flex items-center justify-center gap-2"
                           >
                             {isExpanded ? (
                               <>
@@ -589,7 +608,7 @@ export default function TestHomepageModern() {
             >
               Toutes les marques auto
             </h2>
-            <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-4"></div>
+            <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-primary-600 mx-auto rounded mb-4"></div>
           </div>
 
           {/* Titre H2 */}
@@ -602,7 +621,7 @@ export default function TestHomepageModern() {
           {/* Loading state */}
           {homeData.loadingBrands ? (
             <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-gray-600">Chargement des marques...</p>
             </div>
           ) : (
@@ -615,7 +634,7 @@ export default function TestHomepageModern() {
                     <Link
                       key={brand.id}
                       to={`/constructeurs/${brand.slug}-${brand.id}.html`}
-                      className="group animate-in fade-in duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-4 rounded-lg"
+                      className="group animate-in fade-in duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-4 rounded-lg"
                       style={{
                         animationDelay: `${index * 20}ms`,
                         animationFillMode: "both",
@@ -688,7 +707,7 @@ export default function TestHomepageModern() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white p-4 rounded-full shadow-2xl hover:shadow-primary-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
           aria-label="Retour en haut de page"
         >
           <ChevronRight className="w-6 h-6 -rotate-90" />

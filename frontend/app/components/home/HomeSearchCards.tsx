@@ -15,7 +15,14 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Award, ChevronRight, Package, Search, Users } from "lucide-react";
+import {
+  Award,
+  ChevronRight,
+  Package,
+  ScanLine,
+  Search,
+  Users,
+} from "lucide-react";
 import { memo } from "react";
 
 interface HomeSearchCardsProps {
@@ -28,11 +35,11 @@ const HomeSearchCards = memo(function HomeSearchCards({
   onReferenceSearchClick,
 }: HomeSearchCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       {/* Type de pièce - BLEU - Scroll vers catalogue */}
       <button
         onClick={() => scrollToSection("catalogue")}
-        className="group relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-blue-400 text-left w-full"
+        className="group relative bg-gradient-to-br from-[#0d1b3e] to-[#162d5a] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-white/20 text-left w-full"
       >
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -56,7 +63,7 @@ const HomeSearchCards = memo(function HomeSearchCards({
       {/* Constructeur - INDIGO - Scroll vers marques */}
       <button
         onClick={() => scrollToSection("marques-title")}
-        className="group relative bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-indigo-400 text-left w-full"
+        className="group relative bg-gradient-to-br from-[#0f2347] to-[#1a3a6e] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-white/20 text-left w-full"
       >
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -80,7 +87,7 @@ const HomeSearchCards = memo(function HomeSearchCards({
       {/* Avis expert - VERT */}
       <Link
         to="/contact"
-        className="group relative bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-green-400"
+        className="group relative bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-white/20"
       >
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -102,7 +109,7 @@ const HomeSearchCards = memo(function HomeSearchCards({
       {/* Référence OEM - ORANGE */}
       <button
         onClick={onReferenceSearchClick}
-        className="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-orange-400 text-left w-full"
+        className="group relative bg-gradient-to-br from-[#e8590c] to-[#c2410c] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-white/20 text-left w-full"
       >
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -122,6 +129,27 @@ const HomeSearchCards = memo(function HomeSearchCards({
           </div>
         </div>
       </button>
+
+      {/* Diagnostic Auto - ORANGE/ROUGE - Pièce stratégique */}
+      <Link
+        to="/diagnostic-auto"
+        className="group relative bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-white/20"
+      >
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+        <div className="relative">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <ScanLine className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Un problème ?</h3>
+          <p className="text-sm text-white/95 mb-4 font-medium">
+            Trouvez la cause de votre panne
+          </p>
+          <div className="flex items-center text-white text-sm font-semibold">
+            <span>Diagnostiquer</span>
+            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </Link>
     </div>
   );
 });

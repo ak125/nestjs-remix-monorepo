@@ -32,10 +32,10 @@ import {
   UserPlus,
   LogOut,
   Search,
+  ScanLine,
   ChevronDown,
 } from "lucide-react";
 import { useState, memo } from "react";
-import { Button } from "~/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -43,6 +43,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Sheet, SheetContent, SheetClose, SheetTrigger } from "../ui/sheet";
+import { Button } from "~/components/ui/button";
 
 interface NavbarMobileProps {
   user?: {
@@ -127,9 +128,9 @@ export const NavbarMobile = memo(function NavbarMobile({
               <SheetClose asChild>
                 <button
                   onClick={() => onSearchClick?.()}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-info/20 transition-colors text-gray-700 border border-gray-200"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 transition-colors text-gray-700 border border-gray-200"
                 >
-                  <Search className="h-5 w-5 text-blue-600" />
+                  <Search className="h-5 w-5 text-primary" />
                   <span className="font-medium">Recherche rapide</span>
                 </button>
               </SheetClose>
@@ -143,7 +144,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     to={dashboardLink}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                   >
-                    <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                    <LayoutDashboard className="h-5 w-5 text-primary" />
                     <span className="font-medium">Dashboard</span>
                   </Link>
                 </SheetClose>
@@ -155,7 +156,7 @@ export const NavbarMobile = memo(function NavbarMobile({
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="catalogue" className="border-none">
                   <AccordionTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700 hover:no-underline [&>svg]:size-0 [&>svg]:overflow-hidden">
-                    <Package className="h-5 w-5 text-blue-600" />
+                    <Package className="h-5 w-5 text-primary" />
                     <span className="font-medium flex-1 text-left">
                       Catalogue
                     </span>
@@ -165,7 +166,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#famille-systeme-de-freinage"
-                        className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        className="block py-2 text-sm text-gray-600 hover:text-primary transition-colors"
                       >
                         Freinage
                       </Link>
@@ -173,7 +174,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#famille-systeme-de-filtration"
-                        className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        className="block py-2 text-sm text-gray-600 hover:text-primary transition-colors"
                       >
                         Filtration
                       </Link>
@@ -181,7 +182,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#famille-courroie-galet-poulie-et-chaine"
-                        className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        className="block py-2 text-sm text-gray-600 hover:text-primary transition-colors"
                       >
                         Distribution
                       </Link>
@@ -189,7 +190,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#famille-embrayage"
-                        className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        className="block py-2 text-sm text-gray-600 hover:text-primary transition-colors"
                       >
                         Embrayage
                       </Link>
@@ -197,7 +198,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#famille-amortisseur-et-suspension"
-                        className="block py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        className="block py-2 text-sm text-gray-600 hover:text-primary transition-colors"
                       >
                         Suspension
                       </Link>
@@ -205,7 +206,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                     <SheetClose asChild>
                       <Link
                         to="/#catalogue"
-                        className="block py-2 text-sm font-medium text-blue-600 hover:underline"
+                        className="block py-2 text-sm font-medium text-primary hover:underline"
                       >
                         Voir toutes les catégories
                       </Link>
@@ -222,7 +223,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                   to="/marques"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                 >
-                  <ShoppingBag className="h-5 w-5 text-blue-600" />
+                  <ShoppingBag className="h-5 w-5 text-primary" />
                   <span className="font-medium">Marques</span>
                 </Link>
               </SheetClose>
@@ -235,10 +236,28 @@ export const NavbarMobile = memo(function NavbarMobile({
                   to="/blog-pieces-auto"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                 >
-                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  <BookOpen className="h-5 w-5 text-primary" />
                   <div className="flex items-center gap-2">
                     <span className="font-medium">Blog</span>
                     <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                      Nouveau
+                    </span>
+                  </div>
+                </Link>
+              </SheetClose>
+            </li>
+
+            {/* Diagnostic */}
+            <li>
+              <SheetClose asChild>
+                <Link
+                  to="/diagnostic-auto"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-orange-50 transition-colors text-gray-700"
+                >
+                  <ScanLine className="h-5 w-5 text-orange-500" />
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Diagnostic auto</span>
+                    <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
                       Nouveau
                     </span>
                   </div>
@@ -253,7 +272,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                   to="/support"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                 >
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
+                  <HelpCircle className="h-5 w-5 text-primary" />
                   <span className="font-medium">Aide & Support</span>
                 </Link>
               </SheetClose>
@@ -364,7 +383,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                 <Link
                   to="/register"
                   rel="nofollow"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-info/20 transition-colors font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors font-medium"
                 >
                   <UserPlus className="h-4 w-4" />
                   Inscription

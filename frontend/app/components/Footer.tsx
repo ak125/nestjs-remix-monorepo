@@ -18,14 +18,12 @@ export const Footer = () => {
   return (
     <>
       {/* Footer principal desktop */}
-      <footer className="bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white py-12 hidden md:block">
+      <footer className="bg-[#0d1b3e] text-white py-12 hidden md:block">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Colonne 1: À propos */}
             <div>
-              <h3 className="text-xl font-bold mb-4 text-semantic-info">
-                À propos
-              </h3>
+              <h3 className="text-xl font-bold mb-4 text-primary">À propos</h3>
               <p className="text-neutral-400 mb-4 leading-relaxed">
                 Votre spécialiste de pièces détachées automobiles neuves et
                 d'origine. Plus de 500 000 références pour toutes les marques et
@@ -37,7 +35,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Facebook"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
+                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Facebook size={20} />
                 </a>
@@ -46,7 +44,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Twitter"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
+                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Twitter size={20} />
                 </a>
@@ -55,7 +53,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur LinkedIn"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
+                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Linkedin size={20} />
                 </a>
@@ -64,7 +62,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Instagram"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
+                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Instagram size={20} />
                 </a>
@@ -73,7 +71,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur YouTube"
-                  className="bg-neutral-800 hover:bg-semantic-info transition-colors p-2.5 rounded-full"
+                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Youtube size={20} />
                 </a>
@@ -82,14 +80,14 @@ export const Footer = () => {
 
             {/* Colonne 2: Liens utiles */}
             <div>
-              <h3 className="text-xl font-bold mb-4 text-semantic-info">
+              <h3 className="text-xl font-bold mb-4 text-primary">
                 Liens utiles
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/#catalogue"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Catalogue pièces
                   </Link>
@@ -97,7 +95,7 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/#toutes-les-marques"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Constructeurs
                   </Link>
@@ -105,15 +103,23 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/blog-pieces-auto"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Blog & Conseils
                   </Link>
                 </li>
                 <li>
                   <Link
+                    to="/diagnostic-auto"
+                    className="text-neutral-400 hover:text-primary transition-colors"
+                  >
+                    Diagnostic auto
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/contact"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Contact
                   </Link>
@@ -121,7 +127,7 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/plan-du-site"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Plan du site
                   </Link>
@@ -131,14 +137,14 @@ export const Footer = () => {
 
             {/* Colonne 3: Informations légales */}
             <div>
-              <h3 className="text-xl font-bold mb-4 text-semantic-info">
+              <h3 className="text-xl font-bold mb-4 text-primary">
                 Informations légales
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/legal/cgv"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     CGV
                   </Link>
@@ -146,7 +152,7 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/legal/privacy"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Politique de confidentialité
                   </Link>
@@ -154,7 +160,7 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/legal/cookies"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Gestion des cookies
                   </Link>
@@ -162,7 +168,7 @@ export const Footer = () => {
                 <li>
                   <Link
                     to="/legal/legal-notice"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     Mentions légales
                   </Link>
@@ -172,14 +178,12 @@ export const Footer = () => {
 
             {/* Colonne 4: Contact */}
             <div>
-              <h3 className="text-xl font-bold mb-4 text-semantic-info">
-                Contact
-              </h3>
+              <h3 className="text-xl font-bold mb-4 text-primary">Contact</h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <MapPin
                     size={20}
-                    className="text-semantic-info flex-shrink-0 mt-0.5"
+                    className="text-primary flex-shrink-0 mt-0.5"
                   />
                   <span className="text-neutral-400 text-sm">
                     184 avenue Aristide Briand
@@ -188,25 +192,19 @@ export const Footer = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Phone
-                    size={20}
-                    className="text-semantic-info flex-shrink-0"
-                  />
+                  <Phone size={20} className="text-primary flex-shrink-0" />
                   <a
                     href="tel:+33177695892"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     01 77 69 58 92
                   </a>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Mail
-                    size={20}
-                    className="text-semantic-info flex-shrink-0"
-                  />
+                  <Mail size={20} className="text-primary flex-shrink-0" />
                   <a
                     href="mailto:contact@automecanik.com"
-                    className="text-neutral-400 hover:text-semantic-info transition-colors"
+                    className="text-neutral-400 hover:text-primary transition-colors"
                   >
                     contact@automecanik.com
                   </a>
@@ -223,7 +221,7 @@ export const Footer = () => {
           </div>
 
           {/* Ligne de séparation */}
-          <div className="border-t border-neutral-700 pt-6">
+          <div className="border-t border-white/15 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-neutral-400 text-sm">
                 © {new Date().getFullYear()} Automecanik. Tous droits réservés.
@@ -231,14 +229,14 @@ export const Footer = () => {
               <div className="flex gap-4 text-sm">
                 <Link
                   to="/legal/cgv"
-                  className="text-neutral-400 hover:text-semantic-info transition-colors"
+                  className="text-neutral-400 hover:text-primary transition-colors"
                 >
                   CGV
                 </Link>
                 <span className="text-neutral-600">•</span>
                 <Link
                   to="/legal/privacy"
-                  className="text-neutral-400 hover:text-semantic-info transition-colors"
+                  className="text-neutral-400 hover:text-primary transition-colors"
                 >
                   Confidentialité
                 </Link>
