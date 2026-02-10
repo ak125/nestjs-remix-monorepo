@@ -34,6 +34,9 @@ import {
 // Utils
 
 // UI Components
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
@@ -43,9 +46,6 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -375,6 +375,17 @@ export default function GuideDetailPage() {
               </div>
             </section>
           )}
+
+          {/* Glossaire */}
+          <div className="mt-8 flex items-center gap-2 text-sm">
+            <BookOpen className="w-4 h-4 text-indigo-500" />
+            <Link
+              to="/reference-auto"
+              className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+            >
+              Consulter le glossaire des pièces auto
+            </Link>
+          </div>
 
           {/* CTA */}
           <section className="mt-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-center text-white">

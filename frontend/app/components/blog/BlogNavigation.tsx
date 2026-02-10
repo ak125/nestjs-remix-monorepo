@@ -45,6 +45,16 @@ const navigationItems: NavigationItem[] = [
     borderColor: "border-green-200",
     count: 120,
   },
+  {
+    label: "Glossaire",
+    href: "/reference-auto",
+    icon: BookOpen,
+    description: "Définitions techniques des pièces",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    count: 138,
+  },
 ];
 
 export function BlogNavigation() {
@@ -59,8 +69,8 @@ export function BlogNavigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo/Home */}
-          <Link 
-            to="/blog-pieces-auto" 
+          <Link
+            to="/blog-pieces-auto"
             className="flex items-center gap-3 group hover:scale-105 transition-transform"
           >
             <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-2.5 shadow-lg">
@@ -89,32 +99,41 @@ export function BlogNavigation() {
                     "hover:shadow-md hover:-translate-y-0.5",
                     active
                       ? `${item.bgColor} ${item.color} border-2 ${item.borderColor} shadow-sm`
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent"
+                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent",
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className={cn("w-5 h-5", active ? item.color : "text-gray-500")} />
+                    <Icon
+                      className={cn(
+                        "w-5 h-5",
+                        active ? item.color : "text-gray-500",
+                      )}
+                    />
                     <span>{item.label}</span>
                     {item.count && (
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className={cn(
                           "ml-1 text-xs",
-                          active ? item.bgColor : "bg-gray-200"
+                          active ? item.bgColor : "bg-gray-200",
                         )}
                       >
                         {item.count}
                       </Badge>
                     )}
                   </div>
-                  
+
                   {/* Tooltip au survol */}
-                  <div className={cn(
-                    "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 rounded-lg shadow-lg",
-                    "text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100",
-                    "transition-opacity duration-200 pointer-events-none z-10",
-                    active ? item.bgColor.replace('bg-', 'bg-gradient-to-r from-') : "bg-gray-900"
-                  )}>
+                  <div
+                    className={cn(
+                      "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 rounded-lg shadow-lg",
+                      "text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100",
+                      "transition-opacity duration-200 pointer-events-none z-10",
+                      active
+                        ? item.bgColor.replace("bg-", "bg-gradient-to-r from-")
+                        : "bg-gray-900",
+                    )}
+                  >
                     {item.description}
                   </div>
                 </Link>
@@ -123,7 +142,7 @@ export function BlogNavigation() {
           </div>
 
           {/* Bouton retour accueil */}
-          <Link 
+          <Link
             to="/"
             className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors font-medium"
           >
@@ -134,7 +153,7 @@ export function BlogNavigation() {
 
         {/* Navigation mobile */}
         <div className="lg:hidden pb-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -147,7 +166,7 @@ export function BlogNavigation() {
                     "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
                     active
                       ? `${item.bgColor} ${item.color} border-2 ${item.borderColor}`
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100",
                   )}
                 >
                   <Icon className="w-6 h-6" />

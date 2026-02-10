@@ -31,6 +31,7 @@ import {
   Share2,
   Bookmark,
   Tag,
+  BookOpen,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -697,6 +698,28 @@ export default function LegacyBlogArticle() {
                     }))}
                   />
                 )}
+
+                {/* Glossaire pièces auto */}
+                <Card className="border-indigo-200 bg-indigo-50/50">
+                  <div className="p-4">
+                    <Link
+                      to="/reference-auto"
+                      className="flex items-center gap-3 group"
+                    >
+                      <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                        <BookOpen className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                          Glossaire pièces auto
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          138 définitions techniques
+                        </p>
+                      </div>
+                    </Link>
+                  </div>
+                </Card>
 
                 {/* Articles Croisés - "On vous propose" */}
                 {article.relatedArticles &&

@@ -4,18 +4,18 @@ import { cn } from "~/lib/utils";
 
 // Fonction pour formater un slug en nom lisible
 function formatSlugToName(slug: string): string {
-  if (!slug) return '';
+  if (!slug) return "";
   // Cas spéciaux pour les marques connues (uppercase)
-  const upperCaseBrands = ['bmw', 'kia', 'mg', 'ds', 'tvr', 'audi', 'vw'];
+  const upperCaseBrands = ["bmw", "kia", "mg", "ds", "tvr", "audi", "vw"];
   if (upperCaseBrands.includes(slug.toLowerCase())) {
     return slug.toUpperCase();
   }
   // Convertir slug en nom lisible: "serie-1-e87" => "Série 1 E87"
   return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-    .replace(/\b(E\d+|F\d+|G\d+)\b/gi, match => match.toUpperCase()); // E87, F20, etc.
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+    .replace(/\b(E\d+|F\d+|G\d+)\b/gi, (match) => match.toUpperCase()); // E87, F20, etc.
 }
 
 interface NavigationItem {
@@ -56,6 +56,15 @@ const navigationItems: NavigationItem[] = [
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
   },
+  {
+    label: "Glossaire",
+    href: "/reference-auto",
+    icon: BookOpen,
+    description: "Définitions techniques des pièces",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+  },
 ];
 
 export function BlogPiecesAutoNavigation() {
@@ -71,16 +80,16 @@ export function BlogPiecesAutoNavigation() {
   };
 
   // Détecter quelle section est active
-  const isConseilsActive = location.pathname.includes('/conseils');
-  const isAutoActive = location.pathname.includes('/auto');
+  const isConseilsActive = location.pathname.includes("/conseils");
+  const isAutoActive = location.pathname.includes("/auto");
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo/Home */}
-          <Link 
-            to="/blog-pieces-auto/conseils" 
+          <Link
+            to="/blog-pieces-auto/conseils"
             className="flex items-center gap-3 group hover:scale-105 transition-transform"
           >
             <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-2.5 shadow-lg">
@@ -90,7 +99,9 @@ export function BlogPiecesAutoNavigation() {
               <h1 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                 Pièces Auto
               </h1>
-              <p className="text-xs text-gray-500">Conseils et guides pratiques</p>
+              <p className="text-xs text-gray-500">
+                Conseils et guides pratiques
+              </p>
             </div>
           </Link>
 
@@ -109,20 +120,27 @@ export function BlogPiecesAutoNavigation() {
                     "hover:shadow-md hover:-translate-y-0.5",
                     active
                       ? `${item.bgColor} ${item.color} border-2 ${item.borderColor} shadow-sm`
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent"
+                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-2 border-transparent",
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className={cn("w-5 h-5", active ? item.color : "text-gray-500")} />
+                    <Icon
+                      className={cn(
+                        "w-5 h-5",
+                        active ? item.color : "text-gray-500",
+                      )}
+                    />
                     <span>{item.label}</span>
                   </div>
-                  
+
                   {/* Tooltip au survol */}
-                  <div className={cn(
-                    "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 rounded-lg shadow-lg",
-                    "text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100",
-                    "transition-opacity duration-200 pointer-events-none z-10 bg-gray-900"
-                  )}>
+                  <div
+                    className={cn(
+                      "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 rounded-lg shadow-lg",
+                      "text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100",
+                      "transition-opacity duration-200 pointer-events-none z-10 bg-gray-900",
+                    )}
+                  >
                     {item.description}
                   </div>
                 </Link>
@@ -132,14 +150,14 @@ export function BlogPiecesAutoNavigation() {
 
           {/* Boutons secondaires */}
           <div className="hidden lg:flex items-center gap-3">
-            <Link 
+            <Link
               to="/blog-pieces-auto"
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium text-sm"
             >
               <BookOpen className="w-4 h-4" />
               Blog
             </Link>
-            <Link 
+            <Link
               to="/"
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors font-medium text-sm"
             >
@@ -164,7 +182,7 @@ export function BlogPiecesAutoNavigation() {
                     "flex flex-col items-center gap-2 p-4 rounded-xl transition-all",
                     active
                       ? `${item.bgColor} ${item.color} border-2 ${item.borderColor}`
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent",
                   )}
                 >
                   <Icon className="w-6 h-6" />
@@ -185,7 +203,10 @@ export function BlogPiecesAutoNavigation() {
                 Accueil
               </Link>
               <span>›</span>
-              <Link to="/blog-pieces-auto" className="hover:text-blue-600 transition-colors">
+              <Link
+                to="/blog-pieces-auto"
+                className="hover:text-blue-600 transition-colors"
+              >
                 Blog automobile
               </Link>
               {isConseilsActive && (
@@ -198,11 +219,16 @@ export function BlogPiecesAutoNavigation() {
                 <>
                   <span>›</span>
                   {marque ? (
-                    <Link to="/blog-pieces-auto/auto" className="hover:text-blue-600 transition-colors">
+                    <Link
+                      to="/blog-pieces-auto/auto"
+                      className="hover:text-blue-600 transition-colors"
+                    >
                       Constructeurs automobile
                     </Link>
                   ) : (
-                    <span className="text-gray-900 font-medium">Constructeurs automobile</span>
+                    <span className="text-gray-900 font-medium">
+                      Constructeurs automobile
+                    </span>
                   )}
                 </>
               )}
@@ -210,18 +236,25 @@ export function BlogPiecesAutoNavigation() {
                 <>
                   <span>›</span>
                   {modele ? (
-                    <Link to={`/blog-pieces-auto/auto/${marque}`} className="hover:text-blue-600 transition-colors">
+                    <Link
+                      to={`/blog-pieces-auto/auto/${marque}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
                       {formatSlugToName(marque)}
                     </Link>
                   ) : (
-                    <span className="text-gray-900 font-medium">{formatSlugToName(marque)}</span>
+                    <span className="text-gray-900 font-medium">
+                      {formatSlugToName(marque)}
+                    </span>
                   )}
                 </>
               )}
               {isAutoActive && modele && (
                 <>
                   <span>›</span>
-                  <span className="text-gray-900 font-medium">{formatSlugToName(modele)}</span>
+                  <span className="text-gray-900 font-medium">
+                    {formatSlugToName(modele)}
+                  </span>
                 </>
               )}
             </div>

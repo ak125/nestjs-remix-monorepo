@@ -16,6 +16,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Link,
   useLoaderData,
   useNavigation,
   useLocation,
@@ -23,21 +24,12 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
+import { CheckCircle2, Truck, Shield, Users, BookOpen } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, lazy, Suspense } from "react";
 // 🆕 V2 UX Components
 
-import { ScrollToTop } from "~/components/blog/ScrollToTop";
-import { Error404 } from "~/components/errors/Error404";
-import MobileStickyBar from "~/components/pieces/MobileStickyBar";
-import TableOfContents from "~/components/pieces/TableOfContents";
-import { pluralizePieceName } from "~/lib/seo-utils";
-import { fetchGammePageData } from "~/services/api/gamme-api.service";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
@@ -57,6 +49,15 @@ import {
   storeVehicleClient,
   type VehicleCookie,
 } from "../utils/vehicle-cookie";
+import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import { Error404 } from "~/components/errors/Error404";
+import MobileStickyBar from "~/components/pieces/MobileStickyBar";
+import TableOfContents from "~/components/pieces/TableOfContents";
+import { pluralizePieceName } from "~/lib/seo-utils";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -1002,13 +1003,13 @@ export default function PiecesDetailPage() {
               </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Truck className="w-4 h-4 text-primary-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
                 Livraison 24-48h
               </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Shield className="w-4 h-4 text-secondary-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
@@ -1164,6 +1165,18 @@ export default function PiecesDetailPage() {
             />
           </Suspense>
         </section>
+
+        {/* Glossaire */}
+        <div className="flex items-center gap-2 px-4 py-3 text-sm bg-indigo-50 rounded-lg">
+          <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
+          <span className="text-gray-600">Besoin de clarifier un terme ?</span>
+          <Link
+            to="/reference-auto"
+            className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+          >
+            Voir le glossaire
+          </Link>
+        </div>
 
         {/* 💡 Conseils d'entretien - Position 7 */}
         <section id="advice">

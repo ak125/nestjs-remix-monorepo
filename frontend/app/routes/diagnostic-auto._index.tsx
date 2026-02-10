@@ -32,6 +32,7 @@ import {
   Volume2,
   Wrench,
   Zap,
+  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -486,6 +487,18 @@ export default function DiagnosticAutoIndex() {
           </form>
         </div>
       </section>
+
+      {/* Cross-link glossaire */}
+      <div className="max-w-7xl mx-auto px-4 pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
+        <BookOpen className="w-4 h-4 text-indigo-500" />
+        <span>Comprendre les pièces mentionnées ?</span>
+        <Link
+          to="/reference-auto"
+          className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+        >
+          Consulter le glossaire
+        </Link>
+      </div>
     </div>
   );
 }

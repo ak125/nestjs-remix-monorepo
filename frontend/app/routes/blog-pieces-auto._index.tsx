@@ -425,7 +425,7 @@ export default function BlogIndex() {
             : []
         }
         gradientFrom="from-blue-900"
-        gradientTo="to-purple-900"
+        gradientTo="to-[#162d5a]"
       />
 
       {/* Search Bar Section - Compact */}
@@ -631,7 +631,7 @@ export default function BlogIndex() {
           </div>
 
           {/* 3 Catégories Principales */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 max-w-7xl mx-auto">
             {/* Montage et Entretien */}
             <Link to="/blog-pieces-auto/conseils" className="group">
               <Card className="h-full border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-white overflow-hidden">
@@ -752,6 +752,46 @@ export default function BlogIndex() {
                 </CardContent>
               </Card>
             </Link>
+
+            {/* Glossaire Pièces Auto */}
+            <Link to="/reference-auto" className="group">
+              <Card className="h-full border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-indigo-50 to-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-bl-full opacity-50" />
+                <CardHeader className="relative">
+                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <BookOpen className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    Glossaire Auto
+                  </CardTitle>
+                  <p className="text-gray-600 mt-2">
+                    Définitions techniques des pièces automobiles
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="bg-indigo-100 text-indigo-800 text-sm">
+                      138 définitions
+                    </Badge>
+                    <ArrowRight className="w-5 h-5 text-indigo-600 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-indigo-500" />
+                      Rôles mécaniques
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-indigo-500" />
+                      Compositions détaillées
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-indigo-500" />
+                      Confusions courantes
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Bouton "Tous les conseils" */}
@@ -784,26 +824,38 @@ export default function BlogIndex() {
                 </p>
               </div>
 
-              <TabsList className="grid grid-cols-2 md:grid-cols-3 w-full md:w-auto">
-                <TabsTrigger
-                  value="popular"
-                  className="flex items-center gap-2"
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <TabsList className="grid grid-cols-2 md:grid-cols-3 w-full md:w-auto">
+                  <TabsTrigger
+                    value="popular"
+                    className="flex items-center gap-2"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Populaires
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="recent"
+                    className="flex items-center gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Récents
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="categories"
+                    className="flex items-center gap-2"
+                  >
+                    <Hash className="w-4 h-4" />
+                    Catégories
+                  </TabsTrigger>
+                </TabsList>
+                <Link
+                  to="/reference-auto"
+                  className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                 >
-                  <TrendingUp className="w-4 h-4" />
-                  Populaires
-                </TabsTrigger>
-                <TabsTrigger value="recent" className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Récents
-                </TabsTrigger>
-                <TabsTrigger
-                  value="categories"
-                  className="flex items-center gap-2"
-                >
-                  <Hash className="w-4 h-4" />
-                  Catégories
-                </TabsTrigger>
-              </TabsList>
+                  <BookOpen className="w-4 h-4" />
+                  Glossaire
+                </Link>
+              </div>
             </div>
 
             {/* Articles populaires */}
@@ -1018,7 +1070,7 @@ export default function BlogIndex() {
 
       {/* Section Articles les Plus Consultés */}
       {blogData.popular && blogData.popular.length > 0 && (
-        <section className="py-16 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+        <section className="py-16 bg-gradient-to-br from-gray-900 via-[#0f2347] to-[#162d5a] text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-12">
