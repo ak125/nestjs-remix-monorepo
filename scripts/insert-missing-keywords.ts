@@ -613,9 +613,9 @@ Examples:
   // Build keyword records for processing
   const allKeywords: KeywordRecord[] = [];
 
-  // Add existing keywords (for recalc mode)
+  // Add existing keywords (for recalc mode) — skip V5 (DB siblings, not from CSV)
   if (recalc) {
-    for (const kw of existingKeywords || []) {
+    for (const kw of (existingKeywords || []).filter(k => k.v_level !== 'V5')) {
       // Find volume from CSV if available
       const csvMatch = csvKeywords.find(
         (c) => normalizeKeyword(c.keyword) === normalizeKeyword(kw.keyword)
@@ -679,10 +679,8 @@ Examples:
   console.log(`🆕 New keywords: ${newCount}`);
 
   if (allKeywords.length === 0) {
-    console.log('✅ Nothing to process');
-    return;
-  }
-
+    console.log('✅ Pas de nouveaux keywords CSV — saut direct à V5');
+  } else {
   // Assign V-Levels using v4.0 algorithm
   console.log(`\n⚙️  Phase V: Classification V-Level v4.0...`);
   assignVLevels(allKeywords);
@@ -842,6 +840,7 @@ Examples:
     console.log(`   Matched: ${totalMatched} (${matchRate}%)`);
     console.log(`   Unmatched: ${totalUnmatched}`);
   }
+  } // end of allKeywords.length > 0 block
 
   // ── Phase V5: Véhicules DB pas dans le CSV (même modèle a des V3/V4) ──────
   console.log(`\n⚙️  Phase V5: Véhicules DB hors CSV...`);
@@ -880,10 +879,53 @@ Examples:
         }
       }
 
-      console.log(`   Modèles DB trouvés: ${modeleIdSet.size}`);
+      console.log(`   Modèles DB trouvés (directs): ${modeleIdSet.size}`);
 
-      // Step 3: Get modele names for display
-      const modeleIds = [...modeleIdSet];
+      // Step 2b: Expand modeleIds to include parent + all children via modele_parent
+      const expandedModeleIds = new Set<string>();
+      const directModeleIds = [...modeleIdSet];
+      const rootIds = new Set<string>();
+
+      // Find root for each modele_id (if parent=0, it's the root; otherwise parent is root)
+      for (let i = 0; i < directModeleIds.length; i += 100) {
+        const batch = directModeleIds.slice(i, i + 100);
+        const { data: modeleRows } = await supabase
+          .from('auto_modele')
+          .select('modele_id, modele_parent, modele_name')
+          .in('modele_id', batch);
+
+        for (const row of modeleRows || []) {
+          const rootId = row.modele_parent === 0
+            ? String(row.modele_id)
+            : String(row.modele_parent);
+          rootIds.add(rootId);
+          expandedModeleIds.add(String(row.modele_id));
+        }
+      }
+
+      // Also add roots themselves
+      for (const rid of rootIds) {
+        expandedModeleIds.add(rid);
+      }
+
+      // Get all children of each root
+      const rootIdArray = [...rootIds];
+      for (let i = 0; i < rootIdArray.length; i += 100) {
+        const batch = rootIdArray.slice(i, i + 100).map(Number);
+        const { data: childRows } = await supabase
+          .from('auto_modele')
+          .select('modele_id')
+          .in('modele_parent', batch);
+
+        for (const row of childRows || []) {
+          expandedModeleIds.add(String(row.modele_id));
+        }
+      }
+
+      console.log(`   Modèles DB expandés (parent+enfants): ${expandedModeleIds.size} (racines: ${rootIds.size})`);
+
+      // Step 3: Get modele names for ALL expanded modeles (for display + model field)
+      const modeleIds = [...expandedModeleIds];
       const modeleNameMap = new Map<string, string>();
 
       for (let i = 0; i < modeleIds.length; i += 100) {
@@ -930,8 +972,8 @@ Examples:
           const modelName = modeleNameMap.get(String(v.type_modele_id)) || 'unknown';
           const fuel = (v.type_fuel || '').toLowerCase();
           return {
-            keyword: `${gammeName} ${v.type_name}`.toLowerCase().trim(),
-            keyword_normalized: normalizeKeyword(`${gammeName} ${v.type_name}`),
+            keyword: `${gammeName} ${modelName} ${v.type_name}`.toLowerCase().trim(),
+            keyword_normalized: normalizeKeyword(`${gammeName} ${modelName} ${v.type_name}`),
             gamme: gammeName,
             pg_id: pgId,
             model: modelName.toLowerCase(),
