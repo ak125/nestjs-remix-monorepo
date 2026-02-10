@@ -44,93 +44,164 @@ export class GammeVLevelService extends SupabaseBaseService {
     super();
   }
 
+  /**
+   * V-Level v4.1 Algorithm (validated 2026-02-10)
+   *
+   * Phase T = trier KEYWORDS (CSV, texte + volume) — fait en amont
+   * Phase V = classer VEHICULES (type_ids, apres match backfill)
+   *
+   * Only reclassifies keywords already in DB (type='vehicle').
+   * Does NOT import from CSV or create V5 — use CLI script for that.
+   *
+   * V3 = type_id matche par backfill (match principal, 1er du groupe volume DESC)
+   * V4 = type_id dans CSV, pas le match principal (reste du groupe)
+   * V2 = top 10 V3 promus par score_seo (volume du keyword)
+   */
   async recalculateVLevel(pgId: number): Promise<RecalculateVLevelResult> {
     try {
-      this.logger.log(`🔄 Recalculating V-Level for gamme ${pgId}`);
+      this.logger.log(`🔄 Recalculating V-Level v4.1 for gamme ${pgId}`);
 
-      // 1. Get keywords for this gamme from __seo_keywords
-      const { data: keywords, error: kwError } = await this.supabase
-        .from('__seo_keywords')
-        .select('id, keyword, volume, pg_id, energy')
-        .eq('pg_id', pgId);
+      // 1. Fetch all keywords for this gamme
+      let allKeywords: any[] = [];
+      let offset = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (kwError) {
-        this.logger.error(
-          `❌ Error fetching keywords for gamme ${pgId}:`,
-          kwError,
-        );
-        throw kwError;
-      }
+      while (hasMore) {
+        const { data: batch, error: kwError } = await this.supabase
+          .from('__seo_keywords')
+          .select(
+            'id, keyword, volume, pg_id, energy, model, type, v_level, score_seo',
+          )
+          .eq('pg_id', pgId)
+          .range(offset, offset + batchSize - 1);
 
-      if (!keywords || keywords.length === 0) {
-        // No keywords found - mark all as V4
-        const { data: metricsData } = await this.supabase
-          .from('gamme_seo_metrics')
-          .update({ v_level: 'V4', updated_at: new Date().toISOString() })
-          .eq('gamme_id', pgId.toString())
-          .select('id');
+        if (kwError) {
+          this.logger.error(
+            `❌ Error fetching keywords for gamme ${pgId}:`,
+            kwError,
+          );
+          throw kwError;
+        }
 
-        return {
-          success: true,
-          message: `V-Level V4 (no keywords) for gamme ${pgId}`,
-          updatedCount: metricsData?.length || 0,
-        };
-      }
-
-      // 2. Group keywords by energy_type, sort by search_volume DESC
-      const byEnergy = new Map<string, typeof keywords>();
-      for (const kw of keywords) {
-        const energy = kw.energy || 'all';
-        if (!byEnergy.has(energy)) byEnergy.set(energy, []);
-        byEnergy.get(energy)!.push(kw);
-      }
-
-      let totalUpdated = 0;
-
-      for (const [_energy, energyKeywords] of byEnergy) {
-        // Sort by search volume descending
-        energyKeywords.sort((a, b) => (b.volume || 0) - (a.volume || 0));
-
-        for (let i = 0; i < energyKeywords.length; i++) {
-          const kw = energyKeywords[i];
-          let vLevel: string;
-
-          if ((kw.volume || 0) === 0) {
-            vLevel = 'V4'; // No search volume
-          } else if (i === 0) {
-            vLevel = 'V2'; // Top keyword for this gamme+energy
-          } else if (i <= 3) {
-            vLevel = 'V3'; // Keywords #2-4
-          } else {
-            vLevel = 'V4'; // Remaining keywords
-          }
-
-          // Update keyword v_level
-          const { error: updateError } = await this.supabase
-            .from('__seo_keywords')
-            .update({ v_level: vLevel, updated_at: new Date().toISOString() })
-            .eq('id', kw.id);
-
-          if (!updateError) totalUpdated++;
+        if (batch && batch.length > 0) {
+          allKeywords = allKeywords.concat(batch);
+          offset += batchSize;
+          hasMore = batch.length === batchSize;
+        } else {
+          hasMore = false;
         }
       }
 
-      // 3. Update gamme_seo_metrics with the best V-Level
-      const bestVLevel = keywords.some((k) => (k.volume || 0) > 0)
-        ? 'V2'
-        : 'V4';
-      await this.supabase
-        .from('gamme_seo_metrics')
-        .update({ v_level: bestVLevel, updated_at: new Date().toISOString() })
-        .eq('gamme_id', pgId.toString());
+      if (allKeywords.length === 0) {
+        return {
+          success: true,
+          message: `No keywords for gamme ${pgId}`,
+          updatedCount: 0,
+        };
+      }
+
+      // 2. Separate vehicle vs non-vehicle keywords
+      const vehicleKws = allKeywords.filter((kw) => kw.type === 'vehicle');
+      const nonVehicleKws = allKeywords.filter((kw) => kw.type !== 'vehicle');
+
+      // Skip V5 keywords (created from DB, not from CSV — don't reclassify them)
+      const csvVehicleKws = vehicleKws.filter((kw) => kw.v_level !== 'V5');
+      const v5Kws = vehicleKws.filter((kw) => kw.v_level === 'V5');
+
+      // 3. Group CSV vehicle keywords by model+energy
+      const byModelEnergy = new Map<string, any[]>();
+      for (const kw of csvVehicleKws) {
+        const key = `${kw.model || '_no_model'}|${kw.energy || 'unknown'}`;
+        if (!byModelEnergy.has(key)) byModelEnergy.set(key, []);
+        byModelEnergy.get(key)!.push(kw);
+      }
+
+      // 4. Elect V3 (match principal) and V4 (dans CSV, pas matche) per group
+      const v3Champions: any[] = [];
+      const updates: Array<{
+        id: number;
+        v_level: string;
+        score_seo: number | null;
+      }> = [];
+
+      for (const [, group] of byModelEnergy) {
+        // Sort: volume DESC, keyword length ASC (shorter = better match)
+        group.sort((a: any, b: any) => {
+          if ((b.volume || 0) !== (a.volume || 0))
+            return (b.volume || 0) - (a.volume || 0);
+          return (a.keyword || '').length - (b.keyword || '').length;
+        });
+
+        let v3Assigned = false;
+
+        for (const kw of group) {
+          if (!v3Assigned && (kw.volume || 0) > 0) {
+            // V3: match principal (type_id matche par backfill)
+            updates.push({
+              id: kw.id,
+              v_level: 'V3',
+              score_seo: kw.volume || 0,
+            });
+            v3Champions.push({ ...kw, score_seo: kw.volume || 0 });
+            v3Assigned = true;
+          } else {
+            // V4: dans le CSV, pas le match principal
+            updates.push({ id: kw.id, v_level: 'V4', score_seo: null });
+          }
+        }
+      }
+
+      // 5. Promote top 10 V3 → V2 (dedup by model)
+      v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
+      const seenModels = new Set<string>();
+      const top10: any[] = [];
+      for (const kw of v3Champions) {
+        const model = (kw.model || '').toLowerCase();
+        if (seenModels.has(model)) continue;
+        seenModels.add(model);
+        top10.push(kw);
+        if (top10.length >= 10) break;
+      }
+      const top10Ids = new Set(top10.map((c) => c.id));
+
+      for (const update of updates) {
+        if (top10Ids.has(update.id)) {
+          update.v_level = 'V2';
+        }
+      }
+
+      // 6. Non-vehicle keywords: set v_level = null, score_seo = null
+      for (const kw of nonVehicleKws) {
+        updates.push({ id: kw.id, v_level: null as any, score_seo: null });
+      }
+
+      // 7. Write updates to DB in batches
+      let totalUpdated = 0;
+      for (const update of updates) {
+        const { error: updateError } = await this.supabase
+          .from('__seo_keywords')
+          .update({
+            v_level: update.v_level,
+            score_seo: update.score_seo,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', update.id);
+
+        if (!updateError) totalUpdated++;
+      }
+
+      const v2Count = updates.filter((u) => u.v_level === 'V2').length;
+      const v3Count = updates.filter((u) => u.v_level === 'V3').length;
+      const v4Count = updates.filter((u) => u.v_level === 'V4').length;
 
       this.logger.log(
-        `✅ V-Level recalculated for gamme ${pgId}: ${totalUpdated} keywords updated`,
+        `✅ V-Level v4.1 recalculated for gamme ${pgId}: V2=${v2Count}, V3=${v3Count}, V4=${v4Count}, V5=${v5Kws.length} (preserved)`,
       );
 
       return {
         success: true,
-        message: `V-Level recalcule: ${totalUpdated} keywords mis a jour pour gamme ${pgId}`,
+        message: `V-Level v4.1: V2=${v2Count}, V3=${v3Count}, V4=${v4Count}, V5=${v5Kws.length} (${totalUpdated} updated)`,
         updatedCount: totalUpdated,
       };
     } catch (error) {
@@ -199,6 +270,9 @@ export class GammeVLevelService extends SupabaseBaseService {
     v2: number;
     v3: number;
     v4: number;
+    v5: number;
+    v6: number;
+    unclassified: number;
     total: number;
   }> {
     const { data, error } = await this.supabase
@@ -206,16 +280,37 @@ export class GammeVLevelService extends SupabaseBaseService {
       .select('v_level');
 
     if (error || !data) {
-      return { v1: 0, v2: 0, v3: 0, v4: 0, total: 0 };
+      return {
+        v1: 0,
+        v2: 0,
+        v3: 0,
+        v4: 0,
+        v5: 0,
+        v6: 0,
+        unclassified: 0,
+        total: 0,
+      };
     }
 
-    const stats = { v1: 0, v2: 0, v3: 0, v4: 0, total: data.length };
+    const stats = {
+      v1: 0,
+      v2: 0,
+      v3: 0,
+      v4: 0,
+      v5: 0,
+      v6: 0,
+      unclassified: 0,
+      total: data.length,
+    };
     for (const row of data) {
-      const vl = (row.v_level || 'V4').toUpperCase();
+      const vl = (row.v_level || '').toUpperCase();
       if (vl === 'V1') stats.v1++;
       else if (vl === 'V2') stats.v2++;
       else if (vl === 'V3') stats.v3++;
-      else stats.v4++;
+      else if (vl === 'V4') stats.v4++;
+      else if (vl === 'V5') stats.v5++;
+      else if (vl === 'V6') stats.v6++;
+      else stats.unclassified++;
     }
 
     return stats;

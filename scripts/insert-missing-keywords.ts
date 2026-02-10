@@ -1,13 +1,20 @@
 /**
  * Insert/Update keywords from Google Ads CSV into __seo_keywords
- * V-Level v3.0 Algorithm:
+ * V-Level v4.0 Algorithm (validated 2026-02-10):
  *
- *   V1 = Super-champion inter-gammes (V3 in 2+ gammes, promoted later)
- *   V2 = TOP 20 by score_seo per gamme
- *   V3 = Champion local (TOP 1 by volume per model+energy)
- *   V4 = Variant secondaire (volume > 0, not champion)
- *   V5 = Sans demande (volume = 0 or NULL)
- *   V6 = Bloc B catalogue (manual assignment)
+ *   V1 = top V2 inter-gammes (calculated after multiple gammes)
+ *   V2 = top 10 V3 de la gamme (promoted from V3)
+ *   V3 = champion #1 du groupe [gamme+modèle+énergie], dans le CSV
+ *   V4 = pas #1, dans le CSV, volume > 0
+ *   V5 = dans la DB, pas dans le CSV, mais son modèle a des V3/V4 dans cette gamme
+ *   V6 = dans la DB, dans AUCUNE gamme (global, pas calculé ici)
+ *
+ * Tous les V ont un type_id (véhicule réel dans la DB).
+ * Diesel/Essence séparés dans chaque groupe.
+ *
+ * Pipeline:
+ *   Phase T: CSV → T1(pertinence) → T2(exclusion) → T3(catégorisation) → T4(véhicules seuls)
+ *   Phase V: V3(champion) → V4(challengers) → V2(top V3) → V5(DB sans CSV, après backfill)
  *
  * score_seo = volume × (1 + nb_v4 / 5)
  *
@@ -63,6 +70,115 @@ interface VLevelStats {
   V6: number;
   NULL: number;
 }
+
+// ── Phase T: Triage / Filtering ──────────────────────────────────────────────
+
+/**
+ * T1: Keyword must be relevant to the gamme (contains at least one gamme term)
+ */
+function filterT1_pertinence(keywords: ParsedKeyword[], gamme: string): { kept: ParsedKeyword[]; excluded: ParsedKeyword[] } {
+  const gammeTerms = normalizeKeyword(gamme).split(/\s+/).filter(t => t.length > 2);
+  const kept: ParsedKeyword[] = [];
+  const excluded: ParsedKeyword[] = [];
+
+  for (const kw of keywords) {
+    const norm = normalizeKeyword(kw.keyword);
+    const hasGammeTerm = gammeTerms.some(term => norm.includes(term));
+    if (hasGammeTerm) {
+      kept.push(kw);
+    } else {
+      excluded.push(kw);
+    }
+  }
+  return { kept, excluded };
+}
+
+/**
+ * T2: Exclude keywords that belong to OTHER gammes (not this one)
+ */
+const EXCLUSION_TERMS: Record<string, string[]> = {
+  'disque de frein': ['vanne egr', 'embrayage', 'courroie', 'bougie', 'bobine', 'injecteur', 'turbo', 'demarreur', 'alternateur', 'pompe a eau', 'radiateur', 'echappement', 'amortisseur', 'cardan', 'rotule', 'biellette', 'silentbloc', 'silent bloc'],
+  'plaquette de frein': ['vanne egr', 'embrayage', 'courroie', 'bougie', 'bobine'],
+  'filtre a huile': ['vanne egr', 'embrayage', 'courroie'],
+};
+
+function filterT2_exclusion(keywords: ParsedKeyword[], gamme: string): { kept: ParsedKeyword[]; excluded: ParsedKeyword[] } {
+  const gammeNorm = normalizeKeyword(gamme);
+  const exclusions = EXCLUSION_TERMS[gammeNorm] || [];
+  const kept: ParsedKeyword[] = [];
+  const excluded: ParsedKeyword[] = [];
+
+  for (const kw of keywords) {
+    const norm = normalizeKeyword(kw.keyword);
+    // Exclude if keyword contains an exclusion term AND does NOT contain a gamme term
+    // (e.g. "disque et plaquette" is OK — "plaquette 307" without "disque"/"frein" is not)
+    const hasExclusion = exclusions.some(ex => norm.includes(ex));
+    if (hasExclusion) {
+      excluded.push(kw);
+    } else {
+      kept.push(kw);
+    }
+  }
+  return { kept, excluded };
+}
+
+/**
+ * T3: Categorize keyword type
+ * - 'vehicle': contains a vehicle model
+ * - 'brand': contains a parts brand (brembo, bosch, etc.) but no vehicle
+ * - 'generic': neither vehicle nor brand
+ */
+const BRAND_TERMS = ['brembo', 'bosch', 'ate', 'ferodo', 'galfer', 'trw', 'mintex', 'delphi', 'valeo', 'textar', 'bendix', 'motrio', 'ap racing', 'wilwood', 'ebc', 'newfren'];
+
+function categorizeT3(keyword: string, gamme: string): 'vehicle' | 'brand' | 'generic' {
+  const { model } = extractVehicleInfo(keyword, gamme);
+  if (model) return 'vehicle';
+
+  const norm = normalizeKeyword(keyword);
+  if (BRAND_TERMS.some(b => norm.includes(b))) return 'brand';
+
+  return 'generic';
+}
+
+/**
+ * Run full T1-T4 pipeline
+ * T4: Only vehicle keywords participate in V-Level classification
+ */
+function runTriagePipeline(keywords: ParsedKeyword[], gamme: string): {
+  vehicle: ParsedKeyword[];
+  brand: ParsedKeyword[];
+  generic: ParsedKeyword[];
+  excludedT1: ParsedKeyword[];
+  excludedT2: ParsedKeyword[];
+} {
+  // T1: pertinence
+  const t1 = filterT1_pertinence(keywords, gamme);
+
+  // T2: exclusion
+  const t2 = filterT2_exclusion(t1.kept, gamme);
+
+  // T3+T4: categorize and separate
+  const vehicle: ParsedKeyword[] = [];
+  const brand: ParsedKeyword[] = [];
+  const generic: ParsedKeyword[] = [];
+
+  for (const kw of t2.kept) {
+    const cat = categorizeT3(kw.keyword, gamme);
+    if (cat === 'vehicle') vehicle.push(kw);
+    else if (cat === 'brand') brand.push(kw);
+    else generic.push(kw);
+  }
+
+  return {
+    vehicle,
+    brand,
+    generic,
+    excludedT1: t1.excluded,
+    excludedT2: t2.excluded,
+  };
+}
+
+// ── Energy detection ─────────────────────────────────────────────────────────
 
 // Energy detection patterns
 const ENERGY_PATTERNS: Record<string, string[]> = {
@@ -135,6 +251,18 @@ function normalizeKeyword(keyword: string): string {
 /**
  * Extract model and variant from keyword
  */
+/**
+ * Convert Arabic generation number to Roman numeral for DB matching
+ * "clio 4" → "clio iv", "megane 3" → "megane iii"
+ * Only converts trailing single digit (1-5) after a model name
+ */
+function generationToRoman(model: string): string {
+  const map: Record<string, string> = { '1': 'i', '2': 'ii', '3': 'iii', '4': 'iv', '5': 'v' };
+  return model.replace(/\s+(\d)\s*$/, (_, num) => {
+    return map[num] ? ` ${map[num]}` : ` ${num}`;
+  });
+}
+
 function extractVehicleInfo(
   keyword: string,
   gamme: string
@@ -181,11 +309,27 @@ function extractVehicleInfo(
     /\b(astra)\s*(\d+|[ivx]+)?\b/i,
   ];
 
+  // Compound models (must match BEFORE base models to avoid splitting)
+  const modelsCompound = [
+    /\b(c3\s+picasso)\b/i,
+    /\b(c3\s+aircross)\b/i,
+    /\b(c3\s+pluriel)\b/i,
+    /\b(c4\s+grand\s+picasso)\b/i,
+    /\b(c4\s+picasso)\b/i,
+    /\b(c4\s+cactus)\b/i,
+    /\b(c4\s+aircross)\b/i,
+    /\b(c4\s+spacetourer)\b/i,
+    /\b(c5\s+aircross)\b/i,
+    /\b(xsara\s+picasso)\b/i,
+    /\b(grand\s+scenic)\s*(\d+|[ivx]+)?\b/i,
+    /\b(308\s+sw)\b/i,
+    /\b(508\s+sw)\b/i,
+  ];
+
   const modelsNoGeneration = [
     /\b(c3|c4|c5)\b/i,
     /\b(c3 i|c3 ii|c3 iii)\b/i,
     /\b(c4 i|c4 ii)\b/i,
-    /\b(c3 picasso|c4 picasso)\b/i,
     /\b(berlingo)\s*(\d+|[ivx]+)?\b/i,
     /\b(207|208|2008)\b/i,
     /\b(307|308|3008)\b/i,
@@ -196,6 +340,7 @@ function extractVehicleInfo(
   ];
 
   const allPatterns = [
+    ...modelsCompound,         // Compound first (c4 picasso before c4)
     ...modelsWithGeneration,
     ...modelsNoGeneration,
     ...modelsOptionalGeneration,
@@ -207,7 +352,7 @@ function extractVehicleInfo(
   for (const pattern of allPatterns) {
     const match = remaining.match(pattern);
     if (match) {
-      model = match[0].toLowerCase().replace(/\s+/g, ' ').trim();
+      model = generationToRoman(match[0].toLowerCase().replace(/\s+/g, ' ').trim());
 
       const modelEnd = remaining.indexOf(match[0]) + match[0].length;
       let afterModel = remaining.slice(modelEnd).trim();
@@ -220,6 +365,20 @@ function extractVehicleInfo(
           .replace(/^\s*,\s*/, '')
           .trim() || null;
       }
+
+      // Strip non-variant noise words
+      if (variant) {
+        const NON_VARIANT_TERMS = [
+          'prix', 'avant', 'arriere', 'arrière', 'avec roulement',
+          'et plaquette', 'de frein', 'frein', 'disque', 'ventile',
+          'plein', 'arriere avec roulement', 'avant ventile',
+        ];
+        const variantClean = variant.toLowerCase().trim();
+        if (NON_VARIANT_TERMS.some(t => variantClean === t || variantClean === `${t} prix`)) {
+          variant = null;
+        }
+      }
+
       break;
     }
   }
@@ -235,28 +394,41 @@ function extractVehicleInfo(
 }
 
 /**
- * Calculate score_seo for a V3 champion
- * score_seo = volume × (1 + nb_v4 / 5)
+ * V-Level v4.1 Classification Algorithm
+ *
+ * Phase T = trier les KEYWORDS (CSV, texte + volume) — déjà fait avant cette fonction
+ * Phase V = classer les VEHICULES (type_ids, après match backfill)
+ *
+ * Les V-levels ne regardent PAS le volume. Le volume est déjà trié par les T.
+ *
+ * Definitions:
+ *   V3 = type_id matché par le backfill (match principal)
+ *   V4 = type_id dans le CSV, pas le match principal
+ *   V5 = type_id dans la DB, même modèle a des V3 (assigné après backfill)
+ *   V6 = orphelins DB (assigné globalement)
+ *   V2 = top 10 modèles promus depuis V3
+ *   V1 = modèle V2 dans ≥30% des gammes (batch inter-gammes)
+ *
+ * Pre-backfill: on utilise (model, variant, energy) comme proxy pour type_id.
+ * Le keyword avec le plus de volume dans un groupe (model+energy) est le V3 (match principal).
+ * Les autres keywords du même groupe sont V4 (dans CSV, pas le match principal).
  */
-function calculateScoreSeo(volume: number, nbV4: number): number {
-  return Math.round(volume * (1 + nbV4 / 5));
-}
+function assignVLevels(keywords: KeywordRecord[]): KeywordRecord[] {
+  // Step 1: Only classify vehicle keywords (type = 'vehicle')
+  const vehicleKws = keywords.filter(kw => kw.type === 'vehicle');
+  const nonVehicleKws = keywords.filter(kw => kw.type !== 'vehicle');
 
-/**
- * V-Level v3.0 Classification Algorithm
- */
-function assignVLevels(keywords: KeywordRecord[], top20Limit = 20): KeywordRecord[] {
-  // Step 1: Group by (model + energy)
+  // Non-vehicle keywords don't get V-levels
+  for (const kw of nonVehicleKws) {
+    kw.v_level = null;
+    kw.score_seo = null;
+  }
+
+  // Step 2: Group vehicle keywords by (model + energy)
+  // Each group approximates one "model+energy" slot before backfill assigns type_ids
   const byModelEnergy = new Map<string, KeywordRecord[]>();
 
-  for (const kw of keywords) {
-    // Skip keywords without type_id (cannot be classified per rules)
-    if (kw.type_id === null) {
-      kw.v_level = null;
-      kw.score_seo = null;
-      continue;
-    }
-
+  for (const kw of vehicleKws) {
     const key = `${kw.model || '_no_model'}|${kw.energy}`;
     if (!byModelEnergy.has(key)) {
       byModelEnergy.set(key, []);
@@ -264,54 +436,50 @@ function assignVLevels(keywords: KeywordRecord[], top20Limit = 20): KeywordRecor
     byModelEnergy.get(key)!.push(kw);
   }
 
-  // Step 2: For each group, assign V3 (champion) vs V4 (variants) vs V5 (no volume)
-  const champions: KeywordRecord[] = [];
+  // Step 3: For each group, elect V3 (match principal) and V4 (dans CSV, pas matché)
+  // V3 = the keyword that will match the primary type_id (highest volume = best match)
+  // V4 = other keywords in CSV for this model+energy (different variants, not the primary match)
+  const v3Champions: KeywordRecord[] = [];
 
   for (const [_groupKey, group] of byModelEnergy) {
-    // Sort by volume DESC, then by keyword length (shorter preferred)
+    // Sort by volume DESC, then keyword length ASC (shorter = more generic = better match)
     group.sort((a, b) => {
       if (b.volume !== a.volume) return b.volume - a.volume;
       return a.keyword.length - b.keyword.length;
     });
 
-    let championAssigned = false;
-    let nbV4 = 0;
-
-    // Count V4s first (all non-champion keywords with volume > 0)
-    for (const kw of group) {
-      if (kw.volume > 0) {
-        nbV4++;
-      }
-    }
-    nbV4--; // Subtract 1 for the champion
+    let v3Assigned = false;
 
     for (const kw of group) {
-      if (kw.volume === 0 || kw.volume === null) {
-        // V5: Sans demande
-        kw.v_level = 'V5';
-        kw.score_seo = null;
-      } else if (!championAssigned) {
-        // V3: Champion local (TOP 1 by volume)
+      if (!v3Assigned && kw.volume > 0) {
+        // V3: match principal (type_id matché par backfill)
         kw.v_level = 'V3';
-        kw.score_seo = calculateScoreSeo(kw.volume, Math.max(0, nbV4));
-        championAssigned = true;
-        champions.push(kw);
+        kw.score_seo = kw.volume;
+        v3Assigned = true;
+        v3Champions.push(kw);
       } else {
-        // V4: Variant secondaire
+        // V4: dans le CSV, pas le match principal
         kw.v_level = 'V4';
         kw.score_seo = null;
       }
     }
   }
 
-  // Step 3: Promote TOP 20 V3 → V2 (champions stratégiques)
-  // Sort champions by score_seo DESC
-  champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
-
-  // Promote top N to V2
-  const top20 = champions.slice(0, top20Limit);
-  for (const kw of top20) {
-    kw.v_level = 'V2';
+  // Step 4: Promote top 10 DISTINCT MODELS V3 → V2
+  if (v3Champions.length > 0) {
+    v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
+    const seenModels = new Set<string>();
+    const top10: KeywordRecord[] = [];
+    for (const kw of v3Champions) {
+      const model = (kw.model || '').toLowerCase();
+      if (seenModels.has(model)) continue;
+      seenModels.add(model);
+      top10.push(kw);
+      if (top10.length >= 10) break;
+    }
+    for (const kw of top10) {
+      kw.v_level = 'V2';
+    }
   }
 
   return keywords;
@@ -323,7 +491,7 @@ async function main() {
   if (args.length < 2) {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level v3.0 Keyword Import Script                        ║
+║  V-Level v4.0 Keyword Import Script                        ║
 ╚════════════════════════════════════════════════════════════╝
 
 Usage: npx tsx scripts/insert-missing-keywords.ts <csv_path> <gamme_name> [--dry-run] [--recalc]
@@ -356,7 +524,7 @@ Examples:
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level v3.0 Import                                       ║
+║  V-Level v4.0 Import                                       ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 
@@ -380,8 +548,31 @@ Examples:
   console.log(`🔑 pg_id: ${pgId}`);
 
   // Parse CSV
-  const csvKeywords = parseGoogleAdsCSV(csvPath);
-  console.log(`📊 CSV: ${csvKeywords.length} keywords parsed`);
+  const csvKeywordsRaw = parseGoogleAdsCSV(csvPath);
+  console.log(`📊 CSV: ${csvKeywordsRaw.length} keywords parsed`);
+
+  // ── Phase T: Triage ─────────────────────────────────────────────────────────
+  console.log(`\n⚙️  Phase T: Triage...`);
+  const triage = runTriagePipeline(csvKeywordsRaw, gammeName);
+
+  console.log(`   T1 exclus (hors gamme):    ${triage.excludedT1.length}`);
+  console.log(`   T2 exclus (autre gamme):   ${triage.excludedT2.length}`);
+  console.log(`   T3/T4 véhicule:            ${triage.vehicle.length}`);
+  console.log(`   T3 marque:                 ${triage.brand.length}`);
+  console.log(`   T3 générique:              ${triage.generic.length}`);
+
+  if (triage.excludedT1.length > 0) {
+    console.log(`\n   Exemples T1 exclus:`);
+    triage.excludedT1.slice(0, 5).forEach(k => console.log(`     ✗ ${k.keyword}`));
+  }
+  if (triage.excludedT2.length > 0) {
+    console.log(`\n   Exemples T2 exclus:`);
+    triage.excludedT2.slice(0, 5).forEach(k => console.log(`     ✗ ${k.keyword}`));
+  }
+
+  // All filtered keywords (vehicle + brand + generic) go to DB, but only vehicle gets V-level
+  const csvKeywords = [...triage.vehicle, ...triage.brand, ...triage.generic];
+  console.log(`   → ${csvKeywords.length} keywords retenus (${triage.vehicle.length} véhicules pour V-Level)`);
 
   // Get existing keywords from DB (use gamme, not pg_id)
   // Fetch in batches to avoid Supabase 1000 row limit
@@ -492,8 +683,8 @@ Examples:
     return;
   }
 
-  // Assign V-Levels using v3.0 algorithm
-  console.log(`\n⚙️  Running V-Level v3.0 algorithm...`);
+  // Assign V-Levels using v4.0 algorithm
+  console.log(`\n⚙️  Phase V: Classification V-Level v4.0...`);
   assignVLevels(allKeywords);
 
   // Count V-Level distribution
@@ -508,32 +699,44 @@ Examples:
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level Distribution                                      ║
+║  V-Level Distribution (v4.0)                               ║
 ╠════════════════════════════════════════════════════════════╣
-║  V2 (TOP 20 stratégiques):     ${String(stats.V2).padStart(4)}                        ║
-║  V3 (Champions locaux):        ${String(stats.V3).padStart(4)}                        ║
-║  V4 (Variants secondaires):    ${String(stats.V4).padStart(4)}                        ║
-║  V5 (Sans demande):            ${String(stats.V5).padStart(4)}                        ║
-║  V6 (Bloc B):                  ${String(stats.V6).padStart(4)}                        ║
-║  NULL (type_id manquant):      ${String(stats.NULL).padStart(4)}                        ║
+║  V2 (Top 10 V3):               ${String(stats.V2).padStart(4)}                        ║
+║  V3 (Champions groupe):        ${String(stats.V3).padStart(4)}                        ║
+║  V4 (Challengers CSV):         ${String(stats.V4).padStart(4)}                        ║
+║  V5 (DB hors CSV):             ${String(stats.V5).padStart(4)}  (après backfill)       ║
+║  NULL (générique/marque):      ${String(stats.NULL).padStart(4)}                        ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 
-  // Show TOP 10 V2 (champions stratégiques)
+  // Show V2 (top 10 V3)
   const v2Keywords = allKeywords
-    .filter((k) => k.v_level === 'V2')
+    .filter(k => k.v_level === 'V2')
     .sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
 
-  console.log(`📈 TOP 10 V2 (Champions Stratégiques):`);
-  console.log(`${'Rang'.padEnd(5)} ${'Score'.padEnd(7)} ${'Vol'.padEnd(6)} ${'Modèle'.padEnd(12)} Keyword`);
-  console.log(`${'─'.repeat(60)}`);
-  v2Keywords.slice(0, 10).forEach((kw, i) => {
-    const rank = (i + 1).toString().padEnd(5);
+  console.log(`👑 V2 (Top 10 V3):`);
+  v2Keywords.forEach((kw, i) => {
+    console.log(`   ${i + 1}. ${kw.keyword} | vol=${kw.volume} | score=${kw.score_seo} | model=${kw.model}`);
+  });
+
+  // Show all V3 champions
+  const v3Keywords = allKeywords
+    .filter(k => k.v_level === 'V3')
+    .sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
+
+  console.log(`\n📈 V3 Champions par groupe (${v3Keywords.length}):`);
+  console.log(`${'Score'.padEnd(7)} ${'Vol'.padEnd(6)} ${'Modèle'.padEnd(15)} ${'Énergie'.padEnd(10)} Keyword`);
+  console.log(`${'─'.repeat(70)}`);
+  v3Keywords.slice(0, 20).forEach(kw => {
     const score = (kw.score_seo || 0).toString().padEnd(7);
     const vol = kw.volume.toString().padEnd(6);
-    const model = (kw.model || '-').padEnd(12);
-    console.log(`${rank} ${score} ${vol} ${model} ${kw.keyword}`);
+    const model = (kw.model || '-').padEnd(15);
+    const energy = kw.energy.padEnd(10);
+    console.log(`${score} ${vol} ${model} ${energy} ${kw.keyword}`);
   });
+  if (v3Keywords.length > 20) {
+    console.log(`   ... et ${v3Keywords.length - 20} autres V3`);
+  }
 
   if (dryRun) {
     console.log('\n🔍 DRY RUN - No changes made to database');
@@ -611,6 +814,7 @@ Examples:
     while (hasMore && batchCount < MAX_BATCHES) {
       const rpcResult = await supabase.rpc('backfill_seo_keywords_type_ids', {
         p_batch_size: 100,
+        p_pg_id: pgId,
       });
 
       if (rpcResult.error) {
@@ -639,9 +843,268 @@ Examples:
     console.log(`   Unmatched: ${totalUnmatched}`);
   }
 
+  // ── Phase V5: Véhicules DB pas dans le CSV (même modèle a des V3/V4) ──────
+  console.log(`\n⚙️  Phase V5: Véhicules DB hors CSV...`);
+
+  // Step 1: Get type_ids that have V2/V3/V4 keywords in this gamme (after backfill)
+  const { data: gammeTypeIdRows, error: gmError } = await supabase
+    .from('__seo_keywords')
+    .select('type_id')
+    .eq('gamme', gammeName)
+    .in('v_level', ['V2', 'V3', 'V4'])
+    .not('type_id', 'is', null);
+
+  if (gmError) {
+    console.error(`   ⚠️ V5 query error: ${gmError.message}`);
+  } else {
+    const linkedTypeIds = new Set((gammeTypeIdRows || []).map(r => r.type_id));
+    console.log(`   Type_ids liés (V2/V3/V4): ${linkedTypeIds.size}`);
+
+    if (linkedTypeIds.size === 0) {
+      console.log(`   ⚠️ Aucun type_id lié — backfill nécessaire d'abord. V5 ignoré.`);
+    } else {
+      // Step 2: Get type_modele_id for those type_ids (via auto_type)
+      const typeIdArray = [...linkedTypeIds];
+      const modeleIdSet = new Set<string>();
+
+      // Batch in groups of 100 to avoid PostgREST limits
+      for (let i = 0; i < typeIdArray.length; i += 100) {
+        const batch = typeIdArray.slice(i, i + 100);
+        const { data: typeRows } = await supabase
+          .from('auto_type')
+          .select('type_modele_id')
+          .in('type_id', batch);
+
+        for (const row of typeRows || []) {
+          if (row.type_modele_id) modeleIdSet.add(String(row.type_modele_id));
+        }
+      }
+
+      console.log(`   Modèles DB trouvés: ${modeleIdSet.size}`);
+
+      // Step 3: Get modele names for display
+      const modeleIds = [...modeleIdSet];
+      const modeleNameMap = new Map<string, string>();
+
+      for (let i = 0; i < modeleIds.length; i += 100) {
+        const batch = modeleIds.slice(i, i + 100);
+        const { data: modeleRows } = await supabase
+          .from('auto_modele')
+          .select('modele_id, modele_name')
+          .in('modele_id', batch);
+
+        for (const row of modeleRows || []) {
+          modeleNameMap.set(String(row.modele_id), row.modele_name);
+        }
+      }
+
+      // Step 4: Get ALL type_ids for those modele_ids (siblings)
+      // Also get all type_ids already in __seo_keywords for this gamme
+      const { data: allGammeTypeIdRows } = await supabase
+        .from('__seo_keywords')
+        .select('type_id')
+        .eq('gamme', gammeName)
+        .not('type_id', 'is', null);
+
+      const allLinkedTypeIds = new Set((allGammeTypeIdRows || []).map(r => r.type_id));
+
+      let v5Count = 0;
+      for (let i = 0; i < modeleIds.length; i += 50) {
+        const batch = modeleIds.slice(i, i + 50);
+        const { data: siblingTypes } = await supabase
+          .from('auto_type')
+          .select('type_id, type_name, type_fuel, type_engine, type_modele_id')
+          .in('type_modele_id', batch)
+          .eq('type_display', '1')
+          .limit(1000);
+
+        if (!siblingTypes) continue;
+
+        // Filter out types already linked to this gamme
+        const v5Candidates = siblingTypes.filter(t => !allLinkedTypeIds.has(t.type_id));
+
+        if (v5Candidates.length === 0) continue;
+
+        // Create synthetic V5 keyword entries
+        const v5Records = v5Candidates.map(v => {
+          const modelName = modeleNameMap.get(String(v.type_modele_id)) || 'unknown';
+          const fuel = (v.type_fuel || '').toLowerCase();
+          return {
+            keyword: `${gammeName} ${v.type_name}`.toLowerCase().trim(),
+            keyword_normalized: normalizeKeyword(`${gammeName} ${v.type_name}`),
+            gamme: gammeName,
+            pg_id: pgId,
+            model: modelName.toLowerCase(),
+            variant: v.type_engine || null,
+            energy: fuel.includes('diesel') ? 'diesel'
+              : fuel.includes('essence') || fuel.includes('gasoline') || fuel.includes('petrol') ? 'essence'
+              : fuel.includes('hybrid') ? 'hybride'
+              : fuel.includes('electr') ? 'electrique'
+              : 'unknown',
+            v_level: 'V5',
+            volume: 0,
+            score_seo: null,
+            type: 'vehicle',
+            type_id: v.type_id,
+          };
+        });
+
+        // Upsert in sub-batches of 200
+        for (let j = 0; j < v5Records.length; j += 200) {
+          const subBatch = v5Records.slice(j, j + 200);
+          const { error: v5Error } = await supabase
+            .from('__seo_keywords')
+            .upsert(subBatch, { onConflict: 'keyword,gamme', ignoreDuplicates: true });
+
+          if (!v5Error) {
+            v5Count += subBatch.length;
+          } else {
+            console.error(`   ⚠️ V5 upsert error: ${v5Error.message}`);
+          }
+        }
+
+        // Track newly inserted type_ids to avoid duplicates in next batch
+        for (const v of v5Candidates) {
+          allLinkedTypeIds.add(v.type_id);
+        }
+      }
+
+      // Count actual V5 in DB (v5Count tracks attempts, not actual inserts due to ignoreDuplicates)
+      const { count: v5Actual } = await supabase
+        .from('__seo_keywords')
+        .select('id', { count: 'exact', head: true })
+        .eq('pg_id', pgId)
+        .eq('v_level', 'V5');
+      console.log(`   ✅ V5 créés: ${v5Actual ?? v5Count} véhicules`);
+    }
+  }
+
+  // ── Phase V-PROPAGATE: Un V-level par type_id ──────────────────────────────
+  console.log(`\n⚙️  Phase V-PROPAGATE: Uniformisation V-level par véhicule...`);
+
+  // For each type_id, propagate the best V-level to all its keywords
+  // V2 vehicles: champion keyword stays V2, others get V3 (unique constraint)
+  // V3/V4/V5 vehicles: all keywords inherit the vehicle's level
+  const { data: propResult, error: propError } = await supabase.rpc('propagate_vlevel_per_typeid', {
+    p_pg_id: pgId
+  });
+
+  if (propError) {
+    console.error(`   ⚠️ Propagation error: ${propError.message}`);
+  } else {
+    const updatedCount = propResult?.[0]?.updated ?? 0;
+    console.log(`   ✅ ${updatedCount} keywords réalignés sur leur véhicule`);
+  }
+
+  // ── Stats par véhicule (type_id) ─────────────────────────────────────────
+  const { data: vehicleStats } = await supabase
+    .from('__seo_keywords')
+    .select('v_level, type_id')
+    .eq('pg_id', pgId)
+    .not('type_id', 'is', null)
+    .not('v_level', 'is', null);
+
+  const vehicleByLevel = new Map<string, Set<number>>();
+  for (const row of vehicleStats || []) {
+    const vl = row.v_level as string;
+    if (!vehicleByLevel.has(vl)) vehicleByLevel.set(vl, new Set());
+    vehicleByLevel.get(vl)!.add(row.type_id as number);
+  }
+
+  console.log(`\n╔════════════════════════════════════════════════════════════╗`);
+  console.log(`║  Stats par VEHICULE (type_id)                              ║`);
+  console.log(`╠════════════════════════════════════════════════════════════╣`);
+  for (const level of ['V2', 'V3', 'V4', 'V5']) {
+    const count = vehicleByLevel.get(level)?.size ?? 0;
+    console.log(`║  ${level}: ${String(count).padStart(4)} véhicules                                  ║`);
+  }
+  console.log(`╚════════════════════════════════════════════════════════════╝`);
+
+  // ── Phase V1: Inter-gammes (batch) ─────────────────────────────────────────
+  console.log(`\n⚙️  Phase V1: Calcul inter-gammes...`);
+
+  // Get all distinct gammes that have been imported
+  const { data: allGammes } = await supabase
+    .from('__seo_keywords')
+    .select('pg_id')
+    .not('v_level', 'is', null)
+    .in('v_level', ['V2', 'V3'])
+    .limit(10000);
+
+  const distinctPgIds = new Set((allGammes || []).map((r: { pg_id: number }) => r.pg_id));
+  const totalGammes = distinctPgIds.size;
+  const v1Threshold = Math.max(2, Math.ceil(totalGammes * 0.3));
+
+  console.log(`   Gammes importées: ${totalGammes}`);
+  console.log(`   Seuil V1: ≥${v1Threshold} gammes (30% de ${totalGammes})`);
+
+  if (totalGammes < 2) {
+    console.log(`   ⚠️ Pas assez de gammes pour V1 (minimum 2). V1 ignoré.`);
+  } else {
+    // Get all V2 keywords with their model, grouped by pg_id
+    const { data: v2Keywords } = await supabase
+      .from('__seo_keywords')
+      .select('model, pg_id')
+      .eq('v_level', 'V2')
+      .not('model', 'is', null);
+
+    // Count how many gammes each model appears as V2
+    const modelGammeCount = new Map<string, Set<number>>();
+    for (const row of v2Keywords || []) {
+      const model = (row.model as string).toLowerCase();
+      if (!modelGammeCount.has(model)) modelGammeCount.set(model, new Set());
+      modelGammeCount.get(model)!.add(row.pg_id as number);
+    }
+
+    // Find models that meet the V1 threshold
+    const v1Models: Array<{ model: string; gammeCount: number }> = [];
+    for (const [model, pgIds] of modelGammeCount) {
+      if (pgIds.size >= v1Threshold) {
+        v1Models.push({ model, gammeCount: pgIds.size });
+      }
+    }
+
+    v1Models.sort((a, b) => b.gammeCount - a.gammeCount);
+
+    if (v1Models.length === 0) {
+      console.log(`   Aucun modèle ne dépasse le seuil V1.`);
+    } else {
+      console.log(`\n👑 V1 Candidates (model V2 dans ≥${v1Threshold} gammes):`);
+      for (const { model, gammeCount } of v1Models) {
+        console.log(`   ${model} — V2 dans ${gammeCount}/${totalGammes} gammes`);
+      }
+      console.log(`   (V1 non écrit en DB — calcul informatif pour l'instant)`);
+    }
+  }
+
+  // ── Phase V6: Véhicules dans aucune gamme ──────────────────────────────────
+  console.log(`\n⚙️  Phase V6: Véhicules dans aucune gamme...`);
+
+  const { data: v6Data, error: v6Error } = await supabase.rpc('count_vehicles_no_gamme');
+
+  if (v6Error) {
+    // RPC might not exist yet, just count and report
+    const { count: totalVehicles } = await supabase
+      .from('auto_type')
+      .select('type_id', { count: 'exact', head: true })
+      .eq('type_display', '1');
+
+    const { count: vehiclesWithKeywords } = await supabase
+      .from('__seo_keywords')
+      .select('type_id', { count: 'exact', head: true })
+      .not('type_id', 'is', null);
+
+    const v6Estimate = (totalVehicles || 0) - (vehiclesWithKeywords || 0);
+    console.log(`   Total véhicules DB: ${totalVehicles}`);
+    console.log(`   Véhicules avec keywords: ${vehiclesWithKeywords}`);
+    console.log(`   V6 estimé: ~${v6Estimate} (pas assigné — calcul global séparé)`);
+  } else {
+    console.log(`   V6: ${v6Data} véhicules dans aucune gamme`);
+  }
+
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  ✅ V-Level v3.0 Import Complete                           ║
+║  ✅ V-Level v4.0 Import Complete                           ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 }

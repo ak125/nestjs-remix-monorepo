@@ -11,118 +11,134 @@ Système de classification automatique des gammes et véhicules par niveau SEO, 
 | Système | Cible | Niveaux | Description |
 |---------|-------|---------|-------------|
 | **Système G** | GAMMES (familles de pièces) | G1, G2, G3, G4 | Classification des produits |
-| **Système V** | VÉHICULES | V1, V2, V3, V4, V5 | Classification des motorisations |
+| **Système V** | VÉHICULES | V1, V2, V3, V4, V5, V6 | Classification des motorisations |
+
+> **MISE A JOUR v4.1 (2026-02-10)** : V-levels classent les VEHICULES (type_ids), pas les keywords. Phase T = trier keywords (CSV + volume). Phase V = classer vehicules (type_ids apres match backfill). V3/V4 redefinies.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  SYSTÈME G (Gammes)          │  SYSTÈME V (Véhicules)       │
 │  ─────────────────          │  ─────────────────────       │
-│  G1 = Gammes prioritaires   │  V1 = Variante dominante     │
-│  G2 = Gammes secondaires    │  V2 = Champion #1 gamme      │
-│  G3 = Gammes enfants        │  V3 = Challengers            │
-│  G4 = Gammes catalogue-only │  V4 = Variantes non rech.    │
-│                             │  V5 = Bloc B (véh→pièces)    │
+│  G1 = Gammes prioritaires   │  V1 = Top V2 inter-gammes    │
+│  G2 = Gammes secondaires    │  V2 = Top V3 promus (gamme)  │
+│  G3 = Gammes enfants        │  V3 = type_id matché backfill│
+│  G4 = Gammes catalogue-only │  V4 = dans CSV, pas matché   │
+│                             │  V5 = DB, pas dans le CSV    │
+│                             │  V6 = DB, aucune gamme       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### BONUS : Combinaison V4 + G
 
-Pour les véhicules **V4** (non recherchés pour une gamme), on ajoute le niveau G pour affiner :
+Pour les véhicules **V4** (dans le CSV mais pas le match principal), on ajoute le niveau G pour affiner :
 
 | Combinaison | Signification | Exemple |
 |-------------|---------------|---------|
-| **V4 + G1** | Véhicule non recherché, mais gamme importante | Clio 1.4 i → bougie/bobine |
-| **V4 + G2** | Véhicule non recherché, gamme secondaire | Clio 1.4 i → accessoires rares |
+| **V4 + G1** | Véhicule dans le CSV, gamme importante | Clio 1.5 dCi 86cv → disque de frein |
+| **V4 + G2** | Véhicule dans le CSV, gamme secondaire | Clio 1.5 dCi 86cv → silent bloc |
 
 ---
 
 ## 1. Principes Fondamentaux
 
-### Deux Axes de Recherche Distincts
+### Deux Phases (v4.1)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  BLOC A : Axe "GAMME → VÉHICULES"                           │
+│  PHASE T : Trier les KEYWORDS (CSV + volume)                 │
 │                                                              │
-│  Recherche Google : "filtre huile clio 3 1.5 dci"           │
-│                      ──────────── ──────────────            │
-│                         gamme        véhicule               │
+│  Keywords : "disque frein clio 3 1.5 dci"                    │
+│              ──────────── ──────────────                     │
+│                 gamme        véhicule                        │
 │                                                              │
-│  → Produit : V2 (puis V1/V3 si groupe moteur)               │
+│  Le volume sert à trier les keywords, pas les véhicules.     │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│  BLOC B : Axe "VÉHICULE → PIÈCES"                           │
+│  PHASE MATCH : Keywords → type_ids (backfill RPC)            │
 │                                                              │
-│  Recherche Google : "clio 3 1.4 i bougie"                   │
-│                      ────────────  ──────                   │
-│                        véhicule    pièce                    │
+│  Chaque keyword est associé à un type_id via le backfill.    │
+│  Le type_id matché = match principal.                         │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  PHASE V : Classer les VEHICULES (type_ids uniquement)       │
 │                                                              │
-│  → Produit : V5 (recherche inverse véhicule → pièce)        │
+│  V3 = type_id matché par backfill (match principal)          │
+│  V4 = type_id dans CSV, pas le match principal               │
+│  V5 = type_id en DB, même modèle, hors CSV                  │
+│  V6 = type_id en DB, aucune gamme                            │
+│  V2 = top 10 modèles promus depuis V3                        │
+│  V1 = modèle V2 dans ≥30% des gammes                        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Règle Critique
+### Règle Critique (v4.1)
 
-**V2 ≠ Tout le catalogue**
+**Les V-levels ne regardent PAS le volume. Le volume est déjà trié par les T.**
 
-- Un véhicule est V2 **uniquement** s'il est recherché sur Google avec la gamme
-- Si le couple [gamme + véhicule] n'est jamais tapé → ce véhicule **n'est PAS V2** pour cette gamme
-- V4 ne passe **JAMAIS** par V2 — c'est une catégorie parallèle
+- V3 = type_id matché par le backfill (match principal)
+- V4 = type_id dans le CSV mais pas le match principal (a un type_id)
+- V2 promu depuis top 10 V3
+- V5/V6 = véhicules DB, jamais promus en V2/V3
 
 ---
 
 ## 2. Architecture des Niveaux
 
-### Vue d'Ensemble (Système V - Véhicules)
+### Vue d'Ensemble (Système V - Véhicules) — v4.1
 
 ```
-                    UNIVERS DE DÉPART
-                    (tous véhicules DB)
-                           │
-        ┌──────────────────┴──────────────────┐
-        │                                      │
-   BLOC A                                 BLOC B
-   (gamme → véhicule)                     (véhicule → pièce)
-        │                                      │
-        ▼                                      ▼
-┌───────────────────┐                 ┌───────────────────┐
-│       V2          │                 │       V5          │
-│ (trouvé via       │                 │ (recherche        │
-│  "gamme+véhicule")│                 │  "véhicule+pièce")│
-└─────────┬─────────┘                 │  → G1 par défaut  │
-          │                           └───────────────────┘
-    Analyse groupes
-    moteur
-          │
-    ┌─────┴─────┐
-    │           │
-Groupe 2+    Groupe 1
-    │           │
-┌───┴───┐       │
-│       │       │
-V1      V3    reste V2
-(champion) (variantes) (seul)
+              Phase T                    Phase MATCH              Phase V
+          (trier keywords)           (keywords → type_ids)    (classer vehicules)
+                │                          │                       │
+                ▼                          ▼                       ▼
+       ┌─────────────────┐      ┌──────────────────┐    ┌───────────────────┐
+       │ CSV Keyword      │      │ Backfill RPC     │    │ type_id matché    │
+       │ Planner          │──▶   │ assigne type_id  │──▶ │ = V3              │
+       │ (texte + volume) │      │ à chaque keyword │    │                   │
+       └─────────────────┘      └──────────────────┘    │ type_id dans CSV  │
+                                                         │ pas matché = V4   │
+                                                         └─────────┬─────────┘
+                                                                   │
+       ┌──────────────────────────────────────────────────────────┘
+       │
+       ▼                    ▼                    ▼
+┌────────────┐       ┌────────────┐       ┌────────────┐
+│    V5      │       │    V6      │       │ Top 10 V3  │
+│ (DB, même  │       │ (DB, dans  │       │ → V2       │
+│  modèle,   │       │  aucune    │       │            │
+│  hors CSV) │       │  gamme)    │       │ Inter-gammes│
+└────────────┘       └────────────┘       │ → V1       │
+                                          └────────────┘
 ```
 
-### Définition des Niveaux Véhicules (Système V)
+### Définition des Niveaux Véhicules (Système V) — v4.1
 
-> **Note :** Cette section décrit le **Système V** (véhicules). Voir Section 3 pour le **Système N** (gammes).
+> **Note :** Cette section décrit le **Système V** (véhicules). Voir Section 3 pour le **Système G** (gammes).
+> **Mise à jour v4.1 (2026-02-10)** : V-levels classent les VEHICULES (type_ids), pas les keywords. Phase T trie les keywords, Phase V classe les véhicules.
 
 | Niveau V | Source | Définition | Exemple |
 |----------|--------|------------|---------|
-| **V1** | Bloc A | Variante dominante du modèle (inter-gammes) | Clio 3 1.5 dCi 90cv |
-| **V2** | Bloc A | Champion #1 de la gamme (UNIQUE) | Clio 3 1.5 dCi 105cv (filtre) |
-| **V3** | Bloc A | Challengers (recherchés mais pas #1) | Clio 3 1.5 dCi 86cv |
-| **V4** | Bloc A | Sous-ensemble de V3 (challengers faibles) | Break, BVA, 65cv |
-| **V5** | Bloc B | Recherche "véhicule + pièce" → G1 par défaut | Clio 3 1.4 i |
+| **V1** | Inter-gammes | Modèle V2 dans ≥30% des gammes | Clio 3 1.5 dCi 90cv |
+| **V2** | Gamme | Top 10 modèles promus depuis V3 | Clio 3 1.5 dCi 90cv (disque frein) |
+| **V3** | CSV | type_id matché par le backfill (match principal) | 207 1.6 HDI 16V 90ch |
+| **V4** | CSV | type_id dans le CSV, pas le match principal | 207 1.4 HDI 68ch |
+| **V5** | DB | En DB, PAS dans le CSV, mais modèle a des V3 dans cette gamme | 207 1.6 HDI 92ch |
+| **V6** | DB | En DB, dans AUCUNE gamme (global) | Lada Niva 1.7 |
 
 ### Points Critiques
 
-- **V1, V2, V3, V4** = Bloc A (gamme → véhicule)
-- **V5** = Bloc B (véhicule → pièces) — recherche inverse, G1 par défaut
-- Le niveau V est **PAR GAMME + ÉNERGIE** (un véhicule peut être V1 pour "filtre huile diesel" et V3 pour "embrayage diesel")
-- **Essence et Diesel ne se mélangent JAMAIS** dans les calculs V1/V2
+- **Phase T** = trier les KEYWORDS avec le CSV (texte + volume)
+- **Phase V** = classer les VEHICULES avec les type_ids (après match backfill)
+- **Les V-levels ne regardent PAS le volume.** Le volume est déjà trié par les T.
+- **V3** = le type_id que le backfill RPC a choisi comme match principal
+- **V4** = un type_id qui a des keywords CSV associés, mais qui n'est pas le match principal
+- **V5** = véhicules DB dont le modèle apparaît dans la gamme via CSV, mais eux-mêmes absents du CSV
+- **V6** = véhicules DB qui n'apparaissent dans aucune gamme (classification globale)
+- **Classification bottom-up** : V3 identifié par backfill → V4 = dans CSV pas matché → V2 promu depuis top 10 V3 → V1 inter-gammes
+- Le niveau V est **PAR GAMME** (un véhicule peut être V3 pour "disque frein" et V4 pour "embrayage")
+- **Essence et Diesel ne se mélangent JAMAIS** dans les calculs
 
 ---
 
@@ -257,51 +273,54 @@ POUR chaque gamme:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### DOUBLE SYSTÈME : Gammes (G) + Véhicules (V)
+### DOUBLE SYSTÈME : Gammes (G) + Véhicules (V) — v4.0
 
 **IMPORTANT :** Deux systèmes indépendants mais compatibles !
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SYSTÈME G (Gammes)          SYSTÈME V (Véhicules)          │
-│  ─────────────────          ─────────────────────          │
-│  G1 = Gammes prioritaires   V1 = Véhicule leader Google    │
-│  G2 = Gammes secondaires    V2 = Véhicules recherchés      │
-│  G3 = Gammes enfants        V3 = Variantes moteur          │
-│  G4 = Gammes catalogue-only V4 = Véhicules non recherchés  │
+│  SYSTÈME G (Gammes)          SYSTÈME V (Véhicules) v4.0    │
+│  ─────────────────          ─────────────────────────────  │
+│  G1 = Gammes prioritaires   V1 = Top V2 inter-gammes       │
+│  G2 = Gammes secondaires    V2 = Top V3 promus (gamme)     │
+│  G3 = Gammes enfants        V3 = Champion #1 par groupe    │
+│  G4 = Gammes catalogue-only V4 = Reste CSV (volume > 0)    │
+│                             V5 = DB hors CSV, modèle lié   │
+│                             V6 = DB, aucune gamme           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 3bis. Système V (Niveaux Véhicules)
+## 3bis. Système V (Niveaux Véhicules) — v4.0
 
-### Règle Fondamentale : Structure en 2 Blocs (V1-V4 + V5)
+### Règle Fondamentale : Classification bottom-up V3 → V2 → V1
 
-**IMPORTANT :** Les niveaux V sont organisés en **2 BLOCS** distincts.
+**IMPORTANT (v4.0) :** La classification est **bottom-up**. V3 est élu en premier, puis V2 est promu, puis V1 émerge inter-gammes. Tous les V ont un **type_id** (véhicule réel en DB).
 
 ```
-BLOC A (gamme → véhicule) :
-─────────────────────────
-V1 = variante dominante du modèle (inter-gammes)
-V2 = champion #1 de la gamme (UNIQUE)
-V3 = challengers (recherchés mais pas #1)
-V4 = sous-ensemble de V3 (challengers faibles)
+CLASSIFICATION v4.0 (bottom-up) :
+──────────────────────────────────
+V3 = champion #1 par groupe [gamme+modèle+énergie], dans le CSV
+V4 = reste du groupe, dans le CSV, volume > 0
+V2 = top 10 V3 promus par score_seo dans la gamme
+V1 = top V2 inter-gammes (calculé après plusieurs gammes)
+V5 = en DB, PAS dans le CSV, mais modèle a des V3/V4 dans cette gamme
+V6 = en DB, dans AUCUNE gamme (classification globale)
 
-BLOC B (véhicule → pièces) :
-───────────────────────────
-V5 = recherche "véhicule + pièce" → G1 par défaut
+score_seo = volume × (1 + nb_v4 / 5)
 ```
 
 **V1 et V2** — Deux niveaux complémentaires avec scopes différents.
 
-| Niveau | Définition | Bloc | Usage |
-|--------|------------|------|-------|
-| **V1** | Variante dominante du modèle (inter-gammes) | Bloc A | Canonical constructeur |
-| **V2** | Champion #1 de la gamme (UNIQUE) | Bloc A | Canonical gamme |
-| **V3** | Challengers (recherchés mais pas #1) | Bloc A | Page enrichie |
-| **V4** | Sous-ensemble de V3 (challengers faibles) | Bloc A | SEO G2/G3/G4 |
-| **V5** | Recherche véhicule → pièces | Bloc B | SEO G1 (défaut) |
+| Niveau | Définition | Source | Usage |
+|--------|------------|--------|-------|
+| **V1** | Top V2 inter-gammes (modèle + énergie) | Inter-gammes | Canonical constructeur |
+| **V2** | Top 10 V3 promus par score_seo | Gamme | Canonical gamme |
+| **V3** | Champion #1 par groupe [gamme+modèle+énergie] | CSV | Page enrichie |
+| **V4** | Reste du CSV, volume > 0 | CSV | Pages secondaires |
+| **V5** | En DB, modèle présent dans gamme, hors CSV | DB | Compatibilité étendue |
+| **V6** | En DB, dans aucune gamme | DB | Catalogue interne |
 
 ### Règle : V2 PAR GAMME, V1 GLOBAL
 
@@ -410,116 +429,89 @@ ENSUITE (niveau GLOBAL):
 
 ---
 
-## ⭐ RÈGLES OFFICIELLES V1 / V2 / V3 / V4 (VERSION FINALE)
+## REGLES OFFICIELLES V-LEVEL v4.0 (VALIDEE 2026-02-10)
 
-### Tableau Officiel des Niveaux V
+### Tableau Officiel des Niveaux V (v4.0)
 
 | Niveau | Définition | Portée | Méthode de calcul | Exemple |
 |--------|------------|--------|-------------------|---------|
-| **V1** | Variante maîtresse du modèle | Global (model-level) | Variante qui apparaît le plus souvent comme V2 dans plusieurs gammes pour ce modèle | Clio 3 V1 = 1.5 dCi 90cv Diesel |
-| **V2** | Variante dominante de la gamme (**UNIQUE**) | Local (gamme-level) | Variante #1 la plus recherchée Google (séparée Ess/Diesel) | Plaquettes Clio 3 V2 Diesel = 90cv |
-| **V3** | Variantes recherchées mais pas #1 (challengers) | Local | Variantes #2, #3, #4... triées par volume Google | Clio 3 1.5 dCi 105cv (300 recherches) |
-| **V4** | Variantes non recherchées OU déclinaisons (Break, BVA, 4x4) | Local | Tout ce qui n'est pas V2/V3 mais existe au catalogue — séparé Ess/Diesel | Break, utilitaire, 65cv, BVA, GPL... |
-| **V5** | Variantes cataloguées hors V1-V4 (SEO G1) | Local | DANS catalogue, HORS V1/V2/V3/V4 | 1.4 LPG, 1.6 RS (variantes orphelines) |
-| **Séparation Ess/Diesel** | Obligatoire | **TOUS les niveaux (V1→V5)** | Calcul séparé pour chaque énergie | V5 Diesel ≠ V5 Essence |
+| **V1** | Top V2 inter-gammes | Global (model-level) | Type_id qui apparaît le plus souvent comme V2 dans plusieurs gammes | Clio 3 V1 = 1.5 dCi 90cv Diesel |
+| **V2** | Top V3 promus par score_seo | Local (gamme-level) | Top 10 V3 classés par score_seo DESC | Disque frein : 308 diesel = 1.6 HDi 92cv |
+| **V3** | Champion #1 par groupe | Local (groupe-level) | Champion du groupe [gamme+modèle+énergie], volume DESC, keyword length ASC | 308 diesel : 1.6 HDi 92cv (volume 600) |
+| **V4** | Reste du CSV | Local | Dans le CSV, dans le groupe, mais pas champion — volume > 0 | 308 diesel : 1.6 HDi 112cv (volume 150) |
+| **V5** | DB hors CSV, modèle présent | Local | En DB, PAS dans le CSV, mais son modèle a des V3/V4 dans cette gamme | 308 diesel : 1.6 HDi 75cv (pas dans CSV) |
+| **V6** | DB, aucune gamme | Global | En DB, n'apparaît dans AUCUNE gamme | Lada Niva 1.7 |
+| **Séparation Ess/Diesel** | Obligatoire | **TOUS les niveaux (V1-V6)** | Calcul séparé pour chaque énergie | V5 Diesel ≠ V5 Essence |
 
-### Tableau Officiel par Gammes (Exemple Clio 3)
+### Exemple Concret — Gamme "disque de frein", 308 Diesel
 
-| Gamme | V2 Diesel | V2 Essence | V1 du modèle | Notes |
-|-------|-----------|------------|--------------|-------|
-| Plaquettes | 90cv | 1.2 16v | 90cv | Ok |
-| Filtre à huile | 105cv | 1.4 16v | 90cv | Normal si V2 ≠ V1 |
-| Amortisseurs | 86cv | 1.6 16v | 90cv | Ok |
-| FAP | 105cv | N/A | 90cv | Seulement Diesel |
-| Bougies | N/A | 1.2 16v | 1.2 16v Essence | Seulement Essence |
+| type_id | Variante | Dans CSV | Volume | V-Level | score_seo |
+|---------|----------|----------|--------|---------|-----------|
+| 8201 | 1.6 HDi 92cv | oui | 600 | **V3** (champion) → **V2** (promu) | 600 × (1 + 1/5) = 720 |
+| 8202 | 1.6 HDi 112cv | oui | 150 | **V4** | — |
+| 8205 | 1.6 HDi 75cv | non | — | **V5** | — |
+| 8230 | 2.0 HDi 163cv | non | — | **V5** | — |
+| 9999 | Lada Niva 1.7 | non | — | **V6** (aucune gamme) | — |
 
-### 12 Règles Officielles Finales
+### 12 Règles Officielles v4.0
 
 ```
-1) La sélection du V2 (meilleure variante pour une gamme) doit toujours être faite
-   séparément pour Essence et Diesel.
+1) La classification est BOTTOM-UP : V3 élu en premier, puis V2 promu, puis V1 inter-gammes.
+   Tous les niveaux V sont séparés Essence / Diesel.
 
-2) Le V2 = la variante la plus recherchée Google pour la gamme dans son énergie.
-   → Une gamme ne peut JAMAIS avoir deux V2 pour un même modèle/énergie.
-   → V2 est UNIQUE par gamme + modèle + énergie.
+2) V3 = champion #1 par groupe [gamme + modèle + énergie].
+   → Tri : volume DESC, keyword length ASC
+   → UNIQUE par groupe (1 seul V3 par modèle+énergie dans une gamme)
+   → Doit être dans le CSV (keyword Google)
 
-3) Le V1 n'est pas lié aux gammes mais au modèle :
-       V1 = la variante qui apparaît le plus souvent comme V2
-            dans différentes gammes du même modèle.
+3) V4 = reste du groupe, dans le CSV, volume > 0.
+   → Tous les keywords véhicule du CSV qui ne sont pas V3
+   → Pas de V4 pour volume = 0 (ces keywords restent non classés)
 
-4) Un modèle peut avoir :
-       V1 Clio 3 Diesel
-       V1 Clio 3 Essence
-       V1 Clio 4 Diesel
-       V1 Clio 4 Essence
-       etc.
+4) V2 = top 10 V3 promus par score_seo dans la gamme.
+   → score_seo = volume × (1 + nb_v4 / 5)
+   → nb_v4 = nombre de V4 dans le même groupe que ce V3
+   → Les 10 V3 avec le score_seo le plus élevé deviennent V2
+   → V2 remplace V3 (un keyword est V2 OU V3, jamais les deux)
 
-5) Les niveaux secondaires sont :
-       V3 = challengers (recherchés mais pas #1)
-       V4 = challengers faibles de V3 (recherche faible)
-       V5 = variantes DANS catalogue mais HORS hiérarchie V1-V4 (SEO G1)
+5) V1 = top V2 inter-gammes (calculé APRÈS plusieurs gammes).
+   → V1 = type_id qui apparaît le plus souvent comme V2 dans ≥ 30% des gammes G1
+   → V1 ne dépend PAS d'une gamme — c'est un niveau GLOBAL par modèle + énergie
+   → Un modèle peut avoir V1 Diesel + V1 Essence
 
-6) Le V2 peut changer par gamme.
-   Le V1 ne change que si la variante dominante change sur plusieurs gammes.
+6) V5 = type_id en DB, PAS dans le CSV, mais son modèle a des V3/V4 dans cette gamme.
+   → Trouvé via jointure auto_type → auto_modele → siblings dans la gamme
+   → Permet de couvrir les véhicules DB non présents dans les keywords Google
+   → V5 a TOUJOURS un type_id valide
 
-7) Le V1 ne dépend PAS des gammes,
-   le V2 dépend TOUJOURS des gammes.
+7) V6 = type_id en DB qui n'apparaît dans AUCUNE gamme (ni via CSV ni via V5).
+   → Classification globale, pas par gamme
+   → Utile pour identifier les véhicules orphelins du catalogue
+   → V6 a TOUJOURS un type_id valide
 
-8) ⭐ RÈGLE V3 : Le V3 PEUT être recherché !
-       → Toutes les variantes sont triées par volume de recherche
-       → Variante #1 = V2 (unique champion)
-       → Variantes #2, #3, #4... = V3 (même si recherchées)
-       → Variantes à 0 recherches = V4
+8) Tous les V (V1 à V6) ont un type_id = véhicule réel dans auto_type.
+   → Le backfill type_id se fait via RPC `backfill_seo_keywords_type_ids`
+   → Les keywords sans type_id ne participent PAS au classement V
 
-   🥇 V2 = champion (unique)
-   🥈 V3 = challengers (recherchés mais pas gagnants)
-   ❌ V4 = pas dans la course (0 recherches)
+9) score_seo détermine la promotion V3 → V2 :
+   → score_seo = volume × (1 + nb_v4 / 5)
+   → Un V3 avec beaucoup de V4 dans son groupe = score élevé = priorité V2
+   → Cela favorise les champions de groupes riches (beaucoup de variantes)
 
-9) ⭐ RÈGLE V4 : V4 = SOUS-ENSEMBLE de V3 (Bloc A)
-       V4 = challengers FAIBLES de V3 (recherche faible)
-       → Fait partie de la hiérarchie Bloc A (gamme → véhicule)
-       → Séparé Diesel / Essence comme V1, V2, V3
-       → SEO : G2, G3, G4
+10) Essence et Diesel ne se mélangent JAMAIS dans les calculs.
+    → Chaque groupe = [gamme + modèle + énergie]
+    → V2 Diesel et V2 Essence sont calculés SÉPARÉMENT
+    → Gammes spécifiques (FAP=diesel, Bougies=essence) n'ont qu'une énergie
 
-   V4 Diesel = challengers faibles Diesel (sous-ensemble de V3)
-   V4 Essence = challengers faibles Essence (sous-ensemble de V3)
+11) V1 SEUIL : V1 requiert une dominance significative.
+    → V1 = type_id V2 dans ≥ 30% des gammes G1 du même modèle+énergie
+    → Si aucun type_id ≥ 30%, prendre celui avec le plus de répétitions V2
+    → Départage ex-aequo : volume Google TOTAL le plus élevé
 
-10) ⭐ RÈGLE V5 : V5 = BLOC B (véhicule → pièces)
-        V5 ≠ Bloc A (V1/V2/V3/V4)
-        V5 = véhicules trouvés via recherche "véhicule + pièce"
-        → Bloc B = axe inverse de Bloc A
-        → Utilise G1 par défaut pour SEO
-        → Séparé Diesel / Essence comme V1-V4
-
-    STRUCTURE EN 2 BLOCS :
-    ─────────────────────
-    BLOC A (gamme → véhicule) : "bougie clio 3 1.4 i"
-        → V1, V2, V3, V4
-
-    BLOC B (véhicule → pièces) : "clio 3 1.4 i bougie"
-        → V5 → G1 par défaut
-
-    🥇 V2 = champion (unique) [Bloc A]
-    🥈 V3 = challengers [Bloc A]
-    ❌ V4 = sous-ensemble de V3 [Bloc A]
-    📝 V5 = Bloc B (véhicule → pièces) → G1
-
-11) ⭐ RÈGLE V1 SEUIL : V1 requiert une dominance significative
-        V1 = variante V2 dans ≥ 30% des gammes principales (G1)
-        OU variante V2 avec le plus de répétitions si aucune ≥ 30%
-
-        Exemple : Clio 3 Diesel avec 10 gammes G1
-        → 90cv est V2 dans 4 gammes (40%) → ✅ V1 = 90cv
-        → Si aucune variante ≥ 30%, prendre celle avec le plus de répétitions V2
-
-12) ⭐ RÈGLE V1 ÉGALITÉ : Départage en cas d'ex-aequo
-        SI deux variantes ont le même nombre de répétitions V2 :
-        → V1 = variante avec le volume Google TOTAL le plus élevé
-
-        Exemple :
-        - 90cv = V2 dans 3 gammes, volume total = 3500
-        - 105cv = V2 dans 3 gammes, volume total = 2800
-        → V1 = 90cv (volume total supérieur)
+12) Le pipeline d'import est : T1(pertinence) → T2(exclusion) → T3(catégorisation)
+    → T4(véhicules seulement) → V3/V4 → backfill type_id → V2 → V5 → V6 → V1
+    → Script CLI : `scripts/insert-missing-keywords.ts`
+    → Service backend : `gamme-vlevel.service.ts` (recalcul V2/V3/V4)
 ```
 
 ### Exemple : Classement par Volume de Recherche
@@ -595,83 +587,87 @@ V4 Essence → TOUT le reste Essence :
 
 ---
 
-### Clarification V5 — BLOC B (Véhicule → Pièces)
+### Clarification V5 — Véhicules DB hors CSV (v4.0)
 
-**V5 = véhicules trouvés via recherche "véhicule + pièce" (Bloc B)**
+> **MISE A JOUR v4.0 :** V5 n'est plus "Bloc B / recherche inverse". V5 = type_ids en DB dont le modèle a des V3/V4 dans cette gamme, mais PAS eux-mêmes dans le CSV.
 
-**STRUCTURE EN 2 BLOCS :**
+**V5 = type_id en DB, PAS dans le CSV, modèle présent dans la gamme**
+
+**STRUCTURE v4.0 :**
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC A : "gamme + véhicule"                                │
-│  Exemple : "bougie clio 3 1.4 i"                            │
-│  → V1, V2, V3, V4                                           │
+│  CSV (keywords Google Ads Keyword Planner)                  │
+│  → V3 = champion #1 par groupe [gamme+modèle+énergie]      │
+│  → V4 = reste du groupe, volume > 0                         │
+│  → V2 = top 10 V3 promus par score_seo                     │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC B : "véhicule + pièce"                                │
-│  Exemple : "clio 3 1.4 i bougie"                            │
-│  → V5 → G1 par défaut                                       │
+│  DB (auto_type → auto_modele)                               │
+│  → V5 = modèle présent dans gamme (via V3/V4), hors CSV    │
+│  → V6 = modèle absent de TOUTE gamme                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-| Niveau | Bloc | Recherche | SEO |
-|--------|------|-----------|-----|
-| V3 | Bloc A | Gamme → Véhicule | Selon G |
-| V4 | Bloc A | Gamme → Véhicule (sous-ensemble V3) | G2/G3/G4 |
-| V5 | **Bloc B** | **Véhicule → Pièces** | **G1 défaut** |
+| Niveau | Source | Définition | Usage |
+|--------|--------|-----------|-------|
+| V3/V4 | CSV | Keywords trouvés dans le CSV | Pages SEO gamme |
+| V5 | **DB** | **Type_id en DB, modèle lié, hors CSV** | **Compatibilité étendue** |
+| V6 | **DB** | **Type_id en DB, aucune gamme** | **Catalogue interne** |
 
 **Pourquoi V5 existe :**
-- ✔ Capturer les recherches Bloc B (véhicule → pièce)
-- ✔ Créer du contenu SEO G1 automatiquement
-- ✔ Couvrir les véhicules non trouvés via Bloc A
-- ✔ Enrichir le silo technique G1
+- Couvrir les véhicules DB non présents dans le CSV Google
+- Enrichir la compatibilité des pages gamme
+- Chaque V5 a un type_id valide (véhicule réel)
+- Trouvé via jointure : auto_type → auto_modele → siblings dans la gamme
 
-**Exemples V5 (Bloc B) :**
-- "clio 3 1.4 i bougie" → V5 → G1
-- "megane 2 1.5 dci filtre" → V5 → G1
-- Recherches où véhicule est tapé AVANT la pièce
+**Exemple — Gamme "disque de frein", 308 Diesel :**
 
-**Exemple — Clio 3 Essence :**
+| type_id | Variante | Dans CSV | V-Level |
+|---------|----------|----------|---------|
+| 8201 | 1.6 HDi 92cv | oui | **V3** (champion) |
+| 8202 | 1.6 HDi 112cv | oui | **V4** |
+| 8205 | 1.6 HDi 75cv | non | **V5** (DB sibling) |
+| 8230 | 2.0 HDi 163cv | non | **V5** (DB sibling) |
 
-| Recherche | Bloc | Niveau |
-|-----------|------|--------|
-| "bougie clio 3 1.2 16v" | Bloc A | V3 |
-| "bougie clio 3 1.4 16v" | Bloc A | V4 |
-| "clio 3 1.4 LPG bougie" | **Bloc B** | **V5** → G1 |
-| "clio 3 1.6 RS bougie" | **Bloc B** | **V5** → G1 |
-
-**Schéma Final avec V5 :**
+**Schéma Final v4.0 :**
 
 ```
-Modèle (ex : Clio 3)
+Gamme (ex : disque de frein)
 │
-├── BLOC A (gamme → véhicule)
-│   ├── V1 : variante dominante
-│   ├── V2 : champion #1 (unique)
-│   ├── V3 : challengers
-│   └── V4 : sous-ensemble de V3
+├── CSV (keywords Google)
+│   ├── V3 : champion #1 par groupe
+│   ├── V4 : reste du CSV
+│   └── V2 : top 10 V3 promus (score_seo)
 │
-└── BLOC B (véhicule → pièces)
-    └── V5 : recherche inverse → G1 par défaut
+├── DB (véhicules liés)
+│   └── V5 : type_ids DB dont modèle a V3/V4
+│
+├── DB (orphelins)
+│   └── V6 : type_ids DB dans aucune gamme
+│
+└── Inter-gammes
+    └── V1 : top V2 (≥ 30% des G1)
 ```
 
 ---
 
-### Règle Finale : 2 Types de Niveaux V (Global vs Local)
+### Règle Finale : Scopes des Niveaux V (v4.0)
 
-**IMPORTANT :** Il existe **2 types de niveaux V** avec des scopes différents :
+**IMPORTANT :** Il existe **3 scopes** de niveaux V :
 
-| Type | Niveau | Scope | Définition |
-|------|--------|-------|------------|
-| **GLOBAL** | **V1** | MODÈLE + ÉNERGIE | Variante dominante du modèle, séparée Diesel/Essence |
-| **LOCAL** | **V2** | GAMME + ÉNERGIE | Meilleure variante pour cette gamme, séparée Diesel/Essence |
-| LOCAL | V3 | Moteur | Variantes recherchées mais pas #1 (challengers) |
-| LOCAL | V4 | Catalogue | **TOUT LE RESTE** — séparé Diesel/Essence |
-| LOCAL | V5 | Dans catalogue | Variantes cataloguées hors V1-V4 pour SEO G1 |
+| Scope | Niveaux | Source | Définition |
+|-------|---------|--------|------------|
+| **GLOBAL (modèle)** | **V1** | Inter-gammes | Top V2 inter-gammes (modèle + énergie) |
+| **LOCAL (gamme)** | **V2** | CSV (promu) | Top 10 V3 par score_seo |
+| **LOCAL (groupe)** | **V3** | CSV | Champion #1 par [gamme+modèle+énergie] |
+| **LOCAL (groupe)** | **V4** | CSV | Reste du groupe, volume > 0 |
+| **LOCAL (gamme)** | **V5** | DB | Modèle présent dans gamme, hors CSV |
+| **GLOBAL (DB)** | **V6** | DB | Type_id dans aucune gamme |
 
-**IMPORTANT :** V1 et V2 sont TOUJOURS séparés par énergie (Essence / Diesel). Pas de mélange.
+**IMPORTANT :** Tous les niveaux sont TOUJOURS séparés par énergie (Essence / Diesel). Pas de mélange.
 
-**Note :** Chaque modèle a **2 V1 : un pour Diesel, un pour Essence**.
+**Note :** Chaque modèle peut avoir **2 V1 : un pour Diesel, un pour Essence**. Tous les V ont un type_id.
 
 ---
 
@@ -1130,70 +1126,97 @@ Pour les véhicules **V4** (non recherchés pour une gamme), on ajoute le niveau
 | 1.5 dCi 110cv **BVA** | 1.5 dCi 110cv | Boîte auto |
 | 1.5 dCi 110cv **4x4** | 1.5 dCi 110cv | 4 roues motrices |
 
-### Algorithme de Classification V (Structure 2 Blocs)
+### Algorithme de Classification V v4.0 (bottom-up)
 
 ```
-# BLOC A : Pipeline "Gamme → Véhicules"
+# PHASE 1 : Triage CSV (T1-T4)
+POUR chaque keyword du CSV:
+    T1: keyword contient la gamme ? (pertinence)
+    T2: exclure autres gammes (plaquette seule, vanne egr)
+    T3: catégoriser (generique / marque / vehicle)
+    T4: seuls keywords véhicule participent au classement V
+
+# PHASE 2 : Classification V3/V4 (par groupe)
 POUR chaque gamme G:
-    POUR chaque énergie E (Diesel, Essence):
+    POUR chaque groupe [modèle + énergie]:
+        # Trier : volume DESC, keyword length ASC
+        keywords_csv = SORT(groupe, by=(volume DESC, keyword_length ASC))
 
-        # Étape 1 : Collecter toutes les variantes
-        variantes = get_all_variants(gamme, energie)
+        # Champion = V3 (premier avec volume > 0)
+        keywords_csv[0] → V3 (champion unique du groupe)
 
-        # Étape 2 : Trier par volume Google DESC
-        variantes_triees = SORT(variantes, by=google_volume, DESC)
+        # Reste = V4 (dans le CSV, volume > 0)
+        keywords_csv[1:] → V4
 
-        # Étape 3 : Assigner les niveaux Bloc A
-        SI position = 1:
-            → V2 (champion #1 de la gamme)
-        SINON SI volume > 0:
-            → V3 (positions #2, #3, #4...)
-        SINON:
-            → V4 (variantes de V3)
+        # Calculer score_seo du champion V3
+        nb_v4 = COUNT(V4 dans ce groupe avec volume > 0)
+        score_seo = volume_V3 × (1 + nb_v4 / 5)
 
-# V1 = variante la plus souvent V2 (calculé inter-gammes par modèle)
+# PHASE 3 : Promotion V3 → V2 (par gamme)
+POUR chaque gamme G:
+    champions = TOUS les V3 de cette gamme
+    SORT(champions, by=score_seo DESC)
+    top_10 = champions[0:10]
+    POUR chaque champion dans top_10:
+        champion.v_level = V2 (promu)
 
-# BLOC B : Pipeline "Véhicule → Pièces"
-POUR chaque véhicule NON présent dans V1/V2/V3/V4:
-    SI trouvé via "véhicule + pièce":
-        → V5 (→ G1 par défaut)
+# PHASE 4 : Backfill type_id (RPC)
+POUR chaque keyword véhicule sans type_id:
+    → backfill_seo_keywords_type_ids(batch_size, pg_id)
+    → Matcher keyword → auto_type via modèle + variant + énergie
+
+# PHASE 5 : V5 (DB hors CSV)
+POUR chaque modèle ayant des V3/V4 dans la gamme:
+    → Trouver les type_ids DB du même modèle+énergie
+    → Exclure ceux déjà dans le CSV (V2/V3/V4)
+    → Restants = V5
+
+# PHASE 6 : V6 (aucune gamme)
+POUR chaque type_id en DB:
+    SI n'apparaît dans AUCUNE gamme (ni CSV ni V5):
+        → V6
+
+# PHASE 7 : V1 (inter-gammes, après plusieurs gammes)
+POUR chaque modèle + énergie:
+    Compter les apparitions comme V2 par gamme G1
+    SI ≥ 30% des G1 → V1
 ```
 
-**Formule officielle :**
+**Formule score_seo :**
 
 ```
-BLOC A (gamme → véhicule) :
-1) Trier les variantes par popularité Google (DESC)
-2) Position #1 = V2 (champion unique, pas de seuil)
-3) Positions #2+ recherchées = V3 (positions #2, #3, #4...)
-4) Variantes de V3 = V4 (Break, BVA, 4x4...)
-5) V1 = variante la plus souvent V2 inter-gammes
+score_seo = volume × (1 + nb_v4 / 5)
 
-BLOC B (véhicule → pièces) :
-6) Variantes hors V1-V4 via recherche inverse = V5 (→ G1)
+Exemple : V3 avec volume=600 et 1 V4 dans son groupe
+→ score_seo = 600 × (1 + 1/5) = 720
+
+Exemple : V3 avec volume=300 et 4 V4 dans son groupe
+→ score_seo = 300 × (1 + 4/5) = 540
 ```
 
-### Tableau Récapitulatif Critères V (2 Blocs)
+### Tableau Récapitulatif Critères V (v4.0)
 
-| Niveau | Définition | Bloc | Usage |
-|--------|------------|------|-------|
-| **V1** | Variante dominante du modèle (inter-gammes) | Bloc A | Canonical constructeur |
-| **V2** | Champion #1 de la gamme (UNIQUE, pas de seuil) | Bloc A | Canonical gamme |
-| **V3** | Positions #2, #3, #4... (recherchés mais pas #1) | Bloc A | Page enrichie |
-| **V4** | Variantes/déclinaisons de V3 (Break, BVA, 4x4) | Bloc A | SEO G2/G3/G4 |
-| **V5** | Recherche véhicule → pièces | Bloc B | SEO G1 (défaut) |
+| Niveau | Définition | Source | Usage |
+|--------|------------|--------|-------|
+| **V1** | Top V2 inter-gammes (modèle + énergie) | Inter-gammes | Canonical constructeur |
+| **V2** | Top 10 V3 promus par score_seo | Gamme (CSV) | Canonical gamme |
+| **V3** | Champion #1 par groupe [gamme+modèle+énergie] | CSV | Page enrichie |
+| **V4** | Reste du CSV, volume > 0 | CSV | Pages secondaires |
+| **V5** | DB, modèle présent dans gamme, hors CSV | DB | Compatibilité étendue |
+| **V6** | DB, dans aucune gamme | DB | Catalogue interne |
 
-**Règle clé :** V1-V4 = Bloc A (gamme → véhicule), V5 = Bloc B (véhicule → pièces).
+**Règle clé :** V2/V3/V4 = keywords CSV, V5 = véhicules DB liés, V6 = véhicules DB orphelins, V1 = agrégation inter-gammes.
 
 ### Tableau Récapitulatif Double Système
 
 | Gammes (G) | Description | Véhicules (V) | Description |
 |------------|-------------|---------------|-------------|
-| **G1** | Gammes prioritaires | **V1** | Variante dominante modèle |
-| **G2** | Gammes secondaires | **V2** | Champion #1 gamme |
-| **G3** | Gammes enfants | **V3** | Positions #2, #3, #4... |
-| **G4** | Gammes catalogue-only | **V4** | Variantes de V3 |
-|        |                       | **V5** | Bloc B → G1 défaut |
+| **G1** | Gammes prioritaires | **V1** | Top V2 inter-gammes |
+| **G2** | Gammes secondaires | **V2** | Top V3 promus (gamme) |
+| **G3** | Gammes enfants | **V3** | Champion #1 par groupe |
+| **G4** | Gammes catalogue-only | **V4** | Reste CSV (volume > 0) |
+|        |                       | **V5** | DB hors CSV, modèle lié |
+|        |                       | **V6** | DB, aucune gamme |
 
 ### Exemple Complet
 
@@ -1243,11 +1266,12 @@ POUR chaque gamme:
 
 | Situation | Niveau V | Action |
 |-----------|----------|--------|
-| Champion #1 de la gamme | **V2** | Canonical gamme (Bloc A) |
-| Variante dominante du modèle | **V1** | Canonical constructeur (Bloc A) |
-| Challengers (recherchés mais pas #1) | **V3** | Page enrichie (Bloc A) |
-| Challengers faibles | **V4** | Sous-ensemble V3 (Bloc A) |
-| Recherche "véhicule + pièce" | **V5** | Bloc B → G1 défaut |
+| Top V2 inter-gammes (modèle+énergie) | **V1** | Canonical constructeur |
+| Top 10 V3 promus (score_seo) | **V2** | Canonical gamme |
+| Champion #1 par groupe | **V3** | Page enrichie (CSV) |
+| Reste du CSV, volume > 0 | **V4** | Pages secondaires (CSV) |
+| DB, modèle présent, hors CSV | **V5** | Compatibilité étendue (DB) |
+| DB, aucune gamme | **V6** | Catalogue interne (DB) |
 
 ---
 
@@ -1407,17 +1431,19 @@ Google Sheets (WRITE)    → Sheet "V5_pieces"
 | 2 | Filtre huile | Clio 3 1.5 dCi | Clio 3 1.5 dCi | N2 | 5200 | K9K | gamme+vehicule | 2025-01-15 |
 | 3 | Filtre huile | Clio 4 1.5 dCi | Clio 4 1.5 dCi | N3 | 1400 | K9K | gamme+vehicule | 2025-01-15 |
 
-### Sheet 6 : V5_pieces (Bloc B output)
+### Sheet 6 : V5 (DB siblings hors CSV) — v4.0
 
-| vehicule | niveau | piece | volume | rang | source |
-|----------|--------|-------|--------|------|--------|
-| Clio 3 1.4 i | V5 | bougies | 2600 | 1 | vehicule+piece |
-| Clio 3 1.4 i | V5 | bobine allumage | 2100 | 2 | vehicule+piece |
-| Clio 3 1.4 i | V5 | filtre air | 1800 | 3 | vehicule+piece |
+> **v4.0 :** V5 = type_ids en DB dont le modèle a des V3/V4, mais absents du CSV.
 
-**Colonne `source` importante :**
-- `gamme+vehicule` = V1/V2/V3/V4 (Bloc A)
-- `vehicule+piece` = V5 (Bloc B)
+| type_id | modèle | variante | source | gamme |
+|---------|--------|----------|--------|-------|
+| 8205 | 308 | 1.6 HDi 75cv | db_sibling | disque de frein |
+| 8230 | 308 | 2.0 HDi 163cv | db_sibling | disque de frein |
+
+**Colonne `source` v4.0 :**
+- `csv` = V2/V3/V4 (keywords Google)
+- `db_sibling` = V5 (véhicule DB, modèle lié)
+- `db_orphan` = V6 (véhicule DB, aucune gamme)
 
 ---
 
@@ -1472,20 +1498,20 @@ Table : `__cross_gamme_car_new` (colonne: `cgc_level`)
 | **V3** | cgc_level 3 (filtré) | Variantes même moteur que V1 |
 | **V4** | **NOUVEAU** | Véhicules hors "gamme+véhicule" |
 
-### Migration des Données
+### Migration des Données (v4.0)
 
 ```sql
--- Étape 1 : Ajouter colonne niveau V au système existant
-ALTER TABLE __cross_gamme_car_new
-ADD COLUMN IF NOT EXISTS v_level INTEGER;
+-- NOTE v4.0 : Le système v_level est maintenant dans __seo_keywords (VARCHAR(2))
+-- Les anciens mappings cgc_level → v_level INTEGER ne sont plus utilisés.
+-- La classification v4.0 est bottom-up via le script CLI et le service backend.
 
--- Étape 2 : Mapper les cgc_level existants vers niveaux V
-UPDATE __cross_gamme_car_new SET v_level = 1 WHERE cgc_level IN ('1', '5');  -- V1
-UPDATE __cross_gamme_car_new SET v_level = 2 WHERE cgc_level = '2';           -- V2
-UPDATE __cross_gamme_car_new SET v_level = 3 WHERE cgc_level = '3';           -- V3
+-- Table existante (production) :
+-- __seo_keywords.v_level VARCHAR(2) CHECK (v_level IN ('V1','V2','V3','V4','V5','V6'))
+-- __seo_keywords.score_seo INTEGER
+-- __seo_keywords.type_id BIGINT
 
--- Étape 3 : Les V3 seront affinés par groupe moteur (workflow n8n)
--- Étape 4 : Les V4 seront ajoutés depuis les données Google (workflow n8n)
+-- RPC de backfill type_id :
+-- SELECT * FROM backfill_seo_keywords_type_ids(batch_size, pg_id)
 ```
 
 ### Approche : ENRICHIR cgc_level (pas remplacer)
@@ -1514,7 +1540,7 @@ UPDATE __cross_gamme_car_new SET v_level = 3 WHERE cgc_level = '3';           --
 | Pas de véhicules isolés | **V4 = orphelins intéressants** |
 | Pas de champion par moteur | **V1 = champion exact** |
 
-### Structure RPC Combinée
+### Structure RPC Combinée (v4.0)
 
 La RPC retourne les deux systèmes :
 
@@ -1524,18 +1550,22 @@ SELECT
     vehicule,
     moteur,
     cgc_level,      -- ancien système (interne)
-    v_level,        -- nouveau système V (Google)
+    v_level,        -- système V v4.0 (Google + DB)
     google_volume,
-    famille_moteur
+    score_seo,
+    type_id
 FROM vehicle_gamme_combined
 ORDER BY
     CASE v_level
-        WHEN 1 THEN 1  -- V1 en premier
-        WHEN 3 THEN 2  -- V3 ensuite (variantes)
-        WHEN 2 THEN 3  -- V2 ensuite
-        WHEN 4 THEN 4  -- V4 en dernier
+        WHEN 'V1' THEN 1  -- V1 en premier (top inter-gammes)
+        WHEN 'V2' THEN 2  -- V2 ensuite (top V3 promus)
+        WHEN 'V3' THEN 3  -- V3 ensuite (champions groupes)
+        WHEN 'V4' THEN 4  -- V4 ensuite (reste CSV)
+        WHEN 'V5' THEN 5  -- V5 (DB hors CSV)
+        WHEN 'V6' THEN 6  -- V6 en dernier (aucune gamme)
     END,
-    google_volume DESC;
+    score_seo DESC NULLS LAST,
+    google_volume DESC NULLS LAST;
 ```
 
 ### Ordre d'Affichage sur Page Gamme
@@ -1653,19 +1683,22 @@ CREATE TABLE google_keywords (
 );
 ```
 
-**source_type :**
-- `gamme_vehicle` = mots-clés "gamme + véhicule" (Bloc A)
-- `vehicle_piece` = mots-clés "véhicule + pièce" (Bloc B / V5)
+**source_type (v4.0) :**
+- `csv` = mots-clés du CSV (V2/V3/V4)
+- `db_sibling` = véhicules DB liés (V5)
+- `db_orphan` = véhicules DB orphelins (V6)
 
-### 9.5 Table `vehicle_gamme_profile` (Profil V1/V2/V3/V4 par gamme)
+### 9.5 Table `vehicle_gamme_profile` (Profil V1-V6 par gamme) — v4.0
 
 ```sql
 CREATE TABLE vehicle_gamme_profile (
     gamme_id INTEGER REFERENCES gammes(gamme_id),
     vehicle_id INTEGER REFERENCES vehicles(vehicle_id),
+    type_id INTEGER,              -- auto_type.type_id (obligatoire pour tous les V)
     engine_code VARCHAR(20),      -- copié pour éviter joins lourds
     google_volume_gamme_vehicle INTEGER,
-    v_level INTEGER,              -- 1=V1, 2=V2, 3=V3, 4=V4
+    v_level VARCHAR(2) CHECK (v_level IN ('V1','V2','V3','V4','V5','V6')),
+    score_seo INTEGER,            -- volume × (1 + nb_v4/5) — pour V3/V2
     g_level INTEGER,              -- 1=G1, 2=G2 (utilisé pour V4 + G)
     is_champion BOOLEAN DEFAULT FALSE,
     cgc_level VARCHAR(2),         -- copie pour comparaison
@@ -1675,11 +1708,12 @@ CREATE TABLE vehicle_gamme_profile (
 
 CREATE INDEX idx_vgp_gamme_level ON vehicle_gamme_profile(gamme_id, v_level);
 CREATE INDEX idx_vgp_engine ON vehicle_gamme_profile(gamme_id, engine_code);
-CREATE INDEX idx_vgp_v4_g ON vehicle_gamme_profile(v_level, g_level) WHERE v_level = 4;
+CREATE INDEX idx_vgp_v4_g ON vehicle_gamme_profile(v_level, g_level) WHERE v_level = 'V4';
+CREATE INDEX idx_vgp_type_id ON vehicle_gamme_profile(type_id);
 ```
 
 **Table clé** pour construire les listes de motorisations compatibles.
-**Note :** `g_level` est utilisé principalement pour les V4 afin de déterminer l'importance de la gamme dans la fiche entretien.
+**Note v4.0 :** `type_id` obligatoire pour tous les V. `score_seo` pour promotion V3 → V2.
 
 ### 9.6 Table `vehicle_piece_interest` (Profil V4 détaillé)
 
@@ -1740,40 +1774,46 @@ Exemple : `/pieces/filtre-a-huile-123.html`
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC 1 : HÉROS (V1)                                        │
+│  BLOC 1 : HÉROS (V2 — top champions promus)                │
 ├─────────────────────────────────────────────────────────────┤
-│  H1 : Filtre à huile pour Clio 3 1.5 dCi 2012 90cv         │
+│  H1 : Disque de frein pour Clio 3 1.5 dCi 90cv             │
 │                                                             │
 │  • Description longue                                       │
 │  • Texte SEO complet                                        │
 │  • Liste de pièces principales                              │
 │  • Blocs "pourquoi ce modèle est important"                │
 │                                                             │
-│  Source : vehicle_gamme_profile WHERE v_level = 1           │
+│  Source : __seo_keywords WHERE v_level = 'V2'              │
+│  Ordre : score_seo DESC                                    │
 ├─────────────────────────────────────────────────────────────┤
-│  BLOC 2 : MOTORISATIONS PRINCIPALES (V3)                    │
+│  BLOC 2 : CHAMPIONS PAR GROUPE (V3)                         │
 ├─────────────────────────────────────────────────────────────┤
-│  "Même moteur que [V1] – pièces compatibles identiques"     │
+│  Champions #1 par modèle+énergie (non promus en V2)        │
 │                                                             │
+│  • 308 1.6 HDi 92cv (champion 308 diesel)                  │
+│  • Golf 6 2.0 TDI 140cv (champion Golf diesel)             │
+│                                                             │
+│  Source : WHERE v_level = 'V3' ORDER BY score_seo DESC     │
+├─────────────────────────────────────────────────────────────┤
+│  BLOC 3 : AUTRES VARIANTES CSV (V4)                         │
+├─────────────────────────────────────────────────────────────┤
+│  • 308 1.6 HDi 112cv                                       │
 │  • Clio 3 1.5 dCi 86cv                                     │
-│  • Clio 4 1.5 dCi 90cv                                     │
-│  • Clio 4 1.5 dCi 95cv                                     │
 │                                                             │
-│  Source : WHERE engine_code = engine_code(V1) AND v_level=3│
+│  Source : WHERE v_level = 'V4' ORDER BY volume DESC        │
 ├─────────────────────────────────────────────────────────────┤
-│  BLOC 3 : AUTRES VÉHICULES COMPATIBLES (V2)                 │
+│  BLOC 4 : VÉHICULES COMPATIBLES DB (V5)                    │
 ├─────────────────────────────────────────────────────────────┤
-│  • 208 1.6 HDi                                             │
-│  • Golf 6 2.0 TDI                                          │
+│  Véhicules en DB dont le modèle est présent dans la gamme  │
+│  • 308 1.6 HDi 75cv (pas dans CSV)                         │
+│  • 308 2.0 HDi 163cv (pas dans CSV)                        │
 │                                                             │
-│  Source : WHERE v_level = 2 AND engine_code != V1.engine   │
-│  Ordre : cgc_level 1/5 d'abord, puis cgc_level 2           │
+│  Source : WHERE v_level = 'V5'                              │
 ├─────────────────────────────────────────────────────────────┤
-│  BLOC 4 : LIEN CATALOGUE COMPLET                            │
+│  BLOC 5 : CATALOGUE COMPLET                                │
 ├─────────────────────────────────────────────────────────────┤
 │  [Voir toutes les motorisations compatibles]                │
-│                                                             │
-│  → Page secondaire pour cgc_level=3 (trop nombreux)        │
+│  → V6 non affiché (véhicules sans lien avec cette gamme)   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1811,36 +1851,45 @@ Exemple : `/vehicule/renault-clio-3-1-4-i-2009-75cv.html`
 
 ---
 
-## 11. Impact Frontend Détaillé
+## 11. Impact Frontend Détaillé (v4.0)
 
 ### Impact par Niveau (Véhicules)
 
 | Niveau V | Page Gamme | Page Véhicule | SEO |
 |----------|------------|---------------|-----|
-| **V1** | Bloc héros, description complète | Lien prioritaire | Meta optimisées, schema.org |
-| **V2** | Bloc "Autres véhicules" | Liste gammes | Meta standards |
-| **V3** | Bloc "Même moteur" | Cross-sell | Canonical vers V1 |
-| **V4** | Non affiché | Bloc principal | Contenu ciblé pièces |
+| **V1** | Badge "véhicule leader" si V1 inter-gammes | Page pilier modèle | Canonical constructeur, schema.org |
+| **V2** | Bloc héros, description complète (top champions) | Lien prioritaire | Meta optimisées, score_seo élevé |
+| **V3** | Bloc "Champions par modèle" | Liste gammes | Page enrichie |
+| **V4** | Bloc "Autres variantes" | Cross-sell | Pages secondaires |
+| **V5** | Bloc "Compatibilité étendue" (DB) | Catalogue | Liens internes |
+| **V6** | Non affiché (aucun lien avec la gamme) | Catalogue interne | Pas de SEO |
 
-### Tables Supabase à Créer
+### Tables Supabase — v4.0
+
+> **Note v4.0 :** La table principale est `__seo_keywords` (déjà en production). Les tables ci-dessous sont la spec de référence pour les structures futures.
 
 ```sql
 -- Table pour les niveaux G des gammes
 ALTER TABLE pieces_gamme ADD COLUMN IF NOT EXISTS g_level INTEGER;
 -- G1=prioritaire, G2=secondaire, G3=enfant, G4=catalogue-only
 
--- Table pour les niveaux V par gamme/véhicule
+-- Table existante : __seo_keywords (utilisée par v4.0)
+-- Colonnes clés : id, keyword, volume, pg_id, energy, model, variant,
+--   type, v_level VARCHAR(2), score_seo INTEGER, type_id BIGINT
+
+-- Table pour les niveaux V par gamme/véhicule (spec de référence)
 CREATE TABLE vehicle_gamme_levels (
     id SERIAL PRIMARY KEY,
     type_id INTEGER REFERENCES auto_type(type_id),
     pg_id INTEGER REFERENCES pieces_gamme(pg_id),
-    v_level INTEGER CHECK (v_level IN (1, 2, 3, 4)),  -- V1, V2, V3, V4
+    v_level VARCHAR(2) CHECK (v_level IN ('V1','V2','V3','V4','V5','V6')),
+    score_seo INTEGER,                                 -- volume × (1 + nb_v4/5)
     g_level INTEGER CHECK (g_level IN (1, 2)),        -- G1, G2 (pour V4 uniquement)
     vehicule_exact TEXT,
     vehicule_generique TEXT,
     google_volume INTEGER,
     famille_moteur VARCHAR(20),
-    source VARCHAR(20) CHECK (source IN ('gamme+vehicule', 'vehicule+piece')),
+    source VARCHAR(20) CHECK (source IN ('csv', 'db_sibling', 'db_orphan')),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     UNIQUE(type_id, pg_id)
@@ -1865,7 +1914,10 @@ CREATE INDEX idx_vehicle_gamme_levels_by_level
 ON vehicle_gamme_levels(pg_id, v_level);
 
 CREATE INDEX idx_vehicle_gamme_levels_v4_g
-ON vehicle_gamme_levels(v_level, g_level) WHERE v_level = 4;
+ON vehicle_gamme_levels(v_level, g_level) WHERE v_level = 'V4';
+
+CREATE INDEX idx_vehicle_gamme_levels_score
+ON vehicle_gamme_levels(pg_id, score_seo DESC) WHERE v_level IN ('V2','V3');
 ```
 
 ### Synchronisation n8n → Supabase
@@ -1924,11 +1976,11 @@ Webhook                  → Invalider cache Redis
 - [ ] Workflow 3 : N2 → N1/N3
 - [ ] Tester sur 1 gamme pilote (filtre à huile)
 
-### Phase 3 : Bloc B - V5 (Semaine 3)
+### Phase 3 : V5/V6 DB (Semaine 3) — v4.0
 
-- [ ] Workflow 4 : Détection candidats V5
-- [ ] Workflow 5 : Véhicule → Pièces
-- [ ] Enrichir table familles moteur
+- [x] V5 : Véhicules DB siblings hors CSV (via auto_modele)
+- [x] V6 : Véhicules DB orphelins (aucune gamme)
+- [x] Backfill type_id via RPC V2
 
 ### Phase 4 : Intégration Site (Semaine 4+)
 
@@ -2038,9 +2090,9 @@ H1 : Filtre à huile pour Clio 3 1.5 dCi 2012 90cv
 
 | Priorité | Niveau | Logique |
 |----------|--------|---------|
-| 1 | V1 | Stock prioritaire (véhicule héros) |
-| 2 | V3 | Stock secondaire (variantes) |
-| 3 | V5 | Stock ciblé (pièces demandées) |
+| 1 | V1/V2 | Stock prioritaire (véhicules leaders) |
+| 2 | V3 | Stock secondaire (champions de groupe) |
+| 3 | V4/V5 | Stock étendu (variantes + DB) |
 
 #### Promotions ciblées
 
@@ -2076,21 +2128,23 @@ Conversion : +40%
 - Pack d'entretien complet
 - Pièces les plus vendues pour moteur K9K
 
-### Effet Domino : Hiérarchie Marketing
+### Effet Domino : Hiérarchie Marketing (v4.0)
 
 ```
-N1 (champion)
+V1 (top inter-gammes)
  │
- ├── SEO → Page principale, cluster contenu
+ ├── SEO → Page pilier modèle, cluster contenu
  ├── Ads → Google Ads, Meta Ads ciblés
  ├── Email → Séries spécifiques
  ├── Produits → Mise en avant, packs
  ├── Stocks → Priorité approvisionnement
  └── Promotions → Offres ciblées
 
-V2 (champion) → Pages catalogue standard
-V3 (challengers) → Pages secondaires, liens internes
-V5 (Bloc B) → Pages par pièces prioritaires
+V2 (top champions promus) → Pages gamme, canonical
+V3 (champions par groupe) → Pages enrichies, liens internes
+V4 (reste CSV) → Pages secondaires
+V5 (DB hors CSV) → Compatibilité étendue, catalogue
+V6 (orphelins DB) → Catalogue interne uniquement
 ```
 
 ### Avantage Concurrentiel
@@ -2308,7 +2362,7 @@ un excellent choix, c'est un modèle très fiable. »
 
 ## 19. Résumé
 
-### Double Système G + V en Une Image
+### Double Système G + V en Une Image (v4.0)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -2321,70 +2375,71 @@ un excellent choix, c'est un modèle très fiable. »
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│  SYSTÈME V (Véhicules) - BLOC A                            │
+│  SYSTÈME V (Véhicules) v4.0 — Classification bottom-up     │
 │                                                             │
-│   Google: "filtre huile clio 3"                            │
+│   CSV Keyword Planner : "disque frein clio 3 1.5 dci"      │
+│                    │                                        │
+│           Grouper par [gamme + modèle + énergie]           │
 │                    │                                        │
 │                    ▼                                        │
-│               ┌────────┐                                    │
-│               │   V2   │ ← tous véhicules trouvés           │
-│               └────┬───┘                                    │
-│                    │                                        │
-│            groupe moteur?                                   │
-│           /              \                                  │
-│         oui              non                                │
-│          │                │                                 │
-│    ┌─────┴─────┐          │                                 │
-│    │           │          │                                 │
-│   V1          V3      reste V2                              │
-│ (champion)  (autres)   (seul)                               │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  SYSTÈME V (Véhicules) - BLOC B                            │
+│   ┌──────────── PHASE 1 ──────────────┐                    │
+│   │  Champion #1 du groupe → V3       │                    │
+│   │  Reste du groupe → V4             │                    │
+│   └────────────┬──────────────────────┘                    │
+│                │                                            │
+│   ┌──────────── PHASE 2 ──────────────┐                    │
+│   │  Top 10 V3 par score_seo → V2     │                    │
+│   │  score = vol × (1 + nb_v4/5)      │                    │
+│   └────────────┬──────────────────────┘                    │
+│                │                                            │
+│   ┌──────────── PHASE 3 ──────────────┐                    │
+│   │  Backfill type_id (RPC)           │                    │
+│   │  DB siblings hors CSV → V5        │                    │
+│   │  DB orphelins → V6                │                    │
+│   └────────────┬──────────────────────┘                    │
+│                │                                            │
+│   ┌──────────── PHASE 4 ──────────────┐                    │
+│   │  Inter-gammes : top V2 → V1       │                    │
+│   │  (après plusieurs gammes)         │                    │
+│   └───────────────────────────────────┘                    │
 │                                                             │
-│   Google: "clio 3 1.4 i bougie"                            │
-│                    │                                        │
-│                    ▼                                        │
-│               ┌────────┐                                    │
-│               │   V5   │ ← recherche inverse (véhicule → pièce) │
-│               └────┬───┘                                    │
-│                    │                                        │
-│           → G1 par défaut (SEO)                            │
-│                                                             │
-│   V5 = véhicules trouvés via Bloc B                        │
-│        utilisés pour enrichir le contenu SEO G1            │
+│   Résultat : V1 > V2 > V3 > V4 > V5 > V6                 │
+│   Tous les V ont un type_id (véhicule réel en DB)          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Tableau Récapitulatif Final
+### Tableau Récapitulatif Final (v4.0)
 
-| Gammes (G) | Description | Véhicules (V) | Bloc | Description |
-|------------|-------------|---------------|------|-------------|
-| **G1** | Gammes prioritaires | **V1** | A | Variante dominante du modèle (inter-gammes) |
-| **G2** | Gammes secondaires | **V2** | A | Champion #1 de la gamme (UNIQUE) |
-| **G3** | Gammes enfants | **V3** | A | Challengers (recherchés mais pas #1) |
-| **G4** | Gammes catalogue-only | **V4** | A | Variantes/déclinaisons de V3 |
-|          |                       | **V5** | B | Recherche véhicule → pièce (G1 défaut) |
+| Gammes (G) | Description | Véhicules (V) | Source | Description |
+|------------|-------------|---------------|--------|-------------|
+| **G1** | Gammes prioritaires | **V1** | Inter-gammes | Top V2 inter-gammes (modèle + énergie) |
+| **G2** | Gammes secondaires | **V2** | Gamme (CSV) | Top 10 V3 promus par score_seo |
+| **G3** | Gammes enfants | **V3** | CSV | Champion #1 par groupe [gamme+modèle+énergie] |
+| **G4** | Gammes catalogue-only | **V4** | CSV | Reste du CSV, volume > 0 |
+|          |                       | **V5** | DB | Modèle présent dans gamme, hors CSV |
+|          |                       | **V6** | DB | Aucune gamme (orphelins DB) |
 
-**Structure en 2 Blocs :**
-- **Bloc A** (gamme → véhicule) : V1, V2, V3, V4
-- **Bloc B** (véhicule → pièce) : V5 → G1 par défaut
+**Classification bottom-up :**
+- V3 élu en premier (champion par groupe) → V4 = reste du CSV
+- V2 promu depuis top 10 V3 par score_seo → V1 inter-gammes
+- V5 = DB siblings hors CSV → V6 = DB orphelins
 
-**Bonus V4 + G :**
-- **V4 + G1** = Variante V4 dans gamme importante → prioritaire fiche entretien
-- **V4 + G2** = Variante V4 dans gamme secondaire → affichage minimal
+**score_seo = volume × (1 + nb_v4 / 5)**
 
-### Avantages Clés
+**Tous les V ont un type_id** (véhicule réel dans auto_type).
 
-- **100% automatisé** (n8n + Sheets)
-- **Aucun code** requis
-- **Basé sur Google** (données réelles du marché)
+### Avantages Clés (v4.0)
+
+- **Pipeline CLI automatisé** (`scripts/insert-missing-keywords.ts`)
+- **Service backend aligné** (`gamme-vlevel.service.ts`)
+- **Basé sur Google** (CSV Keyword Planner) + **DB étendue** (V5/V6)
 - **Scalable** (100+ gammes, 10 000+ véhicules)
 - **Aligné métier** (pièces auto B2B/e-commerce)
-- **Terminologie claire** (G pour Gammes, V pour Véhicules)
+- **Terminologie claire** (G pour Gammes, V1-V6 pour Véhicules)
+- **Tous les V ont un type_id** (véhicule réel en DB)
+- **score_seo** pour promotion objective V3 → V2
 
-**Prochaine étape :** Validation du cahier des charges puis implémentation Phase 1.
+**Statut v4.0 :** Pipeline validé sur gamme "disque de frein" (pg_id=82). 84% backfill type_id. Prochaine étape : 2e gamme pour V1 inter-gammes.
 
 ---
 
@@ -2573,11 +2628,12 @@ Le contenu V1 est directement lié au système de classification :
 
 | Niveau V | Affichage dans Tableau | Badge |
 |----------|------------------------|-------|
-| **V1** | ⭐ Mis en avant (variante dominante) | Bleu foncé |
-| **V2** | Champion de la gamme | Vert |
-| **V3** | Challenger | Jaune |
-| **V4** | Variante standard | Orange |
-| **V5** | Bloc B (SEO G1) | Gris |
+| **V1** | ⭐ Top inter-gammes (variante dominante modèle) | Bleu foncé |
+| **V2** | Top champions promus (score_seo) | Vert |
+| **V3** | Champion #1 par groupe | Jaune |
+| **V4** | Reste CSV (volume > 0) | Orange |
+| **V5** | DB hors CSV (modèle lié) | Gris |
+| **V6** | DB orphelin (aucune gamme) | Gris clair |
 
 ### Composants Frontend
 
@@ -2643,56 +2699,51 @@ return (
 ## 21. Récapitulatif des 10 Règles V1-V5 (VERSION FINALE)
 
 ```
-1) V2 séparé Essence/Diesel
-   → Calcul V2 TOUJOURS séparé par énergie
+RÉSUMÉ v4.0 (bottom-up) :
 
-2) V2 = Champion #1 (UNIQUE par gamme + modèle + énergie)
-   → PAS de seuil, simplement le #1 Google
+1) Classification séparée Essence/Diesel (TOUS les niveaux)
 
-3) V1 = variante la plus souvent V2 (inter-gammes)
-   → Calculé par modèle + énergie
+2) V3 = champion #1 par groupe [gamme+modèle+énergie]
+   → 1 seul V3 par groupe, tri volume DESC + keyword_length ASC
 
-4) Un modèle peut avoir V1 Diesel + V1 Essence
-   → Deux V1 séparés par énergie
+3) V4 = reste du CSV (volume > 0, pas champion)
 
-5) V3 = positions #2, #3, #4... (recherchés mais pas #1)
-   → Car il ne peut y avoir qu'1 seul V2 par gamme
+4) V2 = top 10 V3 promus par score_seo dans la gamme
+   → score_seo = volume × (1 + nb_v4 / 5)
 
-6) V2 peut changer par gamme, V1 stable
-   → V1 = référence modèle, V2 = champion local
+5) V1 = top V2 inter-gammes (modèle + énergie)
+   → Requis ≥ 30% des G1 ou plus de répétitions V2
 
-7) V1 ne dépend pas des gammes
-   → V1 est inter-gammes, V2 est par gamme
+6) V5 = type_ids en DB, modèle a des V3/V4, hors CSV
+   → Compatibilité étendue via auto_modele
 
-8) V4 = variantes/déclinaisons de V3
-   → Break, BVA, 4x4... du même moteur que V3
+7) V6 = type_ids en DB, dans aucune gamme (orphelins)
 
-9) V4 hérite du moteur V3
-   → Différentes configurations, même base
+8) Tous les V ont un type_id (véhicule réel en auto_type)
 
-10) V5 = Bloc B (véhicule → pièces) → G1 par défaut
-    → Recherche inverse, SEO G1 automatique
+9) Pipeline : T1→T2→T3→T4 → V3/V4 → backfill → V2 → V5 → V6 → V1
+
+10) V1 est GLOBAL (modèle), V2-V5 sont LOCAL (gamme), V6 est GLOBAL (DB)
 ```
 
 ### Schéma Final Complet
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC A : "gamme + véhicule"                                │
+│  CSV (keywords Google Ads Keyword Planner)                   │
 │                                                              │
-│  V1 ← V2 ← V3 ← V4                                          │
-│  │      │      │     │                                      │
-│  │      │      │     └── V4 = variantes de V3 (Break, BVA)  │
-│  │      │      └── V3 = positions #2, #3... (recherchés)    │
-│  │      └── V2 = champion #1 (unique)                       │
-│  └── V1 = variante dominante (inter-gammes)                 │
+│  V3 ← V4            V2 (promu)          V1 (inter-gammes)   │
+│  │      │             │                    │                 │
+│  │      └── reste     └── top 10 V3       └── top V2 ≥30%   │
+│  └── champion #1         par score_seo         des G1        │
+│      par groupe          = vol×(1+nv4/5)                     │
 └─────────────────────────────────────────────────────────────┘
-                          ↕ (séparé)
+                          ↕ (étendu)
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC B : "véhicule + pièce"                                │
+│  DB (auto_type → auto_modele)                               │
 │                                                              │
-│  V5 = véhicules trouvés via recherche inverse               │
-│       → G1 par défaut                                       │
+│  V5 = type_ids DB dont modèle a V3/V4 (siblings hors CSV)  │
+│  V6 = type_ids DB dans aucune gamme (orphelins)             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -2934,7 +2985,8 @@ Le contenu V2 est directement lié au champion de la gamme :
 | **V3** | Listées dans `variantesCompatibles` (challengers) |
 | **V4** | Listées dans `variantesCompatibles` (variantes) |
 | **V1** | Référence dans l'intro (variante dominante modèle) |
-| **V5** | Non applicable (Bloc B) |
+| **V5** | Listées dans "compatibilité étendue" (DB siblings) |
+| **V6** | Non affiché (orphelins DB, aucune gamme) |
 
 ### Fichiers à Créer (Phase 3)
 
@@ -3194,56 +3246,61 @@ CREATE TABLE __gamme_content_niveau (
 
 ---
 
-## 24. Phase 5 : Contenu V5 (Bloc B - Enrichissement Silo)
+## 24. Phase 5 : Contenu V5 (DB Siblings - Compatibilité Étendue) — v4.0
 
-### Spécification Contenu V5
+### Spécification Contenu V5 (v4.0)
 
 ```
-V5 = CONTENU BLOC B (MÊME STRUCTURE QUE V3/V4)
+V5 = VÉHICULES DB HORS CSV MAIS MODÈLE LIÉ
+
+v4.0 : V5 n'est plus "Bloc B / recherche inverse".
+V5 = type_ids en DB dont le modèle a des V3/V4 dans la gamme,
+mais qui ne sont PAS eux-mêmes dans le CSV Google.
 
 Objectifs stratégiques :
-→ Enrichissement du silo technique
-→ Capture ultra-long-tail
-→ Renforcement de l'autorité technique d'Automecanik
-→ Éviter toute concurrence directe avec V1–V4
+→ Couverture exhaustive du catalogue auto_type
+→ Compatibilité étendue sur les pages gamme
+→ Chaque V5 a un type_id valide
+→ Pas de contenu SEO dédié (pages listing seulement)
 
 Rôle :
-→ Pages "véhicule → pièces" (Bloc B)
-→ Contenu hérité du template V2 (comme V3/V4)
-→ Canonical vers V2 (concentration link juice)
-→ Variables dynamiques personnalisées pour long-tail
+→ Affichage "Véhicules compatibles supplémentaires"
+→ Trouvé via jointure auto_type → auto_modele → siblings
+→ Canonical vers la page gamme principale
 ```
 
-### Différence V5 vs V3/V4
+### Différence V3/V4 vs V5 vs V6 (v4.0)
 
-| Critère | V3/V4 (Bloc A) | V5 (Bloc B) |
-|---------|----------------|-------------|
-| **Type de recherche** | "gamme + véhicule" | "véhicule + pièce" |
-| **Exemple** | "plaquettes clio 3 1.5 dci" | "clio 3 1.4 i bougies" |
-| **SEO Target** | Gamme spécifique | Ultra-long-tail |
-| **Contenu** | Hérité template V2 | Hérité template V2 |
-| **Canonical** | V3=self, V4→V2 | **V5 → V2** |
-| **Compétition** | Directe avec V2 | **Aucune** (Bloc B) |
+| Critère | V3/V4 (CSV) | V5 (DB sibling) | V6 (DB orphelin) |
+|---------|-------------|-----------------|------------------|
+| **Source** | CSV Keyword Planner | auto_type DB | auto_type DB |
+| **Dans le CSV** | Oui | Non | Non |
+| **Modèle lié** | Oui | Oui (même modèle) | Non (aucune gamme) |
+| **type_id** | Backfillé (84%) | Toujours (100%) | Toujours (100%) |
+| **SEO** | Pages enrichies | Listing compatibilité | Pas de SEO |
+| **Canonical** | V3=self, V4→V2 | → page gamme | N/A |
 
-### Stratégie V5 : Enrichissement Sans Concurrence
+### Stratégie V5 v4.0 : Compatibilité Étendue DB
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC A : V2/V3/V4 (gamme → véhicule)                       │
-│  Compétition directe pour les mêmes requêtes                │
+│  CSV (keywords Google)                                       │
 │                                                              │
-│  V2 = Champion #1 (canonical maître)                        │
-│  V3 = Challengers (self-canonical)                          │
-│  V4 = Variantes (canonical → V2)                            │
+│  V2 = Top 10 V3 promus (canonical maître)                   │
+│  V3 = Champions par groupe (self-canonical)                 │
+│  V4 = Reste du CSV (canonical → V2)                         │
 └─────────────────────────────────────────────────────────────┘
-                          ↕ (séparé - pas de compétition)
+                          ↕ (étendu via DB)
 ┌─────────────────────────────────────────────────────────────┐
-│  BLOC B : V5 (véhicule → pièce)                             │
-│  Requêtes DIFFÉRENTES (pas de compétition V1-V4)            │
+│  DB (auto_type → auto_modele)                                │
 │                                                              │
-│  V5 = Enrichissement silo (canonical → V2 G1)               │
-│       → Renforce autorité V2 sans compétition               │
-│       → Capture ultra-long-tail                             │
+│  V5 = Véhicules DB dont modèle a V3/V4 dans la gamme       │
+│       → Listing "véhicules compatibles supplémentaires"     │
+│       → Pas de contenu SEO dédié                            │
+│       → type_id toujours valide (100%)                      │
+│                                                              │
+│  V6 = Véhicules DB dans aucune gamme (orphelins)            │
+│       → Catalogue interne uniquement                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -3265,36 +3322,36 @@ Rôle :
 -- Colonne gcn_niveau_v = 'V5'
 -- Canonical TOUJOURS vers V2
 
--- Ajouter 'V5' aux valeurs possibles
+-- v4.0 : Ajouter V5/V6 aux valeurs possibles
 ALTER TABLE __gamme_content_niveau
   DROP CONSTRAINT IF EXISTS gcn_niveau_v_check;
 
 ALTER TABLE __gamme_content_niveau
   ADD CONSTRAINT gcn_niveau_v_check
-  CHECK (gcn_niveau_v IN ('V2', 'V3', 'V4', 'V5'));
+  CHECK (gcn_niveau_v IN ('V1', 'V2', 'V3', 'V4', 'V5', 'V6'));
 
 -- Contrainte : V5 DOIT avoir un canonical vers V2
 -- (pas self-canonical comme V3)
 
--- Index pour requêtes V5 (Bloc B)
-CREATE INDEX IF NOT EXISTS idx_gamme_content_niveau_v5
+-- Index pour requêtes V5 (DB siblings) et V6 (orphelins)
+CREATE INDEX IF NOT EXISTS idx_gamme_content_niveau_v5_v6
   ON __gamme_content_niveau(gcn_niveau_v)
-  WHERE gcn_niveau_v = 'V5';
+  WHERE gcn_niveau_v IN ('V5', 'V6');
 ```
 
-### Variables Spécifiques V5
+### Variables Spécifiques V5 (v4.0)
 
 ```typescript
-// Variables V5 = identiques V3/V4 + spécifiques Bloc B
+// Variables V5 = DB siblings hors CSV
 #NiveauV#              // "V5"
-#NiveauVLabel#         // "Enrichissement"
-#BlocType#             // "B" (vs "A" pour V2/V3/V4)
-#RequeteType#          // "véhicule → pièce"
+#NiveauVLabel#         // "Compatibilité étendue"
+#SourceType#           // "db_sibling"
+#TypeId#               // type_id auto_type
 
-// Variables Bloc B spécifiques
-#VehiculeFirst#        // "Clio 3 1.4 i"
-#PiecesDemandees#      // "bougies, bobine allumage, filtre air"
-#TopGammeVehicule#     // Liste gammes G1 pour ce véhicule
+// Variables V5 spécifiques
+#ModeleLie#            // "308" (modèle qui a des V3/V4)
+#SiblingsCount#        // Nombre de V5 pour ce modèle
+#GammesPresentes#      // Gammes où le modèle a des V3/V4
 ```
 
 ### Stratégie de Canonical V5
@@ -3347,17 +3404,17 @@ CREATE INDEX IF NOT EXISTS idx_gamme_content_niveau_v5
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  V2 = CONTENU CHAMPION GAMME (700-1000 mots)                │
-│  Template maître, self-canonical                             │
+│  Template maître, self-canonical (top V3 promus)            │
 │  Concentre tout le link juice de V4 et V5                   │
 └───────────────────────┬─────────────────────────────────────┘
                         │ héritage
           ┌─────────────┼─────────────┐
           ▼             ▼             ▼
 ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  V3 (Bloc A)│ │  V4 (Bloc A)│ │  V5 (Bloc B)│
-│  500-700    │ │  400-500    │ │  400-550    │
-│  Self-canon │ │  → V2       │ │  → V2       │
-│  Challengers│ │  Variantes  │ │  Long-tail  │
+│  V3 (CSV)   │ │  V4 (CSV)   │ │  V5 (DB)    │
+│  500-700    │ │  400-500    │ │  Listing    │
+│  Self-canon │ │  → V2       │ │  → gamme    │
+│  Champions  │ │  Reste CSV  │ │  Siblings   │
 └─────────────┘ └─────────────┘ └─────────────┘
                         │             │
                         └─────────────┘
@@ -3378,86 +3435,79 @@ CREATE INDEX IF NOT EXISTS idx_gamme_content_niveau_v5
 | `backend/src/modules/seo/gamme-content-dynamic.service.ts` | MODIFIER | Gérer V5 comme V3/V4 |
 | `frontend/app/components/gamme/GammeContentDisplay.tsx` | MODIFIER | Afficher V5 |
 
-### Prochaines Étapes Phase 5
+### Prochaines Étapes Phase 5 (v4.0)
 
-1. **Modifier contrainte SQL** : Ajouter 'V5' aux valeurs possibles de `gcn_niveau_v`
-2. **Étendre service** : Traiter V5 comme V4 (canonical → V2)
-3. **Ajouter variables Bloc B** : `#BlocType#`, `#RequeteType#`, etc.
-4. **Créer index V5** : Optimiser requêtes Bloc B
-5. **Peupler données V5** : Générer contenu pour véhicules Bloc B
-6. **Valider silo** : Vérifier que V5 enrichit sans compétition
+1. **Modifier contrainte SQL** : V1-V6 dans `gcn_niveau_v` (fait)
+2. **Étendre service** : `gamme-vlevel.service.ts` aligné v4.0 (fait)
+3. **Script import** : `insert-missing-keywords.ts` avec V5/V6 (fait)
+4. **Backfill RPC V2** : Déployée sur massdoc (fait)
+5. **Tester 2e gamme** : "plaquette de frein" pour valider V1 inter-gammes
+6. **Enrichir modèles composés** : Ajouter patterns manquants au besoin
 
 ---
 
-## 25. RÉSUMÉ FINAL : Architecture Contenu V1 → V5
+## 25. RÉSUMÉ FINAL : Architecture Contenu V1 → V6 (v4.0)
 
 ### Tableau de Synthèse
 
 | Phase | Niveau | Type Page | Longueur | Canonical | Objectif |
 |-------|--------|-----------|----------|-----------|----------|
-| 2 | **V1** | Modèle | 800-1200 | Self | Encyclopédique |
-| 3 | **V2** | Gamme Champion | 700-1000 | Self | Conversion |
-| 4 | **V3** | Gamme Challenger | 500-700 | Self | Enrichissement |
-| 4 | **V4** | Gamme Variante | 400-500 | → V2 | Link juice |
-| 5 | **V5** | Bloc B Long-tail | 400-550 | → V2 | Silo + Autorité |
+| 7 | **V1** | Modèle (inter-gammes) | 800-1200 | Self | Encyclopédique |
+| 4 | **V2** | Gamme (top V3 promus) | 700-1000 | Self | Conversion |
+| 4 | **V3** | Gamme (champion groupe) | 500-700 | Self | Enrichissement |
+| 4 | **V4** | Gamme (reste CSV) | 400-500 | → V2 | Link juice |
+| 5 | **V5** | Compatibilité DB | Listing | → gamme | Couverture |
+| — | **V6** | Catalogue interne | — | — | Orphelins DB |
 
-### Principes Clés
+### Principes Clés (v4.0)
 
-1. **V1 = Indépendant** : Page modèle, pas de relation gamme
-2. **V2 = Maître** : Template source, canonical final
-3. **V3/V4 = Bloc A** : Héritage V2, compétition directe
-4. **V5 = Bloc B** : Héritage V2, **PAS de compétition** (requêtes différentes)
-5. **Canonical V4/V5 → V2** : Concentration link juice sur champion
+1. **V1 = Inter-gammes** : Top V2 dans ≥ 30% des G1 du modèle+énergie
+2. **V2 = Top champions** : Top 10 V3 promus par score_seo, canonical maître
+3. **V3 = Champion groupe** : 1 par [gamme+modèle+énergie], self-canonical
+4. **V4 = Reste CSV** : Volume > 0, canonical → V2
+5. **V5 = DB siblings** : Pas de contenu dédié, listing compatibilité
+6. **V6 = DB orphelins** : Catalogue interne uniquement
 
-### Workflow de Génération
-
-```
-1. Créer template V2 (maître)
-   ↓
-2. Générer V3/V4 (Bloc A - gamme → véhicule)
-   ↓
-3. Générer V5 (Bloc B - véhicule → pièce)
-   ↓
-4. Tous pointent vers V2 (canonical)
-   ↓
-5. V2 concentre autorité SEO
-```
-
-### 11 Règles Officielles V1-V5 (MISE À JOUR)
+### Workflow de Génération (v4.0)
 
 ```
-1) V2 séparé Essence/Diesel
-   → Calcul V2 TOUJOURS séparé par énergie
+1. Import CSV + triage T1-T4
+   ↓
+2. Classification V3/V4 (par groupe) + backfill type_id
+   ↓
+3. Promotion V3 → V2 (top 10 par score_seo)
+   ↓
+4. V5 = DB siblings hors CSV, V6 = DB orphelins
+   ↓
+5. V1 inter-gammes (après ≥2 gammes), V2 concentre autorité SEO
+```
 
-2) V2 = Champion #1 (UNIQUE par gamme + modèle + énergie)
-   → PAS de seuil, simplement le #1 Google
+### 12 Règles Officielles V1-V6 v4.0
 
-3) V1 = variante la plus souvent V2 (inter-gammes)
-   → Calculé par modèle + énergie
+```
+1) Classification bottom-up, séparée Essence/Diesel sur TOUS les niveaux
 
-4) Un modèle peut avoir V1 Diesel + V1 Essence
-   → Deux V1 séparés par énergie
+2) V3 = champion #1 par groupe [gamme+modèle+énergie] — tri volume DESC, keyword_length ASC
 
-5) V3 = positions #2, #3, #4... (recherchés mais pas #1)
-   → Car il ne peut y avoir qu'1 seul V2 par gamme
+3) V4 = reste du CSV dans le même groupe, volume > 0
 
-6) V2 peut changer par gamme, V1 stable
-   → V1 = référence modèle, V2 = champion local
+4) V2 = top 10 V3 promus par score_seo = volume × (1 + nb_v4/5)
 
-7) V1 ne dépend pas des gammes
-   → V1 est inter-gammes, V2 est par gamme
+5) V1 = top V2 inter-gammes (modèle+énergie, ≥ 30% des G1)
 
-8) V4 = variantes/déclinaisons de V3
-   → Break, BVA, 4x4... du même moteur que V3
+6) Un modèle peut avoir V1 Diesel + V1 Essence
 
-9) V4 hérite du moteur V3
-   → Différentes configurations, même base
+7) V5 = type_ids DB dont modèle a des V3/V4 dans la gamme, mais hors CSV
 
-10) V5 = Bloc B (véhicule → pièces) → G1 par défaut
-    → Recherche inverse, SEO G1 automatique
+8) V6 = type_ids DB dans aucune gamme (orphelins globaux)
 
-11) V5 = même contenu que V3/V4 (hérité du template V2)
-    → Enrichissement silo, ultra-long-tail
+9) Tous les V ont un type_id (véhicule réel dans auto_type)
+
+10) Pipeline : T1-T4 triage → V3/V4 → backfill type_id → V2 → V5 → V6 → V1
+
+11) score_seo favorise les champions de groupes riches (beaucoup de V4)
+
+12) V1 est GLOBAL, V2-V5 sont LOCAL (par gamme), V6 est GLOBAL
     → Renforce autorité technique Automecanik
     → PAS de compétition avec V1-V4 (Bloc B séparé)
 ```
