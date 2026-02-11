@@ -35,13 +35,6 @@ import {
 } from "lucide-react";
 
 // UI Components
-import { Error404 } from "~/components/errors/Error404";
-import { HtmlContent } from "~/components/seo/HtmlContent";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-
-// SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Badge } from "../components/ui/badge";
 import {
   Card,
@@ -49,6 +42,13 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { Error404 } from "~/components/errors/Error404";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -87,8 +87,14 @@ interface Reference {
   updatedAt: string;
 }
 
+interface RelatedRef {
+  slug: string;
+  title: string;
+}
+
 interface LoaderData {
   reference: Reference;
+  relatedRefs: RelatedRef[];
 }
 
 /* ===========================
@@ -127,6 +133,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { name: "twitter:card", content: "summary" },
     { name: "twitter:title", content: reference.title },
     { name: "twitter:description", content: description },
+    // Article meta (Open Graph enrichi)
+    { property: "article:modified_time", content: reference.updatedAt },
+    { property: "article:section", content: "Référence Auto" },
+    {
+      property: "article:tag",
+      content: reference.title.replace(/ : Fiche technique$/, ""),
+    },
     // SEO Role Signals (Phase 5 - Quasi-Incopiable)
     { name: "x-page-role", content: "R4" },
     { name: "x-page-intent", content: "definition" },
@@ -164,7 +177,27 @@ export async function loader({ params }: LoaderFunctionArgs) {
       throw new Response("Référence non trouvée", { status: 404 });
     }
 
-    return json<LoaderData>({ reference });
+    // Fetch related references (non-blocking — empty array on error)
+    let relatedRefs: RelatedRef[] = [];
+    try {
+      const relRes = await fetch(
+        `${backendUrl}/api/seo/reference/${slug}/related`,
+        { headers: { "Content-Type": "application/json" } },
+      );
+      if (relRes.ok) {
+        const relData = await relRes.json();
+        relatedRefs = (relData.related || []).map(
+          (r: { slug: string; title: string }) => ({
+            slug: r.slug,
+            title: r.title,
+          }),
+        );
+      }
+    } catch {
+      // Silently ignore — related refs are optional
+    }
+
+    return json<LoaderData>({ reference, relatedRefs });
   } catch (error) {
     logger.error("Erreur chargement référence:", error);
     throw new Response("Référence non trouvée", { status: 404 });
@@ -254,6 +287,29 @@ function SchemaJsonLd({ reference }: { reference: Reference }) {
     ],
   };
 
+  // Schema 4: FAQPage from confusions courantes (rich snippets)
+  const faqSchema =
+    reference.confusionsCourantes && reference.confusionsCourantes.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: reference.confusionsCourantes.map((item) => {
+            const parts = item.split(" : ");
+            const questionPart = parts[0]
+              .replace(/\s*≠\s*/g, " et ")
+              .replace(/\s*!=\s*/g, " et ");
+            return {
+              "@type": "Question",
+              name: `Quelle est la différence entre ${questionPart} ?`,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: parts.length > 1 ? parts.slice(1).join(" : ") : item,
+              },
+            };
+          }),
+        }
+      : null;
+
   return (
     <>
       {/* DefinedTerm - Semantic definition signal */}
@@ -271,6 +327,13 @@ function SchemaJsonLd({ reference }: { reference: Reference }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {/* FAQPage - Rich snippets for confusions courantes */}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
     </>
   );
 }
@@ -279,7 +342,7 @@ function SchemaJsonLd({ reference }: { reference: Reference }) {
    Component
 =========================== */
 export default function ReferenceDetailPage() {
-  const { reference } = useLoaderData<typeof loader>();
+  const { reference, relatedRefs } = useLoaderData<typeof loader>();
 
   const shortTitle = reference.title.replace(/ : Définition.*$/, "");
   // Cluster ID pour les signaux SEO (ex: kit-embrayage → embrayage)
@@ -397,23 +460,6 @@ export default function ReferenceDetailPage() {
               </Card>
             )}
 
-            {/* NOUVEAU: Role Négatif - "Ce que ça NE fait PAS" */}
-            {reference.roleNegatif && (
-              <Card className="shadow-lg border-2 border-red-100">
-                <CardHeader className="bg-red-50/50">
-                  <CardTitle className="flex items-center gap-2 text-red-900">
-                    <XCircle className="w-5 h-5" />
-                    Ce que ça NE fait PAS
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                    {reference.roleNegatif}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Composition */}
             {reference.composition && reference.composition.length > 0 && (
               <Card className="shadow-lg border-2 border-blue-100">
@@ -466,7 +512,37 @@ export default function ReferenceDetailPage() {
                 </Card>
               )}
 
-            {/* NOUVEAU: Règles Métier (anti-erreur) */}
+            {/* Ce que ça NE fait PAS (roleNegatif en liste) */}
+            {reference.roleNegatif && (
+              <Card className="shadow-lg border-2 border-red-100">
+                <CardHeader className="bg-red-50/50">
+                  <CardTitle className="flex items-center gap-2 text-red-900">
+                    <XCircle className="w-5 h-5" />
+                    Ce que ça NE fait PAS
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <ul className="space-y-3">
+                    {reference.roleNegatif
+                      .split(/\.\s+/)
+                      .filter((s) => s.trim().length > 10)
+                      .map((point, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-3 p-3 bg-red-50 rounded-lg"
+                        >
+                          <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700">
+                            {point.trim().replace(/\.$/, "")}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Règles Métier (anti-erreur) */}
             {reference.reglesMetier && reference.reglesMetier.length > 0 && (
               <Card className="shadow-lg border-2 border-purple-100">
                 <CardHeader className="bg-purple-50/50">
@@ -568,12 +644,12 @@ export default function ReferenceDetailPage() {
                     {reference.blogSlugs.map((slug, index) => (
                       <li key={index}>
                         <Link
-                          to={`/blog-pieces-auto/guide/${slug}`}
+                          to={`/blog-pieces-auto/conseils/${slug}`}
                           className="flex items-center gap-2 p-2 rounded hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors"
                         >
                           <FileText className="w-4 h-4" />
                           <span className="text-sm">
-                            Guide : {slug.replace(/-/g, " ")}
+                            Conseil : {slug.replace(/-/g, " ")}
                           </span>
                         </Link>
                       </li>
@@ -596,18 +672,53 @@ export default function ReferenceDetailPage() {
                   <CardContent>
                     <ul className="space-y-2">
                       {reference.symptomesAssocies.map((symptome, index) => (
-                        <li
-                          key={index}
-                          className="text-sm text-gray-600 flex items-start gap-2"
-                        >
-                          <span className="text-orange-500">•</span>
-                          {symptome}
+                        <li key={index}>
+                          <Link
+                            to={`/diagnostic-auto/${symptome}`}
+                            className="flex items-center gap-2 p-2 rounded hover:bg-orange-50 text-gray-700 hover:text-orange-700 transition-colors text-sm"
+                          >
+                            <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                            <span>
+                              {symptome
+                                .replace(/-/g, " ")
+                                .replace(/^\w/, (c) => c.toUpperCase())}
+                            </span>
+                          </Link>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                 </Card>
               )}
+
+            {/* Références liées (maillage R4↔R4) */}
+            {relatedRefs && relatedRefs.length > 0 && (
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-indigo-600" />
+                    Références liées
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {relatedRefs.map((ref) => (
+                      <li key={ref.slug}>
+                        <Link
+                          to={`/reference-auto/${ref.slug}`}
+                          className="flex items-center gap-2 p-2 rounded hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 transition-colors text-sm"
+                        >
+                          <FileText className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                          <span>
+                            {ref.title.replace(/ : Fiche technique$/, "")}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Info Box */}
             <Card className="bg-slate-50 border-slate-200">

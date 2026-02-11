@@ -30,6 +30,9 @@ interface ReferenceResponse {
   composition: string[] | null;
   confusionsCourantes: string[] | null;
   symptomesAssocies: string[] | null;
+  roleNegatif: string | null;
+  reglesMetier: string[] | null;
+  scopeLimites: string | null;
   contentHtml: string | null;
   schemaJson: Record<string, unknown> | null;
   gamme: {
@@ -98,7 +101,10 @@ export class ReferenceController {
         gamme: {
           pgId: ref.pgId,
           name: ref.gammeName,
-          url: ref.gammeSlug ? `/pieces/${ref.gammeSlug}.html` : null,
+          url:
+            ref.gammeSlug && ref.pgId
+              ? `/pieces/${ref.gammeSlug}-${ref.pgId}.html`
+              : null,
         },
       })),
       total: references.length,
@@ -287,13 +293,19 @@ export class ReferenceController {
       composition: ref.composition,
       confusionsCourantes: ref.confusionsCourantes,
       symptomesAssocies: ref.symptomesAssocies,
+      roleNegatif: ref.roleNegatif,
+      reglesMetier: ref.reglesMetier,
+      scopeLimites: ref.scopeLimites,
       contentHtml: ref.contentHtml,
       schemaJson:
         ref.schemaJson || this.referenceService.generateSchemaJson(ref),
       gamme: {
         pgId: ref.pgId,
         name: ref.gammeName,
-        url: ref.gammeSlug ? `/pieces/${ref.gammeSlug}.html` : null,
+        url:
+          ref.gammeSlug && ref.pgId
+            ? `/pieces/${ref.gammeSlug}-${ref.pgId}.html`
+            : null,
       },
       relatedReferences: ref.relatedReferences,
       blogSlugs: ref.blogSlugs,
