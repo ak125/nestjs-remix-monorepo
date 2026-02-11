@@ -1,20 +1,21 @@
 /**
  * Insert/Update keywords from Google Ads CSV into __seo_keywords
- * V-Level v4.0 Algorithm (validated 2026-02-10):
+ * V-Level v5.0 Algorithm:
  *
  *   V1 = top V2 inter-gammes (calculated after multiple gammes)
- *   V2 = top 10 V3 de la gamme (promoted from V3)
- *   V3 = champion #1 du groupe [gamme+modèle+énergie], dans le CSV
- *   V4 = pas #1, dans le CSV, volume > 0
- *   V5 = dans la DB, pas dans le CSV, mais son modèle a des V3/V4 dans cette gamme
+ *   V2 = top 10 V3 de la gamme (promoted from V3), dedup par [model+energy]
+ *   V3 = champion #1 du groupe [gamme+modèle+énergie], dans le CSV (volume >= 0)
+ *   V4 = pas #1, dans le CSV
+ *   V5 = dans la DB, pas dans le CSV, siblings avec même parent (pas root)
  *   V6 = dans la DB, dans AUCUNE gamme (global, pas calculé ici)
  *
  * Tous les V ont un type_id (véhicule réel dans la DB).
- * Diesel/Essence séparés dans chaque groupe.
+ * Energies: diesel, hybride, electrique, gpl, essence (dans cet ordre de détection).
+ * Gamme universelle: ignore energy dans le groupement si gamme_universelle=true.
  *
  * Pipeline:
  *   Phase T: CSV → T1(pertinence) → T2(exclusion) → T3(catégorisation) → T4(véhicules seuls)
- *   Phase V: V3(champion) → V4(challengers) → V2(top V3) → V5(DB sans CSV, après backfill)
+ *   Phase V: V3(champion) → V4(challengers) → V2(top V3) → V5(DB siblings same parent)
  *
  * score_seo = volume × (1 + nb_v4 / 5)
  *
@@ -180,19 +181,25 @@ function runTriagePipeline(keywords: ParsedKeyword[], gamme: string): {
 
 // ── Energy detection ─────────────────────────────────────────────────────────
 
-// Energy detection patterns
-const ENERGY_PATTERNS: Record<string, string[]> = {
-  diesel: ['dci', 'hdi', 'tdi', 'bluehdi', 'crdi', 'jtd', 'd4d', 'cdti', 'ddis', 'diesel'],
-  essence: ['tce', 'tsi', 'tfsi', 'vti', 'vvt', 'mpi', '16v', 'vtec', 'essence'],
-  hybride: ['hybrid', 'hybride', 'e-tense'],
-  electrique: ['ev', 'electric', 'electrique', 'e-'],
-};
+// Energy detection patterns — ordered: diesel, hybride, electrique, gpl, essence
+// Order matters: hybrid cars must not be classified as essence
+const ENERGY_DETECTION_ORDER: Array<{ energy: string; patterns: string[] }> = [
+  { energy: 'diesel', patterns: ['dci', 'hdi', 'tdi', 'bluehdi', 'crdi', 'jtd', 'd4d', 'cdti', 'ddis', 'diesel'] },
+  { energy: 'hybride', patterns: ['hybrid', 'phev', 'e-hybrid', 'plug-in', 'hybride', 'e-tense'] },
+  { energy: 'electrique', patterns: ['electrique', 'electric', 'e-208', 'e-c4'] },
+  { energy: 'gpl', patterns: ['gpl', 'lpg', 'bifuel'] },
+  { energy: 'essence', patterns: ['tce', 'tsi', 'tfsi', 'vti', 'vvt', 'mpi', '16v', 'vtec', 'essence'] },
+];
 
 function detectEnergy(text: string): string {
   const lower = text.toLowerCase();
-  for (const [energy, patterns] of Object.entries(ENERGY_PATTERNS)) {
+  for (const { energy, patterns } of ENERGY_DETECTION_ORDER) {
     if (patterns.some((p) => lower.includes(p))) return energy;
   }
+  // Special case: e-prefix models (e-208, e-c4, etc.) — check with word boundary
+  if (/\be-\d/.test(lower) || /\be-[a-z]\d/.test(lower)) return 'electrique';
+  // Standalone 'ev' with word boundary to avoid false positives
+  if (/\bev\b/.test(lower)) return 'electrique';
   return 'unknown';
 }
 
@@ -253,12 +260,15 @@ function normalizeKeyword(keyword: string): string {
  */
 /**
  * Convert Arabic generation number to Roman numeral for DB matching
- * "clio 4" → "clio iv", "megane 3" → "megane iii"
- * Only converts trailing single digit (1-5) after a model name
+ * "clio 4" → "clio iv", "golf 7" → "golf vii", "polo 6" → "polo vi"
+ * Converts trailing number (1-10) after a model name
  */
 function generationToRoman(model: string): string {
-  const map: Record<string, string> = { '1': 'i', '2': 'ii', '3': 'iii', '4': 'iv', '5': 'v' };
-  return model.replace(/\s+(\d)\s*$/, (_, num) => {
+  const map: Record<string, string> = {
+    '1': 'i', '2': 'ii', '3': 'iii', '4': 'iv', '5': 'v',
+    '6': 'vi', '7': 'vii', '8': 'viii', '9': 'ix', '10': 'x',
+  };
+  return model.replace(/\s+(\d+)\s*$/, (_, num) => {
     return map[num] ? ` ${map[num]}` : ` ${num}`;
   });
 }
@@ -394,7 +404,7 @@ function extractVehicleInfo(
 }
 
 /**
- * V-Level v4.1 Classification Algorithm
+ * V-Level v5.0 Classification Algorithm
  *
  * Phase T = trier les KEYWORDS (CSV, texte + volume) — déjà fait avant cette fonction
  * Phase V = classer les VEHICULES (type_ids, après match backfill)
@@ -402,18 +412,19 @@ function extractVehicleInfo(
  * Les V-levels ne regardent PAS le volume. Le volume est déjà trié par les T.
  *
  * Definitions:
- *   V3 = type_id matché par le backfill (match principal)
+ *   V3 = type_id matché par le backfill (match principal), même si volume=0
  *   V4 = type_id dans le CSV, pas le match principal
- *   V5 = type_id dans la DB, même modèle a des V3 (assigné après backfill)
+ *   V5 = type_id dans la DB, siblings avec même parent (pas root)
  *   V6 = orphelins DB (assigné globalement)
- *   V2 = top 10 modèles promus depuis V3
+ *   V2 = top 10 modèles promus depuis V3, dedup par [model+energy]
  *   V1 = modèle V2 dans ≥30% des gammes (batch inter-gammes)
  *
  * Pre-backfill: on utilise (model, variant, energy) comme proxy pour type_id.
- * Le keyword avec le plus de volume dans un groupe (model+energy) est le V3 (match principal).
+ * Le keyword avec le plus de volume dans un groupe est le V3 (match principal).
  * Les autres keywords du même groupe sont V4 (dans CSV, pas le match principal).
+ * Gamme universelle: groupement par [gamme+modèle] seulement (ignore energy).
  */
-function assignVLevels(keywords: KeywordRecord[]): KeywordRecord[] {
+function assignVLevels(keywords: KeywordRecord[], gammeUniverselle: boolean = false): KeywordRecord[] {
   // Step 1: Only classify vehicle keywords (type = 'vehicle')
   const vehicleKws = keywords.filter(kw => kw.type === 'vehicle');
   const nonVehicleKws = keywords.filter(kw => kw.type !== 'vehicle');
@@ -424,56 +435,56 @@ function assignVLevels(keywords: KeywordRecord[]): KeywordRecord[] {
     kw.score_seo = null;
   }
 
-  // Step 2: Group vehicle keywords by (model + energy)
-  // Each group approximates one "model+energy" slot before backfill assigns type_ids
-  const byModelEnergy = new Map<string, KeywordRecord[]>();
+  // Step 2: Group vehicle keywords
+  // Gamme universelle: group by [model] only (ignore energy)
+  // Normal gamme: group by [model + energy]
+  const byGroup = new Map<string, KeywordRecord[]>();
 
   for (const kw of vehicleKws) {
-    const key = `${kw.model || '_no_model'}|${kw.energy}`;
-    if (!byModelEnergy.has(key)) {
-      byModelEnergy.set(key, []);
+    const key = gammeUniverselle
+      ? `${kw.model || '_no_model'}`
+      : `${kw.model || '_no_model'}|${kw.energy}`;
+    if (!byGroup.has(key)) {
+      byGroup.set(key, []);
     }
-    byModelEnergy.get(key)!.push(kw);
+    byGroup.get(key)!.push(kw);
   }
 
   // Step 3: For each group, elect V3 (match principal) and V4 (dans CSV, pas matché)
-  // V3 = the keyword that will match the primary type_id (highest volume = best match)
-  // V4 = other keywords in CSV for this model+energy (different variants, not the primary match)
+  // V3 = first keyword after sorting by volume DESC (even if volume=0)
+  // V4 = other keywords in CSV for this group (different variants, not the primary match)
   const v3Champions: KeywordRecord[] = [];
 
-  for (const [_groupKey, group] of byModelEnergy) {
+  for (const [_groupKey, group] of byGroup) {
     // Sort by volume DESC, then keyword length ASC (shorter = more generic = better match)
     group.sort((a, b) => {
       if (b.volume !== a.volume) return b.volume - a.volume;
       return a.keyword.length - b.keyword.length;
     });
 
-    let v3Assigned = false;
+    // V3 = first keyword in the group (no volume > 0 requirement)
+    const [champion, ...rest] = group;
+    champion.v_level = 'V3';
+    champion.score_seo = champion.volume;
+    v3Champions.push(champion);
 
-    for (const kw of group) {
-      if (!v3Assigned && kw.volume > 0) {
-        // V3: match principal (type_id matché par backfill)
-        kw.v_level = 'V3';
-        kw.score_seo = kw.volume;
-        v3Assigned = true;
-        v3Champions.push(kw);
-      } else {
-        // V4: dans le CSV, pas le match principal
-        kw.v_level = 'V4';
-        kw.score_seo = null;
-      }
+    for (const kw of rest) {
+      // V4: dans le CSV, pas le match principal
+      kw.v_level = 'V4';
+      kw.score_seo = null;
     }
   }
 
-  // Step 4: Promote top 10 DISTINCT MODELS V3 → V2
+  // Step 4: Promote top 10 DISTINCT [model+energy] V3 → V2
+  // Dedup by [model + energy] so a model can have 2 V2 entries (one diesel + one essence)
   if (v3Champions.length > 0) {
     v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
-    const seenModels = new Set<string>();
+    const seenModelEnergy = new Set<string>();
     const top10: KeywordRecord[] = [];
     for (const kw of v3Champions) {
-      const model = (kw.model || '').toLowerCase();
-      if (seenModels.has(model)) continue;
-      seenModels.add(model);
+      const dedupKey = `${(kw.model || '').toLowerCase()}|${kw.energy}`;
+      if (seenModelEnergy.has(dedupKey)) continue;
+      seenModelEnergy.add(dedupKey);
       top10.push(kw);
       if (top10.length >= 10) break;
     }
@@ -491,7 +502,7 @@ async function main() {
   if (args.length < 2) {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level v4.0 Keyword Import Script                        ║
+║  V-Level v5.0 Keyword Import Script                        ║
 ╚════════════════════════════════════════════════════════════╝
 
 Usage: npx tsx scripts/insert-missing-keywords.ts <csv_path> <gamme_name> [--dry-run] [--recalc]
@@ -524,7 +535,7 @@ Examples:
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level v4.0 Import                                       ║
+║  V-Level v5.0 Import                                       ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 
@@ -678,12 +689,24 @@ Examples:
 
   console.log(`🆕 New keywords: ${newCount}`);
 
+  // ── Fetch gamme_universelle flag before groupement ──────────────────────────
+  const { data: gammeMetaData } = await supabase
+    .from('pieces_gamme')
+    .select('gamme_universelle')
+    .eq('pg_id', pgId)
+    .single();
+
+  const gammeUniverselle = gammeMetaData?.gamme_universelle === true;
+  if (gammeUniverselle) {
+    console.log(`🌐 Gamme universelle: OUI — groupement par [modèle] uniquement (énergie ignorée)`);
+  }
+
   if (allKeywords.length === 0) {
     console.log('✅ Pas de nouveaux keywords CSV — saut direct à V5');
   } else {
-  // Assign V-Levels using v4.0 algorithm
-  console.log(`\n⚙️  Phase V: Classification V-Level v4.0...`);
-  assignVLevels(allKeywords);
+  // Assign V-Levels using v5.0 algorithm
+  console.log(`\n⚙️  Phase V: Classification V-Level v5.0...`);
+  assignVLevels(allKeywords, gammeUniverselle);
 
   // Count V-Level distribution
   const stats: VLevelStats = { V1: 0, V2: 0, V3: 0, V4: 0, V5: 0, V6: 0, NULL: 0 };
@@ -697,7 +720,7 @@ Examples:
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  V-Level Distribution (v4.0)                               ║
+║  V-Level Distribution (v5.0)                               ║
 ╠════════════════════════════════════════════════════════════╣
 ║  V2 (Top 10 V3):               ${String(stats.V2).padStart(4)}                        ║
 ║  V3 (Champions groupe):        ${String(stats.V3).padStart(4)}                        ║
@@ -881,48 +904,53 @@ Examples:
 
       console.log(`   Modèles DB trouvés (directs): ${modeleIdSet.size}`);
 
-      // Step 2b: Expand modeleIds to include parent + all children via modele_parent
-      const expandedModeleIds = new Set<string>();
+      // Step 2b: Find siblings with the SAME PARENT (v5.0 rule)
+      // - If modele_parent = 0, the model IS a root → no siblings (skip)
+      // - If modele_parent > 0, find all children of that parent (siblings)
+      const directModeleIdSet = new Set<string>(); // direct models (already V2/V3/V4)
+      const expandedModeleIds = new Set<string>(); // only TRUE siblings (for V5)
       const directModeleIds = [...modeleIdSet];
-      const rootIds = new Set<string>();
+      const parentIds = new Set<number>(); // parents that are NOT roots
+      let rootSkipCount = 0;
 
-      // Find root for each modele_id (if parent=0, it's the root; otherwise parent is root)
+      // Find parent for each modele_id
       for (let i = 0; i < directModeleIds.length; i += 100) {
         const batch = directModeleIds.slice(i, i + 100);
         const { data: modeleRows } = await supabase
           .from('auto_modele')
-          .select('modele_id, modele_parent, modele_name')
+          .select('modele_id, modele_parent')
           .in('modele_id', batch);
 
         for (const row of modeleRows || []) {
-          const rootId = row.modele_parent === 0
-            ? String(row.modele_id)
-            : String(row.modele_parent);
-          rootIds.add(rootId);
-          expandedModeleIds.add(String(row.modele_id));
+          directModeleIdSet.add(String(row.modele_id)); // track but don't V5
+          if (row.modele_parent === 0) {
+            // Model IS a root → no siblings to expand
+            rootSkipCount++;
+          } else {
+            // Model has a parent → collect parent to find siblings
+            parentIds.add(row.modele_parent);
+          }
         }
       }
 
-      // Also add roots themselves
-      for (const rid of rootIds) {
-        expandedModeleIds.add(rid);
-      }
-
-      // Get all children of each root
-      const rootIdArray = [...rootIds];
-      for (let i = 0; i < rootIdArray.length; i += 100) {
-        const batch = rootIdArray.slice(i, i + 100).map(Number);
-        const { data: childRows } = await supabase
+      // Get siblings: all children of each parent, excluding direct models
+      const parentIdArray = [...parentIds];
+      for (let i = 0; i < parentIdArray.length; i += 100) {
+        const batch = parentIdArray.slice(i, i + 100);
+        const { data: siblingRows } = await supabase
           .from('auto_modele')
           .select('modele_id')
           .in('modele_parent', batch);
 
-        for (const row of childRows || []) {
-          expandedModeleIds.add(String(row.modele_id));
+        for (const row of siblingRows || []) {
+          const id = String(row.modele_id);
+          if (!directModeleIdSet.has(id)) {
+            expandedModeleIds.add(id); // only true siblings
+          }
         }
       }
 
-      console.log(`   Modèles DB expandés (parent+enfants): ${expandedModeleIds.size} (racines: ${rootIds.size})`);
+      console.log(`   Modèles DB expandés (siblings même parent): ${expandedModeleIds.size} (parents: ${parentIds.size}, racines ignorées: ${rootSkipCount})`);
 
       // Step 3: Get modele names for ALL expanded modeles (for display + model field)
       const modeleIds = [...expandedModeleIds];
@@ -962,8 +990,8 @@ Examples:
 
         if (!siblingTypes) continue;
 
-        // Filter out types already linked to this gamme
-        const v5Candidates = siblingTypes.filter(t => !allLinkedTypeIds.has(t.type_id));
+        // Filter out types already linked to this gamme (coerce to Number for consistent comparison)
+        const v5Candidates = siblingTypes.filter(t => !allLinkedTypeIds.has(Number(t.type_id)));
 
         if (v5Candidates.length === 0) continue;
 
@@ -979,9 +1007,10 @@ Examples:
             model: modelName.toLowerCase(),
             variant: v.type_engine || null,
             energy: fuel.includes('diesel') ? 'diesel'
-              : fuel.includes('essence') || fuel.includes('gasoline') || fuel.includes('petrol') ? 'essence'
               : fuel.includes('hybrid') ? 'hybride'
-              : fuel.includes('electr') ? 'electrique'
+              : fuel.includes('electr') || fuel.includes('electric') ? 'electrique'
+              : fuel.includes('gpl') || fuel.includes('lpg') ? 'gpl'
+              : fuel.includes('essence') || fuel.includes('gasoline') || fuel.includes('petrol') ? 'essence'
               : 'unknown',
             v_level: 'V5',
             volume: 0,
@@ -1146,7 +1175,7 @@ Examples:
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  ✅ V-Level v4.0 Import Complete                           ║
+║  ✅ V-Level v5.0 Import Complete                           ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 }

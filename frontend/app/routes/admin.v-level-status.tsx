@@ -17,14 +17,12 @@ import { useLoaderData, useRevalidator } from "@remix-run/react";
 import {
   BarChart3,
   RefreshCw,
-  CheckCircle2,
   AlertCircle,
   Clock,
   Database,
   TrendingUp,
   Layers,
 } from "lucide-react";
-import { useState } from "react";
 
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -69,19 +67,7 @@ interface VLevelStats {
   };
 }
 
-interface ValidationResult {
-  valid: boolean;
-  violations: Array<{
-    model_name: string;
-    variant_name: string;
-    energy: string;
-    v2_count: number;
-    g1_total: number;
-    percentage: number;
-  }>;
-  g1_count: number;
-  summary: { total_v1: number; valid_v1: number; invalid_v1: number };
-}
+// V1 validation deferred in v5.0
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -118,26 +104,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function VLevelStatusPage() {
   const { stats, error } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] =
-    useState<ValidationResult | null>(null);
-
-  const handleValidate = async () => {
-    setIsValidating(true);
-    try {
-      const res = await fetch("/api/admin/gammes-seo/v-level/validate", {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setValidationResult(data.data);
-      }
-    } catch (err) {
-      logger.error("Validation error:", err);
-    } finally {
-      setIsValidating(false);
-    }
-  };
+  // V1 validation deferred in v5.0
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "Jamais";
@@ -171,12 +138,6 @@ export default function VLevelStatusPage() {
               className={`h-4 w-4 mr-2 ${revalidator.state === "loading" ? "animate-spin" : ""}`}
             />
             Rafraichir
-          </Button>
-          <Button onClick={handleValidate} disabled={isValidating}>
-            <CheckCircle2
-              className={`h-4 w-4 mr-2 ${isValidating ? "animate-pulse" : ""}`}
-            />
-            {isValidating ? "Validation..." : "Valider V1 Rules"}
           </Button>
         </div>
       </div>
@@ -318,17 +279,17 @@ export default function VLevelStatusPage() {
                     color: "bg-green-500",
                   },
                   {
-                    label: "V3 - Challengers",
+                    label: "V3 - Champions Groupe",
                     count: stats.distribution.v3,
                     color: "bg-blue-500",
                   },
                   {
-                    label: "V4 - Faibles",
+                    label: "V4 - Challengers CSV",
                     count: stats.distribution.v4,
                     color: "bg-gray-400",
                   },
                   {
-                    label: "V5 - Bloc B",
+                    label: "V5 - DB Siblings",
                     count: stats.distribution.v5,
                     color: "bg-orange-500",
                   },
@@ -395,72 +356,6 @@ export default function VLevelStatusPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Validation Results */}
-          {validationResult && (
-            <Card
-              className={
-                validationResult.valid
-                  ? "border-green-200 bg-green-50"
-                  : "border-red-200 bg-red-50"
-              }
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {validationResult.valid ? (
-                    <>
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                      <span className="text-green-800">Validation V1 OK</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-red-600" />
-                      <span className="text-red-800">
-                        Violations V1 Detectees
-                      </span>
-                    </>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Regle: V1 doit etre V2 dans au moins 30% des gammes G1
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-medium">Gammes G1:</span>{" "}
-                    {validationResult.g1_count} |
-                    <span className="font-medium ml-2">V1 valides:</span>{" "}
-                    {validationResult.summary.valid_v1}/
-                    {validationResult.summary.total_v1}
-                  </p>
-                  {validationResult.violations.length > 0 && (
-                    <div className="mt-4">
-                      <p className="font-medium text-red-800 mb-2">
-                        Violations (V1 avec moins de 30% G1):
-                      </p>
-                      <div className="bg-white rounded border border-red-200 divide-y divide-red-100">
-                        {validationResult.violations.map((v, idx) => (
-                          <div
-                            key={idx}
-                            className="p-2 flex justify-between items-center"
-                          >
-                            <span>
-                              {v.model_name}{" "}
-                              <Badge variant="outline">{v.energy}</Badge>
-                            </span>
-                            <span className="text-red-600 font-medium">
-                              {v.percentage}% ({v.v2_count}/{v.g1_total})
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </>
       )}
     </div>

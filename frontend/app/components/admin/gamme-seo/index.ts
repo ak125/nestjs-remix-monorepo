@@ -12,7 +12,6 @@ export type {
   GammeStats,
   PurchaseGuideData,
   SeoFormState,
-  V1ValidationResult,
   EnergyFilter,
 } from "./types";
 
@@ -36,11 +35,3 @@ export { VLevelCard } from "./VLevelCard";
 export { SeoTabContent } from "./SeoTabContent";
 export { VLevelTab } from "./VLevelTab";
 export { VehiclesTab } from "./VehiclesTab";
-export { SectionKCard } from "./SectionKCard";
-
-// Section K Types
-export type {
-  SectionKMetrics,
-  MissingTypeId,
-  ExtraTypeId,
-} from "./SectionKCard";

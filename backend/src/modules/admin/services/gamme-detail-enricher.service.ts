@@ -16,6 +16,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { GammeSeoBadgesService } from './gamme-seo-badges.service';
+import { GammeVLevelService } from './gamme-vlevel.service';
 import type { EnrichedVehicle } from './admin-gammes-seo.service';
 
 // Return type for getGammeDetail
@@ -55,7 +56,10 @@ export interface GammeDetailResult {
 export class GammeDetailEnricherService extends SupabaseBaseService {
   protected readonly logger = new Logger(GammeDetailEnricherService.name);
 
-  constructor(private readonly badgesService: GammeSeoBadgesService) {
+  constructor(
+    private readonly badgesService: GammeSeoBadgesService,
+    private readonly vLevelService: GammeVLevelService,
+  ) {
     super();
   }
 
@@ -130,12 +134,14 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           )
           .eq('cgc_pg_id', pgIdStr)
           .limit(500),
-        // 8. V-Level (from __seo_keywords - the source of truth for V-Levels)
+        // 8. V-Level (V2/V3/V4 from DB — V5 computed dynamically)
         this.supabase
           .from('__seo_keywords')
-          .select('id, keyword, model, energy, v_level, volume, updated_at')
+          .select(
+            'id, keyword, model, energy, v_level, volume, updated_at, type_id',
+          )
           .eq('pg_id', pgId)
-          .in('v_level', ['V1', 'V2', 'V3', 'V4', 'V5'])
+          .in('v_level', ['V1', 'V2', 'V3', 'V4'])
           .order('v_level', { ascending: true })
           .order('volume', { ascending: false, nullsFirst: false }),
         // 9. Products count
@@ -177,7 +183,11 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
         rank: 0,
         search_volume: kw.volume || 0,
         updated_at: kw.updated_at,
+        type_id: kw.type_id,
       }));
+
+      // Compute V5 dynamically from auto_modele hierarchy (no DB persist)
+      const v5Items = await this.vLevelService.getV5Siblings(pgId);
 
       // Group Item Switches by alias - ALL variations
       const switchGroups = this.groupItemSwitches(rawSwitches || []);
@@ -187,14 +197,17 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
         rawFamilySwitches || [],
       );
 
-      // Group by V-Level
+      // Group by V-Level (V5 from dynamic computation)
       const vLevelGrouped = {
         v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
         v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
         v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
         v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
-        v5: (vLevelData || []).filter((v: any) => v.v_level === 'V5'),
+        v5: v5Items,
       };
+
+      // Merge V5 into vLevelData for stats computation
+      const allVLevelData = [...vLevelData, ...v5Items];
 
       // Enrich vehicles with marque/modele/type names
       const allVehicles = await this.enrichVehicles(rawVehicles || []);
@@ -233,7 +246,7 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           productsCount,
           allVehicles,
           vLevelGrouped,
-          vLevelData,
+          allVLevelData,
           articles,
           vehiclesLevel1,
           vehiclesLevel2,

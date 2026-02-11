@@ -28,7 +28,7 @@ export const StatusTypeSchema = z.enum([
 export type StatusType = z.infer<typeof StatusTypeSchema>;
 
 /**
- * Status de test (lowercase pour compatibilité SectionKCard)
+ * Status de test (lowercase)
  */
 export const TestStatusSchema = z.enum(["pass", "fail"]).nullable();
 export type TestStatus = z.infer<typeof TestStatusSchema>;
@@ -95,7 +95,7 @@ export type StatusBadgeProps = z.infer<typeof StatusBadgePropsSchema>;
 // ============================================
 
 /**
- * Item de test (ValidationPanel, SectionKCard)
+ * Item de test (ValidationPanel)
  */
 export const TestItemSchema = z.object({
   id: z.string().min(1, "Test ID is required"),
@@ -141,26 +141,6 @@ export const DrillDownSectionSchema = z.object({
   title: z.string(),
 });
 export type DrillDownSection = z.infer<typeof DrillDownSectionSchema>;
-
-// ============================================
-// SECTION K METRICS
-// ============================================
-
-/**
- * Métriques Section K (V-Level conformité)
- */
-export const SectionKMetricsSchema = z.object({
-  pg_id: z.number().int().positive(),
-  gamme_name: z.string(),
-  catalog_valid: z.number().int().min(0),
-  covered_v2v3: z.number().int().min(0),
-  expected_v4: z.number().int().min(0),
-  actual_v4: z.number().int().min(0),
-  missing: z.number().int().min(0),
-  extras: z.number().int().min(0),
-  status: z.enum(["CONFORME", "NON_CONFORME"]),
-});
-export type SectionKMetrics = z.infer<typeof SectionKMetricsSchema>;
 
 // ============================================
 // FILTER BAR

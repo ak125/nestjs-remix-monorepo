@@ -3,56 +3,34 @@
  * Handles V-Level rankings display, filtering, and validation
  */
 
-import {
-  AlertCircle,
-  CheckCircle2,
-  Download,
-  RefreshCw,
-  Upload,
-} from "lucide-react";
+import { AlertCircle, Download, RefreshCw, Upload } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { useVehicleEnrichment } from "~/hooks/useVehicleEnrichment";
-import { logger } from "~/utils/logger";
-import {
-  SectionKCard,
-  type ExtraTypeId,
-  type MissingTypeId,
-  type SectionKMetrics,
-} from "./SectionKCard";
 import {
   type EnergyFilter,
   type GammeDetail,
   type LoaderFreshness,
-  type V1ValidationResult,
   type VLevelItem,
 } from "./types";
 import { checkV2Violations, exportVLevelToCSV, filterByEnergy } from "./utils";
 import { VLevelCard } from "./VLevelCard";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { useVehicleEnrichment } from "~/hooks/useVehicleEnrichment";
+import { logger } from "~/utils/logger";
 
 interface VLevelTabProps {
   detail: GammeDetail;
   freshness: LoaderFreshness;
   onShowImport: () => void;
-  sectionK?: {
-    metrics: SectionKMetrics | null;
-    missingTypeIds: MissingTypeId[];
-    extrasTypeIds: ExtraTypeId[];
-  };
 }
 
 export const VLevelTab = memo(function VLevelTab({
   detail,
   freshness,
   onShowImport,
-  sectionK,
 }: VLevelTabProps) {
   const [energyFilter, setEnergyFilter] = useState<EnergyFilter>("all");
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] =
-    useState<V1ValidationResult | null>(null);
 
   // Check for V2 violations (duplicates) - safely handle undefined vLevel
   const v2Violations = useMemo(
@@ -63,7 +41,7 @@ export const VLevelTab = memo(function VLevelTab({
   // Collect all type_ids from V-Level items for batch enrichment
   const allTypeIds = useMemo(() => {
     const ids: number[] = [];
-    const levels = ["v1", "v2", "v3", "v4", "v5"] as const;
+    const levels = ["v2", "v3", "v4", "v5"] as const;
 
     levels.forEach((level) => {
       const items = detail.vLevel?.[level];
@@ -121,23 +99,6 @@ export const VLevelTab = memo(function VLevelTab({
     }
   };
 
-  const handleValidateV1Rules = async () => {
-    setIsValidating(true);
-    try {
-      const res = await fetch("/api/admin/gammes-seo/v-level/validate", {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setValidationResult(data.data);
-      }
-    } catch (error) {
-      logger.error("Erreur validation V1:", error);
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
   const handleExportCSV = () => {
     exportVLevelToCSV(detail.vLevel, detail.gamme.pg_alias);
   };
@@ -147,15 +108,6 @@ export const VLevelTab = memo(function VLevelTab({
 
   return (
     <div className="space-y-4">
-      {/* Section K - Conformité V4 */}
-      {sectionK && (
-        <SectionKCard
-          metrics={sectionK.metrics}
-          missingTypeIds={sectionK.missingTypeIds}
-          extrasTypeIds={sectionK.extrasTypeIds}
-        />
-      )}
-
       {/* Warning if data is stale */}
       {(freshness.vLevel.status === "stale" ||
         freshness.vLevel.status === "old") && (
@@ -195,7 +147,7 @@ export const VLevelTab = memo(function VLevelTab({
           <div>
             <p className="font-medium">Violation regle V2</p>
             <p className="text-sm">
-              V2 doit etre UNIQUE par gamme+energie. Doublons detectes:
+              V2 dedup par modele+energie (max 10). Doublons detectes:
               {v2Violations.diesel.length > 0 && (
                 <span className="ml-1">
                   <span className="font-medium">Diesel:</span>{" "}
@@ -276,83 +228,8 @@ export const VLevelTab = memo(function VLevelTab({
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleValidateV1Rules}
-            disabled={isValidating}
-          >
-            <CheckCircle2
-              className={`h-4 w-4 mr-2 ${isValidating ? "animate-pulse" : ""}`}
-            />
-            {isValidating ? "Validation..." : "Valider V1"}
-          </Button>
         </div>
       </div>
-
-      {/* V1 Validation results */}
-      {validationResult && (
-        <Card
-          className={
-            validationResult.valid
-              ? "border-green-200 bg-green-50"
-              : "border-red-200 bg-red-50"
-          }
-        >
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              {validationResult.valid ? (
-                <>
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span className="text-green-800">Validation V1 OK</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="h-5 w-5 text-red-600" />
-                  <span className="text-red-800">Violations V1 detectees</span>
-                </>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm space-y-2">
-              <p>
-                <span className="font-medium">Gammes G1:</span>{" "}
-                {validationResult.g1_count} |
-                <span className="font-medium ml-2">V1 valides:</span>{" "}
-                {validationResult.summary.valid_v1}/
-                {validationResult.summary.total_v1}
-              </p>
-              {validationResult.violations.length > 0 && (
-                <div className="mt-2">
-                  <p className="font-medium text-red-800 mb-1">
-                    Violations (V1 avec {"<"}30% G1):
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {validationResult.violations.map((v, idx) => (
-                      <li key={idx} className="text-red-700">
-                        {v.model_name} ({v.energy}) - {v.percentage}% (
-                        {v.v2_count}/{v.g1_total} G1)
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* V1 - Champions */}
-      <VLevelCard
-        title="V1 - Champions Modele"
-        description="Variants GLOBAUX dominants (>=30% G1 gammes)"
-        items={filterItems(detail.vLevel?.v1)}
-        colorClass="border-amber-200 bg-amber-50"
-        icon="\uD83C\uDFC6"
-        defaultExpanded={true}
-        enrichedTypes={enrichedTypes}
-      />
 
       {/* V2 - Champions Gamme */}
       <VLevelCard
@@ -365,36 +242,36 @@ export const VLevelTab = memo(function VLevelTab({
         enrichedTypes={enrichedTypes}
       />
 
-      {/* V3 - Challengers (excludes V2 via v2Items prop) */}
+      {/* V3 - Champions Groupe (excludes V2 via v2Items prop) */}
       <VLevelCard
-        title="V3 - Challengers"
-        description="Positions #2, #3, #4... (dédupliqués, excluant V2)"
+        title="V3 - Champions Groupe"
+        description="Match principal par groupe model+energie"
         items={filterItems(detail.vLevel?.v3)}
         colorClass="border-blue-200 bg-blue-50"
-        icon="\uD83E\uDD48"
+        icon="\uD83C\uDFC5"
         defaultExpanded={true}
         v2Items={detail.vLevel?.v2}
         enrichedTypes={enrichedTypes}
       />
 
-      {/* V4 - Weak */}
+      {/* V4 - Challengers CSV */}
       <VLevelCard
-        title="V4 - Faibles"
-        description="Variants non recherches"
+        title="V4 - Challengers CSV"
+        description="Dans le CSV, pas le match principal"
         items={filterItems(detail.vLevel?.v4)}
         colorClass="border-gray-200 bg-gray-50"
-        icon="\uD83D\uDCC9"
+        icon="\uD83E\uDD48"
         defaultExpanded={false}
         enrichedTypes={enrichedTypes}
       />
 
-      {/* V5 - Block B */}
+      {/* V5 - Autres motorisations */}
       <VLevelCard
-        title="V5 - Bloc B"
-        description="Variants catalogue hors V1-V4"
+        title="V5 - Autres motorisations"
+        description="Autres motorisations du meme modele (en DB, pas dans V3/V4)"
         items={filterItems(detail.vLevel?.v5)}
         colorClass="border-orange-200 bg-orange-50"
-        icon="\uD83D\uDCE6"
+        icon="\uD83D\uDD17"
         defaultExpanded={false}
         enrichedTypes={enrichedTypes}
       />

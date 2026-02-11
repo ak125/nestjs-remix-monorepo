@@ -1,39 +1,22 @@
 /**
- * 🔄 GAMME V-LEVEL SERVICE
+ * GAMME V-LEVEL SERVICE v5.0
  *
- * Extracted from AdminGammesSeoService to reduce file size.
- * Handles V-Level management:
- * - recalculateVLevel: recalculates V-Level for a gamme
- * - validateV1Rules: validates V1 must be V2 in >= 30% of G1 gammes
+ * Recalculates V-Level classification for a gamme.
+ * Rules: see .spec/features/g-v-classification.md
+ *
+ * V3 = champion per [model+energy] group (highest volume, or first if all zero)
+ * V4 = rest of CSV keywords in same group
+ * V2 = top 10 V3 promoted by volume (dedup by [model+energy])
+ * V5 = sibling vehicles from DB (same modele_parent generation)
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
-// ============== RESULT TYPES ==============
-
 export interface RecalculateVLevelResult {
   success: boolean;
   message: string;
   updatedCount: number;
-}
-
-export interface V1ValidationResult {
-  valid: boolean;
-  violations: Array<{
-    model_name: string;
-    variant_name: string;
-    energy: string;
-    v2_count: number;
-    g1_total: number;
-    percentage: number;
-  }>;
-  g1_count: number;
-  summary: {
-    total_v1: number;
-    valid_v1: number;
-    invalid_v1: number;
-  };
 }
 
 @Injectable()
@@ -45,21 +28,21 @@ export class GammeVLevelService extends SupabaseBaseService {
   }
 
   /**
-   * V-Level v4.1 Algorithm (validated 2026-02-10)
+   * V-Level v5.0 Algorithm
    *
-   * Phase T = trier KEYWORDS (CSV, texte + volume) — fait en amont
-   * Phase V = classer VEHICULES (type_ids, apres match backfill)
-   *
-   * Only reclassifies keywords already in DB (type='vehicle').
-   * Does NOT import from CSV or create V5 — use CLI script for that.
-   *
-   * V3 = type_id matche par backfill (match principal, 1er du groupe volume DESC)
-   * V4 = type_id dans CSV, pas le match principal (reste du groupe)
-   * V2 = top 10 V3 promus par score_seo (volume du keyword)
+   * Reclassifies all keywords for a gamme:
+   * 1. Group CSV vehicle keywords by [model + energy] (or [model] if gamme_universelle)
+   * 2. Elect V3 champion per group (highest volume, first if tie)
+   * 3. V4 = rest of group
+   * 4. V2 = top 10 V3, dedup by [model + energy]
+   * Note: V5 is computed dynamically by getV5Siblings() — not persisted
    */
-  async recalculateVLevel(pgId: number): Promise<RecalculateVLevelResult> {
+  async recalculateVLevel(
+    pgId: number,
+    gammeUniverselle = false,
+  ): Promise<RecalculateVLevelResult> {
     try {
-      this.logger.log(`🔄 Recalculating V-Level v4.1 for gamme ${pgId}`);
+      this.logger.log(`Recalculating V-Level v5.0 for gamme ${pgId}`);
 
       // 1. Fetch all keywords for this gamme
       let allKeywords: any[] = [];
@@ -71,14 +54,14 @@ export class GammeVLevelService extends SupabaseBaseService {
         const { data: batch, error: kwError } = await this.supabase
           .from('__seo_keywords')
           .select(
-            'id, keyword, volume, pg_id, energy, model, type, v_level, score_seo',
+            'id, keyword, volume, pg_id, energy, model, type, v_level, score_seo, type_id',
           )
           .eq('pg_id', pgId)
           .range(offset, offset + batchSize - 1);
 
         if (kwError) {
           this.logger.error(
-            `❌ Error fetching keywords for gamme ${pgId}:`,
+            `Error fetching keywords for gamme ${pgId}:`,
             kwError,
           );
           throw kwError;
@@ -101,23 +84,77 @@ export class GammeVLevelService extends SupabaseBaseService {
         };
       }
 
+      // 1b. Enrich energy from auto_type.type_fuel for items with unknown energy
+      const unknownEnergyKws = allKeywords.filter(
+        (kw) => kw.type_id && (!kw.energy || kw.energy === 'unknown'),
+      );
+      if (unknownEnergyKws.length > 0) {
+        const typeIds = [...new Set(unknownEnergyKws.map((kw) => kw.type_id))];
+        const fuelMap = new Map<number, string>();
+        for (let i = 0; i < typeIds.length; i += 100) {
+          const batch = typeIds.slice(i, i + 100);
+          const { data: types } = await this.supabase
+            .from('auto_type')
+            .select('type_id, type_fuel')
+            .in('type_id', batch.map(String));
+          if (types) {
+            for (const t of types) {
+              if (t.type_fuel) fuelMap.set(Number(t.type_id), t.type_fuel);
+            }
+          }
+        }
+        const energyUpdates: Array<{ id: number; energy: string }> = [];
+        for (const kw of unknownEnergyKws) {
+          const fuel = fuelMap.get(Number(kw.type_id));
+          if (fuel) {
+            const detectedEnergy = this.detectEnergy(fuel);
+            if (detectedEnergy !== 'unknown') {
+              kw.energy = detectedEnergy;
+              energyUpdates.push({ id: kw.id, energy: detectedEnergy });
+            }
+          }
+        }
+        // Persist energy enrichment to DB
+        for (const update of energyUpdates) {
+          await this.supabase
+            .from('__seo_keywords')
+            .update({ energy: update.energy })
+            .eq('id', update.id);
+        }
+        this.logger.log(
+          `Energy enriched: ${energyUpdates.length}/${unknownEnergyKws.length} keywords updated from type_fuel`,
+        );
+      }
+
       // 2. Separate vehicle vs non-vehicle keywords
       const vehicleKws = allKeywords.filter((kw) => kw.type === 'vehicle');
       const nonVehicleKws = allKeywords.filter((kw) => kw.type !== 'vehicle');
 
-      // Skip V5 keywords (created from DB, not from CSV — don't reclassify them)
-      const csvVehicleKws = vehicleKws.filter((kw) => kw.v_level !== 'V5');
-      const v5Kws = vehicleKws.filter((kw) => kw.v_level === 'V5');
+      // 3. V-levels = keywords with motorisation ONLY (never generic)
+      // A keyword is "specific" if it mentions engine/fuel/hp patterns
+      const MOTOR_PATTERN =
+        /(\d+\.\d+|hdi|dci|tdi|cdi|tce|tsi|vti|puretech|tfsi|gti|vtec|mpi|d4d|jtd|cdti|crdi|dtec|\d+\s*ch|\d+\s*cv)/i;
+      const motorKws = vehicleKws.filter((kw) =>
+        MOTOR_PATTERN.test(kw.keyword || ''),
+      );
+      const genericVehicleKws = vehicleKws.filter(
+        (kw) => !MOTOR_PATTERN.test(kw.keyword || ''),
+      );
 
-      // 3. Group CSV vehicle keywords by model+energy
+      // CSV motor keywords only (V5 is computed dynamically, not persisted)
+      const csvVehicleKws = motorKws.filter((kw) => kw.v_level !== 'V5');
+
+      // 4. Group CSV vehicle keywords by [model+energy] or [model] if universelle
       const byModelEnergy = new Map<string, any[]>();
       for (const kw of csvVehicleKws) {
-        const key = `${kw.model || '_no_model'}|${kw.energy || 'unknown'}`;
+        const key = gammeUniverselle
+          ? `${kw.model || '_no_model'}`
+          : `${kw.model || '_no_model'}|${kw.energy || 'unknown'}`;
         if (!byModelEnergy.has(key)) byModelEnergy.set(key, []);
         byModelEnergy.get(key)!.push(kw);
       }
 
-      // 4. Elect V3 (match principal) and V4 (dans CSV, pas matche) per group
+      // 5. Elect V3 (champion) and V4 (rest) per group
       const v3Champions: any[] = [];
       const updates: Array<{
         id: number;
@@ -133,33 +170,33 @@ export class GammeVLevelService extends SupabaseBaseService {
           return (a.keyword || '').length - (b.keyword || '').length;
         });
 
-        let v3Assigned = false;
+        // First keyword = V3 (champion), even if volume=0
+        const champion = group[0];
+        updates.push({
+          id: champion.id,
+          v_level: 'V3',
+          score_seo: champion.volume || 0,
+        });
+        v3Champions.push({ ...champion, score_seo: champion.volume || 0 });
 
-        for (const kw of group) {
-          if (!v3Assigned && (kw.volume || 0) > 0) {
-            // V3: match principal (type_id matche par backfill)
-            updates.push({
-              id: kw.id,
-              v_level: 'V3',
-              score_seo: kw.volume || 0,
-            });
-            v3Champions.push({ ...kw, score_seo: kw.volume || 0 });
-            v3Assigned = true;
-          } else {
-            // V4: dans le CSV, pas le match principal
-            updates.push({ id: kw.id, v_level: 'V4', score_seo: null });
-          }
+        // Rest = V4
+        for (let i = 1; i < group.length; i++) {
+          updates.push({
+            id: group[i].id,
+            v_level: 'V4',
+            score_seo: group[i].volume || 0,
+          });
         }
       }
 
-      // 5. Promote top 10 V3 → V2 (dedup by model)
+      // 6. Promote top 10 V3 -> V2 (dedup by [model + energy])
       v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
-      const seenModels = new Set<string>();
+      const seenModelEnergy = new Set<string>();
       const top10: any[] = [];
       for (const kw of v3Champions) {
-        const model = (kw.model || '').toLowerCase();
-        if (seenModels.has(model)) continue;
-        seenModels.add(model);
+        const modelEnergy = `${(kw.model || '').toLowerCase()}|${(kw.energy || '').toLowerCase()}`;
+        if (seenModelEnergy.has(modelEnergy)) continue;
+        seenModelEnergy.add(modelEnergy);
         top10.push(kw);
         if (top10.length >= 10) break;
       }
@@ -171,12 +208,15 @@ export class GammeVLevelService extends SupabaseBaseService {
         }
       }
 
-      // 6. Non-vehicle keywords: set v_level = null, score_seo = null
+      // 7. Non-vehicle + generic vehicle keywords: clear v_level
       for (const kw of nonVehicleKws) {
         updates.push({ id: kw.id, v_level: null as any, score_seo: null });
       }
+      for (const kw of genericVehicleKws) {
+        updates.push({ id: kw.id, v_level: null as any, score_seo: null });
+      }
 
-      // 7. Write updates to DB in batches
+      // 8. Write V2/V3/V4 updates to DB
       let totalUpdated = 0;
       for (const update of updates) {
         const { error: updateError } = await this.supabase
@@ -196,27 +236,220 @@ export class GammeVLevelService extends SupabaseBaseService {
       const v4Count = updates.filter((u) => u.v_level === 'V4').length;
 
       this.logger.log(
-        `✅ V-Level v4.1 recalculated for gamme ${pgId}: V2=${v2Count}, V3=${v3Count}, V4=${v4Count}, V5=${v5Kws.length} (preserved)`,
+        `V-Level v5.0 recalculated for gamme ${pgId}: V2=${v2Count}, V3=${v3Count}, V4=${v4Count} (V5 computed dynamically)`,
       );
 
       return {
         success: true,
-        message: `V-Level v4.1: V2=${v2Count}, V3=${v3Count}, V4=${v4Count}, V5=${v5Kws.length} (${totalUpdated} updated)`,
+        message: `V-Level v5.0: V2=${v2Count}, V3=${v3Count}, V4=${v4Count} (${totalUpdated} updated, V5 dynamique)`,
         updatedCount: totalUpdated,
       };
     } catch (error) {
-      this.logger.error(`❌ Error in recalculateVLevel(${pgId}):`, error);
+      this.logger.error(`Error in recalculateVLevel(${pgId}):`, error);
       throw error;
     }
   }
 
   /**
-   * 🔄 Recalcule les V-Level pour TOUTES les gammes
-   * Batch processing pour classification globale
+   * Compute V5 children on the fly (no DB persist).
+   * V5 = other motorisations of the SAME model + child models, not in V2/V3/V4.
+   * Example: 207 has V3/V4 → V5 = other 207 types + all 207 CC/SW/PASSION types.
+   * Returns V5 items in the same format as VLevelItem for frontend display.
+   */
+  async getV5Siblings(pgId: number): Promise<any[]> {
+    try {
+      // Get all type_ids from V2/V3/V4 keywords for this gamme
+      let allTypeIds: number[] = [];
+      let offset = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const { data } = await this.supabase
+          .from('__seo_keywords')
+          .select('type_id')
+          .eq('pg_id', pgId)
+          .in('v_level', ['V2', 'V3', 'V4'])
+          .not('type_id', 'is', null)
+          .range(offset, offset + 999);
+        if (data && data.length > 0) {
+          allTypeIds = allTypeIds.concat(data.map((r) => r.type_id));
+          offset += 1000;
+          hasMore = data.length === 1000;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      const csvTypeIds = new Set(allTypeIds);
+      if (csvTypeIds.size === 0) return [];
+
+      // Get modele_ids for CSV type_ids
+      const typeIdArray = [...csvTypeIds];
+      const modeleIds = new Set<number>();
+
+      for (let i = 0; i < typeIdArray.length; i += 100) {
+        const batch = typeIdArray.slice(i, i + 100);
+        const { data: types } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_modele_id')
+          .in('type_id', batch);
+
+        if (types) {
+          for (const t of types) {
+            if (t.type_modele_id) modeleIds.add(Number(t.type_modele_id));
+          }
+        }
+      }
+
+      if (modeleIds.size === 0) return [];
+
+      // V5 = same model + child models, not in V2/V3/V4
+      // Step 1: Find child models (e.g., 207 → 207 CC, 207 SW, 207 PASSION)
+      const baseModeleIdArray = [...modeleIds];
+      const allModeleIds = new Set(modeleIds);
+
+      for (let i = 0; i < baseModeleIdArray.length; i += 100) {
+        const batch = baseModeleIdArray.slice(i, i + 100);
+        const { data: children } = await this.supabase
+          .from('auto_modele')
+          .select('modele_id')
+          .in('modele_parent', batch);
+        if (children) {
+          for (const c of children) {
+            allModeleIds.add(c.modele_id);
+          }
+        }
+      }
+
+      const modeleIdArray = [...allModeleIds];
+
+      // Get model names for display
+      const modeleNameMap = new Map<number, string>();
+      for (let i = 0; i < modeleIdArray.length; i += 100) {
+        const batch = modeleIdArray.slice(i, i + 100);
+        const { data: models } = await this.supabase
+          .from('auto_modele')
+          .select('modele_id, modele_name')
+          .in('modele_id', batch);
+        if (models) {
+          for (const m of models) {
+            modeleNameMap.set(m.modele_id, m.modele_name);
+          }
+        }
+      }
+
+      // Get ALL displayable types for V2/V3/V4 models + their children
+      let allModelTypes: any[] = [];
+      for (let i = 0; i < modeleIdArray.length; i += 100) {
+        const batch = modeleIdArray.slice(i, i + 100);
+        const { data: types } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_name, type_fuel, type_engine, type_modele_id')
+          .in('type_modele_id', batch)
+          .eq('type_display', '1');
+
+        if (types) allModelTypes = allModelTypes.concat(types);
+      }
+
+      // Exclude types already in V2/V3/V4
+      const newTypes = allModelTypes.filter(
+        (t) => !csvTypeIds.has(Number(t.type_id)),
+      );
+
+      if (newTypes.length === 0) return [];
+
+      // Get gamme name
+      const { data: gammeData } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_name')
+        .eq('pg_id', pgId)
+        .single();
+
+      const gammeName = gammeData?.pg_name || `gamme_${pgId}`;
+
+      // Return V5 items (same format as VLevelItem for frontend)
+      return newTypes.map((t) => {
+        const modelName = modeleNameMap.get(Number(t.type_modele_id)) || '';
+        return {
+          id: Number(t.type_id),
+          gamme_name: gammeName,
+          model_name: modelName.toLowerCase(),
+          brand: '',
+          variant_name: `${gammeName} ${modelName} ${t.type_name}`
+            .toLowerCase()
+            .trim(),
+          energy: this.detectEnergy(t.type_fuel || ''),
+          v_level: 'V5',
+          rank: 0,
+          search_volume: 0,
+          updated_at: new Date().toISOString(),
+          type_id: Number(t.type_id),
+        };
+      });
+    } catch (error) {
+      this.logger.warn(`Error computing V5 for gamme ${pgId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Detect energy type from fuel string.
+   * v5.0: diesel, essence, hybride, electrique, gpl
+   */
+  detectEnergy(fuel: string): string {
+    const f = fuel.toLowerCase();
+    if (
+      f.includes('diesel') ||
+      f.includes('dci') ||
+      f.includes('hdi') ||
+      f.includes('tdi') ||
+      f.includes('cdi') ||
+      f.includes('d4d') ||
+      f.includes('jtd') ||
+      f.includes('cdti') ||
+      f.includes('crdi') ||
+      f.includes('dtec')
+    )
+      return 'diesel';
+    if (
+      f.includes('hybrid') ||
+      f.includes('phev') ||
+      f.includes('e-hybrid') ||
+      f.includes('plug-in') ||
+      f.includes('hybride')
+    )
+      return 'hybride';
+    if (
+      f.includes('electrique') ||
+      f.includes('electric') ||
+      f.includes('ev') ||
+      f.includes('e-208') ||
+      f.includes('e-c4')
+    )
+      return 'electrique';
+    if (f.includes('gpl') || f.includes('lpg') || f.includes('bifuel'))
+      return 'gpl';
+    // Default to essence for gasoline patterns
+    if (
+      f.includes('essence') ||
+      f.includes('tce') ||
+      f.includes('vti') ||
+      f.includes('puretech') ||
+      f.includes('tfsi') ||
+      f.includes('tsi') ||
+      f.includes('gti') ||
+      f.includes('vtec') ||
+      f.includes('mpi')
+    )
+      return 'essence';
+    return 'unknown';
+  }
+
+  /**
+   * Recalculate V-Levels for ALL gammes
    */
   async recalculateAllVLevels(): Promise<RecalculateVLevelResult> {
     try {
-      this.logger.log('🔄 Recalculating V-Levels for ALL gammes...');
+      this.logger.log('Recalculating V-Levels v5.0 for ALL gammes...');
 
       // Get all gammes that have keywords
       const { data: gammeIds, error } = await this.supabase
@@ -225,45 +458,58 @@ export class GammeVLevelService extends SupabaseBaseService {
         .not('pg_id', 'is', null);
 
       if (error) {
-        this.logger.error('❌ Error fetching gamme IDs:', error);
+        this.logger.error('Error fetching gamme IDs:', error);
         throw error;
       }
 
-      // Deduplicate gamme IDs
       const uniqueGammeIds = [
         ...new Set((gammeIds || []).map((r) => r.pg_id)),
       ].filter(Boolean);
-      this.logger.log(`📊 Found ${uniqueGammeIds.length} gammes with keywords`);
+      this.logger.log(`Found ${uniqueGammeIds.length} gammes with keywords`);
+
+      // Fetch gamme_universelle flags
+      const { data: gammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, gamme_universelle')
+        .in('pg_id', uniqueGammeIds);
+
+      const universalMap = new Map<number, boolean>();
+      if (gammes) {
+        for (const g of gammes) {
+          universalMap.set(g.pg_id, g.gamme_universelle === true);
+        }
+      }
 
       let totalUpdated = 0;
       for (const pgId of uniqueGammeIds) {
         try {
-          const result = await this.recalculateVLevel(pgId);
+          const isUniversal = universalMap.get(pgId) || false;
+          const result = await this.recalculateVLevel(pgId, isUniversal);
           totalUpdated += result.updatedCount;
         } catch (_err) {
           this.logger.warn(
-            `⚠️ Failed to recalculate V-Level for gamme ${pgId}, skipping`,
+            `Failed to recalculate V-Level for gamme ${pgId}, skipping`,
           );
         }
       }
 
       this.logger.log(
-        `✅ All V-Levels recalculated: ${totalUpdated} total keywords updated`,
+        `All V-Levels recalculated: ${totalUpdated} total keywords updated`,
       );
 
       return {
         success: true,
-        message: `V-Level global: ${uniqueGammeIds.length} gammes, ${totalUpdated} keywords mis a jour`,
+        message: `V-Level v5.0 global: ${uniqueGammeIds.length} gammes, ${totalUpdated} keywords mis a jour`,
         updatedCount: totalUpdated,
       };
     } catch (error) {
-      this.logger.error('❌ Error in recalculateAllVLevels():', error);
+      this.logger.error('Error in recalculateAllVLevels():', error);
       throw error;
     }
   }
 
   /**
-   * 📊 Get V-Level distribution stats
+   * Get V-Level distribution stats
    */
   async getVLevelStats(): Promise<{
     v1: number;
@@ -314,113 +560,5 @@ export class GammeVLevelService extends SupabaseBaseService {
     }
 
     return stats;
-  }
-
-  /**
-   * 🔍 Valide les regles V-Level:
-   * - V1 doit etre V2 dans >= 30% des gammes G1
-   * - Detecte les violations de cette regle
-   */
-  async validateV1Rules(): Promise<V1ValidationResult> {
-    try {
-      this.logger.log('🔍 Validating V1 rules (>= 30% G1 gammes)');
-
-      // 1. Count G1 gammes (pg_top = '1')
-      const { count: g1Count, error: g1Error } = await this.supabase
-        .from('pieces_gamme')
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_top', '1');
-
-      if (g1Error) {
-        this.logger.error('❌ Error counting G1 gammes:', g1Error);
-        throw g1Error;
-      }
-
-      const totalG1 = g1Count || 0;
-      this.logger.log(`📊 Total G1 gammes: ${totalG1}`);
-
-      // 2. Fetch all V1
-      const { data: v1Data, error: v1Error } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select('model_name, variant_name, energy')
-        .eq('v_level', 'V1');
-
-      if (v1Error) {
-        this.logger.error('❌ Error fetching V1 data:', v1Error);
-        throw v1Error;
-      }
-
-      const v1Items = v1Data || [];
-      this.logger.log(`📊 Total V1 items: ${v1Items.length}`);
-
-      // 3. For each unique V1 (model_name + energy), count how many G1 gammes have it as V2
-      const violations: V1ValidationResult['violations'] = [];
-
-      // Group V1 by model_name + energy (to avoid duplicates)
-      const uniqueV1 = new Map<
-        string,
-        { model_name: string; variant_name: string; energy: string }
-      >();
-      for (const v1 of v1Items) {
-        const key = `${v1.model_name}|${v1.energy}`;
-        if (!uniqueV1.has(key)) {
-          uniqueV1.set(key, v1);
-        }
-      }
-
-      // Check each unique V1
-      for (const [, v1] of uniqueV1) {
-        // Count how many times this variant is V2 in G1 gammes
-        const { count: v2Count, error: v2Error } = await this.supabase
-          .from('gamme_seo_metrics')
-          .select('gamme_id', { count: 'exact', head: true })
-          .eq('model_name', v1.model_name)
-          .ilike('energy', v1.energy)
-          .eq('v_level', 'V2');
-
-        if (v2Error) {
-          this.logger.warn(
-            `⚠️ Error counting V2 for ${v1.model_name}:`,
-            v2Error,
-          );
-          continue;
-        }
-
-        const v2CountNum = v2Count || 0;
-        const percentage = totalG1 > 0 ? (v2CountNum / totalG1) * 100 : 0;
-
-        // If < 30%, it's a violation
-        if (percentage < 30) {
-          violations.push({
-            model_name: v1.model_name,
-            variant_name: v1.variant_name || '',
-            energy: v1.energy,
-            v2_count: v2CountNum,
-            g1_total: totalG1,
-            percentage: Math.round(percentage * 10) / 10,
-          });
-        }
-      }
-
-      const result: V1ValidationResult = {
-        valid: violations.length === 0,
-        violations,
-        g1_count: totalG1,
-        summary: {
-          total_v1: uniqueV1.size,
-          valid_v1: uniqueV1.size - violations.length,
-          invalid_v1: violations.length,
-        },
-      };
-
-      this.logger.log(
-        `✅ V1 validation complete: ${result.summary.valid_v1}/${result.summary.total_v1} valid`,
-      );
-
-      return result;
-    } catch (error) {
-      this.logger.error('❌ Error in validateV1Rules():', error);
-      throw error;
-    }
   }
 }

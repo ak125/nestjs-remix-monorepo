@@ -23,7 +23,6 @@ import {
 } from './gamme-seo-thresholds.service';
 import { GammeSeoAuditService } from './gamme-seo-audit.service';
 import { GammeSeoBadgesService } from './gamme-seo-badges.service';
-import { GammeSeoSectionKService } from './gamme-seo-section-k.service';
 import { GammeDetailEnricherService } from './gamme-detail-enricher.service';
 import { GammeVLevelService } from './gamme-vlevel.service';
 
@@ -185,7 +184,6 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     @Inject(forwardRef(() => GammeSeoAuditService))
     private readonly auditService: GammeSeoAuditService,
     private readonly badgesService: GammeSeoBadgesService,
-    private readonly sectionKService: GammeSeoSectionKService,
     private readonly detailEnricherService: GammeDetailEnricherService,
     private readonly vLevelService: GammeVLevelService,
     rpcGate: RpcGateService,
@@ -1104,31 +1102,14 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     message: string;
     updatedCount: number;
   }> {
-    return this.vLevelService.recalculateVLevel(pgId);
-  }
-
-  /**
-   * 🔍 Valide les règles V-Level:
-   * Delegated to GammeVLevelService
-   */
-  async validateV1Rules(): Promise<{
-    valid: boolean;
-    violations: Array<{
-      model_name: string;
-      variant_name: string;
-      energy: string;
-      v2_count: number;
-      g1_total: number;
-      percentage: number;
-    }>;
-    g1_count: number;
-    summary: {
-      total_v1: number;
-      valid_v1: number;
-      invalid_v1: number;
-    };
-  }> {
-    return this.vLevelService.validateV1Rules();
+    // Fetch gamme_universelle flag
+    const { data: gammeData } = await this.supabase
+      .from('pieces_gamme')
+      .select('gamme_universelle')
+      .eq('pg_id', pgId)
+      .single();
+    const isUniversal = gammeData?.gamme_universelle === true;
+    return this.vLevelService.recalculateVLevel(pgId, isUniversal);
   }
 
   // ============== FACADE GETTERS ==============
@@ -1137,15 +1118,12 @@ export class AdminGammesSeoService extends SupabaseBaseService {
     return this.badgesService;
   }
 
-  getSectionKService(): GammeSeoSectionKService {
-    return this.sectionKService;
-  }
+  // Section K removed in v5.0
 }
 
-// Extracted to gamme-seo-badges.service.ts and gamme-seo-section-k.service.ts
-// Methods moved: getVLevelGlobalStats, refreshAggregates, getGammeAggregates,
-//   getSectionKMetrics, getSectionKMissingDetails, getSectionKExtrasDetails
+// Extracted to gamme-seo-badges.service.ts
+// Methods moved: getVLevelGlobalStats, refreshAggregates, getGammeAggregates
 // Extracted to gamme-detail-enricher.service.ts
 // Methods delegated: getGammeDetail (fetch + enrich gamme data)
-// Extracted to gamme-vlevel.service.ts
-// Methods delegated: recalculateVLevel, validateV1Rules
+// Extracted to gamme-vlevel.service.ts (v5.0)
+// Methods delegated: recalculateVLevel

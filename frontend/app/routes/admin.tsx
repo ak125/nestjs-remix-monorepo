@@ -14,11 +14,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { getOptionalUser, getAuthUser } from "../auth/unified.server";
+import { AdminSidebar } from "../components/AdminSidebar";
 import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
-import { getOptionalUser, getAuthUser } from "../auth/unified.server";
-import { AdminSidebar } from "../components/AdminSidebar";
 
 export const meta: MetaFunction = () => {
   return [
@@ -58,14 +58,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   };
 
   try {
+    const cookieHeader = request.headers.get("Cookie") || "";
+
     // Récupérer les données depuis la nouvelle API Dashboard
     const dashboardResponse = await fetch(
       `${getInternalApiUrl("")}/api/dashboard/stats`,
+      { headers: { Cookie: cookieHeader } },
     );
 
     // Récupérer les statistiques produits admin
     const productsStatsResponse = await fetch(
       `${getInternalApiUrl("")}/api/admin/products/stats/detailed`,
+      { headers: { Cookie: cookieHeader, "Content-Type": "application/json" } },
     );
 
     if (dashboardResponse.ok) {

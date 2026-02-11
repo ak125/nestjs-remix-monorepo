@@ -34,9 +34,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Alert, Badge } from "~/components/ui";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import {
@@ -45,6 +42,9 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { Alert, Badge } from "~/components/ui";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
   return [
@@ -1199,7 +1199,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="w-12 h-12 rounded-lg bg-primary-500 shadow-md"></div>
                       <div>
-                        <p className="text-sm font-medium">#FF3B30</p>
+                        <p className="text-sm font-medium">#e8590c</p>
                         <p className="text-xs text-gray-600">primary-500</p>
                       </div>
                     </div>
@@ -1216,7 +1216,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="w-12 h-12 rounded-lg bg-secondary-500 shadow-md"></div>
                       <div>
-                        <p className="text-sm font-medium">#0F4C81</p>
+                        <p className="text-sm font-medium">#0d1b3e</p>
                         <p className="text-xs text-gray-600">secondary-500</p>
                       </div>
                     </div>

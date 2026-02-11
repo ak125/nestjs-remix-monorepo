@@ -254,20 +254,5 @@ export interface SeoFormState {
   sg_content: string;
 }
 
-// V1 validation result
-export interface V1ValidationResult {
-  valid: boolean;
-  violations: Array<{
-    model_name: string;
-    variant_name: string;
-    energy: string;
-    v2_count: number;
-    g1_total: number;
-    percentage: number;
-  }>;
-  g1_count: number;
-  summary: { total_v1: number; valid_v1: number; invalid_v1: number };
-}
-
 // Energy filter type
 export type EnergyFilter = "all" | "diesel" | "essence";

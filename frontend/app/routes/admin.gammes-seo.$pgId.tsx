@@ -51,9 +51,6 @@ import {
   type GammeDetail,
   type LoaderFreshness,
   type SeoFormState,
-  type SectionKMetrics,
-  type MissingTypeId,
-  type ExtraTypeId,
   getFreshnessStatus,
   getDefaultGuideForm,
   SeoTabContent,
@@ -84,7 +81,6 @@ import { Textarea } from "~/components/ui/textarea";
 
 // Import extracted components
 import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) =>
@@ -164,53 +160,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ),
   };
 
-  // Fetch Section K data
-  let sectionK: {
-    metrics: SectionKMetrics | null;
-    missingTypeIds: MissingTypeId[];
-    extrasTypeIds: ExtraTypeId[];
-  } = { metrics: null, missingTypeIds: [], extrasTypeIds: [] };
-
-  try {
-    const sectionKResponse = await fetch(
-      `${backendUrl}/api/admin/gammes-seo/section-k/metrics?pg_id=${pgId}`,
-      { headers: { Cookie: cookieHeader, "Content-Type": "application/json" } },
-    );
-
-    if (sectionKResponse.ok) {
-      const sectionKData = await sectionKResponse.json();
-      const metricsArray = sectionKData.metrics || [];
-      sectionK.metrics = metricsArray.length > 0 ? metricsArray[0] : null;
-
-      // Fetch drill-down if non-conforme
-      if (sectionK.metrics?.status === "NON_CONFORME") {
-        if (sectionK.metrics.missing > 0) {
-          const missingRes = await fetch(
-            `${backendUrl}/api/admin/gammes-seo/section-k/${pgId}/missing`,
-            { headers: { Cookie: cookieHeader } },
-          );
-          if (missingRes.ok) {
-            const missingData = await missingRes.json();
-            sectionK.missingTypeIds = missingData.data || [];
-          }
-        }
-        if (sectionK.metrics.extras > 0) {
-          const extrasRes = await fetch(
-            `${backendUrl}/api/admin/gammes-seo/section-k/${pgId}/extras`,
-            { headers: { Cookie: cookieHeader } },
-          );
-          if (extrasRes.ok) {
-            const extrasData = await extrasRes.json();
-            sectionK.extrasTypeIds = extrasData.data || [];
-          }
-        }
-      }
-    }
-  } catch (e) {
-    logger.error("Section K fetch error:", e);
-  }
-
-  return json({ detail, freshness, sectionK });
+  return json({ detail, freshness });
 }
 
 // Action
@@ -306,7 +256,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 // Component
 export default function AdminGammeSeoDetail() {
-  const { detail, freshness, sectionK } = useLoaderData<typeof loader>();
+  const { detail, freshness } = useLoaderData<typeof loader>();
   const _navigation = useNavigation();
   const fetcher = useFetcher();
 
@@ -795,7 +745,6 @@ export default function AdminGammeSeoDetail() {
             detail={detail}
             freshness={freshness}
             onShowImport={() => setShowVLevelImport(true)}
-            sectionK={sectionK}
           />
         </TabsContent>
 
