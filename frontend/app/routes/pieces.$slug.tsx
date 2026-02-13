@@ -11,7 +11,6 @@
 
 import {
   json,
-  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -33,14 +32,12 @@ import { useEffect, lazy, Suspense } from "react";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
-import { PiecesRelatedArticles as _PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { buildCanonicalUrl as _buildCanonicalUrl } from "../utils/seo/canonical";
 // Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
 import { normalizeAlias } from "../utils/url-builder.utils";
 import {
@@ -55,6 +52,7 @@ import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { type GammeContentContractV1 } from "~/types/gamme-content-contract.types";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -117,6 +115,11 @@ const HowToChooseSection = lazy(() =>
 const SymptomsSection = lazy(() =>
   import("../components/seo/SymptomsSection").then((m) => ({
     default: m.SymptomsSection,
+  })),
+);
+const AntiMistakesSection = lazy(() =>
+  import("../components/seo/AntiMistakesSection").then((m) => ({
+    default: m.AntiMistakesSection,
   })),
 );
 const FAQSection = lazy(() =>
@@ -243,29 +246,17 @@ interface LoaderData {
     verbCount: number;
     nounCount: number;
   };
-  // 📖 Purchase Guide V2 - structure orientée client
-  purchaseGuideData?: {
-    id: number;
-    pgId: string;
-    intro: { title: string; role: string; syncParts: string[] };
-    risk: {
-      title: string;
-      explanation: string;
-      consequences: string[];
-      costRange: string;
-      conclusion: string;
-    };
-    timing: { title: string; years: string; km: string; note: string };
-    arguments: Array<{ title: string; content: string; icon: string }>;
-    // Nouvelles sections Phase 2
-    h1Override?: string | null;
-    howToChoose?: string | null;
-    symptoms?: string[] | null;
-    faq?: Array<{ question: string; answer: string }> | null;
-  } | null;
+  // 📖 Contrat éditorial par gamme (sans H1)
+  gammeContent?: GammeContentContractV1 | null;
+  // Alias legacy temporaire
+  purchaseGuideData?: GammeContentContractV1 | null;
   // 🔄 Données de substitution (Moteur 200 Always)
   substitution?: {
     httpStatus: number;
+    robots?: string;
+    seo?: {
+      canonical?: string;
+    };
     lock?: {
       type: "vehicle" | "technology" | "ambiguity" | "precision";
       missing: string;
@@ -317,198 +308,243 @@ function toProxyImageUrl(url: string | undefined): string | undefined {
   return url;
 }
 
+function buildNoindexErrorResponse(status: 404 | 410): Response {
+  return new Response(status === 404 ? "Not Found" : "Gone", {
+    status,
+    headers: { "X-Robots-Tag": "noindex, follow" },
+  });
+}
+
+function buildUpstreamErrorResponse(rawStatus: number): Response {
+  const status = rawStatus >= 400 && rawStatus <= 599 ? rawStatus : 500;
+  if (status === 404 || status === 410) {
+    return buildNoindexErrorResponse(status);
+  }
+  if (status === 503) {
+    return new Response("Service Unavailable", { status });
+  }
+  return new Response("Internal Server Error", { status });
+}
+
+function resolveGammeId(
+  slug: string,
+  substitutionResponse: LoaderData["substitution"] | null | undefined,
+): string | null {
+  // 1) Source backend: lock.known.gamme.id
+  const knownGammeId = substitutionResponse?.lock?.known?.gamme?.id;
+  if (typeof knownGammeId === "number") return String(knownGammeId);
+
+  // 2) Source backend: seo.canonical
+  const canonical = substitutionResponse?.seo?.canonical;
+  if (canonical) {
+    const canonicalMatch = canonical.match(/-(\d+)\.html$/);
+    if (canonicalMatch?.[1]) return canonicalMatch[1];
+  }
+
+  // 3) Format local slug: /pieces/alias-123.html
+  const slugMatch = slug.match(/-(\d+)\.html$/);
+  if (slugMatch?.[1]) return slugMatch[1];
+
+  return null;
+}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const slug = params.slug;
   if (!slug) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  // Redirect /pieces/catalogue → homepage (page supprimée)
+  // /pieces/catalogue: page supprimée sans équivalent direct
+  // On renvoie 410 + noindex pour éviter un soft-404 vers une page non pertinente
   if (slug === "catalogue") {
-    return redirect("/", 301);
+    throw buildNoindexErrorResponse(410);
   }
-
-  // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)
-  const match = slug.match(/-(\d+)\.html$/);
-
-  // 🛑 410 Gone - URLs sans ID (ex: /pieces/suspension)
-  // Ces pages n'existent plus - gammes sans véhicule supprimées
-  if (!match) {
-    logger.log(`🛑 [410] /pieces/${slug}`);
-    throw new Response(null, { status: 410 });
-  }
-
-  const gammeId = match[1];
 
   try {
     // 🚀 Configuration API depuis variables d'environnement
-    // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
     // ⚠️ Timeout réduit de 180s à 30s pour compatibilité Googlebot (~30s patience)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
+    try {
+      const API_URL = getInternalApiUrl("");
+      const currentUrl = new URL(request.url);
+      const pathname = currentUrl.pathname;
 
-    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
-    const API_URL = getInternalApiUrl("");
-    const currentUrl = new URL(request.url);
-    const pathname = currentUrl.pathname;
-
-    const [selectedVehicle, apiData, switchesResponse, substitutionResponse] =
-      await Promise.all([
-        // 🚗 Récupérer véhicule depuis cookie (parallélisé)
+      // 1) Source de vérité statuts métier: API substitution
+      const [selectedVehicle, substitutionResponse] = await Promise.all([
         getVehicleFromCookie(request.headers.get("Cookie")),
+        fetch(
+          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+          { signal: controller.signal },
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      ]);
+
+      logger.log(
+        "🚗 Véhicule depuis cookie:",
+        selectedVehicle
+          ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
+          : "Aucun véhicule sélectionné",
+      );
+
+      if (substitutionResponse) {
+        logger.log(
+          `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
+        );
+      }
+
+      if (substitutionResponse?.httpStatus === 404) {
+        throw buildNoindexErrorResponse(404);
+      }
+      if (substitutionResponse?.httpStatus === 410) {
+        throw buildNoindexErrorResponse(410);
+      }
+
+      // 2) Résoudre gammeId depuis backend (fallback slug/canonical)
+      const gammeId = resolveGammeId(slug, substitutionResponse);
+      if (!gammeId) {
+        logger.error(
+          `❌ Impossible de résoudre gammeId pour /pieces/${slug} (substitution=200)`,
+        );
+        throw new Response("Service Unavailable", { status: 503 });
+      }
+
+      // 3) Charger données page + switches SEO
+      const [apiData, switchesResponse] = await Promise.all([
         fetchGammePageData(gammeId, { signal: controller.signal }),
         fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
           signal: controller.signal,
         })
           .then((res) => (res.ok ? res.json() : { data: [] }))
           .catch(() => ({ data: [] })),
-        // 🔄 Substitution API pour données enrichies (412/410 handling)
-        fetch(
-          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
-          {
-            signal: controller.signal,
-          },
+      ]);
+
+      const upstreamStatus = (apiData as { status?: number }).status;
+      const apiStatus =
+        typeof upstreamStatus === "number" ? upstreamStatus : 200;
+      if (apiStatus !== 200) {
+        throw buildUpstreamErrorResponse(apiStatus);
+      }
+
+      // 🔗 Mapper les switches SEO pour ancres variées
+      interface SeoSwitch {
+        sis_id: string;
+        sis_alias?: string;
+        sis_content: string;
+      }
+      const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
+      const verbSwitches = rawSwitches
+        .filter(
+          (s) =>
+            s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
         )
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null),
-      ]).finally(() => clearTimeout(timeoutId));
+        .map((s) => ({ id: s.sis_id, content: s.sis_content }));
+      const nounSwitches = rawSwitches
+        .filter(
+          (s) =>
+            s.sis_alias?.startsWith("noun_") ||
+            !s.sis_alias?.startsWith("verb_"),
+        )
+        .map((s) => ({ id: s.sis_id, content: s.sis_content }));
 
-    logger.log(
-      "🚗 Véhicule depuis cookie:",
-      selectedVehicle
-        ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
-        : "Aucun véhicule sélectionné",
-    );
+      const seoSwitches =
+        rawSwitches.length > 0
+          ? {
+              verbs:
+                verbSwitches.length > 0
+                  ? verbSwitches
+                  : rawSwitches.map((s) => ({
+                      id: s.sis_id,
+                      content: s.sis_content,
+                    })),
+              nouns: nounSwitches,
+              verbCount: verbSwitches.length || rawSwitches.length,
+              nounCount: nounSwitches.length,
+            }
+          : undefined;
 
-    // 🔗 Mapper les switches SEO pour ancres variées
-    interface SeoSwitch {
-      sis_id: string;
-      sis_alias?: string;
-      sis_content: string;
-    }
-    const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
-    const verbSwitches = rawSwitches
-      .filter(
-        (s) =>
-          s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
-      )
-      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-    const nounSwitches = rawSwitches
-      .filter(
-        (s) =>
-          s.sis_alias?.startsWith("noun_") || !s.sis_alias?.startsWith("verb_"),
-      )
-      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-
-    const seoSwitches =
-      rawSwitches.length > 0
-        ? {
-            verbs:
-              verbSwitches.length > 0
-                ? verbSwitches
-                : rawSwitches.map((s) => ({
-                    id: s.sis_id,
-                    content: s.sis_content,
-                  })),
-            nouns: nounSwitches,
-            verbCount: verbSwitches.length || rawSwitches.length,
-            nounCount: nounSwitches.length,
-          }
-        : undefined;
-
-    logger.log(
-      `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
-    );
-
-    // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-    const heroData = apiData.hero as
-      | {
-          h1: string;
-          content: string;
-          image: string;
-          wall: string;
-          famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
-          pg_name?: string;
-          pg_alias?: string;
-        }
-      | undefined;
-    // Note: API returns different shapes than LoaderData, using type assertion for compatibility
-    const data = {
-      ...apiData,
-      status: 200,
-      content: heroData
-        ? {
-            h1: heroData.h1,
-            content: heroData.content,
-            pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
-            pg_alias: heroData.pg_alias || "",
-            pg_pic: toProxyImageUrl(heroData.image),
-            pg_wall: toProxyImageUrl(heroData.wall),
-          }
-        : undefined,
-      famille: apiData.hero?.famille_info,
-      guide: apiData.guideAchat
-        ? {
-            ...apiData.guideAchat,
-            date: apiData.guideAchat.updated,
-          }
-        : undefined,
-    } as unknown as LoaderData;
-
-    // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
-    const baseBreadcrumb = [
-      { label: "Accueil", href: "/" },
-      { label: data.content?.pg_name || "Pièce", current: true },
-    ];
-
-    // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
-    // (évite hydration mismatch serveur/client)
-    const breadcrumbItems = buildBreadcrumbWithVehicle(
-      baseBreadcrumb,
-      null, // Pas de véhicule sur page gamme seule
-    );
-
-    logger.log(
-      "🍞 Breadcrumb généré:",
-      breadcrumbItems.map((i) => i.label).join(" → "),
-    );
-
-    // 🔄 Log substitution status
-    if (substitutionResponse) {
       logger.log(
-        `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
+        `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
       );
-    }
 
-    // 🔄 Handle 404/410 based on substitution API response
-    if (substitutionResponse?.httpStatus === 404) {
-      throw new Response("Not Found", {
-        status: 404,
-        headers: { "X-Robots-Tag": "noindex, follow" },
-      });
-    }
-    if (substitutionResponse?.httpStatus === 410) {
-      throw new Response("Gone", {
-        status: 410,
-        headers: { "X-Robots-Tag": "noindex, follow" },
-      });
-    }
+      // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
+      const heroData = apiData.hero as
+        | {
+            h1: string;
+            content: string;
+            image: string;
+            wall: string;
+            famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
+            pg_name?: string;
+            pg_alias?: string;
+          }
+        | undefined;
 
-    // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO, substitution et prix
-    return json(
-      {
-        ...data,
-        breadcrumbs: { items: breadcrumbItems },
-        selectedVehicle,
-        seoSwitches,
-        substitution: substitutionResponse,
-      },
-      {
-        headers: {
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      // Note: API returns different shapes than LoaderData, using type assertion for compatibility
+      const data = {
+        ...apiData,
+        status: apiStatus,
+        content: heroData
+          ? {
+              h1: heroData.h1,
+              content: heroData.content,
+              pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
+              pg_alias: heroData.pg_alias || "",
+              pg_pic: toProxyImageUrl(heroData.image),
+              pg_wall: toProxyImageUrl(heroData.wall),
+            }
+          : undefined,
+        famille: apiData.hero?.famille_info,
+        guide: apiData.guideAchat
+          ? {
+              ...apiData.guideAchat,
+              date: apiData.guideAchat.updated,
+            }
+          : undefined,
+      } as unknown as LoaderData;
+
+      // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
+      const baseBreadcrumb = [
+        { label: "Accueil", href: "/" },
+        { label: data.content?.pg_name || "Pièce", current: true },
+      ];
+
+      // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
+      // (évite hydration mismatch serveur/client)
+      const breadcrumbItems = buildBreadcrumbWithVehicle(
+        baseBreadcrumb,
+        null, // Pas de véhicule sur page gamme seule
+      );
+
+      logger.log(
+        "🍞 Breadcrumb généré:",
+        breadcrumbItems.map((i) => i.label).join(" → "),
+      );
+
+      const successRobotsTag =
+        data.meta?.robots || "index, follow, max-image-preview:large";
+
+      // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO, substitution et prix
+      return json(
+        {
+          ...data,
+          breadcrumbs: { items: breadcrumbItems },
+          selectedVehicle,
+          seoSwitches,
+          substitution: substitutionResponse,
         },
-      },
-    );
+        {
+          headers: {
+            "Cache-Control":
+              "public, max-age=3600, stale-while-revalidate=86400",
+            "X-Robots-Tag": successRobotsTag,
+          },
+        },
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -524,6 +560,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     return [
       { title: "Page non trouvée" },
       { name: "description", content: "La page demandée n'a pas été trouvée." },
+      { name: "robots", content: "noindex, follow" },
     ];
   }
 
@@ -667,13 +704,26 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 };
 
 export function headers({
-  loaderHeaders: _loaderHeaders,
+  loaderHeaders,
+  errorHeaders,
 }: {
   loaderHeaders: Headers;
+  errorHeaders: Headers | undefined;
 }) {
-  return {
-    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-  };
+  const cacheControl =
+    loaderHeaders.get("Cache-Control") ||
+    "public, max-age=3600, stale-while-revalidate=86400";
+  const robotsTag =
+    errorHeaders?.get("X-Robots-Tag") || loaderHeaders.get("X-Robots-Tag");
+
+  return robotsTag
+    ? {
+        "Cache-Control": cacheControl,
+        "X-Robots-Tag": robotsTag,
+      }
+    : {
+        "Cache-Control": cacheControl,
+      };
 }
 
 export default function PiecesDetailPage() {
@@ -740,6 +790,7 @@ export default function PiecesDetailPage() {
           })),
         }
       : undefined;
+  const gammeContent = data.gammeContent || data.purchaseGuideData || null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
@@ -860,14 +911,13 @@ export default function PiecesDetailPage() {
             )}
           </div>
 
-          {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
+          {/* Titre H1 dynamique optimisé SEO */}
           <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
                 {(() => {
-                  // Priorité: h1Override > h1 existant > fallback
+                  // Priorité: h1 CMS/DB > fallback
                   const rawH1 =
-                    data.purchaseGuideData?.h1Override ||
                     data.content?.h1 ||
                     `${data.content?.pg_name || "Pièces auto"} pas cher`;
                   // Nettoyer les balises HTML (<b>, </b>, etc.)
@@ -1029,18 +1079,19 @@ export default function PiecesDetailPage() {
         <TableOfContents
           gammeName={data.content?.pg_name}
           hasMotorizations={!!data.motorisations?.items?.length}
-          hasSymptoms={!!data.purchaseGuideData?.symptoms?.length}
-          hasGuide={!!data.purchaseGuideData}
+          hasSymptoms={!!gammeContent?.symptoms?.length}
+          hasAntiMistakes={!!gammeContent?.antiMistakes?.length}
+          hasGuide={!!gammeContent}
           hasInformations={!!data.informations?.items?.length}
           hasConseils={!!data.conseils?.items?.length}
           hasEquipementiers={!!data.equipementiers?.items?.length}
-          hasFaq={!!data.purchaseGuideData?.faq?.length}
+          hasFaq={!!gammeContent?.faq?.length}
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
         />
       </div>
 
       {/* 💡 Guide d'achat V2 complet - Contenu orienté client (pour SEO longue traîne) */}
-      {data.purchaseGuideData && (
+      {gammeContent && (
         <Suspense
           fallback={
             <div className="container mx-auto px-4 mb-space-6">
@@ -1053,7 +1104,7 @@ export default function PiecesDetailPage() {
           }
         >
           <PurchaseGuideSection
-            guide={data.purchaseGuideData}
+            guide={gammeContent}
             gammeName={data.content?.pg_name}
             className="mb-space-6"
           />
@@ -1078,7 +1129,7 @@ export default function PiecesDetailPage() {
       </div>
 
       {/* ⚡ Guide rapide (4 cartes compactes) - Position 4 */}
-      {data.purchaseGuideData && (
+      {gammeContent && (
         <div className="container mx-auto px-4">
           <Suspense
             fallback={
@@ -1086,7 +1137,7 @@ export default function PiecesDetailPage() {
             }
           >
             <QuickGuideSection
-              guide={data.purchaseGuideData}
+              guide={gammeContent}
               gammeName={data.content?.pg_name}
             />
           </Suspense>
@@ -1094,14 +1145,14 @@ export default function PiecesDetailPage() {
       )}
 
       {/* 📖 Comment choisir - Position 6 après Purchase Guide (intro/risk/timing/arguments) */}
-      {data.purchaseGuideData?.howToChoose && (
+      {gammeContent?.howToChoose && (
         <Suspense
           fallback={
             <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
           }
         >
           <HowToChooseSection
-            content={data.purchaseGuideData.howToChoose}
+            content={gammeContent.howToChoose}
             gammeName={data.content?.pg_name || "cette pièce"}
           />
         </Suspense>
@@ -1135,21 +1186,36 @@ export default function PiecesDetailPage() {
         {/* 🚀 Sections below-fold lazy-loaded avec IDs pour navigation ancres */}
 
         {/* 📖 Symptômes d'usure - Position 5 */}
-        {data.purchaseGuideData?.symptoms &&
-          data.purchaseGuideData.symptoms.length > 0 && (
-            <section id="symptoms">
-              <Suspense
-                fallback={
-                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-                }
-              >
-                <SymptomsSection
-                  symptoms={data.purchaseGuideData.symptoms}
-                  gammeName={data.content?.pg_name || "cette pièce"}
-                />
-              </Suspense>
-            </section>
-          )}
+        {gammeContent?.symptoms && gammeContent.symptoms.length > 0 && (
+          <section id="symptoms">
+            <Suspense
+              fallback={
+                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+              }
+            >
+              <SymptomsSection
+                symptoms={gammeContent.symptoms}
+                gammeName={data.content?.pg_name || "cette pièce"}
+              />
+            </Suspense>
+          </section>
+        )}
+
+        {/* ⛔ Erreurs à éviter - Position 5 bis */}
+        {gammeContent?.antiMistakes && gammeContent.antiMistakes.length > 0 && (
+          <section id="anti-mistakes">
+            <Suspense
+              fallback={
+                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+              }
+            >
+              <AntiMistakesSection
+                antiMistakes={gammeContent.antiMistakes}
+                gammeName={data.content?.pg_name || "cette pièce"}
+              />
+            </Suspense>
+          </section>
+        )}
 
         {/* 📚 Informations essentielles - Position 6 */}
         <section id="essentials">
@@ -1222,21 +1288,20 @@ export default function PiecesDetailPage() {
         </section>
 
         {/* 📖 FAQ avec Schema.org - Position 10 (fin pour SEO longue traîne) */}
-        {data.purchaseGuideData?.faq &&
-          data.purchaseGuideData.faq.length > 0 && (
-            <section id="faq">
-              <Suspense
-                fallback={
-                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-                }
-              >
-                <FAQSection
-                  faq={data.purchaseGuideData.faq}
-                  gammeName={data.content?.pg_name || "cette pièce"}
-                />
-              </Suspense>
-            </section>
-          )}
+        {gammeContent?.faq && gammeContent.faq.length > 0 && (
+          <section id="faq">
+            <Suspense
+              fallback={
+                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+              }
+            >
+              <FAQSection
+                faq={gammeContent.faq}
+                gammeName={data.content?.pg_name || "cette pièce"}
+              />
+            </Suspense>
+          </section>
+        )}
 
         {/* Bouton Scroll To Top */}
         <ScrollToTop />
