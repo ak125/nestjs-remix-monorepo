@@ -40,6 +40,13 @@ interface MigrationResult {
   error?: string;
 }
 
+function buildNoindexNotFoundResponse(message: string): Response {
+  return new Response(message, {
+    status: 404,
+    headers: { "X-Robots-Tag": "noindex, follow" },
+  });
+}
+
 // ====================================
 // 🔧 UTILITAIRES DE MIGRATION
 // ====================================
@@ -111,7 +118,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // Vérifier si c'est bien une URL de pièce
   if (!legacyUrl.includes("/pieces/") || !legacyUrl.endsWith(".html")) {
-    throw new Response("URL non reconnue comme URL de pièce", { status: 404 });
+    throw buildNoindexNotFoundResponse("URL non reconnue comme URL de pièce");
   }
 
   // Vérifier si c'est une URL de pièces avec véhicule (4 segments)
@@ -120,9 +127,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     logger.log(
       "🔧 [PIECES V4] URL pièces avec véhicule détectée, laissant passer pour pieces.$gamme.$marque.$modele.$type.tsx",
     );
-    throw new Response(
+    throw buildNoindexNotFoundResponse(
       "URL pièces avec véhicule - gérée par la route spécialisée",
-      { status: 404 },
     );
   }
 
@@ -135,9 +141,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       `✅ [PIECES V4] URL gamme simple détectée: alias=${alias}, gammeId=${gammeId}`,
     );
     // URL gamme simple - rediriger vers pieces.$slug.tsx
-    throw new Response("URL gamme simple - gérée par pieces.$slug.tsx", {
-      status: 404,
-    });
+    throw buildNoindexNotFoundResponse(
+      "URL gamme simple - gérée par pieces.$slug.tsx",
+    );
   }
 
   // Sinon, tenter la migration avec l'ancien système
@@ -169,6 +175,19 @@ export const meta: MetaFunction<typeof loader> = () => {
     { name: "robots", content: "noindex, nofollow" },
   ];
 };
+
+export function headers({
+  loaderHeaders,
+  errorHeaders,
+}: {
+  loaderHeaders: Headers;
+  errorHeaders: Headers | undefined;
+}) {
+  const robotsTag =
+    errorHeaders?.get("X-Robots-Tag") || loaderHeaders.get("X-Robots-Tag");
+
+  return robotsTag ? { "X-Robots-Tag": robotsTag } : {};
+}
 
 // ====================================
 // 🎨 COMPOSANT PRINCIPAL

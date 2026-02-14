@@ -10,8 +10,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { SeoHeadersService } from '../services/seo-headers.service';
 import { RobotsTxtService } from '../services/robots-txt.service';
 
@@ -26,8 +25,7 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-
-    const path = request.url;
+    const path = request.path || request.url.split('?')[0];
 
     // Déterminer type de page
     let headers = this.seoHeadersService.getDefaultHeaders();
@@ -45,9 +43,17 @@ export class SeoHeadersInterceptor implements NestInterceptor {
       headers = this.seoHeadersService.getNoIndexHeaders();
     }
     // Produits
-    else if (path.startsWith('/pieces/') || path.startsWith('/produits/')) {
+    else if (
+      path === '/pieces' ||
+      path.startsWith('/pieces/') ||
+      path.startsWith('/produits/')
+    ) {
       const canonical = `https://www.automecanik.com${path.split('?')[0]}`;
       headers = this.seoHeadersService.getProductHeaders(canonical);
+      // Les routes Remix /pieces gèrent elles-mêmes robots + canonical (incluant 404/410).
+      // Évite les headers contradictoires (double X-Robots-Tag, canonical sur erreur).
+      delete headers['X-Robots-Tag'];
+      delete headers.Link;
     }
     // Blog
     else if (path.startsWith('/blog/') || path.startsWith('/conseils/')) {
@@ -59,17 +65,13 @@ export class SeoHeadersInterceptor implements NestInterceptor {
       headers = this.seoHeadersService.getNoIndexHeaders();
     }
 
-    // Appliquer headers
+    // Appliquer headers globaux (n'écrase pas les headers explicites définis ensuite)
     Object.entries(headers).forEach(([key, value]) => {
       if (value) {
         response.setHeader(key, value);
       }
     });
 
-    return next.handle().pipe(
-      map((data) => {
-        return data;
-      }),
-    );
+    return next.handle();
   }
 }

@@ -17,7 +17,14 @@ import {
   useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -200,6 +207,42 @@ function getQueryClient() {
   return browserQueryClient;
 }
 
+/** Error boundary that silently catches ChatWidget crashes without affecting the app. */
+class ChatWidgetErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    logger.warn(
+      "[ChatWidget] crash intercepte:",
+      error.message,
+      info.componentStack?.slice(0, 200),
+    );
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
+/** Lazy-loaded ChatWidget wrapped in error boundary + suspense */
+function ChatWidgetSafe() {
+  return (
+    <ChatWidgetErrorBoundary>
+      <Suspense fallback={null}>
+        <ChatWidget />
+      </Suspense>
+    </ChatWidgetErrorBoundary>
+  );
+}
+
 /**
  * AppShell - Inner component that safely uses hooks
  * Rendered inside providers where React/Remix context is available
@@ -340,11 +383,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <NotificationContainer />
-      {!location.pathname.startsWith("/admin") && (
-        <Suspense fallback={null}>
-          <ChatWidget />
-        </Suspense>
-      )}
+      {!location.pathname.startsWith("/admin") && <ChatWidgetSafe />}
     </div>
   );
 }
