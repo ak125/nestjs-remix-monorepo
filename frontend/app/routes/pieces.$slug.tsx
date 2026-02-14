@@ -52,7 +52,11 @@ import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
-import { type GammeContentContractV1 } from "~/types/gamme-content-contract.types";
+import { type GammeBuyingGuideV1 } from "~/types/gamme-content-contract.types";
+import {
+  applySectionFallbacks,
+  validateGammeContract,
+} from "~/utils/gamme-contract-qa.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -168,6 +172,12 @@ interface LoaderData {
     conseils_count?: number;
     informations_count?: number;
     guide_available?: number;
+    buying_guide_available?: number;
+    buying_guide_source_verified?: number;
+    buying_guide_quality_score?: number;
+    buying_guide_fallback_used?: number;
+    buying_guide_gate_ok?: number;
+    buying_guide_gate_reasons?: string | null;
   };
   content?: {
     h1: string;
@@ -246,10 +256,8 @@ interface LoaderData {
     verbCount: number;
     nounCount: number;
   };
-  // 📖 Contrat éditorial par gamme (sans H1)
-  gammeContent?: GammeContentContractV1 | null;
-  // Alias legacy temporaire
-  purchaseGuideData?: GammeContentContractV1 | null;
+  // 🛒 Contrat orienté achat (nouvelle source de vérité data)
+  gammeBuyingGuide?: GammeBuyingGuideV1 | null;
   // 🔄 Données de substitution (Moteur 200 Always)
   substitution?: {
     httpStatus: number;
@@ -503,6 +511,70 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             }
           : undefined,
       } as unknown as LoaderData;
+
+      // Mode E2E deterministe (non prod): simuler les cas guide absent / source non verifiee
+      const e2eGuideMode = currentUrl.searchParams.get("__e2eBuyingGuide");
+      if (process.env.NODE_ENV !== "production") {
+        if (e2eGuideMode === "absent") {
+          data.gammeBuyingGuide = null;
+        } else if (e2eGuideMode === "unverified" && data.gammeBuyingGuide) {
+          data.gammeBuyingGuide = {
+            ...data.gammeBuyingGuide,
+            quality: {
+              ...(data.gammeBuyingGuide.quality || {
+                score: 0,
+                flags: [],
+                version: "GammeBuyingGuide.v1",
+                source: "db:test-unverified",
+              }),
+              source:
+                data.gammeBuyingGuide.quality?.source || "db:test-unverified",
+              verified: false,
+            },
+          };
+        }
+      }
+
+      // 🛡️ QA hook contrat gamme: fallback sectionnel sans toucher au H1
+      const contractInput = data.gammeBuyingGuide || null;
+      if (!contractInput) {
+        logger.warn(
+          `🧯 Aucun gammeBuyingGuide exploitable (gamme=${gammeId}), sections guide masquées`,
+        );
+      }
+      const qc = validateGammeContract(contractInput, {
+        famille: data.famille,
+        pgName: data.content?.pg_name,
+      });
+      const missingSourceProvenance = qc.flags.includes(
+        "MISSING_SOURCE_PROVENANCE",
+      );
+      const isBackendFallback =
+        data.performance?.buying_guide_fallback_used === 1 ||
+        contractInput?.quality?.source?.startsWith("fallback://");
+      const forceStrictSourceGate = e2eGuideMode === "unverified";
+      const safeBuyingGuide =
+        missingSourceProvenance && (forceStrictSourceGate || !isBackendFallback)
+          ? null
+          : applySectionFallbacks(contractInput, qc);
+      data.gammeBuyingGuide = safeBuyingGuide;
+
+      if (
+        missingSourceProvenance &&
+        (forceStrictSourceGate || !isBackendFallback)
+      ) {
+        logger.warn(
+          `🛡️ QA contrat gamme rejeté: provenance source manquante/non fiable (gamme=${gammeId})`,
+        );
+      } else if (missingSourceProvenance && isBackendFallback) {
+        logger.warn(
+          `🛡️ QA contrat gamme: provenance non vérifiée acceptée car fallback backend explicite (gamme=${gammeId})`,
+        );
+      }
+
+      logger.log(
+        `🛡️ QA contrat gamme: score=${qc.score}, flags=${qc.flags.join(",") || "none"}`,
+      );
 
       // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
       const baseBreadcrumb = [
@@ -790,7 +862,7 @@ export default function PiecesDetailPage() {
           })),
         }
       : undefined;
-  const gammeContent = data.gammeContent || data.purchaseGuideData || null;
+  const buyingGuide = data.gammeBuyingGuide || null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
@@ -945,7 +1017,7 @@ export default function PiecesDetailPage() {
                     const name = data.content?.pg_name?.toLowerCase() || "";
                     const pluralName = pluralizePieceName(name);
                     return name
-                      ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
+                      ? `On affiche uniquement les ${pluralName} compatibles avant/arriere pour votre vehicule`
                       : "Trouvez la référence compatible avec votre véhicule";
                   })()}
                 </p>
@@ -1074,24 +1146,40 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
+      {/* ⚡ Bloc "Comment choisir en 20 sec" placé au-dessus de la ligne de flottaison */}
+      {buyingGuide && (
+        <div className="container mx-auto px-4 -mt-2 md:-mt-4 relative z-20">
+          <Suspense
+            fallback={
+              <div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-6" />
+            }
+          >
+            <QuickGuideSection
+              guide={buyingGuide}
+              gammeName={data.content?.pg_name}
+            />
+          </Suspense>
+        </div>
+      )}
+
       {/* 📑 Sommaire ancré - Navigation rapide vers toutes les sections */}
       <div className="container mx-auto px-4 py-4">
         <TableOfContents
           gammeName={data.content?.pg_name}
           hasMotorizations={!!data.motorisations?.items?.length}
-          hasSymptoms={!!gammeContent?.symptoms?.length}
-          hasAntiMistakes={!!gammeContent?.antiMistakes?.length}
-          hasGuide={!!gammeContent}
+          hasSymptoms={!!buyingGuide?.symptoms?.length}
+          hasAntiMistakes={!!buyingGuide?.antiMistakes?.length}
+          hasGuide={!!buyingGuide}
           hasInformations={!!data.informations?.items?.length}
           hasConseils={!!data.conseils?.items?.length}
           hasEquipementiers={!!data.equipementiers?.items?.length}
-          hasFaq={!!gammeContent?.faq?.length}
+          hasFaq={!!buyingGuide?.faq?.length}
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
         />
       </div>
 
       {/* 💡 Guide d'achat V2 complet - Contenu orienté client (pour SEO longue traîne) */}
-      {gammeContent && (
+      {buyingGuide && (
         <Suspense
           fallback={
             <div className="container mx-auto px-4 mb-space-6">
@@ -1104,14 +1192,60 @@ export default function PiecesDetailPage() {
           }
         >
           <PurchaseGuideSection
-            guide={gammeContent}
+            guide={buyingGuide}
             gammeName={data.content?.pg_name}
             className="mb-space-6"
           />
         </Suspense>
       )}
 
-      {/* 🚗 Motorisations compatibles - Position 3 (REMONTÉ après sélecteur) */}
+      {/* 📖 Comment choisir - Étape 2: critères et cas d'usage */}
+      {buyingGuide && (
+        <Suspense
+          fallback={
+            <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+          }
+        >
+          <HowToChooseSection
+            guide={buyingGuide}
+            gammeName={data.content?.pg_name || "cette pièce"}
+          />
+        </Suspense>
+      )}
+
+      {/* 🎯 Étape 3: envoyer vers la sélection véhicule */}
+      <div className="container mx-auto px-4">
+        <section className="mb-8 rounded-2xl border border-primary-100 bg-gradient-to-r from-primary-50 to-secondary-50 p-4 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm md:text-base font-semibold text-neutral-900">
+                Validez votre véhicule pour afficher uniquement les références
+                compatibles.
+              </p>
+              <p className="text-sm text-neutral-600">
+                Vérifiez d'abord le véhicule, puis comparez les options
+                proposées pour votre configuration.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="#vehicle-selector"
+                className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+              >
+                Sélectionner mon véhicule
+              </a>
+              <a
+                href="#compatibilities"
+                className="inline-flex items-center rounded-lg border border-primary-300 bg-white px-4 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50"
+              >
+                Voir les compatibilités
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* 🚗 Motorisations compatibles - Étape 3: compatibilités filtrées */}
       <div className="container mx-auto px-4">
         <section id="compatibilities">
           <Suspense
@@ -1127,36 +1261,6 @@ export default function PiecesDetailPage() {
           </Suspense>
         </section>
       </div>
-
-      {/* ⚡ Guide rapide (4 cartes compactes) - Position 4 */}
-      {gammeContent && (
-        <div className="container mx-auto px-4">
-          <Suspense
-            fallback={
-              <div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-8" />
-            }
-          >
-            <QuickGuideSection
-              guide={gammeContent}
-              gammeName={data.content?.pg_name}
-            />
-          </Suspense>
-        </div>
-      )}
-
-      {/* 📖 Comment choisir - Position 6 après Purchase Guide (intro/risk/timing/arguments) */}
-      {gammeContent?.howToChoose && (
-        <Suspense
-          fallback={
-            <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-          }
-        >
-          <HowToChooseSection
-            content={gammeContent.howToChoose}
-            gammeName={data.content?.pg_name || "cette pièce"}
-          />
-        </Suspense>
-      )}
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
@@ -1186,7 +1290,7 @@ export default function PiecesDetailPage() {
         {/* 🚀 Sections below-fold lazy-loaded avec IDs pour navigation ancres */}
 
         {/* 📖 Symptômes d'usure - Position 5 */}
-        {gammeContent?.symptoms && gammeContent.symptoms.length > 0 && (
+        {buyingGuide?.symptoms && buyingGuide.symptoms.length > 0 && (
           <section id="symptoms">
             <Suspense
               fallback={
@@ -1194,7 +1298,7 @@ export default function PiecesDetailPage() {
               }
             >
               <SymptomsSection
-                symptoms={gammeContent.symptoms}
+                symptoms={buyingGuide.symptoms}
                 gammeName={data.content?.pg_name || "cette pièce"}
               />
             </Suspense>
@@ -1202,7 +1306,7 @@ export default function PiecesDetailPage() {
         )}
 
         {/* ⛔ Erreurs à éviter - Position 5 bis */}
-        {gammeContent?.antiMistakes && gammeContent.antiMistakes.length > 0 && (
+        {buyingGuide?.antiMistakes && buyingGuide.antiMistakes.length > 0 && (
           <section id="anti-mistakes">
             <Suspense
               fallback={
@@ -1210,7 +1314,7 @@ export default function PiecesDetailPage() {
               }
             >
               <AntiMistakesSection
-                antiMistakes={gammeContent.antiMistakes}
+                antiMistakes={buyingGuide.antiMistakes}
                 gammeName={data.content?.pg_name || "cette pièce"}
               />
             </Suspense>
@@ -1288,7 +1392,7 @@ export default function PiecesDetailPage() {
         </section>
 
         {/* 📖 FAQ avec Schema.org - Position 10 (fin pour SEO longue traîne) */}
-        {gammeContent?.faq && gammeContent.faq.length > 0 && (
+        {buyingGuide?.faq && buyingGuide.faq.length > 0 && (
           <section id="faq">
             <Suspense
               fallback={
@@ -1296,7 +1400,7 @@ export default function PiecesDetailPage() {
               }
             >
               <FAQSection
-                faq={gammeContent.faq}
+                faq={buyingGuide.faq}
                 gammeName={data.content?.pg_name || "cette pièce"}
               />
             </Suspense>

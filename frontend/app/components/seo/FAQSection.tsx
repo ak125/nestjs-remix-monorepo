@@ -1,5 +1,10 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState, memo } from "react";
+import { memo } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { cn } from "~/lib/utils";
@@ -17,18 +22,16 @@ interface FAQSectionProps {
 
 /**
  * Section FAQ avec schema.org FAQPage markup
- * Optimisé pour les featured snippets Google
+ * Optimise pour les featured snippets Google
  */
 export const FAQSection = memo(function FAQSection({
   faq,
   gammeName,
   className,
 }: FAQSectionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
   if (!faq || faq.length === 0) return null;
 
-  const pieceType = gammeName?.toLowerCase() || "pièce";
+  const pieceType = gammeName?.toLowerCase() || "piece";
   const pluralType = pluralizePieceName(pieceType);
 
   // Schema.org FAQPage structured data
@@ -43,10 +46,6 @@ export const FAQSection = memo(function FAQSection({
         text: item.answer,
       },
     })),
-  };
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
@@ -65,50 +64,29 @@ export const FAQSection = memo(function FAQSection({
                 ❓
               </span>
               <CardTitle id="faq-title" className="text-xl text-purple-900">
-                Questions fréquentes sur les {pluralType}
+                Questions frequentes sur les {pluralType}
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <Accordion type="single" collapsible defaultValue="faq-0">
               {faq.map((item, index) => (
-                <div
+                <AccordionItem
                   key={index}
-                  className="bg-white rounded-lg border border-purple-200 overflow-hidden"
+                  value={`faq-${index}`}
+                  className="border-purple-200 bg-white rounded-lg mb-3 last:mb-0"
                 >
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    className="w-full flex items-center justify-between p-4 text-left hover:bg-purple-50 transition-colors"
-                    aria-expanded={openIndex === index}
-                    aria-controls={`faq-answer-${index}`}
-                  >
-                    <span className="font-semibold text-purple-900 pr-4">
-                      {item.question}
-                    </span>
-                    <span className="flex-shrink-0 text-purple-600">
-                      {openIndex === index ? (
-                        <ChevronUp className="w-5 h-5" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5" />
-                      )}
-                    </span>
-                  </button>
-                  <div
-                    id={`faq-answer-${index}`}
-                    className={cn(
-                      "overflow-hidden transition-all duration-300",
-                      openIndex === index ? "max-h-96" : "max-h-0",
-                    )}
-                  >
-                    <div className="p-4 pt-0 border-t border-purple-100">
-                      <p className="text-gray-700 leading-relaxed">
-                        {item.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  <AccordionTrigger className="px-4 text-purple-900 hover:no-underline hover:bg-purple-50 rounded-t-lg">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 border-t border-purple-100">
+                    <p className="text-gray-700 leading-relaxed pt-2">
+                      {item.answer}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </CardContent>
         </Card>
       </div>

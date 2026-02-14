@@ -32,6 +32,8 @@ import { AdminGammesSeoThresholdsController } from './controllers/admin-gammes-s
 import { AdminGammesSeoVlevelController } from './controllers/admin-gammes-seo-vlevel.controller'; // 📊 Gammes SEO - V-Level & Section K
 import { AdminGammesSeoAggregatesController } from './controllers/admin-gammes-seo-aggregates.controller'; // 🏷️ Gammes SEO - Agrégats
 import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
+import { AdminVehicleResolveController } from './controllers/admin-vehicle-resolve.controller'; // 🚗 Vehicle type resolve
+import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -41,6 +43,7 @@ import { GammeDetailEnricherService } from './services/gamme-detail-enricher.ser
 import { GammeVLevelService } from './services/gamme-vlevel.service';
 import { StockMovementService } from './services/stock-movement.service';
 import { StockReportService } from './services/stock-report.service';
+import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -57,6 +60,7 @@ import { StaffModule } from '../staff/staff.module';
 import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
+import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
 
 @Module({
   imports: [
@@ -66,6 +70,7 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     ProductsModule,
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
+    RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
   ],
   controllers: [
     ConfigurationController,
@@ -88,6 +93,8 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     AdminGammesSeoVlevelController, // 📊 Gammes SEO - V-Level & Section K
     AdminGammesSeoAggregatesController, // 🏷️ Gammes SEO - Agrégats badges
     SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
+    AdminVehicleResolveController, // 🚗 Vehicle type resolve - /api/admin/vehicles/*
+    AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
   ],
   providers: [
     ConfigurationService,
@@ -107,6 +114,7 @@ import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineServi
     GammeVLevelService,
     StockMovementService,
     StockReportService,
+    BuyingGuideEnricherService, // 📖 RAG enrichment service
   ],
   exports: [
     ConfigurationService,

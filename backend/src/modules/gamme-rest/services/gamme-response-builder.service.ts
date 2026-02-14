@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
-import { PurchaseGuideDataService } from './purchase-guide-data.service';
+import { BuyingGuideDataService } from './buying-guide-data.service';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { stripHtmlForMeta } from '../../../utils/html-entities';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
@@ -20,7 +20,7 @@ export class GammeResponseBuilderService {
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly rpcService: GammeRpcService,
-    private readonly purchaseGuideService: PurchaseGuideDataService,
+    private readonly buyingGuideService: BuyingGuideDataService,
   ) {}
 
   /**
@@ -105,6 +105,7 @@ export class GammeResponseBuilderService {
     // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts
 
     // Traitement motorisations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const motorisations = motorisationsEnriched.map(
       (item: any, index: number) => {
         const { fragment1, fragment2 } =
@@ -358,6 +359,7 @@ export class GammeResponseBuilderService {
     );
 
     // Traitement motorisations blog (niveau 5)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
       // ✅ Utilise fonction centralisée
       const marqueAlias =
@@ -410,9 +412,22 @@ export class GammeResponseBuilderService {
         }
       : null;
 
-    // Récupérer les données du guide d'achat V2 (nouvelles sections)
-    const purchaseGuideData =
-      await this.purchaseGuideService.getPurchaseGuideV2(pgId);
+    // Récupérer le contrat éditorial puis construire le guide orienté achat.
+    const buyingGuideContract =
+      await this.buyingGuideService.getBuyingGuideContractV1(pgId);
+    const mappedBuyingGuide = buyingGuideContract
+      ? this.buyingGuideService.toBuyingGuideV1(buyingGuideContract)
+      : null;
+    const antiWikiGate =
+      this.buyingGuideService.passesBuyingGuideAntiWikiGate(mappedBuyingGuide);
+    const useFallbackBuyingGuide = !antiWikiGate.ok;
+    const gammeBuyingGuide = useFallbackBuyingGuide
+      ? this.buyingGuideService.buildAutoBuyingGuideV1({
+          pgId,
+          pgName: pgNameSite,
+          familyName: familleInfo?.mf_name || null,
+        })
+      : mappedBuyingGuide;
 
     const totalTime = performance.now() - startTime;
 
@@ -493,7 +508,8 @@ export class GammeResponseBuilderService {
             }
           : null,
       guideAchat,
-      purchaseGuideData: purchaseGuideData || null,
+      // ✅ Nouveau contrat orienté décision d'achat (sans H1)
+      gammeBuyingGuide: gammeBuyingGuide || null,
       motorisationsBlog:
         motorisationsBlog.length > 0
           ? {
@@ -523,9 +539,11 @@ export class GammeResponseBuilderService {
       seoSwitches: {
         verbs: seoFragments1
           .slice(0, 20)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
         nouns: seoFragments2
           .slice(0, 20)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
         verbCount: seoFragments1.length,
         nounCount: seoFragments2.length,
@@ -540,7 +558,15 @@ export class GammeResponseBuilderService {
         conseils_count: conseils.length,
         informations_count: informations.length,
         guide_available: guideAchat ? 1 : 0,
-        purchase_guide_v2_available: purchaseGuideData ? 1 : 0,
+        buying_guide_available: gammeBuyingGuide ? 1 : 0,
+        buying_guide_source_verified:
+          gammeBuyingGuide?.quality?.verified === true ? 1 : 0,
+        buying_guide_quality_score: gammeBuyingGuide?.quality?.score ?? 0,
+        buying_guide_fallback_used: useFallbackBuyingGuide ? 1 : 0,
+        buying_guide_gate_ok: antiWikiGate.ok ? 1 : 0,
+        buying_guide_gate_reasons: antiWikiGate.ok
+          ? null
+          : antiWikiGate.reasons.join(','),
       },
     };
   }

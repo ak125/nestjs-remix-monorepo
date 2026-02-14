@@ -1,411 +1,321 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { pluralizePieceName } from "~/lib/seo-utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
-
-// Types matching backend PurchaseGuideData V2 (orientée client)
-export interface PurchaseGuideData {
-  id?: number;
-  pgId?: string;
-
-  // Section 1: À quoi ça sert
-  intro: {
-    title: string;
-    role: string;
-    syncParts: string[];
-  };
-
-  // Section 2: Pourquoi c'est critique (réduction de la peur)
-  risk: {
-    title: string;
-    explanation: string;
-    consequences: string[];
-    costRange: string;
-    conclusion: string;
-  };
-
-  // Section 3: Quand changer
-  timing: {
-    title: string;
-    years: string;
-    km: string;
-    note: string;
-  };
-
-  // Section 4: Pourquoi acheter chez nous (4 arguments)
-  arguments: Array<{
-    title: string;
-    content: string;
-    icon?: string;
-  }>;
-
-  // Nouvelles sections (Phase 2)
-  h1Override?: string | null;
-  howToChoose?: string | null;
-  symptoms?: string[] | null;
-  faq?: Array<{ question: string; answer: string }> | null;
-
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { type GammeBuyingGuideV1 } from "~/types/gamme-content-contract.types";
 
 interface PurchaseGuideSectionProps {
-  guide: PurchaseGuideData;
+  guide: GammeBuyingGuideV1;
   gammeName?: string;
   className?: string;
 }
 
-/**
- * Composant complet du guide d'achat (pour rétrocompatibilité)
- * Contient toutes les sections ensemble
- */
 export const PurchaseGuideSection = memo(function PurchaseGuideSection({
   guide,
   gammeName,
   className,
 }: PurchaseGuideSectionProps) {
+  const criteria = guide?.selectionCriteria;
+  const { requiredCriteria, recommendedCriteria } = useMemo(() => {
+    const list = criteria || [];
+    const required = list.filter((c) => c.priority === "required");
+    const recommended = list.filter((c) => c.priority === "recommended");
+    return { requiredCriteria: required, recommendedCriteria: recommended };
+  }, [criteria]);
+
   if (!guide) return null;
+
+  const compatibilityRules = guide.compatibilityRules || [];
+  const decisionNodes = guide.decisionTree || [];
+  const allCriteria = guide.selectionCriteria || [];
+  const inputs = guide.inputs;
+  const output = guide.output;
 
   return (
     <div className={cn("space-y-8", className)}>
-      <IntroSection intro={guide.intro} gammeName={gammeName} />
-      <RiskSection risk={guide.risk} gammeName={gammeName} />
-      <TimingSection timing={guide.timing} gammeName={gammeName} />
-      <ArgumentsSection arguments={guide.arguments} gammeName={gammeName} />
+      {/* Compatibility & inputs */}
+      <section className="py-8" aria-labelledby="guide-compat-title">
+        <div className="container mx-auto px-4">
+          <h2
+            id="guide-compat-title"
+            className="text-2xl font-bold text-gray-900 mb-6"
+          >
+            {gammeName} : compatibilite et points critiques avant commande
+          </h2>
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl text-blue-900">
+                Eviter les erreurs de reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {inputs && (
+                <div className="rounded-lg border border-blue-200 bg-white p-4">
+                  <p className="font-semibold text-blue-900 mb-2">
+                    Entrees a verifier avant filtrage
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• {inputs.vehicle}</li>
+                    <li>• {inputs.position}</li>
+                    <li>• {inputs.dimensionsOrReference}</li>
+                    <li>• {inputs.discType}</li>
+                    {(inputs.constraints || []).map((item, index) => (
+                      <li key={index}>• {item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {compatibilityRules.map((rule, index) => (
+                <p
+                  key={index}
+                  className={cn(
+                    "text-gray-700 leading-relaxed",
+                    index === 0 && "text-lg",
+                  )}
+                >
+                  {rule}
+                </p>
+              ))}
+              {guide.pairing?.required?.length > 0 && (
+                <div className="rounded-lg border border-blue-200 bg-white p-4">
+                  <p className="font-semibold text-blue-900 mb-2">
+                    A verifier en meme temps
+                  </p>
+                  <ul className="space-y-2">
+                    {guide.pairing.required.map((item, index) => (
+                      <li key={index} className="text-gray-700">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Decision tree — Accordion */}
+      {decisionNodes.length > 0 && (
+        <section className="py-8" aria-labelledby="guide-decision-title">
+          <div className="container mx-auto px-4">
+            <h2
+              id="guide-decision-title"
+              className="text-2xl font-bold text-gray-900 mb-6"
+            >
+              Arbre de decision rapide
+            </h2>
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="pt-6">
+                <Accordion
+                  type="multiple"
+                  defaultValue={[decisionNodes[0]?.id]}
+                >
+                  {decisionNodes.map((node) => (
+                    <AccordionItem
+                      key={node.id}
+                      value={node.id}
+                      className="border-amber-200"
+                    >
+                      <AccordionTrigger className="text-amber-900 hover:no-underline">
+                        {node.question}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2">
+                          {(node.options || []).map((option, index) => (
+                            <div
+                              key={`${node.id}-${index}`}
+                              className="rounded-lg border border-amber-200 bg-white p-3 flex items-start gap-3"
+                            >
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "shrink-0 mt-0.5 text-xs",
+                                  option.outcome === "replace" &&
+                                    "border-red-300 text-red-700 bg-red-50",
+                                  option.outcome === "check" &&
+                                    "border-amber-300 text-amber-700 bg-amber-50",
+                                  option.outcome === "continue" &&
+                                    "border-green-300 text-green-700 bg-green-50",
+                                  option.outcome === "stop" &&
+                                    "border-gray-300 text-gray-700 bg-gray-50",
+                                )}
+                              >
+                                {option.outcome}
+                              </Badge>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {option.label}
+                                </p>
+                                {option.note && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {option.note}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+            {(output?.warnings || []).length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+                <p className="font-semibold text-amber-900 mb-2">
+                  Warnings compatibilite
+                </p>
+                <ul className="space-y-2">
+                  {output.warnings.map((warning, index) => (
+                    <li key={index} className="text-sm text-gray-700">
+                      • {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Selection criteria — Tabs required/recommended */}
+      {allCriteria.length > 0 && (
+        <section className="py-8" aria-labelledby="guide-criteria-title">
+          <div className="container mx-auto px-4">
+            <h2
+              id="guide-criteria-title"
+              className="text-2xl font-bold text-gray-900 mb-6"
+            >
+              Criteres de selection selon votre usage
+            </h2>
+            <Card className="border-indigo-200 bg-indigo-50/50">
+              <CardContent className="pt-6">
+                {requiredCriteria.length > 0 &&
+                recommendedCriteria.length > 0 ? (
+                  <Tabs defaultValue="required">
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="required">
+                        Obligatoires ({requiredCriteria.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="recommended">
+                        Recommandes ({recommendedCriteria.length})
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="required">
+                      <CriteriaGrid criteria={requiredCriteria} />
+                    </TabsContent>
+                    <TabsContent value="recommended">
+                      <CriteriaGrid criteria={recommendedCriteria} />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <CriteriaGrid criteria={allCriteria} />
+                )}
+
+                {(guide.useCases || []).length > 0 && (
+                  <div className="mt-5 rounded-lg border border-indigo-200 bg-white p-4">
+                    <p className="font-semibold text-indigo-900 mb-2">
+                      Cas d'usage
+                    </p>
+                    <ul className="space-y-2">
+                      {guide.useCases.map((item) => (
+                        <li key={item.id} className="text-sm text-gray-700">
+                          <span className="font-medium">{item.label}:</span>{" "}
+                          {item.recommendation}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {output?.selectedSpec && (
+                  <div className="mt-5 rounded-lg border border-indigo-200 bg-white p-4">
+                    <p className="font-semibold text-indigo-900 mb-2">
+                      Sortie attendue
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      {output.selectedSpec}
+                    </p>
+                    {(output.pairingAdvice || []).length > 0 && (
+                      <ul className="space-y-2 mt-3">
+                        {output.pairingAdvice.map((item, index) => (
+                          <li key={index} className="text-sm text-gray-700">
+                            • {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
+      {/* Trust arguments */}
+      {(guide.trustArguments || []).length > 0 && (
+        <section className="py-8" aria-labelledby="guide-trust-title">
+          <div className="container mx-auto px-4">
+            <h2
+              id="guide-trust-title"
+              className="text-2xl font-bold text-gray-900 mb-6"
+            >
+              Pourquoi commander sur Automecanik
+            </h2>
+            <Card className="border-green-200 bg-green-50/50">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {guide.trustArguments.map((arg) => (
+                    <div
+                      key={arg.title}
+                      className="rounded-lg border border-green-200 bg-white p-4"
+                    >
+                      <p className="font-semibold text-green-900">
+                        {arg.title}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {arg.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
     </div>
   );
 });
 
-// ============================================================================
-// SECTIONS EXPORTÉES INDIVIDUELLEMENT (pour nouvelle structure avec H2)
-// ============================================================================
-
-interface IntroSectionProps {
-  intro: PurchaseGuideData["intro"];
-  gammeName?: string;
-  className?: string;
-}
-
-/**
- * Section 1: À quoi ça sert / Rôle et sécurité
- * H2: {Gamme} : rôle et sécurité
- */
-export const IntroSection = memo(function IntroSection({
-  intro,
-  gammeName,
-  className,
-}: IntroSectionProps) {
-  if (!intro.title && !intro.role) return null;
-
-  // pieceType reserved for future use
-  const _pieceType = gammeName?.toLowerCase() || "cette pièce";
-
+/** Reusable grid for selection criteria */
+function CriteriaGrid({
+  criteria,
+}: {
+  criteria: GammeBuyingGuideV1["selectionCriteria"];
+}) {
   return (
-    <section
-      className={cn("py-8", className)}
-      aria-labelledby="intro-section-title"
-    >
-      <div className="container mx-auto px-4">
-        <h2
-          id="intro-section-title"
-          className="text-2xl font-bold text-gray-900 mb-6"
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {criteria.map((criterion) => (
+        <div
+          key={criterion.key}
+          className="rounded-lg border border-indigo-200 bg-white p-4"
         >
-          {gammeName} : rôle et sécurité
-        </h2>
-        <Card className="border-blue-200 bg-blue-50/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white text-xl">
-                🔧
-              </span>
-              <CardTitle className="text-xl text-blue-900">
-                {intro.title || "À quoi ça sert ?"}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {intro.role && (
-              <p className="text-gray-700 text-lg leading-relaxed">
-                {intro.role}
-              </p>
-            )}
-
-            {intro.syncParts && intro.syncParts.length > 0 && (
-              <div className="pt-2">
-                <p className="text-sm text-gray-600 mb-2">Fonctionne avec :</p>
-                <ul className="space-y-2 ml-4">
-                  {intro.syncParts.map((part, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-gray-700"
-                    >
-                      <span className="text-blue-600 mt-1">•</span>
-                      <span>{part}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+          <p className="font-semibold text-indigo-900">{criterion.label}</p>
+          <p className="text-sm text-gray-700 mt-1">{criterion.guidance}</p>
+        </div>
+      ))}
+    </div>
   );
-});
-
-interface RiskSectionProps {
-  risk: PurchaseGuideData["risk"];
-  gammeName?: string;
-  className?: string;
 }
-
-/**
- * Section 2: Pourquoi c'est critique
- * H2: Pourquoi ne jamais rouler avec {gamme} usée ?
- */
-export const RiskSection = memo(function RiskSection({
-  risk,
-  gammeName,
-  className,
-}: RiskSectionProps) {
-  if (!risk.title && !risk.explanation) return null;
-
-  const pieceType = gammeName?.toLowerCase() || "cette pièce";
-  const pluralType = pluralizePieceName(pieceType);
-
-  return (
-    <section
-      className={cn("py-8", className)}
-      aria-labelledby="risk-section-title"
-    >
-      <div className="container mx-auto px-4">
-        <h2
-          id="risk-section-title"
-          className="text-2xl font-bold text-gray-900 mb-6"
-        >
-          {risk.title ||
-            `Pourquoi ne jamais rouler avec des ${pluralType} usées ?`}
-        </h2>
-        <Card className="border-red-200 bg-red-50/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white text-xl">
-                ⚠️
-              </span>
-              <CardTitle className="text-xl text-red-900">
-                Risques et conséquences
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {risk.explanation && (
-              <p className="text-gray-700 text-lg leading-relaxed">
-                {risk.explanation}
-              </p>
-            )}
-
-            {risk.consequences && risk.consequences.length > 0 && (
-              <div className="p-4 bg-red-100 rounded-lg border border-red-200">
-                <p className="text-red-900 font-semibold mb-3 flex items-center gap-2">
-                  <span>💥</span> En cas de défaillance :
-                </p>
-                <ul className="space-y-2 ml-4">
-                  {risk.consequences.map((consequence, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-red-800"
-                    >
-                      <span className="text-red-600 mt-1">•</span>
-                      <span>{consequence}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {risk.costRange && (
-              <p className="text-gray-700">
-                <span className="font-medium">Coût des réparations :</span>{" "}
-                <span className="text-red-700 font-bold">{risk.costRange}</span>
-              </p>
-            )}
-
-            {risk.conclusion && (
-              <div className="flex items-start gap-2 p-3 bg-green-100 rounded-lg border border-green-200 mt-4">
-                <span className="text-green-600 text-xl">👉</span>
-                <p className="text-green-900 font-medium">{risk.conclusion}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-});
-
-interface TimingSectionProps {
-  timing: PurchaseGuideData["timing"];
-  gammeName?: string;
-  className?: string;
-}
-
-/**
- * Section 3: Quand changer
- * H2: Quand faut-il changer {gamme} ?
- */
-export const TimingSection = memo(function TimingSection({
-  timing,
-  gammeName,
-  className,
-}: TimingSectionProps) {
-  if (!timing.title && !timing.years && !timing.km) return null;
-
-  const pieceType = gammeName?.toLowerCase() || "cette pièce";
-  const pluralType = pluralizePieceName(pieceType);
-
-  return (
-    <section
-      className={cn("py-8", className)}
-      aria-labelledby="timing-section-title"
-    >
-      <div className="container mx-auto px-4">
-        <h2
-          id="timing-section-title"
-          className="text-2xl font-bold text-gray-900 mb-6"
-        >
-          Quand faut-il changer les {pluralType} ?
-        </h2>
-        <Card className="border-amber-200 bg-amber-50/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-600 text-white text-xl">
-                ⏱️
-              </span>
-              <CardTitle className="text-xl text-amber-900">
-                {timing.title || "Quand faut-il la changer ?"}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-700 text-lg">En général :</p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {timing.years && (
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-amber-200">
-                  <span className="text-2xl">📅</span>
-                  <div>
-                    <p className="text-sm text-gray-600">Intervalle temps</p>
-                    <p className="text-lg font-bold text-amber-900">
-                      tous les {timing.years}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {timing.km && (
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-amber-200">
-                  <span className="text-2xl">🚗</span>
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      Intervalle kilométrage
-                    </p>
-                    <p className="text-lg font-bold text-amber-900">
-                      entre {timing.km}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {timing.note && (
-              <div className="flex items-start gap-2 p-3 bg-amber-100 rounded-lg border border-amber-200 mt-4">
-                <span className="text-amber-600 text-xl">📌</span>
-                <p className="text-amber-900">{timing.note}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-});
-
-interface ArgumentsSectionProps {
-  arguments: PurchaseGuideData["arguments"];
-  gammeName?: string;
-  className?: string;
-}
-
-/**
- * Section 4: Pourquoi acheter chez nous
- * H2: Pourquoi acheter votre {gamme} sur Automecanik ?
- */
-export const ArgumentsSection = memo(function ArgumentsSection({
-  arguments: args,
-  gammeName,
-  className,
-}: ArgumentsSectionProps) {
-  if (!args || args.length === 0) return null;
-
-  const pieceType = gammeName?.toLowerCase() || "pièce";
-  const pluralType = pluralizePieceName(pieceType);
-
-  const iconMap: Record<string, string> = {
-    "check-circle": "✅",
-    "shield-check": "🛡️",
-    "currency-euro": "💰",
-    cube: "📦",
-  };
-
-  return (
-    <section
-      className={cn("py-8", className)}
-      aria-labelledby="arguments-section-title"
-    >
-      <div className="container mx-auto px-4">
-        <h2
-          id="arguments-section-title"
-          className="text-2xl font-bold text-gray-900 mb-6"
-        >
-          Pourquoi acheter vos {pluralType} sur Automecanik ?
-        </h2>
-        <Card className="border-green-200 bg-green-50/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white text-xl">
-                🛒
-              </span>
-              <CardTitle className="text-xl text-green-900">
-                Pourquoi acheter votre pièce en ligne ?
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {args.map((arg, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-4 bg-white rounded-lg border border-green-200"
-                >
-                  <span className="text-2xl flex-shrink-0">
-                    {iconMap[arg.icon || ""] || "✅"}
-                  </span>
-                  <div>
-                    <h4 className="font-bold text-green-900 mb-1">
-                      {arg.title}
-                    </h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {arg.content}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-});
 
 export default PurchaseGuideSection;
