@@ -219,16 +219,37 @@ export class VehicleModelsService extends SupabaseBaseService {
         );
 
         // 🔧 Étape 2: Récupérer les types pour ces modèles
-        // ⚠️ Utiliser les IDs en string car type_modele_id est TEXT
-        const { data: allTypes, error: typesError } = await this.client
-          .from(TABLES.auto_type)
-          .select('type_id, type_modele_id, type_year_from, type_year_to')
-          .in('type_modele_id', allModelIdsStr);
+        // ⚠️ type_modele_id est TEXT dans auto_type
+        // ⚠️ Supabase PostgREST max-rows = 1000. Paginer pour les grosses marques (Toyota 3510+).
+        const typesSelect =
+          'type_id, type_modele_id, type_year_from, type_year_to, type_fuel';
+        const allTypes: any[] = [];
+        let typesOffset = 0;
+        const typesBatchSize = 1000;
 
-        if (typesError) {
-          this.logger.error('Erreur récupération types:', typesError);
-          throw typesError;
+        while (true) {
+          const { data: batch, error: typesError } = await this.client
+            .from(TABLES.auto_type)
+            .select(typesSelect)
+            .in('type_modele_id', allModelIdsStr)
+            .range(typesOffset, typesOffset + typesBatchSize - 1);
+
+          if (typesError) {
+            this.logger.error('Erreur récupération types:', typesError);
+            throw typesError;
+          }
+
+          if (!batch || batch.length === 0) break;
+          allTypes.push(...batch);
+
+          // Si on a reçu moins que le batch, c'est la dernière page
+          if (batch.length < typesBatchSize) break;
+          typesOffset += typesBatchSize;
         }
+
+        this.logger.debug(
+          `✅ ${allTypes.length} types récupérés pour marque ${marqueId}`,
+        );
 
         // 🔧 Étape 3: Grouper les types par modèle (type_modele_id est STRING)
         const modelIdsByType = new Map<string, any[]>();
@@ -290,6 +311,7 @@ export class VehicleModelsService extends SupabaseBaseService {
           .from(TABLES.auto_modele)
           .select('*', { count: 'exact' })
           .eq('modele_marque_id', marqueId)
+          .eq('modele_display', 1)
           .in('modele_id', modelIdsWithTypes);
 
         if (search?.trim()) {
@@ -311,9 +333,21 @@ export class VehicleModelsService extends SupabaseBaseService {
           throw error;
         }
 
+        // Enrichir chaque modèle avec motorisationsCount et fuel_types
+        const enrichedData = (data || []).map((model: any) => {
+          const types = modelIdsByType.get(model.modele_id.toString()) || [];
+          return {
+            ...model,
+            motorisationsCount: types.length,
+            modele_fuel_types: [
+              ...new Set(types.map((t: any) => t.type_fuel).filter(Boolean)),
+            ],
+          };
+        });
+
         return {
           success: true,
-          data: data || [],
+          data: enrichedData,
           total: count || 0,
           page,
           limit,
@@ -673,19 +707,27 @@ export class VehicleModelsService extends SupabaseBaseService {
           // Informations sur les types
           const { data: types } = await this.client
             .from(TABLES.auto_type)
-            .select('type_year, type_engine_code')
+            .select('type_year_from, type_year_to, type_engine_code')
             .eq('type_modele_id', modeleId)
-            .eq('type_display', 1);
+            .eq('type_display', '1');
 
           const typeCount = types?.length || 0;
 
-          // Plage d'années
-          const years = types?.map((t) => t.type_year).filter(Boolean) || [];
+          // Plage d'années (type_year_from / type_year_to sont TEXT)
+          const years =
+            types
+              ?.map((t: any) => parseInt(t.type_year_from, 10))
+              .filter((y: number) => !isNaN(y)) || [];
+          const yearsTo =
+            types
+              ?.map((t: any) => parseInt(t.type_year_to, 10))
+              .filter((y: number) => !isNaN(y)) || [];
+          const allYears = [...years, ...yearsTo];
           const yearRange =
-            years.length > 0
+            allYears.length > 0
               ? {
-                  min: Math.min(...years),
-                  max: Math.max(...years),
+                  min: Math.min(...allYears),
+                  max: Math.max(...allYears),
                 }
               : null;
 

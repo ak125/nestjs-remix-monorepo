@@ -213,40 +213,76 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const { page = 0, limit = 50 } = options;
           const offset = page * limit;
 
-          // Requête avec agrégation par année
-          const { data, error } = await this.client
-            .from(TABLES.auto_type)
-            .select(
-              `
-              type_year,
-              auto_modele!inner(
-                auto_marque!inner(marque_id)
-              )
-            `,
-            )
-            .eq('auto_modele.auto_marque.marque_id', marqueId)
-            .eq('type_display', 1)
-            .not('type_year', 'is', null)
-            .order('type_year', { ascending: false });
+          // Étape 1: Récupérer les modele_id pour cette marque
+          // (pas de FK auto_type → auto_modele, donc on fait 2 requêtes séparées
+          //  comme getModelsByBrand dans vehicle-models.service.ts)
+          const { data: models, error: modelsError } = await this.client
+            .from(TABLES.auto_modele)
+            .select('modele_id')
+            .eq('modele_marque_id', marqueId);
 
-          if (error) {
-            this.logger.error('Erreur getYearsByBrand:', error);
-            throw error;
+          if (modelsError) {
+            this.logger.error('Erreur getYearsByBrand (modèles):', modelsError);
+            throw modelsError;
           }
 
-          // Agrégation côté client (peut être optimisé avec une vue SQL)
-          const yearCounts = new Map<number, number>();
-          data?.forEach((item) => {
-            const year = item.type_year;
-            if (year) {
-              yearCounts.set(year, (yearCounts.get(year) || 0) + 1);
+          if (!models?.length) {
+            return {
+              success: true,
+              data: [],
+              total: 0,
+              page: 0,
+              limit: 0,
+            };
+          }
+
+          // ⚠️ type_modele_id est TEXT dans auto_type
+          const modelIdsStr = models.map((m) => m.modele_id.toString());
+
+          // Étape 2: Récupérer type_year_from/to pour ces modèles
+          // Paginer par batch de 1000 (PostgREST max-rows)
+          const allTypes: any[] = [];
+          let typesOffset = 0;
+          const batchSize = 1000;
+
+          while (true) {
+            const { data: batch, error: typesError } = await this.client
+              .from(TABLES.auto_type)
+              .select('type_year_from, type_year_to')
+              .in('type_modele_id', modelIdsStr)
+              .eq('type_display', '1')
+              .not('type_year_from', 'is', null)
+              .range(typesOffset, typesOffset + batchSize - 1);
+
+            if (typesError) {
+              this.logger.error('Erreur getYearsByBrand (types):', typesError);
+              throw typesError;
+            }
+            if (!batch?.length) break;
+            allTypes.push(...batch);
+            if (batch.length < batchSize) break;
+            typesOffset += batchSize;
+          }
+
+          // Étape 3: Agréger les années à partir des ranges
+          const currentYear = new Date().getFullYear();
+          const yearSet = new Set<number>();
+          allTypes.forEach((item: any) => {
+            const from = parseInt(item.type_year_from, 10);
+            const to = item.type_year_to
+              ? parseInt(item.type_year_to, 10)
+              : currentYear;
+            if (!isNaN(from)) {
+              for (let y = from; y <= Math.min(to, currentYear); y++) {
+                yearSet.add(y);
+              }
             }
           });
 
-          const years = Array.from(yearCounts.entries())
-            .map(([year, count]) => ({ year, count }))
-            .sort((a, b) => b.year - a.year)
-            .slice(offset, offset + limit);
+          const years = Array.from(yearSet)
+            .sort((a, b) => b - a)
+            .slice(offset, offset + limit)
+            .map((y) => ({ year: y, count: 1 }));
 
           return {
             success: true,
