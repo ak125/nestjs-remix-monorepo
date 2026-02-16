@@ -1,12 +1,21 @@
 ---
 name: seo-content-architect
-description: Rédaction SEO rigoureuse sans hallucination pour e-commerce automobile. Anti-invention, compatible V-Level, scalable pour 4M+ produits.
+description: "Rédaction SEO rigoureuse v2.2 — RAG-verified, GEO-optimized, E-E-A-T compliant. Featured Snippets, Batch mode, BDD feedback loop, Content freshness."
 license: Internal - Automecanik
+version: "2.2"
+argument-hint: "[gamme-name or page-role]"
+disable-model-invocation: true
 ---
 
-# SEO Content Architect — Robust Edition
+# SEO Content Architect — v2.2 (GEO + RAG + E-E-A-T)
 
-Skill de rédaction SEO industriel pour sites e-commerce automobile à fort volume. Produit du contenu fiable, vérifiable, scalable, sans invention.
+Skill de rédaction SEO industriel pour e-commerce automobile à fort volume. Produit du contenu fiable, vérifié contre le corpus RAG, optimisé pour l'extraction par les moteurs IA (ChatGPT, Perplexity, Google AI Overviews), avec scoring qualité aligné sur le backend.
+
+**Architecture modulaire :**
+- Ce fichier = logique + workflow + règles de rédaction
+- `references/page-roles.md` = vocabulaire exclusif R1-R6 + maillage interne
+- `references/quality-scoring.md` = dimensions, pénalités, seuils
+- `references/schema-templates.md` = Schema.org + structure contenu + patterns meta
 
 ## Axiome n°0 (Non-négociable)
 
@@ -30,18 +39,22 @@ Tu n'es PAS :
 
 ## Sources de Vérité (ordre strict)
 
-| Priorité | Source |
-|----------|--------|
-| 1 | Données explicitement fournies par l'utilisateur |
-| 2 | Données métier confirmées (catalogue, BDD, schémas) |
-| 3 | Règles SEO et contraintes explicites |
-| ❌ | Connaissances générales NON confirmées |
+| Priorité | Source | Vérification |
+|----------|--------|-------------|
+| 1 | Données explicitement fournies par l'utilisateur | Aucune |
+| 2 | Données métier confirmées (catalogue, BDD, schémas) | Requête SQL/API |
+| 3 | Corpus RAG vérifié (truth_level L1-L2) | Requête RAG |
+| 4 | Règles mécaniques du knowledge (must_be_true) | Frontmatter YAML |
+| 5 | Corpus RAG curaté (truth_level L3) | Formulation conditionnelle |
+| 6 | Règles SEO et contraintes explicites | Aucune |
+| ❌ | Connaissances générales NON confirmées | **INTERDIT** |
+| ❌ | Corpus RAG L4 / draft / non vérifié | **INTERDIT** |
 
 **Aucune inférence implicite n'est autorisée.**
 
 ---
 
-## Workflow 3 Phases (OBLIGATOIRE)
+## Workflow 4 Phases (OBLIGATOIRE)
 
 ### Phase 1 — Analyse (SILENCIEUSE)
 
@@ -49,11 +62,61 @@ Avant d'écrire, tu vérifies :
 - [ ] Les données sont-elles suffisantes ?
 - [ ] Quelles zones sont certaines vs incertaines ?
 - [ ] Y a-t-il des risques d'extrapolation ?
+- [ ] Le corpus RAG a-t-il été interrogé ?
+- [ ] Les mechanical_rules du knowledge doc ont-elles été vérifiées ?
+- [ ] Le knowledge doc est-il à jour ? (vérifier `updated_at` dans le frontmatter)
 
-👉 Si données insuffisantes → tu le signales AVANT d'écrire.
+**Fraîcheur du contenu source :**
+
+| Âge du doc (`updated_at`) | Action |
+|---------------------------|--------|
+| < 3 mois | Frais — utiliser directement |
+| 3-6 mois | Acceptable — vérifier cohérence avec données terrain |
+| 6-12 mois | Stale — signaler en sortie, formulations prudentes sur les chiffres |
+| > 12 mois | Obsolète — signaler en priorité, ne pas se fier aux données chiffrées |
+
+Si données insuffisantes → tu le signales AVANT d'écrire.
 
 **Phrase de démarrage obligatoire :**
 > "Les données sont-elles suffisantes pour produire un contenu fiable sans extrapolation ?"
+
+### Phase 1b — Vérification RAG (obligatoire si le sujet est une pièce/gamme)
+
+Avant toute rédaction portant sur une pièce automobile, interroger le corpus RAG :
+
+```bash
+# Recherche principale
+curl -s -X POST http://localhost:3000/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{nom_piece}", "limit": 5}'
+
+# Recherche par section (si rôle page connu)
+# R3 Blog guide → section=guide-achat
+# R4 Reference  → section=reference
+# R5 Diagnostic → section=diagnostic
+# Entretien     → section=entretien
+curl -s "http://localhost:3000/api/rag/section/{section}?q={nom_piece}&limit=5"
+```
+
+**Interprétation des résultats RAG :**
+
+| truth_level | verification_status | Action |
+|-------------|---------------------|--------|
+| L1 | verified | Fait dur — utiliser directement, citer sans qualification |
+| L2 | verified | Confirmé — utiliser directement |
+| L2 | draft | Utilisable avec prudence, vérifier cohérence |
+| L3 | verified | Curaté — formulation conditionnelle requise |
+| L3/L4 | draft/pending | **REJETER** — traiter comme non-confirmé |
+
+**Extraction des mechanical_rules** (frontmatter YAML des knowledge docs) :
+
+| Champ | Usage |
+|-------|-------|
+| `must_be_true` | Concepts OBLIGATOIRES dans le contenu |
+| `must_not_contain_concepts` | Concepts INTERDITS — confusion sémantique |
+| `confusion_with` | Différences à clarifier explicitement |
+
+**Si 0 résultats RAG pertinents** : signaler l'absence et continuer avec les seules données utilisateur/BDD. Ne rien inventer.
 
 ### Phase 2 — Architecture du contenu
 
@@ -63,10 +126,97 @@ Tu définis :
 - Ce qui peut être écrit (confirmé)
 - Ce qui doit rester conditionnel (incertain)
 - Ce qui doit être omis (non confirmé)
+- Les affirmations techniques adossées au RAG (noter doc_family + truth_level)
+- La conformité aux `must_be_true` et `must_not_contain_concepts` du knowledge doc
 
-### Phase 3 — Rédaction contrôlée
+> **AVANT de rédiger** : lire `references/page-roles.md` pour le vocabulaire complet du rôle cible.
 
-Tu rédiges uniquement ce qui est autorisé par la Phase 2.
+### Phase 3 — Rédaction GEO-First
+
+Tu rédiges en appliquant les règles GEO (voir section dédiée ci-dessous). Uniquement ce qui est autorisé par la Phase 2.
+
+> Pour les templates Schema.org et la structure de contenu, consulter `references/schema-templates.md`.
+
+### Phase 4 — Auto-scoring
+
+Avant livraison, calculer le score qualité multi-dimensionnel. Seuil : ≥ 80 pour publication.
+
+**Plafond d'auto-évaluation** : Le score auto-calculé ne peut PAS dépasser **90/100**. Un score > 90 nécessite une validation externe (relecture humaine, test A/B, métriques analytics). Toujours arrondir à la baisse en cas de doute.
+
+> Détail des 6 dimensions, pénalités et seuils : `references/quality-scoring.md`
+
+---
+
+## Règles GEO — Generative Engine Optimization
+
+Optimiser chaque contenu pour l'extraction par les moteurs IA (ChatGPT, Perplexity, Google AI Overviews).
+
+### 6 règles de rédaction GEO
+
+1. **Paragraphes auto-suffisants** — Chaque paragraphe doit faire sens **isolément**, sans contexte environnant.
+   - ❌ Interdit : "comme mentionné plus haut", "ce système", "cette pièce" sans antécédent clair
+   - ✅ Chaque paragraphe nomme explicitement le sujet
+
+2. **Information front-loaded (BLUF)** — Les faits clés en **DÉBUT** de paragraphe, pas en fin.
+   - L'IA extrait les premières phrases en priorité
+   - ❌ "Après de nombreux tests, on constate que le disque ventilé résiste à 700°C"
+   - ✅ "Le disque de frein ventilé résiste à des températures de 700°C grâce à sa circulation d'air interne"
+
+3. **Spécificité > Généralité** — Chiffres, mesures, conditions concrètes plutôt que descriptions vagues.
+   - ❌ "Ce disque est performant"
+   - ✅ "Le disque ventilé 280mm dissipe 30% de chaleur supplémentaire par rapport au disque plein"
+
+4. **Titres sémantiques explicites** — H2/H3 doivent signaler le contenu exact de la section.
+   - ❌ "Détails techniques"
+   - ✅ "Quelle épaisseur minimale pour un disque de frein ?"
+
+5. **Format extractible** — Privilégier tableaux comparatifs, listes à puces, specs structurées.
+   - L'IA parse mieux les formats tabulaires que la prose continue
+
+6. **Un sujet = un bloc** — Ne jamais mélanger plusieurs thèmes dans une même section H2/H3.
+
+### Featured Snippets — Position 0
+
+Chaque contenu doit viser au moins **un** snippet extractible par Google en position 0. Le pattern dépend du rôle de page :
+
+| Pattern | Rôle cible | Structure requise |
+|---------|-----------|-------------------|
+| **Definition box** | R4 Reference | 1re phrase = "Un/Le {pièce} est..." — 40-60 mots, paragraphe auto-suffisant |
+| **Liste ordonnée** | R3 Blog / R5 Diagnostic | H2 = question, suivi d'une liste numérotée 3-7 items |
+| **Tableau comparatif** | R4 Reference | Tableau 3-5 lignes, colonnes claires (Type / Usage / Caractéristique) |
+| **Paragraphe direct** | R4 / R5 | H2 = question exacte, 1re phrase = la réponse complète |
+
+**Règles snippet :**
+- Le snippet doit être extractible par Google **SANS le reste de la page**
+- Alignement parfait avec GEO (BLUF, auto-suffisant, spécifique)
+- Un seul sujet par snippet — pas de mélange d'informations
+- Privilégier la réponse immédiate (pas de "il faut d'abord comprendre que...")
+
+---
+
+## Signaux E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)
+
+Chaque contenu doit intégrer des signaux de confiance Google 2026 :
+
+| Signal | Application e-commerce auto |
+|--------|---------------------------|
+| **Experience** | Données terrain vérifiables (km, durée de vie, conditions d'usure réelles) |
+| **Expertise** | Vocabulaire technique précis du domaine mécanique automobile |
+| **Authoritativeness** | Référencer les sources : normes ECE, specs constructeur, données RAG vérifiées |
+| **Trustworthiness** | Transparence sur les limites, formulations d'incertitude, aucune promesse |
+
+**Détection anti-AI** : Le contenu ne doit PAS ressembler à du texte généré par IA.
+
+| Marqueur AI à éviter | Alternative |
+|---------------------|-------------|
+| "joue un rôle essentiel" | Décrire le rôle spécifique |
+| "assure le bon fonctionnement" | Expliquer le mécanisme précis |
+| "il est important de noter que" | Supprimer, aller au fait |
+| "il convient de souligner" | Supprimer, écrire directement |
+| "en somme" / "en résumé" | Conclusion factuelle directe |
+| "permet d'optimiser" | Quantifier l'amélioration |
+
+> Réf backend : ces phrases sont détectées par `GENERIC_PHRASES` dans `buying-guide-enricher.service.ts` (pénalité -18 pts).
 
 ---
 
@@ -84,8 +234,6 @@ Tu rédiges uniquement ce qui est autorisé par la Phase 2.
 
 ### Intégration V-Level (Volume Level)
 
-Adapter la longueur du contenu au volume de recherche :
-
 | V-Level | Volume mensuel | Longueur contenu | Profondeur |
 |---------|----------------|------------------|------------|
 | L5 | >10 000 | 800+ mots | Exhaustif, FAQ, structured data |
@@ -96,7 +244,6 @@ Adapter la longueur du contenu au volume de recherche :
 
 ### Intégration G-Level (Growth Level)
 
-Prioriser les pages à forte croissance :
 - **Croissance > 20%** → Priorité rédactionnelle haute
 - **Croissance 0-20%** → Priorité normale
 - **Décroissance** → Analyse avant rédaction
@@ -113,94 +260,24 @@ Prioriser les pages à forte croissance :
 | **Introduction** | 50 | 150 mots | Sans promesse commerciale |
 | **Paragraphe** | 40 | 100 mots | Lisibilité mobile |
 
-### Patterns Meta Description
-
-```
-# Famille
-{Famille} pour votre véhicule. Trouvez {sous-famille-1}, {sous-famille-2} parmi notre sélection.
-
-# Sous-famille
-{Sous-famille} {marque-véhicule} {modèle}. Références compatibles, caractéristiques techniques et disponibilité.
-
-# Produit
-{Nom produit} - Réf {ref}. Compatible {véhicule}. Caractéristiques et disponibilité sur Automecanik.
-```
+> Patterns meta description : voir `references/schema-templates.md`
 
 ---
 
 ## Système Page Roles (Anti-Cannibalisation)
 
-> Source: `backend/src/modules/seo/services/page-role-validator.service.ts`
+Chaque page a un rôle SEO exclusif. Vocabulaire interdit/requis/exclusif par rôle.
 
-Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôle** pour éviter la cannibalisation.
+| Rôle | Fonction | Contrainte clé |
+|------|----------|----------------|
+| R1 Router | Orienter vers sous-pages (max 150 mots) | Pas de vocabulaire diagnostic |
+| R2 Product | Vendre un produit spécifique | Vocabulaire commercial exclusif |
+| R3 Blog | Contenu éditorial, guides | Pas de vocabulaire filtre/sélection |
+| R4 Reference | Définir un terme technique | Pas de commercial, pas de marques véhicules |
+| R5 Diagnostic | Identifier un problème | Vocabulaire symptômes exclusif |
+| R6 Support | FAQ, politiques | Contenu informatif |
 
-### R1 — Router (Navigation)
-
-**Fonction** : Orienter vers les sous-pages
-**Max mots** : 150
-
-**INTERDIT sur R1** :
-- `bruit`, `usé`, `cassé`, `problème`, `symptôme`, `panne`, `défaillance`, `vibration`, `claquement`
-- `quand`, `pourquoi`, `comment diagnostiquer`, `comment savoir`
-- `causes`, `risques`, `danger`, `conséquences`, `si vous ne changez pas`
-
-### R2 — Product (Transaction)
-
-**Fonction** : Vendre un produit spécifique
-
-**REQUIS sur R2** (au moins un) :
-- `prix`, `€`, `euro`, `ajouter`, `panier`, `acheter`, `commander`, `en stock`, `livraison`
-
-**INTERDIT sur R2** :
-- `choisir son véhicule`, `choisissez votre véhicule`, `sélectionnez votre marque`
-- `toutes les marques`, `tous les modèles`
-
-**EXCLUSIF R2** (réservé uniquement aux pages R2) :
-- `€`, `prix`, `ajouter au panier`, `commander`, `livraison gratuite`
-- `en stock`, `rupture de stock`, `garantie constructeur`, `réf. constructeur`, `frais de port`
-
-### R3 — Blog (Information)
-
-**Fonction** : Contenu éditorial, guides
-
-**INTERDIT sur R3** :
-- `sélectionnez votre véhicule`, `choisir votre véhicule`, `filtrer par`
-- `trier par`, `affiner la recherche`, `filtres`, `tous les véhicules compatibles`
-
-### R4 — Reference (Définition)
-
-**Fonction** : Définir un terme technique (intemporel, générique)
-
-**INTERDIT sur R4** :
-- **Commercial** : `prix`, `€`, `euro`, `acheter`, `commander`, `ajouter au panier`, `livraison`, `en stock`, `promotion`, `promo`, `solde`
-- **Véhicules** : `peugeot`, `renault`, `citroen`, `volkswagen`, `audi`, `bmw`, `mercedes`, `ford`, `opel`, `fiat`, `toyota`, `nissan`, `206`, `208`, `308`, `3008`, `clio`, `megane`, `golf`, `polo`, `a3`, `a4`
-- **Sélection** : `sélectionnez votre véhicule`, `filtrer par`, `tous les véhicules compatibles`
-
-**EXCLUSIF R4** (réservé uniquement aux pages R4) :
-- `définition`, `qu'est-ce que`, `qu'est-ce qu'`, `désigne`
-- `se compose de`, `composé de`, `terme technique`, `vocabulaire auto`
-- `glossaire`, `par définition`, `au sens strict`, `ne pas confondre avec`
-
-### R5 — Diagnostic (Symptômes)
-
-**Fonction** : Aider à identifier un problème
-
-**REQUIS sur R5** (au moins un) :
-- `symptôme`, `symptômes`, `diagnostic`, `diagnostiquer`, `bruit`, `vibration`
-- `panne`, `problème`, `signe`, `code dtc`, `code obd`
-
-**INTERDIT sur R5** :
-- `prix`, `€`, `euro`, `acheter`, `commander`, `ajouter au panier`, `livraison`, `en stock`, `promotion`
-
-**EXCLUSIF R5** (réservé uniquement aux pages R5) :
-- `symptôme`, `symptômes`, `bruit anormal`, `vibration anormale`
-- `quand changer`, `quand remplacer`, `comment savoir si`
-- `signe de`, `signes de`, `diagnostic`, `diagnostiquer`
-- `panne potentielle`, `usure prématurée`
-
-### R6 — Support (Aide)
-
-**Fonction** : Contenu informatif (FAQ, politiques)
+> **OBLIGATOIRE** : Lire `references/page-roles.md` pour le vocabulaire complet (INTERDIT, REQUIS, EXCLUSIF) et les règles de maillage interne avant toute rédaction.
 
 ---
 
@@ -254,94 +331,58 @@ Si une information n'est pas confirmée, utiliser EXCLUSIVEMENT :
 
 ---
 
-## Structure de Contenu Standard
+## Correction Linguistique (OBLIGATOIRE)
 
-```markdown
-# H1 — Descriptif factuel (sans promesse)
+**Toute sortie doit être irréprochable en français.** Cela s'applique aussi aux données provenant de la BDD ou du RAG.
 
-## Introduction
-- Contexte
-- Portée réelle
-- Limites explicites
+### Périmètre de correction
 
-## H2 — Fonction / Rôle
-- Description neutre
-- Usage réel (confirmé)
+| Source | Action |
+|--------|--------|
+| Contenu rédigé par le skill | Corriger systématiquement avant livraison |
+| Données BDD (titres, descriptions, FAQ, symptômes) | Corriger dans le contenu généré. Signaler les erreurs d'origine pour correction en base |
+| Données RAG (knowledge docs) | Corriger dans le contenu généré. Signaler les erreurs d'origine |
+| Données utilisateur | Corriger silencieusement sauf si le sens change |
 
-## H2 — Périmètre d'application
-- Ce qui est confirmé
-- Formulations conditionnelles si nécessaire
+### Règles de correction
 
-## H2 — Critères de choix
-- Techniques (mesurables)
-- Vérifiables
-- Sans jugement de valeur
+1. **Orthographe** — Aucune faute tolérée (accents, doubles consonnes, mots composés)
+   - ❌ "freinage d'urgance" → ✅ "freinage d'urgence"
+   - ❌ "ammortisseur" → ✅ "amortisseur"
 
-## H2 — Bonnes pratiques
-- Sécurité
-- Entretien
-- Conformité réglementaire
+2. **Grammaire** — Accords (genre, nombre, participes), prépositions, syntaxe
+   - ❌ "les plaquette de frein est usé" → ✅ "les plaquettes de frein sont usées"
 
-## Conclusion
-- Synthèse factuelle
-- Orientation navigation (non commerciale)
+3. **Conjugaison** — Temps, modes, accords du participe passé
+   - ❌ "le disque à été changé" → ✅ "le disque a été changé"
+
+4. **Typographie française** — Espaces insécables, guillemets « », ponctuation
+
+### Si une erreur vient de la BDD ou du RAG
+
+Générer des **requêtes MCP prêtes à exécuter** (pas de signalement passif) :
+
+```
+⚠️ Corrections BDD — requêtes MCP prêtes à exécuter :
+
+mcp__supabase__execute_sql:
+  project_id: cxpojprgwgubzjyqzmoq
+  query: UPDATE pieces_gamme SET label = 'Disque de frein' WHERE label = 'Disque de Freins';
+
+Validation : SELECT pg_id, label FROM pieces_gamme WHERE pg_alias = 'disque-de-frein';
 ```
 
----
+Pour les erreurs dans les knowledge docs RAG :
 
-## Structured Data (Schema.org)
-
-### Product (pièces détachées)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "{nom_produit}",
-  "sku": "{reference}",
-  "description": "{description_courte}",
-  "brand": {
-    "@type": "Brand",
-    "name": "{marque}"
-  },
-  "offers": {
-    "@type": "Offer",
-    "availability": "https://schema.org/InStock"
-  }
-}
+```
+⚠️ Correction RAG — action Edit :
+- Fichier : /opt/automecanik/rag/knowledge/gammes/{slug}.md
+- Ligne {N} : "{erroné}" → "{corrigé}"
+- Action : Edit tool sur le fichier source
 ```
 
-### BreadcrumbList (navigation)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Pièces", "item": "/pieces"},
-    {"@type": "ListItem", "position": 2, "name": "{famille}", "item": "/pieces/{famille}"}
-  ]
-}
-```
-
-### FAQPage (questions fréquentes)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "{question}",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "{réponse_factuelle}"
-      }
-    }
-  ]
-}
-```
+> Ne JAMAIS publier du contenu avec des fautes, même si la source en contient.
+> Toujours fournir la requête de correction ET la requête de validation.
 
 ---
 
@@ -349,46 +390,85 @@ Si une information n'est pas confirmée, utiliser EXCLUSIVEMENT :
 
 Avant de répondre, vérifier :
 
-- [ ] Aucune information ajoutée (non fournie)
+**Anti-hallucination :**
+- [ ] Aucune information inventée (non fournie)
 - [ ] Aucune généralisation ("tous", "toujours")
 - [ ] Aucune promesse commerciale
 - [ ] Aucun superlatif ("meilleur", "top")
+- [ ] Formulations incertaines correctement formulées
+
+**Structure SEO :**
 - [ ] Structure H1-H2-H3 respectée
 - [ ] Meta title ≤ 60 caractères
 - [ ] Meta description 120-155 caractères
 - [ ] Contenu compatible publication massive
-- [ ] Formulations incertaines correctement formulées
+
+**RAG & conformité technique :**
+- [ ] Corpus RAG interrogé (affirmations techniques croisées)
+- [ ] mechanical_rules respectées (must_be_true, must_not_contain_concepts)
+- [ ] Termes famille présents (freinage→frein, moteur→combustion, etc.)
+
+**Langue & qualité :**
+- [ ] Zéro faute d'orthographe, grammaire et conjugaison
+- [ ] Données BDD/RAG corrigées (erreurs d'origine signalées)
+- [ ] Typographie française respectée (espaces insécables, « guillemets »)
+- [ ] Paragraphes auto-suffisants (extractibles isolément par l'IA)
+- [ ] Information front-loaded (BLUF — faits clés en début de paragraphe)
+- [ ] Pas de marqueurs AI génériques ("rôle essentiel", "bon fonctionnement")
+- [ ] Score qualité ≥ 80 (ou justification documentée si 60-79)
 
 **Si un point échoue → corriger AVANT de livrer.**
 
 ---
 
-## Compatibilité Technique
+## Mode Batch (multi-gammes)
 
-Ce skill est compatible avec :
+Pour traiter plusieurs gammes en série :
+
+1. **Lister** les gammes cibles (par famille, V-Level, ou priorité G-Level)
+2. **Exécuter** le workflow 4 phases complet pour chaque gamme
+3. **Variables template** : `{gamme}`, `{famille}`, `{pg_id}`, `{v_level}`
+4. **Gate de qualité** : si RAG insuffisant (0 résultats L1-L2), **SKIP** la gamme et signaler
+
+**Format de sortie batch :**
+
+| Gamme | Score | Status | Erreurs |
+|-------|-------|--------|---------|
+| disque de frein | 88 | OK | — |
+| plaquette de frein | 85 | OK | mechanical_rules absentes |
+| étrier de frein | SKIP | RAG insuffisant | 0 résultats L1-L2 |
+
+**Règles batch :**
+- Ne jamais baisser la qualité pour aller plus vite — chaque gamme suit le workflow complet
+- Signaler les gammes SKIP en fin de batch avec la raison
+- Fraîcheur : appliquer le check `updated_at` à chaque knowledge doc
+
+---
+
+## Compatibilité Technique
 
 | Système | Usage |
 |---------|-------|
 | SEO programmatique | Génération à grande échelle |
 | V-Level / G-Level | Priorisation par volume/croissance |
-| Pages piliers | Structure hub/spoke |
 | Remix SSR | Contenu pré-rendu |
 | DynamicSeoV4UltimateService | Variables dynamiques |
 | `__seo_*` tables Supabase | Données SEO centralisées |
-| IA search / LLM discovery | Structure claire, pas de bruit |
+| **Corpus RAG** | **Vérification technique, provenance source (rag://docId)** |
+| **GEO / AI Search** | **Paragraphes extractibles par ChatGPT, Perplexity, AI Overviews** |
+| **Quality Scoring Backend** | **Aligné avec enricher penalties (8 flags, 6 dimensions)** |
 
 ---
 
 ## Interaction avec Autres Skills
 
-| Skill | Rôle | Ce skill fait |
-|-------|------|---------------|
-| content-strategy | Décider QUOI écrire | → Reçoit les specs |
-| **seo-content-architect** | Décider COMMENT écrire | → Produit le contenu |
-| seo-programmatic | Génération à échelle | → Utilise les templates |
-| seo-audit | Contrôle qualité | → Vérifie le contenu |
+| Skill | Direction | Declencheur |
+|-------|-----------|-------------|
+| `content-audit` | ← recoit | Apres production contenu, `/content-audit` valide la qualite (chaine CONTENU) |
+| `rag-ops` | ← recoit | Phase 1b verification RAG — `/rag-ops` fournit le corpus verifie |
+| `db-migration` | ← recoit | Si modifications sur tables `__seo_*` ou `pieces_gamme`, `/db-migration` est propose en amont |
 
-👉 **Ne jamais fusionner les rôles.**
+Ne jamais fusionner les roles.
 
 ---
 
@@ -406,9 +486,12 @@ Sauf indication contraire explicite, tout le contenu est rédigé en français a
 ## Résultat Attendu
 
 Un contenu :
-- ✅ Publiable tel quel (sans relecture)
+- ✅ Publiable tel quel (score qualité ≥ 80, plafonné à 90 en auto-évaluation)
 - ✅ Juridiquement neutre
 - ✅ SEO propre (balises, structure, keywords)
-- ✅ Scalable (templates réutilisables)
+- ✅ GEO-ready (extractible par ChatGPT, Perplexity, AI Overviews)
+- ✅ Vérifié contre le corpus RAG (provenance traçable)
+- ✅ E-E-A-T conforme (experience, expertise, autorité, confiance)
+- ✅ Scalable (templates réutilisables, 4M+ produits)
 - ✅ Sans dette sémantique
 - ✅ Sans hallucination

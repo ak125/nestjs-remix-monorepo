@@ -1,12 +1,21 @@
 ---
 name: ui-ux-pro-max
-description: "UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refactor, check UI/UX code. Projects: website, landing page, dashboard, admin panel, e-commerce, SaaS, portfolio, blog, mobile app, .html, .tsx, .vue, .svelte. Elements: button, modal, navbar, sidebar, card, table, form, chart. Styles: glassmorphism, claymorphism, minimalism, brutalism, neumorphism, bento grid, dark mode, responsive, skeuomorphism, flat design. Topics: color palette, accessibility, animation, layout, typography, font pairing, spacing, hover, shadow, gradient. Integrations: shadcn/ui MCP for component search and examples."
+description: "UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks. Search, generate design systems, accessibility audit."
+argument-hint: "[design-query or component-type]"
+version: "1.1"
 ---
 # UI/UX Pro Max - Design Intelligence
 
 Comprehensive design guide for web and mobile applications. Contains 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines, and 25 chart types across 13 technology stacks. Searchable database with priority-based recommendations.
 
-## When to Apply
+## Quand proposer ce skill
+
+| Contexte detecte | Proposition |
+|------------------|------------|
+| Choix palette, couleurs, typographie | `/ui-ux-pro-max [requete design]` |
+| Audit accessibilite WCAG ou contraste | `/ui-ux-pro-max accessibility audit` |
+| Construction dashboard ou landing page | `/ui-ux-pro-max [type de page]` |
+| Apres `/frontend-design` pour validation | `/ui-ux-pro-max [composant]` (chaine UI) |
 
 Reference these guidelines when:
 - Designing new UI components or pages
@@ -86,10 +95,158 @@ Reference these guidelines when:
 
 ## How to Use
 
-Search specific domains using the CLI tool below.
+This skill operates in 3 modes depending on the user's need:
+
+### Mode 1 — Generate (design system creation)
+
+Use the CLI tool below to generate a complete design system. This is the existing workflow (Steps 1-4).
+
+### Mode 2 — Validate (component/page audit)
+
+Audit an existing component or page against UI/UX standards. Follow the Workflow Validate below.
+
+### Mode 3 — Audit (full design system check)
+
+Comprehensive audit of the entire design system: tokens usage, palette coherence, typography hierarchy, accessibility.
 
 ---
 
+## Workflow Validate (4 phases)
+
+### Phase 1 — SCAN (identifier le composant)
+
+1. **Lire le fichier** cible (composant, page, section)
+2. **Extraire** : classes Tailwind, couleurs hardcodees, polices, spacing, z-index
+3. **Identifier** le role de page (R1-R6) ou le type de composant (card, form, nav, hero, etc.)
+4. **Lister** les elements interactifs (boutons, liens, inputs, selects)
+
+### Phase 2 — CHECK (comparer aux standards)
+
+Appliquer ces checks dans l'ordre de priorite :
+
+| # | Check | Seuil | Severite |
+|---|-------|-------|----------|
+| 1 | Contraste texte/fond | >= 4.5:1 (normal), >= 3:1 (large) | BLOQUANT |
+| 2 | Touch targets mobile | >= 44x44px | BLOQUANT |
+| 3 | `aria-label` boutons icone-only | Present sur tous | BLOQUANT |
+| 4 | `alt` text images | Present sur toutes | BLOQUANT |
+| 5 | Focus visible (keyboard) | Ring visible sur interactifs | BLOQUANT |
+| 6 | `prefers-reduced-motion` | Animations respectent | BLOQUANT |
+| 7 | Semantic HTML | `<button>` pas `<div onClick>` | BLOQUANT |
+| 8 | Couleurs = design tokens | Pas de hex hardcode | HAUTE |
+| 9 | Police = systeme typo | Pas de font hors systeme | HAUTE |
+| 10 | Spacing = echelle Tailwind | Pas de valeurs arbitraires | HAUTE |
+| 11 | `cursor-pointer` | Sur tous les elements cliquables | HAUTE |
+| 12 | Transitions hover | 150-300ms, transform/opacity only | MOYENNE |
+| 13 | z-index echelle | 10, 20, 30, 50 (pas de valeurs random) | MOYENNE |
+| 14 | Responsive 4 breakpoints | 375px, 768px, 1024px, 1440px | MOYENNE |
+| 15 | Skeleton/loading states | Dimensions fixes, pas de CLS | BASSE |
+| 16 | Micro-interactions | Feedback visuel au click/tap | BASSE |
+
+### Phase 3 — REPORT (rapport structure)
+
+Generer le rapport au format de sortie ci-dessous.
+
+### Phase 4 — FIX (corrections sur demande)
+
+Si l'utilisateur demande les corrections :
+1. Corriger les BLOQUANTS en priorite
+2. Proposer les fixes HAUTE avec diff
+3. MOYENNE et BASSE = suggestions backlog
+
+---
+
+## Niveaux de Severite
+
+| Niveau | Symbole | Definition | Impact |
+|--------|---------|-----------|--------|
+| **BLOQUANT** | :no_entry: | Accessibilite cassee (contraste < 3:1, touch < 44px, aria manquant, `<div onClick>`) | Correction OBLIGATOIRE avant livraison |
+| **HAUTE** | :warning: | Design system viole (hex hardcode, police hors systeme, token manquant, cursor manquant) | Discussion requise |
+| **MOYENNE** | :bulb: | Inconsistance (spacing non-standard, z-index random, radius non-standard) | Backlog |
+| **BASSE** | :information_source: | Nice-to-have (animation, micro-interaction, skeleton) | Optionnel |
+
+**Criteres de conformite :**
+- 0 BLOQUANT = condition necessaire
+- 0 HAUTE non-resolue = condition necessaire
+- MOYENNE + BASSE = informatif, ne bloque pas
+
+---
+
+## Tokens Automecanik
+
+**Source de verite :** `packages/design-tokens/src/tokens/design-tokens.json`
+
+| Token | Valeur | Usage Tailwind | Contexte |
+|-------|--------|---------------|----------|
+| `primary` | `#e8590c` (orange) | `bg-primary`, `text-primary` | CTA, prix, urgence, accents |
+| `secondary` | `#0d1b3e` (dark blue) | `bg-secondary`, `text-secondary` | Headers, navigation, confiance |
+| `background` | `#ffffff` | `bg-background` | Fond principal |
+| `surface` | `#f8f9fa` | `bg-surface` | Cartes, zones secondaires |
+| `border` | `#e2e8f0` | `border-border` | Separateurs, contours |
+| `success` | vert | `text-green-*` | Stock disponible, validations |
+| `warning` | amber | `text-amber-*` | Alertes, stock faible |
+| `danger` | rouge | `text-red-*` | Erreurs, rupture stock |
+
+**Regles tokens :**
+- Utiliser les classes Tailwind semantic (`bg-primary`) en priorite
+- Ne JAMAIS hardcoder `#e8590c` directement — utiliser le token
+- Si extension necessaire, justifier et documenter dans le design system
+- Importer depuis `packages/design-tokens/src/tokens/generated.ts` ou CSS vars
+
+---
+
+## Format de Sortie (mode Validate)
+
+```markdown
+## UI/UX Validation — [composant ou page]
+
+### Scope
+- Fichier(s) : [liste]
+- Type : [composant / page / section]
+- Role : [R1-R6 ou type composant]
+
+### Standards Check
+
+| # | Check | Status | Details |
+|---|-------|--------|---------|
+| 1 | Contraste >= 4.5:1 | PASS/FAIL | [valeur mesuree] |
+| 2 | Touch targets >= 44px | PASS/FAIL | [taille mesuree] |
+| 3 | aria-label icones | PASS/FAIL | [N manquants] |
+| 4 | alt text images | PASS/FAIL | [N manquantes] |
+| 5 | Focus visible | PASS/FAIL | ... |
+| 6 | prefers-reduced-motion | PASS/FAIL | ... |
+| 7 | Semantic HTML | PASS/FAIL | ... |
+| 8 | Design tokens | PASS/FAIL | [N hex hardcodes] |
+| 9 | Systeme typo | PASS/FAIL | [fonts hors systeme] |
+| 10 | Spacing standard | PASS/FAIL | ... |
+| 11 | cursor-pointer | PASS/FAIL | [N manquants] |
+
+### Issues
+
+#### BLOQUANT (N)
+- [fichier:ligne] Description du probleme
+
+#### HAUTE (N)
+- [fichier:ligne] Description du probleme
+
+#### MOYENNE (N)
+- [fichier:ligne] Description
+
+#### BASSE (N)
+- [fichier:ligne] Description
+
+### Verdict
+- [ ] **CONFORME** — 0 BLOQUANT, 0 HAUTE non-resolue
+- [ ] **NON-CONFORME** — [N] BLOQUANT(s), [N] HAUTE(s) a corriger
+```
+
+---
+
+## Generate Mode — CLI Reference
+
+Search specific domains using the CLI tool below.
+
+---
 
 ## Prerequisites
 
@@ -375,3 +532,13 @@ Before delivering UI code, verify these items:
 - [ ] Form inputs have labels
 - [ ] Color is not the only indicator
 - [ ] `prefers-reduced-motion` respected
+
+---
+
+## Interaction avec Autres Skills
+
+| Skill | Direction | Declencheur |
+|-------|-----------|-------------|
+| `frontend-design` | ← recoit | Apres `/frontend-design`, valider standards design (contraste, accessibilite) |
+| `ui-os` | ← recoit | `/ui-os` phase standards delegue a `/ui-ux-pro-max` |
+| `responsive-audit` | → complement | `/ui-ux-pro-max` valide design, `/responsive-audit` valide mobile |

@@ -1,8 +1,25 @@
+---
+name: ui-os
+description: "UI Operating System: full UI architecture audit, design system governance, mobile-first compliance across 6 phases."
+argument-hint: "[full-audit or phase-number]"
+disable-model-invocation: true
+version: "1.1"
+---
+
 # Automekanik UI Operating System (UI-OS)
 
 > **Skill Name:** `ui-os`
 > **Invocation:** `/ui-os` or when working on UI architecture tasks
 > **Scope:** Full UI system architecture, audit, and governance
+
+## Quand proposer ce skill
+
+| Contexte detecte | Proposition |
+|------------------|------------|
+| Demande audit UI complet ou coherence design | `/ui-os full-audit` |
+| Incoherence tokens/composants detectee | `/ui-os [phase]` |
+| Avant sprint UI majeur (planification) | `/ui-os full-audit` |
+| Apres ajout de nombreux composants | `/ui-os 2` (phase composants) |
 
 ---
 
@@ -274,3 +291,13 @@ Les fichiers d'extraction existent déjà dans `scripts/ui-audit/extraction/`:
 - `responsive.strategy.observed.md` ✅
 
 Utiliser ces données comme base pour les phases suivantes.
+
+---
+
+## Interaction avec Autres Skills
+
+| Skill | Direction | Declencheur |
+|-------|-----------|-------------|
+| `frontend-design` | → propose | Phase 5 identifie composants manquants → `/frontend-design` les construit |
+| `ui-ux-pro-max` | → propose | Phase 2 detecte violations standards → `/ui-ux-pro-max` valide |
+| `responsive-audit` | → propose | Phase 6 prepare les breakpoints → `/responsive-audit` valide mobile |
