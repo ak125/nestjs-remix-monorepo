@@ -32,7 +32,7 @@ import { AdminGammesSeoThresholdsController } from './controllers/admin-gammes-s
 import { AdminGammesSeoVlevelController } from './controllers/admin-gammes-seo-vlevel.controller'; // 📊 Gammes SEO - V-Level & Section K
 import { AdminGammesSeoAggregatesController } from './controllers/admin-gammes-seo-aggregates.controller'; // 🏷️ Gammes SEO - Agrégats
 import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
-import { AdminVehicleResolveController } from './controllers/admin-vehicle-resolve.controller'; // 🚗 Vehicle type resolve
+// AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
@@ -93,7 +93,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
     AdminGammesSeoVlevelController, // 📊 Gammes SEO - V-Level & Section K
     AdminGammesSeoAggregatesController, // 🏷️ Gammes SEO - Agrégats badges
     SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
-    AdminVehicleResolveController, // 🚗 Vehicle type resolve - /api/admin/vehicles/*
+    // AdminVehicleResolveController supprimé
     AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
   ],
   providers: [
