@@ -1,44 +1,65 @@
 /**
- * 🚀 Service API pour les pages gamme avec fallback automatique
+ * Service API pour les pages gamme avec fallback automatique
  *
- * Stratégie :
+ * Strategie :
  * 1. Essaie RPC V2 (ultra-rapide : ~75ms)
- * 2. Si échec, fallback sur méthode classique (~680ms)
+ * 2. Si echec, fallback sur methode classique (~680ms)
  * 3. Log les performances pour monitoring
  */
 
+import {
+  type GammePageMeta,
+  type GammePageFamille,
+  type GammePagePerformance,
+  type GammePageMotorisationItem,
+  type GammePageCatalogueItem,
+  type GammePageEquipementierItem,
+  type GammePageConseilItem,
+  type GammePagePurchaseGuideData,
+  type GammePageBuyingGuide,
+} from "~/types/gamme-page-contract.types";
 import { logger } from "~/utils/logger";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 
-interface GammePageData {
-  meta: {
-    title: string;
-    description: string;
-    keywords: string;
-    robots: string;
-    canonical: string;
-  };
+export interface GammeApiResponse {
+  meta: GammePageMeta;
   hero: {
     h1: string;
     content: string;
     image: string;
     wall: string;
-    famille_info?: Record<string, unknown>;
+    famille_info?: GammePageFamille;
+    pg_name?: string;
+    pg_alias?: string;
   };
-  motorisations: Record<string, unknown>[];
+  motorisations?: {
+    title: string;
+    items: GammePageMotorisationItem[];
+  } | null;
   catalogueFiltres?: Record<string, unknown>;
-  equipementiers?: Record<string, unknown>;
-  conseils?: Record<string, unknown>;
-  informations?: Record<string, unknown>;
-  guideAchat?: Record<string, unknown>;
-  catalogueMameFamille?: Record<string, unknown>;
-  famille?: Record<string, unknown>;
-  performance?: {
-    total_time_ms: number;
-    rpc_time_ms?: number;
-    motorisations_count: number;
-  };
+  equipementiers?: {
+    title: string;
+    items: GammePageEquipementierItem[];
+  } | null;
+  conseils?: {
+    title: string;
+    content: string;
+    items: GammePageConseilItem[];
+  } | null;
+  informations?: {
+    title: string;
+    content: string;
+    items: string[];
+  } | null;
+  guideAchat?: Record<string, unknown> & { updated?: string };
+  gammeBuyingGuide?: GammePageBuyingGuide | null;
+  catalogueMameFamille?: {
+    title: string;
+    items: GammePageCatalogueItem[];
+  } | null;
+  purchaseGuideData?: GammePagePurchaseGuideData | null;
+  performance?: GammePagePerformance;
 }
 
 interface FetchOptions {
@@ -47,22 +68,22 @@ interface FetchOptions {
 }
 
 /**
- * Récupère les données d'une page gamme avec stratégie de fallback
+ * Recupere les donnees d'une page gamme avec strategie de fallback
  */
 export async function fetchGammePageData(
   gammeId: number | string,
   options: FetchOptions = {},
-): Promise<GammePageData> {
+): Promise<GammeApiResponse> {
   const { signal, useRpcV2 = true } = options;
 
   const startTime = performance.now();
 
-  // Tentative RPC V2 (ultra-optimisé)
+  // Tentative RPC V2 (ultra-optimise)
   if (useRpcV2) {
     try {
       logger.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
 
-      // Timeout spécifique pour RPC V2 (10s max)
+      // Timeout specifique pour RPC V2 (10s max)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       const rpcSignal = signal || controller.signal;
@@ -81,7 +102,7 @@ export async function fetchGammePageData(
         const data = await rpcResponse.json();
         const elapsed = performance.now() - startTime;
 
-        // Pas d'erreur dans la réponse
+        // Pas d'erreur dans la reponse
         if (!data.error) {
           logger.log(
             `✅ RPC V2 SUCCESS pour gamme ${gammeId} en ${elapsed.toFixed(0)}ms` +
@@ -106,8 +127,8 @@ export async function fetchGammePageData(
     }
   }
 
-  // Fallback sur méthode classique
-  logger.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
+  // Fallback sur methode classique
+  logger.log(`🔄 Fallback methode classique pour gamme ${gammeId}...`);
 
   // Timeout pour fallback (60s max)
   const fallbackController = new AbortController();
@@ -145,17 +166,17 @@ export async function fetchGammePageData(
 }
 
 /**
- * Feature flag pour activer/désactiver RPC V2
- * À configurer via variable d'environnement
+ * Feature flag pour activer/desactiver RPC V2
+ * A configurer via variable d'environnement
  */
-export const ENABLE_RPC_V2 = process.env.ENABLE_RPC_V2 !== "false"; // Activé par défaut
+export const ENABLE_RPC_V2 = process.env.ENABLE_RPC_V2 !== "false"; // Active par defaut
 
 /**
- * Version simplifiée pour compatibilité
+ * Version simplifiee pour compatibilite
  */
 export async function fetchGammePageDataLegacy(
   gammeId: number | string,
   signal?: AbortSignal,
-): Promise<GammePageData> {
+): Promise<GammeApiResponse> {
   return fetchGammePageData(gammeId, { signal, useRpcV2: ENABLE_RPC_V2 });
 }

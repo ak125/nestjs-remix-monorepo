@@ -70,6 +70,7 @@ import {
   type GammePageDataV1,
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
+import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -289,30 +290,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           pg_pic: toProxyImageUrl(heroData.image) ?? "",
           pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }
-      : null;
-
-    const meta = apiData.meta ?? null;
-
-    // Guard Tier 1 : la page ne peut pas rendre sans meta + content
-    if (!content || !meta) {
-      logger.error(
-        `[pieces/$slug] Tier 1 manquant — gammeId=${gammeId}, content=${!!content}, meta=${!!meta}`,
-      );
-      throw new Response("Internal Server Error", { status: 500 });
-    }
+      : undefined;
 
     // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
       [
         { label: "Accueil", href: "/" },
-        { label: content.pg_name || "Piece", current: true },
+        { label: content?.pg_name || "Piece", current: true },
       ],
       null,
-    );
-
-    logger.log(
-      "🍞 Breadcrumb:",
-      breadcrumbItems.map((i) => i.label).join(" → "),
     );
 
     // Substitution : 404/410 handling
@@ -334,38 +320,40 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       });
     }
 
-    // Construire le contrat GammePageDataV1
-    const pageData: GammePageDataV1 = {
+    // Validation Zod avec degradation gracieuse
+    const { data: pageData, degraded } = parseGammePageData({
       _v: GAMME_PAGE_CONTRACT_VERSION,
       pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
         clusterId: "gamme",
         canonicalEntity: slug,
       }),
       status: 200,
-      meta,
+      meta: apiData.meta,
       content,
       breadcrumbs: { items: breadcrumbItems },
-      famille: heroData?.famille_info ?? null,
-      performance: apiData.performance ?? null,
-      motorisations: apiData.motorisations ?? null,
-      catalogueMameFamille: apiData.catalogueMameFamille ?? null,
-      equipementiers: apiData.equipementiers ?? null,
-      conseils: apiData.conseils ?? null,
-      informations: apiData.informations ?? null,
-      seoSwitches: seoSwitches ?? null,
+      famille: heroData?.famille_info,
+      performance: apiData.performance,
+      motorisations: apiData.motorisations,
+      catalogueMameFamille: apiData.catalogueMameFamille,
+      equipementiers: apiData.equipementiers,
+      conseils: apiData.conseils,
+      informations: apiData.informations,
+      seoSwitches,
       guide: apiData.guideAchat
         ? {
-            ...(apiData.guideAchat as GammePageDataV1["guide"] & {
-              updated?: string;
-            }),
+            ...apiData.guideAchat,
             date: (apiData.guideAchat as { updated?: string }).updated ?? "",
           }
-        : null,
-      selectedVehicle: selectedVehicle ?? null,
-      purchaseGuideData: apiData.purchaseGuideData ?? null,
-      gammaBuyingGuide: apiData.gammaBuyingGuide ?? null,
-      substitution: substitutionResponse ?? null,
-    };
+        : undefined,
+      selectedVehicle,
+      purchaseGuideData: apiData.purchaseGuideData,
+      gammeBuyingGuide: apiData.gammeBuyingGuide,
+      substitution: substitutionResponse,
+    });
+
+    if (degraded.length > 0) {
+      logger.warn(`[pieces/$slug] Sections degradees: ${degraded.join(", ")}`);
+    }
 
     return json(pageData, {
       headers: {
