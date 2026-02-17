@@ -107,28 +107,74 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityFlags = ['UNKNOWN_PAGE_TYPE'];
       }
 
-      // Determine final status
-      const finalStatus = qualityScore >= 70 ? 'draft' : 'failed';
+      // Inject internal link markers post-enrichment (Gap 3)
+      if (qualityScore >= 70 && pageType !== 'R4_reference') {
+        try {
+          const markersCount = await this.injectLinkMarkers(
+            pgId,
+            pgAlias,
+            pageType,
+          );
+          if (markersCount > 0) {
+            qualityFlags.push(`LINKS_INJECTED_${markersCount}`);
+            this.logger.log(
+              `Injected ${markersCount} link markers for ${pgAlias}/${pageType}`,
+            );
+          }
+        } catch (err) {
+          this.logger.warn(
+            `Link marker injection failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }
 
-      // Only set is_draft=true on purchase guide if quality passed
-      if (
-        finalStatus === 'draft' &&
-        (pageType === 'R1_pieces' || pageType === 'R3_guide_achat')
-      ) {
+      // Determine final status with auto-publish threshold
+      const autoPublishThreshold = parseInt(
+        this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD', '85'),
+        10,
+      );
+      let finalStatus: 'draft' | 'failed' | 'auto_published' =
+        qualityScore >= 70 ? 'draft' : 'failed';
+
+      if (qualityScore >= autoPublishThreshold) {
+        finalStatus = 'auto_published';
+      }
+
+      // Update dependent tables based on status
+      if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+        if (finalStatus === 'auto_published') {
+          // Auto-publish: make content live immediately
+          await this.client
+            .from('__seo_gamme_purchase_guide')
+            .update({ sgpg_is_draft: false })
+            .eq('sgpg_pg_id', String(pgId));
+        } else if (finalStatus === 'draft') {
+          await this.client
+            .from('__seo_gamme_purchase_guide')
+            .update({ sgpg_is_draft: true })
+            .eq('sgpg_pg_id', String(pgId));
+        }
+      }
+
+      if (pageType === 'R4_reference' && finalStatus === 'auto_published') {
         await this.client
-          .from('__seo_gamme_purchase_guide')
-          .update({ sgpg_is_draft: true })
-          .eq('sgpg_pg_id', String(pgId));
+          .from('__seo_reference')
+          .update({ is_published: true })
+          .eq('slug', pgAlias);
       }
 
       // Update tracking log
+      const now = new Date().toISOString();
       await this.client
         .from('__rag_content_refresh_log')
         .update({
           status: finalStatus,
           quality_score: qualityScore,
           quality_flags: qualityFlags,
-          completed_at: new Date().toISOString(),
+          completed_at: now,
+          ...(finalStatus === 'auto_published'
+            ? { published_at: now, published_by: 'auto' }
+            : {}),
           error_message:
             finalStatus === 'failed'
               ? errorMessage || 'Quality score below threshold'
@@ -137,11 +183,11 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         .eq('id', refreshLogId);
 
       this.logger.log(
-        `Content-refresh complete: ${pgAlias}/${pageType} → ${finalStatus} (score=${qualityScore})`,
+        `Content-refresh complete: ${pgAlias}/${pageType} → ${finalStatus} (score=${qualityScore}, threshold=${autoPublishThreshold})`,
       );
 
       return {
-        status: finalStatus as 'draft' | 'failed',
+        status: finalStatus,
         qualityScore,
         qualityFlags,
         errorMessage,
@@ -168,5 +214,109 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         errorMessage: msg,
       };
     }
+  }
+
+  /**
+   * Scan enriched content for mentions of other gamme names
+   * and inject #LinkGamme_{pg_id}# markers for InternalLinkingService.
+   */
+  private async injectLinkMarkers(
+    pgId: number,
+    pgAlias: string,
+    pageType: string,
+  ): Promise<number> {
+    const { data: gammes } = await this.client
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .eq('pg_display', '1')
+      .neq('pg_alias', pgAlias)
+      .neq('pg_alias', '')
+      .limit(200);
+
+    if (!gammes?.length) return 0;
+
+    let markersInserted = 0;
+
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+      const { data: guide } = await this.client
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_id, sgpg_how_to_choose, sgpg_symptoms, sgpg_faq')
+        .eq('sgpg_pg_id', String(pgId))
+        .single();
+
+      if (guide) {
+        const fields = [
+          'sgpg_how_to_choose',
+          'sgpg_symptoms',
+          'sgpg_faq',
+        ] as const;
+        for (const field of fields) {
+          const content = guide[field] as string | null;
+          if (!content) continue;
+          const updated = this.insertMarkers(content, gammes, 3);
+          if (updated !== content) {
+            await this.client
+              .from('__seo_gamme_purchase_guide')
+              .update({ [field]: updated })
+              .eq('sgpg_id', guide.sgpg_id);
+            markersInserted++;
+          }
+        }
+      }
+    }
+
+    if (pageType === 'R3_conseils') {
+      // Conseil uses row-per-section model (sgc_content + sgc_section_type)
+      const { data: sections } = await this.client
+        .from('__seo_gamme_conseil')
+        .select('sgc_id, sgc_content, sgc_section_type')
+        .eq('sgc_pg_id', String(pgId));
+
+      if (sections?.length) {
+        for (const section of sections) {
+          const content = section.sgc_content as string | null;
+          if (!content) continue;
+          const updated = this.insertMarkers(content, gammes, 3);
+          if (updated !== content) {
+            await this.client
+              .from('__seo_gamme_conseil')
+              .update({ sgc_content: updated })
+              .eq('sgc_id', section.sgc_id);
+            markersInserted++;
+          }
+        }
+      }
+    }
+
+    return markersInserted;
+  }
+
+  /**
+   * Replace first occurrence of gamme names in text with link markers.
+   * Max `maxMarkers` replacements per text block.
+   */
+  private insertMarkers(
+    text: string,
+    gammes: Array<{ pg_id: number; pg_alias: string; pg_name: string }>,
+    maxMarkers: number,
+  ): string {
+    let result = text;
+    let count = 0;
+
+    for (const g of gammes) {
+      if (count >= maxMarkers) break;
+      const name = (g.pg_name || '').trim();
+      if (name.length < 4) continue; // skip very short names
+      const marker = `#LinkGamme_${g.pg_id}#`;
+      if (result.includes(marker)) continue; // already has this marker
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b(${escaped})\\b`, 'i');
+      if (regex.test(result)) {
+        result = result.replace(regex, `$1 ${marker}`);
+        count++;
+      }
+    }
+
+    return result;
   }
 }

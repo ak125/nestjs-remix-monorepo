@@ -6,7 +6,7 @@ export interface ContentRefreshJobData {
 }
 
 export interface ContentRefreshResult {
-  status: 'draft' | 'failed' | 'skipped';
+  status: 'draft' | 'failed' | 'skipped' | 'auto_published';
   qualityScore: number;
   qualityFlags: string[];
   errorMessage?: string;

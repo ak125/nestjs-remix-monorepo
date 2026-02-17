@@ -567,6 +567,11 @@ export class RagProxyService {
         stagedPdfPath: stagedPdfHostPath,
       };
 
+      // Start polling for completion → emit RAG_INGESTION_COMPLETED
+      if (result.jobId) {
+        this.pollPdfAndEmit(result.jobId);
+      }
+
       return result;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -1062,7 +1067,8 @@ export class RagProxyService {
   }
 
   /**
-   * Background pipeline: fetch URL → extract text → POST to RAG admin.
+   * Background pipeline: use RAG container's ingest_web.py + reindex.
+   * Writes to /tmp/ (writable) inside container, then docker cp to host.
    */
   private async processWebIngest(job: {
     jobId: string;
@@ -1073,176 +1079,156 @@ export class RagProxyService {
     returnCode: number | null;
     logLines: string[];
   }): Promise<void> {
-    // 1. Fetch the web page
-    job.logLines.push(`Fetching ${job.url}...`);
-    const fetchRes = await fetch(job.url, {
-      headers: { 'User-Agent': 'AutoMecanik-RAG-Bot/1.0' },
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!fetchRes.ok) {
-      throw new Error(`HTTP ${fetchRes.status} ${fetchRes.statusText}`);
-    }
-    const html = await fetchRes.text();
-    job.logLines.push(`Fetched ${html.length} bytes`);
-
-    // 2. Extract text from HTML
-    const content = this.htmlToText(html);
-    const title = this.extractTitle(html) || new URL(job.url).hostname;
-    job.logLines.push(`Extracted: "${title}" (${content.length} chars)`);
-
-    if (content.length < 50) {
-      throw new Error(
-        `Content too short (${content.length} chars) — page may require JavaScript rendering`,
-      );
-    }
-
-    // 3. Write markdown file with YAML frontmatter to HOST filesystem
-    const now = new Date().toISOString();
-    const fileContent = [
-      '---',
-      `title: "${title.replace(/"/g, '\\"')}"`,
-      'source_type: guide',
-      'category: knowledge',
-      `truth_level: ${job.truthLevel}`,
-      'verification_status: unverified',
-      `source_uri: ${job.url}`,
-      `source_url: ${job.url}`,
-      `created_at: '${now}'`,
-      `updated_at: '${now}'`,
-      '---',
-      '',
-      `# ${title}`,
-      '',
-      content,
-    ].join('\n');
-
+    const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
     const knowledgeHostPath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
-    const importDir = path.join(knowledgeHostPath, '_web_import', job.jobId);
-    const slug = title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s]+/g, '-')
-      .slice(0, 80);
-    const filename = `${slug}.md`;
+    const containerTmpPath = `/tmp/web-import/${job.jobId}`;
+    const safeUrl = job.url.replace(/'/g, "'\\''");
 
-    await fs.mkdir(importDir, { recursive: true });
-    await fs.writeFile(path.join(importDir, filename), fileContent, 'utf-8');
-    job.logLines.push(`Wrote ${filename} (${fileContent.length} bytes)`);
+    // Step 1: Run ingest_web.py (writes sections to /tmp/ in container)
+    job.logLines.push(`Running ingest_web.py for ${job.url}`);
+    const ingestCmd = [
+      'ENV=dev',
+      'python3 /app/scripts/ingest_web.py',
+      `--url '${safeUrl}'`,
+      `--knowledge-path '${containerTmpPath}'`,
+      `--truth-level ${job.truthLevel}`,
+      '--no-images',
+      '-v',
+    ].join(' ');
 
-    // 4. docker exec reindex with ENV=dev (same pattern as PDF pipeline)
-    job.logLines.push(`Reindexing via docker exec...`);
-    const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
-    const containerImportPath = `/knowledge/_web_import/${job.jobId}`;
-    const { spawn } = await import('node:child_process');
+    await this.execDockerCmd(containerName, ingestCmd, job);
 
+    // Step 2: Detect output subdirectory (web/ or web-catalog/)
+    const { execSync } = await import('node:child_process');
+    const lsOutput = execSync(
+      `docker exec ${containerName} ls ${containerTmpPath}/`,
+      { encoding: 'utf-8', timeout: 5_000 },
+    ).trim();
+    const subDir = lsOutput.includes('web-catalog') ? 'web-catalog' : 'web';
+    job.logLines.push(`Output: ${subDir}/ (${lsOutput.replace(/\n/g, ', ')})`);
+
+    // Step 3: Copy results from container /tmp/ to host knowledge dir
+    execSync(
+      `docker cp ${containerName}:${containerTmpPath}/. ${knowledgeHostPath}/`,
+      { timeout: 15_000 },
+    );
+    job.logLines.push('Copied sections to knowledge directory');
+
+    // Step 4: Reindex the new files in Weaviate
+    job.logLines.push('Reindexing...');
     const reindexCmd = [
       'ENV=dev',
       'WEAVIATE_URL=http://weaviate-prod:8080',
-      'python scripts/reindex.py',
-      `--path '${containerImportPath}'`,
+      'python3 /app/scripts/reindex.py',
+      `--path '/knowledge/${subDir}'`,
       '--collection AUTO',
-      '--batch-size 1',
+      '--batch-size 5',
       '--cpu-strict',
       '--strict-routing',
     ].join(' ');
 
-    await new Promise<void>((resolve, reject) => {
-      const child = spawn('docker', [
-        'exec',
-        containerName,
-        'bash',
-        '-c',
-        reindexCmd,
-      ]);
-      child.stdout?.on('data', (d: Buffer) => {
-        const lines = d.toString().split('\n').filter(Boolean);
-        job.logLines.push(...lines);
-      });
-      child.stderr?.on('data', (d: Buffer) => {
-        const lines = d.toString().split('\n').filter(Boolean);
-        job.logLines.push(...lines);
-      });
-      child.on('close', (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`reindex exited with code ${code}`));
-      });
+    await this.execDockerCmd(containerName, reindexCmd, job);
+
+    // Step 5: Cleanup container temp
+    execSync(`docker exec ${containerName} rm -rf ${containerTmpPath}`, {
+      timeout: 5_000,
     });
 
-    // 5. Copy file to permanent web/ dir and clean up temp
-    const webDir = path.join(knowledgeHostPath, 'web');
-    await fs.mkdir(webDir, { recursive: true });
-    await fs.copyFile(
-      path.join(importDir, filename),
-      path.join(webDir, filename),
-    );
-    await fs.rm(importDir, { recursive: true, force: true });
-
-    // 6. Mark as done
     job.status = 'done';
     job.returnCode = 0;
     job.finishedAt = Math.floor(Date.now() / 1000);
-    job.logLines.push(`Done — ${filename} ingested and indexed`);
+    job.logLines.push(`Done — ${subDir}/ sections ingested and indexed`);
     this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
+
+    // Emit event to trigger content refresh pipeline
+    this.emitIngestionCompleted(job.jobId, 'web');
   }
 
-  /** Strip HTML to plain text, preserving basic structure. */
-  private htmlToText(html: string): string {
-    let text = html;
+  /** Exec a command inside a docker container with log streaming. */
+  private async execDockerCmd(
+    container: string,
+    cmd: string,
+    job: { logLines: string[] },
+  ): Promise<void> {
+    const { spawn } = await import('node:child_process');
+    return new Promise<void>((resolve, reject) => {
+      const child = spawn('docker', ['exec', container, 'bash', '-c', cmd]);
+      child.stdout?.on('data', (d: Buffer) => {
+        for (const line of d.toString().split('\n').filter(Boolean)) {
+          job.logLines.push(line.trim());
+        }
+      });
+      child.stderr?.on('data', (d: Buffer) => {
+        for (const line of d.toString().split('\n').filter(Boolean)) {
+          job.logLines.push(line.trim());
+        }
+      });
+      child.on('close', (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`Command exited with code ${code}`));
+      });
+    });
+  }
 
-    // Phase 1: Remove non-content blocks
-    text = text.replace(
+  /** Strip HTML to markdown-like text, preserving basic structure. */
+  private htmlToText(html: string): string {
+    let t = html;
+    // Phase 1: strip data-* attrs and non-content blocks
+    t = t.replace(/\sdata-[a-z-]+="[^"]*"/gi, '');
+    t = t.replace(
       /<(script|style|noscript|svg|iframe)\b[^>]*>[\s\S]*?<\/\1>/gi,
       '',
     );
-    text = text.replace(
+    t = t.replace(
       /<(nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi,
       '',
     );
-    text = text.replace(
+    // eslint-disable-next-line no-useless-escape
+    t = t.replace(
       /<[^>]+(class|id)="[^"]*\b(cookie|banner|popup|modal|gdpr|consent|sidebar|menu)\b[^"]*"[^>]*>[\s\S]*?<\/[a-z]+>/gi,
       '',
     );
-
-    // Phase 2: Convert to markdown
-    text = text.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
-    text = text.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n');
-    text = text.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
-    text = text.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n#### $1\n');
-    text = text.replace(/<h[56][^>]*>(.*?)<\/h[56]>/gi, '\n##### $1\n');
-    text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, '\n- $1');
-    text = text.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
-    text = text.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
-    text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
-    text = text.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
-    text = text.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1');
-    text = text.replace(/<br\s*\/?>/gi, '\n');
-    text = text.replace(
+    // Phase 2: convert to markdown
+    t = t.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n# $1\n');
+    t = t.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n');
+    t = t.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n');
+    t = t.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n#### $1\n');
+    t = t.replace(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/gi, '\n##### $1\n');
+    t = t.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1');
+    t = t.replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**');
+    t = t.replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, '**$1**');
+    t = t.replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, '*$1*');
+    t = t.replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, '*$1*');
+    t = t.replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, '$1');
+    t = t.replace(/<br\s*\/?>/gi, '\n');
+    t = t.replace(
       /<\/?(p|div|tr|table|section|article|blockquote)[^>]*>/gi,
       '\n',
     );
-    text = text.replace(/<\/?(ul|ol)[^>]*>/gi, '\n');
-
-    // Phase 3: Cleanup
-    text = text.replace(/<[^>]+>/g, '');
-    text = text.replace(/&nbsp;/g, ' ');
-    text = text.replace(/&amp;/g, '&');
-    text = text.replace(/&lt;/g, '<');
-    text = text.replace(/&gt;/g, '>');
-    text = text.replace(/&quot;/g, '"');
-    text = text.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
-    text = text.replace(/&#x([0-9a-f]+);/gi, (_, h) =>
-      String.fromCharCode(parseInt(h, 16)),
+    t = t.replace(/<\/?(ul|ol)[^>]*>/gi, '\n');
+    // Phase 3: cleanup
+    t = t.replace(/<[^>]+>/g, '');
+    t = t.replace(/&nbsp;/g, ' ');
+    t = t.replace(/&amp;/g, '&');
+    t = t.replace(/&lt;/g, '<');
+    t = t.replace(/&gt;/g, '>');
+    t = t.replace(/&quot;/g, '"');
+    t = t.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+    t = t.replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
     );
-    text = text.replace(/&\w+;/g, '');
-    text = text.replace(/\t/g, ' ');
-    text = text.replace(/ {2,}/g, ' ');
-    text = text
+    t = t.replace(/&\w+;/g, '');
+    t = t.replace(/<\/?\w+[^>]*>/g, '');
+    t = t.replace(/\{[^}]{50,}\}/g, '');
+    t = t.replace(/\t/g, ' ');
+    t = t.replace(/ {2,}/g, ' ');
+    t = t
       .split('\n')
-      .map((l) => l.trim())
+      .map((line) => line.trim())
       .join('\n');
-    text = text.replace(/\n{3,}/g, '\n\n');
-    return text.trim();
+    t = t.replace(/\n{3,}/g, '\n\n');
+    return t.trim();
   }
 
   /** Extract <title> from HTML. */
@@ -1318,28 +1304,69 @@ export class RagProxyService {
   }
 
   /**
-   * Scan /opt/automecanik/rag/knowledge/gammes/ for .md files modified
-   * in the last 10 minutes. Returns array of pg_alias slugs.
+   * Scan knowledge directories for recently modified .md files.
+   * - gammes/ → filename = pg_alias (direct match)
+   * - web/, web-catalog/ → read frontmatter for `gamme:` field
+   * Returns array of pg_alias slugs (deduplicated).
    */
   private detectAffectedGammes(): string[] {
     const knowledgePath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
-    const gammeDir = path.join(knowledgePath, 'gammes');
-    const cutoff = Date.now() - 10 * 60 * 1000;
+    const cutoff = Date.now() - 30 * 60 * 1000; // 30 min window for long PDF ingestions
+    const results = new Set<string>();
 
+    // 1. Scan gammes/ directory (filename = alias)
+    const gammeDir = path.join(knowledgePath, 'gammes');
     try {
-      const files = readdirSync(gammeDir);
-      return files
-        .filter((f) => f.endsWith('.md'))
-        .filter((f) => {
-          const stat = statSync(path.join(gammeDir, f));
-          return stat.mtimeMs > cutoff;
-        })
-        .map((f) => f.replace('.md', ''));
+      for (const f of readdirSync(gammeDir)) {
+        if (!f.endsWith('.md')) continue;
+        if (statSync(path.join(gammeDir, f)).mtimeMs > cutoff) {
+          results.add(f.replace('.md', ''));
+        }
+      }
     } catch {
       this.logger.warn(`Could not scan gamme knowledge dir: ${gammeDir}`);
-      return [];
     }
+
+    // 2. Scan web/ and web-catalog/ for frontmatter `gamme:` field
+    for (const subDir of ['web', 'web-catalog']) {
+      const dir = path.join(knowledgePath, subDir);
+      try {
+        for (const f of readdirSync(dir)) {
+          if (!f.endsWith('.md')) continue;
+          const fullPath = path.join(dir, f);
+          if (statSync(fullPath).mtimeMs <= cutoff) continue;
+
+          // Read first 500 chars to find frontmatter gamme field
+          try {
+            const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
+            const gammeMatch = head.match(/^gamme:\s*(.+)$/m);
+            if (gammeMatch) {
+              results.add(gammeMatch[1].trim());
+              continue;
+            }
+            const categoryMatch = head.match(/^category:\s*(.+)$/m);
+            if (categoryMatch) {
+              // Convert "Filtre à huile" → "filtre-a-huile"
+              const slug = categoryMatch[1]
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+              if (slug.length > 3) results.add(slug);
+            }
+          } catch {
+            // Skip unreadable files
+          }
+        }
+      } catch {
+        // Directory may not exist
+      }
+    }
+
+    return Array.from(results);
   }
 
   /**
