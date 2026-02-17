@@ -162,6 +162,7 @@ function cleanHtml(html: string): string {
     ALLOWED_ATTR: [
       "href",
       "class",
+      "id",
       "data-link-type",
       "data-formula",
       "data-target-gamme",

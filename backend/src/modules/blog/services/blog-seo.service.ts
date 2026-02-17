@@ -129,7 +129,7 @@ export class BlogSeoService {
    * @param pg_id ID de la gamme
    * @returns Array de switches avec alias et contenu
    */
-  async getSeoItemSwitches(pg_id: number): Promise<any[]> {
+  async getSeoItemSwitches(pg_id: number): Promise<Record<string, unknown>[]> {
     try {
       this.logger.log(`🔤 Récupération switches SEO pour pg_id=${pg_id}`);
 
@@ -164,9 +164,14 @@ export class BlogSeoService {
    * @param pg_id ID de la gamme
    * @returns Array de conseils avec titre et contenu
    */
-  async getGammeConseil(
-    pg_id: number,
-  ): Promise<Array<{ title: string; content: string }>> {
+  async getGammeConseil(pg_id: number): Promise<
+    Array<{
+      title: string;
+      content: string;
+      sectionType: string | null;
+      order: number | null;
+    }>
+  > {
     try {
       this.logger.log(
         `📋 Récupération conseils de remplacement pour pg_id=${pg_id}`,
@@ -174,8 +179,9 @@ export class BlogSeoService {
 
       const { data, error } = await this.supabaseService.client
         .from('__seo_gamme_conseil')
-        .select('*')
+        .select('sgc_title, sgc_content, sgc_section_type, sgc_order')
         .eq('sgc_pg_id', pg_id.toString())
+        .order('sgc_order', { ascending: true, nullsFirst: false })
         .order('sgc_id', { ascending: true });
 
       if (error) {
@@ -195,6 +201,8 @@ export class BlogSeoService {
       return data.map((item) => ({
         title: item.sgc_title || '',
         content: item.sgc_content || '',
+        sectionType: item.sgc_section_type || null,
+        order: item.sgc_order ? Number(item.sgc_order) : null,
       }));
     } catch (error) {
       this.logger.error(

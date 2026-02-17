@@ -209,13 +209,18 @@ export class BlogService {
     return this.seoService.injectSimpleLinks(content);
   }
 
-  async getSeoItemSwitches(pg_id: number): Promise<any[]> {
+  async getSeoItemSwitches(pg_id: number): Promise<Record<string, unknown>[]> {
     return this.seoService.getSeoItemSwitches(pg_id);
   }
 
-  async getGammeConseil(
-    pg_id: number,
-  ): Promise<Array<{ title: string; content: string }>> {
+  async getGammeConseil(pg_id: number): Promise<
+    Array<{
+      title: string;
+      content: string;
+      sectionType: string | null;
+      order: number | null;
+    }>
+  > {
     return this.seoService.getGammeConseil(pg_id);
   }
 
@@ -235,7 +240,7 @@ export class BlogService {
     pg_id: number,
     limit = 1000,
     pg_alias = '',
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     return this.relationService.getCompatibleVehicles(pg_id, limit, pg_alias);
   }
 
@@ -258,11 +263,11 @@ export class BlogService {
   /**
    * Expose la méthode de transformation pour les contrôleurs qui en ont besoin
    */
-  transformAdviceToArticle(advice: any): BlogArticle {
+  transformAdviceToArticle(advice: Record<string, unknown>): BlogArticle {
     return this.transformService.transformAdviceToArticle(advice);
   }
 
-  transformGuideToArticle(guide: any): BlogArticle {
+  transformGuideToArticle(guide: Record<string, unknown>): BlogArticle {
     return this.transformService.transformGuideToArticle(guide);
   }
 
@@ -274,7 +279,7 @@ export class BlogService {
     return this.transformService.buildImageUrl(filename, folder, marqueAlias);
   }
 
-  calculateReadingTime(content: any): number {
+  calculateReadingTime(content: string): number {
     return this.transformService.calculateReadingTime(content);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   PageRole,
   getPageRoleFromUrl,
+  getR3SubRoleFromUrl,
   PAGE_ROLE_META,
   isLinkAllowed,
   isRoleAbove,
@@ -264,8 +265,7 @@ export class PageRoleValidatorService {
     'symptômes',
     'bruit anormal',
     'vibration anormale',
-    'quand changer',
-    'quand remplacer',
+    // 'quand changer', 'quand remplacer' — déplacés en PARTAGÉ R5/R3 (page-roles.md)
     'comment savoir si',
     'signe de',
     'signes de',
@@ -273,10 +273,44 @@ export class PageRoleValidatorService {
     'diagnostiquer',
     'panne potentielle',
     'usure prématurée',
+    'code dtc',
+    'code obd',
+  ];
+
+  /**
+   * Vocabulaire EXCLUSIF R3/conseils (How-To)
+   * Ces mots ne peuvent apparaître QUE sur des pages R3/conseils
+   * Présence ailleurs = cannibalisation potentielle
+   */
+  private readonly EXCLUSIVE_VOCAB_R3_CONSEILS: string[] = [
+    'démontage',
+    'démonter',
+    'dépose',
+    'remontage',
+    'remonter',
+    'repose',
+    'étapes de remplacement',
+    'pas à pas',
+    'outils nécessaires',
+    'outils indispensables',
+    'couple de serrage',
+    'ordre de démontage',
+    'ordre de remontage',
+    "temps d'intervention",
+    'temps estimé',
+    'niveau de difficulté',
+    'vérifier après remontage',
+    'vérification finale',
+    'essai routier',
+    'essai progressif',
+    'avant de commencer',
+    'contrôler en même temps',
   ];
 
   /**
    * Map rôle → vocabulaire exclusif pour validation croisée
+   * Note: R3/conseils n'est pas dans cette map car il partage PageRole.R3_BLOG
+   * avec guide-achat. La validation R3/conseils est gérée séparément via URL.
    */
   private readonly EXCLUSIVE_VOCAB_MAP: Map<PageRole, string[]> = new Map([
     [PageRole.R2_PRODUCT, this.EXCLUSIVE_VOCAB_R2],
@@ -378,6 +412,106 @@ export class PageRoleValidatorService {
   }
 
   /**
+   * Valide une page R3/conseils (How-To)
+   * GATES: pas de contenu encyclopédique, pas de vocabulaire commercial,
+   * liens R4/R5 requis, phrases génériques détectées
+   *
+   * Phase 1: tous WARNING sauf ENCYCLOPEDIC_OVERLAP (ERROR immédiat)
+   */
+  validateR3Conseils(content: string, _url: string): RoleViolation[] {
+    const violations: RoleViolation[] = [];
+    const lowerContent = content.toLowerCase();
+
+    // Appliquer d'abord les gates R3 génériques (filtres/sélection)
+    violations.push(...this.validateR3Blog(content));
+
+    // GATE: ENCYCLOPEDIC_OVERLAP (ERROR day 1 — cannibalisation réelle R4)
+    const r4Terms = [
+      'définition',
+      'composé de',
+      'glossaire',
+      'par définition',
+      'au sens strict',
+      'terme technique',
+    ];
+    const foundR4Terms = r4Terms.filter((t) => lowerContent.includes(t));
+    if (foundR4Terms.length >= 2) {
+      violations.push({
+        type: 'exclusive_vocab_violation',
+        message: `R3/conseils: ${foundR4Terms.length} termes R4 Référence détectés (${foundR4Terms.join(', ')}) — contenu encyclopédique sur page how-to`,
+        severity: 'error',
+        details: { flag: 'ENCYCLOPEDIC_OVERLAP', terms: foundR4Terms },
+      });
+    }
+
+    // GATE: PURCHASE_VOCABULARY (WARNING Phase 1)
+    const purchaseTerms = [
+      'prix',
+      '€',
+      'euro',
+      'en stock',
+      'livraison',
+      'promotion',
+      'frais de port',
+      'ajouter au panier',
+    ];
+    for (const term of purchaseTerms) {
+      if (lowerContent.includes(term)) {
+        violations.push({
+          type: 'forbidden_keyword',
+          message: `R3/conseils: vocabulaire commercial "${term}" interdit (R2 Product)`,
+          severity: 'warning',
+          details: { flag: 'PURCHASE_VOCABULARY', keyword: term },
+        });
+        break; // Un seul suffit
+      }
+    }
+
+    // GATE: GENERIC_PHRASES (WARNING Phase 1)
+    const genericPhrases = [
+      'joue un rôle essentiel',
+      'assure le bon fonctionnement',
+      'est un élément important',
+      'il est important de noter',
+    ];
+    for (const phrase of genericPhrases) {
+      if (lowerContent.includes(phrase)) {
+        violations.push({
+          type: 'forbidden_keyword',
+          message: `R3/conseils: phrase générique AI "${phrase}" détectée`,
+          severity: 'warning',
+          details: { flag: 'GENERIC_PHRASES', phrase },
+        });
+        break;
+      }
+    }
+
+    // GATE: NO_LINK_TO_R4 (WARNING Phase 1)
+    if (!lowerContent.includes('/reference-auto/')) {
+      violations.push({
+        type: 'missing_element',
+        message:
+          'R3/conseils: aucun lien vers /reference-auto/ (maillage R4 manquant)',
+        severity: 'warning',
+        details: { flag: 'NO_LINK_TO_R4' },
+      });
+    }
+
+    // GATE: NO_LINK_TO_R5 (WARNING Phase 1)
+    if (!lowerContent.includes('/diagnostic-auto/')) {
+      violations.push({
+        type: 'missing_element',
+        message:
+          'R3/conseils: aucun lien vers /diagnostic-auto/ (maillage R5 manquant)',
+        severity: 'warning',
+        details: { flag: 'NO_LINK_TO_R5' },
+      });
+    }
+
+    return violations;
+  }
+
+  /**
    * Valide une page R4 Référence
    * GATES: pas de véhicule, pas de prix/CTA, pas de filtres
    */
@@ -473,11 +607,12 @@ export class PageRoleValidatorService {
   validateExclusiveVocabulary(
     content: string,
     pageRole: PageRole,
+    url?: string,
   ): RoleViolation[] {
     const violations: RoleViolation[] = [];
     const lowerContent = content.toLowerCase();
 
-    // Pour chaque rôle ayant un vocabulaire exclusif
+    // Pour chaque rôle ayant un vocabulaire exclusif (R2, R4, R5)
     for (const [exclusiveRole, vocabList] of Array.from(
       this.EXCLUSIVE_VOCAB_MAP.entries(),
     )) {
@@ -504,6 +639,30 @@ export class PageRoleValidatorService {
       }
     }
 
+    // Validation croisée R3/conseils (pas dans EXCLUSIVE_VOCAB_MAP car partage PageRole.R3_BLOG)
+    const isConseilsPage =
+      pageRole === PageRole.R3_BLOG &&
+      url &&
+      getR3SubRoleFromUrl(url) === 'conseils';
+
+    if (!isConseilsPage) {
+      for (const word of this.EXCLUSIVE_VOCAB_R3_CONSEILS) {
+        if (lowerContent.includes(word.toLowerCase())) {
+          violations.push({
+            type: 'exclusive_vocab_violation',
+            message: `Vocabulaire exclusif R3/conseils trouvé sur page ${pageRole}: "${word}"`,
+            severity: 'error',
+            details: {
+              word,
+              foundOnRole: pageRole,
+              belongsToRole: 'R3/conseils',
+              explanation: `Le mot "${word}" est réservé aux pages conseils how-to. Sa présence sur une page ${pageRole} crée de la cannibalisation SEO.`,
+            },
+          });
+        }
+      }
+    }
+
     return violations;
   }
 
@@ -520,16 +679,43 @@ export class PageRoleValidatorService {
   validateOwnExclusiveVocabulary(
     content: string,
     pageRole: PageRole,
+    url?: string,
   ): RoleViolation[] {
     const violations: RoleViolation[] = [];
-    const vocabList = this.EXCLUSIVE_VOCAB_MAP.get(pageRole);
+    const lowerContent = content.toLowerCase();
 
-    // Seulement pour les rôles avec vocabulaire exclusif
+    // Check R3/conseils own vocabulary (not in EXCLUSIVE_VOCAB_MAP)
+    if (
+      pageRole === PageRole.R3_BLOG &&
+      url &&
+      getR3SubRoleFromUrl(url) === 'conseils'
+    ) {
+      const hasConseilsVocab = this.EXCLUSIVE_VOCAB_R3_CONSEILS.some((word) =>
+        lowerContent.includes(word.toLowerCase()),
+      );
+      if (!hasConseilsVocab) {
+        violations.push({
+          type: 'exclusive_vocab_violation',
+          message:
+            'Page R3/conseils sans vocabulaire distinctif how-to (démontage, outils, etc.)',
+          severity: 'warning',
+          details: {
+            expectedRole: 'R3/conseils',
+            expectedVocabulary: this.EXCLUSIVE_VOCAB_R3_CONSEILS.slice(0, 5),
+            explanation:
+              'Une page conseils how-to devrait contenir au moins un mot de procédure (démontage, remontage, outils nécessaires, etc.).',
+          },
+        });
+      }
+      return violations;
+    }
+
+    // Standard check for R2/R4/R5
+    const vocabList = this.EXCLUSIVE_VOCAB_MAP.get(pageRole);
     if (!vocabList) {
       return violations;
     }
 
-    const lowerContent = content.toLowerCase();
     const hasOwnVocab = vocabList.some((word) =>
       lowerContent.includes(word.toLowerCase()),
     );
@@ -541,7 +727,7 @@ export class PageRoleValidatorService {
         severity: 'warning',
         details: {
           expectedRole: pageRole,
-          expectedVocabulary: vocabList.slice(0, 5), // Top 5 exemples
+          expectedVocabulary: vocabList.slice(0, 5),
           explanation: `Une page ${PAGE_ROLE_META[pageRole].label} devrait contenir au moins un mot de son vocabulaire exclusif pour être clairement identifiée par Google.`,
         },
       });
@@ -624,9 +810,15 @@ export class PageRoleValidatorService {
         case PageRole.R2_PRODUCT:
           violations.push(...this.validateR2Product(content));
           break;
-        case PageRole.R3_BLOG:
-          violations.push(...this.validateR3Blog(content));
+        case PageRole.R3_BLOG: {
+          const r3Sub = getR3SubRoleFromUrl(url);
+          if (r3Sub === 'conseils') {
+            violations.push(...this.validateR3Conseils(content, url));
+          } else {
+            violations.push(...this.validateR3Blog(content));
+          }
           break;
+        }
         case PageRole.R4_REFERENCE:
           violations.push(...this.validateR4Reference(content));
           break;
@@ -642,12 +834,12 @@ export class PageRoleValidatorService {
 
       // 1. Vérifier qu'on n'utilise PAS le vocabulaire d'autres rôles
       violations.push(
-        ...this.validateExclusiveVocabulary(content, roleToValidate),
+        ...this.validateExclusiveVocabulary(content, roleToValidate, url),
       );
 
       // 2. Vérifier qu'on utilise bien NOTRE vocabulaire exclusif (si applicable)
       violations.push(
-        ...this.validateOwnExclusiveVocabulary(content, roleToValidate),
+        ...this.validateOwnExclusiveVocabulary(content, roleToValidate, url),
       );
     }
 

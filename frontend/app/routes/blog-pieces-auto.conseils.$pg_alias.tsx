@@ -32,6 +32,16 @@ import {
   Bookmark,
   Tag,
   BookOpen,
+  Info,
+  AlertTriangle,
+  CheckCircle,
+  Wrench,
+  ShieldAlert,
+  ClipboardCheck,
+  Package,
+  HelpCircle,
+  ExternalLink,
+  Settings,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -146,9 +156,112 @@ interface BlogSection {
 interface GammeConseil {
   title: string;
   content: string;
+  sectionType: string | null;
+  order: number | null;
 }
 
 type ConseilArray = GammeConseil[];
+
+// --- Section styles par type (Phase 2 - rendu typé S1-S8) ---
+
+const SECTION_ICONS: Record<string, typeof Info> = {
+  S1: Info,
+  S2: AlertTriangle,
+  S3: CheckCircle,
+  S4_DEPOSE: Wrench,
+  S4_REPOSE: Wrench,
+  S5: ShieldAlert,
+  S6: ClipboardCheck,
+  S7: Package,
+  S8: HelpCircle,
+  META: ExternalLink,
+};
+
+const SECTION_STYLES: Record<
+  string,
+  { border: string; headerBg: string; label: string }
+> = {
+  S1: {
+    border: "border-blue-200",
+    headerBg: "bg-gradient-to-r from-blue-600 to-indigo-600",
+    label: "Avant de commencer",
+  },
+  S2: {
+    border: "border-amber-200",
+    headerBg: "bg-gradient-to-r from-amber-500 to-orange-500",
+    label: "Signes d'usure",
+  },
+  S3: {
+    border: "border-emerald-300",
+    headerBg: "bg-gradient-to-r from-emerald-600 to-green-600",
+    label: "Compatibilité",
+  },
+  S4_DEPOSE: {
+    border: "border-slate-200",
+    headerBg: "bg-gradient-to-r from-slate-600 to-gray-700",
+    label: "Démontage",
+  },
+  S4_REPOSE: {
+    border: "border-slate-200",
+    headerBg: "bg-gradient-to-r from-slate-600 to-gray-700",
+    label: "Remontage",
+  },
+  S5: {
+    border: "border-red-200",
+    headerBg: "bg-gradient-to-r from-red-500 to-rose-500",
+    label: "Erreurs à éviter",
+  },
+  S6: {
+    border: "border-sky-200",
+    headerBg: "bg-gradient-to-r from-sky-500 to-blue-500",
+    label: "Vérification finale",
+  },
+  S7: {
+    border: "border-green-200",
+    headerBg: "bg-gradient-to-r from-green-600 to-emerald-600",
+    label: "Pièces complémentaires",
+  },
+  S8: {
+    border: "border-violet-200",
+    headerBg: "bg-gradient-to-r from-violet-500 to-purple-500",
+    label: "FAQ",
+  },
+  META: {
+    border: "border-gray-200",
+    headerBg: "bg-gradient-to-r from-gray-400 to-gray-500",
+    label: "Articles associés",
+  },
+};
+
+const DEFAULT_SECTION_STYLE = {
+  border: "border-green-200",
+  headerBg: "bg-gradient-to-r from-green-600 to-emerald-600",
+  label: "Conseil",
+};
+
+function getSectionStyle(type: string | null) {
+  if (!type) return DEFAULT_SECTION_STYLE;
+  return SECTION_STYLES[type] || DEFAULT_SECTION_STYLE;
+}
+
+function SectionIcon({ type }: { type: string | null }) {
+  const IconComponent = (type && SECTION_ICONS[type]) || Settings;
+  return <IconComponent className="w-6 h-6" />;
+}
+
+function slugifyTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/** Strip "1. ", "a. ", "b. " etc. for title comparison */
+function stripNumberingPrefix(title: string): string {
+  return title.replace(/^[0-9a-z]+\.\s*/i, "");
+}
 
 // Loader
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -328,6 +441,10 @@ export default function LegacyBlogArticle() {
     useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const s1Section = conseil?.find((c) => c.sectionType === "S1") ?? null;
+  const articleSlugs = new Set(
+    article.sections.map((s) => slugifyTitle(stripNumberingPrefix(s.title))),
+  );
   // SSR-safe: Use ref for startTime to avoid hydration mismatch
   const startTimeRef = useRef<number>(0);
 
@@ -469,47 +586,26 @@ export default function LegacyBlogArticle() {
             <article className="lg:col-span-3 order-2 lg:order-1">
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-8 lg:p-12">
-                  {/* Section Rôle (AU DÉBUT de l'article si disponible) */}
-                  {conseil &&
-                    conseil.length > 0 &&
-                    conseil.find((c) =>
-                      c.title.toLowerCase().includes("rôle"),
-                    ) && (
-                      <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <svg
-                            className="w-6 h-6 text-blue-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          {
-                            conseil.find((c) =>
-                              c.title.toLowerCase().includes("rôle"),
-                            )!.title
-                          }
-                        </h2>
-                        <HtmlContent
-                          html={
-                            conseil.find((c) =>
-                              c.title.toLowerCase().includes("rôle"),
-                            )!.content
-                          }
-                          className="prose prose-lg max-w-none
+                  {/* Section S1 — Avant de commencer (en haut de l'article) */}
+                  {s1Section && (
+                    <div
+                      id={slugifyTitle(s1Section.title)}
+                      className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200"
+                    >
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Info className="w-6 h-6 text-blue-600" />
+                        {s1Section.title}
+                      </h2>
+                      <HtmlContent
+                        html={s1Section.content}
+                        className="prose prose-lg max-w-none
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                         prose-strong:text-gray-900 prose-strong:font-semibold"
-                          trackLinks={true}
-                        />
-                      </div>
-                    )}
+                        trackLinks={true}
+                      />
+                    </div>
+                  )}
 
                   {/* Contenu principal */}
                   <HtmlContent
@@ -617,59 +713,61 @@ export default function LegacyBlogArticle() {
               </Card>
             </article>
 
-            {/* Sections de Montage/Démontage (tous les conseils sauf "Rôle") */}
+            {/* Sections conseil S2-S8 (Cards typées, doublons article exclus) */}
             {conseil &&
-              conseil.length > 0 &&
-              conseil.filter((c) => !c.title.toLowerCase().includes("rôle"))
-                .length > 0 && (
+              conseil.filter(
+                (c) =>
+                  c.sectionType &&
+                  c.sectionType !== "S1" &&
+                  c.sectionType !== "META" &&
+                  !articleSlugs.has(
+                    slugifyTitle(stripNumberingPrefix(c.title)),
+                  ),
+              ).length > 0 && (
                 <div className="lg:col-span-3 order-2 mb-8 space-y-6">
                   {conseil
-                    .filter((c) => !c.title.toLowerCase().includes("rôle"))
-                    .map((conseilItem, index) => (
-                      <Card
-                        key={index}
-                        className="shadow-xl border-2 border-green-200 overflow-hidden"
-                      >
-                        <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                          <CardTitle className="flex items-center gap-2 text-2xl">
-                            <svg
-                              className="w-6 h-6"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                            {conseilItem.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                          <HtmlContent
-                            html={conseilItem.content}
-                            className="prose prose-lg max-w-none
-                        prose-headings:text-gray-900 prose-headings:font-bold
-                        prose-p:text-gray-700 prose-p:leading-relaxed
-                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-gray-900 prose-strong:font-semibold
-                        prose-ul:list-disc prose-ul:pl-6
-                        prose-ol:list-decimal prose-ol:pl-6
-                        prose-li:text-gray-700 prose-li:mb-2"
-                            trackLinks={true}
-                          />
-                        </CardContent>
-                      </Card>
-                    ))}
+                    .filter(
+                      (c) =>
+                        c.sectionType &&
+                        c.sectionType !== "S1" &&
+                        c.sectionType !== "META" &&
+                        !articleSlugs.has(
+                          slugifyTitle(stripNumberingPrefix(c.title)),
+                        ),
+                    )
+                    .map((conseilItem, index) => {
+                      const style = getSectionStyle(conseilItem.sectionType);
+                      return (
+                        <Card
+                          key={index}
+                          id={slugifyTitle(conseilItem.title)}
+                          className={`shadow-xl border-2 ${style.border} overflow-hidden`}
+                        >
+                          <CardHeader
+                            className={`${style.headerBg} text-white`}
+                          >
+                            <CardTitle className="flex items-center gap-2 text-2xl">
+                              <SectionIcon type={conseilItem.sectionType} />
+                              {conseilItem.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-6">
+                            <HtmlContent
+                              html={conseilItem.content}
+                              className="prose prose-lg max-w-none
+                          prose-headings:text-gray-900 prose-headings:font-bold
+                          prose-p:text-gray-700 prose-p:leading-relaxed
+                          prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                          prose-strong:text-gray-900 prose-strong:font-semibold
+                          prose-ul:list-disc prose-ul:pl-6
+                          prose-ol:list-decimal prose-ol:pl-6
+                          prose-li:text-gray-700 prose-li:mb-2"
+                              trackLinks={true}
+                            />
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                 </div>
               )}
 
@@ -688,14 +786,42 @@ export default function LegacyBlogArticle() {
             {/* Sidebar (1/3) - Sticky pour toujours visible */}
             <aside className="lg:col-span-1 order-1 lg:order-2">
               <div className="lg:sticky lg:top-20 space-y-6">
-                {/* 🆕 Table des matières avec scroll spy */}
-                {article.sections.length > 0 && (
+                {/* Table des matières — ordre DOM : S1 → article H2/H3 → S2-S8 */}
+                {(article.sections.length > 0 ||
+                  (conseil && conseil.length > 0)) && (
                   <TableOfContents
-                    sections={article.sections.map((s) => ({
-                      level: s.level,
-                      title: s.title,
-                      anchor: s.anchor,
-                    }))}
+                    sections={[
+                      // S1 en premier (rendu en haut de l'article)
+                      ...(conseil || [])
+                        .filter((c) => c.sectionType === "S1")
+                        .map((c) => ({
+                          level: 2 as const,
+                          title: c.title,
+                          anchor: slugifyTitle(c.title),
+                        })),
+                      // Sections article H2/H3
+                      ...article.sections.map((s) => ({
+                        level: s.level,
+                        title: s.title,
+                        anchor: s.anchor,
+                      })),
+                      // S2-S8 (cards sous l'article, doublons article exclus)
+                      ...(conseil || [])
+                        .filter(
+                          (c) =>
+                            c.sectionType &&
+                            c.sectionType !== "S1" &&
+                            c.sectionType !== "META" &&
+                            !articleSlugs.has(
+                              slugifyTitle(stripNumberingPrefix(c.title)),
+                            ),
+                        )
+                        .map((c) => ({
+                          level: 2 as const,
+                          title: c.title,
+                          anchor: slugifyTitle(c.title),
+                        })),
+                    ]}
                   />
                 )}
 
