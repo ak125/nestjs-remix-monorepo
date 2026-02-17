@@ -161,3 +161,69 @@ export const PAGE_ROLE_LABELS: Record<PageRole, string> = {
   [PageRole.R5_DIAGNOSTIC]: "Diagnostic (Symptômes)",
   [PageRole.R6_SUPPORT]: "Support (Aide)",
 };
+
+/**
+ * Intent utilisateur (chat RAG) — granularité fine
+ */
+export type UserIntent =
+  | "fitment" // Compatibilité véhicule
+  | "troubleshoot" // Diagnostic/panne
+  | "policy" // Livraison/retour/garantie
+  | "cost" // Prix/tarif
+  | "compare" // Comparaison
+  | "maintain" // Entretien/intervalles
+  | "do" // Tutoriel/montage
+  | "define" // Définition technique
+  | "choose"; // Choix/achat
+
+/**
+ * Famille d'intent (regroupement pour le routage RAG)
+ */
+export type IntentFamily =
+  | "transactional" // fitment, cost, choose
+  | "informational" // define, compare, maintain
+  | "diagnostic" // troubleshoot
+  | "support"; // policy, do
+
+/**
+ * Mappe un UserIntent vers sa famille de routage
+ */
+export function mapUserIntentToFamily(intent: UserIntent): IntentFamily {
+  switch (intent) {
+    case "fitment":
+    case "cost":
+    case "choose":
+      return "transactional";
+    case "define":
+    case "compare":
+    case "maintain":
+      return "informational";
+    case "troubleshoot":
+      return "diagnostic";
+    case "policy":
+    case "do":
+      return "support";
+  }
+}
+
+/**
+ * Mappe un UserIntent vers le PageIntent correspondant
+ */
+export function mapUserIntentToPageIntent(intent: UserIntent): PageIntent {
+  switch (intent) {
+    case "fitment":
+    case "choose":
+      return "selection";
+    case "cost":
+      return "purchase";
+    case "define":
+    case "compare":
+    case "maintain":
+      return "education";
+    case "troubleshoot":
+      return "diagnosis";
+    case "policy":
+    case "do":
+      return "support";
+  }
+}
