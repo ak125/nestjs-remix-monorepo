@@ -1303,10 +1303,14 @@ export class RagProxyService {
     );
   }
 
+  /** Cached list of known gamme aliases from gammes/ directory. */
+  private knownGammeAliasesCache: string[] | null = null;
+
   /**
    * Scan knowledge directories for recently modified .md files.
-   * - gammes/ → filename = pg_alias (direct match)
-   * - web/, web-catalog/ → read frontmatter for `gamme:` field
+   * 1. gammes/ → filename = pg_alias (direct match)
+   * 2. web/, web-catalog/ → frontmatter gamme: or category: field
+   * 3. web/, web-catalog/ → title: matched against known gamme aliases
    * Returns array of pg_alias slugs (deduplicated).
    */
   private detectAffectedGammes(): string[] {
@@ -1328,7 +1332,10 @@ export class RagProxyService {
       this.logger.warn(`Could not scan gamme knowledge dir: ${gammeDir}`);
     }
 
-    // 2. Scan web/ and web-catalog/ for frontmatter `gamme:` field
+    // Load known gamme aliases for title matching (strategy 3)
+    const knownAliases = this.getKnownGammeAliases(knowledgePath);
+
+    // 2+3. Scan web/ and web-catalog/
     for (const subDir of ['web', 'web-catalog']) {
       const dir = path.join(knowledgePath, subDir);
       try {
@@ -1337,25 +1344,56 @@ export class RagProxyService {
           const fullPath = path.join(dir, f);
           if (statSync(fullPath).mtimeMs <= cutoff) continue;
 
-          // Read first 500 chars to find frontmatter gamme field
           try {
             const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
+
+            // Strategy 2a: explicit gamme: field
             const gammeMatch = head.match(/^gamme:\s*(.+)$/m);
             if (gammeMatch) {
               results.add(gammeMatch[1].trim());
               continue;
             }
+
+            // Strategy 2b: category: field (if it's a gamme name, not generic)
             const categoryMatch = head.match(/^category:\s*(.+)$/m);
             if (categoryMatch) {
-              // Convert "Filtre à huile" → "filtre-a-huile"
-              const slug = categoryMatch[1]
+              const catVal = categoryMatch[1].trim().toLowerCase();
+              if (
+                catVal !== 'catalog' &&
+                catVal !== 'knowledge' &&
+                catVal !== 'guide'
+              ) {
+                const slug = catVal
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-|-$/g, '');
+                if (slug.length > 3) {
+                  results.add(slug);
+                  continue;
+                }
+              }
+            }
+
+            // Strategy 3: match title: against known gamme aliases
+            const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
+            if (titleMatch && knownAliases.length > 0) {
+              const titleSlug = titleMatch[1]
                 .trim()
                 .toLowerCase()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
+                .replace(/ - section.*$/i, '') // strip section suffix
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-|-$/g, '');
-              if (slug.length > 3) results.add(slug);
+
+              for (const alias of knownAliases) {
+                if (alias.length < 4) continue;
+                if (titleSlug.includes(alias)) {
+                  results.add(alias);
+                  break;
+                }
+              }
             }
           } catch {
             // Skip unreadable files
@@ -1367,6 +1405,21 @@ export class RagProxyService {
     }
 
     return Array.from(results);
+  }
+
+  /** Get known gamme aliases from gammes/ directory filenames (cached). */
+  private getKnownGammeAliases(knowledgePath: string): string[] {
+    if (this.knownGammeAliasesCache) return this.knownGammeAliasesCache;
+    const gammeDir = path.join(knowledgePath, 'gammes');
+    try {
+      this.knownGammeAliasesCache = readdirSync(gammeDir)
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => f.replace('.md', ''))
+        .sort((a, b) => b.length - a.length); // longest first for best match
+      return this.knownGammeAliasesCache;
+    } catch {
+      return [];
+    }
   }
 
   /**
