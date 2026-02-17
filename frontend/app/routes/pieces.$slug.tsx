@@ -107,42 +107,10 @@ const EquipementiersSection = lazy(() =>
     default: m.default,
   })),
 );
-const ConseilsSection = lazy(() =>
-  import("../components/pieces/ConseilsSection").then((m) => ({
-    default: m.default,
-  })),
-);
-const InformationsSection = lazy(() =>
-  import("../components/pieces/InformationsSection").then((m) => ({
-    default: m.default,
-  })),
-);
+// R1 ROUTER: ConseilsSection (R3/conseils) et InformationsSection supprimes — hors-role
 
-// 📖 Nouvelles sections SEO V2 (symptoms, FAQ)
-const SymptomsSection = lazy(() =>
-  import("../components/seo/SymptomsSection").then((m) => ({
-    default: m.SymptomsSection,
-  })),
-);
-const FAQSection = lazy(() =>
-  import("../components/seo/FAQSection").then((m) => ({
-    default: m.FAQSection,
-  })),
-);
-const AntiMistakesSection = lazy(() =>
-  import("../components/seo/AntiMistakesSection").then((m) => ({
-    default: m.AntiMistakesSection,
-  })),
-);
-
-// 🛒 Section guide d'achat narratif (intro + risk + timing + arguments)
-const PurchaseNarrativeSection = lazy(() =>
-  import("../components/pieces/PurchaseNarrativeSection").then((m) => ({
-    default: m.PurchaseNarrativeSection,
-  })),
-);
-
-// 🛒 Checklist avant commande (critères, pairing, trust)
+// R1 ROUTER: sections hors-role supprimees (SymptomsSection=R5, AntiMistakesSection=R3, PurchaseNarrativeSection=R3)
+// Voir brief: .claude/skills/seo-content-architect/references/r1-router-role.md
 
 // 🎯 Grille de décision (B4 R2D2 — use-cases + decision tree)
 const DecisionGridSection = lazy(() =>
@@ -155,6 +123,13 @@ const DecisionGridSection = lazy(() =>
 const UXMessageBox = lazy(() =>
   import("../components/seo/UXMessageBox").then((m) => ({
     default: m.UXMessageBox,
+  })),
+);
+
+// 📖 FAQ Section avec Schema.org
+const FAQSection = lazy(() =>
+  import("../components/seo/FAQSection").then((m) => ({
+    default: m.FAQSection,
   })),
 );
 
@@ -598,10 +573,6 @@ export default function PiecesDetailPage() {
         mf_pic: data.famille.mf_pic,
       } as Parameters<typeof hierarchyApi.getFamilyColor>[0])
     : "from-primary-950 via-primary-900 to-secondary-900"; // Fallback avec design tokens
-
-  const pluralName = data.content?.pg_name
-    ? pluralizePieceName(data.content.pg_name.toLowerCase())
-    : null;
 
   // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)
   const itemListData =
@@ -1093,27 +1064,15 @@ export default function PiecesDetailPage() {
               <QuickGuideSection
                 guide={data.purchaseGuideData}
                 gammeName={data.content?.pg_name}
-                selectionCriteria={data.gammeBuyingGuide?.selectionCriteria?.map(
-                  (c) => ({
-                    label: c.label,
-                    guidance: c.guidance,
-                    priority: c.priority,
-                  }),
-                )}
-                howToChoose={data.purchaseGuideData?.howToChoose}
-                symptoms={data.purchaseGuideData?.symptoms ?? undefined}
               />
             </Suspense>
           </Reveal>
         </PageSection>
       )}
 
-      {/* 🎯 Grille de decision (B4 R2D2 — visible a ~12%) */}
-      {data.gammeBuyingGuide &&
-        ((data.gammeBuyingGuide.useCases &&
-          data.gammeBuyingGuide.useCases.length > 0) ||
-          (data.gammeBuyingGuide.decisionTree &&
-            data.gammeBuyingGuide.decisionTree.length > 0)) && (
+      {/* 🎯 Profils d'usage (R1: orientation par cas d'utilisation, sans diagnostic) */}
+      {data.gammeBuyingGuide?.useCases &&
+        data.gammeBuyingGuide.useCases.length > 0 && (
           <PageSection bg="slate">
             <Reveal>
               <Suspense
@@ -1123,7 +1082,7 @@ export default function PiecesDetailPage() {
               >
                 <DecisionGridSection
                   useCases={data.gammeBuyingGuide.useCases}
-                  decisionTree={data.gammeBuyingGuide.decisionTree}
+                  decisionTree={[]}
                   gammeName={data.content?.pg_name}
                 />
               </Suspense>
@@ -1131,43 +1090,7 @@ export default function PiecesDetailPage() {
           </PageSection>
         )}
 
-      {/* 📖 Symptômes d'usure — R2D2 U4: decision early (<50% de la page) */}
-      {data.purchaseGuideData?.symptoms &&
-        data.purchaseGuideData.symptoms.length > 0 && (
-          <PageSection id="symptoms">
-            <Reveal>
-              <Suspense
-                fallback={
-                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-                }
-              >
-                <SymptomsSection
-                  symptoms={data.purchaseGuideData.symptoms}
-                  gammeName={data.content?.pg_name || "cette pièce"}
-                />
-              </Suspense>
-            </Reveal>
-          </PageSection>
-        )}
-
-      {/* ⚠️ Anti-erreurs YMYL — R2D2 U4: erreurs a eviter <50% de la page */}
-      {data.purchaseGuideData?.antiMistakes &&
-        data.purchaseGuideData.antiMistakes.length > 0 && (
-          <PageSection id="anti-mistakes">
-            <Reveal>
-              <Suspense
-                fallback={
-                  <div className="h-32 bg-gray-50 animate-pulse rounded-lg" />
-                }
-              >
-                <AntiMistakesSection
-                  antiMistakes={data.purchaseGuideData.antiMistakes}
-                  gammeName={data.content?.pg_name || "cette pièce"}
-                />
-              </Suspense>
-            </Reveal>
-          </PageSection>
-        )}
+      {/* R1 ROUTER: SymptomsSection (R5) et AntiMistakesSection (R3) supprimés — hors-rôle */}
 
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
       <PageSection bg="slate" id="compatibilities">
@@ -1192,20 +1115,13 @@ export default function PiecesDetailPage() {
         <TableOfContents
           gammeName={data.content?.pg_name}
           hasMotorizations={!!data.motorisations?.items?.length}
-          hasSymptoms={!!data.purchaseGuideData?.symptoms?.length}
+          hasSymptoms={false}
           hasGuide={false}
-          hasDecisionGrid={
-            !!(
-              data.gammeBuyingGuide?.useCases?.length ||
-              data.gammeBuyingGuide?.decisionTree?.length
-            )
-          }
-          hasPurchaseGuide={
-            !!(data.purchaseGuideData?.intro && data.purchaseGuideData?.risk)
-          }
-          hasAntiMistakes={!!data.purchaseGuideData?.antiMistakes?.length}
-          hasInformations={!!data.informations?.items?.length}
-          hasConseils={!!data.conseils?.items?.length}
+          hasDecisionGrid={!!data.gammeBuyingGuide?.useCases?.length}
+          hasPurchaseGuide={false}
+          hasAntiMistakes={false}
+          hasInformations={false}
+          hasConseils={false}
           hasEquipementiers={!!data.equipementiers?.items?.length}
           hasFaq={!!data.purchaseGuideData?.faq?.length}
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
@@ -1239,71 +1155,11 @@ export default function PiecesDetailPage() {
         </Reveal>
       </PageSection>
 
-      {/* 🛒 Guide d'achat narratif (intro + risques + timing + arguments + howToChoose) */}
-      {data.purchaseGuideData?.intro && data.purchaseGuideData?.risk && (
-        <PageSection bg="slate" id="purchase-guide">
-          <Reveal>
-            <Suspense
-              fallback={
-                <div className="h-64 bg-slate-100 animate-pulse rounded-lg" />
-              }
-            >
-              <PurchaseNarrativeSection
-                intro={data.purchaseGuideData.intro}
-                risk={data.purchaseGuideData.risk}
-                timing={data.purchaseGuideData.timing}
-                arguments={data.purchaseGuideData.arguments || []}
-                howToChoose={data.purchaseGuideData.howToChoose}
-                gammeName={data.content?.pg_name || "pièces"}
-              />
-            </Suspense>
-          </Reveal>
-        </PageSection>
-      )}
+      {/* R1 ROUTER: PurchaseNarrativeSection (R3/guide-achat) et InformationsSection supprimés — hors-rôle */}
 
-      {/* 📚 Informations essentielles */}
-      <PageSection bg="slate" id="essentials">
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-64 bg-slate-100 animate-pulse rounded-lg" />
-            }
-          >
-            <InformationsSection
-              informations={data.informations}
-              catalogueFamille={data.catalogueMameFamille?.items}
-              gammeName={data.content?.pg_name}
-              riskConsequences={data.purchaseGuideData?.risk?.consequences}
-            />
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
-      {/* 💡 Conseils d'entretien + 🔧 Équipementiers — DarkSection navy */}
+      {/* 🔧 Équipementiers — DarkSection navy (ConseilsSection R3/conseils supprimé — hors-rôle R1) */}
       <DarkSection>
         <div className="space-y-12">
-          <div id="advice">
-            <SectionHeader
-              title={`Conseils d'entretien${pluralName ? ` pour vos ${pluralName}` : ""}`}
-              sub="Prévention et maintenance par nos experts"
-              dark
-            />
-            <Reveal>
-              <Suspense
-                fallback={
-                  <div className="h-64 bg-white/5 animate-pulse rounded-lg" />
-                }
-              >
-                <ConseilsSection
-                  conseils={data.conseils}
-                  catalogueFamille={data.catalogueMameFamille?.items}
-                  gammeName={data.content?.pg_name}
-                  isDarkMode
-                />
-              </Suspense>
-            </Reveal>
-          </div>
-
           <div id="brands">
             <SectionHeader
               title="Marques équipementières de confiance"

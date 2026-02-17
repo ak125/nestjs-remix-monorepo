@@ -30,6 +30,7 @@ interface MotorisationsSectionProps {
   };
   familleColor?: string;
   familleName?: string;
+  totalCount?: number;
 }
 
 // Limite d'affichage par défaut (SEO: éviter dilution)

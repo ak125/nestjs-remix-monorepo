@@ -22,6 +22,9 @@ interface TableOfContentsProps {
   hasMotorizations?: boolean;
   hasSymptoms?: boolean;
   hasGuide?: boolean;
+  hasDecisionGrid?: boolean;
+  hasPurchaseGuide?: boolean;
+  hasAntiMistakes?: boolean;
   hasInformations?: boolean;
   hasConseils?: boolean;
   hasEquipementiers?: boolean;

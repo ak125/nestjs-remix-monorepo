@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo, memo } from "react";
 
-import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";
+import { pluralizePieceName } from "~/lib/seo-utils";
 
 interface ConseilItem {
   id: number;
@@ -37,6 +37,7 @@ interface ConseilsSectionProps {
   };
   catalogueFamille?: CatalogueItem[];
   gammeName?: string;
+  isDarkMode?: boolean;
 }
 
 // Limite de conseils visibles par défaut

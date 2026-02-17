@@ -15,6 +15,7 @@ interface EquipementiersSectionProps {
     title: string;
     items: EquipementierItem[];
   };
+  isDarkMode?: boolean;
 }
 
 /**
