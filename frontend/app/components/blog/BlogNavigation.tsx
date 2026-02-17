@@ -37,7 +37,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     label: "Guide d'Achat",
-    href: "/blog-pieces-auto/guide",
+    href: "/blog-pieces-auto/guide-achat",
     icon: ShoppingCart,
     description: "Conseils pour bien choisir",
     color: "text-green-600",
@@ -77,9 +77,9 @@ export function BlogNavigation() {
               <BookOpen className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                 Blog Automecanik
-              </h1>
+              </span>
               <p className="text-xs text-gray-500">Conseils et guides auto</p>
             </div>
           </Link>

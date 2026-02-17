@@ -366,7 +366,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
   /**
    * Récupère toutes les URLs de guides blog
-   * Format : /blog-pieces-auto/guide/{bg_alias}
+   * Format : /blog-pieces-auto/guide-achat/{bg_alias}
    */
   async getAllBlogGuidesUrls(options?: {
     limit?: number;
@@ -406,7 +406,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
         bg_id: guide.bg_id,
         bg_title: guide.bg_title || 'Sans titre',
         bg_alias: guide.bg_alias || this.slugify(guide.bg_title),
-        url: `/blog-pieces-auto/guide/${guide.bg_alias || this.slugify(guide.bg_title)}`,
+        url: `/blog-pieces-auto/guide-achat/${guide.bg_alias || this.slugify(guide.bg_title)}`,
       }));
     } catch (error) {
       this.logger.error('Erreur getAllBlogGuidesUrls:', error);

@@ -268,9 +268,9 @@ function resolveKnownPattern(pathname: string): string | null {
     return "/blog-pieces-auto" + pathname;
   }
 
-  // /guide/* → /blog-pieces-auto/guide/*
+  // /guide/* → /blog-pieces-auto/guide-achat/*
   if (pathname.startsWith("/guide/") || pathname.startsWith("/guides/")) {
-    const rest = pathname.replace(/^\/guides?\//, "/guide/");
+    const rest = pathname.replace(/^\/guides?\//, "/guide-achat/");
     return "/blog-pieces-auto" + rest;
   }
 

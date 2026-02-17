@@ -31,6 +31,8 @@ export interface BlogArticle {
   updatedAt?: string;
   viewsCount: number;
   readingTime?: number;
+  h2Count?: number;
+  h3Count?: number;
   featuredImage?: string | null; // URL de l'image d'en-tête (ex: /uploads/blog/articles/20.jpg)
   sections: BlogSection[];
   legacy_id: number;

@@ -11,6 +11,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -23,7 +24,17 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { CheckCircle2, Truck, Shield, Users, BookOpen } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  Shield,
+  Truck,
+  Users,
+  Wrench,
+} from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, lazy, Suspense } from "react";
@@ -48,15 +59,14 @@ import {
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
+import DarkSection from "~/components/layout/DarkSection";
+import PageSection from "~/components/layout/PageSection";
+import Reveal from "~/components/layout/Reveal";
+import SectionHeader from "~/components/layout/SectionHeader";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
-import { type GammeBuyingGuideV1 } from "~/types/gamme-content-contract.types";
-import {
-  applySectionFallbacks,
-  validateGammeContract,
-} from "~/utils/gamme-contract-qa.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -73,12 +83,6 @@ export const handle = {
 };
 
 // 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
-// Guide d'achat V2 - structure orientée client (intro/risk/timing/arguments)
-const PurchaseGuideSection = lazy(() =>
-  import("../components/seo/PurchaseGuideSection").then((m) => ({
-    default: m.PurchaseGuideSection,
-  })),
-);
 const QuickGuideSection = lazy(() =>
   import("../components/pieces/QuickGuideSection").then((m) => ({
     default: m.default,
@@ -110,15 +114,15 @@ const InformationsSection = lazy(() =>
   })),
 );
 
-// 📖 Nouvelles sections SEO V2 (howToChoose, symptoms, FAQ)
-const HowToChooseSection = lazy(() =>
-  import("../components/seo/HowToChooseSection").then((m) => ({
-    default: m.HowToChooseSection,
-  })),
-);
+// 📖 Nouvelles sections SEO V2 (symptoms, FAQ)
 const SymptomsSection = lazy(() =>
   import("../components/seo/SymptomsSection").then((m) => ({
     default: m.SymptomsSection,
+  })),
+);
+const FAQSection = lazy(() =>
+  import("../components/seo/FAQSection").then((m) => ({
+    default: m.FAQSection,
   })),
 );
 const AntiMistakesSection = lazy(() =>
@@ -126,9 +130,20 @@ const AntiMistakesSection = lazy(() =>
     default: m.AntiMistakesSection,
   })),
 );
-const FAQSection = lazy(() =>
-  import("../components/seo/FAQSection").then((m) => ({
-    default: m.FAQSection,
+
+// 🛒 Section guide d'achat narratif (intro + risk + timing + arguments)
+const PurchaseNarrativeSection = lazy(() =>
+  import("../components/pieces/PurchaseNarrativeSection").then((m) => ({
+    default: m.PurchaseNarrativeSection,
+  })),
+);
+
+// 🛒 Checklist avant commande (critères, pairing, trust)
+
+// 🎯 Grille de décision (B4 R2D2 — use-cases + decision tree)
+const DecisionGridSection = lazy(() =>
+  import("../components/pieces/DecisionGridSection").then((m) => ({
+    default: m.DecisionGridSection,
   })),
 );
 
@@ -172,12 +187,6 @@ interface LoaderData {
     conseils_count?: number;
     informations_count?: number;
     guide_available?: number;
-    buying_guide_available?: number;
-    buying_guide_source_verified?: number;
-    buying_guide_quality_score?: number;
-    buying_guide_fallback_used?: number;
-    buying_guide_gate_ok?: number;
-    buying_guide_gate_reasons?: string | null;
   };
   content?: {
     h1: string;
@@ -256,15 +265,63 @@ interface LoaderData {
     verbCount: number;
     nounCount: number;
   };
-  // 🛒 Contrat orienté achat (nouvelle source de vérité data)
-  gammeBuyingGuide?: GammeBuyingGuideV1 | null;
+  // 📖 Purchase Guide V2 - structure orientée client
+  purchaseGuideData?: {
+    id: number;
+    pgId: string;
+    intro: { title: string; role: string; syncParts: string[] };
+    risk: {
+      title: string;
+      explanation: string;
+      consequences: string[];
+      costRange: string;
+      conclusion: string;
+    };
+    timing: { title: string; years: string; km: string; note: string };
+    arguments: Array<{ title: string; content: string; icon: string }>;
+    // Nouvelles sections Phase 2
+    h1Override?: string | null;
+    howToChoose?: string | null;
+    symptoms?: string[] | null;
+    antiMistakes?: string[] | null;
+    faq?: Array<{ question: string; answer: string }> | null;
+  } | null;
+  // 🛒 Buying Guide enrichi (RAG) — checklist avant commande
+  gammeBuyingGuide?: {
+    compatibilityRules?: string[];
+    selectionCriteria?: Array<{
+      key: string;
+      label: string;
+      guidance: string;
+      priority: "required" | "recommended";
+    }>;
+    trustArguments?: Array<{ title: string; content: string; icon?: string }>;
+    pairing?: {
+      required?: string[];
+      recommended?: string[];
+      checks?: string[];
+    };
+    antiMistakes?: string[];
+    risk?: { costRange?: string };
+    faq?: Array<{ question: string; answer: string }>;
+    useCases?: Array<{
+      id: string;
+      label: string;
+      recommendation: string;
+    }>;
+    decisionTree?: Array<{
+      id: string;
+      question: string;
+      options: Array<{
+        label: string;
+        outcome: string;
+        note?: string;
+      }>;
+    }>;
+  } | null;
   // 🔄 Données de substitution (Moteur 200 Always)
   substitution?: {
     httpStatus: number;
-    robots?: string;
-    seo?: {
-      canonical?: string;
-    };
     lock?: {
       type: "vehicle" | "technology" | "ambiguity" | "precision";
       missing: string;
@@ -316,307 +373,198 @@ function toProxyImageUrl(url: string | undefined): string | undefined {
   return url;
 }
 
-function buildNoindexErrorResponse(status: 404 | 410): Response {
-  return new Response(status === 404 ? "Not Found" : "Gone", {
-    status,
-    headers: { "X-Robots-Tag": "noindex, follow" },
-  });
-}
-
-function buildUpstreamErrorResponse(rawStatus: number): Response {
-  const status = rawStatus >= 400 && rawStatus <= 599 ? rawStatus : 500;
-  if (status === 404 || status === 410) {
-    return buildNoindexErrorResponse(status);
-  }
-  if (status === 503) {
-    return new Response("Service Unavailable", { status });
-  }
-  return new Response("Internal Server Error", { status });
-}
-
-function resolveGammeId(
-  slug: string,
-  substitutionResponse: LoaderData["substitution"] | null | undefined,
-): string | null {
-  // 1) Source backend: lock.known.gamme.id
-  const knownGammeId = substitutionResponse?.lock?.known?.gamme?.id;
-  if (typeof knownGammeId === "number") return String(knownGammeId);
-
-  // 2) Source backend: seo.canonical
-  const canonical = substitutionResponse?.seo?.canonical;
-  if (canonical) {
-    const canonicalMatch = canonical.match(/-(\d+)\.html$/);
-    if (canonicalMatch?.[1]) return canonicalMatch[1];
-  }
-
-  // 3) Format local slug: /pieces/alias-123.html
-  const slugMatch = slug.match(/-(\d+)\.html$/);
-  if (slugMatch?.[1]) return slugMatch[1];
-
-  return null;
-}
-
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const slug = params.slug;
   if (!slug) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  // /pieces/catalogue: page supprimée sans équivalent direct
-  // On renvoie 410 + noindex pour éviter un soft-404 vers une page non pertinente
+  // Redirect /pieces/catalogue → homepage (page supprimée)
   if (slug === "catalogue") {
-    throw buildNoindexErrorResponse(410);
+    return redirect("/", 301);
   }
+
+  // Extraire l'ID de la gamme depuis le slug (format: nom-gamme-ID.html)
+  const match = slug.match(/-(\d+)\.html$/);
+
+  // 🛑 410 Gone - URLs sans ID (ex: /pieces/suspension)
+  // Ces pages n'existent plus - gammes sans véhicule supprimées
+  if (!match) {
+    logger.log(`🛑 [410] /pieces/${slug}`);
+    throw new Response(null, { status: 410 });
+  }
+
+  const gammeId = match[1];
 
   try {
     // 🚀 Configuration API depuis variables d'environnement
+    // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
     // ⚠️ Timeout réduit de 180s à 30s pour compatibilité Googlebot (~30s patience)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
-    try {
-      const API_URL = getInternalApiUrl("");
-      const currentUrl = new URL(request.url);
-      const pathname = currentUrl.pathname;
 
-      // 1) Source de vérité statuts métier: API substitution
-      const [selectedVehicle, substitutionResponse] = await Promise.all([
+    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
+    const API_URL = getInternalApiUrl("");
+    const currentUrl = new URL(request.url);
+    const pathname = currentUrl.pathname;
+
+    const [selectedVehicle, apiData, switchesResponse, substitutionResponse] =
+      await Promise.all([
+        // 🚗 Récupérer véhicule depuis cookie (parallélisé)
         getVehicleFromCookie(request.headers.get("Cookie")),
-        fetch(
-          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
-          { signal: controller.signal },
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null),
-      ]);
-
-      logger.log(
-        "🚗 Véhicule depuis cookie:",
-        selectedVehicle
-          ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
-          : "Aucun véhicule sélectionné",
-      );
-
-      if (substitutionResponse) {
-        logger.log(
-          `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
-        );
-      }
-
-      if (substitutionResponse?.httpStatus === 404) {
-        throw buildNoindexErrorResponse(404);
-      }
-      if (substitutionResponse?.httpStatus === 410) {
-        throw buildNoindexErrorResponse(410);
-      }
-
-      // 2) Résoudre gammeId depuis backend (fallback slug/canonical)
-      const gammeId = resolveGammeId(slug, substitutionResponse);
-      if (!gammeId) {
-        logger.error(
-          `❌ Impossible de résoudre gammeId pour /pieces/${slug} (substitution=200)`,
-        );
-        throw new Response("Service Unavailable", { status: 503 });
-      }
-
-      // 3) Charger données page + switches SEO
-      const [apiData, switchesResponse] = await Promise.all([
         fetchGammePageData(gammeId, { signal: controller.signal }),
         fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
           signal: controller.signal,
         })
           .then((res) => (res.ok ? res.json() : { data: [] }))
           .catch(() => ({ data: [] })),
-      ]);
-
-      const upstreamStatus = (apiData as { status?: number }).status;
-      const apiStatus =
-        typeof upstreamStatus === "number" ? upstreamStatus : 200;
-      if (apiStatus !== 200) {
-        throw buildUpstreamErrorResponse(apiStatus);
-      }
-
-      // 🔗 Mapper les switches SEO pour ancres variées
-      interface SeoSwitch {
-        sis_id: string;
-        sis_alias?: string;
-        sis_content: string;
-      }
-      const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
-      const verbSwitches = rawSwitches
-        .filter(
-          (s) =>
-            s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
-        )
-        .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-      const nounSwitches = rawSwitches
-        .filter(
-          (s) =>
-            s.sis_alias?.startsWith("noun_") ||
-            !s.sis_alias?.startsWith("verb_"),
-        )
-        .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-
-      const seoSwitches =
-        rawSwitches.length > 0
-          ? {
-              verbs:
-                verbSwitches.length > 0
-                  ? verbSwitches
-                  : rawSwitches.map((s) => ({
-                      id: s.sis_id,
-                      content: s.sis_content,
-                    })),
-              nouns: nounSwitches,
-              verbCount: verbSwitches.length || rawSwitches.length,
-              nounCount: nounSwitches.length,
-            }
-          : undefined;
-
-      logger.log(
-        `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
-      );
-
-      // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-      const heroData = apiData.hero as
-        | {
-            h1: string;
-            content: string;
-            image: string;
-            wall: string;
-            famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
-            pg_name?: string;
-            pg_alias?: string;
-          }
-        | undefined;
-
-      // Note: API returns different shapes than LoaderData, using type assertion for compatibility
-      const data = {
-        ...apiData,
-        status: apiStatus,
-        content: heroData
-          ? {
-              h1: heroData.h1,
-              content: heroData.content,
-              pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
-              pg_alias: heroData.pg_alias || "",
-              pg_pic: toProxyImageUrl(heroData.image),
-              pg_wall: toProxyImageUrl(heroData.wall),
-            }
-          : undefined,
-        famille: apiData.hero?.famille_info,
-        guide: apiData.guideAchat
-          ? {
-              ...apiData.guideAchat,
-              date: apiData.guideAchat.updated,
-            }
-          : undefined,
-      } as unknown as LoaderData;
-
-      // Mode E2E deterministe (non prod): simuler les cas guide absent / source non verifiee
-      const e2eGuideMode = currentUrl.searchParams.get("__e2eBuyingGuide");
-      if (process.env.NODE_ENV !== "production") {
-        if (e2eGuideMode === "absent") {
-          data.gammeBuyingGuide = null;
-        } else if (e2eGuideMode === "unverified" && data.gammeBuyingGuide) {
-          data.gammeBuyingGuide = {
-            ...data.gammeBuyingGuide,
-            quality: {
-              ...(data.gammeBuyingGuide.quality || {
-                score: 0,
-                flags: [],
-                version: "GammeBuyingGuide.v1",
-                source: "db:test-unverified",
-              }),
-              source:
-                data.gammeBuyingGuide.quality?.source || "db:test-unverified",
-              verified: false,
-            },
-          };
-        }
-      }
-
-      // 🛡️ QA hook contrat gamme: fallback sectionnel sans toucher au H1
-      const contractInput = data.gammeBuyingGuide || null;
-      if (!contractInput) {
-        logger.warn(
-          `🧯 Aucun gammeBuyingGuide exploitable (gamme=${gammeId}), sections guide masquées`,
-        );
-      }
-      const qc = validateGammeContract(contractInput, {
-        famille: data.famille,
-        pgName: data.content?.pg_name,
-      });
-      const missingSourceProvenance = qc.flags.includes(
-        "MISSING_SOURCE_PROVENANCE",
-      );
-      const isBackendFallback =
-        data.performance?.buying_guide_fallback_used === 1 ||
-        contractInput?.quality?.source?.startsWith("fallback://");
-      const forceStrictSourceGate = e2eGuideMode === "unverified";
-      const safeBuyingGuide =
-        missingSourceProvenance && (forceStrictSourceGate || !isBackendFallback)
-          ? null
-          : applySectionFallbacks(contractInput, qc);
-      data.gammeBuyingGuide = safeBuyingGuide;
-
-      if (
-        missingSourceProvenance &&
-        (forceStrictSourceGate || !isBackendFallback)
-      ) {
-        logger.warn(
-          `🛡️ QA contrat gamme rejeté: provenance source manquante/non fiable (gamme=${gammeId})`,
-        );
-      } else if (missingSourceProvenance && isBackendFallback) {
-        logger.warn(
-          `🛡️ QA contrat gamme: provenance non vérifiée acceptée car fallback backend explicite (gamme=${gammeId})`,
-        );
-      }
-
-      logger.log(
-        `🛡️ QA contrat gamme: score=${qc.score}, flags=${qc.flags.join(",") || "none"}`,
-      );
-
-      // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
-      const baseBreadcrumb = [
-        { label: "Accueil", href: "/" },
-        { label: data.content?.pg_name || "Pièce", current: true },
-      ];
-
-      // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
-      // (évite hydration mismatch serveur/client)
-      const breadcrumbItems = buildBreadcrumbWithVehicle(
-        baseBreadcrumb,
-        null, // Pas de véhicule sur page gamme seule
-      );
-
-      logger.log(
-        "🍞 Breadcrumb généré:",
-        breadcrumbItems.map((i) => i.label).join(" → "),
-      );
-
-      const successRobotsTag =
-        data.meta?.robots || "index, follow, max-image-preview:large";
-
-      // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO, substitution et prix
-      return json(
-        {
-          ...data,
-          breadcrumbs: { items: breadcrumbItems },
-          selectedVehicle,
-          seoSwitches,
-          substitution: substitutionResponse,
-        },
-        {
-          headers: {
-            "Cache-Control":
-              "public, max-age=3600, stale-while-revalidate=86400",
-            "X-Robots-Tag": successRobotsTag,
+        // 🔄 Substitution API pour données enrichies (412/410 handling)
+        fetch(
+          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+          {
+            signal: controller.signal,
           },
-        },
-      );
-    } finally {
-      clearTimeout(timeoutId);
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      ]).finally(() => clearTimeout(timeoutId));
+
+    logger.log(
+      "🚗 Véhicule depuis cookie:",
+      selectedVehicle
+        ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
+        : "Aucun véhicule sélectionné",
+    );
+
+    // 🔗 Mapper les switches SEO pour ancres variées
+    interface SeoSwitch {
+      sis_id: string;
+      sis_alias?: string;
+      sis_content: string;
     }
+    const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
+    const verbSwitches = rawSwitches
+      .filter(
+        (s) =>
+          s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
+      )
+      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
+    const nounSwitches = rawSwitches
+      .filter(
+        (s) =>
+          s.sis_alias?.startsWith("noun_") || !s.sis_alias?.startsWith("verb_"),
+      )
+      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
+
+    const seoSwitches =
+      rawSwitches.length > 0
+        ? {
+            verbs:
+              verbSwitches.length > 0
+                ? verbSwitches
+                : rawSwitches.map((s) => ({
+                    id: s.sis_id,
+                    content: s.sis_content,
+                  })),
+            nouns: nounSwitches,
+            verbCount: verbSwitches.length || rawSwitches.length,
+            nounCount: nounSwitches.length,
+          }
+        : undefined;
+
+    logger.log(
+      `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
+    );
+
+    // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
+    const heroData = apiData.hero as
+      | {
+          h1: string;
+          content: string;
+          image: string;
+          wall: string;
+          famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
+          pg_name?: string;
+          pg_alias?: string;
+        }
+      | undefined;
+    // Note: API returns different shapes than LoaderData, using type assertion for compatibility
+    const data = {
+      ...apiData,
+      status: 200,
+      content: heroData
+        ? {
+            h1: heroData.h1,
+            content: heroData.content,
+            pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
+            pg_alias: heroData.pg_alias || "",
+            pg_pic: toProxyImageUrl(heroData.image),
+            pg_wall: toProxyImageUrl(heroData.wall),
+          }
+        : undefined,
+      famille: apiData.hero?.famille_info,
+      guide: apiData.guideAchat
+        ? {
+            ...apiData.guideAchat,
+            date: apiData.guideAchat.updated,
+          }
+        : undefined,
+    } as unknown as LoaderData;
+
+    // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
+    const baseBreadcrumb = [
+      { label: "Accueil", href: "/" },
+      { label: data.content?.pg_name || "Pièce", current: true },
+    ];
+
+    // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
+    // (évite hydration mismatch serveur/client)
+    const breadcrumbItems = buildBreadcrumbWithVehicle(
+      baseBreadcrumb,
+      null, // Pas de véhicule sur page gamme seule
+    );
+
+    logger.log(
+      "🍞 Breadcrumb généré:",
+      breadcrumbItems.map((i) => i.label).join(" → "),
+    );
+
+    // 🔄 Log substitution status
+    if (substitutionResponse) {
+      logger.log(
+        `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
+      );
+    }
+
+    // 🔄 Handle 404/410 based on substitution API response
+    if (substitutionResponse?.httpStatus === 404) {
+      throw new Response("Not Found", {
+        status: 404,
+        headers: { "X-Robots-Tag": "noindex, follow" },
+      });
+    }
+    if (substitutionResponse?.httpStatus === 410) {
+      throw new Response("Gone", {
+        status: 410,
+        headers: { "X-Robots-Tag": "noindex, follow" },
+      });
+    }
+
+    // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO, substitution et prix
+    return json(
+      {
+        ...data,
+        breadcrumbs: { items: breadcrumbItems },
+        selectedVehicle,
+        seoSwitches,
+        substitution: substitutionResponse,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -632,7 +580,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     return [
       { title: "Page non trouvée" },
       { name: "description", content: "La page demandée n'a pas été trouvée." },
-      { name: "robots", content: "noindex, follow" },
     ];
   }
 
@@ -644,7 +591,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const title = data.meta?.title || data.content?.pg_name || "Pièces Auto";
   const description =
     data.meta?.description ||
-    `${data.content?.pg_name || "Pièces"} de qualité au meilleur prix.`;
+    `${data.content?.pg_name || "Pièces"} pour votre véhicule. Trouvez la référence compatible parmi nos équipementiers de confiance. Livraison rapide.`;
   const keywords =
     data.meta?.keywords || data.content?.pg_name?.toLowerCase() || "";
 
@@ -696,7 +643,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
             name: `${data.content.pg_name} - Véhicules compatibles`,
             numberOfItems: data.motorisations?.items?.length || 0,
             itemListElement: (data.motorisations?.items || [])
-              .slice(0, 15)
+              .slice(0, 30)
               .map((item, index) => ({
                 "@type": "ListItem",
                 position: index + 1,
@@ -706,6 +653,23 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                   : canonicalUrl,
               })),
           },
+          // 3️⃣ HowTo - Etapes de selection (si howToChoose present)
+          ...(data.purchaseGuideData?.howToChoose
+            ? [
+                {
+                  "@type": "HowTo",
+                  name: `Comment bien choisir vos ${data.content.pg_name.toLowerCase()}`,
+                  step: data.purchaseGuideData.howToChoose
+                    .split(/\d+\)\s*/)
+                    .filter((s: string) => s.trim().length > 0)
+                    .map((s: string, i: number) => ({
+                      "@type": "HowToStep",
+                      position: i + 1,
+                      text: s.trim().replace(/\.$/, ""),
+                    })),
+                },
+              ]
+            : []),
         ],
       }
     : null;
@@ -739,6 +703,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   result.push({ property: "og:description", content: description });
   result.push({ property: "og:url", content: canonicalUrl });
   result.push({ property: "og:type", content: "website" });
+
+  // Twitter Cards
+  result.push({ name: "twitter:card", content: "summary_large_image" });
+  result.push({ name: "twitter:title", content: title });
+  result.push({ name: "twitter:description", content: description });
 
   // Canonical
   result.push({ tagName: "link", rel: "canonical", href: canonicalUrl });
@@ -776,26 +745,13 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 };
 
 export function headers({
-  loaderHeaders,
-  errorHeaders,
+  loaderHeaders: _loaderHeaders,
 }: {
   loaderHeaders: Headers;
-  errorHeaders: Headers | undefined;
 }) {
-  const cacheControl =
-    loaderHeaders.get("Cache-Control") ||
-    "public, max-age=3600, stale-while-revalidate=86400";
-  const robotsTag =
-    errorHeaders?.get("X-Robots-Tag") || loaderHeaders.get("X-Robots-Tag");
-
-  return robotsTag
-    ? {
-        "Cache-Control": cacheControl,
-        "X-Robots-Tag": robotsTag,
-      }
-    : {
-        "Cache-Control": cacheControl,
-      };
+  return {
+    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+  };
 }
 
 export default function PiecesDetailPage() {
@@ -848,6 +804,10 @@ export default function PiecesDetailPage() {
       } as Parameters<typeof hierarchyApi.getFamilyColor>[0])
     : "from-primary-950 via-primary-900 to-secondary-900"; // Fallback avec design tokens
 
+  const pluralName = data.content?.pg_name
+    ? pluralizePieceName(data.content.pg_name.toLowerCase())
+    : null;
+
   // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)
   const itemListData =
     data.motorisations?.items && data.motorisations.items.length > 0
@@ -862,7 +822,6 @@ export default function PiecesDetailPage() {
           })),
         }
       : undefined;
-  const buyingGuide = data.gammeBuyingGuide || null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
@@ -983,15 +942,16 @@ export default function PiecesDetailPage() {
             )}
           </div>
 
-          {/* Titre H1 dynamique optimisé SEO */}
+          {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
           <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+            <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
                 {(() => {
-                  // Priorité: h1 CMS/DB > fallback
+                  // Priorité: h1Override > h1 existant > fallback
                   const rawH1 =
+                    data.purchaseGuideData?.h1Override ||
                     data.content?.h1 ||
-                    `${data.content?.pg_name || "Pièces auto"} pas cher`;
+                    `${data.content?.pg_name || "Pièces auto"} : trouvez la référence compatible`;
                   // Nettoyer les balises HTML (<b>, </b>, etc.)
                   return rawH1.replace(/<[^>]*>/g, "");
                 })()}
@@ -1017,7 +977,7 @@ export default function PiecesDetailPage() {
                     const name = data.content?.pg_name?.toLowerCase() || "";
                     const pluralName = pluralizePieceName(name);
                     return name
-                      ? `On affiche uniquement les ${pluralName} compatibles avant/arriere pour votre vehicule`
+                      ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
                       : "Trouvez la référence compatible avec votre véhicule";
                   })()}
                 </p>
@@ -1125,13 +1085,13 @@ export default function PiecesDetailPage() {
               </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Truck className="w-4 h-4 text-primary-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
                 Livraison 24-48h
               </span>
             </div>
             <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Shield className="w-4 h-4 text-secondary-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
@@ -1146,236 +1106,434 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
-      {/* ⚡ Bloc "Comment choisir en 20 sec" placé au-dessus de la ligne de flottaison */}
-      {buyingGuide && (
-        <div className="container mx-auto px-4 -mt-2 md:-mt-4 relative z-20">
-          <Suspense
-            fallback={
-              <div className="h-48 bg-gray-50 animate-pulse rounded-lg mb-6" />
-            }
-          >
-            <QuickGuideSection
-              guide={buyingGuide}
-              gammeName={data.content?.pg_name}
-            />
-          </Suspense>
-        </div>
-      )}
-
-      {/* 📑 Sommaire ancré - Navigation rapide vers toutes les sections */}
-      <div className="container mx-auto px-4 py-4">
-        <TableOfContents
-          gammeName={data.content?.pg_name}
-          hasMotorizations={!!data.motorisations?.items?.length}
-          hasSymptoms={!!buyingGuide?.symptoms?.length}
-          hasAntiMistakes={!!buyingGuide?.antiMistakes?.length}
-          hasGuide={!!buyingGuide}
-          hasInformations={!!data.informations?.items?.length}
-          hasConseils={!!data.conseils?.items?.length}
-          hasEquipementiers={!!data.equipementiers?.items?.length}
-          hasFaq={!!buyingGuide?.faq?.length}
-          hasCatalogue={!!data.catalogueMameFamille?.items?.length}
+      {/* 🎓 Conseils & Diagnostic — dark glassmorphism (aligne homepage) */}
+      <section
+        className="relative py-12 md:py-16 lg:py-20 overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a]"
+        aria-labelledby="conseils-diagnostic-title"
+      >
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:4rem_4rem]"
+          aria-hidden="true"
         />
-      </div>
+        {/* Orange glow top-right */}
+        <div
+          className="absolute -top-20 -right-20 w-80 h-80 bg-primary-500/[0.08] rounded-full blur-3xl"
+          aria-hidden="true"
+        />
+        {/* Blue glow bottom-left */}
+        <div
+          className="absolute -bottom-20 -left-20 w-60 h-60 bg-secondary-200/10 rounded-full blur-3xl"
+          aria-hidden="true"
+        />
 
-      {/* 💡 Guide d'achat V2 complet - Contenu orienté client (pour SEO longue traîne) */}
-      {buyingGuide && (
-        <Suspense
-          fallback={
-            <div className="container mx-auto px-4 mb-space-6">
-              <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
-                <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
-                <div className="h-64 bg-gray-100 rounded-2xl"></div>
-                <div className="h-96 bg-gray-100 rounded-2xl"></div>
+        <div className="relative container mx-auto px-4 max-w-7xl">
+          {/* Header */}
+          <div className="text-center mb-8 md:mb-12">
+            <h2
+              id="conseils-diagnostic-title"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3"
+            >
+              Conseils & <span className="text-primary-400">Diagnostic</span>
+            </h2>
+            <div className="h-1 w-16 bg-gradient-to-r from-primary-400 to-primary-500 mx-auto rounded mb-4" />
+            <p className="text-sm md:text-base text-white/70 max-w-xl mx-auto">
+              L&apos;expertise automobile au service de votre véhicule
+            </p>
+          </div>
+
+          {/* FEATURE CARD: Diagnostic auto */}
+          <Link
+            to="/diagnostic-auto"
+            className="group relative block mb-5 md:mb-6 rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-1"
+            aria-label="Lancer un diagnostic auto"
+          >
+            <div className="absolute inset-0 bg-white/[0.07] backdrop-blur-sm" />
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary-400 via-primary-500 to-primary-600" />
+            <div className="absolute inset-0 bg-primary-500/0 group-hover:bg-primary-500/5 transition-colors duration-300" />
+
+            <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+              <div className="flex-shrink-0">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 group-hover:scale-105 transition-all duration-300">
+                  <Activity className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white">
+                    Diagnostic auto
+                  </h3>
+                  <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-500/20 text-primary-300 border border-primary-500/30">
+                    Gratuit
+                  </span>
+                </div>
+                <p className="text-sm md:text-base text-white/70 leading-relaxed mb-3 md:mb-0">
+                  Identifiez votre panne : vibrations, bruits, voyants moteur
+                  &mdash; causes et solutions par nos experts.
+                </p>
+                <div className="flex flex-wrap gap-2 md:mt-3">
+                  {[
+                    "Vibrations",
+                    "Bruits moteur",
+                    "Voyants",
+                    data.famille?.mf_name || "Freinage",
+                  ].map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 bg-white/[0.06] rounded-lg text-xs text-white/60 border border-white/10"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex-shrink-0 flex items-center gap-2 text-primary-400 font-semibold text-sm md:text-base">
+                <span className="md:hidden">Diagnostiquer</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
               </div>
             </div>
-          }
-        >
-          <PurchaseGuideSection
-            guide={buyingGuide}
-            gammeName={data.content?.pg_name}
-            className="mb-space-6"
-          />
-        </Suspense>
-      )}
+          </Link>
 
-      {/* 📖 Comment choisir - Étape 2: critères et cas d'usage */}
-      {buyingGuide && (
-        <Suspense
-          fallback={
-            <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-          }
-        >
-          <HowToChooseSection
-            guide={buyingGuide}
-            gammeName={data.content?.pg_name || "cette pièce"}
-          />
-        </Suspense>
-      )}
+          {/* SECONDARY CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            {/* Guides d'achat */}
+            <Link
+              to="/blog-pieces-auto/guide-achat"
+              className="group relative flex items-center gap-4 p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-sm hover:bg-white/[0.09] hover:border-white/20 transition-all duration-300"
+              aria-label="Lire les guides d'achat"
+            >
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors duration-300">
+                <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white/80" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-white mb-0.5">
+                  Guides d&apos;achat
+                </h3>
+                <p className="text-xs text-white/50 line-clamp-1">
+                  {data.famille?.mf_name || "Distribution"}, filtration,
+                  embrayage&hellip;
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </Link>
 
-      {/* 🎯 Étape 3: envoyer vers la sélection véhicule */}
-      <div className="container mx-auto px-4">
-        <section className="mb-8 rounded-2xl border border-primary-100 bg-gradient-to-r from-primary-50 to-secondary-50 p-4 md:p-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm md:text-base font-semibold text-neutral-900">
-                Validez votre véhicule pour afficher uniquement les références
-                compatibles.
-              </p>
-              <p className="text-sm text-neutral-600">
-                Vérifiez d'abord le véhicule, puis comparez les options
-                proposées pour votre configuration.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href="#vehicle-selector"
-                className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
-              >
-                Sélectionner mon véhicule
-              </a>
-              <a
-                href="#compatibilities"
-                className="inline-flex items-center rounded-lg border border-primary-300 bg-white px-4 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50"
-              >
-                Voir les compatibilités
-              </a>
-            </div>
+            {/* Référence technique */}
+            <Link
+              to={`/reference-auto/${data.content?.pg_alias || ""}`}
+              className="group relative flex items-center gap-4 p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-sm hover:bg-white/[0.09] hover:border-white/20 transition-all duration-300"
+              aria-label="Consulter le glossaire technique"
+            >
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors duration-300">
+                <Wrench className="w-5 h-5 md:w-6 md:h-6 text-white/80" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-white mb-0.5">
+                  Référence technique
+                </h3>
+                <p className="text-xs text-white/50 line-clamp-1">
+                  Glossaire, définitions, specs OE
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </Link>
+
+            {/* Conseils entretien */}
+            <Link
+              to={`/blog-pieces-auto/conseils/${data.content?.pg_alias || ""}`}
+              className="group relative flex items-center gap-4 p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-sm hover:bg-white/[0.09] hover:border-white/20 transition-all duration-300"
+              aria-label="Lire les conseils d'entretien"
+            >
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors duration-300">
+                <Shield className="w-5 h-5 md:w-6 md:h-6 text-white/80" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-white mb-0.5">
+                  Conseils entretien
+                </h3>
+                <p className="text-xs text-white/50 line-clamp-1">
+                  Calendrier, astuces mécanicien, pièces à surveiller
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </Link>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* 🚗 Motorisations compatibles - Étape 3: compatibilités filtrées */}
-      <div className="container mx-auto px-4">
-        <section id="compatibilities">
+      {/* 📖 Bandeau guides contextuel — aide rapide + maillage interne R1→R3 */}
+      <PageSection maxWidth="5xl" className="py-3 sm:py-4">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 text-sm">
+          <span className="font-medium text-gray-700">Besoin d'aide ?</span>
+          <Link
+            to="/blog-pieces-auto/guide-achat/selecteur-vehicule"
+            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            Comment utiliser le sélecteur
+          </Link>
+          {data.content?.pg_alias && (
+            <Link
+              to={`/blog-pieces-auto/conseils/${data.content.pg_alias}`}
+              className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              <Wrench className="h-3.5 w-3.5" />
+              Guide : comment changer un{" "}
+              {data.content?.pg_name?.toLowerCase() || "pièce"}
+            </Link>
+          )}
+        </div>
+      </PageSection>
+
+      {/* ⚡ Mini-guide rapide (3 cartes) — Position 2 : orientation immédiate */}
+      {data.purchaseGuideData && (
+        <PageSection>
+          <Reveal>
+            <Suspense
+              fallback={
+                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+              }
+            >
+              <QuickGuideSection
+                guide={data.purchaseGuideData}
+                gammeName={data.content?.pg_name}
+                selectionCriteria={data.gammeBuyingGuide?.selectionCriteria?.map(
+                  (c) => ({
+                    label: c.label,
+                    guidance: c.guidance,
+                    priority: c.priority,
+                  }),
+                )}
+                howToChoose={data.purchaseGuideData?.howToChoose}
+                symptoms={data.purchaseGuideData?.symptoms ?? undefined}
+              />
+            </Suspense>
+          </Reveal>
+        </PageSection>
+      )}
+
+      {/* 🎯 Grille de decision (B4 R2D2 — visible a ~12%) */}
+      {data.gammeBuyingGuide &&
+        ((data.gammeBuyingGuide.useCases &&
+          data.gammeBuyingGuide.useCases.length > 0) ||
+          (data.gammeBuyingGuide.decisionTree &&
+            data.gammeBuyingGuide.decisionTree.length > 0)) && (
+          <PageSection bg="slate">
+            <Reveal>
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+                }
+              >
+                <DecisionGridSection
+                  useCases={data.gammeBuyingGuide.useCases}
+                  decisionTree={data.gammeBuyingGuide.decisionTree}
+                  gammeName={data.content?.pg_name}
+                />
+              </Suspense>
+            </Reveal>
+          </PageSection>
+        )}
+
+      {/* 📖 Symptômes d'usure — R2D2 U4: decision early (<50% de la page) */}
+      {data.purchaseGuideData?.symptoms &&
+        data.purchaseGuideData.symptoms.length > 0 && (
+          <PageSection id="symptoms">
+            <Reveal>
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+                }
+              >
+                <SymptomsSection
+                  symptoms={data.purchaseGuideData.symptoms}
+                  gammeName={data.content?.pg_name || "cette pièce"}
+                />
+              </Suspense>
+            </Reveal>
+          </PageSection>
+        )}
+
+      {/* ⚠️ Anti-erreurs YMYL — R2D2 U4: erreurs a eviter <50% de la page */}
+      {data.purchaseGuideData?.antiMistakes &&
+        data.purchaseGuideData.antiMistakes.length > 0 && (
+          <PageSection id="anti-mistakes">
+            <Reveal>
+              <Suspense
+                fallback={
+                  <div className="h-32 bg-gray-50 animate-pulse rounded-lg" />
+                }
+              >
+                <AntiMistakesSection
+                  antiMistakes={data.purchaseGuideData.antiMistakes}
+                  gammeName={data.content?.pg_name || "cette pièce"}
+                />
+              </Suspense>
+            </Reveal>
+          </PageSection>
+        )}
+
+      {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
+      <PageSection bg="slate" id="compatibilities">
+        <Reveal>
           <Suspense
             fallback={
-              <div className="h-96 bg-gray-50 animate-pulse rounded-lg mb-8" />
+              <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
             }
           >
             <MotorisationsSection
               motorisations={data.motorisations}
               familleColor={familleColor}
               familleName={data.content?.pg_name || "pièces"}
+              totalCount={data.performance?.motorisations_count}
             />
           </Suspense>
-        </section>
+        </Reveal>
+      </PageSection>
+
+      {/* 📑 Sommaire ancré — Position 4 : navigation vers le contenu SEO */}
+      <div className="container mx-auto px-4 max-w-7xl py-4">
+        <TableOfContents
+          gammeName={data.content?.pg_name}
+          hasMotorizations={!!data.motorisations?.items?.length}
+          hasSymptoms={!!data.purchaseGuideData?.symptoms?.length}
+          hasGuide={false}
+          hasDecisionGrid={
+            !!(
+              data.gammeBuyingGuide?.useCases?.length ||
+              data.gammeBuyingGuide?.decisionTree?.length
+            )
+          }
+          hasPurchaseGuide={
+            !!(data.purchaseGuideData?.intro && data.purchaseGuideData?.risk)
+          }
+          hasAntiMistakes={!!data.purchaseGuideData?.antiMistakes?.length}
+          hasInformations={!!data.informations?.items?.length}
+          hasConseils={!!data.conseils?.items?.length}
+          hasEquipementiers={!!data.equipementiers?.items?.length}
+          hasFaq={!!data.purchaseGuideData?.faq?.length}
+          hasCatalogue={!!data.catalogueMameFamille?.items?.length}
+        />
       </div>
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
-        <div className="container mx-auto px-4 mt-4">
+        <PageSection className="py-4 sm:py-4">
           <VehicleFilterBadge
             vehicle={data.selectedVehicle}
             showDetails={true}
           />
-        </div>
+        </PageSection>
       )}
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Contenu principal de la gamme */}
-        <section className="bg-white rounded-xl shadow-lg mb-6 md:mb-8 overflow-hidden">
-          {/* Contenu SEO */}
-          {data.content?.content && (
-            <div className="p-4 md:p-6 lg:p-8">
-              <HtmlContent
-                html={data.content.content}
-                trackLinks={true}
-                className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
-              />
-            </div>
-          )}
-        </section>
+      {/* Contenu principal de la gamme */}
+      <PageSection>
+        <Reveal>
+          <section className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {data.content?.content && (
+              <div className="p-4 md:p-6 lg:p-8">
+                <HtmlContent
+                  html={data.content.content}
+                  trackLinks={true}
+                  className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
+                />
+              </div>
+            )}
+          </section>
+        </Reveal>
+      </PageSection>
 
-        {/* 🚀 Sections below-fold lazy-loaded avec IDs pour navigation ancres */}
-
-        {/* 📖 Symptômes d'usure - Position 5 */}
-        {buyingGuide?.symptoms && buyingGuide.symptoms.length > 0 && (
-          <section id="symptoms">
+      {/* 🛒 Guide d'achat narratif (intro + risques + timing + arguments + howToChoose) */}
+      {data.purchaseGuideData?.intro && data.purchaseGuideData?.risk && (
+        <PageSection bg="slate" id="purchase-guide">
+          <Reveal>
             <Suspense
               fallback={
-                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+                <div className="h-64 bg-slate-100 animate-pulse rounded-lg" />
               }
             >
-              <SymptomsSection
-                symptoms={buyingGuide.symptoms}
-                gammeName={data.content?.pg_name || "cette pièce"}
+              <PurchaseNarrativeSection
+                intro={data.purchaseGuideData.intro}
+                risk={data.purchaseGuideData.risk}
+                timing={data.purchaseGuideData.timing}
+                arguments={data.purchaseGuideData.arguments || []}
+                howToChoose={data.purchaseGuideData.howToChoose}
+                gammeName={data.content?.pg_name || "pièces"}
               />
             </Suspense>
-          </section>
-        )}
+          </Reveal>
+        </PageSection>
+      )}
 
-        {/* ⛔ Erreurs à éviter - Position 5 bis */}
-        {buyingGuide?.antiMistakes && buyingGuide.antiMistakes.length > 0 && (
-          <section id="anti-mistakes">
-            <Suspense
-              fallback={
-                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-              }
-            >
-              <AntiMistakesSection
-                antiMistakes={buyingGuide.antiMistakes}
-                gammeName={data.content?.pg_name || "cette pièce"}
-              />
-            </Suspense>
-          </section>
-        )}
-
-        {/* 📚 Informations essentielles - Position 6 */}
-        <section id="essentials">
+      {/* 📚 Informations essentielles */}
+      <PageSection bg="slate" id="essentials">
+        <Reveal>
           <Suspense
             fallback={
-              <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
+              <div className="h-64 bg-slate-100 animate-pulse rounded-lg" />
             }
           >
             <InformationsSection
               informations={data.informations}
               catalogueFamille={data.catalogueMameFamille?.items}
               gammeName={data.content?.pg_name}
+              riskConsequences={data.purchaseGuideData?.risk?.consequences}
             />
           </Suspense>
-        </section>
+        </Reveal>
+      </PageSection>
 
-        {/* Glossaire */}
-        <div className="flex items-center gap-2 px-4 py-3 text-sm bg-indigo-50 rounded-lg">
-          <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
-          <span className="text-gray-600">Besoin de clarifier un terme ?</span>
-          <Link
-            to="/reference-auto"
-            className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-          >
-            Voir le glossaire
-          </Link>
+      {/* 💡 Conseils d'entretien + 🔧 Équipementiers — DarkSection navy */}
+      <DarkSection>
+        <div className="space-y-12">
+          <div id="advice">
+            <SectionHeader
+              title={`Conseils d'entretien${pluralName ? ` pour vos ${pluralName}` : ""}`}
+              sub="Prévention et maintenance par nos experts"
+              dark
+            />
+            <Reveal>
+              <Suspense
+                fallback={
+                  <div className="h-64 bg-white/5 animate-pulse rounded-lg" />
+                }
+              >
+                <ConseilsSection
+                  conseils={data.conseils}
+                  catalogueFamille={data.catalogueMameFamille?.items}
+                  gammeName={data.content?.pg_name}
+                  isDarkMode
+                />
+              </Suspense>
+            </Reveal>
+          </div>
+
+          <div id="brands">
+            <SectionHeader
+              title="Marques équipementières de confiance"
+              sub="Fabricants OE et qualité premium"
+              dark
+            />
+            <Reveal delay={100}>
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-white/5 animate-pulse rounded-lg" />
+                }
+              >
+                <EquipementiersSection
+                  equipementiers={data.equipementiers}
+                  isDarkMode
+                />
+              </Suspense>
+            </Reveal>
+          </div>
         </div>
+      </DarkSection>
 
-        {/* 💡 Conseils d'entretien - Position 7 */}
-        <section id="advice">
-          <Suspense
-            fallback={
-              <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
-            }
-          >
-            <ConseilsSection
-              conseils={data.conseils}
-              catalogueFamille={data.catalogueMameFamille?.items}
-              gammeName={data.content?.pg_name}
-            />
-          </Suspense>
-        </section>
-
-        {/* 🔧 Équipementiers - Position 8 */}
-        <section id="brands">
-          <Suspense
-            fallback={
-              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-            }
-          >
-            <EquipementiersSection equipementiers={data.equipementiers} />
-          </Suspense>
-        </section>
-
-        {/* 📦 Catalogue Même Famille - Position 9 */}
-        <section id="family">
+      {/* 📦 Catalogue Même Famille */}
+      <PageSection id="family">
+        <Reveal>
           <Suspense
             fallback={
               <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
@@ -1389,27 +1547,40 @@ export default function PiecesDetailPage() {
               }))}
             />
           </Suspense>
-        </section>
+        </Reveal>
+      </PageSection>
 
-        {/* 📖 FAQ avec Schema.org - Position 10 (fin pour SEO longue traîne) */}
-        {buyingGuide?.faq && buyingGuide.faq.length > 0 && (
-          <section id="faq">
-            <Suspense
-              fallback={
-                <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-              }
-            >
-              <FAQSection
-                faq={buyingGuide.faq}
-                gammeName={data.content?.pg_name || "cette pièce"}
-              />
-            </Suspense>
-          </section>
-        )}
+      {/* 📖 FAQ avec Schema.org (merge purchaseGuideData + gammeBuyingGuide) */}
+      {(() => {
+        const baseFaq = data.purchaseGuideData?.faq || [];
+        const extraFaq = data.gammeBuyingGuide?.faq || [];
+        const seenQuestions = new Set(baseFaq.map((f) => f.question));
+        const mergedFaq = [
+          ...baseFaq,
+          ...extraFaq.filter((f) => !seenQuestions.has(f.question)),
+        ];
+        return (
+          mergedFaq.length > 0 && (
+            <PageSection bg="slate" id="faq">
+              <Reveal>
+                <Suspense
+                  fallback={
+                    <div className="h-48 bg-slate-100 animate-pulse rounded-lg" />
+                  }
+                >
+                  <FAQSection
+                    faq={mergedFaq}
+                    gammeName={data.content?.pg_name || "cette pièce"}
+                  />
+                </Suspense>
+              </Reveal>
+            </PageSection>
+          )
+        );
+      })()}
 
-        {/* Bouton Scroll To Top */}
-        <ScrollToTop />
-      </div>
+      {/* Bouton Scroll To Top */}
+      <ScrollToTop />
 
       {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}
       <MobileStickyBar

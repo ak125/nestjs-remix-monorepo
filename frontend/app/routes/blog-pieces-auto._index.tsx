@@ -714,7 +714,7 @@ export default function BlogIndex() {
             </Link>
 
             {/* Guide d'Achat */}
-            <Link to="/blog-pieces-auto/guide" className="group">
+            <Link to="/blog-pieces-auto/guide-achat" className="group">
               <Card className="h-full border-2 border-green-200 hover:border-green-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-white overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-success/10 rounded-bl-full opacity-50" />
                 <CardHeader className="relative">

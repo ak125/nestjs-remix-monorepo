@@ -28,7 +28,7 @@ export class GuideService {
   ) {}
 
   /**
-   * 📖 Récupérer tous les guides avec pagination
+   * 📖 Récupérer tous les guides (manuels + auto purchase guides)
    */
   async getAllGuides(
     options: {
@@ -50,43 +50,74 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
+
+      // 1) Guides manuels (__blog_guide)
       let query = client
         .from(TABLES.blog_guide)
         .select('*', { count: 'exact' });
 
-      // Appliquer les filtres
       if (filters.type) {
         query = query.ilike('bg_title', `%${filters.type}%`);
       }
-
       if (filters.minViews) {
         query = query.gte('bg_visit', filters.minViews.toString());
       }
 
-      // Pagination et tri
-      query = query
-        .order('bg_visit', { ascending: false })
-        .range(offset, offset + limit - 1);
+      query = query.order('bg_visit', { ascending: false });
 
-      const { data: guidesList, count } = await query;
+      const { data: guidesList, count: manualCount } = await query;
 
-      if (!guidesList) {
-        return { articles: [], total: 0 };
-      }
-
-      // Transformer chaque guide en article complet (parallélisé pour éviter N+1)
-      const articlePromises = guidesList.map((guide) =>
+      const articlePromises = (guidesList || []).map((guide) =>
         this.transformGuideToArticle(client, guide),
       );
-      const articlesResults = await Promise.all(articlePromises);
-      const articles = articlesResults.filter(
+      const manualArticles = (await Promise.all(articlePromises)).filter(
         (article): article is BlogArticle => article !== null,
       );
 
-      const result = { articles, total: count || 0 };
+      // 2) Guides auto-générés depuis __seo_gamme_purchase_guide
+      const { data: purchaseGuides } = await client
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_pg_id')
+        .not('sgpg_how_to_choose', 'is', null);
+
+      const pgIds = (purchaseGuides || []).map((p: any) => p.sgpg_pg_id);
+
+      let autoGuides: BlogArticle[] = [];
+      if (pgIds.length > 0) {
+        const { data: gammes } = await client
+          .from('pieces_gamme')
+          .select('pg_id, pg_name, pg_alias, pg_parent')
+          .in('pg_id', pgIds)
+          .eq('pg_display', '1');
+
+        autoGuides = (gammes || []).map((g: any) => ({
+          id: `gamme_guide_${g.pg_id}`,
+          type: 'guide' as const,
+          title: `Comment choisir son ${(g.pg_name || '').toLowerCase()} ?`,
+          slug: g.pg_alias,
+          excerpt: '',
+          content: '',
+          keywords: [],
+          tags: [g.pg_parent, g.pg_name].filter(Boolean),
+          publishedAt: new Date().toISOString(),
+          viewsCount: 0,
+          sections: [],
+          legacy_id: parseInt(g.pg_id) || 0,
+          legacy_table: '__seo_gamme_purchase_guide',
+        }));
+      }
+
+      // Combiner : manuels d'abord, puis auto (paginés)
+      const allArticles = [...manualArticles, ...autoGuides];
+      const total = (manualCount || 0) + autoGuides.length;
+      const paginated = allArticles.slice(offset, offset + limit);
+
+      const result = { articles: paginated, total };
       await this.cacheManager.set(cacheKey, result, 1800); // 30 min
 
-      this.logger.log(`📖 Récupéré ${articles.length} guides (${count} total)`);
+      this.logger.log(
+        `📖 Récupéré ${paginated.length} guides (${manualArticles.length} manuels + ${autoGuides.length} auto, ${total} total)`,
+      );
       return result;
     } catch (error) {
       this.logger.error(
@@ -132,7 +163,9 @@ export class GuideService {
   }
 
   /**
-   * � Récupérer un guide par slug (alias)
+   * Récupérer un guide par slug — fallback chain :
+   * 1) __blog_guide (guides manuels éditoriaux)
+   * 2) __seo_gamme_purchase_guide via pg_alias direct
    */
   async getGuideBySlug(slug: string): Promise<BlogArticle | null> {
     const cacheKey = `guide:slug:${slug}`;
@@ -144,19 +177,51 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
+
+      // 1) Chercher dans __blog_guide (guides manuels)
       const { data: guide } = await client
         .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_alias', slug)
         .single();
 
-      if (!guide) return null;
+      if (guide) {
+        const [article, relatedGuides] = await Promise.all([
+          this.transformGuideToArticle(client, guide),
+          this.getRelatedGuides(client, guide.bg_id),
+        ]);
 
-      const article = await this.transformGuideToArticle(client, guide);
-      if (article) {
-        await this.cacheManager.set(cacheKey, article, 3600); // 1h
+        if (article) {
+          const enriched = { ...article, relatedGuides };
+          await this.cacheManager.set(cacheKey, enriched, 3600);
+          return enriched;
+        }
+        return article;
       }
 
+      // 2) Fallback : slug = pg_alias directement → purchase guide
+      const { data: gamme } = await client
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias, pg_parent')
+        .eq('pg_alias', slug)
+        .eq('pg_display', '1')
+        .single();
+
+      if (!gamme) return null;
+
+      const { data: purchaseGuide } = await client
+        .from('__seo_gamme_purchase_guide')
+        .select('*')
+        .eq('sgpg_pg_id', gamme.pg_id)
+        .single();
+
+      if (!purchaseGuide) return null;
+
+      const article = this.transformPurchaseGuideToArticle(
+        gamme,
+        purchaseGuide,
+      );
+      await this.cacheManager.set(cacheKey, article, 3600);
       return article;
     } catch (error) {
       this.logger.error(
@@ -429,19 +494,34 @@ export class GuideService {
     client: any,
     guide: any,
   ): Promise<BlogArticle> {
-    // Récupérer les sections H2
+    // Batch H2 + H3 en 2 queries (pas N+1)
     const { data: h2Sections } = await client
       .from(TABLES.blog_guide_h2)
       .select('*')
       .eq('bg2_bg_id', guide.bg_id)
       .order('bg2_id');
 
+    const h2Ids = (h2Sections || []).map((h: any) => h.bg2_id);
+    const { data: allH3Sections } =
+      h2Ids.length > 0
+        ? await client
+            .from(TABLES.blog_guide_h3)
+            .select('*')
+            .in('bg3_bg2_id', h2Ids)
+            .order('bg3_id')
+        : { data: [] };
+
+    // Grouper H3 par bg3_bg2_id pour acces O(1)
+    const h3Map = new Map<number, any[]>();
+    (allH3Sections || []).forEach((h3: any) => {
+      if (!h3Map.has(h3.bg3_bg2_id)) h3Map.set(h3.bg3_bg2_id, []);
+      h3Map.get(h3.bg3_bg2_id)!.push(h3);
+    });
+
     const sections: BlogSection[] = [];
 
-    // Pour chaque H2, récupérer ses H3
     if (h2Sections && h2Sections.length > 0) {
       for (const h2 of h2Sections) {
-        // Ajouter le H2
         sections.push({
           level: 2,
           title: h2.bg2_h2,
@@ -452,29 +532,25 @@ export class GuideService {
           cta_link: h2.bg2_cta_link || null,
         });
 
-        // Récupérer les H3 de ce H2
-        const { data: h3Sections } = await client
-          .from(TABLES.blog_guide_h3)
-          .select('*')
-          .eq('bg3_bg2_id', h2.bg2_id)
-          .order('bg3_id');
-
-        // Ajouter les H3 (sous-sections du H2 actuel)
-        if (h3Sections && h3Sections.length > 0) {
-          h3Sections.forEach((h3: any) => {
-            sections.push({
-              level: 3,
-              title: h3.bg3_h3,
-              content: h3.bg3_content,
-              anchor: h3.bg3_h3?.toLowerCase().replace(/\s+/g, '-'),
-              wall: h3.bg3_wall || null,
-              cta_anchor: h3.bg3_cta_anchor || null,
-              cta_link: h3.bg3_cta_link || null,
-            });
+        const h3ForThis = h3Map.get(h2.bg2_id) || [];
+        for (const h3 of h3ForThis) {
+          sections.push({
+            level: 3,
+            title: h3.bg3_h3,
+            content: h3.bg3_content,
+            anchor: h3.bg3_h3?.toLowerCase().replace(/\s+/g, '-'),
+            wall: h3.bg3_wall || null,
+            cta_anchor: h3.bg3_cta_anchor || null,
+            cta_link: h3.bg3_cta_link || null,
           });
         }
       }
     }
+
+    // Calculer readingTime (chars totaux / 1000 ~ 1 min)
+    const totalChars =
+      (guide.bg_content?.length || 0) +
+      sections.reduce((sum, s) => sum + (s.content?.length || 0), 0);
 
     return {
       id: `guide_${guide.bg_id}`,
@@ -491,6 +567,9 @@ export class GuideService {
       updatedAt: guide.bg_update,
       viewsCount: parseInt(guide.bg_visit) || 0,
       sections,
+      h2Count: sections.filter((s) => s.level === 2).length,
+      h3Count: sections.filter((s) => s.level === 3).length,
+      readingTime: Math.max(1, Math.ceil(totalChars / 1000)),
       legacy_id: parseInt(guide.bg_id),
       legacy_table: '__blog_guide',
       seo_data: {
@@ -499,5 +578,160 @@ export class GuideService {
         keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       },
     };
+  }
+
+  /**
+   * Transforme un purchase guide (__seo_gamme_purchase_guide) en BlogArticle
+   */
+  private transformPurchaseGuideToArticle(gamme: any, pg: any): BlogArticle {
+    const sections: BlogSection[] = [];
+    const pgName = (gamme.pg_name || '').toLowerCase();
+
+    // H2: À quoi ça sert
+    if (pg.sgpg_intro_role) {
+      sections.push({
+        level: 2,
+        title: pg.sgpg_intro_title || `À quoi sert un ${pgName} ?`,
+        content: pg.sgpg_intro_role,
+        anchor: 'a-quoi-ca-sert',
+      });
+    }
+
+    // H2: Comment choisir
+    if (pg.sgpg_how_to_choose) {
+      sections.push({
+        level: 2,
+        title: `Comment choisir son ${pgName} ?`,
+        content: pg.sgpg_how_to_choose,
+        anchor: 'comment-choisir',
+      });
+    }
+
+    // H2: Risques
+    if (pg.sgpg_risk_explanation) {
+      sections.push({
+        level: 2,
+        title: pg.sgpg_risk_title || "Pourquoi c'est critique",
+        content: pg.sgpg_risk_explanation,
+        anchor: 'risques',
+      });
+    }
+
+    // H2: Quand changer
+    if (pg.sgpg_timing_note) {
+      const timingContent = pg.sgpg_timing_km
+        ? `${pg.sgpg_timing_note} (${pg.sgpg_timing_km} km)`
+        : pg.sgpg_timing_note;
+      sections.push({
+        level: 2,
+        title: pg.sgpg_timing_title || 'Quand changer',
+        content: timingContent,
+        anchor: 'quand-changer',
+      });
+    }
+
+    // H2: Symptômes
+    const symptoms: string[] = pg.sgpg_symptoms || [];
+    if (symptoms.length > 0) {
+      sections.push({
+        level: 2,
+        title: 'Symptômes à surveiller',
+        content: `<ul>${symptoms.map((s: string) => `<li>${s}</li>`).join('')}</ul>`,
+        anchor: 'symptomes',
+      });
+    }
+
+    // H2: Erreurs à éviter
+    const antiMistakes: string[] = pg.sgpg_anti_mistakes || [];
+    if (antiMistakes.length > 0) {
+      sections.push({
+        level: 2,
+        title: 'Erreurs à éviter',
+        content: `<ul>${antiMistakes.map((m: string) => `<li>${m}</li>`).join('')}</ul>`,
+        anchor: 'erreurs',
+      });
+    }
+
+    // H2: FAQ (chaque Q/R = H3)
+    const faq: Array<{ question: string; answer: string }> = pg.sgpg_faq || [];
+    if (faq.length > 0) {
+      sections.push({
+        level: 2,
+        title: 'Questions fréquentes',
+        content: '',
+        anchor: 'faq',
+      });
+      for (const item of faq) {
+        sections.push({
+          level: 3,
+          title: item.question,
+          content: item.answer,
+          anchor: (item.question || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .slice(0, 50),
+        });
+      }
+    }
+
+    const totalChars = sections.reduce(
+      (sum, s) => sum + (s.content?.length || 0),
+      0,
+    );
+
+    return {
+      id: `gamme_guide_${gamme.pg_id}`,
+      type: 'guide',
+      title: `Comment choisir son ${pgName} ?`,
+      slug: gamme.pg_alias,
+      excerpt: (pg.sgpg_intro_role || '').slice(0, 200),
+      content: '',
+      keywords: [],
+      tags: [gamme.pg_parent, gamme.pg_name].filter(Boolean),
+      publishedAt: pg.sgpg_created_at || new Date().toISOString(),
+      updatedAt: pg.sgpg_updated_at || null,
+      viewsCount: 0,
+      sections,
+      h2Count: sections.filter((s) => s.level === 2).length,
+      h3Count: sections.filter((s) => s.level === 3).length,
+      readingTime: Math.max(1, Math.ceil(totalChars / 1000)),
+      legacy_id: parseInt(gamme.pg_id) || 0,
+      legacy_table: '__seo_gamme_purchase_guide',
+      seo_data: {
+        meta_title: `Comment choisir son ${pgName} ? Guide complet`,
+        meta_description: (pg.sgpg_intro_role || '').slice(0, 155),
+        keywords: [gamme.pg_name, gamme.pg_parent].filter(Boolean),
+      },
+    };
+  }
+
+  /**
+   * Récupère les autres guides (pour section "Guides similaires")
+   */
+  private async getRelatedGuides(
+    client: any,
+    currentGuideId: string,
+  ): Promise<any[]> {
+    try {
+      const { data: otherGuides } = await client
+        .from(TABLES.blog_guide)
+        .select(
+          'bg_id, bg_title, bg_alias, bg_preview, bg_descrip, bg_visit, bg_create',
+        )
+        .neq('bg_id', currentGuideId)
+        .limit(4);
+
+      return (otherGuides || []).map((g: any) => ({
+        id: `guide_${g.bg_id}`,
+        title: g.bg_title,
+        slug: g.bg_alias,
+        excerpt: g.bg_preview || g.bg_descrip || '',
+        viewsCount: parseInt(g.bg_visit) || 0,
+        publishedAt: g.bg_create,
+      }));
+    } catch (error) {
+      this.logger.warn(`Erreur related guides: ${(error as Error).message}`);
+      return [];
+    }
   }
 }

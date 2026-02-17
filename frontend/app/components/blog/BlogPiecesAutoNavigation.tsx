@@ -40,7 +40,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     label: "Guide d'Achat",
-    href: "/blog-pieces-auto/guide",
+    href: "/blog-pieces-auto/guide-achat",
     icon: Wrench,
     description: "Comparatifs et conseils d'achat",
     color: "text-green-600",
@@ -96,9 +96,9 @@ export function BlogPiecesAutoNavigation() {
               <Wrench className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                 Pièces Auto
-              </h1>
+              </span>
               <p className="text-xs text-gray-500">
                 Conseils et guides pratiques
               </p>
