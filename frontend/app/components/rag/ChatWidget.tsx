@@ -14,6 +14,7 @@ import { useState, useRef, useEffect, useCallback, memo } from "react";
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";
 import { useVehicle } from "~/hooks/useVehiclePersistence";
+import { classifyChatIntent } from "~/utils/chat-intent.utils";
 
 interface ChatWidgetProps {
   streamUrl?: string;
@@ -71,20 +72,25 @@ const ChatWidget = memo(function ChatWidget({
       ]);
 
       try {
+        const intentRouting = classifyChatIntent(content);
+
         const response = await fetch(streamUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: content,
             sessionId,
-            context: vehicle
-              ? {
-                  brand: vehicle.brand,
-                  model: vehicle.model,
-                  engine: vehicle.engine,
-                  year: vehicle.year,
-                }
-              : undefined,
+            context: {
+              ...(vehicle
+                ? {
+                    brand: vehicle.brand,
+                    model: vehicle.model,
+                    engine: vehicle.engine,
+                    year: vehicle.year,
+                  }
+                : {}),
+              intent_routing: intentRouting,
+            },
           }),
         });
 
@@ -131,6 +137,28 @@ const ChatWidget = memo(function ChatWidget({
                   break;
                 case "metadata":
                   if (data.sessionId) setSessionId(data.sessionId);
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? {
+                            ...m,
+                            responseMode: data.responseMode || "answer",
+                            needsClarification: Boolean(
+                              data.needsClarification,
+                            ),
+                            clarifyQuestions: Array.isArray(
+                              data.clarifyQuestions,
+                            )
+                              ? data.clarifyQuestions.slice(0, 2)
+                              : [],
+                            sourcesCitation:
+                              typeof data.sourcesCitation === "string"
+                                ? data.sourcesCitation
+                                : "",
+                          }
+                        : m,
+                    ),
+                  );
                   break;
                 case "done":
                   setMessages((prev) =>
@@ -145,7 +173,8 @@ const ChatWidget = memo(function ChatWidget({
             }
           }
         }
-      } catch {
+      } catch (error) {
+        console.error("[ChatWidget] Erreur appel RAG:", error);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantId

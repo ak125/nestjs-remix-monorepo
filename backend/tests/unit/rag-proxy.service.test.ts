@@ -53,6 +53,25 @@ describe('RagProxyService', () => {
     jest.restoreAllMocks();
   });
 
+  const readSseEventPayload = (
+    writes: string[],
+    eventName: string,
+  ): Record<string, unknown> | null => {
+    for (const chunk of writes) {
+      const parts = chunk.split('\n');
+      const eventLine = parts.find((line) => line.startsWith('event: '));
+      const dataLine = parts.find((line) => line.startsWith('data: '));
+      if (!eventLine || !dataLine) continue;
+      if (eventLine === `event: ${eventName}`) {
+        return JSON.parse(dataLine.slice('data: '.length)) as Record<
+          string,
+          unknown
+        >;
+      }
+    }
+    return null;
+  };
+
   // ========================================
   // chat() — 4 tests
   // ========================================
@@ -72,6 +91,10 @@ describe('RagProxyService', () => {
       query_type: 'on_topic',
       passed_guardrails: true,
       refusal_reason: null,
+      response_mode: 'partial',
+      needs_clarification: true,
+      clarify_questions: ['Question 1', 'Question 2', 'Question 3'],
+      sources_citation: '## Sources\n1. [L2] ...',
     };
 
     it('should return a formatted ChatResponseDto on valid request', async () => {
@@ -91,6 +114,11 @@ describe('RagProxyService', () => {
         queryType: 'on_topic',
         passedGuardrails: true,
         refusalReason: null,
+        responseMode: 'partial',
+        needsClarification: true,
+        clarifyQuestions: ['Question 1', 'Question 2'],
+        sourcesCitation: '## Sources\n1. [L2] ...',
+        truthMetadata: { composite_confidence: 0.92 },
       });
     });
 
@@ -110,7 +138,7 @@ describe('RagProxyService', () => {
       await expect(service.chat(chatRequest)).rejects.toThrow(HttpException);
     });
 
-    it('should send X-API-Key header and locale: fr', async () => {
+    it('should send X-RAG-API-Key header and locale: fr', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockRagResponse,
@@ -123,7 +151,7 @@ describe('RagProxyService', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            'X-API-Key': MOCK_API_KEY,
+            'X-RAG-API-Key': MOCK_API_KEY,
             'Content-Type': 'application/json',
           }),
         }),
@@ -153,14 +181,19 @@ describe('RagProxyService', () => {
         {
           title: 'Plaquettes de frein',
           content: 'Les plaquettes de frein sont...',
-          sourcePath: 'gammes/plaquettes-de-frein.md',
-          sourceType: 'knowledge',
+          source_path: 'gammes/plaquettes-de-frein.md',
+          source_type: 'knowledge',
           category: 'freinage',
           score: 0.95,
         },
       ],
       query: 'plaquettes de frein avant',
       total: 1,
+      response_mode: 'partial',
+      needs_clarification: true,
+      clarify_questions: ['Q1', 'Q2', 'Q3'],
+      sources_citation: '## Sources\n1. [L2] ...',
+      truth_metadata: { composite_confidence: 0.61 },
     };
 
     it('should return a SearchResponseDto on valid request', async () => {
@@ -172,9 +205,25 @@ describe('RagProxyService', () => {
       const result = await service.search(searchRequest);
 
       expect(result).toEqual({
-        results: mockSearchResponse.results,
+        results: [
+          {
+            title: 'Plaquettes de frein',
+            content: 'Les plaquettes de frein sont...',
+            source_path: 'gammes/plaquettes-de-frein.md',
+            source_type: 'knowledge',
+            sourcePath: 'gammes/plaquettes-de-frein.md',
+            sourceType: 'knowledge',
+            category: 'freinage',
+            score: 0.95,
+          },
+        ],
         query: 'plaquettes de frein avant',
         total: 1,
+        response_mode: 'partial',
+        needs_clarification: true,
+        clarify_questions: ['Q1', 'Q2'],
+        sources_citation: '## Sources\n1. [L2] ...',
+        truth_metadata: { composite_confidence: 0.61 },
       });
     });
 
@@ -195,6 +244,72 @@ describe('RagProxyService', () => {
       await expect(service.search(searchRequest)).rejects.toThrow(
         HttpException,
       );
+    });
+  });
+
+  // ========================================
+  // chatStream() — 1 test
+  // ========================================
+
+  describe('chatStream()', () => {
+    it('should emit verified RAG metadata in SSE stream', async () => {
+      jest.spyOn(service as never, 'chat').mockResolvedValue({
+        answer: 'Reponse',
+        sources: ['knowledge/normes/ece-r90.md'],
+        sessionId: 'session-sse-123',
+        confidence: 0.71,
+        citations: ['citation'],
+        queryType: 'ambiguous',
+        passedGuardrails: true,
+        refusalReason: null,
+        responseMode: 'partial',
+        needsClarification: true,
+        clarifyQuestions: ['Q1', 'Q2'],
+        sourcesCitation: '## Sources\n1. ...',
+        truthMetadata: { composite_confidence: 0.71 },
+      } as never);
+
+      jest
+        .spyOn(service as never, 'delay')
+        .mockResolvedValue(undefined as never);
+
+      const writes: string[] = [];
+      const res = {
+        write: jest.fn((chunk: string) => {
+          writes.push(chunk);
+        }),
+        end: jest.fn(),
+      };
+
+      await service.chatStream(
+        { message: 'test sse', sessionId: 'session-sse-123' },
+        res as never,
+      );
+
+      const metadata = readSseEventPayload(writes, 'metadata');
+      expect(metadata).not.toBeNull();
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          sessionId: 'session-sse-123',
+          confidence: 0.71,
+          responseMode: 'partial',
+          needsClarification: true,
+          clarifyQuestions: ['Q1', 'Q2'],
+          sourcesCitation: '## Sources\n1. ...',
+          truthMetadata: { composite_confidence: 0.71 },
+        }),
+      );
+
+      const sources = readSseEventPayload(writes, 'sources');
+      expect(sources).toEqual(
+        expect.objectContaining({
+          sources: ['knowledge/normes/ece-r90.md'],
+        }),
+      );
+
+      const done = readSseEventPayload(writes, 'done');
+      expect(done).toEqual(expect.objectContaining({ confidence: 0.71 }));
+      expect(res.end).toHaveBeenCalled();
     });
   });
 

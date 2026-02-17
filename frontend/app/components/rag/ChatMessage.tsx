@@ -14,7 +14,11 @@ export interface ChatMessageData {
   role: "user" | "assistant";
   content: string;
   sources?: string[];
+  sourcesCitation?: string;
   confidence?: number;
+  responseMode?: "answer" | "partial" | "clarify";
+  needsClarification?: boolean;
+  clarifyQuestions?: string[];
   timestamp: Date;
 }
 
@@ -24,6 +28,19 @@ interface ChatMessageProps {
 
 const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
+  const mode = message.responseMode || "answer";
+  const modeLabel =
+    mode === "partial"
+      ? "Réponse partielle"
+      : mode === "clarify"
+        ? "À clarifier"
+        : "Réponse";
+  const modeClass =
+    mode === "partial"
+      ? "bg-amber-100 text-amber-800"
+      : mode === "clarify"
+        ? "bg-orange-100 text-orange-800"
+        : "bg-emerald-100 text-emerald-800";
 
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
@@ -52,6 +69,16 @@ const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
       >
         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
+        {!isUser && (
+          <div className="mt-2">
+            <span
+              className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${modeClass}`}
+            >
+              {modeLabel}
+            </span>
+          </div>
+        )}
+
         {/* Sources (assistant only) */}
         {!isUser && message.sources && message.sources.length > 0 && (
           <div className="mt-2 pt-2 border-t border-gray-200">
@@ -68,6 +95,39 @@ const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
               ))}
             </ul>
           </div>
+        )}
+
+        {/* Clarification mode (assistant only) */}
+        {!isUser && message.needsClarification && (
+          <div className="mt-2 pt-2 border-t border-amber-200">
+            <p className="text-xs font-medium text-amber-700 mb-1">
+              Précision nécessaire
+            </p>
+            {message.clarifyQuestions &&
+              message.clarifyQuestions.length > 0 && (
+                <ul className="space-y-1">
+                  {message.clarifyQuestions
+                    .slice(0, 2)
+                    .map((question, index) => (
+                      <li key={index} className="text-xs text-amber-800">
+                        {index + 1}. {question}
+                      </li>
+                    ))}
+                </ul>
+              )}
+          </div>
+        )}
+
+        {/* Raw source citation block (assistant only) */}
+        {!isUser && message.sourcesCitation && (
+          <details className="mt-2 pt-2 border-t border-gray-200">
+            <summary className="text-xs text-gray-500 cursor-pointer">
+              Citations techniques
+            </summary>
+            <pre className="mt-1 text-[11px] leading-4 text-gray-600 whitespace-pre-wrap">
+              {message.sourcesCitation}
+            </pre>
+          </details>
         )}
 
         {/* Confidence indicator (assistant only) */}

@@ -25,6 +25,11 @@ export const ChatResponseSchema = z.object({
     .optional(),
   passedGuardrails: z.boolean().optional(),
   refusalReason: z.string().nullable().optional(),
+  responseMode: z.enum(['answer', 'partial', 'clarify']).optional(),
+  needsClarification: z.boolean().optional(),
+  clarifyQuestions: z.array(z.string()).optional(),
+  sourcesCitation: z.string().optional(),
+  truthMetadata: z.record(z.unknown()).optional(),
 });
 
 // Types TypeScript inférés
