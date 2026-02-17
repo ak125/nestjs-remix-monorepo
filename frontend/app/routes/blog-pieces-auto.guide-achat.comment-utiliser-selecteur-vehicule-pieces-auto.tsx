@@ -351,7 +351,7 @@ function TableOfContentsGuide() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-all duration-200 ${
+              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-2.5 sm:py-1.5 text-sm transition-all duration-200 ${
                 isActive
                   ? "border-green-400 bg-green-100 font-medium text-green-800"
                   : "border-gray-200 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50 hover:text-green-700"
@@ -797,8 +797,8 @@ export default function GuideSelecteurVehicule() {
             </div>
 
             {/* Grille de decision — quelle methode choisir */}
-            <Card className="mb-8">
-              <Table>
+            <Card className="mb-8 overflow-x-auto">
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow className="border-b-2 border-green-200 bg-green-50">
                     <TableHead className="font-semibold text-gray-900">

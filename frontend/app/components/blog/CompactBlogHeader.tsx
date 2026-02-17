@@ -87,7 +87,7 @@ export function CompactBlogHeader({
                   {item.href ? (
                     <Link
                       to={item.href}
-                      className="hover:text-white transition-colors"
+                      className="hover:text-white transition-colors py-1"
                     >
                       {item.label}
                     </Link>
@@ -160,6 +160,9 @@ export function CompactBlogHeader({
                       <span className="text-sm font-semibold">
                         {stat.value}
                       </span>
+                      {stat.label && (
+                        <span className="text-xs opacity-80">{stat.label}</span>
+                      )}
                     </div>
                   );
                 })}
