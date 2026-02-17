@@ -5,6 +5,7 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../../modules/admin/services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../../modules/admin/services/conseil-enricher.service';
+import { ReferenceService } from '../../modules/seo/services/reference.service';
 import type {
   ContentRefreshJobData,
   ContentRefreshResult,
@@ -18,6 +19,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     configService: ConfigService,
     private readonly buyingGuideEnricher: BuyingGuideEnricherService,
     private readonly conseilEnricher: ConseilEnricherService,
+    private readonly referenceService: ReferenceService,
   ) {
     super(configService);
   }
@@ -69,23 +71,19 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
 
         case 'R4_reference': {
-          // For R4, we generate a draft via ReferenceService
-          // Since we might not have ReferenceService injected here,
-          // we do a simple RAG-based SQL approach
-          const { data: existingRef } = await this.client
-            .from('__seo_reference')
-            .select('id, is_published')
-            .eq('slug', pgAlias)
-            .single();
+          // Delegate to ReferenceService.refreshSingleGamme() for RAG-based enrichment
+          const refResult =
+            await this.referenceService.refreshSingleGamme(pgAlias);
 
-          if (existingRef) {
-            // Entry exists, mark for review
-            qualityScore = 75;
-            qualityFlags = ['EXISTING_ENTRY_REVIEW'];
-          } else {
-            // No entry — flag for manual creation via /seo-content-architect
+          if (refResult.created) {
+            qualityScore = 80;
+            qualityFlags = ['NEW_ENTRY_CREATED'];
+          } else if (refResult.updated) {
+            qualityScore = 85;
+            qualityFlags = ['EXISTING_ENTRY_UPDATED'];
+          } else if (refResult.skipped) {
             qualityScore = 50;
-            qualityFlags = ['NO_EXISTING_ENTRY', 'MANUAL_CREATION_NEEDED'];
+            qualityFlags = ['NO_RAG_DATA_AVAILABLE'];
           }
           break;
         }

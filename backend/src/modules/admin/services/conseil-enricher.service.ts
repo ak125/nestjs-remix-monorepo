@@ -137,7 +137,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // 2. Parse frontmatter YAML for page_contract
-    const contract = this.parsePageContract(ragContent);
+    let contract = this.parsePageContract(ragContent);
+    if (!contract) {
+      // Fallback: try parsing mechanical_rules + diagnostic_tree from YAML
+      contract = this.parseFromMechanicalRules(ragContent);
+    }
     if (!contract) {
       return {
         status: 'skipped',
@@ -347,6 +351,159 @@ export class ConseilEnricherService extends SupabaseBaseService {
       nodes.push({ if: currentIf, then: currentThen });
     }
     return nodes;
+  }
+
+  // ── Fallback: Parse from mechanical_rules + diagnostic_tree ──
+
+  /**
+   * Fallback parser when parsePageContract() returns null.
+   * Extracts data from mechanical_rules, diagnostic_tree, and top-level symptoms
+   * in the YAML frontmatter. Returns a PageContract if at least 2 fields are found.
+   */
+  private parseFromMechanicalRules(content: string): PageContract | null {
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return null;
+    const fm = fmMatch[1];
+    const markdownBody = content.substring(fmMatch[0].length);
+
+    const contract: PageContract = {};
+    let fieldsFound = 0;
+
+    // 1. Extract role_summary from mechanical_rules as intro.role
+    const roleSummaryMatch = fm.match(
+      /role_summary:\s*>-?\s*\n([\s\S]*?)(?=\n\s{2}\w|\n\w|$)/,
+    );
+    const roleSummaryInline = fm.match(/role_summary:\s+(.+?)$/m);
+    const roleSummary = roleSummaryMatch
+      ? roleSummaryMatch[1].replace(/\s+/g, ' ').trim()
+      : roleSummaryInline?.[1]?.trim() || null;
+
+    if (roleSummary && roleSummary.length > 10) {
+      contract.intro = { role: roleSummary };
+      fieldsFound++;
+    }
+
+    // 2. Extract must_be_true from mechanical_rules → map to antiMistakes
+    //    (rules that must hold true = rules not to violate)
+    const mustBeTrue: string[] = [];
+    const mbtMatch = fm.match(/must_be_true:\s*\n((?:\s*-\s*.+\n?)*)/);
+    if (mbtMatch) {
+      const lines = mbtMatch[1].match(/^\s*-\s*(.+)$/gm);
+      if (lines) {
+        for (const line of lines) {
+          const val = line.replace(/^\s*-\s*/, '').trim();
+          if (val) mustBeTrue.push(val);
+        }
+      }
+    }
+    if (mustBeTrue.length > 0) {
+      contract.antiMistakes = mustBeTrue;
+      fieldsFound++;
+    }
+
+    // 3. Extract diagnostic_tree (top-level) → if/then pairs
+    const diagnosticTree: Array<{ if: string; then: string }> = [];
+    const dtSection = fm.match(
+      /^diagnostic_tree:\s*\n((?:\s*-\s*[\s\S]*?)(?=\n\w|\n$|$))/m,
+    );
+    if (dtSection) {
+      const dtText = dtSection[1];
+      const ifMatches = dtText.matchAll(/^\s*-?\s*if:\s*(.+)$/gm);
+      const thenMatches = dtText.matchAll(/^\s+then:\s*(.+)$/gm);
+      const ifs = [...ifMatches].map((m) => m[1].trim());
+      const thens = [...thenMatches].map((m) => m[1].trim());
+      const len = Math.min(ifs.length, thens.length);
+      for (let i = 0; i < len; i++) {
+        diagnosticTree.push({
+          if: ifs[i].replace(/_/g, ' '),
+          then: thens[i].replace(/_/g, ' '),
+        });
+      }
+    }
+    if (diagnosticTree.length > 0) {
+      contract.diagnosticTree = diagnosticTree;
+      fieldsFound++;
+    }
+
+    // 4. Extract symptoms from top-level symptoms: list (label field)
+    const symptoms: string[] = [];
+    const sympSection = fm.match(
+      /^symptoms:\s*\n((?:\s*-[\s\S]*?)(?=\n\w|$))/m,
+    );
+    if (sympSection) {
+      const labelMatches = sympSection[1].matchAll(/label:\s*(.+)$/gm);
+      for (const m of labelMatches) {
+        const label = m[1].trim();
+        if (label) symptoms.push(label);
+      }
+    }
+
+    // Also check markdown body for ## Symptomes section
+    if (symptoms.length === 0) {
+      const sympMdMatch = markdownBody.match(
+        /##\s*Sympt[oô]mes[^\n]*\n([\s\S]*?)(?=\n##\s|\n$|$)/i,
+      );
+      if (sympMdMatch) {
+        const bulletMatches = sympMdMatch[1].matchAll(
+          /^[-*]\s+\*?\*?(.+?)\*?\*?\s*$/gm,
+        );
+        for (const m of bulletMatches) {
+          const item = m[1].trim();
+          if (item && item.length > 5) symptoms.push(item);
+        }
+      }
+    }
+
+    if (symptoms.length > 0) {
+      contract.symptoms = symptoms;
+      fieldsFound++;
+    }
+
+    // 5. Extract faq from page_contract section (nested under page_contract:)
+    const pcSection = fm.match(
+      /^page_contract:\s*\n((?:\s{2}[\s\S]*?)(?=\n\w|$))/m,
+    );
+    if (pcSection) {
+      const pcText = pcSection[1];
+      const faqs: Array<{ q: string; a: string }> = [];
+      const faqIdx = pcText.indexOf('faq:');
+      if (faqIdx >= 0) {
+        const faqText = pcText.substring(faqIdx);
+        const faqLines = faqText.split('\n').slice(1);
+        let currentQ = '';
+        let currentA = '';
+        for (const line of faqLines) {
+          const qMatch = line.match(/^\s+-?\s*question:\s*(.+)$/);
+          const aMatch = line.match(/^\s+answer:\s*(.+)$/);
+          if (qMatch) {
+            if (currentQ && currentA) {
+              faqs.push({ q: currentQ, a: currentA });
+            }
+            currentQ = qMatch[1].trim();
+            currentA = '';
+          } else if (aMatch) {
+            currentA = aMatch[1].trim();
+          } else if (
+            line.trim() &&
+            !line.match(/^\s/) &&
+            line.indexOf(':') > 0
+          ) {
+            // New top-level key in page_contract — stop parsing faq
+            break;
+          }
+        }
+        if (currentQ && currentA) {
+          faqs.push({ q: currentQ, a: currentA });
+        }
+      }
+      if (faqs.length > 0) {
+        contract.faq = faqs;
+        fieldsFound++;
+      }
+    }
+
+    // Return contract only if at least 2 fields were found
+    return fieldsFound >= 2 ? contract : null;
   }
 
   // ── Load existing sections ──

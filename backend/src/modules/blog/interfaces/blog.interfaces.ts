@@ -37,6 +37,7 @@ export interface BlogArticle {
   sections: BlogSection[];
   legacy_id: number;
   legacy_table: string;
+  source?: 'manual' | 'auto';
   cta_anchor?: string | null; // Texte du bouton CTA principal
   cta_link?: string | null; // URL du bouton CTA principal
   relatedArticles?: BlogArticle[]; // Articles croisés (sidebar "On vous propose")

@@ -120,6 +120,7 @@ export class GuideService {
           sections: [],
           legacy_id: parseInt(g.pg_id) || 0,
           legacy_table: '__seo_gamme_purchase_guide',
+          source: 'auto' as const,
         }));
       }
 
@@ -591,6 +592,7 @@ export class GuideService {
       readingTime: Math.max(1, Math.ceil(totalChars / 1000)),
       legacy_id: parseInt(guide.bg_id),
       legacy_table: '__blog_guide',
+      source: 'manual',
       seo_data: {
         meta_title: guide.bg_title,
         meta_description: guide.bg_descrip,
@@ -718,6 +720,7 @@ export class GuideService {
       readingTime: Math.max(1, Math.ceil(totalChars / 1000)),
       legacy_id: parseInt(gamme.pg_id) || 0,
       legacy_table: '__seo_gamme_purchase_guide',
+      source: 'auto',
       seo_data: {
         meta_title: `Comment choisir son ${pgName} ? Guide complet`,
         meta_description: (pg.sgpg_intro_role || '').slice(0, 155),

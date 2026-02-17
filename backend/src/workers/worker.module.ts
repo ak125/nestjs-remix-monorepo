@@ -24,6 +24,7 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
+import { ReferenceService } from '../modules/seo/services/reference.service';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { ConseilEnricherService } from '../modules/admin/services/conseil-enrich
     // Enricher services (used by ContentRefreshProcessor)
     BuyingGuideEnricherService,
     ConseilEnricherService,
+    ReferenceService,
 
     // Services
     // SitemapStreamingService, // DESACTIVE

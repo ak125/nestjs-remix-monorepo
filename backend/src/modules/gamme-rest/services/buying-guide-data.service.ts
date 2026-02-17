@@ -1,107 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { PURCHASE_GUIDE_VALIDATION } from '../../seo/validation/purchase-guide-validation.constants';
+import {
+  type GammeContentQualityFlag,
+  CONTRACT_VERSION,
+  BUYING_GUIDE_VERSION,
+  MIN_NARRATIVE_LENGTH,
+  MAX_NARRATIVE_LENGTH,
+  MIN_ANTI_MISTAKES_CONTENT as MIN_ANTI_MISTAKES,
+  MIN_ARGUMENTS,
+  MIN_SELECTION_CRITERIA as BUYING_GUIDE_MIN_SELECTION_CRITERIA,
+  MIN_ANTI_MISTAKES_BUYING_GUIDE as BUYING_GUIDE_MIN_ANTI_MISTAKES,
+  MIN_DECISION_NODES as BUYING_GUIDE_MIN_DECISION_NODES,
+  ACTION_MARKERS_NORMALIZED as BUYING_GUIDE_ACTION_MARKERS,
+  GENERIC_PHRASES,
+  FAMILY_REQUIRED_TERMS,
+  type FamilyKey,
+  FAMILY_MARKERS,
+  FLAG_PENALTIES,
+  TRUSTED_SOURCE_PREFIXES,
+} from '../../../config/buying-guide-quality.constants';
 
-/**
- * Flags qualité du contrat éditorial "GammeContentContract v1"
- */
-export type GammeContentQualityFlag =
-  | 'GENERIC_PHRASES'
-  | 'MISSING_REQUIRED_TERMS'
-  | 'TOO_SHORT'
-  | 'TOO_LONG'
-  | 'FAQ_TOO_SMALL'
-  | 'SYMPTOMS_TOO_SMALL'
-  | 'DUPLICATE_ITEMS'
-  | 'MISSING_SOURCE_PROVENANCE'
-  | 'INTRO_ROLE_MISMATCH';
-
-const CONTRACT_VERSION = 'GammeContentContract.v1' as const;
-const BUYING_GUIDE_VERSION = 'GammeBuyingGuide.v1' as const;
-const MIN_NARRATIVE_LENGTH = 40;
-const MAX_NARRATIVE_LENGTH = 420;
-const MIN_ANTI_MISTAKES = 3;
-const MIN_ARGUMENTS = 3;
-const BUYING_GUIDE_MIN_SELECTION_CRITERIA = 5;
-const BUYING_GUIDE_MIN_ANTI_MISTAKES = 4;
-const BUYING_GUIDE_MIN_DECISION_NODES = 1;
-const BUYING_GUIDE_ACTION_MARKERS = [
-  'verifier',
-  'controler',
-  'choisir',
-  'comparer',
-  'identifier',
-  'confirmer',
-  'mesurer',
-  'valider',
-  'respecter',
-  'remplacer',
-  'eviter',
-  'filtrer',
-  'selectionner',
-] as const;
-
-const GENERIC_PHRASES = [
-  'rôle essentiel',
-  'entretien régulier',
-  'pièce importante',
-  'bon fonctionnement',
-  'il est recommandé',
-  'il est conseillé',
-  'en bon état',
-  'pièce indispensable',
-];
-
-const FAMILY_REQUIRED_TERMS = {
-  freinage: ['frein', 'freinage', 'distance', 'sécurité'],
-  moteur: ['moteur', 'combustion', 'lubrification', 'fiabilité'],
-  suspension: ['suspension', 'stabilité', 'amortissement', 'tenue'],
-  transmission: ['transmission', 'couple', 'embrayage', 'motricité'],
-  electrique: ['électrique', 'charge', 'alimentation', 'batterie'],
-  climatisation: ['climatisation', 'froid', 'pression', 'compresseur'],
-} as const;
-
-const FAMILY_MARKERS: Record<keyof typeof FAMILY_REQUIRED_TERMS, string[]> = {
-  freinage: ['frein', 'disque', 'plaquette', 'étrier', 'abs'],
-  moteur: ['moteur', 'injecteur', 'distribution', 'lubrification'],
-  suspension: ['suspension', 'amortisseur', 'coupelle', 'ressort'],
-  transmission: ['embrayage', 'cardan', 'boîte', 'transmission'],
-  electrique: ['alternateur', 'batterie', 'démarreur', 'électrique'],
-  climatisation: ['climatisation', 'compresseur', 'condenseur', 'évaporateur'],
-};
-
-const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
-  GENERIC_PHRASES: 18,
-  MISSING_REQUIRED_TERMS: 16,
-  TOO_SHORT: 10,
-  TOO_LONG: 8,
-  FAQ_TOO_SMALL: 14,
-  SYMPTOMS_TOO_SMALL: 12,
-  DUPLICATE_ITEMS: 8,
-  MISSING_SOURCE_PROVENANCE: 20,
-  INTRO_ROLE_MISMATCH: 25,
-};
-
-const TRUSTED_SOURCE_PREFIXES = [
-  'pdf://',
-  'pdf:',
-  'oem://',
-  'oem:',
-  'catalog://',
-  'catalog:',
-  'manual://',
-  'manual:',
-  'tech://',
-  'tech:',
-  'bulletin://',
-  'bulletin:',
-  'scraping://',
-  'scraping:',
-  'rag://',
-  'rag:',
-  'https://',
-  'http://',
-] as const;
+// Re-export type for backward compatibility (other files import it from here)
+export type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
 const REQUIRE_BUYING_GUIDE_SOURCE =
   process.env.REQUIRE_BUYING_GUIDE_SOURCE ??
   process.env.REQUIRE_PURCHASE_GUIDE_SOURCE;
@@ -260,7 +181,6 @@ export interface GammeBuyingGuideV1 {
 }
 
 type BuyingGuideContractWithoutQuality = Omit<BuyingGuideContractV1, 'quality'>;
-type FamilyKey = keyof typeof FAMILY_REQUIRED_TERMS;
 
 /**
  * Service pour récupérer et fabriquer le contrat buying guide.

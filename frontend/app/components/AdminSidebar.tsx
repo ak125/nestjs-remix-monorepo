@@ -27,6 +27,7 @@ import {
   Link2,
   Map,
   MessageSquare,
+  RefreshCw,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -289,6 +290,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           icon: Tag,
           description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`,
         },
+        {
+          name: "Content Refresh",
+          href: "/admin/content-refresh",
+          icon: RefreshCw,
+          description: "Pipeline rafraîchissement contenu",
+        },
       ],
     },
     {
@@ -344,7 +351,8 @@ export const AdminSidebar = memo(function AdminSidebar({
   >({
     "SEO Enterprise":
       location.pathname.startsWith("/admin/seo") ||
-      location.pathname.startsWith("/admin/gammes-seo"),
+      location.pathname.startsWith("/admin/gammes-seo") ||
+      location.pathname.startsWith("/admin/content-refresh"),
     Blog:
       location.pathname.startsWith("/admin/blog") ||
       location.pathname.startsWith("/admin/articles") ||

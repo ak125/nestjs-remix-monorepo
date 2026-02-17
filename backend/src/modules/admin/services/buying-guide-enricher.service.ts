@@ -10,80 +10,23 @@ import {
   type SectionResult,
   type EnrichmentResult,
 } from '../dto/buying-guide-enrich.dto';
-import type { GammeContentQualityFlag } from '../../gamme-rest/services/buying-guide-data.service';
-
-// ── Quality gate constants (mirrored from buying-guide-data.service.ts) ──
-
-const MIN_NARRATIVE_LENGTH = 40;
-const MAX_NARRATIVE_LENGTH = 420;
-
-const GENERIC_PHRASES = [
-  'rôle essentiel',
-  'entretien régulier',
-  'pièce importante',
-  'bon fonctionnement',
-  'il est recommandé',
-  'il est conseillé',
-  'en bon état',
-  'pièce indispensable',
-];
-
-const FAMILY_REQUIRED_TERMS: Record<string, string[]> = {
-  freinage: ['frein', 'freinage', 'distance', 'sécurité'],
-  moteur: ['moteur', 'combustion', 'lubrification', 'fiabilité'],
-  suspension: ['suspension', 'stabilité', 'amortissement', 'tenue'],
-  transmission: ['transmission', 'couple', 'embrayage', 'motricité'],
-  electrique: ['électrique', 'charge', 'alimentation', 'batterie'],
-  climatisation: ['climatisation', 'froid', 'pression', 'compresseur'],
-};
-
-const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
-  GENERIC_PHRASES: 18,
-  MISSING_REQUIRED_TERMS: 16,
-  TOO_SHORT: 10,
-  TOO_LONG: 8,
-  FAQ_TOO_SMALL: 14,
-  SYMPTOMS_TOO_SMALL: 12,
-  DUPLICATE_ITEMS: 8,
-  MISSING_SOURCE_PROVENANCE: 20,
-  INTRO_ROLE_MISMATCH: 25,
-};
-
-const FAMILY_MARKERS: Record<string, string[]> = {
-  freinage: ['frein', 'disque', 'plaquette', 'étrier', 'abs'],
-  moteur: ['moteur', 'injecteur', 'distribution', 'lubrification'],
-  suspension: ['suspension', 'amortisseur', 'coupelle', 'ressort'],
-  transmission: ['embrayage', 'cardan', 'boîte', 'transmission'],
-  electrique: ['alternateur', 'batterie', 'démarreur', 'électrique'],
-  climatisation: ['climatisation', 'compresseur', 'condenseur', 'évaporateur'],
-};
-
-const ACTION_MARKERS = [
-  'vérifier',
-  'contrôler',
-  'choisir',
-  'comparer',
-  'identifier',
-  'confirmer',
-  'mesurer',
-  'valider',
-  'respecter',
-  'remplacer',
-  'éviter',
-  'filtrer',
-  'sélectionner',
-];
-
-// Min thresholds for anti-wiki gate
-const MIN_SELECTION_CRITERIA = 5;
-const MIN_ANTI_MISTAKES = 4;
-const MIN_DECISION_NODES = 1;
-const MIN_FAQS = 3;
-const MIN_SYMPTOMS = 3;
-
-// RAG confidence threshold
-const MIN_VERIFIED_CONFIDENCE = 0.8;
-const MIN_QUALITY_SCORE = 70;
+import {
+  type GammeContentQualityFlag,
+  MIN_NARRATIVE_LENGTH,
+  MAX_NARRATIVE_LENGTH,
+  GENERIC_PHRASES,
+  FAMILY_REQUIRED_TERMS,
+  FLAG_PENALTIES,
+  FAMILY_MARKERS,
+  ACTION_MARKERS,
+  MIN_SELECTION_CRITERIA,
+  MIN_ANTI_MISTAKES_BUYING_GUIDE as MIN_ANTI_MISTAKES,
+  MIN_DECISION_NODES,
+  MIN_FAQS,
+  MIN_SYMPTOMS,
+  MIN_VERIFIED_CONFIDENCE,
+  MIN_QUALITY_SCORE,
+} from '../../../config/buying-guide-quality.constants';
 
 interface SectionValidationResult {
   ok: boolean;
