@@ -13,7 +13,8 @@ export type GammeContentQualityFlag =
   | 'FAQ_TOO_SMALL'
   | 'SYMPTOMS_TOO_SMALL'
   | 'DUPLICATE_ITEMS'
-  | 'MISSING_SOURCE_PROVENANCE';
+  | 'MISSING_SOURCE_PROVENANCE'
+  | 'INTRO_ROLE_MISMATCH';
 
 const CONTRACT_VERSION = 'GammeContentContract.v1' as const;
 const BUYING_GUIDE_VERSION = 'GammeBuyingGuide.v1' as const;
@@ -78,6 +79,7 @@ const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   SYMPTOMS_TOO_SMALL: 12,
   DUPLICATE_ITEMS: 8,
   MISSING_SOURCE_PROVENANCE: 20,
+  INTRO_ROLE_MISMATCH: 25,
 };
 
 const TRUSTED_SOURCE_PREFIXES = [
@@ -95,6 +97,8 @@ const TRUSTED_SOURCE_PREFIXES = [
   'bulletin:',
   'scraping://',
   'scraping:',
+  'rag://',
+  'rag:',
   'https://',
   'http://',
 ] as const;
@@ -385,6 +389,75 @@ export class BuyingGuideDataService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère le guide enrichi SANS enforcement de la provenance.
+   * Usage: preview admin pour valider le contenu avant activation en prod.
+   */
+  async getEnrichedGuideRaw(pgId: string): Promise<GammeBuyingGuideV1 | null> {
+    try {
+      const baseSelect = `
+        sgpg_id,
+        sgpg_pg_id,
+        sgpg_h1_override,
+        sgpg_intro_title,
+        sgpg_intro_role,
+        sgpg_intro_sync_parts,
+        sgpg_risk_title,
+        sgpg_risk_explanation,
+        sgpg_risk_consequences,
+        sgpg_risk_cost_range,
+        sgpg_risk_conclusion,
+        sgpg_timing_title,
+        sgpg_timing_years,
+        sgpg_timing_km,
+        sgpg_timing_note,
+        sgpg_arg1_title,
+        sgpg_arg1_content,
+        sgpg_arg1_icon,
+        sgpg_arg2_title,
+        sgpg_arg2_content,
+        sgpg_arg2_icon,
+        sgpg_arg3_title,
+        sgpg_arg3_content,
+        sgpg_arg3_icon,
+        sgpg_arg4_title,
+        sgpg_arg4_content,
+        sgpg_arg4_icon,
+        sgpg_how_to_choose,
+        sgpg_symptoms,
+        sgpg_faq,
+        sgpg_anti_mistakes,
+        sgpg_selection_criteria,
+        sgpg_decision_tree,
+        sgpg_use_cases,
+        sgpg_source_type,
+        sgpg_source_uri,
+        sgpg_source_ref,
+        sgpg_source_verified,
+        sgpg_source_verified_at,
+        sgpg_source_verified_by
+      `;
+
+      const { data, error } = await this.client
+        .from('__seo_gamme_purchase_guide')
+        .select(baseSelect)
+        .eq('sgpg_pg_id', pgId)
+        .single();
+
+      if (error || !data) return null;
+
+      // Transformer sans rejeter (bypass provenance gate)
+      const transformed = this.transformToV2(data);
+      return this.toBuyingGuideV1(transformed);
+    } catch (error) {
+      this.logger.error(
+        `Erreur getEnrichedGuideRaw pour gamme ${pgId}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
    * Construit le contrat orienté achat à partir du contrat éditorial validé.
    * Ce mapping permet de migrer la data sans casser l'UI existante.
    */
@@ -400,9 +473,11 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     const selectionCriteria = contract.enrichedSelectionCriteria?.length
       ? contract.enrichedSelectionCriteria
       : this.buildSelectionCriteria(gammeName, familyKey);
-    const useCases = contract.enrichedUseCases?.length
-      ? contract.enrichedUseCases
-      : this.buildUseCases(familyKey);
+    const useCases =
+      contract.enrichedUseCases?.length &&
+      contract.enrichedUseCases.every((uc) => uc.recommendation?.trim())
+        ? contract.enrichedUseCases
+        : this.buildUseCases(familyKey);
     const antiMistakes = contract.enrichedAntiMistakes?.length
       ? contract.enrichedAntiMistakes
       : contract.antiMistakes || [];
@@ -1438,6 +1513,39 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     );
   }
 
+  /**
+   * Detects when intro_role describes a different piece than the guide's title.
+   * Extracts the piece name before ':' in intro_role and checks for shared
+   * significant words with gammeName (articles stripped).
+   */
+  private isIntroRoleMismatch(introRole: string, gammeName: string): boolean {
+    const colonIdx = introRole.indexOf(':');
+    if (colonIdx < 1) return false;
+
+    const rolePiece = this.normalizeForMatch(introRole.slice(0, colonIdx));
+    const titleNorm = this.normalizeForMatch(gammeName);
+
+    if (!rolePiece || !titleNorm) return false;
+
+    const stripArticles = (s: string) =>
+      s.replace(/^(le |la |les |l'|l'|un |une |des )/i, '').trim();
+
+    const roleWords = stripArticles(rolePiece)
+      .split(/\s+/)
+      .filter((w) => w.length > 2);
+    const titleWords = stripArticles(titleNorm)
+      .split(/\s+/)
+      .filter((w) => w.length > 2);
+
+    if (roleWords.length === 0 || titleWords.length === 0) return false;
+
+    const hasCommon = roleWords.some((rw) =>
+      titleWords.some((tw) => tw.includes(rw) || rw.includes(tw)),
+    );
+
+    return !hasCommon;
+  }
+
   private hasActionableMarker(value: string): boolean {
     const normalized = this.normalizeForMatch(value);
     if (!normalized) return false;
@@ -1782,6 +1890,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       gated.intro.role = this.fallbackIntroRole(gammeName, familyKey);
     } else if (this.containsGenericPhrase(introRole)) {
       addFlag('GENERIC_PHRASES');
+      gated.intro.role = this.fallbackIntroRole(gammeName, familyKey);
+    } else if (this.isIntroRoleMismatch(introRole, gammeName)) {
+      addFlag('INTRO_ROLE_MISMATCH');
       gated.intro.role = this.fallbackIntroRole(gammeName, familyKey);
     }
 
