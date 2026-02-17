@@ -26,6 +26,14 @@
 | < 60 | Rejet — réécriture nécessaire |
 | > 90 | **Interdit en auto-évaluation** — nécessite validation externe |
 
+### Cibles word count par rôle
+
+| Rôle | Word count cible | Justification |
+|------|-----------------|---------------|
+| R3/guide-achat | 600-900 mots | 7+1 sections, V-Level L4-L5. Au-delà de 900 : risque de cannibalisation R4/R5 |
+| R3/conseils | 800-1200 mots | Contenu procédural, étapes détaillées |
+| R4 Reference | 400-700 mots | Définition encyclopédique, concis et dense |
+
 ---
 
 ## Pénalités automatiques
@@ -36,7 +44,8 @@
 | `MISSING_REQUIRED_TERMS` | -16 pts | Termes famille absents (ex: "frein", "freinage" pour famille freinage) |
 | `MISSING_SOURCE_PROVENANCE` | -20 pts | Aucune source RAG/PDF/OEM référencée |
 | `FAQ_TOO_SMALL` | -14 pts | Moins de 3 FAQ |
-| `SYMPTOMS_TOO_SMALL` | -12 pts | Moins de 3 symptômes (si R5 ou guide achat) |
+| `INTRO_ROLE_MISMATCH` | -25 pts | Intro contient du vocabulaire exclusif d'un autre rôle (ex: termes R4 dans guide-achat) |
+| `SYMPTOMS_TOO_SMALL` | -12 pts | Moins de 3 symptômes (R5 uniquement — ne s'applique PAS à R3/guide-achat, symptômes hors périmètre §2) |
 | `TOO_SHORT` | -10 pts | Contenu narratif < 40 caractères par section |
 | `TOO_LONG` | -8 pts | Section narrative > 420 caractères |
 | `DUPLICATE_ITEMS` | -8 pts | Doublons dans les listes (FAQ, symptômes, critères) |

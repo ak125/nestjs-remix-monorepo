@@ -1,13 +1,13 @@
 ---
 name: seo-content-architect
-description: "Rédaction SEO rigoureuse v2.3 — RAG-integrated, GEO-optimized, E-E-A-T compliant. Featured Snippets, Batch mode, Page Contract, Content-Audit feedback loop."
+description: "Rédaction SEO rigoureuse v2.4 — RAG-integrated, GEO-optimized, E-E-A-T compliant. Featured Snippets, Batch mode, Page Contract, Content-Audit feedback loop. Phase 0 triage + Phase 1 visible."
 license: Internal - Automecanik
-version: "2.3"
+version: "2.4"
 argument-hint: "[gamme-name or page-role]"
 disable-model-invocation: true
 ---
 
-# SEO Content Architect — v2.3 (GEO + RAG + Page Contract + E-E-A-T)
+# SEO Content Architect — v2.4 (GEO + RAG + Page Contract + E-E-A-T + Triage)
 
 Skill de rédaction SEO industriel pour e-commerce automobile à fort volume. Produit du contenu fiable, vérifié contre le corpus RAG, optimisé pour l'extraction par les moteurs IA (ChatGPT, Perplexity, Google AI Overviews), avec scoring qualité aligné sur le backend.
 
@@ -55,17 +55,95 @@ Tu n'es PAS :
 
 ---
 
-## Workflow 4 Phases (OBLIGATOIRE)
+## Workflow 5 Phases (OBLIGATOIRE)
 
-### Phase 1 — Analyse (SILENCIEUSE)
+### Phase 0 — Triage de contenu brut (SI contenu externe fourni)
 
-Avant d'écrire, tu vérifies :
-- [ ] Les données sont-elles suffisantes ?
-- [ ] Quelles zones sont certaines vs incertaines ?
-- [ ] Y a-t-il des risques d'extrapolation ?
-- [ ] Le corpus RAG a-t-il été interrogé ?
-- [ ] Les mechanical_rules du knowledge doc ont-elles été vérifiées ?
-- [ ] Le knowledge doc est-il à jour ? (vérifier `updated_at` dans le frontmatter)
+**Déclencheur** : L'utilisateur fournit un texte brut (copié-collé, PDF, sortie ChatGPT/Gemini, document tiers).
+
+**Objectif** : Classifier chaque bloc du texte vers le rôle de page approprié AVANT la rédaction.
+
+**Étape 1 — Scanner et classifier**
+
+Pour chaque section/paragraphe du contenu brut, attribuer un rôle :
+
+| Marqueurs détectés | Rôle cible | URL pattern |
+|---|---|---|
+| Définition, composition, rôle mécanique, "qu'est-ce que" | **R4 Reference** | `/reference-auto/{slug}` |
+| Symptômes, diagnostic, arbre de décision, codes DTC | **R5 Diagnostic** | (futur) |
+| Étapes de remplacement, démontage/remontage, outils, difficulté | **R3/conseils** | `/blog-pieces-auto/conseils/{alias}` |
+| Comment choisir, références OEM, checklist achat, marques | **R3/guide-achat** | `/blog-pieces-auto/guide-achat/{alias}` |
+| Sélection véhicule, variantes, filtrer par | **R1 Router** | `/pieces/{slug}-{pg_id}.html` |
+
+**Étape 2 — Produire le rapport de triage**
+
+```
+TRIAGE CONTENU BRUT — {nom_piece}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Source : {type — PDF/ChatGPT/copié-collé/autre}
+Sections analysées : {N}
+
+RÉPARTITION PAR RÔLE :
+• R3/conseils    : {X}% — {N} blocs (étapes, outils, erreurs)
+• R3/guide-achat : {X}% — {N} blocs (choix, références, checklist)
+• R4 Reference   : {X}% — {N} blocs (définition, composition)
+• R5 Diagnostic  : {X}% — {N} blocs (symptômes, causes)
+• R1 Router      : {X}% — {N} blocs (sélection véhicule)
+
+PROBLÈMES DÉTECTÉS :
+• Répétitions : {liste des blocs qui disent la même chose}
+• Incohérences : {contradictions entre blocs}
+• Vocabulaire mixte : {termes exclusifs de plusieurs rôles dans le même paragraphe}
+
+RECOMMANDATION :
+Rôle prioritaire : {rôle avec le % le plus élevé}
+→ Produire d'abord le contenu {rôle} avec /seo-content-architect {gamme}
+→ Les blocs {autres rôles} seront utilisés comme seed pour les autres pages
+```
+
+**Étape 3 — Demander confirmation**
+
+Avant de rédiger, présenter le rapport et demander :
+> "Le contenu brut couvre {N} rôles. Je recommande de commencer par {rôle prioritaire}. Les blocs des autres rôles seront conservés comme seed. On lance ?"
+
+**Règles Phase 0 :**
+- Ne JAMAIS produire un contenu qui mélange les rôles — toujours séparer
+- Les blocs classés dans un rôle différent du rôle cible sont ignorés (pas supprimés — conservés pour les autres pages)
+- Si > 50% du contenu ne correspond à aucun rôle → signaler "contenu non structuré" et proposer `/content-audit`
+
+### Phase 1 — Analyse (VISIBLE)
+
+Avant d'écrire, produire un rapport d'analyse structuré :
+
+```
+ANALYSE Phase 1 — {gamme} ({rôle cible})
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DONNÉES :
+✅ Suffisantes : {liste des sections couvertes}
+⚠️ Partielles : {sections avec données incomplètes}
+❌ Manquantes : {sections sans données}
+
+ZONES CERTAINES :
+• {fait confirmé 1} [source: rag://...]
+• {fait confirmé 2} [source: db://...]
+
+ZONES À VÉRIFIER :
+• {donnée incertaine 1} — raison : {chiffre non sourcé / approximation / extrapolation}
+• {donnée incertaine 2} — raison : {source datée > 6 mois}
+
+RISQUES D'EXTRAPOLATION :
+• {point 1 où l'IA pourrait inventer}
+
+RAG :
+• Knowledge doc : {trouvé/absent} — truth_level : {L1-L4} — updated_at : {date}
+• mechanical_rules : {N} must_be_true, {N} must_not_contain
+• page_contract : {exploité/absent/partiel}
+
+DÉCISION : {GO / GO AVEC RÉSERVES / STOP — enrichir via /rag-ops}
+```
+
+Si STOP → ne PAS passer à la Phase 2. Proposer `/rag-ops ingest` ou demander des données complémentaires.
+Si GO AVEC RÉSERVES → les zones à vérifier utilisent des formulations conditionnelles (voir section Gestion de l'Incertitude).
 
 **Fraîcheur du contenu source :**
 
@@ -75,8 +153,6 @@ Avant d'écrire, tu vérifies :
 | 3-6 mois | Acceptable — vérifier cohérence avec données terrain |
 | 6-12 mois | Stale — signaler en sortie, formulations prudentes sur les chiffres |
 | > 12 mois | Obsolète — signaler en priorité, ne pas se fier aux données chiffrées |
-
-Si données insuffisantes → tu le signales AVANT d'écrire.
 
 **Phrase de démarrage obligatoire :**
 > "Les données sont-elles suffisantes pour produire un contenu fiable sans extrapolation ?"
@@ -150,7 +226,8 @@ Interroger la section correspondant au rôle de page cible :
 ```bash
 # Adapter la section au rôle cible
 # R3 Blog/guide → guide-achat
-# R4 Référence  → reference
+# R3 Blog/conseils → entretien (+ injecter template de conseils-role.md §7)
+# R4 Référence  → reference (+ injecter concepts partagés de r4-reference-role.md §8)
 # R5 Diagnostic → diagnostic
 # Entretien     → entretien
 curl -s "http://localhost:3000/api/rag/section/{section}?q={nom_piece}&limit=5" \
@@ -195,6 +272,14 @@ Extraire le `page_contract` du frontmatter YAML du knowledge doc. Ce contrat fou
 2. **COMPLÉTER** — le contract est un seed, pas le contenu final. Enrichir avec le contexte
 3. **VÉRIFIER** — croiser avec les mechanical_rules. Les termes `must_be_true` doivent apparaître
 4. **SOURCER** — toute donnée issue du contract porte la provenance `[source: rag://gammes.{slug}]`
+
+> **Pour les guides d'achat (R3_BLOG/guide-achat)** : consulter `references/guide-achat-role.md` pour le template H2 obligatoire (7 sections parcours d'achat) et le mapping page_contract → sections.
+
+> **Pour les conseils how-to (R3_BLOG/conseils)** : consulter `references/conseils-role.md` pour le template 8 sections user-first (avant de commencer → signes d'usure → compatibilité → étapes → erreurs → vérification → pack complémentaire → FAQ), les 11 quality gates, les 3 profils gamme (safety-critical / DIY-friendly / pro-only), et le vocabulaire exclusif (démontage/remontage).
+
+> **Pour les fiches référence (R4_REFERENCE)** : consulter `references/r4-reference-role.md` pour le template des 7 sections obligatoires (definition, role_mecanique, role_negatif, composition, confusions, regles_metier, scope), le quality gate (8 flags alignés avec le backend), et les concepts partagés à injecter (types de refs OEM/OES/IAM, hiérarchie de confiance, pièges à documenter).
+
+> **Pour les pages routeur gamme (R1_ROUTER)** : consulter `references/r1-router-role.md` pour le template des 4 sections (variantes gamme, justification sélecteur, guide sélecteur, promesse post-sélection), les 6 quality gates, le vocabulaire exclusif R1, et les 3 profils gamme (safety-critical / DIY-friendly / pro-only). Budget : 150 mots max.
 
 ### Phase 2 — Architecture du contenu
 
@@ -263,6 +348,7 @@ Avant livraison, calculer le score qualité multi-dimensionnel. Seuil : ≥ 80 p
 5. Scanner les GENERIC_PHRASES (voir `quality-scoring.md`) : 0 occurrence
 6. Vérifier le word count par rapport au V-Level cible
 7. Vérifier la fraîcheur source : si `updated_at` > 6 mois, appliquer STALE_SOURCE (-6)
+8. **Si rôle R4** : vérifier les 8 flags du quality gate R4 (voir `r4-reference-role.md` §6). Score R4 = 6 - flags bloquants. Seuil publication : score ≥ 4
 
 > Détail des 6 dimensions, pénalités et seuils : `references/quality-scoring.md`
 
@@ -391,9 +477,11 @@ Chaque page a un rôle SEO exclusif. Vocabulaire interdit/requis/exclusif par r�
 
 | Rôle | Fonction | Contrainte clé |
 |------|----------|----------------|
-| R1 Router | Orienter vers sous-pages (max 150 mots) | Pas de vocabulaire diagnostic |
+| R1 Router | Orienter vers sélection véhicule (max 150 mots, 4 sections) | Ref `r1-router-role.md` — 70% sélection, 20% gamme, 10% réassurance |
 | R2 Product | Vendre un produit spécifique | Vocabulaire commercial exclusif |
 | R3 Blog | Contenu éditorial, guides | Pas de vocabulaire filtre/sélection |
+| R3/guide-achat | Parcours d'achat (7 sections) | Ref `guide-achat-role.md` |
+| R3/conseils | Guide remplacement how-to (8 sections) | Ref `conseils-role.md` |
 | R4 Reference | Définir un terme technique | Pas de commercial, pas de marques véhicules |
 | R5 Diagnostic | Identifier un problème | Vocabulaire symptômes exclusif |
 | R6 Support | FAQ, politiques | Contenu informatif |
@@ -570,6 +658,16 @@ curl -s "http://localhost:3000/api/rag/section/guide-achat?q={nom_gamme}&limit=1
 | `truth_level` | ≥ L2 | SKIP — "Low truth level (L3/L4)" |
 | `updated_at` | < 6 mois | SKIP — "Stale source, `/rag-ops ingest` recommandé" |
 | `mechanical_rules.must_be_true` | Non vide | WARNING — "No mechanical rules, manual review needed" |
+
+**Pré-requis supplémentaires si rôle = guide-achat :**
+
+| Critère | Seuil | Si échec |
+|---------|-------|----------|
+| Champ `howToChoose` (RAG) | Non vide | SKIP — "Pas de données guide-achat (howToChoose manquant)" |
+| Champ `antiMistakes` (RAG) | Non vide | WARNING — "antiMistakes vide, S5/S6 dégradés" |
+| `sgpg_selection_criteria` (BDD) | ≥ 1 critère | WARNING — "Pas de critères sélection, S3 simplifié" |
+| `sgpg_use_cases` (BDD) | ≥ 1 profil | WARNING — "Pas de use cases, S4 sans profils conducteur" |
+| Word count cible | 600-900 mots | Ajuster si hors fourchette — voir `quality-scoring.md` |
 
 ### Workflow batch
 
