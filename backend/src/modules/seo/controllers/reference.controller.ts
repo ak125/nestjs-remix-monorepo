@@ -16,6 +16,7 @@ import {
   ReferenceService,
   SeoReference,
   SeoReferenceListItem,
+  ReferenceAuditResult,
 } from '../services/reference.service';
 
 /**
@@ -125,6 +126,19 @@ export class ReferenceController {
     this.logger.debug('📝 GET /api/seo/reference/drafts');
     const drafts = await this.referenceService.getDrafts();
     return { drafts, total: drafts.length };
+  }
+
+  /**
+   * Audit qualité de toutes les références R4 publiées
+   * GET /api/seo/reference/audit
+   * Retourne score, flags et stats (stubs vs contenu réel)
+   * ADMIN ONLY
+   */
+  @Get('audit')
+  @UseGuards(IsAdminGuard)
+  async auditReferences(): Promise<ReferenceAuditResult> {
+    this.logger.log('🔍 GET /api/seo/reference/audit');
+    return this.referenceService.auditAllReferences();
   }
 
   /**

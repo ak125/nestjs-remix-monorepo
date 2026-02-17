@@ -355,6 +355,126 @@ export class ReferenceService extends SupabaseBaseService {
   }
 
   /**
+   * Refresh a single gamme's R4 reference from RAG knowledge.
+   * Creates a new DRAFT or updates existing entry (never overwrites is_published).
+   */
+  async refreshSingleGamme(
+    pgAlias: string,
+  ): Promise<{ created: boolean; updated: boolean; skipped: boolean }> {
+    // 1. Find gamme by alias
+    const { data: gamme } = await this.supabase
+      .from('__pg_gammes')
+      .select('id, pg_alias, label, description')
+      .eq('pg_alias', pgAlias)
+      .single();
+
+    if (!gamme) {
+      this.logger.warn(`No gamme found for alias: ${pgAlias}`);
+      return { created: false, updated: false, skipped: true };
+    }
+
+    // 2. Parse fresh RAG data
+    const ragData = this.parseRagGammeFile(pgAlias);
+    if (!ragData) {
+      this.logger.warn(`No RAG data available for: ${pgAlias}`);
+      return { created: false, updated: false, skipped: true };
+    }
+
+    // 3. Check if entry exists
+    const { data: existing } = await this.supabase
+      .from('__seo_reference')
+      .select('id, is_published')
+      .eq('slug', pgAlias)
+      .single();
+
+    // 4. Build content HTML from RAG data
+    let contentHtml = '<div class="reference-content">';
+    if (ragData.roleSummary) {
+      contentHtml += `<section><h2>Rôle mécanique</h2><p>${ragData.roleSummary}</p></section>`;
+    }
+    if (ragData.mustBeTrue.length > 0) {
+      contentHtml += '<section><h2>Règles métier</h2><ul>';
+      ragData.mustBeTrue.forEach((rule) => {
+        contentHtml += `<li>${rule}</li>`;
+      });
+      contentHtml += '</ul></section>';
+    }
+    if (ragData.symptoms.length > 0) {
+      contentHtml += '<section><h2>Symptômes associés</h2><ul>';
+      ragData.symptoms.forEach((symptom) => {
+        contentHtml += `<li>${symptom}</li>`;
+      });
+      contentHtml += '</ul></section>';
+    }
+    contentHtml += '</div>';
+
+    if (existing) {
+      // 5a. Update existing entry — refresh content but keep is_published
+      const { error } = await this.supabase
+        .from('__seo_reference')
+        .update({
+          role_mecanique: ragData.roleSummary || undefined,
+          confusions_courantes:
+            ragData.mustNotContain.length > 0
+              ? ragData.mustNotContain
+              : undefined,
+          symptomes_associes:
+            ragData.symptoms.length > 0 ? ragData.symptoms : undefined,
+          regles_metier:
+            ragData.mustBeTrue.length > 0 ? ragData.mustBeTrue : undefined,
+          content_html: contentHtml,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+
+      if (error) {
+        this.logger.error(
+          `Failed to update reference ${pgAlias}: ${error.message}`,
+        );
+        return { created: false, updated: false, skipped: false };
+      }
+
+      this.logger.log(`Updated R4 reference for: ${pgAlias}`);
+      return { created: false, updated: true, skipped: false };
+    }
+
+    // 5b. Create new DRAFT entry
+    const { error: insertError } = await this.supabase
+      .from('__seo_reference')
+      .insert({
+        slug: pgAlias,
+        title: `${gamme.label} : Définition, rôle et composition`,
+        meta_description: ragData.roleSummary
+          ? `${gamme.label}: ${ragData.roleSummary.substring(0, 130)}. Guide complet.`
+          : `Définition technique du ${gamme.label}: rôle, composition, fonctionnement.`,
+        definition: ragData.roleSummary
+          ? `Le ${gamme.label} ${ragData.roleSummary.charAt(0).toLowerCase()}${ragData.roleSummary.slice(1)}.`
+          : gamme.description || `Le ${gamme.label} est une pièce automobile.`,
+        role_mecanique:
+          ragData.roleSummary || `Rôle mécanique du ${gamme.label}.`,
+        confusions_courantes:
+          ragData.mustNotContain.length > 0 ? ragData.mustNotContain : null,
+        symptomes_associes:
+          ragData.symptoms.length > 0 ? ragData.symptoms : null,
+        regles_metier:
+          ragData.mustBeTrue.length > 0 ? ragData.mustBeTrue : null,
+        content_html: contentHtml,
+        pg_id: gamme.id,
+        is_published: false,
+      });
+
+    if (insertError) {
+      this.logger.error(
+        `Failed to create reference ${pgAlias}: ${insertError.message}`,
+      );
+      return { created: false, updated: false, skipped: false };
+    }
+
+    this.logger.log(`Created R4 draft reference for: ${pgAlias}`);
+    return { created: true, updated: false, skipped: false };
+  }
+
+  /**
    * Récupère tous les drafts (non publiés)
    * @returns Liste des références en mode draft
    */
@@ -603,4 +723,175 @@ export class ReferenceService extends SupabaseBaseService {
       updatedAt: new Date(row.updated_at as string),
     };
   }
+
+  // ==========================================
+  // Quality Gate — R4 Content Validation
+  // ==========================================
+
+  /**
+   * Valide la qualité du contenu d'une référence R4
+   * Retourne un score 0-6 et une liste de flags
+   *
+   * Flags BLOQUANTS (empêchent la publication) :
+   * - GENERIC_DEFINITION : contenu placeholder
+   * - NO_NUMBERS_IN_DEFINITION : pas de données chiffrées
+   * - GENERIC_COMPOSITION : composition placeholder
+   *
+   * Flags WARNING :
+   * - MISSING_ROLE_NEGATIF, MISSING_REGLES_METIER, MISSING_SCOPE
+   * - MISSING_ACCENTS, TITLE_FORMAT
+   */
+  validateReferenceQuality(ref: SeoReference): ReferenceQualityResult {
+    const flags: string[] = [];
+
+    // --- BLOQUANTS ---
+
+    // 1. Définition générique ou trop courte
+    if (
+      !ref.definition ||
+      ref.definition.length < 300 ||
+      /joue un r[oô]le essentiel/i.test(ref.definition) ||
+      /Son entretien r[eé]gulier garantit/i.test(ref.definition)
+    ) {
+      flags.push('GENERIC_DEFINITION');
+    }
+
+    // 2. Pas de chiffres dans la définition
+    if (ref.definition && !/\d/.test(ref.definition)) {
+      flags.push('NO_NUMBERS_IN_DEFINITION');
+    }
+
+    // 3. Composition générique
+    if (
+      ref.composition &&
+      ref.composition.some(
+        (c) =>
+          /^Composants principaux$/i.test(c) ||
+          /^[EÉ]l[eé]ments d'assemblage$/i.test(c) ||
+          /^Pi[eè]ces d'usure$/i.test(c),
+      )
+    ) {
+      flags.push('GENERIC_COMPOSITION');
+    }
+
+    // --- WARNINGS ---
+
+    // 4. Rôle négatif manquant
+    if (!ref.roleNegatif || ref.roleNegatif.trim().length === 0) {
+      flags.push('MISSING_ROLE_NEGATIF');
+    }
+
+    // 5. Règles métier insuffisantes
+    if (!ref.reglesMetier || ref.reglesMetier.length < 3) {
+      flags.push('MISSING_REGLES_METIER');
+    }
+
+    // 6. Scope manquant
+    if (!ref.scopeLimites || ref.scopeLimites.trim().length === 0) {
+      flags.push('MISSING_SCOPE');
+    }
+
+    // 7. Accents manquants dans la définition
+    if (
+      ref.definition &&
+      /\b(vehicule|securite|systeme|fiabilite|regulier)\b/.test(ref.definition)
+    ) {
+      flags.push('MISSING_ACCENTS');
+    }
+
+    // 8. Format du titre
+    if (!ref.title.includes(' : ') || !ref.title.includes('| Guide Auto')) {
+      flags.push('TITLE_FORMAT');
+    }
+
+    // Score: 6 - nombre de flags bloquants
+    const blockingFlags = [
+      'GENERIC_DEFINITION',
+      'NO_NUMBERS_IN_DEFINITION',
+      'GENERIC_COMPOSITION',
+    ];
+    const blockingCount = flags.filter((f) => blockingFlags.includes(f)).length;
+    const warningCount = flags.filter((f) => !blockingFlags.includes(f)).length;
+    const score = Math.max(0, 6 - blockingCount * 2 - warningCount);
+
+    return {
+      score,
+      flags,
+      isPublishable: blockingCount === 0,
+    };
+  }
+
+  /**
+   * Audit bulk de toutes les références publiées
+   * Retourne les stats et le détail par référence
+   */
+  async auditAllReferences(): Promise<ReferenceAuditResult> {
+    const allRefs = await this.getAllFull();
+    const details: ReferenceAuditDetail[] = allRefs.map((ref) => {
+      const quality = this.validateReferenceQuality(ref);
+      return {
+        slug: ref.slug,
+        title: ref.title,
+        score: quality.score,
+        flags: quality.flags,
+        isPublishable: quality.isPublishable,
+        definitionLength: ref.definition?.length || 0,
+      };
+    });
+
+    const stubs = details.filter((d) => !d.isPublishable).length;
+    const real = details.filter((d) => d.isPublishable).length;
+
+    return {
+      total: details.length,
+      stubs,
+      real,
+      details: details.sort((a, b) => a.score - b.score),
+    };
+  }
+
+  /**
+   * Récupère TOUTES les références (publiées) avec les champs complets
+   * Utilisé pour l'audit bulk
+   */
+  private async getAllFull(): Promise<SeoReference[]> {
+    const { data, error } = await this.supabase
+      .from('__seo_reference')
+      .select('*')
+      .eq('is_published', true)
+      .order('slug');
+
+    if (error || !data) {
+      this.logger.error('❌ Error fetching all references for audit:', error);
+      return [];
+    }
+
+    return data.map((row: any) => this.mapRowToReference(row));
+  }
+}
+
+// ==========================================
+// Quality Gate Types
+// ==========================================
+
+export interface ReferenceQualityResult {
+  score: number;
+  flags: string[];
+  isPublishable: boolean;
+}
+
+export interface ReferenceAuditDetail {
+  slug: string;
+  title: string;
+  score: number;
+  flags: string[];
+  isPublishable: boolean;
+  definitionLength: number;
+}
+
+export interface ReferenceAuditResult {
+  total: number;
+  stubs: number;
+  real: number;
+  details: ReferenceAuditDetail[];
 }

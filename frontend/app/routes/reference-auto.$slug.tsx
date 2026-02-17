@@ -138,7 +138,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { property: "article:section", content: "Référence Auto" },
     {
       property: "article:tag",
-      content: reference.title.replace(/ : Fiche technique$/, ""),
+      content: reference.title.replace(/ :.*$/, ""),
     },
     // SEO Role Signals (Phase 5 - Quasi-Incopiable)
     { name: "x-page-role", content: "R4" },
@@ -208,7 +208,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
    JSON-LD Schema
 =========================== */
 function SchemaJsonLd({ reference }: { reference: Reference }) {
-  const shortTitle = reference.title.replace(/ : Définition.*$/, "");
+  const shortTitle = reference.title.replace(/ :.*$/, "");
   const canonicalUrl = `https://automecanik.com${reference.canonicalUrl}`;
 
   // Schema 1: DefinedTerm (semantic definition)
@@ -344,7 +344,7 @@ function SchemaJsonLd({ reference }: { reference: Reference }) {
 export default function ReferenceDetailPage() {
   const { reference, relatedRefs } = useLoaderData<typeof loader>();
 
-  const shortTitle = reference.title.replace(/ : Définition.*$/, "");
+  const shortTitle = reference.title.replace(/ :.*$/, "");
   // Cluster ID pour les signaux SEO (ex: kit-embrayage → embrayage)
   const clusterId = reference.slug
     .replace(/^kit-/, "")
