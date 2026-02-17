@@ -171,6 +171,25 @@ export class RagProxyController {
     return this.ragProxyService.ingestWebUrl(request);
   }
 
+  @Get('admin/ingest/web/jobs')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'List all web URL ingestion jobs' })
+  @ApiResponse({ status: 200, description: 'List of web ingestion jobs' })
+  listWebJobs() {
+    return this.ragProxyService.listWebJobs();
+  }
+
+  @Get('admin/ingest/web/jobs/:jobId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Get web URL ingest job status and logs' })
+  @ApiResponse({ status: 200, description: 'Job status with logs' })
+  @ApiResponse({ status: 404, description: 'Job not found' })
+  getWebJobStatus(@Param('jobId') jobId: string) {
+    const job = this.ragProxyService.getWebJob(jobId);
+    if (!job) throw new NotFoundException('Web ingest job not found');
+    return job;
+  }
+
   /** List all RAG knowledge images (admin only). */
   @Get('admin/images')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)

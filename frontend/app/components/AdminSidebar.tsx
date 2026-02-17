@@ -26,6 +26,7 @@ import {
   Megaphone,
   Link2,
   Map,
+  MessageSquare,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -291,6 +292,34 @@ export const AdminSidebar = memo(function AdminSidebar({
       ],
     },
     {
+      name: "RAG / Chat IA",
+      href: "/admin/rag",
+      icon: MessageSquare,
+      description: "Knowledge base & chat",
+      badge: { count: "IA", color: "bg-amber-600" },
+      notification: false,
+      subItems: [
+        {
+          name: "Dashboard RAG",
+          href: "/admin/rag",
+          icon: BarChart3,
+          description: "Stats corpus & intents",
+        },
+        {
+          name: "Documents",
+          href: "/admin/rag/documents",
+          icon: FileText,
+          description: "Knowledge base",
+        },
+        {
+          name: "Ingestion",
+          href: "/admin/rag/ingest",
+          icon: Send,
+          description: "PDF & URL ingest",
+        },
+      ],
+    },
+    {
       name: "Rapports",
       href: "/admin/reports",
       icon: BarChart3,
@@ -321,6 +350,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       location.pathname.startsWith("/admin/articles") ||
       location.pathname.startsWith("/admin/performances"),
     Marketing: location.pathname.startsWith("/admin/marketing"),
+    "RAG / Chat IA": location.pathname.startsWith("/admin/rag"),
   });
 
   // Fermer le menu mobile lors du changement de route

@@ -13,7 +13,7 @@ import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";
-import { useVehicle } from "~/hooks/useVehiclePersistence";
+import { useVehiclePersistence } from "~/hooks/useVehiclePersistence";
 import { classifyChatIntent } from "~/utils/chat-intent.utils";
 
 interface ChatWidgetProps {
@@ -23,7 +23,7 @@ interface ChatWidgetProps {
 const ChatWidget = memo(function ChatWidget({
   streamUrl = "/api/rag/chat/stream",
 }: ChatWidgetProps) {
-  const { vehicle } = useVehicle();
+  const [vehicle] = useVehiclePersistence();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessageData[]>([]);

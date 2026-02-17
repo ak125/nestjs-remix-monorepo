@@ -15,6 +15,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
@@ -34,6 +35,7 @@ import { AdminGammesSeoAggregatesController } from './controllers/admin-gammes-s
 import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
+import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -44,6 +46,8 @@ import { GammeVLevelService } from './services/gamme-vlevel.service';
 import { StockMovementService } from './services/stock-movement.service';
 import { StockReportService } from './services/stock-report.service';
 import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment
+import { ContentRefreshService } from './services/content-refresh.service'; // 🔄 Content Refresh orchestrator
+import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -71,6 +75,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
+    BullModule.registerQueue({ name: 'seo-monitor' }), // 🔄 Queue pour ContentRefreshService
   ],
   controllers: [
     ConfigurationController,
@@ -95,6 +100,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
     SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
     // AdminVehicleResolveController supprimé
     AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
+    AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
   ],
   providers: [
     ConfigurationService,
@@ -115,6 +121,8 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
     StockMovementService,
     StockReportService,
     BuyingGuideEnricherService, // 📖 RAG enrichment service
+    ContentRefreshService, // 🔄 Content Refresh orchestrator (event listener + queue)
+    ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
   ],
   exports: [
     ConfigurationService,

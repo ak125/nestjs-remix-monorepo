@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ExternalServiceException } from '../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { promises as fs, readdirSync, statSync, readFileSync } from 'node:fs';
@@ -19,6 +20,10 @@ import {
   PdfIngestJobStatusResponseDto,
 } from './dto/pdf-ingest.dto';
 import { getErrorMessage } from '../../common/utils/error.utils';
+import {
+  RAG_INGESTION_COMPLETED,
+  type RagIngestionCompletedEvent,
+} from './events/rag-ingestion.events';
 
 /** Simple circuit breaker state for the RAG external service. */
 interface CircuitBreakerState {
@@ -58,7 +63,25 @@ export class RagProxyService {
     { count: number; confidenceSum: number; lastSeenAt: string }
   >();
 
-  constructor(private readonly configService: ConfigService) {
+  /** In-memory store for web ingestion jobs (survives until server restart). */
+  private readonly webJobs = new Map<
+    string,
+    {
+      jobId: string;
+      url: string;
+      status: string;
+      truthLevel: string;
+      startedAt: number;
+      finishedAt: number | null;
+      returnCode: number | null;
+      logLines: string[];
+    }
+  >();
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {
     // URL externe obligatoire - le RAG est sur un serveur SÉPARÉ (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
     this.ragApiKey = this.configService.getOrThrow<string>('RAG_API_KEY');
@@ -535,7 +558,7 @@ export class RagProxyService {
         log_path?: string;
       };
 
-      return {
+      const result = {
         jobId: data.job_id || '',
         status: data.status || 'unknown',
         pid: data.pid ?? null,
@@ -543,6 +566,8 @@ export class RagProxyService {
         inputDir: containerInputDir,
         stagedPdfPath: stagedPdfHostPath,
       };
+
+      return result;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -992,7 +1017,8 @@ export class RagProxyService {
   }
 
   /**
-   * Ingest a single web URL into RAG knowledge via docker exec.
+   * Ingest a single web URL into RAG knowledge.
+   * Fetches URL in Node.js then POSTs content to RAG admin endpoint.
    */
   async ingestWebUrl(request: {
     url?: string;
@@ -1005,40 +1031,333 @@ export class RagProxyService {
       throw new BadRequestException('Invalid URL');
     }
 
-    const runId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const jobId = runId;
+    const jobId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const truthLevel = request.truthLevel || 'L3';
-    const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
 
-    const { spawn } = await import('node:child_process');
-    const child = spawn('docker', [
-      'exec',
-      containerName,
-      'python',
-      '-m',
-      'knowledge.ingest_web',
-      '--url',
+    const job = {
+      jobId,
       url,
-      '--truth-level',
+      status: 'running',
       truthLevel,
-    ]);
+      startedAt: Math.floor(Date.now() / 1000),
+      finishedAt: null as number | null,
+      returnCode: null as number | null,
+      logLines: [] as string[],
+    };
+    this.webJobs.set(jobId, job);
 
-    const logLines: string[] = [];
-    child.stdout?.on('data', (d: Buffer) => {
-      const lines = d.toString().split('\n').filter(Boolean);
-      logLines.push(...lines);
-    });
-    child.stderr?.on('data', (d: Buffer) => {
-      const lines = d.toString().split('\n').filter(Boolean);
-      logLines.push(...lines);
-    });
-
-    child.on('close', (code) => {
-      this.logger.log(`Web ingest job ${jobId} finished with code ${code}`);
+    // Process asynchronously (don't block the HTTP response)
+    this.processWebIngest(job).catch((err) => {
+      job.status = 'failed';
+      job.finishedAt = Math.floor(Date.now() / 1000);
+      job.returnCode = 1;
+      job.logLines.push(`Error: ${getErrorMessage(err)}`);
+      this.logger.error(
+        `Web ingest job ${jobId} failed: ${getErrorMessage(err)}`,
+      );
     });
 
     this.logger.log(`Web ingest job started: ${jobId} for ${url}`);
     return { jobId, status: 'running' };
+  }
+
+  /**
+   * Background pipeline: fetch URL → extract text → POST to RAG admin.
+   */
+  private async processWebIngest(job: {
+    jobId: string;
+    url: string;
+    status: string;
+    truthLevel: string;
+    finishedAt: number | null;
+    returnCode: number | null;
+    logLines: string[];
+  }): Promise<void> {
+    // 1. Fetch the web page
+    job.logLines.push(`Fetching ${job.url}...`);
+    const fetchRes = await fetch(job.url, {
+      headers: { 'User-Agent': 'AutoMecanik-RAG-Bot/1.0' },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!fetchRes.ok) {
+      throw new Error(`HTTP ${fetchRes.status} ${fetchRes.statusText}`);
+    }
+    const html = await fetchRes.text();
+    job.logLines.push(`Fetched ${html.length} bytes`);
+
+    // 2. Extract text from HTML
+    const content = this.htmlToText(html);
+    const title = this.extractTitle(html) || new URL(job.url).hostname;
+    job.logLines.push(`Extracted: "${title}" (${content.length} chars)`);
+
+    if (content.length < 50) {
+      throw new Error(
+        `Content too short (${content.length} chars) — page may require JavaScript rendering`,
+      );
+    }
+
+    // 3. Write markdown file with YAML frontmatter to HOST filesystem
+    const now = new Date().toISOString();
+    const fileContent = [
+      '---',
+      `title: "${title.replace(/"/g, '\\"')}"`,
+      'source_type: guide',
+      'category: knowledge',
+      `truth_level: ${job.truthLevel}`,
+      'verification_status: unverified',
+      `source_uri: ${job.url}`,
+      `source_url: ${job.url}`,
+      `created_at: '${now}'`,
+      `updated_at: '${now}'`,
+      '---',
+      '',
+      `# ${title}`,
+      '',
+      content,
+    ].join('\n');
+
+    const knowledgeHostPath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const importDir = path.join(knowledgeHostPath, '_web_import', job.jobId);
+    const slug = title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s]+/g, '-')
+      .slice(0, 80);
+    const filename = `${slug}.md`;
+
+    await fs.mkdir(importDir, { recursive: true });
+    await fs.writeFile(path.join(importDir, filename), fileContent, 'utf-8');
+    job.logLines.push(`Wrote ${filename} (${fileContent.length} bytes)`);
+
+    // 4. docker exec reindex with ENV=dev (same pattern as PDF pipeline)
+    job.logLines.push(`Reindexing via docker exec...`);
+    const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
+    const containerImportPath = `/knowledge/_web_import/${job.jobId}`;
+    const { spawn } = await import('node:child_process');
+
+    const reindexCmd = [
+      'ENV=dev',
+      'WEAVIATE_URL=http://weaviate-prod:8080',
+      'python scripts/reindex.py',
+      `--path '${containerImportPath}'`,
+      '--collection AUTO',
+      '--batch-size 1',
+      '--cpu-strict',
+      '--strict-routing',
+    ].join(' ');
+
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn('docker', [
+        'exec',
+        containerName,
+        'bash',
+        '-c',
+        reindexCmd,
+      ]);
+      child.stdout?.on('data', (d: Buffer) => {
+        const lines = d.toString().split('\n').filter(Boolean);
+        job.logLines.push(...lines);
+      });
+      child.stderr?.on('data', (d: Buffer) => {
+        const lines = d.toString().split('\n').filter(Boolean);
+        job.logLines.push(...lines);
+      });
+      child.on('close', (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`reindex exited with code ${code}`));
+      });
+    });
+
+    // 5. Copy file to permanent web/ dir and clean up temp
+    const webDir = path.join(knowledgeHostPath, 'web');
+    await fs.mkdir(webDir, { recursive: true });
+    await fs.copyFile(
+      path.join(importDir, filename),
+      path.join(webDir, filename),
+    );
+    await fs.rm(importDir, { recursive: true, force: true });
+
+    // 6. Mark as done
+    job.status = 'done';
+    job.returnCode = 0;
+    job.finishedAt = Math.floor(Date.now() / 1000);
+    job.logLines.push(`Done — ${filename} ingested and indexed`);
+    this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
+  }
+
+  /** Strip HTML to plain text, preserving basic structure. */
+  private htmlToText(html: string): string {
+    let text = html;
+
+    // Phase 1: Remove non-content blocks
+    text = text.replace(
+      /<(script|style|noscript|svg|iframe)\b[^>]*>[\s\S]*?<\/\1>/gi,
+      '',
+    );
+    text = text.replace(
+      /<(nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi,
+      '',
+    );
+    text = text.replace(
+      /<[^>]+(class|id)="[^"]*\b(cookie|banner|popup|modal|gdpr|consent|sidebar|menu)\b[^"]*"[^>]*>[\s\S]*?<\/[a-z]+>/gi,
+      '',
+    );
+
+    // Phase 2: Convert to markdown
+    text = text.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
+    text = text.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n');
+    text = text.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
+    text = text.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n#### $1\n');
+    text = text.replace(/<h[56][^>]*>(.*?)<\/h[56]>/gi, '\n##### $1\n');
+    text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, '\n- $1');
+    text = text.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+    text = text.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+    text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+    text = text.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+    text = text.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1');
+    text = text.replace(/<br\s*\/?>/gi, '\n');
+    text = text.replace(
+      /<\/?(p|div|tr|table|section|article|blockquote)[^>]*>/gi,
+      '\n',
+    );
+    text = text.replace(/<\/?(ul|ol)[^>]*>/gi, '\n');
+
+    // Phase 3: Cleanup
+    text = text.replace(/<[^>]+>/g, '');
+    text = text.replace(/&nbsp;/g, ' ');
+    text = text.replace(/&amp;/g, '&');
+    text = text.replace(/&lt;/g, '<');
+    text = text.replace(/&gt;/g, '>');
+    text = text.replace(/&quot;/g, '"');
+    text = text.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+    text = text.replace(/&#x([0-9a-f]+);/gi, (_, h) =>
+      String.fromCharCode(parseInt(h, 16)),
+    );
+    text = text.replace(/&\w+;/g, '');
+    text = text.replace(/\t/g, ' ');
+    text = text.replace(/ {2,}/g, ' ');
+    text = text
+      .split('\n')
+      .map((l) => l.trim())
+      .join('\n');
+    text = text.replace(/\n{3,}/g, '\n\n');
+    return text.trim();
+  }
+
+  /** Extract <title> from HTML. */
+  private extractTitle(html: string): string {
+    const m = html.match(/<title[^>]*>(.*?)<\/title>/i);
+    return (
+      m?.[1]
+        ?.replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim() || ''
+    );
+  }
+
+  // ── Content Refresh Pipeline: Event emission ──
+
+  /**
+   * Poll PDF ingest job status every 15s (max 20 attempts = 5 min).
+   * Emits RAG_INGESTION_COMPLETED when the job finishes.
+   */
+  private pollPdfAndEmit(jobId: string): void {
+    const MAX_ATTEMPTS = 20;
+    const INTERVAL_MS = 15_000;
+    let attempt = 0;
+
+    const timer = setInterval(async () => {
+      attempt++;
+      try {
+        const status = await this.getSinglePdfJobStatus(jobId, 10);
+        if (status.status === 'done' || status.status === 'completed') {
+          clearInterval(timer);
+          this.emitIngestionCompleted(jobId, 'pdf');
+        } else if (
+          status.status === 'failed' ||
+          status.status === 'error' ||
+          attempt >= MAX_ATTEMPTS
+        ) {
+          clearInterval(timer);
+          if (attempt >= MAX_ATTEMPTS) {
+            this.logger.warn(
+              `PDF ingest poll timeout for job ${jobId} after ${MAX_ATTEMPTS} attempts`,
+            );
+          }
+        }
+      } catch (err) {
+        this.logger.error(
+          `PDF ingest poll error for ${jobId}: ${getErrorMessage(err)}`,
+        );
+        if (attempt >= MAX_ATTEMPTS) {
+          clearInterval(timer);
+        }
+      }
+    }, INTERVAL_MS);
+  }
+
+  /**
+   * Emit RAG_INGESTION_COMPLETED event after ingestion finishes.
+   * Detects affected gammes by scanning recently modified knowledge files.
+   */
+  private emitIngestionCompleted(jobId: string, source: 'pdf' | 'web'): void {
+    const affectedGammes = this.detectAffectedGammes();
+    const event: RagIngestionCompletedEvent = {
+      jobId,
+      source,
+      status: 'done',
+      completedAt: Math.floor(Date.now() / 1000),
+      affectedGammes,
+    };
+    this.eventEmitter.emit(RAG_INGESTION_COMPLETED, event);
+    this.logger.log(
+      `Emitted ${RAG_INGESTION_COMPLETED}: jobId=${jobId}, source=${source}, gammes=[${affectedGammes.join(', ')}]`,
+    );
+  }
+
+  /**
+   * Scan /opt/automecanik/rag/knowledge/gammes/ for .md files modified
+   * in the last 10 minutes. Returns array of pg_alias slugs.
+   */
+  private detectAffectedGammes(): string[] {
+    const knowledgePath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const gammeDir = path.join(knowledgePath, 'gammes');
+    const cutoff = Date.now() - 10 * 60 * 1000;
+
+    try {
+      const files = readdirSync(gammeDir);
+      return files
+        .filter((f) => f.endsWith('.md'))
+        .filter((f) => {
+          const stat = statSync(path.join(gammeDir, f));
+          return stat.mtimeMs > cutoff;
+        })
+        .map((f) => f.replace('.md', ''));
+    } catch {
+      this.logger.warn(`Could not scan gamme knowledge dir: ${gammeDir}`);
+      return [];
+    }
+  }
+
+  /**
+   * List in-memory web ingestion jobs (most recent first).
+   */
+  listWebJobs() {
+    return Array.from(this.webJobs.values())
+      .sort((a, b) => b.startedAt - a.startedAt)
+      .map(({ logLines: _logs, ...rest }) => rest);
+  }
+
+  /**
+   * Get a single web ingestion job by ID, including logs.
+   */
+  getWebJob(jobId: string) {
+    const job = this.webJobs.get(jobId);
+    if (!job) return null;
+    return job;
   }
 
   /**

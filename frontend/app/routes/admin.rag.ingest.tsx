@@ -36,6 +36,8 @@ interface IngestionJob {
   startedAt: number | null;
   finishedAt: number | null;
   returnCode: number | null;
+  type: "pdf" | "web";
+  url?: string;
 }
 
 interface IngestResult {
@@ -46,13 +48,30 @@ interface IngestResult {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
-  const apiUrl = getInternalApiUrlFromRequest(
-    "/api/rag/admin/ingest/pdf/jobs",
-    request,
-  );
+  const headers = { Cookie: cookie };
 
-  const response = await fetch(apiUrl, { headers: { Cookie: cookie } });
-  const jobs: IngestionJob[] = response.ok ? await response.json() : [];
+  const [pdfRes, webRes] = await Promise.all([
+    fetch(
+      getInternalApiUrlFromRequest("/api/rag/admin/ingest/pdf/jobs", request),
+      { headers },
+    ),
+    fetch(
+      getInternalApiUrlFromRequest("/api/rag/admin/ingest/web/jobs", request),
+      { headers },
+    ),
+  ]);
+
+  const pdfRaw: Omit<IngestionJob, "type">[] = pdfRes.ok
+    ? await pdfRes.json()
+    : [];
+  const webRaw: (Omit<IngestionJob, "type"> & { url?: string })[] = webRes.ok
+    ? await webRes.json()
+    : [];
+
+  const jobs: IngestionJob[] = [
+    ...pdfRaw.map((j) => ({ ...j, type: "pdf" as const })),
+    ...webRaw.map((j) => ({ ...j, type: "web" as const, url: j.url })),
+  ].sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0));
 
   return json({ jobs });
 }
@@ -456,6 +475,7 @@ export default function AdminRagIngest() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Job ID</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Démarré</TableHead>
                     <TableHead>Terminé</TableHead>
@@ -475,6 +495,18 @@ export default function AdminRagIngest() {
                     >
                       <TableCell className="font-mono text-xs">
                         {job.jobId.slice(0, 12)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={job.type === "web" ? "default" : "secondary"}
+                          className={
+                            job.type === "web"
+                              ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+                          }
+                        >
+                          {job.type === "web" ? "URL" : "PDF"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <StatusBadge
