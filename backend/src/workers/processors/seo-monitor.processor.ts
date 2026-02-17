@@ -50,54 +50,57 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
   }
 
   /**
-   * URLs critiques à surveiller en priorité
-   * Ces URLs génèrent le plus de trafic organique
+   * URLs critiques a surveiller en priorite
+   * Combos type+gamme verifiees dans pieces_relation_type (source de verite du listing)
    */
   private readonly CRITICAL_URLS = [
-    // Filtres à huile populaires
+    // Filtres a huile (gamme 7) — Peugeot Partner I
     {
-      url: '/pieces/filtre-a-huile-75/renault-140/clio-iii-140004/1-5-dci-19052.html',
-      typeId: 19052,
-      gammeId: 75,
+      url: '/pieces/filtre-a-huile-7/peugeot-128/partner-i-combispace-128094/1-4-phase-1-8217.html',
+      typeId: 8217,
+      gammeId: 7,
     },
     {
-      url: '/pieces/filtre-a-huile-75/peugeot-118/208-118001/1-6-bluehdi-75-18781.html',
-      typeId: 18781,
-      gammeId: 75,
-    },
-    {
-      url: '/pieces/filtre-a-huile-75/citroen-46/c4-picasso-46012/2-0-hdi-19053.html',
-      typeId: 19053,
-      gammeId: 75,
+      url: '/pieces/filtre-a-huile-7/peugeot-128/partner-i-128093/1-4-phase-1-7977.html',
+      typeId: 7977,
+      gammeId: 7,
     },
 
-    // Plaquettes de frein populaires
+    // Disques de frein (gamme 82) — VW Golf VI
     {
-      url: '/pieces/plaquettes-de-frein-11/volkswagen-166/golf-v-166005/1-9-tdi-19087.html',
-      typeId: 19087,
-      gammeId: 11,
+      url: '/pieces/disque-de-frein-82/volkswagen-173/golf-vi-173046/2-0-gti-30971.html',
+      typeId: 30971,
+      gammeId: 82,
     },
     {
-      url: '/pieces/plaquettes-de-frein-11/audi-11/a3-11001/2-0-tdi-18782.html',
-      typeId: 18782,
-      gammeId: 11,
-    },
-
-    // Disques de frein
-    {
-      url: '/pieces/disque-de-frein-10/bmw-24/serie-3-24003/320d-18783.html',
-      typeId: 18783,
-      gammeId: 10,
+      url: '/pieces/disque-de-frein-82/volkswagen-173/golf-vi-173046/1-6-29991.html',
+      typeId: 29991,
+      gammeId: 82,
     },
 
-    // Amortisseurs
+    // Plaquettes de frein (gamme 402) — VW Transporter IV
     {
-      url: '/pieces/amortisseur-1/mercedes-107/classe-c-107003/220-cdi-18784.html',
-      typeId: 18784,
-      gammeId: 1,
+      url: '/pieces/plaquette-de-frein-402/volkswagen-173/transporter-iv-fourgon-173146/2-5-tdi-8773.html',
+      typeId: 8773,
+      gammeId: 402,
+    },
+    {
+      url: '/pieces/plaquette-de-frein-402/volkswagen-173/transporter-iv-fourgon-173146/1-9-td-6318.html',
+      typeId: 6318,
+      gammeId: 402,
     },
 
-    // TODO: Ajouter plus d'URLs critiques basées sur Google Analytics
+    // Amortisseurs (gamme 854) — BMW Serie 3 E46
+    {
+      url: '/pieces/amortisseur-854/bmw-33/serie-3-e46-33027/2-2-320-i-15452.html',
+      typeId: 15452,
+      gammeId: 854,
+    },
+    {
+      url: '/pieces/amortisseur-854/bmw-33/serie-3-e46-33027/1-9-316-i-11042.html',
+      typeId: 11042,
+      gammeId: 854,
+    },
   ];
 
   /**
@@ -196,13 +199,12 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
     gammeId: number,
   ): Promise<UrlCheckResult> {
     try {
-      // Requête SQL pour compter les pièces compatibles
-      // Table réelle: __cross_gamme_car (cross-reference gamme × vehicule)
-      const { data, error } = await this.supabase
-        .from('__cross_gamme_car')
-        .select('cgc_id', { count: 'exact' })
-        .eq('cgc_type_id', typeId)
-        .eq('cgc_pg_id', gammeId);
+      // Source de verite: pieces_relation_type (meme table que la RPC get_pieces_for_type_gamme_v4)
+      const { count, error } = await this.supabase
+        .from('pieces_relation_type')
+        .select('rtp_piece_id', { count: 'exact', head: true })
+        .eq('rtp_type_id', typeId)
+        .eq('rtp_ga_id', gammeId);
 
       if (error) {
         return {
@@ -216,10 +218,10 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         };
       }
 
-      const count = data?.length || 0;
+      const piecesCount = count ?? 0;
 
       // Analyse du résultat
-      if (count === 0) {
+      if (piecesCount === 0) {
         this.logger.error(
           `🚨 ALERTE SEO: 0 pièce trouvée pour ${url} (typeId=${typeId}, gammeId=${gammeId})`,
         );
@@ -234,15 +236,17 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         };
       }
 
-      if (count < 5) {
-        this.logger.warn(`⚠️ WARNING: Seulement ${count} pièce(s) pour ${url}`);
+      if (piecesCount < 5) {
+        this.logger.warn(
+          `⚠️ WARNING: Seulement ${piecesCount} pièce(s) pour ${url}`,
+        );
         return {
           url,
           typeId,
           gammeId,
-          piecesCount: count,
+          piecesCount,
           status: 'warning',
-          message: `⚠️ Peu de pièces disponibles (${count})`,
+          message: `⚠️ Peu de pièces disponibles (${piecesCount})`,
           checkedAt: new Date().toISOString(),
         };
       }
@@ -252,7 +256,7 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         url,
         typeId,
         gammeId,
-        piecesCount: count,
+        piecesCount,
         status: 'ok',
         checkedAt: new Date().toISOString(),
       };

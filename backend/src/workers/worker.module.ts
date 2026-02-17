@@ -1,5 +1,5 @@
 /**
- * 🔄 MODULE WORKER BULLMQ
+ * MODULE WORKER BULLMQ
  */
 
 import { Module } from '@nestjs/common';
@@ -7,17 +7,23 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 // Processors
-// import { SitemapProcessor } from './processors/sitemap.processor'; // ❌ DÉSACTIVÉ temporairement
-// import { CacheProcessor } from './processors/cache.processor'; // ❌ DÉSACTIVÉ - Besoin IORedis Module
-// import { EmailProcessor } from './processors/email.processor'; // ❌ DÉSACTIVÉ temporairement
+// import { SitemapProcessor } from './processors/sitemap.processor'; // DESACTIVE temporairement
+// import { CacheProcessor } from './processors/cache.processor'; // DESACTIVE - Besoin IORedis Module
+// import { EmailProcessor } from './processors/email.processor'; // DESACTIVE temporairement
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
+import { ContentRefreshProcessor } from './processors/content-refresh.processor';
 
 // Services (depuis modules existants)
-// import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service'; // ❌ DÉSACTIVÉ
-// import { SitemapDeltaService } from '../modules/seo/services/sitemap-delta.service'; // ❌ DÉSACTIVÉ
+// import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service'; // DESACTIVE
+// import { SitemapDeltaService } from '../modules/seo/services/sitemap-delta.service'; // DESACTIVE
 
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
+
+// Dependencies for ContentRefreshProcessor
+import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
+import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
+import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 
 @Module({
   imports: [
@@ -41,8 +47,8 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
             type: 'exponential',
             delay: 5000,
           },
-          removeOnComplete: 100, // Garder 100 derniers jobs réussis
-          removeOnFail: 500, // Garder 500 derniers jobs échoués
+          removeOnComplete: 100,
+          removeOnFail: 500,
         },
       }),
       inject: [ConfigService],
@@ -50,24 +56,32 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 
     // Queues BullMQ
     BullModule.registerQueue(
-      // { name: 'sitemap' }, // ❌ DÉSACTIVÉ temporairement
-      // { name: 'cache' }, // ❌ DÉSACTIVÉ temporairement
-      // { name: 'email' }, // ❌ DÉSACTIVÉ temporairement
-      { name: 'seo-monitor' }, // ✅ Queue monitoring SEO anti-désindexation
+      // { name: 'sitemap' }, // DESACTIVE temporairement
+      // { name: 'cache' }, // DESACTIVE temporairement
+      // { name: 'email' }, // DESACTIVE temporairement
+      { name: 'seo-monitor' },
     ),
+
+    // Modules for ContentRefreshProcessor dependencies
+    RagProxyModule,
   ],
 
   providers: [
     // Processors
-    // SitemapProcessor, // ❌ DÉSACTIVÉ
-    // CacheProcessor, // ❌ DÉSACTIVÉ
-    // EmailProcessor, // ❌ DÉSACTIVÉ
-    SeoMonitorProcessor, // ✅ ACTIF
+    // SitemapProcessor, // DESACTIVE
+    // CacheProcessor, // DESACTIVE
+    // EmailProcessor, // DESACTIVE
+    SeoMonitorProcessor,
+    ContentRefreshProcessor,
+
+    // Enricher services (used by ContentRefreshProcessor)
+    BuyingGuideEnricherService,
+    ConseilEnricherService,
 
     // Services
-    // SitemapStreamingService, // ❌ DÉSACTIVÉ
-    // SitemapDeltaService, // ❌ DÉSACTIVÉ
-    SeoMonitorSchedulerService, // ✅ ACTIF
+    // SitemapStreamingService, // DESACTIVE
+    // SitemapDeltaService, // DESACTIVE
+    SeoMonitorSchedulerService,
   ],
   exports: [SeoMonitorSchedulerService],
 })

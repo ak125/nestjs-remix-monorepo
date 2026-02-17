@@ -373,7 +373,7 @@ ${links}
         for (const g of guides) {
           if (g.bg_alias) {
             urls.push(
-              `${this.BASE_URL}/blog-pieces-auto/article/${g.bg_alias}`,
+              `${this.BASE_URL}/blog-pieces-auto/guide-achat/${g.bg_alias}`,
             );
           }
         }
