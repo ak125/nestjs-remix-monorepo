@@ -90,6 +90,10 @@ export class GuideService {
           .in('pg_id', pgIds)
           .eq('pg_display', '1');
 
+        // Resolve family names via __seo_family_gamme_car_switch → catalog_family
+        const gammeIds = (gammes || []).map((g: any) => g.pg_id.toString());
+        const familyMap = await this.resolveFamilyNames(client, gammeIds);
+
         autoGuides = (gammes || []).map((g: any) => ({
           id: `gamme_guide_${g.pg_id}`,
           type: 'guide' as const,
@@ -98,7 +102,11 @@ export class GuideService {
           excerpt: '',
           content: '',
           keywords: [],
-          tags: [g.pg_parent, g.pg_name].filter(Boolean),
+          tags: [
+            familyMap.get(g.pg_id.toString()) ||
+              this.guessFamilyFromName(g.pg_name),
+            g.pg_name,
+          ].filter(Boolean),
           publishedAt: new Date().toISOString(),
           viewsCount: 0,
           sections: [],
@@ -562,7 +570,10 @@ export class GuideService {
       h1: guide.bg_h1,
       h2: guide.bg_h2,
       keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
-      tags: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
+      tags: [
+        this.guessFamilyFromName(guide.bg_title),
+        ...(guide.bg_keywords ? guide.bg_keywords.split(', ') : []),
+      ],
       publishedAt: guide.bg_create,
       updatedAt: guide.bg_update,
       viewsCount: parseInt(guide.bg_visit) || 0,
@@ -687,7 +698,9 @@ export class GuideService {
       excerpt: (pg.sgpg_intro_role || '').slice(0, 200),
       content: '',
       keywords: [],
-      tags: [gamme.pg_parent, gamme.pg_name].filter(Boolean),
+      tags: [this.guessFamilyFromName(gamme.pg_name), gamme.pg_name].filter(
+        Boolean,
+      ),
       publishedAt: pg.sgpg_created_at || new Date().toISOString(),
       updatedAt: pg.sgpg_updated_at || null,
       viewsCount: 0,
@@ -733,5 +746,106 @@ export class GuideService {
       this.logger.warn(`Erreur related guides: ${(error as Error).message}`);
       return [];
     }
+  }
+
+  /**
+   * Resolve pg_id → family name via __seo_family_gamme_car_switch + catalog_family
+   */
+  private async resolveFamilyNames(
+    client: any,
+    pgIds: string[],
+  ): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    if (pgIds.length === 0) return map;
+
+    try {
+      const { data: mappings } = await client
+        .from('__seo_family_gamme_car_switch')
+        .select('sfgcs_pg_id, sfgcs_mf_id')
+        .in('sfgcs_pg_id', pgIds);
+
+      if (!mappings || mappings.length === 0) return map;
+
+      const pgToMf = new Map<string, string>();
+      for (const m of mappings) {
+        if (!pgToMf.has(m.sfgcs_pg_id)) {
+          pgToMf.set(m.sfgcs_pg_id, m.sfgcs_mf_id);
+        }
+      }
+
+      const mfIds = [...new Set(pgToMf.values())];
+      const { data: families } = await client
+        .from('catalog_family')
+        .select('mf_id, mf_name')
+        .in('mf_id', mfIds);
+
+      const mfToName = new Map<string, string>();
+      for (const f of families || []) {
+        mfToName.set(f.mf_id, f.mf_name);
+      }
+
+      for (const [pgId, mfId] of pgToMf) {
+        const name = mfToName.get(mfId);
+        if (name) map.set(pgId, name);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Erreur resolution familles: ${(error as Error).message}`,
+      );
+    }
+
+    return map;
+  }
+
+  /**
+   * Fallback: guess family from gamme name keywords
+   */
+  private guessFamilyFromName(name: string): string {
+    const n = (name || '').toLowerCase();
+    if (
+      n.includes('frein') ||
+      n.includes('abs') ||
+      n.includes('plaquette') ||
+      n.includes('étrier') ||
+      n.includes('tambour') ||
+      n.includes('mâchoire')
+    )
+      return 'Freinage';
+    if (
+      n.includes('échappement') ||
+      n.includes('echappement') ||
+      n.includes('catalyseur') ||
+      n.includes('collecteur')
+    )
+      return 'Echappement';
+    if (
+      n.includes('turbo') ||
+      n.includes('intercooler') ||
+      n.includes('gaine de turbo')
+    )
+      return 'Turbo';
+    if (
+      n.includes('feu') ||
+      n.includes('éclairage') ||
+      n.includes('eclairage') ||
+      n.includes('phare') ||
+      n.includes('clignotant')
+    )
+      return 'Eclairage';
+    if (
+      n.includes('essuie') ||
+      n.includes('balai') ||
+      n.includes('rétroviseur') ||
+      n.includes('retroviseur') ||
+      n.includes('lève-vitre') ||
+      n.includes('attelage')
+    )
+      return 'Accessoires';
+    if (n.includes('amortisseur') || n.includes('suspension'))
+      return 'Amortisseur et suspension';
+    if (n.includes('courroie') || n.includes('distribution'))
+      return 'Courroie, galet, poulie et chaîne';
+    if (n.includes('embrayage')) return 'Embrayage';
+    return 'Autres';
   }
 }

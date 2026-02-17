@@ -21,7 +21,16 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { ArrowRight, BookOpen, Clock, Eye, List, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Car,
+  Clock,
+  Eye,
+  List,
+  Sparkles,
+} from "lucide-react";
+import { useMemo } from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
@@ -229,13 +238,59 @@ const cleanGuideTitle = (title: string) =>
   title.replace(/^Guide achat de piece auto:?\s*/i, "");
 
 /* ===========================
+   Guides épinglés (routes statiques hors DB)
+=========================== */
+const PINNED_GUIDES: BlogGuide[] = [
+  {
+    id: "pinned-selecteur-vehicule",
+    type: "achat",
+    title: "Selecteur de vehicule pieces auto : comment trouver la bonne piece",
+    slug: "comment-utiliser-selecteur-vehicule-pieces-auto",
+    excerpt:
+      "4 methodes pour identifier votre vehicule et trouver les pieces compatibles : immatriculation, code VIN, selection manuelle ou reference OEM.",
+    publishedAt: "2026-02-01T00:00:00Z",
+    viewsCount: 0,
+    featuredImage: null,
+    h2Count: 8,
+    readingTime: 12,
+    keywords: [
+      "selecteur vehicule",
+      "trouver piece auto",
+      "immatriculation",
+      "code VIN",
+    ],
+    tags: ["Outils", "Selecteur vehicule"],
+  },
+];
+
+/* ===========================
    Page
 =========================== */
 export default function BlogGuidesIndex() {
   const { guides, relatedAdvice, totalAdvice } = useLoaderData<typeof loader>();
 
-  const featuredGuide = guides[0] ?? null;
-  const otherGuides = guides.slice(1);
+  // Fusionner guides épinglés (routes statiques) + guides API, dedup par slug
+  const apiSlugs = new Set(guides.map((g) => g.slug));
+  const uniquePinned = PINNED_GUIDES.filter((p) => !apiSlugs.has(p.slug));
+  const allGuides = [...guides, ...uniquePinned];
+
+  const featuredGuide = allGuides[0] ?? null;
+  const otherGuides = allGuides.slice(1);
+
+  // Séparer guides produit (familles) et guides outils (transversaux)
+  const toolGuides = otherGuides.filter((g) => g.tags?.[0] === "Outils");
+  const productGuides = otherGuides.filter((g) => g.tags?.[0] !== "Outils");
+
+  // Groupement par famille (tags[0] = nom famille : Freinage, Eclairage, etc.)
+  const groupedGuides = useMemo(() => {
+    const groups: Record<string, BlogGuide[]> = {};
+    productGuides.forEach((guide) => {
+      const family = guide.tags?.[0] || "Autres";
+      if (!groups[family]) groups[family] = [];
+      groups[family].push(guide);
+    });
+    return Object.entries(groups).sort(([, a], [, b]) => b.length - a.length);
+  }, [productGuides]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50">
@@ -327,18 +382,81 @@ export default function BlogGuidesIndex() {
         </section>
       )}
 
-      {/* Autres guides */}
-      {otherGuides.length > 0 && (
-        <section className="pb-12">
+      {/* Guides pratiques (outils transversaux) */}
+      {toolGuides.length > 0 && (
+        <section className="py-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-y border-blue-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-5xl mx-auto">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Car className="w-5 h-5 text-blue-600" />
+                Guides pratiques
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {toolGuides.map((guide) => (
+                  <Link
+                    key={guide.id}
+                    to={`/blog-pieces-auto/guide-achat/${guide.slug}`}
+                    className="group block"
+                  >
+                    <Card className="h-full hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 border border-blue-200 hover:border-blue-400 group-hover:-translate-y-0.5 bg-white">
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                            <Car className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-gray-900 mb-1.5 group-hover:text-blue-600 transition-colors leading-tight">
+                              {cleanGuideTitle(guide.title)}
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              {stripHtmlForMeta(guide.excerpt)}
+                            </p>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              {guide.h2Count != null && guide.h2Count > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <List className="w-3.5 h-3.5" />
+                                  <span>{guide.h2Count} sections</span>
+                                </div>
+                              )}
+                              {guide.readingTime != null &&
+                                guide.readingTime > 0 && (
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    <span>{guide.readingTime} min</span>
+                                  </div>
+                                )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Guides par famille */}
+      {groupedGuides.map(([family, familyGuides], famIdx) => (
+        <section
+          key={family}
+          className={`py-10 ${famIdx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}
+        >
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-green-600" />
-                Autres guides
+                {family}
+                <span className="text-sm font-normal text-gray-500">
+                  ({familyGuides.length} guide
+                  {familyGuides.length > 1 ? "s" : ""})
+                </span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {otherGuides.map((guide) => (
+                {familyGuides.map((guide) => (
                   <Link
                     key={guide.id}
                     to={`/blog-pieces-auto/guide-achat/${guide.slug}`}
@@ -376,6 +494,13 @@ export default function BlogGuidesIndex() {
                                 <span>{guide.h2Count} sections</span>
                               </div>
                             )}
+                            {guide.readingTime != null &&
+                              guide.readingTime > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  <span>{guide.readingTime} min</span>
+                                </div>
+                              )}
                             <div className="flex items-center gap-1">
                               <Eye className="w-3.5 h-3.5" />
                               <span>{formatViews(guide.viewsCount || 0)}</span>
@@ -390,7 +515,7 @@ export default function BlogGuidesIndex() {
             </div>
           </div>
         </section>
-      )}
+      ))}
 
       {/* Etat vide */}
       {guides.length === 0 && (
