@@ -4,12 +4,17 @@ import {
   AlertTriangle,
   CheckCircle,
   Wrench,
-  ChevronDown,
 } from "lucide-react";
 import { useMemo, memo } from "react";
 
-import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import { pluralizePieceName } from "~/lib/seo-utils";
 
 interface CatalogueItem {
   id?: number;
@@ -30,6 +35,7 @@ interface InformationsSectionProps {
   };
   catalogueFamille?: CatalogueItem[];
   gammeName?: string;
+  riskConsequences?: string[];
 }
 
 // Mots-clés pour catégoriser les informations
@@ -266,8 +272,9 @@ function ThemeIcon({ type, className }: { type: string; className?: string }) {
 }
 
 /**
- * Composant Details/Summary natif HTML5 (SEO-friendly)
+ * Composant Accordion shadcn (SEO-friendly)
  * Le contenu est TOUJOURS dans le DOM → indexable par Google
+ * forceMount assure que le contenu est rendu même quand fermé
  */
 interface ThemeDetailsProps {
   themeKey: string;
@@ -280,11 +287,12 @@ function ThemeDetails({ themeKey, items }: ThemeDetailsProps) {
   const config = THEME_CONFIG[themeKey] || THEME_CONFIG.general;
 
   return (
-    <details
-      className={`group border-2 ${config.colors.border} rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow`}
+    <AccordionItem
+      value={themeKey}
+      className={`border-2 ${config.colors.border} rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow`}
     >
-      <summary
-        className={`flex items-center justify-between p-4 ${config.colors.bg} cursor-pointer list-none hover:brightness-95 transition-all`}
+      <AccordionTrigger
+        className={`p-4 ${config.colors.bg} hover:no-underline hover:brightness-95 transition-all`}
       >
         <div className="flex items-center gap-3">
           <span
@@ -299,28 +307,30 @@ function ThemeDetails({ themeKey, items }: ThemeDetailsProps) {
             {items.length}
           </span>
         </div>
-        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/50 group-open:rotate-180 transition-transform duration-200">
-          <ChevronDown className="w-4 h-4 text-gray-600" />
-        </span>
-      </summary>
+      </AccordionTrigger>
 
-      {/* Contenu toujours dans le DOM (SEO) - CSS gère l'affichage */}
-      <div className="p-4 pt-3 space-y-2 bg-white border-t border-gray-100">
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-start gap-2 text-sm text-gray-700"
-          >
-            <span className="text-gray-400 mt-1">•</span>
-            <HtmlContent
-              html={item}
-              className="flex-1 leading-relaxed"
-              trackLinks={true}
-            />
-          </div>
-        ))}
-      </div>
-    </details>
+      {/* Contenu toujours dans le DOM (SEO) - Accordion gère l'affichage */}
+      <AccordionContent
+        className="px-4 pb-4 pt-3 bg-white border-t border-gray-100"
+        forceMount
+      >
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-2 text-sm text-gray-700"
+            >
+              <span className="text-gray-400 mt-1">•</span>
+              <HtmlContent
+                html={item}
+                className="flex-1 leading-relaxed"
+                trackLinks={true}
+              />
+            </div>
+          ))}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -328,6 +338,7 @@ const InformationsSection = memo(function InformationsSection({
   informations,
   catalogueFamille,
   gammeName,
+  riskConsequences,
 }: InformationsSectionProps) {
   const pluralGammeName = gammeName
     ? pluralizePieceName(gammeName.toLowerCase())
@@ -374,8 +385,30 @@ const InformationsSection = memo(function InformationsSection({
       }
     });
 
+    // R2D2 U9: dédupliquer les items "sécurité" qui répètent les risk.consequences
+    // PurchaseNarrativeSection affiche déjà les conséquences de manière proéminente
+    if (
+      riskConsequences &&
+      riskConsequences.length > 0 &&
+      cats.securite.length > 0
+    ) {
+      const normalize = (t: string) =>
+        t
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/<[^>]*>/g, "");
+      const riskTexts = riskConsequences.map(normalize);
+      cats.securite = cats.securite.filter((item) => {
+        const norm = normalize(item);
+        return !riskTexts.some(
+          (risk) => norm.includes(risk) || risk.includes(norm),
+        );
+      });
+    }
+
     return { essentials: essentialItems, categories: cats };
-  }, [informations?.items, catalogueFamille]);
+  }, [informations?.items, catalogueFamille, riskConsequences]);
 
   if (!informations?.items || informations.items.length === 0) {
     return null;
@@ -438,36 +471,41 @@ const InformationsSection = memo(function InformationsSection({
           </div>
         </div>
 
-        {/* Thèmes avec <details>/<summary> natif HTML5 (SEO-friendly) */}
+        {/* Thèmes avec Accordion shadcn (SEO-friendly — contenu forceMount dans le DOM) */}
         {hasThemes && (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500 mb-2 flex items-center gap-2">
+          <div>
+            <p className="text-sm text-gray-500 mb-3 flex items-center gap-2">
               <Info className="w-4 h-4" />
               Cliquez sur un thème pour voir les détails
             </p>
 
-            {categories.fonctionnement.length > 0 && (
-              <ThemeDetails
-                themeKey="fonctionnement"
-                items={categories.fonctionnement}
-              />
-            )}
+            <Accordion type="single" collapsible className="space-y-3">
+              {categories.fonctionnement.length > 0 && (
+                <ThemeDetails
+                  themeKey="fonctionnement"
+                  items={categories.fonctionnement}
+                />
+              )}
 
-            {categories.usure.length > 0 && (
-              <ThemeDetails themeKey="usure" items={categories.usure} />
-            )}
+              {categories.usure.length > 0 && (
+                <ThemeDetails themeKey="usure" items={categories.usure} />
+              )}
 
-            {categories.securite.length > 0 && (
-              <ThemeDetails themeKey="securite" items={categories.securite} />
-            )}
+              {categories.securite.length > 0 && (
+                <ThemeDetails themeKey="securite" items={categories.securite} />
+              )}
 
-            {categories.pratiques.length > 0 && (
-              <ThemeDetails themeKey="pratiques" items={categories.pratiques} />
-            )}
+              {categories.pratiques.length > 0 && (
+                <ThemeDetails
+                  themeKey="pratiques"
+                  items={categories.pratiques}
+                />
+              )}
 
-            {categories.general.length > 0 && (
-              <ThemeDetails themeKey="general" items={categories.general} />
-            )}
+              {categories.general.length > 0 && (
+                <ThemeDetails themeKey="general" items={categories.general} />
+              )}
+            </Accordion>
           </div>
         )}
       </div>

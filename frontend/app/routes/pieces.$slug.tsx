@@ -55,7 +55,6 @@ import {
   getVehicleFromCookie,
   buildBreadcrumbWithVehicle,
   storeVehicleClient,
-  type VehicleCookie,
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
@@ -67,6 +66,10 @@ import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import {
+  type GammePageDataV1,
+  GAMME_PAGE_CONTRACT_VERSION,
+} from "~/types/gamme-page-contract.types";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -154,208 +157,7 @@ const UXMessageBox = lazy(() =>
   })),
 );
 
-interface LoaderData {
-  status: number;
-  selectedVehicle?: VehicleCookie | null;
-  meta?: {
-    title: string;
-    description: string;
-    keywords: string;
-    robots: string;
-    canonical: string;
-    relfollow?: number;
-  };
-  breadcrumbs?: {
-    items: Array<{
-      label: string;
-      href: string;
-      current?: boolean;
-    }>;
-  };
-  famille?: {
-    mf_id: number;
-    mf_name: string;
-    mf_pic: string;
-  };
-  performance?: {
-    total_time_ms: number;
-    parallel_time_ms?: number;
-    rpc_time_ms?: number;
-    motorisations_count: number;
-    catalogue_famille_count?: number;
-    equipementiers_count?: number;
-    conseils_count?: number;
-    informations_count?: number;
-    guide_available?: number;
-  };
-  content?: {
-    h1: string;
-    content: string;
-    pg_name: string;
-    pg_alias: string;
-    pg_pic: string;
-    pg_wall: string;
-  };
-  guide?: {
-    id: number;
-    title: string;
-    alias: string;
-    preview: string;
-    wall: string;
-    date: string;
-    image: string;
-    link: string;
-    h2_content?: string;
-  };
-  motorisations?: {
-    title: string;
-    items: Array<{
-      title: string;
-      description: string;
-      image: string;
-      link: string;
-      marque_name: string;
-      modele_name: string;
-      type_name: string;
-      puissance: string;
-      periode: string;
-      advice: string;
-    }>;
-  };
-  catalogueMameFamille?: {
-    title: string;
-    items: Array<{
-      name: string;
-      link: string;
-      image: string;
-      description: string;
-      meta_description: string;
-      sort?: number;
-    }>;
-  };
-  equipementiers?: {
-    title: string;
-    items: Array<{
-      pm_id: number;
-      pm_name: string;
-      pm_logo: string;
-      title: string;
-      image: string;
-      description: string;
-    }>;
-  };
-  conseils?: {
-    title: string;
-    content: string;
-    items: Array<{
-      id: number;
-      title: string;
-      content: string;
-    }>;
-  };
-  informations?: {
-    title: string;
-    content: string;
-    items: string[];
-  };
-  // 🔗 SEO Switches pour maillage interne (ancres variées)
-  seoSwitches?: {
-    verbs: Array<{ id: string; content: string }>;
-    nouns: Array<{ id: string; content: string }>;
-    verbCount: number;
-    nounCount: number;
-  };
-  // 📖 Purchase Guide V2 - structure orientée client
-  purchaseGuideData?: {
-    id: number;
-    pgId: string;
-    intro: { title: string; role: string; syncParts: string[] };
-    risk: {
-      title: string;
-      explanation: string;
-      consequences: string[];
-      costRange: string;
-      conclusion: string;
-    };
-    timing: { title: string; years: string; km: string; note: string };
-    arguments: Array<{ title: string; content: string; icon: string }>;
-    // Nouvelles sections Phase 2
-    h1Override?: string | null;
-    howToChoose?: string | null;
-    symptoms?: string[] | null;
-    antiMistakes?: string[] | null;
-    faq?: Array<{ question: string; answer: string }> | null;
-  } | null;
-  // 🛒 Buying Guide enrichi (RAG) — checklist avant commande
-  gammeBuyingGuide?: {
-    compatibilityRules?: string[];
-    selectionCriteria?: Array<{
-      key: string;
-      label: string;
-      guidance: string;
-      priority: "required" | "recommended";
-    }>;
-    trustArguments?: Array<{ title: string; content: string; icon?: string }>;
-    pairing?: {
-      required?: string[];
-      recommended?: string[];
-      checks?: string[];
-    };
-    antiMistakes?: string[];
-    risk?: { costRange?: string };
-    faq?: Array<{ question: string; answer: string }>;
-    useCases?: Array<{
-      id: string;
-      label: string;
-      recommendation: string;
-    }>;
-    decisionTree?: Array<{
-      id: string;
-      question: string;
-      options: Array<{
-        label: string;
-        outcome: string;
-        note?: string;
-      }>;
-    }>;
-  } | null;
-  // 🔄 Données de substitution (Moteur 200 Always)
-  substitution?: {
-    httpStatus: number;
-    lock?: {
-      type: "vehicle" | "technology" | "ambiguity" | "precision";
-      missing: string;
-      known: {
-        gamme?: { id: number; name: string; alias: string };
-        marque?: { id: number; name: string };
-        modele?: { id: number; name: string };
-      };
-      options: Array<{
-        id: number;
-        label: string;
-        url: string;
-        description?: string;
-      }>;
-    };
-    substitute?: {
-      piece_id: number;
-      name: string;
-      price: number;
-      priceFormatted?: string;
-      image?: string;
-      brand?: string;
-      ref?: string;
-      url: string;
-    };
-    relatedParts?: Array<{
-      pg_id: number;
-      pg_name: string;
-      pg_alias: string;
-      pg_pic?: string;
-      url: string;
-    }>;
-  } | null;
-}
+// Contrat de donnees : voir frontend/app/types/gamme-page-contract.types.ts
 
 /**
  * ✅ Migration 2026-01-21: Transforme les URLs Supabase en /img/* proxy
@@ -476,67 +278,49 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
     );
 
-    // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
-    const heroData = apiData.hero as
-      | {
-          h1: string;
-          content: string;
-          image: string;
-          wall: string;
-          famille_info?: { mf_id: number; mf_name: string; mf_pic: string };
-          pg_name?: string;
-          pg_alias?: string;
+    // Mapper hero → content
+    const heroData = apiData.hero;
+    const content = heroData
+      ? {
+          h1: heroData.h1,
+          content: heroData.content,
+          pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
+          pg_alias: heroData.pg_alias || "",
+          pg_pic: toProxyImageUrl(heroData.image) ?? "",
+          pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }
-      | undefined;
-    // Note: API returns different shapes than LoaderData, using type assertion for compatibility
-    const data = {
-      ...apiData,
-      status: 200,
-      content: heroData
-        ? {
-            h1: heroData.h1,
-            content: heroData.content,
-            pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
-            pg_alias: heroData.pg_alias || "",
-            pg_pic: toProxyImageUrl(heroData.image),
-            pg_wall: toProxyImageUrl(heroData.wall),
-          }
-        : undefined,
-      famille: apiData.hero?.famille_info,
-      guide: apiData.guideAchat
-        ? {
-            ...apiData.guideAchat,
-            date: apiData.guideAchat.updated,
-          }
-        : undefined,
-    } as unknown as LoaderData;
+      : null;
 
-    // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
-    const baseBreadcrumb = [
-      { label: "Accueil", href: "/" },
-      { label: data.content?.pg_name || "Pièce", current: true },
-    ];
+    const meta = apiData.meta ?? null;
 
-    // 🍞 Pour les pages gamme seules, NE PAS inclure le véhicule du cookie
-    // (évite hydration mismatch serveur/client)
+    // Guard Tier 1 : la page ne peut pas rendre sans meta + content
+    if (!content || !meta) {
+      logger.error(
+        `[pieces/$slug] Tier 1 manquant — gammeId=${gammeId}, content=${!!content}, meta=${!!meta}`,
+      );
+      throw new Response("Internal Server Error", { status: 500 });
+    }
+
+    // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
-      baseBreadcrumb,
-      null, // Pas de véhicule sur page gamme seule
+      [
+        { label: "Accueil", href: "/" },
+        { label: content.pg_name || "Piece", current: true },
+      ],
+      null,
     );
 
     logger.log(
-      "🍞 Breadcrumb généré:",
+      "🍞 Breadcrumb:",
       breadcrumbItems.map((i) => i.label).join(" → "),
     );
 
-    // 🔄 Log substitution status
+    // Substitution : 404/410 handling
     if (substitutionResponse) {
       logger.log(
-        `🔄 Substitution API: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
+        `🔄 Substitution: httpStatus=${substitutionResponse.httpStatus}, lock=${substitutionResponse.lock?.type || "none"}`,
       );
     }
-
-    // 🔄 Handle 404/410 based on substitution API response
     if (substitutionResponse?.httpStatus === 404) {
       throw new Response("Not Found", {
         status: 404,
@@ -550,21 +334,44 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       });
     }
 
-    // Retourner data avec breadcrumb mis à jour, véhicule, switches SEO, substitution et prix
-    return json(
-      {
-        ...data,
-        breadcrumbs: { items: breadcrumbItems },
-        selectedVehicle,
-        seoSwitches,
-        substitution: substitutionResponse,
+    // Construire le contrat GammePageDataV1
+    const pageData: GammePageDataV1 = {
+      _v: GAMME_PAGE_CONTRACT_VERSION,
+      pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+        clusterId: "gamme",
+        canonicalEntity: slug,
+      }),
+      status: 200,
+      meta,
+      content,
+      breadcrumbs: { items: breadcrumbItems },
+      famille: heroData?.famille_info ?? null,
+      performance: apiData.performance ?? null,
+      motorisations: apiData.motorisations ?? null,
+      catalogueMameFamille: apiData.catalogueMameFamille ?? null,
+      equipementiers: apiData.equipementiers ?? null,
+      conseils: apiData.conseils ?? null,
+      informations: apiData.informations ?? null,
+      seoSwitches: seoSwitches ?? null,
+      guide: apiData.guideAchat
+        ? {
+            ...(apiData.guideAchat as GammePageDataV1["guide"] & {
+              updated?: string;
+            }),
+            date: (apiData.guideAchat as { updated?: string }).updated ?? "",
+          }
+        : null,
+      selectedVehicle: selectedVehicle ?? null,
+      purchaseGuideData: apiData.purchaseGuideData ?? null,
+      gammaBuyingGuide: apiData.gammaBuyingGuide ?? null,
+      substitution: substitutionResponse ?? null,
+    };
+
+    return json(pageData, {
+      headers: {
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       },
-      {
-        headers: {
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-        },
-      },
-    );
+    });
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -755,7 +562,7 @@ export function headers({
 }
 
 export default function PiecesDetailPage() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>() as GammePageDataV1;
   const navigation = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
