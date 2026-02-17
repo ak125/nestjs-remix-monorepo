@@ -94,7 +94,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const backendUrl = getInternalApiUrl("");
 
   const [guidesResult, adviceResult] = await Promise.allSettled([
-    fetch(`${backendUrl}/api/blog/guides?limit=100&type=achat`, {
+    fetch(`${backendUrl}/api/blog/guides?limit=300&type=achat`, {
       headers: { "Content-Type": "application/json" },
     }),
     fetch(`${backendUrl}/api/blog/advice?limit=8&page=1`, {
@@ -221,6 +221,20 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
     { property: "og:url", content: canonicalUrl },
+    {
+      property: "og:image",
+      content: "https://www.automecanik.com/logo-navbar.webp",
+    },
+    { name: "twitter:card", content: "summary_large_image" },
+    {
+      name: "twitter:title",
+      content: "Guides d'Achat Pieces Auto",
+    },
+    { name: "twitter:description", content: description },
+    {
+      name: "twitter:image",
+      content: "https://www.automecanik.com/logo-navbar.webp",
+    },
     { "script:ld+json": schema },
   ];
 };

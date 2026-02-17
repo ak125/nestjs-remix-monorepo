@@ -82,6 +82,11 @@ export class GuideService {
 
       const pgIds = (purchaseGuides || []).map((p: any) => p.sgpg_pg_id);
 
+      // Exclure les gammes qui ont déjà un guide manuel dans __blog_guide
+      const manualAliases = new Set(
+        (guidesList || []).map((g: any) => g.bg_alias),
+      );
+
       let autoGuides: BlogArticle[] = [];
       if (pgIds.length > 0) {
         const { data: gammes } = await client
@@ -91,10 +96,13 @@ export class GuideService {
           .eq('pg_display', '1');
 
         // Resolve family names via __seo_family_gamme_car_switch → catalog_family
-        const gammeIds = (gammes || []).map((g: any) => g.pg_id.toString());
+        const filteredGammes = (gammes || []).filter(
+          (g: any) => !manualAliases.has(g.pg_alias),
+        );
+        const gammeIds = filteredGammes.map((g: any) => g.pg_id.toString());
         const familyMap = await this.resolveFamilyNames(client, gammeIds);
 
-        autoGuides = (gammes || []).map((g: any) => ({
+        autoGuides = filteredGammes.map((g: any) => ({
           id: `gamme_guide_${g.pg_id}`,
           type: 'guide' as const,
           title: `Comment choisir son ${(g.pg_name || '').toLowerCase()} ?`,
@@ -719,9 +727,105 @@ export class GuideService {
   }
 
   /**
-   * Récupère les autres guides (pour section "Guides similaires")
+   * Récupère les guides de la même famille (pour section "Guides similaires")
+   * Chaîne : bg_alias → pieces_gamme → __seo_family_gamme_car_switch → siblings
+   * Fallback : 4 guides récents si pas de famille trouvée
    */
   private async getRelatedGuides(
+    client: any,
+    currentGuideId: string,
+  ): Promise<any[]> {
+    try {
+      // 1. Récupérer le bg_alias du guide courant
+      const { data: currentGuide } = await client
+        .from(TABLES.blog_guide)
+        .select('bg_alias')
+        .eq('bg_id', currentGuideId)
+        .single();
+
+      if (!currentGuide?.bg_alias) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      // 2. Résoudre la gamme via pieces_gamme
+      const { data: gamme } = await client
+        .from('pieces_gamme')
+        .select('pg_id')
+        .eq('pg_alias', currentGuide.bg_alias)
+        .eq('pg_display', '1')
+        .single();
+
+      if (!gamme) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      // 3. Trouver la famille via __seo_family_gamme_car_switch
+      const { data: familyLink } = await client
+        .from('__seo_family_gamme_car_switch')
+        .select('sfgcs_mf_id')
+        .eq('sfgcs_pg_id', gamme.pg_id.toString())
+        .single();
+
+      if (!familyLink?.sfgcs_mf_id) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      // 4. Trouver les autres gammes de la même famille
+      const { data: sameFamily } = await client
+        .from('__seo_family_gamme_car_switch')
+        .select('sfgcs_pg_id')
+        .eq('sfgcs_mf_id', familyLink.sfgcs_mf_id)
+        .neq('sfgcs_pg_id', gamme.pg_id.toString());
+
+      if (!sameFamily || sameFamily.length === 0) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      // 5. Résoudre les alias des gammes sœurs
+      const siblingPgIds = sameFamily.map((s: any) => s.sfgcs_pg_id);
+      const { data: siblingGammes } = await client
+        .from('pieces_gamme')
+        .select('pg_alias')
+        .in('pg_id', siblingPgIds)
+        .eq('pg_display', '1');
+
+      const siblingAliases = (siblingGammes || []).map((g: any) => g.pg_alias);
+      if (siblingAliases.length === 0) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      // 6. Récupérer les guides correspondants
+      const { data: relatedGuides } = await client
+        .from(TABLES.blog_guide)
+        .select(
+          'bg_id, bg_title, bg_alias, bg_preview, bg_descrip, bg_visit, bg_create',
+        )
+        .in('bg_alias', siblingAliases)
+        .neq('bg_id', currentGuideId)
+        .limit(4);
+
+      if (!relatedGuides || relatedGuides.length === 0) {
+        return this.fallbackRelatedGuides(client, currentGuideId);
+      }
+
+      return relatedGuides.map((g: any) => ({
+        id: `guide_${g.bg_id}`,
+        title: g.bg_title,
+        slug: g.bg_alias,
+        excerpt: g.bg_preview || g.bg_descrip || '',
+        viewsCount: parseInt(g.bg_visit) || 0,
+        publishedAt: g.bg_create,
+      }));
+    } catch (error) {
+      this.logger.warn(`Erreur related guides: ${(error as Error).message}`);
+      return this.fallbackRelatedGuides(client, currentGuideId);
+    }
+  }
+
+  /**
+   * Fallback : 4 guides récents (ancien comportement)
+   */
+  private async fallbackRelatedGuides(
     client: any,
     currentGuideId: string,
   ): Promise<any[]> {
@@ -743,7 +847,9 @@ export class GuideService {
         publishedAt: g.bg_create,
       }));
     } catch (error) {
-      this.logger.warn(`Erreur related guides: ${(error as Error).message}`);
+      this.logger.warn(
+        `Erreur fallback related guides: ${(error as Error).message}`,
+      );
       return [];
     }
   }

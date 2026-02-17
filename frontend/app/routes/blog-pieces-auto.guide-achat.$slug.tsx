@@ -176,6 +176,38 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ],
   };
 
+  // FAQPage schema — extract Q&A from FAQ sections (details/summary HTML)
+  const faqSection = guide.sections?.find(
+    (s) => s.level === 2 && /faq|questions?\s+fr[ée]quent/i.test(s.title),
+  );
+  const faqSchema = faqSection
+    ? (() => {
+        const qaPairs: { q: string; a: string }[] = [];
+        const detailsRegex =
+          /<summary>[^<]*<strong>([^<]+)<\/strong>[^<]*<\/summary>\s*<p>([\s\S]*?)<\/p>\s*<\/details>/g;
+        let match;
+        while ((match = detailsRegex.exec(faqSection.content)) !== null) {
+          qaPairs.push({
+            q: match[1].trim(),
+            a: match[2].replace(/<[^>]+>/g, "").trim(),
+          });
+        }
+        if (qaPairs.length === 0) return null;
+        return {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: qaPairs.map((qa) => ({
+            "@type": "Question",
+            name: qa.q,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: qa.a,
+            },
+          })),
+        };
+      })()
+    : null;
+
   const result: any[] = [
     { title: `${cleanTitle} - Guide d'Achat Pièces Auto` },
     { name: "description", content: cleanExcerpt },
@@ -185,9 +217,23 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:description", content: cleanExcerpt },
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
+    {
+      property: "og:image",
+      content:
+        guide.featuredImage || "https://www.automecanik.com/logo-navbar.webp",
+    },
     { property: "article:published_time", content: guide.publishedAt },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: cleanTitle },
+    { name: "twitter:description", content: cleanExcerpt },
+    {
+      name: "twitter:image",
+      content:
+        guide.featuredImage || "https://www.automecanik.com/logo-navbar.webp",
+    },
     { "script:ld+json": articleSchema },
     { "script:ld+json": breadcrumbSchema },
+    ...(faqSchema ? [{ "script:ld+json": faqSchema }] : []),
   ];
 
   // LCP OPTIMIZATION: Preload featured image
@@ -340,11 +386,6 @@ export default function GuideDetailPage() {
                 <Sparkles className="w-3 h-3 mr-1" />
                 Guide d'Achat
               </Badge>
-
-              {/* Title */}
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                {cleanTitle}
-              </h2>
 
               {/* Meta Info */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-8 pb-8 border-b">

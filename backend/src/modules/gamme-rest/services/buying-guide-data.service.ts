@@ -326,6 +326,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         .from('__seo_gamme_purchase_guide')
         .select(provenanceSelect)
         .eq('sgpg_pg_id', pgId)
+        .neq('sgpg_is_draft', true)
         .single();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let data: any = provenanceQuery.data;
@@ -345,6 +346,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
           .from('__seo_gamme_purchase_guide')
           .select(baseSelect)
           .eq('sgpg_pg_id', pgId)
+          .neq('sgpg_is_draft', true)
           .single();
 
         data = fallbackQuery.data;
@@ -441,6 +443,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         .from('__seo_gamme_purchase_guide')
         .select(baseSelect)
         .eq('sgpg_pg_id', pgId)
+        .neq('sgpg_is_draft', true)
         .single();
 
       if (error || !data) return null;

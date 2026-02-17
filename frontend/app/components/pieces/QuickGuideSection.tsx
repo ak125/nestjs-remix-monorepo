@@ -1,12 +1,4 @@
-import {
-  Wrench,
-  Clock,
-  Banknote,
-  ChevronRight,
-  CheckCircle2,
-  ListOrdered,
-  Search,
-} from "lucide-react";
+import { Wrench, Clock, Banknote, ChevronRight } from "lucide-react";
 import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -39,18 +31,9 @@ export interface PurchaseGuideData {
   }>;
 }
 
-interface SelectionCriterion {
-  label: string;
-  guidance: string;
-  priority: string;
-}
-
 interface QuickGuideSectionProps {
   guide: PurchaseGuideData;
   gammeName?: string;
-  selectionCriteria?: SelectionCriterion[];
-  howToChoose?: string | null;
-  symptoms?: string[];
 }
 
 interface GuideCard {
@@ -129,23 +112,12 @@ function GuideCardComponent({ card }: { card: GuideCard }) {
 const QuickGuideSection = memo(function QuickGuideSection({
   guide,
   gammeName,
-  selectionCriteria,
-  howToChoose,
-  symptoms,
 }: QuickGuideSectionProps) {
   if (!guide) return null;
 
   const pluralName = gammeName
     ? pluralizePieceName(gammeName.toLowerCase())
     : "pièces";
-
-  // Parse howToChoose steps (pattern: "1) step text 2) step text ...")
-  const methodSteps = howToChoose
-    ? howToChoose
-        .split(/\d+\)\s*/)
-        .filter((s) => s.trim().length > 0)
-        .map((s) => s.trim().replace(/\.$/, ""))
-    : [];
 
   // 3 cartes essentielles : rôle, timing, budget
   const cards: GuideCard[] = [
@@ -196,77 +168,6 @@ const QuickGuideSection = memo(function QuickGuideSection({
               <GuideCardComponent key={card.id} card={card} />
             ))}
           </div>
-
-          {/* Methode de selection — B3 R2D2 (etapes numerotees) */}
-          {methodSteps.length > 0 && (
-            <div className="mt-5 border-l-4 border-[#e8590c] bg-slate-50 rounded-r-lg p-4">
-              <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <ListOrdered className="w-4 h-4 text-[#e8590c]" />
-                Comment choisir vos {pluralName} en {methodSteps.length} etapes
-              </h3>
-              <ol className="space-y-2">
-                {methodSteps.map((step, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#e8590c] text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-gray-700 leading-relaxed">
-                      {step}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Checklist rapide — B1 R2D2 (visible en 10 sec) */}
-          {selectionCriteria && selectionCriteria.length > 0 && (
-            <div className="mt-5 border-l-4 border-[#0d1b3e] bg-slate-50 rounded-r-lg p-4">
-              <h3 className="text-base font-bold text-slate-900 mb-3">
-                Avant de commander vos {pluralName}
-              </h3>
-              <ul className="space-y-2">
-                {selectionCriteria.slice(0, 7).map((criterion, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#0d1b3e] mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">
-                      <span className="font-medium text-gray-900">
-                        {criterion.label}
-                      </span>
-                      {criterion.guidance ? ` — ${criterion.guidance}` : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 🔍 R2D2 U6: comment vérifier l'usure (test concret) */}
-          {symptoms && symptoms.length > 0 && (
-            <div className="mt-5 border-l-4 border-amber-400 bg-amber-50 rounded-r-lg p-4">
-              <h3 className="text-base font-bold text-amber-900 mb-3 flex items-center gap-2">
-                <Search className="w-4 h-4 text-amber-600" />
-                Comment vérifier l&apos;usure de vos {pluralName}
-              </h3>
-              <ul className="space-y-2">
-                {symptoms.slice(0, 3).map((symptom, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-amber-800 leading-relaxed">
-                      Vérifiez :{" "}
-                      {symptom.charAt(0).toLowerCase() + symptom.slice(1)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-xs text-amber-600">
-                Si un ou plusieurs signes sont présents, le remplacement est
-                recommandé.
-              </p>
-            </div>
-          )}
 
           {/* CTA vers sélecteur */}
           <div className="mt-5 text-center">
