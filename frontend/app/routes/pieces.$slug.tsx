@@ -133,6 +133,26 @@ const FAQSection = lazy(() =>
   })),
 );
 
+// R1 ROUTER: FAQ statiques orientées sélecteur véhicule (remplace les FAQ R3/guide-achat)
+const R1_SELECTOR_FAQ = [
+  {
+    question: "Mon véhicule n'apparaît pas dans le sélecteur, que faire ?",
+    answer:
+      "Essayez de rechercher par la marque et le modèle exact. Si votre véhicule est très ancien ou importé hors Europe, il peut ne pas figurer dans notre base. Contactez-nous avec votre carte grise pour une recherche manuelle.",
+  },
+  {
+    question: "Mon modèle a plusieurs motorisations, laquelle choisir ?",
+    answer:
+      "Vérifiez le code moteur sur votre carte grise (case D.2) ou sur la plaque constructeur dans le compartiment moteur. Chaque motorisation peut avoir un montage différent.",
+  },
+  {
+    question:
+      "Comment être sûr que la pièce est compatible avec mon véhicule ?",
+    answer:
+      "En sélectionnant votre véhicule exact dans notre sélecteur, seules les références 100% compatibles s'affichent. Nous vérifions la compatibilité via les bases techniques constructeur.",
+  },
+];
+
 // Contrat de donnees : voir frontend/app/types/gamme-page-contract.types.ts
 
 /**
@@ -1201,34 +1221,21 @@ export default function PiecesDetailPage() {
         </Reveal>
       </PageSection>
 
-      {/* 📖 FAQ avec Schema.org (merge purchaseGuideData + gammeBuyingGuide) */}
-      {(() => {
-        const baseFaq = data.purchaseGuideData?.faq || [];
-        const extraFaq = data.gammeBuyingGuide?.faq || [];
-        const seenQuestions = new Set(baseFaq.map((f) => f.question));
-        const mergedFaq = [
-          ...baseFaq,
-          ...extraFaq.filter((f) => !seenQuestions.has(f.question)),
-        ];
-        return (
-          mergedFaq.length > 0 && (
-            <PageSection bg="slate" id="faq">
-              <Reveal>
-                <Suspense
-                  fallback={
-                    <div className="h-48 bg-slate-100 animate-pulse rounded-lg" />
-                  }
-                >
-                  <FAQSection
-                    faq={mergedFaq}
-                    gammeName={data.content?.pg_name || "cette pièce"}
-                  />
-                </Suspense>
-              </Reveal>
-            </PageSection>
-          )
-        );
-      })()}
+      {/* 📖 FAQ R1 — questions universelles sur le sélecteur véhicule */}
+      <PageSection bg="slate" id="faq">
+        <Reveal>
+          <Suspense
+            fallback={
+              <div className="h-48 bg-slate-100 animate-pulse rounded-lg" />
+            }
+          >
+            <FAQSection
+              faq={R1_SELECTOR_FAQ}
+              gammeName={data.content?.pg_name || "cette pièce"}
+            />
+          </Suspense>
+        </Reveal>
+      </PageSection>
 
       {/* Bouton Scroll To Top */}
       <ScrollToTop />
