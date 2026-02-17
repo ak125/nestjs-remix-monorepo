@@ -575,6 +575,37 @@ export default function DiagnosticAutoDetail() {
                 </Card>
               )}
 
+            {/* Liens R3 Conseils - Articles liés */}
+            {diagnostic.related_blog_articles &&
+              diagnostic.related_blog_articles.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-amber-600" />
+                      Conseils et guides
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {diagnostic.related_blog_articles.map((slug) => (
+                        <Link
+                          key={slug}
+                          to={`/blog-pieces-auto/conseils/${slug}`}
+                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                        >
+                          <span className="text-amber-700">
+                            {slug
+                              .replace(/-/g, " ")
+                              .replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </span>
+                          <ExternalLink className="h-4 w-4 text-amber-600" />
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
             {/* Liens R1 Routeur - Trouver la pièce */}
             {diagnostic.related_gammes &&
               diagnostic.related_gammes.length > 0 && (

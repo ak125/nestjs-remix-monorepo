@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { ConfigService } from '@nestjs/config';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 // ── Section type constants matching DB values ──
 
@@ -93,6 +95,7 @@ interface PageContract {
 @Injectable()
 export class ConseilEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ConseilEnricherService.name);
+  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
 
   constructor(
     configService: ConfigService,
@@ -109,12 +112,27 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgId: string,
     pgAlias: string,
   ): Promise<ConseilEnrichResult> {
-    // 1. Load RAG knowledge doc
+    // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
     try {
       const doc = await this.ragService.getKnowledgeDoc(`gammes.${pgAlias}`);
       ragContent = doc.content || '';
     } catch {
+      ragContent = '';
+    }
+
+    // Fallback: read from disk if API content lacks YAML frontmatter
+    if (!ragContent || !ragContent.startsWith('---\n')) {
+      const diskContent = this.readGammeFromDisk(pgAlias);
+      if (diskContent) {
+        this.logger.log(
+          `Disk fallback for ${pgAlias}: ${diskContent.length} chars`,
+        );
+        ragContent = diskContent;
+      }
+    }
+
+    if (!ragContent || ragContent.length < 100) {
       return {
         status: 'skipped',
         score: 0,
@@ -122,17 +140,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
         sectionsCreated: 0,
         sectionsUpdated: 0,
         reason: 'NO_RAG_DOC',
-      };
-    }
-
-    if (ragContent.length < 100) {
-      return {
-        status: 'skipped',
-        score: 0,
-        flags: [],
-        sectionsCreated: 0,
-        sectionsUpdated: 0,
-        reason: 'RAG_DOC_TOO_SHORT',
       };
     }
 
@@ -199,6 +206,18 @@ export class ConseilEnricherService extends SupabaseBaseService {
       sectionsUpdated: 0,
       reason: 'QUALITY_BELOW_THRESHOLD',
     };
+  }
+
+  // ── Disk reader (fallback when RAG API strips frontmatter) ──
+
+  private readGammeFromDisk(pgAlias: string): string | null {
+    const filePath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
+    try {
+      if (!existsSync(filePath)) return null;
+      return readFileSync(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
   }
 
   // ── YAML Frontmatter Parser ──
@@ -303,7 +322,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const qMatch = line.match(
         /^\s+-?\s*(?:question|q):\s*['"]?(.+?)['"]?\s*$/,
       );
-      const aMatch = line.match(/^\s+(?:answer|a):\s*['"]?(.+?)['"]?\s*$/);
+      const aMatch = line.match(/^\s+-?\s*(?:answer|a):\s*['"]?(.+?)['"]?\s*$/);
       if (qMatch) {
         if (currentQ && currentA) {
           faqs.push({ q: currentQ, a: currentA });

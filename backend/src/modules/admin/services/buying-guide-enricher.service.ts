@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { ConfigService } from '@nestjs/config';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { z } from 'zod';
 import {
   SelectionCriterionSchema,
@@ -63,6 +65,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
     BuyingGuideEnricherService.name,
   );
+  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
 
   constructor(
     configService: ConfigService,
@@ -284,6 +287,18 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       );
     }
 
+    // Fallback: read from disk if API content lacks YAML frontmatter
+    if (!gammeContent || !gammeContent.startsWith('---\n')) {
+      const diskContent = this.readGammeFromDisk(slug);
+      if (diskContent) {
+        this.logger.log(
+          `Disk fallback for ${slug}: ${diskContent.length} chars`,
+        );
+        gammeContent = diskContent;
+        if (!sources.length) sources.push(`disk://${slug}`);
+      }
+    }
+
     // Guide doc slug doesn't always match gamme slug
     // e.g. "disque-de-frein" → "choisir-disques-frein", "plaquette-de-frein" → "choisir-plaquettes"
     const guideDocId = await this.findGuideDocId(slug);
@@ -331,6 +346,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       `RAG knowledge docs loaded: ${allContent.length} chars, sources=[${sources.join(', ')}]`,
     );
 
+    // ── Parse page_contract from YAML (fallback data source) ──
+    const pageContract = this.parsePageContractYaml(gammeContent);
+
     // ── Extract anti_mistakes ──
     const errorsSection = this.extractSection(allContent, 'Erreurs a eviter');
     const antiMistakes = errorsSection
@@ -340,6 +358,26 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     if (antiMistakes.length === 0) {
       const errorsAlt = this.extractSection(allContent, 'Erreurs à éviter');
       if (errorsAlt) antiMistakes.push(...this.extractBulletList(errorsAlt));
+    }
+    // Heading alias: "Attention aux Fausses Promesses"
+    if (antiMistakes.length === 0) {
+      const errorsAlias = this.extractSection(
+        allContent,
+        'Attention aux Fausses Promesses',
+      );
+      if (errorsAlias)
+        antiMistakes.push(...this.extractBulletList(errorsAlias));
+    }
+    // YAML fallback: page_contract.antiMistakes
+    if (
+      antiMistakes.length < MIN_ANTI_MISTAKES &&
+      pageContract?.antiMistakes?.length
+    ) {
+      for (const item of pageContract.antiMistakes) {
+        if (!antiMistakes.some((e) => e.toLowerCase() === item.toLowerCase())) {
+          antiMistakes.push(item);
+        }
+      }
     }
     // Merge items from "Solutions" section (complementary maintenance actions)
     const solutionsSection =
@@ -381,10 +419,31 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       allContent,
       'Check-list compatibilité',
     );
+    // Heading aliases for auto-generated docs
+    const checklistAlias =
+      this.extractSection(allContent, 'Criteres de Compatibilite') ||
+      this.extractSection(allContent, 'Critères de Compatibilité');
     const checklistItems = this.extractBulletList(
-      checklistSection || checklistAlt || '',
+      checklistSection || checklistAlt || checklistAlias || '',
     );
     const selectionCriteria = this.buildCriteriaFromCheckList(checklistItems);
+    // YAML fallback: build criteria from page_contract.symptoms + howToChoose
+    if (
+      selectionCriteria.length < MIN_SELECTION_CRITERIA &&
+      pageContract?.symptoms?.length
+    ) {
+      for (const symptom of pageContract.symptoms) {
+        const clean = symptom.replace(/^\*\*/, '').replace(/\*\*$/, '').trim();
+        if (clean.length > 5) {
+          selectionCriteria.push({
+            key: `yaml-${selectionCriteria.length}`,
+            label: clean,
+            guidance: `Vérifier : ${clean}`,
+            priority: 'recommended',
+          });
+        }
+      }
+    }
     const criteriaValidation = this.validateSection(
       'selection_criteria',
       selectionCriteria,
@@ -424,6 +483,30 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       testsSection || '',
       testsAtelierSection || '',
     );
+    // YAML fallback: page_contract.diagnosticTree → decision nodes
+    if (
+      decisionTree.length < MIN_DECISION_NODES &&
+      pageContract?.diagnosticTree?.length
+    ) {
+      for (let i = 0; i < pageContract.diagnosticTree.length; i++) {
+        const dt = pageContract.diagnosticTree[i];
+        const nextIdx =
+          i + 1 < pageContract.diagnosticTree.length
+            ? `yaml-step-${i + 1}`
+            : undefined;
+        decisionTree.push({
+          id: `yaml-step-${i}`,
+          question: dt.if.replace(/_/g, ' '),
+          options: [
+            {
+              label: dt.then.replace(/_/g, ' '),
+              outcome: 'check' as const,
+              ...(nextIdx ? { nextId: nextIdx } : {}),
+            },
+          ],
+        });
+      }
+    }
     const treeValidation = this.validateSection(
       'decision_tree',
       decisionTree,
@@ -497,6 +580,17 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         (rainuresSection || rainuresAlt || '') +
         '\n' +
         (standardSection || standardAlt || '');
+    }
+
+    // Priority 3 (YAML fallback): page_contract.arguments
+    if (useCases.length < 2 && pageContract?.arguments?.length) {
+      for (const arg of pageContract.arguments) {
+        useCases.push({
+          id: `yaml-${useCases.length}`,
+          label: arg.title,
+          recommendation: arg.content,
+        });
+      }
     }
 
     const useCasesValidation = this.validateSection(
@@ -688,8 +782,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     let currentQ = '';
     let currentA = '';
     for (const line of lines) {
-      const qMatch = line.match(/^\s+-\s+question:\s+(.+)/);
-      const aMatch = line.match(/^\s+answer:\s+(.+)/);
+      const qMatch = line.match(/^\s+-?\s*question:\s+(.+)/);
+      const aMatch = line.match(/^\s+-?\s*answer:\s+(.+)/);
       if (qMatch) {
         if (currentQ && currentA) {
           faqs.push({ question: currentQ, answer: currentA });
@@ -706,6 +800,129 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       faqs.push({ question: currentQ, answer: currentA });
     }
     return faqs;
+  }
+
+  // ── Disk reader (fallback when RAG API strips frontmatter) ──
+
+  private readGammeFromDisk(slug: string): string | null {
+    const filePath = join(this.RAG_GAMMES_DIR, `${slug}.md`);
+    try {
+      if (!existsSync(filePath)) return null;
+      return readFileSync(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  // ── Page contract YAML parser ──
+
+  /**
+   * Parse page_contract from YAML frontmatter to extract structured data.
+   * Used as fallback when markdown heading extraction yields insufficient results.
+   */
+  private parsePageContractYaml(content: string): {
+    antiMistakes?: string[];
+    symptoms?: string[];
+    howToChoose?: string;
+    diagnosticTree?: Array<{ if: string; then: string }>;
+    arguments?: Array<{ title: string; content: string }>;
+  } | null {
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return null;
+    const fm = fmMatch[1];
+
+    if (!fm.includes('page_contract:')) return null;
+
+    const result: {
+      antiMistakes?: string[];
+      symptoms?: string[];
+      howToChoose?: string;
+      diagnosticTree?: Array<{ if: string; then: string }>;
+      arguments?: Array<{ title: string; content: string }>;
+    } = {};
+
+    // antiMistakes list
+    const antiMistakes = this.parseFrontmatterList(content, 'antiMistakes');
+    if (antiMistakes.length > 0) result.antiMistakes = antiMistakes;
+
+    // symptoms list (under page_contract)
+    const pcIdx = fm.indexOf('page_contract:');
+    if (pcIdx >= 0) {
+      const pcBlock = fm.substring(pcIdx);
+      const sympIdx = pcBlock.indexOf('symptoms:');
+      if (sympIdx >= 0) {
+        const afterSymp = pcBlock.substring(sympIdx);
+        const lines = afterSymp.split('\n').slice(1);
+        const symptoms: string[] = [];
+        for (const line of lines) {
+          const m = line.match(/^\s+-\s+['"]?(.+?)['"]?\s*$/);
+          if (m) {
+            symptoms.push(m[1].trim());
+          } else if (line.trim() && !line.match(/^\s/)) {
+            break;
+          }
+        }
+        if (symptoms.length > 0) result.symptoms = symptoms;
+      }
+    }
+
+    // howToChoose (inline string, not a list)
+    const htcMatch = fm.match(/howToChoose:\s+(.+)$/m);
+    if (htcMatch) result.howToChoose = htcMatch[1].trim();
+
+    // diagnostic_tree (top-level, not under page_contract)
+    const dtIdx = fm.indexOf('diagnostic_tree:');
+    if (dtIdx >= 0) {
+      const afterDt = fm.substring(dtIdx);
+      const dtLines = afterDt.split('\n').slice(1);
+      const nodes: Array<{ if: string; then: string }> = [];
+      let curIf = '';
+      let curThen = '';
+      for (const line of dtLines) {
+        const ifM = line.match(/^\s*-?\s*if:\s*(.+)/);
+        const thenM = line.match(/^\s+then:\s*(.+)/);
+        if (ifM) {
+          if (curIf && curThen) nodes.push({ if: curIf, then: curThen });
+          curIf = ifM[1].trim();
+          curThen = '';
+        } else if (thenM) {
+          curThen = thenM[1].trim();
+        } else if (line.trim() && !line.match(/^\s/) && !line.startsWith('-')) {
+          break;
+        }
+      }
+      if (curIf && curThen) nodes.push({ if: curIf, then: curThen });
+      if (nodes.length > 0) result.diagnosticTree = nodes;
+    }
+
+    // arguments (under page_contract)
+    const argIdx = fm.indexOf('arguments:');
+    if (argIdx >= 0) {
+      const afterArg = fm.substring(argIdx);
+      const argLines = afterArg.split('\n').slice(1);
+      const args: Array<{ title: string; content: string }> = [];
+      let curTitle = '';
+      let curContent = '';
+      for (const line of argLines) {
+        const titleM = line.match(/^\s+title:\s+(.+)/);
+        const contentM = line.match(/^\s+content:\s+(.+)/);
+        if (titleM) {
+          curTitle = titleM[1].trim();
+        } else if (contentM) {
+          curContent = contentM[1].trim();
+          if (curTitle && curContent) {
+            args.push({ title: curTitle, content: curContent });
+            curTitle = '';
+            curContent = '';
+          }
+        } else if (line.trim() && !line.match(/^\s/) && !line.startsWith('-')) {
+          break;
+        }
+      }
+      if (args.length > 0) result.arguments = args;
+    }
+
+    return Object.keys(result).length > 0 ? result : null;
   }
 
   // ── Language filter ──

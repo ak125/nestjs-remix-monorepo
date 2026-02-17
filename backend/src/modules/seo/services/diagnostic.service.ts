@@ -28,6 +28,7 @@ export interface SeoDiagnostic {
   cluster_id: string | null;
   related_references: string[] | null;
   related_gammes: number[] | null;
+  related_blog_articles: string[] | null;
   recommended_actions: Array<{
     action: string;
     urgency: string;
@@ -869,6 +870,7 @@ export class DiagnosticService extends SupabaseBaseService {
       cluster_id: row.cluster_id as string | null,
       related_references: row.related_references as string[] | null,
       related_gammes: row.related_gammes as number[] | null,
+      related_blog_articles: row.related_blog_articles as string[] | null,
       recommended_actions: row.recommended_actions as Array<{
         action: string;
         urgency: string;
