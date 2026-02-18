@@ -53,9 +53,12 @@ export interface SeoLinkData {
 
 /**
  * Check if a URL is internal (same domain or relative)
- * SSR-safe: utilise domaine hardcodé pour éviter mismatch hydratation
+ * Uses BASE_URL / API_BASE_URL env var → dynamic per environment
  */
-const SITE_ORIGIN = "https://www.automecanik.com";
+const SITE_ORIGIN =
+  process.env.BASE_URL ||
+  process.env.API_BASE_URL ||
+  "https://www.automecanik.com";
 
 function isInternalLink(href: string | undefined): boolean {
   if (!href) return false;
@@ -242,9 +245,12 @@ export const HtmlContent = memo(function HtmlContent({
 
       // Internal link → Remix <Link> for SPA navigation
       if (isInternalLink(href)) {
+        const to = href.startsWith("/")
+          ? href
+          : new URL(href, SITE_ORIGIN).pathname;
         return (
           <Link
-            to={href}
+            to={to}
             className={cssClass}
             onClick={handleClick}
             data-link-type={linkType}

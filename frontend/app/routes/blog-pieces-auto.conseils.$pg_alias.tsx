@@ -68,9 +68,10 @@ import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
 import { Error404 } from "~/components/errors/Error404";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 // SEO Components - HtmlContent remplace dangerouslySetInnerHTML
-import { HtmlContent } from "~/components/seo/HtmlContent";
 import {
   trackArticleView,
   trackReadingTime,
@@ -129,6 +130,8 @@ interface _BlogArticle {
   publishedAt: string;
   updatedAt: string;
   viewsCount: number;
+  readingTime?: number;
+  legacy_table?: string;
   featuredImage?: string | null;
   /** Wall/thumbnail image filename */
   wall?: string | null;
@@ -258,11 +261,6 @@ function slugifyTitle(title: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-/** Strip "1. ", "a. ", "b. " etc. for title comparison */
-function stripNumberingPrefix(title: string): string {
-  return title.replace(/^[0-9a-z]+\.\s*/i, "");
-}
-
 // Loader
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
@@ -271,33 +269,50 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect("/blog-pieces-auto/conseils", 301);
   }
 
+  // Timeout 15s pour éviter les erreurs 5xx
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     const baseUrl = getInternalApiUrl("");
+    const fetchHeaders = {
+      cookie: request.headers.get("cookie") || "",
+    };
 
     // 1️⃣ Essayer d'abord par slug (pour les liens depuis la liste)
-    let response = await fetch(`${baseUrl}/api/blog/article/${pg_alias}`, {
-      headers: {
-        cookie: request.headers.get("cookie") || "",
+    let article: _BlogArticle | null = null;
+    const slugResponse = await fetch(
+      `${baseUrl}/api/blog/article/${pg_alias}`,
+      {
+        headers: fetchHeaders,
+        signal: controller.signal,
       },
-    });
+    );
 
-    // 2️⃣ Si échec, essayer par gamme (legacy URLs)
-    if (!response.ok) {
-      response = await fetch(
+    if (slugResponse.ok) {
+      const slugData = await slugResponse.json();
+      // Route conseils = contenu __blog_advice uniquement
+      // Ignorer les résultats __blog_guide (page guide-achat séparée)
+      if (slugData?.data && slugData.data.legacy_table !== "__blog_guide") {
+        article = slugData.data;
+      }
+    }
+
+    // 2️⃣ Fallback par gamme (legacy URLs) → renvoie __blog_advice
+    if (!article) {
+      const gammeResponse = await fetch(
         `${baseUrl}/api/blog/article/by-gamme/${pg_alias}`,
         {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
-          },
+          headers: fetchHeaders,
+          signal: controller.signal,
         },
       );
-    }
 
-    if (!response.ok) {
-      return redirect("/blog-pieces-auto/conseils", 301);
+      if (gammeResponse.ok) {
+        const gammeData = await gammeResponse.json();
+        article = gammeData?.data || null;
+      }
     }
-
-    const { data: article } = await response.json();
 
     if (!article) {
       return redirect("/blog-pieces-auto/conseils", 301);
@@ -309,9 +324,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       const adjacentResponse = await fetch(
         `${baseUrl}/api/blog/article/${article.slug}/adjacent`,
         {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
-          },
+          headers: fetchHeaders,
+          signal: controller.signal,
         },
       );
 
@@ -336,9 +350,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         const switchesResponse = await fetch(
           `${baseUrl}/api/blog/seo-switches/${article.pg_id}`,
           {
-            headers: {
-              cookie: request.headers.get("cookie") || "",
-            },
+            headers: fetchHeaders,
+            signal: controller.signal,
           },
         );
 
@@ -359,9 +372,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         const conseilResponse = await fetch(
           `${baseUrl}/api/blog/conseil/${article.pg_id}`,
           {
-            headers: {
-              cookie: request.headers.get("cookie") || "",
-            },
+            headers: fetchHeaders,
+            signal: controller.signal,
           },
         );
 
@@ -375,6 +387,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     }
 
+    clearTimeout(timeoutId);
     return json({
       article,
       pg_alias,
@@ -383,6 +396,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       conseil: (conseil || []) as ConseilArray,
     });
   } catch (error) {
+    clearTimeout(timeoutId);
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
       throw error;
@@ -409,20 +423,73 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
   const cleanDescription = stripHtmlForMeta(article.seo_data.meta_description);
   const cleanExcerpt = stripHtmlForMeta(article.excerpt);
+  const title = article.seo_data.meta_title || article.h1 || article.title;
 
-  const result: Array<Record<string, string>> = [
-    { title: article.seo_data.meta_title },
+  // JSON-LD Schema Article — rich snippets Google
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": canonicalUrl,
+    headline: title,
+    description: cleanDescription,
+    url: canonicalUrl,
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAt || article.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: "Automecanik",
+      url: "https://www.automecanik.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Automecanik",
+      url: "https://www.automecanik.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.automecanik.com/logo-navbar.webp",
+      },
+    },
+    articleSection: "Conseils Auto",
+    keywords: article.keywords.join(", "),
+    ...(article.readingTime && { timeRequired: `PT${article.readingTime}M` }),
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+    ...(article.viewsCount > 0 && {
+      interactionStatistic: {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/ReadAction",
+        userInteractionCount: article.viewsCount,
+      },
+    }),
+  };
+
+  const result: Array<Record<string, string | object>> = [
+    { title },
     { name: "description", content: cleanDescription },
     { name: "keywords", content: article.keywords.join(", ") },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: "robots", content: "index, follow" },
+    { name: "author", content: "Automecanik - Experts Automobile" },
     { property: "og:title", content: article.title },
     { property: "og:description", content: cleanExcerpt },
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
+    { property: "article:published_time", content: article.publishedAt },
+    {
+      property: "article:modified_time",
+      content: article.updatedAt || article.publishedAt,
+    },
+    { property: "article:tag", content: article.keywords.join(", ") },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: cleanDescription },
+    // JSON-LD Schema Article
+    { "script:ld+json": articleSchema },
   ];
 
-  // 🚀 LCP OPTIMIZATION: Preload featured image
+  // LCP OPTIMIZATION: Preload featured image
   if (article.featuredImage) {
     result.push({
       tagName: "link",
@@ -441,10 +508,11 @@ export default function LegacyBlogArticle() {
     useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const s1Section = conseil?.find((c) => c.sectionType === "S1") ?? null;
-  const articleSlugs = new Set(
-    article.sections.map((s) => slugifyTitle(stripNumberingPrefix(s.title))),
-  );
+  const s1Sections = conseil?.filter((c) => c.sectionType === "S1") ?? [];
+  // Quand des sections conseil S1-S8 existent, elles remplacent les H2/H3 article (évite la duplication)
+  const hasConseilSections =
+    conseil &&
+    conseil.filter((c) => c.sectionType && c.sectionType !== "META").length > 0;
   // SSR-safe: Use ref for startTime to avoid hydration mismatch
   const startTimeRef = useRef<number>(0);
 
@@ -510,6 +578,19 @@ export default function LegacyBlogArticle() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-3">
+          <PublicBreadcrumb
+            items={[
+              { label: "Blog", href: "/blog-pieces-auto" },
+              { label: "Conseils", href: "/blog-pieces-auto/conseils" },
+              { label: article.title },
+            ]}
+          />
+        </div>
+      </div>
 
       {/* Header Compact */}
       <CompactBlogHeader
@@ -586,18 +667,19 @@ export default function LegacyBlogArticle() {
             <article className="lg:col-span-3 order-2 lg:order-1">
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-8 lg:p-12">
-                  {/* Section S1 — Avant de commencer (en haut de l'article) */}
-                  {s1Section && (
+                  {/* Sections S1 — Informations / Avant de commencer (en haut de l'article) */}
+                  {s1Sections.map((s1, idx) => (
                     <div
-                      id={slugifyTitle(s1Section.title)}
+                      key={idx}
+                      id={slugifyTitle(s1.title)}
                       className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <Info className="w-6 h-6 text-blue-600" />
-                        {s1Section.title}
+                        {s1.title}
                       </h2>
                       <HtmlContent
-                        html={s1Section.content}
+                        html={s1.content}
                         className="prose prose-lg max-w-none
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
@@ -605,7 +687,7 @@ export default function LegacyBlogArticle() {
                         trackLinks={true}
                       />
                     </div>
-                  )}
+                  ))}
 
                   {/* Contenu principal */}
                   <HtmlContent
@@ -628,7 +710,7 @@ export default function LegacyBlogArticle() {
                     />
                   )}
 
-                  {/* Sections H2/H3 */}
+                  {/* Sections H2/H3 de l'article (toujours affichées) */}
                   {article.sections.map((section, index) => (
                     <section key={index} id={section.anchor} className="mb-8">
                       {section.level === 2 ? (
@@ -687,6 +769,53 @@ export default function LegacyBlogArticle() {
                     </section>
                   ))}
 
+                  {/* Sections conseil S2-S8 (complètent les H2/H3 article) */}
+                  {hasConseilSections &&
+                    conseil
+                      .filter(
+                        (c) =>
+                          c.sectionType &&
+                          c.sectionType !== "S1" &&
+                          c.sectionType !== "META",
+                      )
+                      .map((conseilItem, index) => {
+                        const style = getSectionStyle(conseilItem.sectionType);
+                        return (
+                          <div
+                            key={index}
+                            id={slugifyTitle(conseilItem.title)}
+                            className="mb-8"
+                          >
+                            <Card
+                              className={`shadow-xl border-2 ${style.border} overflow-hidden`}
+                            >
+                              <CardHeader
+                                className={`${style.headerBg} text-white`}
+                              >
+                                <CardTitle className="flex items-center gap-2 text-2xl">
+                                  <SectionIcon type={conseilItem.sectionType} />
+                                  {conseilItem.title}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-6">
+                                <HtmlContent
+                                  html={conseilItem.content}
+                                  className="prose prose-lg max-w-none
+                                    prose-headings:text-gray-900 prose-headings:font-bold
+                                    prose-p:text-gray-700 prose-p:leading-relaxed
+                                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                                    prose-strong:text-gray-900 prose-strong:font-semibold
+                                    prose-ul:list-disc prose-ul:pl-6
+                                    prose-ol:list-decimal prose-ol:pl-6
+                                    prose-li:text-gray-700 prose-li:mb-2"
+                                  trackLinks={true}
+                                />
+                              </CardContent>
+                            </Card>
+                          </div>
+                        );
+                      })}
+
                   {/* Actions */}
                   <hr className="my-4 border-gray-200" />
                   <div className="flex items-center justify-between mt-8">
@@ -713,64 +842,6 @@ export default function LegacyBlogArticle() {
               </Card>
             </article>
 
-            {/* Sections conseil S2-S8 (Cards typées, doublons article exclus) */}
-            {conseil &&
-              conseil.filter(
-                (c) =>
-                  c.sectionType &&
-                  c.sectionType !== "S1" &&
-                  c.sectionType !== "META" &&
-                  !articleSlugs.has(
-                    slugifyTitle(stripNumberingPrefix(c.title)),
-                  ),
-              ).length > 0 && (
-                <div className="lg:col-span-3 order-2 mb-8 space-y-6">
-                  {conseil
-                    .filter(
-                      (c) =>
-                        c.sectionType &&
-                        c.sectionType !== "S1" &&
-                        c.sectionType !== "META" &&
-                        !articleSlugs.has(
-                          slugifyTitle(stripNumberingPrefix(c.title)),
-                        ),
-                    )
-                    .map((conseilItem, index) => {
-                      const style = getSectionStyle(conseilItem.sectionType);
-                      return (
-                        <Card
-                          key={index}
-                          id={slugifyTitle(conseilItem.title)}
-                          className={`shadow-xl border-2 ${style.border} overflow-hidden`}
-                        >
-                          <CardHeader
-                            className={`${style.headerBg} text-white`}
-                          >
-                            <CardTitle className="flex items-center gap-2 text-2xl">
-                              <SectionIcon type={conseilItem.sectionType} />
-                              {conseilItem.title}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-6">
-                            <HtmlContent
-                              html={conseilItem.content}
-                              className="prose prose-lg max-w-none
-                          prose-headings:text-gray-900 prose-headings:font-bold
-                          prose-p:text-gray-700 prose-p:leading-relaxed
-                          prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                          prose-strong:text-gray-900 prose-strong:font-semibold
-                          prose-ul:list-disc prose-ul:pl-6
-                          prose-ol:list-decimal prose-ol:pl-6
-                          prose-li:text-gray-700 prose-li:mb-2"
-                              trackLinks={true}
-                            />
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                </div>
-              )}
-
             {/* Véhicules Compatibles (Pleine largeur, après l'article) */}
             {article.compatibleVehicles &&
               article.compatibleVehicles.length > 0 && (
@@ -790,38 +861,23 @@ export default function LegacyBlogArticle() {
                 {(article.sections.length > 0 ||
                   (conseil && conseil.length > 0)) && (
                   <TableOfContents
-                    sections={[
-                      // S1 en premier (rendu en haut de l'article)
-                      ...(conseil || [])
-                        .filter((c) => c.sectionType === "S1")
-                        .map((c) => ({
-                          level: 2 as const,
-                          title: c.title,
-                          anchor: slugifyTitle(c.title),
-                        })),
-                      // Sections article H2/H3
-                      ...article.sections.map((s) => ({
-                        level: s.level,
-                        title: s.title,
-                        anchor: s.anchor,
-                      })),
-                      // S2-S8 (cards sous l'article, doublons article exclus)
-                      ...(conseil || [])
-                        .filter(
-                          (c) =>
-                            c.sectionType &&
-                            c.sectionType !== "S1" &&
-                            c.sectionType !== "META" &&
-                            !articleSlugs.has(
-                              slugifyTitle(stripNumberingPrefix(c.title)),
-                            ),
-                        )
-                        .map((c) => ({
-                          level: 2 as const,
-                          title: c.title,
-                          anchor: slugifyTitle(c.title),
-                        })),
-                    ]}
+                    sections={
+                      hasConseilSections
+                        ? (conseil || [])
+                            .filter(
+                              (c) => c.sectionType && c.sectionType !== "META",
+                            )
+                            .map((c) => ({
+                              level: 2 as const,
+                              title: c.title,
+                              anchor: slugifyTitle(c.title),
+                            }))
+                        : article.sections.map((s) => ({
+                            level: s.level,
+                            title: s.title,
+                            anchor: s.anchor,
+                          }))
+                    }
                   />
                 )}
 

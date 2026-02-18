@@ -130,7 +130,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
       // Determine final status with auto-publish threshold
       const autoPublishThreshold = parseInt(
-        this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD', '85'),
+        this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD', '101'),
         10,
       );
       let finalStatus: 'draft' | 'failed' | 'auto_published' =

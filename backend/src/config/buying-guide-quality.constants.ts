@@ -180,6 +180,8 @@ export const ACTION_MARKERS_NORMALIZED: readonly string[] = [
 // ─────────────────────────────────────────────────────────────
 
 export const TRUSTED_SOURCE_PREFIXES: readonly string[] = [
+  'db://',
+  'db:',
   'pdf://',
   'pdf:',
   'oem://',

@@ -1138,12 +1138,14 @@ export default function PiecesDetailPage() {
           hasSymptoms={false}
           hasGuide={false}
           hasDecisionGrid={!!data.gammeBuyingGuide?.useCases?.length}
-          hasPurchaseGuide={false}
+          hasPurchaseGuide={!!data.purchaseGuideData}
           hasAntiMistakes={false}
           hasInformations={false}
           hasConseils={false}
           hasEquipementiers={!!data.equipementiers?.items?.length}
-          hasFaq={!!data.purchaseGuideData?.faq?.length}
+          hasFaq={
+            !!(data.purchaseGuideData?.faq?.length || R1_SELECTOR_FAQ.length)
+          }
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
         />
       </div>
@@ -1230,7 +1232,11 @@ export default function PiecesDetailPage() {
             }
           >
             <FAQSection
-              faq={R1_SELECTOR_FAQ}
+              faq={
+                data.purchaseGuideData?.faq?.length
+                  ? data.purchaseGuideData.faq
+                  : R1_SELECTOR_FAQ
+              }
               gammeName={data.content?.pg_name || "cette pièce"}
             />
           </Suspense>

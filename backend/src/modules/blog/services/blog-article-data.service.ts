@@ -59,7 +59,20 @@ export class BlogArticleDataService {
         );
         if (adviceMatch) {
           this.logger.debug(`Article found with alias: "${variant}"`);
-          return await this.loadArticleWithSections(adviceMatch);
+          const article = await this.loadArticleWithSections(adviceMatch);
+          // Enrichir avec pg_alias pour permettre les redirections /article/ → /conseils/
+          if (adviceMatch.ba_pg_id) {
+            const { data: gamme } = await this.supabaseService.client
+              .from(TABLES.pieces_gamme)
+              .select('pg_id, pg_alias')
+              .eq('pg_id', adviceMatch.ba_pg_id)
+              .single();
+            if (gamme) {
+              article.pg_alias = gamme.pg_alias;
+              article.pg_id = gamme.pg_id;
+            }
+          }
+          return article;
         }
 
         const guideMatch = guideResult.data?.find(

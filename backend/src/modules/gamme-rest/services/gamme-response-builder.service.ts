@@ -429,6 +429,51 @@ export class GammeResponseBuilderService {
         })
       : mappedBuyingGuide;
 
+    // Map contract data to purchaseGuideData for QuickGuideSection (intro/timing/budget cards)
+    const purchaseGuideData = buyingGuideContract
+      ? {
+          intro: buyingGuideContract.intro,
+          risk: buyingGuideContract.risk,
+          timing: buyingGuideContract.timing,
+          arguments: buyingGuideContract.arguments,
+          howToChoose: buyingGuideContract.howToChoose,
+          symptoms: buyingGuideContract.symptoms,
+          faq: buyingGuideContract.faq,
+          h1Override: null as string | null,
+        }
+      : gammeBuyingGuide
+        ? {
+            intro: {
+              title: `À quoi sert ${pgNameSite} ?`,
+              role: gammeBuyingGuide.compatibilityRules?.[0] || '',
+              syncParts: gammeBuyingGuide.pairing?.recommended || [],
+            },
+            risk: {
+              title: `Pourquoi remplacer ${pgNameSite} à temps ?`,
+              explanation: '',
+              consequences: [],
+              costRange: '',
+              conclusion: '',
+            },
+            timing: {
+              title: 'Quand intervenir ?',
+              years: 'Contrôle annuel recommandé',
+              km: 'Contrôle à chaque révision',
+              note: '',
+            },
+            arguments:
+              gammeBuyingGuide.trustArguments?.slice(0, 4)?.map((a) => ({
+                title: a.title,
+                content: a.content,
+                icon: a.icon,
+              })) || [],
+            howToChoose: null as string | null,
+            symptoms: gammeBuyingGuide.symptoms || [],
+            faq: gammeBuyingGuide.faq || [],
+            h1Override: null as string | null,
+          }
+        : null;
+
     const totalTime = performance.now() - startTime;
 
     // ✅ URLs via fonctions centralisées
@@ -510,6 +555,8 @@ export class GammeResponseBuilderService {
       guideAchat,
       // ✅ Nouveau contrat orienté décision d'achat (sans H1)
       gammeBuyingGuide: gammeBuyingGuide || null,
+      // ✅ Données narratives pour QuickGuideSection (intro/timing/budget)
+      purchaseGuideData,
       motorisationsBlog:
         motorisationsBlog.length > 0
           ? {

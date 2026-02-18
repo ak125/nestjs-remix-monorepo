@@ -61,6 +61,8 @@ interface BlogArticle {
     anchor: string;
   }>;
   legacy_id?: number;
+  legacy_table?: string;
+  pg_alias?: string | null;
   seo_data?: {
     meta_title?: string;
     meta_description?: string;
@@ -242,6 +244,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (articleResponse.ok) {
       const articleData = await articleResponse.json();
       article = articleData.data || articleData;
+    }
+
+    // 301 : les articles advice et guide ont leur propre route canonique
+    if (article?.type === "advice" && article?.pg_alias) {
+      clearTimeout(timeoutId);
+      return redirect(`/blog-pieces-auto/conseils/${article.pg_alias}`, 301);
+    }
+    if (article?.legacy_table === "__blog_guide") {
+      clearTimeout(timeoutId);
+      return redirect(`/blog-pieces-auto/guide-achat/${article.slug}`, 301);
     }
 
     // Récupérer articles similaires (optionnel, ne bloque pas)
