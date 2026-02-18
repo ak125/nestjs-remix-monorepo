@@ -25,6 +25,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -309,6 +310,7 @@ export default function ReferenceIndexPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-page-role="R4">
+      <BlogPiecesAutoNavigation />
       <SchemaJsonLd references={references} />
 
       {/* ═══ BREADCRUMB ═══ */}

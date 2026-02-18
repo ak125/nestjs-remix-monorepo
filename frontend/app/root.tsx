@@ -109,16 +109,12 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = () => [
-  { charset: "utf-8" },
+  // charset et viewport sont hardcodés dans le Layout JSX — pas de doublon ici
   { title: "Automecanik - Pièces auto à prix pas cher" },
   {
     name: "description",
     content:
       "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
-  },
-  {
-    name: "viewport",
-    content: "width=device-width, initial-scale=1, viewport-fit=cover",
   },
   { name: "theme-color", content: "#2563eb" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
@@ -411,6 +407,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];

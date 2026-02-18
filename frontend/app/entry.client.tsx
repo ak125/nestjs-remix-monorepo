@@ -21,5 +21,13 @@ if ("serviceWorker" in navigator) {
 }
 
 startTransition(() => {
-  hydrateRoot(document, <RemixBrowser />);
+  hydrateRoot(document, <RemixBrowser />, {
+    onRecoverableError(error) {
+      // Ignorer les erreurs d'hydratation mineures (extensions navigateur, etc.)
+      if (error instanceof Error && error.message.includes("Hydration")) {
+        return;
+      }
+      console.error("Recoverable error:", error);
+    },
+  });
 });

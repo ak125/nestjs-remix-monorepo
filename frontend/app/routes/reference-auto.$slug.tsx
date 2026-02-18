@@ -42,6 +42,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -361,6 +362,7 @@ export default function ReferenceDetailPage() {
       data-canonical-entity={reference.slug}
       data-cluster-id={clusterId}
     >
+      <BlogPiecesAutoNavigation />
       {/* Schema.org JSON-LD (DefinedTerm + TechArticle + Breadcrumbs) */}
       <SchemaJsonLd reference={reference} />
 

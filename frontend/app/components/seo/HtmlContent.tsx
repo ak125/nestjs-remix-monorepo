@@ -52,13 +52,18 @@ export interface SeoLinkData {
 // =====================================================
 
 /**
- * Check if a URL is internal (same domain or relative)
- * Uses BASE_URL / API_BASE_URL env var → dynamic per environment
+ * Returns the site origin dynamically (lazy — no module-level side effects).
+ * Client: window.location.origin (always correct)
+ * Server: process.env fallback
  */
-const SITE_ORIGIN =
-  process.env.BASE_URL ||
-  process.env.API_BASE_URL ||
-  "https://www.automecanik.com";
+function getSiteOrigin(): string {
+  if (typeof window !== "undefined") return window.location.origin;
+  return (
+    process.env.BASE_URL ||
+    process.env.API_BASE_URL ||
+    "https://www.automecanik.com"
+  );
+}
 
 function isInternalLink(href: string | undefined): boolean {
   if (!href) return false;
@@ -68,10 +73,11 @@ function isInternalLink(href: string | undefined): boolean {
     return true;
   }
 
-  // Check for same domain (SSR-safe: domaine hardcodé)
+  // Check for same domain
   try {
-    const url = new URL(href, SITE_ORIGIN);
-    return url.origin === SITE_ORIGIN;
+    const origin = getSiteOrigin();
+    const url = new URL(href, origin);
+    return url.origin === origin;
   } catch {
     return false;
   }
@@ -247,7 +253,7 @@ export const HtmlContent = memo(function HtmlContent({
       if (isInternalLink(href)) {
         const to = href.startsWith("/")
           ? href
-          : new URL(href, SITE_ORIGIN).pathname;
+          : new URL(href, getSiteOrigin()).pathname;
         return (
           <Link
             to={to}
