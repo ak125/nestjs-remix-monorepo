@@ -44,9 +44,12 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       .eq('id', refreshLogId);
 
     try {
-      let qualityScore = 0;
+      let qualityScore: number | null = 0;
       let qualityFlags: string[] = [];
       let errorMessage: string | undefined;
+      // RAG-as-Optional-Overlay: track when RAG is absent (normal condition)
+      let ragSkipped = false;
+      let ragSkipReason: string | undefined;
 
       switch (pageType) {
         case 'R1_pieces':
@@ -58,11 +61,32 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           );
           const result = enrichResults[0];
           if (result && 'averageConfidence' in result) {
-            qualityScore = result.averageConfidence >= 0.8 ? 85 : 60;
-            qualityFlags =
-              result.skippedSections?.map(
+            const avgConf = (result as { averageConfidence: number })
+              .averageConfidence;
+            const skipped =
+              (result as { skippedSections?: string[] }).skippedSections || [];
+            const updated = (result as { updated?: boolean }).updated;
+            const sections =
+              (result as { sections?: Record<string, unknown> }).sections || {};
+
+            if (
+              !updated &&
+              avgConf === 0 &&
+              skipped.length > 0 &&
+              skipped.length >= Object.keys(sections).length
+            ) {
+              // All sections skipped = no RAG data (NORMAL)
+              ragSkipped = true;
+              ragSkipReason = 'NO_RAG_DATA_AVAILABLE';
+              qualityFlags = skipped.map(
                 (s: string) => `SKIPPED_${s.toUpperCase()}`,
-              ) || [];
+              );
+            } else {
+              qualityScore = avgConf >= 0.8 ? 85 : 60;
+              qualityFlags = skipped.map(
+                (s: string) => `SKIPPED_${s.toUpperCase()}`,
+              );
+            }
           } else if (result && 'qualityScore' in result) {
             qualityScore = (result as { qualityScore: number }).qualityScore;
             qualityFlags = (result as { qualityFlags: string[] }).qualityFlags;
@@ -82,7 +106,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             qualityScore = 85;
             qualityFlags = ['EXISTING_ENTRY_UPDATED'];
           } else if (refResult.skipped) {
-            qualityScore = 50;
+            // No RAG file = normal condition, not an error
+            ragSkipped = true;
+            ragSkipReason = 'NO_RAG_DATA_AVAILABLE';
             qualityFlags = ['NO_RAG_DATA_AVAILABLE'];
           }
           break;
@@ -97,7 +123,19 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityScore = conseilResult.score;
           qualityFlags = conseilResult.flags;
           if (conseilResult.status === 'skipped') {
-            errorMessage = conseilResult.reason;
+            if (
+              conseilResult.reason === 'NO_RAG_DOC' ||
+              conseilResult.reason === 'NO_PAGE_CONTRACT'
+            ) {
+              // No RAG doc or unparseable = normal, not an error
+              ragSkipped = true;
+              ragSkipReason = conseilResult.reason;
+            } else if (conseilResult.reason === 'NO_ENRICHMENT_NEEDED') {
+              // Already fully enriched, nothing to do
+              ragSkipped = true;
+              ragSkipReason = conseilResult.reason;
+              qualityScore = 100;
+            }
           }
           break;
         }
@@ -108,7 +146,12 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       }
 
       // Inject internal link markers post-enrichment (Gap 3)
-      if (qualityScore >= 70 && pageType !== 'R4_reference') {
+      // Skip when RAG is absent — no enriched content to scan
+      if (
+        !ragSkipped &&
+        (qualityScore ?? 0) >= 70 &&
+        pageType !== 'R4_reference'
+      ) {
         try {
           const markersCount = await this.injectLinkMarkers(
             pgId,
@@ -133,34 +176,42 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD', '101'),
         10,
       );
-      let finalStatus: 'draft' | 'failed' | 'auto_published' =
-        qualityScore >= 70 ? 'draft' : 'failed';
+      let finalStatus: ContentRefreshResult['status'];
 
-      if (qualityScore >= autoPublishThreshold) {
+      if (ragSkipped) {
+        // RAG absent = neutral condition, not an error
+        finalStatus = 'skipped';
+      } else if ((qualityScore ?? 0) >= autoPublishThreshold) {
         finalStatus = 'auto_published';
+      } else if ((qualityScore ?? 0) >= 70) {
+        finalStatus = 'draft';
+      } else {
+        finalStatus = 'failed';
       }
 
-      // Update dependent tables based on status
-      if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
-        if (finalStatus === 'auto_published') {
-          // Auto-publish: make content live immediately
-          await this.client
-            .from('__seo_gamme_purchase_guide')
-            .update({ sgpg_is_draft: false })
-            .eq('sgpg_pg_id', String(pgId));
-        } else if (finalStatus === 'draft') {
-          await this.client
-            .from('__seo_gamme_purchase_guide')
-            .update({ sgpg_is_draft: true })
-            .eq('sgpg_pg_id', String(pgId));
+      // Update dependent tables — skip when RAG absent (no content changed)
+      if (finalStatus !== 'skipped') {
+        if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+          if (finalStatus === 'auto_published') {
+            // Auto-publish: make content live immediately
+            await this.client
+              .from('__seo_gamme_purchase_guide')
+              .update({ sgpg_is_draft: false })
+              .eq('sgpg_pg_id', String(pgId));
+          } else if (finalStatus === 'draft') {
+            await this.client
+              .from('__seo_gamme_purchase_guide')
+              .update({ sgpg_is_draft: true })
+              .eq('sgpg_pg_id', String(pgId));
+          }
         }
-      }
 
-      if (pageType === 'R4_reference' && finalStatus === 'auto_published') {
-        await this.client
-          .from('__seo_reference')
-          .update({ is_published: true })
-          .eq('slug', pgAlias);
+        if (pageType === 'R4_reference' && finalStatus === 'auto_published') {
+          await this.client
+            .from('__seo_reference')
+            .update({ is_published: true })
+            .eq('slug', pgAlias);
+        }
       }
 
       // Update tracking log
@@ -169,7 +220,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         .from('__rag_content_refresh_log')
         .update({
           status: finalStatus,
-          quality_score: qualityScore,
+          quality_score: ragSkipped ? null : qualityScore,
           quality_flags: qualityFlags,
           completed_at: now,
           ...(finalStatus === 'auto_published'
@@ -183,12 +234,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         .eq('id', refreshLogId);
 
       this.logger.log(
-        `Content-refresh complete: ${pgAlias}/${pageType} → ${finalStatus} (score=${qualityScore}, threshold=${autoPublishThreshold})`,
+        `Content-refresh complete: ${pgAlias}/${pageType} → ${finalStatus}` +
+          (ragSkipped
+            ? ` (ragSkipped: ${ragSkipReason})`
+            : ` (score=${qualityScore}, threshold=${autoPublishThreshold})`),
       );
 
       return {
         status: finalStatus,
-        qualityScore,
+        qualityScore: ragSkipped ? null : qualityScore,
         qualityFlags,
         errorMessage,
       };
