@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RagProxyController } from './rag-proxy.controller';
 import { RagProxyService } from './rag-proxy.service';
+import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
 
 // NOTE: RagProxyService uses EventEmitter2 (inject @nestjs/event-emitter).
 // EventEmitterModule.forRoot() is imported globally in app.module.ts,
@@ -9,7 +10,7 @@ import { RagProxyService } from './rag-proxy.service';
 @Module({
   imports: [ConfigModule],
   controllers: [RagProxyController],
-  providers: [RagProxyService],
-  exports: [RagProxyService],
+  providers: [RagProxyService, FrontmatterValidatorService],
+  exports: [RagProxyService, FrontmatterValidatorService],
 })
 export class RagProxyModule {}

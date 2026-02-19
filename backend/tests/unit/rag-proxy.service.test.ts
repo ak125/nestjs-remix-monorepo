@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
+import { FrontmatterValidatorService } from '../../src/modules/rag-proxy/services/frontmatter-validator.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;
@@ -45,6 +46,14 @@ describe('RagProxyService', () => {
         RagProxyService,
         { provide: ConfigService, useValue: mockConfigService },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        {
+          provide: FrontmatterValidatorService,
+          useValue: {
+            validateFile: jest.fn().mockReturnValue({ valid: true, kbType: 'KB_GAMME', errors: [], frontmatter: {} }),
+            validateIntakeZone: jest.fn().mockReturnValue({ valid: [], quarantined: [] }),
+            parseFrontmatter: jest.fn().mockReturnValue({}),
+          },
+        },
       ],
     }).compile();
 

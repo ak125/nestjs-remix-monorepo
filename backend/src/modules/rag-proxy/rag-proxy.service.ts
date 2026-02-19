@@ -24,6 +24,7 @@ import {
   RAG_INGESTION_COMPLETED,
   type RagIngestionCompletedEvent,
 } from './events/rag-ingestion.events';
+import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
 
 /** Simple circuit breaker state for the RAG external service. */
 interface CircuitBreakerState {
@@ -81,6 +82,7 @@ export class RagProxyService {
   constructor(
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly frontmatterValidator: FrontmatterValidatorService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SÉPARÉ (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -1115,6 +1117,22 @@ export class RagProxyService {
     );
     job.logLines.push('Copied sections to knowledge directory');
 
+    // Step 3b: Validate frontmatter BEFORE reindex (quarantine invalid files)
+    const validation = this.frontmatterValidator.validateIntakeZone(
+      knowledgeHostPath,
+      subDir,
+    );
+    if (validation.quarantined.length > 0) {
+      job.logLines.push(
+        `⚠ Quarantined ${validation.quarantined.length} file(s): ${validation.quarantined.map((q) => q.filename).join(', ')}`,
+      );
+    }
+    if (validation.valid.length > 0) {
+      job.logLines.push(
+        `✓ ${validation.valid.length} file(s) passed validation`,
+      );
+    }
+
     // Step 4: Reindex the new files in Weaviate
     job.logLines.push('Reindexing...');
     const reindexCmd = [
@@ -1142,7 +1160,7 @@ export class RagProxyService {
     this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
 
     // Emit event to trigger content refresh pipeline
-    this.emitIngestionCompleted(job.jobId, 'web');
+    this.emitIngestionCompleted(job.jobId, 'web', validation);
   }
 
   /** Exec a command inside a docker container with log streaming. */
@@ -1216,7 +1234,14 @@ export class RagProxyService {
    * Emit RAG_INGESTION_COMPLETED event after ingestion finishes.
    * Detects affected gammes by scanning recently modified knowledge files.
    */
-  private emitIngestionCompleted(jobId: string, source: 'pdf' | 'web'): void {
+  private emitIngestionCompleted(
+    jobId: string,
+    source: 'pdf' | 'web',
+    validationResult?: {
+      valid: string[];
+      quarantined: Array<{ filename: string; reason: string }>;
+    },
+  ): void {
     const affectedGammes = this.detectAffectedGammes();
     const event: RagIngestionCompletedEvent = {
       jobId,
@@ -1225,9 +1250,26 @@ export class RagProxyService {
       completedAt: Math.floor(Date.now() / 1000),
       affectedGammes,
     };
+
+    if (validationResult) {
+      event.validationSummary = {
+        totalFiles:
+          validationResult.valid.length + validationResult.quarantined.length,
+        validFiles: validationResult.valid.length,
+        quarantinedFiles: validationResult.quarantined.length,
+        quarantined: validationResult.quarantined.map((q) => ({
+          filename: q.filename,
+          reason: q.reason,
+        })),
+      };
+    }
+
     this.eventEmitter.emit(RAG_INGESTION_COMPLETED, event);
     this.logger.log(
-      `Emitted ${RAG_INGESTION_COMPLETED}: jobId=${jobId}, source=${source}, gammes=[${affectedGammes.join(', ')}]`,
+      `Emitted ${RAG_INGESTION_COMPLETED}: jobId=${jobId}, source=${source}, gammes=[${affectedGammes.join(', ')}]` +
+        (event.validationSummary
+          ? `, validated=${event.validationSummary.validFiles}, quarantined=${event.validationSummary.quarantinedFiles}`
+          : ''),
     );
   }
 
@@ -1273,6 +1315,15 @@ export class RagProxyService {
           if (statSync(fullPath).mtimeMs <= cutoff) continue;
 
           try {
+            // Pre-filter: skip files with invalid frontmatter
+            const quickCheck = this.frontmatterValidator.validateFile(fullPath);
+            if (!quickCheck.valid) {
+              this.logger.debug(
+                `Skipping ${subDir}/${f}: ${quickCheck.errors.join(', ')}`,
+              );
+              continue;
+            }
+
             const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
 
             // Strategy 2a: explicit gamme: field
@@ -1308,6 +1359,10 @@ export class RagProxyService {
             if (titleMatch && knownAliases.length > 0) {
               const titleSlug = titleMatch[1]
                 .trim()
+                // Unescape Python-style \xNN hex sequences from ingest_web.py
+                .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) =>
+                  String.fromCharCode(parseInt(hex, 16)),
+                )
                 .toLowerCase()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
@@ -1315,9 +1370,15 @@ export class RagProxyService {
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-|-$/g, '');
 
+              // Also try de-pluralized slug (French: filtres→filtre, disques→disque)
+              const titleSlugDePlural = titleSlug.replace(/s(-|$)/g, '$1');
+
               for (const alias of knownAliases) {
                 if (alias.length < 4) continue;
-                if (titleSlug.includes(alias)) {
+                if (
+                  titleSlug.includes(alias) ||
+                  titleSlugDePlural.includes(alias)
+                ) {
                   results.add(alias);
                   break;
                 }
