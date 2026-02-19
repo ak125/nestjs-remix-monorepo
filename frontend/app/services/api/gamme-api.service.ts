@@ -17,6 +17,7 @@ import {
   type GammePageConseilItem,
   type GammePagePurchaseGuideData,
   type GammePageBuyingGuide,
+  type GammePageSeoSwitch,
 } from "~/types/gamme-page-contract.types";
 import { logger } from "~/utils/logger";
 
@@ -60,6 +61,19 @@ export interface GammeApiResponse {
   } | null;
   purchaseGuideData?: GammePagePurchaseGuideData | null;
   performance?: GammePagePerformance;
+  seoSwitches?: {
+    verbs: GammePageSeoSwitch[];
+    nouns: GammePageSeoSwitch[];
+    verbCount: number;
+    nounCount: number;
+  };
+  reference?: {
+    slug: string;
+    title: string;
+    definition: string;
+    roleMecanique: string | null;
+    canonicalUrl: string | null;
+  } | null;
 }
 
 interface FetchOptions {
@@ -86,7 +100,8 @@ export async function fetchGammePageData(
       // Timeout specifique pour RPC V2 (10s max)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
-      const rpcSignal = signal || controller.signal;
+      // Timeout local 10s : ne PAS laisser le signal parent (30s) l'écraser
+      const rpcSignal = controller.signal;
 
       const rpcResponse = await fetch(
         `${API_URL}/api/gamme-rest/${gammeId}/page-data-rpc-v2`,
