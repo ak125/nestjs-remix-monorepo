@@ -91,8 +91,7 @@ const mockConseilEnricher = { enrichSingle: jest.fn() };
 const mockReferenceService = { refreshSingleGamme: jest.fn() };
 const mockDiagnosticService = { refreshFromRag: jest.fn() };
 const mockConfigService = {
-  get: jest.fn((key: string, defaultVal?: string) => {
-    if (key === 'CONTENT_AUTO_PUBLISH_THRESHOLD') return '101';
+  get: jest.fn((_key: string, defaultVal?: string) => {
     return defaultVal ?? '';
   }),
 };
@@ -116,8 +115,7 @@ beforeEach(() => {
     eq: jest.fn().mockResolvedValue({ error: null }),
   });
   mockConfigService.get.mockImplementation(
-    (key: string, defaultVal?: string) => {
-      if (key === 'CONTENT_AUTO_PUBLISH_THRESHOLD') return '101';
+    (_key: string, defaultVal?: string) => {
       return defaultVal ?? '';
     },
   );

@@ -194,18 +194,12 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
       }
 
-      // Determine final status with auto-publish threshold
-      const autoPublishThreshold = parseInt(
-        this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD', '101'),
-        10,
-      );
+      // Determine final status
       let finalStatus: ContentRefreshResult['status'];
 
       if (ragSkipped) {
         // RAG absent = neutral condition, not an error
         finalStatus = 'skipped';
-      } else if ((qualityScore ?? 0) >= autoPublishThreshold) {
-        finalStatus = 'auto_published';
       } else if ((qualityScore ?? 0) >= 70) {
         finalStatus = 'draft';
       } else {
@@ -215,32 +209,12 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       // Update dependent tables — skip when RAG absent (no content changed)
       if (finalStatus !== 'skipped') {
         if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
-          if (finalStatus === 'auto_published') {
-            // Auto-publish: make content live immediately
-            await this.client
-              .from('__seo_gamme_purchase_guide')
-              .update({ sgpg_is_draft: false })
-              .eq('sgpg_pg_id', String(pgId));
-          } else if (finalStatus === 'draft') {
+          if (finalStatus === 'draft') {
             await this.client
               .from('__seo_gamme_purchase_guide')
               .update({ sgpg_is_draft: true })
               .eq('sgpg_pg_id', String(pgId));
           }
-        }
-
-        if (pageType === 'R4_reference' && finalStatus === 'auto_published') {
-          await this.client
-            .from('__seo_reference')
-            .update({ is_published: true })
-            .eq('slug', pgAlias);
-        }
-
-        if (pageType === 'R5_diagnostic' && finalStatus === 'auto_published') {
-          await this.client
-            .from('__seo_observable')
-            .update({ is_published: true })
-            .eq('slug', diagnosticSlug);
         }
       }
 
@@ -253,9 +227,6 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           quality_score: ragSkipped ? null : qualityScore,
           quality_flags: qualityFlags,
           completed_at: now,
-          ...(finalStatus === 'auto_published'
-            ? { published_at: now, published_by: 'auto' }
-            : {}),
           error_message:
             finalStatus === 'failed'
               ? errorMessage || 'Quality score below threshold'
@@ -267,7 +238,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         `Content-refresh complete: ${diagnosticSlug || pgAlias}/${pageType} → ${finalStatus}` +
           (ragSkipped
             ? ` (ragSkipped: ${ragSkipReason})`
-            : ` (score=${qualityScore}, threshold=${autoPublishThreshold})`),
+            : ` (score=${qualityScore})`),
       );
 
       return {

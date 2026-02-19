@@ -26,7 +26,7 @@ export type AnyContentRefreshJobData =
   | ContentRefreshJobDataR5;
 
 export interface ContentRefreshResult {
-  status: 'draft' | 'failed' | 'skipped' | 'auto_published';
+  status: 'draft' | 'failed' | 'skipped';
   qualityScore: number | null;
   qualityFlags: string[];
   errorMessage?: string;
