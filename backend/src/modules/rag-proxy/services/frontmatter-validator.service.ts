@@ -65,6 +65,23 @@ export class FrontmatterValidatorService {
 
     const fm = this.parseFrontmatter(content);
 
+    // Auto-infer doc_family from source_type when missing
+    // (web/PDF ingestion scripts don't always set doc_family)
+    if (!fm.doc_family && fm.source_type) {
+      const SOURCE_TO_FAMILY: Record<string, string> = {
+        gamme: 'catalog',
+        diagnostic: 'diagnostic',
+        guide: 'guide',
+        faq: 'knowledge',
+        policy: 'knowledge',
+        general: 'knowledge',
+      };
+      const inferred = SOURCE_TO_FAMILY[fm.source_type];
+      if (inferred) {
+        fm.doc_family = inferred;
+      }
+    }
+
     // Check required fields
     for (const field of REQUIRED_FRONTMATTER_FIELDS) {
       if (!fm[field]) {

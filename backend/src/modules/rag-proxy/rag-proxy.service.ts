@@ -1206,7 +1206,51 @@ export class RagProxyService {
         const status = await this.getSinglePdfJobStatus(jobId, 10);
         if (status.status === 'done' || status.status === 'completed') {
           clearInterval(timer);
-          this.emitIngestionCompleted(jobId, 'pdf');
+
+          // Validate frontmatter on recently modified knowledge files (like web flow)
+          const knowledgePath =
+            process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+          let validationResult:
+            | {
+                valid: string[];
+                quarantined: Array<{
+                  filename: string;
+                  reason: string;
+                }>;
+              }
+            | undefined;
+          try {
+            const subDirs = readdirSync(knowledgePath, {
+              withFileTypes: true,
+            })
+              .filter(
+                (d) =>
+                  d.isDirectory() &&
+                  !d.name.startsWith('.') &&
+                  d.name !== '_quarantine' &&
+                  d.name !== '__pycache__',
+              )
+              .map((d) => d.name);
+            for (const subDir of subDirs) {
+              const result = this.frontmatterValidator.validateIntakeZone(
+                knowledgePath,
+                subDir,
+              );
+              if (result.quarantined.length > 0 || result.valid.length > 0) {
+                if (!validationResult) {
+                  validationResult = { valid: [], quarantined: [] };
+                }
+                validationResult.valid.push(...result.valid);
+                validationResult.quarantined.push(...result.quarantined);
+              }
+            }
+          } catch (valErr) {
+            this.logger.warn(
+              `PDF frontmatter validation skipped: ${getErrorMessage(valErr)}`,
+            );
+          }
+
+          this.emitIngestionCompleted(jobId, 'pdf', validationResult);
         } else if (
           status.status === 'failed' ||
           status.status === 'error' ||
@@ -1310,8 +1354,22 @@ export class RagProxyService {
     // Load known gamme aliases for title matching (strategy 3)
     const knownAliases = this.getKnownGammeAliases(knowledgePath);
 
-    // 2+3. Scan web/ and web-catalog/
-    for (const subDir of ['web', 'web-catalog']) {
+    // 2+3. Scan ALL knowledge subdirectories (excluding gammes/ handled above)
+    const EXCLUDED_DIRS = new Set(['gammes', '_quarantine', '__pycache__']);
+    let allSubDirs: string[] = [];
+    try {
+      allSubDirs = readdirSync(knowledgePath, { withFileTypes: true })
+        .filter(
+          (d) =>
+            d.isDirectory() &&
+            !EXCLUDED_DIRS.has(d.name) &&
+            !d.name.startsWith('.'),
+        )
+        .map((d) => d.name);
+    } catch {
+      this.logger.warn(`Could not list knowledge subdirs: ${knowledgePath}`);
+    }
+    for (const subDir of allSubDirs) {
       const dir = path.join(knowledgePath, subDir);
       try {
         for (const f of readdirSync(dir)) {

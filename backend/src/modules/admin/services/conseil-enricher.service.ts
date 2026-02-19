@@ -32,6 +32,10 @@ const SECTION_ORDERS: Record<string, number> = {
   S8: 85,
 };
 
+// Minimum content length to consider a section "substantial".
+// Sections below this threshold are treated as placeholders and can be re-enriched.
+const MIN_SECTION_CONTENT_LENGTH = 150;
+
 // ── Generic phrase penalties (shared + conseil-specific extras) ──
 
 const GENERIC_PHRASES = [...SHARED_GENERIC_PHRASES, 'il est important'];
@@ -764,10 +768,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S3 Comment choisir — create if missing (only 5 exist in DB!)
+    // S3 Comment choisir — create if missing or update if placeholder (<150 chars)
     {
       const existingS3 = existing.get(SECTION_TYPES.S3);
-      if (!existingS3) {
+      const s3Substantial =
+        existingS3 &&
+        (existingS3.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s3Substantial) {
         let s3Content = '';
         if (contract.howToChoose?.length) {
           const items = contract.howToChoose
@@ -780,7 +787,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
         if (s3Content.length > 30) {
           actions.push({
             type: SECTION_TYPES.S3,
-            action: 'create',
+            action: existingS3 ? 'update' : 'create',
             title: `Comment choisir vos ${gammeName} :`,
             content: s3Content,
             order: SECTION_ORDERS.S3,
@@ -793,13 +800,16 @@ export class ConseilEnricherService extends SupabaseBaseService {
     // Too risky to overwrite technical procedures without explicit data
     if (contract.diagnosticTree && contract.diagnosticTree.length >= 3) {
       const existingS4D = existing.get(SECTION_TYPES.S4_DEPOSE);
-      if (!existingS4D) {
+      const s4dSubstantial =
+        existingS4D &&
+        (existingS4D.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s4dSubstantial) {
         const steps = contract.diagnosticTree
           .map((node) => `- Si ${node.if} → ${node.then}`)
           .join('<br>');
         actions.push({
           type: SECTION_TYPES.S4_DEPOSE,
-          action: 'create',
+          action: existingS4D ? 'update' : 'create',
           title: `Diagnostic des ${gammeName} :`,
           content: steps,
           order: SECTION_ORDERS.S4_DEPOSE,
@@ -807,16 +817,19 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S5 Erreurs à éviter — CREATE if missing (most gammes don't have S5)
+    // S5 Erreurs à éviter — create if missing or update if placeholder (<150 chars)
     if (contract.antiMistakes && contract.antiMistakes.length >= 3) {
       const existingS5 = existing.get(SECTION_TYPES.S5);
-      if (!existingS5) {
+      const s5Substantial =
+        existingS5 &&
+        (existingS5.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s5Substantial) {
         const items = contract.antiMistakes
           .map((item) => `- ${item}`)
           .join('<br>');
         actions.push({
           type: SECTION_TYPES.S5,
-          action: 'create',
+          action: existingS5 ? 'update' : 'create',
           title: `Erreurs à éviter avec les ${gammeName} :`,
           content: items,
           order: SECTION_ORDERS.S5,
@@ -824,16 +837,19 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S6 Vérification — create from diagnostic_tree if available
+    // S6 Vérification — create from diagnostic_tree if available, update if placeholder
     if (contract.diagnosticTree && contract.diagnosticTree.length >= 2) {
       const existingS6 = existing.get(SECTION_TYPES.S6);
-      if (!existingS6) {
+      const s6Substantial =
+        existingS6 &&
+        (existingS6.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s6Substantial) {
         const checks = contract.diagnosticTree
           .map((node) => `- Vérifier : ${node.then}`)
           .join('<br>');
         actions.push({
           type: SECTION_TYPES.S6,
-          action: 'create',
+          action: existingS6 ? 'update' : 'create',
           title: `Vérifications après remplacement des ${gammeName} :`,
           content: checks,
           order: SECTION_ORDERS.S6,
@@ -844,7 +860,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
     // S7 Pièces associées — prefer markdown associated pieces over syncParts
     {
       const existingS7 = existing.get(SECTION_TYPES.S7);
-      if (!existingS7) {
+      const s7Substantial =
+        existingS7 &&
+        (existingS7.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s7Substantial) {
         const pieces =
           contract.associatedPieces && contract.associatedPieces.length > 0
             ? contract.associatedPieces
@@ -859,7 +878,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
             .join('<br>');
           actions.push({
             type: SECTION_TYPES.S7,
-            action: 'create',
+            action: existingS7 ? 'update' : 'create',
             title: `Pièces à contrôler et à remplacer avec les ${gammeName} :`,
             content: links,
             order: SECTION_ORDERS.S7,
@@ -868,10 +887,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S8 FAQ — CREATE if missing (no gammes have S8)
+    // S8 FAQ — create if missing or update if placeholder (<150 chars)
     if (contract.faq && contract.faq.length >= 3) {
       const existingS8 = existing.get(SECTION_TYPES.S8);
-      if (!existingS8) {
+      const s8Substantial =
+        existingS8 &&
+        (existingS8.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s8Substantial) {
         const faqHtml = contract.faq
           .map(
             (f) =>
@@ -880,7 +902,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
           .join('\n');
         actions.push({
           type: SECTION_TYPES.S8,
-          action: 'create',
+          action: existingS8 ? 'update' : 'create',
           title: `Questions fréquentes sur les ${gammeName} :`,
           content: faqHtml,
           order: SECTION_ORDERS.S8,
