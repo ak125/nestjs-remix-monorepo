@@ -183,8 +183,11 @@ Chaque module NestJS suit cette architecture stricte :
 | `__products` | Catalogue | produits, variantes |
 | `__orders` | Commerce | commandes, lignes |
 | `__users` | Auth | utilisateurs, sessions |
-| `__seo_*` | SEO | meta, redirects |
+| `__seo_*` | SEO | meta, redirects, reference, gamme_conseil, gamme_purchase_guide |
 | `__blog_*` | Contenu | articles, categories |
+| `__rag_*` | Pipeline | content_refresh_log |
+| `__qa_*` | QA | protected_meta_hash (baselines SEO) |
+| `__pg_gammes` | VIEW | gammes actives + search_volume (pieces_gamme + gamme_seo_metrics) |
 
 ### Fonctions RPC
 
