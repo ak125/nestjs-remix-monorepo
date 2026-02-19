@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
 import { BuyingGuideDataService } from './buying-guide-data.service';
+import { ReferenceService } from '../../seo/services/reference.service';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { stripHtmlForMeta } from '../../../utils/html-entities';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
@@ -21,6 +22,7 @@ export class GammeResponseBuilderService {
     private readonly transformer: GammeDataTransformerService,
     private readonly rpcService: GammeRpcService,
     private readonly buyingGuideService: BuyingGuideDataService,
+    private readonly referenceService: ReferenceService,
   ) {}
 
   /**
@@ -478,6 +480,29 @@ export class GammeResponseBuilderService {
           }
         : null;
 
+    // Fetch reference data (optional, non-blocking)
+    let referenceData: {
+      slug: string;
+      title: string;
+      definition: string;
+      roleMecanique: string | null;
+      canonicalUrl: string | null;
+    } | null = null;
+    try {
+      const ref = await this.referenceService.getByPgId(pgIdNum);
+      if (ref && ref.definition) {
+        referenceData = {
+          slug: ref.slug,
+          title: ref.title,
+          definition: ref.definition,
+          roleMecanique: ref.roleMecanique,
+          canonicalUrl: ref.canonicalUrl,
+        };
+      }
+    } catch {
+      /* non-bloquant — pas de référence = pas d'encart */
+    }
+
     const totalTime = performance.now() - startTime;
 
     // ✅ URLs via fonctions centralisées
@@ -561,6 +586,8 @@ export class GammeResponseBuilderService {
       gammeBuyingGuide: gammeBuyingGuide || null,
       // ✅ Données narratives pour QuickGuideSection (intro/timing/budget)
       purchaseGuideData,
+      // ✅ Référence technique R4 (encart "En savoir plus")
+      reference: referenceData,
       motorisationsBlog:
         motorisationsBlog.length > 0
           ? {

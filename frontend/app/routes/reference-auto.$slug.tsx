@@ -81,6 +81,7 @@ interface Reference {
     pgId: number | null;
     name: string | null;
     url: string | null;
+    productCount?: number;
   };
   relatedReferences: number[] | null;
   blogSlugs: string[] | null;
@@ -623,7 +624,9 @@ export default function ReferenceDetailPage() {
                         {reference.gamme.name || shortTitle}
                       </span>
                       <p className="text-sm text-gray-500">
-                        Voir les pièces disponibles
+                        {reference.gamme.productCount
+                          ? `${reference.gamme.productCount} pièces disponibles`
+                          : "Voir les pièces disponibles"}
                       </p>
                     </div>
                     <ExternalLink className="w-4 h-4 text-gray-400" />

@@ -40,6 +40,7 @@ interface ReferenceResponse {
     pgId: number | null;
     name: string | null;
     url: string | null;
+    productCount?: number;
   };
   relatedReferences: number[] | null;
   blogSlugs: string[] | null;
@@ -291,7 +292,19 @@ export class ReferenceController {
       throw new NotFoundException(`Référence non trouvée: ${slug}`);
     }
 
-    return this.mapToResponse(reference);
+    const response = this.mapToResponse(reference);
+
+    // Enrich with product count (non-blocking)
+    if (reference.pgId) {
+      try {
+        response.gamme.productCount =
+          await this.referenceService.getProductCountByGammeId(reference.pgId);
+      } catch {
+        /* non-bloquant */
+      }
+    }
+
+    return response;
   }
 
   /**

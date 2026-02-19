@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 // 🆕 V2 UX Components
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
@@ -52,9 +52,10 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 // Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
 import { normalizeAlias } from "../utils/url-builder.utils";
 import {
-  getVehicleFromCookie,
+  getVehicleClient,
   buildBreadcrumbWithVehicle,
   storeVehicleClient,
+  type VehicleCookie,
 } from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
@@ -116,6 +117,13 @@ const EquipementiersSection = lazy(() =>
 const DecisionGridSection = lazy(() =>
   import("../components/pieces/DecisionGridSection").then((m) => ({
     default: m.DecisionGridSection,
+  })),
+);
+
+// 📘 Référence technique R4 (encart "En savoir plus")
+const ReferenceEncartSection = lazy(() =>
+  import("../components/pieces/ReferenceEncartSection").then((m) => ({
+    default: m.ReferenceEncartSection,
   })),
 );
 
@@ -206,10 +214,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const currentUrl = new URL(request.url);
     const pathname = currentUrl.pathname;
 
-    const [selectedVehicle, apiData, switchesResponse, substitutionResponse] =
-      await Promise.all([
-        // 🚗 Récupérer véhicule depuis cookie (parallélisé)
-        getVehicleFromCookie(request.headers.get("Cookie")),
+    const [apiData, switchesResponse, substitutionResponse] = await Promise.all(
+      [
         fetchGammePageData(gammeId, { signal: controller.signal }),
         fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
           signal: controller.signal,
@@ -225,14 +231,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         )
           .then((res) => (res.ok ? res.json() : null))
           .catch(() => null),
-      ]).finally(() => clearTimeout(timeoutId));
-
-    logger.log(
-      "🚗 Véhicule depuis cookie:",
-      selectedVehicle
-        ? `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}`
-        : "Aucun véhicule sélectionné",
-    );
+      ],
+    ).finally(() => clearTimeout(timeoutId));
 
     // 🔗 Mapper les switches SEO pour ancres variées
     interface SeoSwitch {
@@ -340,7 +340,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             date: (apiData.guideAchat as { updated?: string }).updated ?? "",
           }
         : undefined,
-      selectedVehicle,
       purchaseGuideData: apiData.purchaseGuideData,
       gammeBuyingGuide: apiData.gammeBuyingGuide,
       substitution: substitutionResponse,
@@ -552,6 +551,15 @@ export default function PiecesDetailPage() {
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
+
+  // 🚗 Véhicule sélectionné — côté client uniquement (évite cache poisoning SSR)
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleCookie | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setSelectedVehicle(getVehicleClient());
+  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -1112,6 +1120,13 @@ export default function PiecesDetailPage() {
 
       {/* R1 ROUTER: SymptomsSection (R5) et AntiMistakesSection (R3) supprimés — hors-rôle */}
 
+      {/* 📘 Référence technique R4 — encart "En savoir plus" */}
+      {data.reference && (
+        <Suspense fallback={null}>
+          <ReferenceEncartSection reference={data.reference} />
+        </Suspense>
+      )}
+
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
       <PageSection bg="slate" id="compatibilities">
         <Reveal>
@@ -1151,10 +1166,11 @@ export default function PiecesDetailPage() {
       </div>
 
       {/* 🚗 Badge véhicule actif (si présent) */}
-      {data.selectedVehicle && (
+      {selectedVehicle && (
         <PageSection className="py-4 sm:py-4">
           <VehicleFilterBadge
-            vehicle={data.selectedVehicle}
+            vehicle={selectedVehicle}
+            onClear={() => setSelectedVehicle(null)}
             showDetails={true}
           />
         </PageSection>

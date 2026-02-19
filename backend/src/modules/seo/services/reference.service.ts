@@ -90,6 +90,32 @@ export class ReferenceService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère une référence par pg_id (gamme ID)
+   */
+  async getByPgId(pgId: number): Promise<SeoReference | null> {
+    const { data, error } = await this.supabase
+      .from('__seo_reference')
+      .select('*')
+      .eq('pg_id', pgId)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return this.mapRowToReference(data);
+  }
+
+  /**
+   * Compte les produits pour une gamme (pour CTA pages référence)
+   */
+  async getProductCountByGammeId(pgId: number): Promise<number> {
+    const { count } = await this.supabase
+      .from('pieces')
+      .select('*', { count: 'exact', head: true })
+      .eq('piece_pg_id', pgId)
+      .eq('piece_display', true);
+    return count || 0;
+  }
+
+  /**
    * Récupère toutes les références publiées
    * @returns Liste des références (version légère)
    */

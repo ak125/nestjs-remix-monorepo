@@ -12,7 +12,6 @@
 
 import { z } from "zod";
 import { type PageRoleMeta } from "~/utils/page-role.types";
-import { type VehicleCookie } from "~/utils/vehicle-cookie";
 
 // ============================================================
 // Version
@@ -266,12 +265,20 @@ export interface GammePageDataV1 {
     nounCount: number;
   };
   guide?: GammePageGuide;
-  selectedVehicle?: VehicleCookie;
 
   // --- Tier 3 : Enrichissement ---
   purchaseGuideData?: GammePagePurchaseGuideData | null;
   gammeBuyingGuide?: GammePageBuyingGuide | null;
   substitution?: GammePageSubstitution | null;
+
+  // --- Tier 3 : Référence technique R4 ---
+  reference?: {
+    slug: string;
+    title: string;
+    definition: string;
+    roleMecanique: string | null;
+    canonicalUrl: string | null;
+  } | null;
 }
 
 // ============================================================
