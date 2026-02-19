@@ -334,39 +334,6 @@ export function isRoleAbove(
 // =====================================================
 
 /**
- * Types de sections dans __seo_gamme_conseil
- * Mapping template S1-S8 du rôle R3/conseils
- */
-export enum ConseilSectionType {
-  S1 = 'S1', // Avant de commencer (role, outils, difficulte)
-  S2 = 'S2', // Signes d'usure / quand intervenir
-  S3 = 'S3', // Compatibilite / comment choisir
-  S4_DEPOSE = 'S4_DEPOSE', // Etapes - demontage
-  S4_REPOSE = 'S4_REPOSE', // Etapes - remontage
-  S5 = 'S5', // Erreurs frequentes
-  S6 = 'S6', // Verification finale / essai routier
-  S7 = 'S7', // Pieces complementaires
-  S8 = 'S8', // FAQ
-  META = 'META', // Liens / articles associes (not a content section)
-}
-
-/**
- * Display order for section types in the template
- */
-export const CONSEIL_SECTION_ORDER: Record<ConseilSectionType, number> = {
-  [ConseilSectionType.S1]: 10,
-  [ConseilSectionType.S2]: 20,
-  [ConseilSectionType.S3]: 30,
-  [ConseilSectionType.S4_DEPOSE]: 40,
-  [ConseilSectionType.S4_REPOSE]: 50,
-  [ConseilSectionType.S5]: 60,
-  [ConseilSectionType.S6]: 70,
-  [ConseilSectionType.S7]: 80,
-  [ConseilSectionType.S8]: 90,
-  [ConseilSectionType.META]: 99,
-};
-
-/**
  * R3 Blog sub-roles
  */
 export type R3SubRole = 'conseils' | 'guide-achat';

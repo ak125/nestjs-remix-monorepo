@@ -77,6 +77,9 @@ import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
     ContentRefreshProcessor,
 
     // Enricher services (used by ContentRefreshProcessor)
+    // NOTE: These 4 services are also declared in AdminModule/SeoContentModule.
+    // WorkerModule does NOT import those modules, so NestJS creates separate instances.
+    // Verified stateless (no in-memory cache/state) — safe duplicate. See audit 2026-02-19.
     BuyingGuideEnricherService,
     ConseilEnricherService,
     ReferenceService,

@@ -4,6 +4,7 @@ import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
 
 // ── Section type constants matching DB values ──
 
@@ -31,19 +32,9 @@ const SECTION_ORDERS: Record<string, number> = {
   S8: 85,
 };
 
-// ── Generic phrase penalties ──
+// ── Generic phrase penalties (shared + conseil-specific extras) ──
 
-const GENERIC_PHRASES = [
-  'rôle essentiel',
-  'bon fonctionnement',
-  'il est important',
-  'il est recommandé',
-  'pièce indispensable',
-  'entretien régulier',
-  'il est conseillé',
-  'pièce importante',
-  'en bon état',
-];
+const GENERIC_PHRASES = [...SHARED_GENERIC_PHRASES, 'il est important'];
 
 // ── Quality gate penalties ──
 
