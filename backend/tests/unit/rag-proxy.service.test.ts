@@ -11,6 +11,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { HttpException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 
 describe('RagProxyService', () => {
@@ -43,6 +44,7 @@ describe('RagProxyService', () => {
       providers: [
         RagProxyService,
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 
