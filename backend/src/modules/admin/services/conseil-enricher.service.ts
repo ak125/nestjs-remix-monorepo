@@ -180,7 +180,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       return {
         status: 'skipped',
         score: 100,
-        flags: [],
+        flags: ['NO_ENRICHMENT_NEEDED'],
         sectionsCreated: 0,
         sectionsUpdated: 0,
         reason: 'NO_ENRICHMENT_NEEDED',

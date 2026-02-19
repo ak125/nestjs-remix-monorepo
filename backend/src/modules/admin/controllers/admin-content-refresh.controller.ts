@@ -46,6 +46,16 @@ export class AdminContentRefreshController {
   }
 
   /**
+   * GET /api/admin/content-refresh/qa-gate
+   * Verify protected SEO fields (title/H1/canonical/meta) are unchanged vs baseline.
+   * Returns GO if 0 mutations, BLOCK if any mutation detected.
+   */
+  @Get('qa-gate')
+  async checkQaGate() {
+    return this.contentRefreshService.checkProtectedFieldsGate();
+  }
+
+  /**
    * POST /api/admin/content-refresh/trigger
    * Manually trigger content refresh for one or more gammes.
    */

@@ -629,12 +629,13 @@ export class ReferenceService extends SupabaseBaseService {
 
         const fm = fmMatch[1];
 
-        // Extract role_summary
+        // Extract role_summary (supports both YAML block scalar `>-` and inline with indented continuation)
         const roleMatch = fm.match(
-          /role_summary:\s*>-?\s*\n([\s\S]*?)(?=\n\s*\w|$)/,
+          /role_summary:\s*(?:>-?\s*\n([\s\S]*?)(?=\n\s*\w+:|$)|(.*(?:\n\s{2,}.*)*))/,
         );
         const roleSummary = roleMatch
-          ? roleMatch[1].replace(/\s+/g, ' ').trim()
+          ? (roleMatch[1] || roleMatch[2] || '').replace(/\s+/g, ' ').trim() ||
+            null
           : null;
 
         // Extract must_be_true list

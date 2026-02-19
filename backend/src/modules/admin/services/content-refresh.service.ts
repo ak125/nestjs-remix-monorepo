@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -322,6 +323,132 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     this.logger.log(`Rejected refresh #${id}: ${reason}`);
     return { success: true };
+  }
+
+  /**
+   * QA Gate: verify that SEO-protected fields have not been mutated
+   * since baseline was captured in __qa_protected_meta_hash.
+   * Computes MD5 JS-side (same formula as baseline: md5(col1||'||'||col2||'||'||col3)).
+   */
+  async checkProtectedFieldsGate(): Promise<{
+    seo_mutations: number;
+    ref_mutations: number;
+    h1_override_mutations: number;
+    gate: 'GO' | 'BLOCK';
+    checked_at: string;
+    baseline_count: number;
+    details: Array<{ pg_alias: string; field: string }>;
+  }> {
+    // 1. Fetch baselines
+    const { data: baselines } = await this.client
+      .from('__qa_protected_meta_hash')
+      .select('pg_id, pg_alias, seo_hash, ref_hash, h1_override_hash');
+
+    if (!baselines || baselines.length === 0) {
+      return {
+        seo_mutations: 0,
+        ref_mutations: 0,
+        h1_override_mutations: 0,
+        gate: 'GO',
+        checked_at: new Date().toISOString(),
+        baseline_count: 0,
+        details: [],
+      };
+    }
+
+    const pgIds = baselines.map((b) => String(b.pg_id));
+    const pgAliases = baselines.map((b) => b.pg_alias as string);
+
+    // 2. Fetch current SEO values
+    const { data: seoRows } = await this.client
+      .from('__seo_gamme')
+      .select('sg_pg_id, sg_title, sg_h1, sg_descrip')
+      .in('sg_pg_id', pgIds);
+
+    // 3. Fetch current reference values
+    const { data: refRows } = await this.client
+      .from('__seo_reference')
+      .select('slug, title, meta_description, canonical_url')
+      .in('slug', pgAliases);
+
+    // 4. Fetch current h1_override values
+    const { data: pgRows } = await this.client
+      .from('__seo_gamme_purchase_guide')
+      .select('sgpg_pg_id, sgpg_h1_override')
+      .in('sgpg_pg_id', pgIds);
+
+    // Build lookup maps
+    const seoMap = new Map((seoRows || []).map((r) => [String(r.sg_pg_id), r]));
+    const refMap = new Map((refRows || []).map((r) => [r.slug as string, r]));
+    const pgMap = new Map((pgRows || []).map((r) => [String(r.sgpg_pg_id), r]));
+
+    // 5. Compare hashes
+    let seoMutations = 0;
+    let refMutations = 0;
+    let h1Mutations = 0;
+    const details: Array<{ pg_alias: string; field: string }> = [];
+
+    for (const baseline of baselines) {
+      const pgId = String(baseline.pg_id);
+      const alias = baseline.pg_alias as string;
+
+      // SEO check
+      const seo = seoMap.get(pgId);
+      if (seo) {
+        const hash = this.md5Gate(
+          (seo.sg_title as string) || '',
+          (seo.sg_h1 as string) || '',
+          (seo.sg_descrip as string) || '',
+        );
+        if (hash !== baseline.seo_hash) {
+          seoMutations++;
+          details.push({ pg_alias: alias, field: 'seo' });
+        }
+      }
+
+      // Reference check
+      const ref = refMap.get(alias);
+      if (ref) {
+        const hash = this.md5Gate(
+          (ref.title as string) || '',
+          (ref.meta_description as string) || '',
+          (ref.canonical_url as string) || '',
+        );
+        if (hash !== baseline.ref_hash) {
+          refMutations++;
+          details.push({ pg_alias: alias, field: 'ref' });
+        }
+      }
+
+      // H1 override check
+      const pg = pgMap.get(pgId);
+      if (pg) {
+        const hash = createHash('md5')
+          .update((pg.sgpg_h1_override as string) || '')
+          .digest('hex');
+        if (hash !== baseline.h1_override_hash) {
+          h1Mutations++;
+          details.push({ pg_alias: alias, field: 'h1_override' });
+        }
+      }
+    }
+
+    const totalMutations = seoMutations + refMutations + h1Mutations;
+
+    return {
+      seo_mutations: seoMutations,
+      ref_mutations: refMutations,
+      h1_override_mutations: h1Mutations,
+      gate: totalMutations === 0 ? 'GO' : 'BLOCK',
+      checked_at: new Date().toISOString(),
+      baseline_count: baselines.length,
+      details: totalMutations > 0 ? details : [],
+    };
+  }
+
+  /** MD5 with '||' separator — mirrors PostgreSQL: md5(coalesce(a,'') || '||' || coalesce(b,'') || '||' || coalesce(c,'')) */
+  private md5Gate(...fields: string[]): string {
+    return createHash('md5').update(fields.join('||')).digest('hex');
   }
 
   // ── Private helpers ──
