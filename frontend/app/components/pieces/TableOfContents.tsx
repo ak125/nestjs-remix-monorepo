@@ -118,20 +118,12 @@ const TableOfContents = memo(function TableOfContents({
   ];
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    // SSR-safe: document/window n'existent pas côté serveur
     if (typeof document === "undefined" || typeof window === "undefined")
       return;
     const element = document.getElementById(id);
-    if (element) {
-      const offset = 80; // Hauteur de la navbar sticky
-      const elementPosition =
-        element.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: elementPosition - offset,
-        behavior: "smooth",
-      });
-    }
+    if (!element) return; // Laisser le comportement natif #anchor
+    e.preventDefault();
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (

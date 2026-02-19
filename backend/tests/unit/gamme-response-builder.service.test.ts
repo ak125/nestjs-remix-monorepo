@@ -155,10 +155,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(() => autoGuide),
     } as any;
 
+    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
+      referenceService,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -197,10 +200,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(),
     } as any;
 
+    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
+      referenceService,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -239,10 +245,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(() => fallbackGuide),
     } as any;
 
+    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
+      referenceService,
     );
 
     const result = await service.buildRpcV2Response('479');

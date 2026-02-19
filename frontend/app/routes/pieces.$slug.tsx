@@ -63,6 +63,7 @@ import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
 import SectionHeader from "~/components/layout/SectionHeader";
+import { ContentGuidePills } from "~/components/pieces/ContentGuidePills";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import TableOfContents from "~/components/pieces/TableOfContents";
 import { pluralizePieceName } from "~/lib/seo-utils";
@@ -776,7 +777,7 @@ export default function PiecesDetailPage() {
                 {/* VehicleSelector à droite */}
                 <div
                   id="vehicle-selector"
-                  className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400"
+                  className="flex-1 w-full scroll-mt-20 animate-in fade-in slide-in-from-right duration-1000 delay-400"
                 >
                   <VehicleSelector
                     enableTypeMineSearch={true}
@@ -1010,28 +1011,13 @@ export default function PiecesDetailPage() {
         </div>
       </section>
 
-      {/* 📖 Bandeau guides contextuel — aide rapide + maillage interne R1→R3 */}
+      {/* 📖 Navigation contextuelle — guides, conseils, référence R4 */}
       <PageSection maxWidth="5xl" className="py-3 sm:py-4">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 text-sm">
-          <span className="font-medium text-gray-700">Besoin d'aide ?</span>
-          <Link
-            to="/blog-pieces-auto/guide-achat/selecteur-vehicule"
-            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            <BookOpen className="h-3.5 w-3.5" />
-            Comment utiliser le sélecteur
-          </Link>
-          {data.content?.pg_alias && (
-            <Link
-              to={`/blog-pieces-auto/conseils/${data.content.pg_alias}`}
-              className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline"
-            >
-              <Wrench className="h-3.5 w-3.5" />
-              Guide : comment changer un{" "}
-              {data.content?.pg_name?.toLowerCase() || "pièce"}
-            </Link>
-          )}
-        </div>
+        <ContentGuidePills
+          pgAlias={data.content?.pg_alias}
+          pgName={data.content?.pg_name}
+          reference={data.reference}
+        />
       </PageSection>
 
       {/* ⚡ Mini-guide rapide (3 cartes) — Position 2 : orientation immédiate */}
@@ -1082,7 +1068,7 @@ export default function PiecesDetailPage() {
       )}
 
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
-      <PageSection bg="slate" id="compatibilities">
+      <PageSection bg="slate" id="compatibilities" className="scroll-mt-20">
         <Reveal>
           <Suspense
             fallback={
@@ -1152,7 +1138,7 @@ export default function PiecesDetailPage() {
       {/* 🔧 Équipementiers — DarkSection navy (ConseilsSection R3/conseils supprimé — hors-rôle R1) */}
       <DarkSection>
         <div className="space-y-12">
-          <div id="brands">
+          <div id="brands" className="scroll-mt-20">
             <SectionHeader
               title="Marques équipementières de confiance"
               sub="Fabricants OE et qualité premium"
@@ -1175,7 +1161,7 @@ export default function PiecesDetailPage() {
       </DarkSection>
 
       {/* 📦 Catalogue Même Famille */}
-      <PageSection id="family">
+      <PageSection id="family" className="scroll-mt-20">
         <Reveal>
           <Suspense
             fallback={
@@ -1194,7 +1180,7 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 📖 FAQ R1 — questions universelles sur le sélecteur véhicule */}
-      <PageSection bg="slate" id="faq">
+      <PageSection bg="slate" id="faq" className="scroll-mt-20">
         <Reveal>
           <Suspense
             fallback={
