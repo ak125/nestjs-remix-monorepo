@@ -4,6 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > Detailed rules in `.claude/rules/`: backend, frontend, payments, deployment, agent-teams, context7
 
+## Regle #0 — TOUJOURS demander avant d'agir
+
+**JAMAIS prendre de decision seul.** Cela s'applique a TOUT : code, DB, config, structure, nommage, approche.
+
+1. **Presenter les options** et attendre validation AVANT d'implementer
+2. **Si ambiguite** : poser la question, ne PAS deviner l'intention
+3. **Format** : "Je propose X car Y. Tu valides ?" — puis ATTENDRE la reponse
+4. **Pas d'action sans feu vert** : ni refactoring, ni ajout de code, ni modification de logique
+
 ## Presentation des reponses
 
 **Ordre de lecture naturel :** Toujours structurer les reponses pour une lecture de haut en bas :
