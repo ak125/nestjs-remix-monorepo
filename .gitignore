@@ -165,3 +165,17 @@ ux-roadmap/
 
 # Agent submissions (separate repo, never commit)
 agent-submissions/
+
+# ============================================
+# Noise files (2026-02-19)
+# ============================================
+
+# CSV exports at root (Ahrefs, Search Console, etc.)
+*.csv
+!packages/**/*.csv
+
+# PDFs in frontend (source brochures, not for git)
+frontend/*.pdf
+
+# Claude Code backups
+.claude/*.bak
