@@ -432,6 +432,8 @@ export class GammeResponseBuilderService {
     // Map contract data to purchaseGuideData for QuickGuideSection (intro/timing/budget cards)
     const purchaseGuideData = buyingGuideContract
       ? {
+          id: pgIdNum,
+          pgId: pgId,
           intro: buyingGuideContract.intro,
           risk: buyingGuideContract.risk,
           timing: buyingGuideContract.timing,
@@ -443,6 +445,8 @@ export class GammeResponseBuilderService {
         }
       : gammeBuyingGuide
         ? {
+            id: pgIdNum,
+            pgId: pgId,
             intro: {
               title: `À quoi sert ${pgNameSite} ?`,
               role: gammeBuyingGuide.compatibilityRules?.[0] || '',
@@ -598,7 +602,7 @@ export class GammeResponseBuilderService {
       performance: {
         total_time_ms: totalTime,
         rpc_time_ms: timings.rpcTime,
-        motorisations_count: motorisations.length,
+        motorisations_count: cgcLevelStats.level_3 || motorisations.length,
         motorisations_blog_count: motorisationsBlog.length,
         catalogue_famille_count: catalogueFiltres.length,
         equipementiers_count: equipementiers.length,
