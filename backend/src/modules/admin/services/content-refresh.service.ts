@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -76,7 +78,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     const pgId = gamme.pg_id as number;
 
     // Determine which page types need refresh
-    const pageTypes = await this.determinePageTypes(pgId);
+    const pageTypes = await this.determinePageTypes(pgId, pgAlias);
 
     // Queue a job for each page type
     const queued: PageType[] = [];
@@ -265,7 +267,10 @@ export class ContentRefreshService extends SupabaseBaseService {
 
   // ── Private helpers ──
 
-  private async determinePageTypes(pgId: number): Promise<PageType[]> {
+  private async determinePageTypes(
+    pgId: number,
+    pgAlias: string,
+  ): Promise<PageType[]> {
     const types: PageType[] = [];
 
     // R1/R3 Guide Achat: check if purchase guide exists
@@ -289,8 +294,14 @@ export class ContentRefreshService extends SupabaseBaseService {
       types.push('R3_conseils');
     }
 
-    // R4 Reference: always eligible
-    types.push('R4_reference');
+    // R4 Reference: auto-enabled when RAG knowledge file exists
+    const ragFile = join(
+      '/opt/automecanik/rag/knowledge/gammes',
+      `${pgAlias}.md`,
+    );
+    if (existsSync(ragFile)) {
+      types.push('R4_reference');
+    }
 
     return types;
   }
