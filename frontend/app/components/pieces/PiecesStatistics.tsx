@@ -5,7 +5,7 @@
  * Dashboard de statistiques visuelles
  */
 
-import React, { memo } from "react";
+import { memo, useMemo } from "react";
 import { type PieceData } from "../../types/pieces-route.types";
 
 interface PiecesStatisticsProps {
@@ -23,7 +23,7 @@ export const PiecesStatistics = memo(function PiecesStatistics({
   gammeName,
 }: PiecesStatisticsProps) {
   // Calcul des stats
-  const stats = React.useMemo(() => {
+  const stats = useMemo(() => {
     if (pieces.length === 0) return null;
 
     const prices = pieces.map((p) => p.price);
