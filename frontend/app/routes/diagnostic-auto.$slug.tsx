@@ -81,6 +81,7 @@ interface DiagnosticData {
   ctx_freq: string;
   cluster_id: string;
   related_references: string[];
+  related_blog_articles: string[];
   related_gammes: number[];
   recommended_actions: Array<{
     action: string;
